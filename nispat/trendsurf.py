@@ -145,7 +145,7 @@ def main(*args):
     Phi = create_basis(Xz, basis)
     hyp0 = np.zeros(2)
 
-    # estimate the data from all subjects
+    # estimate the models for all subjects
     yhat = np.zeros_like(Yz)
     ys2 = np.zeros_like(Yz)
     nlZ = np.zeros(N)

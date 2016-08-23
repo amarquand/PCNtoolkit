@@ -5,24 +5,30 @@ import scipy as sp
 
 
 class BLR:
-    """
-    Bayesian linear regression
+    """Bayesian linear regression
 
     Estimation and prediction of Bayesian linear regression models
-    Basic usage:
 
-        >> B = BLR()
-        >> hyp = B.estimate(hyp0, X, t)
-        >> ts,s2 = B.predict(hyp, X, t, Xs)
+    Basic usage::
 
-    where the variables are:
-        hyp  : vector of hyperparmaters. hyp = [log(beta); log(alpha)]
-        hyp0 : starting estimates for hyperparameter optimisation
-        X    : N x D data array
-        t    : 1D Array of targets (length N)
-        Xs   : Nte x D array of test cases
-        ts   : predictive mean
-        s2   : predictive variance
+        B = BLR()
+        hyp = B.estimate(hyp0, X, t)
+        ts,s2 = B.predict(hyp, X, t, Xs)
+
+    where the variables are
+
+    :param hyp: vector of hyperparmaters.
+    :param X: N x D data array
+    :param t: 1D Array of targets (length N)
+    :param Xs: Nte x D array of test cases
+    :param hyp0: starting estimates for hyperparameter optimisation
+
+    :returns ts: predictive mean
+    :returns s2: predictive variance
+
+    The hyperparameters are::
+
+        hyp = [log(beta), log(alpha)]  # hyp is a numpy array
 
     The implementation and notation mostly follows Bishop (2006).
     The hyperparameter beta is the noise precision and alpha is the precision
