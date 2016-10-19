@@ -9,7 +9,7 @@ import tempfile
 
 def load_nifti(datafile):
 
-    print('Loading nifti input ...')
+    print('Loading nifti: ' + datafile + ' ...')
     img = nib.load(datafile)
     dat = img.get_data()
 
@@ -18,28 +18,28 @@ def load_nifti(datafile):
 
 def vol2vec(dat, mask=None):
 
+    if len(dat.shape) < 4:
+        dim = (np.prod(dat.shape[0:3]), 1)
+    else:
+        dim = (np.prod(dat.shape[0:3]), dat.shape[3])
+
     if mask is None:
         print('No mask specified. Generating one automatically ...')
-        if len(dat.shape) < 4:
+        if dim[1] == 1:
             mask = dat[:, :, :] != 0
-            dim = (np.prod(dat.shape[0:3]), 1)
-            multivol = False
         else:
             mask = dat[:, :, :, 0] != 0
-            dim = (np.prod(dat.shape[0:3]), dat.shape[3])
-            multivol = True
     else:
         mask = load_nifti(mask)
         mask = mask != 0
 
-    maskid = np.where(mask.ravel())[0]
-
     # mask the image
+    maskid = np.where(mask.ravel())[0]
     dat = np.reshape(dat, dim)
     dat = dat[maskid, :]
 
     # convert to 1-d array if the file only contains one volume
-    if not multivol:
+    if dim[1] != 1:
         dat = dat.ravel()
 
     return dat
@@ -54,7 +54,7 @@ def load_cifti(filename, vol=False, mask=None):
                            str(os.getpid()) + "-" + fpref)
 
     # extract surface data from the cifti file
-    print("extracting surface data to ", outstem, '*.gii', sep="")
+    print("extracting cifti surface data to ", outstem, '*.gii', sep="")
     giinamel = outstem + '-left.gii'
     giinamer = outstem + '-right.gii'
     os.system('wb_command -cifti-separate ' + filename +
@@ -76,7 +76,7 @@ def load_cifti(filename, vol=False, mask=None):
 
     if vol:
         niiname = outstem + '-vol.nii'
-        print("extracting volume data to ", niiname, sep="")
+        print("extracting cifti volume data to ", niiname, sep="")
         os.system('wb_command -cifti-separate ' + filename +
                   ' COLUMN -volume-all ' + niiname)
         vol = load_nifti(niiname)

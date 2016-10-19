@@ -168,7 +168,7 @@ def main(*args):
 
         print("Variance explained =", ev[i], "% RMSE =", rmse[i])
 
-    print("Mean (std) variance explaind =", ev.mean(), "(", ev.std(), ")")
+    print("Mean (std) variance explained =", ev.mean(), "(", ev.std(), ")")
     print("Mean (std) RMSE =", rmse.mean(), "(", rmse.std(), ")")
 
     # Write output
