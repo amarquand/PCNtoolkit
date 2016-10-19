@@ -4,8 +4,9 @@ import numpy as np
 import scipy as sp
 from matplotlib import pyplot as plt
 
-sys.path.append('/home/mrstats/andmar/sfw/pyspat')
-from bayesreg import blr
+#sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+from bayesreg import BLR
+from gp import GPR, covSqExp
 
 X = np.arange(0,10,0.1)
 N = len(X)
@@ -35,13 +36,28 @@ yid = range(0,N,1)
 
 hyp0 = np.zeros(2)
 hyp0 = np.zeros(4)
-B = blr()
-B.post(hyp0,Phi[yid,:],y[yid])
+B = BLR(hyp0,Phi[yid,:],y[yid])
+#B = BLR()
+#B.post(hyp0,Phi[yid,:],y[yid])
 B.loglik(hyp0,Phi[yid,:],y[yid])
 B.dloglik(hyp0,Phi[yid,:],y[yid])
 hyp = B.estimate(hyp0,Phi[yid,:],y[yid])
 
-yhat,s2 = B.predict(hyp0,Phi[yid,:],y[yid],Phi)
+yhat,s2 = B.predict(hyp,Phi[yid,:],y[yid],Phi)
+
+plt.plot(X,y)
+plt.plot(X,yhat)
+plt.show()
+
+# test GPR
+y = y-y.mean()
+hyp0 = np.zeros(3)
+G = GPR(hyp0, covSqExp, Phi[yid,:], y[yid])
+G.loglik(hyp0, covSqExp, Phi[yid,:], y[yid])
+G.dloglik(hyp0, covSqExp, Phi[yid,:], y[yid])
+hyp = G.estimate(hyp0,covSqExp, Phi[yid,:], y[yid])
+
+yhat,s2 = G.predict(hyp0,Phi[yid,:],y[yid],Phi)
 
 plt.plot(X,y)
 plt.plot(X,yhat)
