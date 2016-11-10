@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
-from gp import GPR, covSqExp
+from gp import GPR, covSqExp, covSqExpARD, covLin
 
 # load from the installed package
 #from nispat.gp import GPR, covSqExp
@@ -161,10 +161,21 @@ Xs = np.asarray([-1.90000000000000,
 1.86200000000000,
 1.90000000000000])
 
+N = len(X)
+
+X = np.c_[X, np.ones(N), np.arange(1,N+1)]
+
+cov = covSqExp
 hyp0 = np.zeros(3)
-hyp0 = np.ones(3)
-G = GPR(hyp0, covSqExp, X, y)
-G.loglik(hyp0, covSqExp, X, y)
-G.dloglik(hyp0, covSqExp, X, y)
-hyp = G.estimate(hyp0,covSqExp, X, y, optimizer='powell')
+
+cov = covSqExpARD
+hyp0 = np.zeros(X.shape[1]+2)
+
+#cov = covLin
+#hyp0 = np.asarray((0, None))
+
+G = GPR(hyp0, cov, X, y)
+G.loglik(hyp0, cov, X, y)
+G.dloglik(hyp0, cov, X, y)
+hyp = G.estimate(hyp0,cov, X, y)
 #yhat,s2 = G.predict(hyp0,Phi[yid,:],y[yid],Phi)

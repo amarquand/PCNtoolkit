@@ -16,7 +16,7 @@ y = [4.54920374633170, 0.371985574437271, 0.711307965514790, ...
     0.503774817336353, 1.94252531382056, 0.579133950013327,...
     0.670874423968554, 0.377353755100965]';
 
-%X = [X ones(size(X,1),1) (1:size(X,1))'];
+X = [X ones(size(X,1),1) (1:size(X,1))'];
 
 %y = y-mean(y);
 
@@ -24,7 +24,8 @@ inffunc  = @infExact;
 %meanfunc = @meanConst;    hyp0.mean = 0;
 meanfunc = @meanZero;     hyp0.mean = [];
 likfunc  = @likGauss;     hyp0.lik  = 0;%-0.6428;%0;
-covfunc  = @covSEiso;     hyp0.cov  = zeros(2,1);%[1.196, 1.2764,]';%zeros(2,1);
+%covfunc  = @covSEiso;     hyp0.cov  = zeros(2,1);%[1.196, 1.2764,]';%zeros(2,1);
+covfunc  = @covSEard;     hyp0.cov  = zeros(size(X,2)+1,1);%[1.196, 1.2764,]';%zeros(2,1);
 
 hyp = hyp0;
 
