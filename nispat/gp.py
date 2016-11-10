@@ -6,6 +6,10 @@ from numpy.linalg import solve, LinAlgError
 from numpy.linalg import cholesky as chol
 
 
+# Utility functions
+# -----------------
+
+
 def _sqDist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
 
@@ -36,6 +40,27 @@ def _sqDist(x, z=None):
     return dist
 
 
+# Covariance functions
+# --------------------
+
+
+def covLin(theta, x, z=None, i=None):
+
+    if theta[0] is not None:
+        print("hyperparameter specified but not required. Ignoring...")
+
+    if z is None:
+        z = x
+
+    if i is None:
+        K = x.dot(z.T)
+        return K
+    elif i == 0:
+        return np.asarray(0)
+    else:
+        raise ValueError("Invalid covariance function parameter")
+
+
 def covSqExp(theta, x, z=None, i=None):
     """ Ordinary squared exponential covariance function.
         The hyperparameters are:
@@ -49,21 +74,47 @@ def covSqExp(theta, x, z=None, i=None):
     if z is None:
         z = x
 
-    D = _sqDist(x/ell, z/ell)
+    R = _sqDist(x/ell, z/ell)
 
     if i is None:  # return covariance
-        K = sf2*np.exp(-D/2)
+        K = sf2*np.exp(-R/2)
         return K
-
     elif i == 0:   # return derivative of lengthscale parameter
-        dK = sf2*np.exp(-D/2)*D
+        dK = sf2*np.exp(-R/2)*R
         return dK
-
     elif i == 1:   # return derivative of signal variance parameter
-        dK = 2*sf2*np.exp(-D/2)
+        dK = 2*sf2*np.exp(-R/2)
         return dK
+    else:
+        raise ValueError("Invalid covariance function parameter")
 
-    else:  # covariance
+
+def covSqExpARD(theta, x, z=None, i=None):
+    """ Squared exponential covariance function with ARD
+        The hyperparameters are:
+            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    """
+
+    D = x.shape[1]
+    ell = np.exp(theta[0:D])
+    sf2 = np.exp(2*theta[D])
+
+    if z is None:
+        z = x
+
+    R = _sqDist(x.dot(np.diag(1./ell)), x.dot(np.diag(1./ell)))
+
+    K = sf2*np.exp(-R/2)
+    if i is None:  # return covariance
+        return K
+    elif i < D:    # return derivative of lengthscale parameter
+        dK = K*_sqDist(x[:, i]/ell[i], z[:, i]/ell[i])
+        return dK
+    elif i == D:   # return derivative of signal variance parameter
+        dK = 2*K
+        return dK
+    else:
         raise ValueError("Invalid covariance function parameter")
 
 
@@ -119,7 +170,9 @@ class GPR:
             self.post(hyp, cov, X, y)
 
     def _updatepost(self, hyp, cov):
-        if (hyp == self.hyp).all() and hasattr(self, 'alpha') and \
+
+        hypeq = np.asarray(hyp == self.hyp)
+        if hypeq.all() and hasattr(self, 'alpha') and \
            (hasattr(self, 'cov') and cov == self.cov):
             return False
         else:
@@ -195,7 +248,7 @@ class GPR:
             solve(self.L.T, solve(self.L, np.eye(self.N)))
 
         # initialise derivatives
-        self.dnlZ = np.zeros(hyp.shape)
+        self.dnlZ = np.zeros(len(hyp))
 
         # noise variance
         self.dnlZ[0] = -sn2*np.trace(Q)
