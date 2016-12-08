@@ -174,6 +174,8 @@ class BLR:
             F = -self.iSigma.dot(dSigma).dot(self.iSigma)
             c = -beta*F.dot(X.T).dot(y)
 
+            #import pdb
+            #pdb.set_trace()
             dnlZ[i+1] = -(-0.5 * np.trace(self.iSigma.dot(dSigma)) +
                           beta * y.T.dot(X).dot(c) -
                           beta * c.T.dot(XX).dot(self.m) -

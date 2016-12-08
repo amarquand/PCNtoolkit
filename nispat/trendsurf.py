@@ -23,38 +23,28 @@ if __name__ == "__main__":
         sys.path.append(path)
     del path
     from bayesreg import BLR
+    import fileio
+    # from fileio import load_nifti, save_nifti, create_mask
 else:
     # running as module
     from .bayesreg import BLR
+    from .fileio import load_nifti, save_nifti, create_mask
 
 
-def load_data(datafile, maskfile):
+def load_data(datafile, maskfile=None):
     """ load 4d nifti data """
     if datafile.endswith("nii.gz") or datafile.endswith("nii"):
-        print('Loading nifti input ...')
-        img = nib.load(datafile)
-        dat = img.get_data()
-        dim = dat.shape[0:3]
+        dat = fileio.load_nifti(datafile, vol=True)
+        dim = dat.shape
+        if len(dim) <= 3:
+            dim = dim + (1,)
     else:
         raise ValueError("No routine to handle non-nifti data")
 
-    # load a nifti mask
-    if maskfile is None:
-        print('No mask specified. Generating one automatically ...')
-        mask = dat[:, :, :, 0] != 0
-    else:
-        print('Loading ROI mask ...')
-        if maskfile.endswith("nii.gz") or maskfile.endswith(".nii"):
-            imm = nib.load(maskfile)
-            mask = imm.get_data() != 0
-        else:
-            raise ValueError("Invalid mask filename specified")
+    mask = fileio.create_mask(dat, mask=maskfile)
 
-    maskid = np.where(mask.flatten())[0]
-
-    # mask the image
-    dat = np.reshape(dat, (np.prod(dim), dat.shape[3]))
-    dat = dat[maskid, :]
+    dat = fileio.vol2vec(dat, mask)
+    maskid = np.where(mask.ravel())[0]
 
     # generate voxel coordinates
     i, j, k = np.meshgrid(np.linspace(0, dim[0]-1, dim[0]),
@@ -62,6 +52,7 @@ def load_data(datafile, maskfile):
                           np.linspace(0, dim[2]-1, dim[2]), indexing='ij')
 
     # voxel-to-world mapping
+    img = nib.load(datafile)
     world = np.vstack((i.ravel(), j.ravel(), k.ravel(),
                        np.ones(np.prod(i.shape), float))).T
     world = np.dot(world, img.affine.T)[maskid, 0:3]
@@ -131,6 +122,8 @@ def main(*args):
     print("Processing data in", filename)
     Y, X, mask = load_data(filename, maskfile)
     Y = np.round(10000*Y)/10000  # truncate precision to avoid numerical probs
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
     N = Y.shape[1]
 
     # standardize responses and covariates
@@ -157,12 +150,15 @@ def main(*args):
         print("Estimating model ", i+1, "of", N)
         breg = BLR()
         hyp[i, :] = breg.estimate(hyp0, Phi, Yz[:, i])
+        print(hyp)
+        print(breg.nlZ)
         m[i, :] = breg.m
         nlZ[i] = breg.nlZ
 
         # compute predictions and errors
         yhat[:, i], ys2[:, i] = breg.predict(hyp[i, :], Phi, Yz[:, i], Phi)
         yhat[:, i] = yhat[:, i]*sY[i] + mY[i]
+        plt.plot(yhat)
         rmse[i] = np.sqrt(np.mean((Y[:, i] - yhat[:, i]) ** 2))
         ev[i] = 100*(1 - (np.var(yhat[:, i] - Y[:, i]) / np.var(Y[:, i])))
 
@@ -178,8 +174,8 @@ def main(*args):
     np.savetxt("hyp.txt", hyp, delimiter='\t', fmt='%5.8f')
     np.savetxt("explainedvar.txt", ev, delimiter='\t', fmt='%5.8f')
     np.savetxt("rmse.txt", rmse, delimiter='\t', fmt='%5.8f')
-    write_nii(yhat, 'yhat.nii.gz', filename, mask)
-    write_nii(ys2, 'ys2.nii.gz', filename, mask)
+    fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
+    fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
 
 # For running from the command line:
 if __name__ == "__main__":
