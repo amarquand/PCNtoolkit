@@ -1,3 +1,16 @@
+.*
+__pycache__
+\#*.py\#
+.\#*.py
+*.pyc
+*.acn
+*.acr
+*.alg
+*.aux
+*.bbl
+*.blg
+*.dvi
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
