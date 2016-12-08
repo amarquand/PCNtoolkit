@@ -5,7 +5,7 @@ from scipy import optimize
 from numpy.linalg import solve, LinAlgError
 from numpy.linalg import cholesky as chol
 
-
+# -----------------
 # Utility functions
 # -----------------
 
@@ -39,7 +39,7 @@ def _sqDist(x, z=None):
 
     return dist
 
-
+# --------------------
 # Covariance functions
 # --------------------
 
