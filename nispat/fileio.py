@@ -128,8 +128,21 @@ def load_cifti(filename, vol=False, mask=None):
 
     return out
 
+# --------------
+# ascii routines
+# --------------
 
-# def load_ascii(filename):
+
+def load_ascii(filename):
+    # currently very basic functionality.
+
+    x = np.loadtxt(filename)
+    return x
+
+
+def save_ascii(data, filename):
+
+    np.savetxt(filename, data)
 
 
 def load(filename, mask=None, ascii=False):
@@ -138,8 +151,8 @@ def load(filename, mask=None, ascii=False):
         x = load_cifti(filename, vol=True)
     elif filename.endswith(('.nii.gz', '.nii', '.img', '.hdr')):
         x = load_nifti(filename, mask)
-    # elif ascii or filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
-    #     x = load_ascii(filename)
+    elif ascii or filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
+        x = load_ascii(filename)
     else:
         raise ValueError("I don't know what to do with " + filename)
     return x
