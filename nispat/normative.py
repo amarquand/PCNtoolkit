@@ -12,8 +12,9 @@ from __future__ import print_function
 import os
 import sys
 import numpy as np
-import nibabel as nib
 import argparse
+
+from gp import GPR, covSqExp
 
 # Test whether this module is being invoked as a script or part of a package
 if __name__ == "__main__":
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     # from fileio import load_nifti, save_nifti, create_mask
 
 
-def load_data(datafile, maskfile=None, covfile):
+def load_data(datafile, covfile, maskfile=None):
     """ load 4d nifti data """
     if datafile.endswith("nii.gz") or datafile.endswith("nii"):
         dat = fileio.load_nifti(datafile, vol=True)
@@ -39,10 +40,10 @@ def load_data(datafile, maskfile=None, covfile):
 
     mask = fileio.create_mask(dat, mask=maskfile)
 
-    dat = fileio.vol2vec(dat, mask)
-    maskid = np.where(mask.ravel())[0]
+    X = fileio.load(covfile)
+    Y = fileio.vol2vec(dat, mask)
 
-    return dat, cov, mask
+    return X, Y, mask
 
 
 def main(*args):
@@ -66,8 +67,7 @@ def main(*args):
 
     # load data
     print("Processing data in", filename)
-    Y, X, mask = load_data(filename, maskfile)
-    Y = np.round(10000*Y)/10000  # truncate precision to avoid numerical probs
+    Y, X, mask = load_data(filename, covfile, maskfile)
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
     N = Y.shape[1]
@@ -80,9 +80,12 @@ def main(*args):
     sX = np.std(X, axis=0)
     Xz = (X - mX) / sX
 
-    # create basis set and set starting hyperparamters
-    Phi = create_basis(Xz, basis)
+    # set starting hyperparamters
     hyp0 = np.zeros(2)
+    
+    G = GPR(hyp0, covSqExp, Xz[ids,:], y[ids])
+    hyp = G.estimate(hyp0,covSqExp, Phi[yid,:], y[yid])
+    yhat, s2 = G.predict(hyp0,Phi[yid,:],y[yid],Phi)
 
     # estimate the models for all subjects
     yhat = np.zeros_like(Yz)
@@ -123,12 +126,12 @@ def main(*args):
     fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
     fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
 
+wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
+maskfile = os.path.join(wdir, 'mask_3mm.nii.gz')
+datafile = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
+covfile = os.path.join(wdir, 'covariates_n50.txt')
+main(datafile + '-m ' + maskfile + '-c ' + covfile)
+
 # For running from the command line:
-if __name__ == "__main__":
-    main(sys.argv[1:])
-else:
-    wdir = '/home/mrstats/andmar/py.sandbox'
-    maskfile = sys.path.join(wdir,'mask_3mm.nii.gz')
-    datafile = sys.path.join(wdir,'shoot_data_3mm_n50.nii.gz')
-    covfile = sys.path.join(wdir,'covariates_n50.txt')
-    main(datafile + '-m ' + maskfile + '-c ' + covfile)
+#if __name__ == "__main__":
+#    main(sys.argv[1:])
