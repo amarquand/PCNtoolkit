@@ -158,7 +158,6 @@ def main(*args):
         # compute predictions and errors
         yhat[:, i], ys2[:, i] = breg.predict(hyp[i, :], Phi, Yz[:, i], Phi)
         yhat[:, i] = yhat[:, i]*sY[i] + mY[i]
-        plt.plot(yhat)
         rmse[i] = np.sqrt(np.mean((Y[:, i] - yhat[:, i]) ** 2))
         ev[i] = 100*(1 - (np.var(yhat[:, i] - Y[:, i]) / np.var(Y[:, i])))
 
