@@ -307,7 +307,7 @@ class GPR:
         ymu = Ks.dot(self.alpha)
 
         # predictive variance (for a noisy test input)
-        v = solve(self.L.T, Ks)
+        v = solve(self.L.T, Ks.T)
         ys2 = kss - v.T.dot(self.alpha) + sn2
 
         return ymu, ys2
