@@ -1,4 +1,4 @@
-#!/home/mrstats/maamen/Software/python/bin/python2.7
+#!/Users/andre/sfw/anaconda3/bin/python
 
 # ------------------------------------------------------------------------------
 #  Usage:
@@ -13,6 +13,8 @@ import os
 import sys
 import numpy as np
 import argparse
+
+from scipy import stats
 from sklearn.model_selection import KFold
 
 #from gp import GPR, covSqExp
@@ -39,12 +41,12 @@ def load_data(datafile, covfile, maskfile=None):
     else:
         raise ValueError("No routine to handle non-nifti data")
 
-    mask = fileio.create_mask(dat, mask=maskfile)
-
     X = fileio.load(covfile)
-    Y = fileio.vol2vec(dat, mask).T
 
-    return X, Y, mask
+    volmask = fileio.create_mask(dat, mask=maskfile)
+    Y = fileio.vol2vec(dat, volmask).T
+
+    return X, Y, volmask
 
 
 def main(*args):
@@ -70,17 +72,22 @@ def main(*args):
         raise(ValueError, "No covariates specified")
     else:
         covfile = args.covfile
-        
+
     # load data
     print("Processing data in", filename)
-    X, Y, mask = load_data(filename, covfile, maskfile)
+    X, Y, maskvol = load_data(filename, covfile, maskfile=maskfile)
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
     Nsub, Nmod = Y.shape
-    
+
+    # find and remove bad variables from the response variables
+    # note that the covariates are assumed to have already been checked
+    nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
+                                 np.var(Y, axis=0) != 0))[0]
+
     # set starting hyperparamters
     hyp0 = np.zeros(3)
-    
+
     # run cross-validation loop
     kfcv = KFold(n_splits=Nfold)
     Yhat = np.zeros_like(Y)
@@ -88,51 +95,58 @@ def main(*args):
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, Nfold))
     Hyp = np.zeros((Nmod, len(hyp0), Nfold))
-    fold = 1
+    fold = 0
     for tr, te in kfcv.split(X):
-    
-        # standardize responses and covariates
-        mY = np.mean(Y[tr, :], axis=0)
-        sY = np.std(Y[tr, :], axis=0)
-        Yz = (Y - mY) / sY
+
+        # standardize responses and covariates, ignoring invalid entries
+        iy, jy = np.ix_(tr, nz)
+        mY = np.mean(Y[iy, jy], axis=0)
+        sY = np.std(Y[iy, jy], axis=0)
+        Yz = np.zeros_like(Y)
+        Yz[:, nz] = (Y[:, nz] - mY) / sY
+
         mX = np.mean(X[tr, :], axis=0)
         sX = np.std(X[tr, :],  axis=0)
-        Xz = (X - mX) / sX  
+        Xz = (X - mX) / sX
 
         # estimate the models for all subjects
-        for i in range(0, Nmod):
-            print("Estimating model ", i+1, "of", Nmod)            
-            gpr = GPR(hyp0, covSqExp, Xz[tr, :], Yz[tr, i])
-            Hyp[i, :, fold] = gpr.estimate(hyp0, covSqExp, Xz[tr,:], Yz[tr, i])
+        for i in range(0, len(nz)):  # range(0, Nmod):
+            print("Estimating model ", i+1, "of", len(nz))            
+            gpr = GPR(hyp0, covSqExp, Xz[tr, :], Yz[tr, nz[i]])
+            Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covSqExp, Xz[tr, :],
+                                               Yz[tr, nz[i]])
 
-            yhat, s2 = gpr.predict(Hyp[i, :, fold], Xz[tr, :], Yz[tr, i], Xz[te, :])
-            
-            Yhat[te, i] = yhat * sY[i] + mY[i]
-            S2[te, i] = np.diag(s2) * sY[i]**2
-            Z[te, i] = (Y[te, i] - Yhat[te, i]) / np.sqrt(S2[te, i])
-            nlZ[i, fold] = gpr.nlZ
+            yhat, s2 = gpr.predict(Hyp[i, :, fold], Xz[tr, :],
+                                   Yz[tr, i], Xz[te, :])
 
-        rmse[i] = np.sqrt(np.mean((Y[:, i] - yhat[:, i]) ** 2))
-        ev[i] = 100*(1 - (np.var(yhat[:, i] - Y[:, i]) / np.var(Y[:, i])))
+            Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
+            S2[te, nz[i]] = np.diag(s2) * sY[i]**2
+            Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
+                            np.sqrt(S2[te, nz[i]])
+            nlZ[nz[i], fold] = gpr.nlZ
 
-        print("Variance explained =", ev[i], "% RMSE =", rmse[i])
+        fold += 1
 
-    print("Mean (std) variance explained =", ev.mean(), "(", ev.std(), ")")
-    print("Mean (std) RMSE =", rmse.mean(), "(", rmse.std(), ")")
+    # compute performance metrics
+    MSE = np.mean((Y - Yhat)**2, axis=0)
+    RMSE = np.sqrt(MSE)
+    SMSE = np.zeros_like(MSE)
+    SMSE[nz] = MSE[nz] / np.var(Y[:, nz], axis=0)
 
     # Write output
     print("Writing output ...")
-    np.savetxt("trendcoeff.txt", m, delimiter='\t', fmt='%5.8f')
-    np.savetxt("negloglik.txt", nlZ, delimiter='\t', fmt='%5.8f')
-    np.savetxt("hyp.txt", hyp, delimiter='\t', fmt='%5.8f')
-    np.savetxt("explainedvar.txt", ev, delimiter='\t', fmt='%5.8f')
-    np.savetxt("rmse.txt", rmse, delimiter='\t', fmt='%5.8f')
-    fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
-    fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
+    fileio.save_nifti(Yhat.T, 'yhat.nii.gz', filename, maskvol)
+    fileio.save_nifti(S2.T, 'ys2.nii.gz', filename, maskvol)
+    fileio.save_nifti(Z.T, 'Z.nii.gz', filename, maskvol)
+    fileio.save_nifti(RMSE, 'rmse.nii.gz', filename, maskvol)
+    fileio.save_nifti(SMSE, 'smse.nii.gz', filename, maskvol)
+
+    #np.savetxt("trendcoeff.txt", m, delimiter='\t', fmt='%5.8f')
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
+#wdir = '/Users/andre/data/normative_nimg'
 #maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
-#filename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
+#ilename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
 #covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
 #main(filename + '-m ' + maskfile + '-c ' + covfile)
 main()
