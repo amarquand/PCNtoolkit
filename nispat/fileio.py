@@ -14,7 +14,7 @@ def create_mask(data_array, mask=None):
 
     if mask is not None:
         print('Loading ROI mask ...')
-        maskvol = load_nifti(mask)
+        maskvol = load_nifti(mask, vol=True)
         maskvol = maskvol != 0
     else:
         if len(data_array.shape) < 4:
@@ -38,10 +38,11 @@ def vol2vec(dat, mask=None):
     else:
         dim = dat.shape[0:3] + (dat.shape[3],)
 
-    volmask = create_mask(dat)
+    if mask is None:
+        mask = create_mask(dat)
 
     # mask the image
-    maskid = np.where(volmask.ravel())[0]
+    maskid = np.where(mask.ravel())[0]
     dat = np.reshape(dat, (np.prod(dim[0:3]), dim[3]))
     dat = dat[maskid, :]
 
@@ -73,8 +74,13 @@ def save_nifti(data, filename, examplenii, mask):
 
     # load example image
     ex_img = nib.load(examplenii)
+    ex_img.shape
     dim = ex_img.shape[0:3]
-    nvol = int(data.shape[1])
+    if len(data.shape) < 2:
+        nvol = 1
+        data = data[:, np.newaxis]
+    else:
+        nvol = int(data.shape[1])
 
     # write data
     array_data = np.zeros((np.prod(dim), nvol))
@@ -144,13 +150,13 @@ def save_ascii(data, filename):
     np.savetxt(filename, data)
 
 
-def load(filename, mask=None, ascii=False):
+def load(filename, mask=None, text=False):
 
     if filename.endswith(('.dtseries.nii', '.dscalar.nii', '.dlabel.nii')):
         x = load_cifti(filename, vol=True)
     elif filename.endswith(('.nii.gz', '.nii', '.img', '.hdr')):
         x = load_nifti(filename, mask)
-    elif ascii or filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
+    elif text or filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
         x = load_ascii(filename)
     else:
         raise ValueError("I don't know what to do with " + filename)
