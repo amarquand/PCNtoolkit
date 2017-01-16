@@ -133,21 +133,41 @@ def main(*args):
     SMSE = np.zeros_like(MSE)
     SMSE[nz] = MSE[nz] / np.var(Y[:, nz], axis=0)
 
+    # compute correlation manually to save memory
+    Ym = Y[:, nz] - np.mean(Y[:, nz], axis=0)
+    Yhm = Yhat[:, nz] - np.mean(Yhat[:, nz], axis=0)
+    Yn = Ym / np.sqrt(np.sum(Ym**2, axis=0))
+    Yhn = Yhm / np.sqrt(np.sum(Yhm**2, axis=0))
+    Rho = np.zeros(Nmod)
+    Rho[nz] = np.sum(Yn * Yhn, axis=0)
+    del(Yn, Yhn, Ym, Yhm)
+
+    # Fisher r-to-z
+    Zr = (np.arctanh(Rho) - np.arctanh(0)) * np.sqrt(Nsub - 3)
+    N = stats.norm()
+    pRho = N.cdf(Zr)
+
     # Write output
     print("Writing output ...")
-    fileio.save_nifti(Yhat.T, 'yhat.nii.gz', filename, maskvol)
-    fileio.save_nifti(S2.T, 'ys2.nii.gz', filename, maskvol)
-    fileio.save_nifti(Z.T, 'Z.nii.gz', filename, maskvol)
-    fileio.save_nifti(RMSE, 'rmse.nii.gz', filename, maskvol)
-    fileio.save_nifti(SMSE, 'smse.nii.gz', filename, maskvol)
+    if fileio.file_type(filename) == 'cifti' or \
+       fileio.file_type(filename) == 'nifti':
+        exfile = filename
+    else:
+        exfile = None
 
-    #np.savetxt("trendcoeff.txt", m, delimiter='\t', fmt='%5.8f')
+    fileio.save(Yhat.T, 'yhat.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(S2.T, 'ys2.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(Z.T, 'Z.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(Rho, 'Rho.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(pRho, 'pRho.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(RMSE, 'rmse.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(SMSE, 'smse.nii.gz', example=exfile, mask=maskvol)
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
-#wdir = '/Users/andre/data/normative_nimg'
-#maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
-#ilename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
-#covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
+wdir = '/Users/andre/data/normative_nimg'
+maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
+filename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
+covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
 #main(filename + '-m ' + maskfile + '-c ' + covfile)
 main()
 

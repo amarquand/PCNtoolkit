@@ -11,6 +11,7 @@ import tempfile
 
 
 def create_mask(data_array, mask=None):
+    # create a (volumetric) mask either from an input nifti or the nifti itself
 
     if mask is not None:
         print('Loading ROI mask ...')
@@ -32,6 +33,7 @@ def create_mask(data_array, mask=None):
 
 
 def vol2vec(dat, mask=None):
+    # vectorise a 3d image
 
     if len(dat.shape) < 4:
         dim = dat.shape[0:3] + (1,)
@@ -51,6 +53,21 @@ def vol2vec(dat, mask=None):
         dat = dat.ravel()
 
     return dat
+
+
+def file_type(filename):
+    # routine to determine filetype
+
+    if filename.endswith(('.dtseries.nii', '.dscalar.nii', '.dlabel.nii')):
+        ftype = 'cifti'
+    elif filename.endswith(('.nii.gz', '.nii', '.img', '.hdr')):
+        ftype = 'nifti'
+    elif filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
+        ftype = 'text'
+    else:
+        raise ValueError("I don't know what to do with " + filename)
+
+    return ftype
 
 # --------------
 # nifti routines
@@ -149,15 +166,28 @@ def save_ascii(data, filename):
 
     np.savetxt(filename, data)
 
+# ----------------
+# generic routines
+# ----------------
+
+
+def save(data, filename, example=None, mask=None, text=False):
+
+    if file_type(filename) == 'cifti':
+        x = save_cifti(data, filename, vol=True)
+    elif file_type(filename) == 'nifti':
+        x = save_nifti(data, filename, example, mask)
+    elif text or file_type(filename) == 'text':
+        x = save_ascii(data, filename)
+
 
 def load(filename, mask=None, text=False):
 
-    if filename.endswith(('.dtseries.nii', '.dscalar.nii', '.dlabel.nii')):
+    if file_type(filename) == 'cifti':
         x = load_cifti(filename, vol=True)
-    elif filename.endswith(('.nii.gz', '.nii', '.img', '.hdr')):
+    elif file_type(filename) == 'nifti':
         x = load_nifti(filename, mask)
-    elif text or filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
+    elif text or file_type(filename) == 'text':
         x = load_ascii(filename)
-    else:
-        raise ValueError("I don't know what to do with " + filename)
+        
     return x
