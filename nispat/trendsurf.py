@@ -150,8 +150,6 @@ def main(*args):
         print("Estimating model ", i+1, "of", N)
         breg = BLR()
         hyp[i, :] = breg.estimate(hyp0, Phi, Yz[:, i])
-        #print(hyp)
-        #print(breg.nlZ)
         m[i, :] = breg.m
         nlZ[i] = breg.nlZ
 
