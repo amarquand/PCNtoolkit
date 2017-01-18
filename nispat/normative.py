@@ -17,8 +17,6 @@ import argparse
 from scipy import stats
 from sklearn.model_selection import KFold
 
-#from gp import GPR, covSqExp
-
 # Test whether this module is being invoked as a script or part of a package
 if __name__ == "__main__":
     # running as a script
@@ -31,22 +29,48 @@ if __name__ == "__main__":
     # from fileio import load_nifti, save_nifti, create_mask
 
 
-def load_data(datafile, covfile, maskfile=None):
-    """ load 4d nifti data """
-    if datafile.endswith("nii.gz") or datafile.endswith("nii"):
-        dat = fileio.load_nifti(datafile, vol=True)
-        dim = dat.shape
-        if len(dim) <= 3:
-            dim = dim + (1,)
-    else:
-        raise ValueError("No routine to handle non-nifti data")
+def load_data(datafile, covfile, maskfile=None, vol=True):
+    """ load dataset (covariates + responses) """
 
+    # load covariates
     X = fileio.load(covfile)
 
-    volmask = fileio.create_mask(dat, mask=maskfile)
-    Y = fileio.vol2vec(dat, volmask).T
+    # load responses
+    if fileio.file_type(datafile) == 'nifti':
+        dat = fileio.load_nifti(datafile, vol=vol)
+        volmask = fileio.create_mask(dat, mask=maskfile)
+        Y = fileio.vol2vec(dat, volmask).T
+    else:
+        Y = fileio.load(datafile)
+        volmask = None
+        if fileio.file_type(datafile) == 'cifti':
+            Y = Y.T
 
     return X, Y, volmask
+
+
+def compute_pearsonr(A, B):
+    """ computes correlation manually to save memory """
+
+    N = A.shape[1]
+
+    # first mean centre
+    Am = A - np.mean(A, axis=0)
+    Bm = B - np.mean(B, axis=0)
+    # then normalize
+    An = Am / np.sqrt(np.sum(Am**2, axis=0))
+    Bn = Bm / np.sqrt(np.sum(Bm**2, axis=0))
+    del(Am, Bm)
+
+    Rho = np.sum(An * Bn, axis=0)
+    del(An, Bn)
+
+    # Fisher r-to-z
+    Zr = (np.arctanh(Rho) - np.arctanh(0)) * np.sqrt(N - 3)
+    N = stats.norm()
+    pRho = 1-N.cdf(Zr)
+
+    return Rho, pRho
 
 
 def main(*args):
@@ -85,17 +109,17 @@ def main(*args):
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
 
-    # set starting hyperparamters
+    # set basic parameters
     hyp0 = np.zeros(3)
+    kfcv = KFold(n_splits=Nfold)
+    fold = 0
 
     # run cross-validation loop
-    kfcv = KFold(n_splits=Nfold)
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, Nfold))
     Hyp = np.zeros((Nmod, len(hyp0), Nfold))
-    fold = 0
     for tr, te in kfcv.split(X):
 
         # standardize responses and covariates, ignoring invalid entries
@@ -104,25 +128,24 @@ def main(*args):
         sY = np.std(Y[iy, jy], axis=0)
         Yz = np.zeros_like(Y)
         Yz[:, nz] = (Y[:, nz] - mY) / sY
-
         mX = np.mean(X[tr, :], axis=0)
         sX = np.std(X[tr, :],  axis=0)
         Xz = (X - mX) / sX
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
-            print("Estimating model ", i+1, "of", len(nz))            
+            print("Estimating model ", i+1, "of", len(nz))
             gpr = GPR(hyp0, covSqExp, Xz[tr, :], Yz[tr, nz[i]])
             Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covSqExp, Xz[tr, :],
                                                Yz[tr, nz[i]])
 
-            yhat, s2 = gpr.predict(Hyp[i, :, fold], Xz[tr, :],
-                                   Yz[tr, i], Xz[te, :])
+            yhat, s2 = gpr.predict(Hyp[nz[i], :, fold], Xz[tr, :],
+                                   Yz[tr, nz[i]], Xz[te, :])
 
             Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
             S2[te, nz[i]] = np.diag(s2) * sY[i]**2
             Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                            np.sqrt(S2[te, nz[i]])
+                           np.sqrt(S2[te, nz[i]])
             nlZ[nz[i], fold] = gpr.nlZ
 
         fold += 1
@@ -132,20 +155,9 @@ def main(*args):
     RMSE = np.sqrt(MSE)
     SMSE = np.zeros_like(MSE)
     SMSE[nz] = MSE[nz] / np.var(Y[:, nz], axis=0)
-
-    # compute correlation manually to save memory
-    Ym = Y[:, nz] - np.mean(Y[:, nz], axis=0)
-    Yhm = Yhat[:, nz] - np.mean(Yhat[:, nz], axis=0)
-    Yn = Ym / np.sqrt(np.sum(Ym**2, axis=0))
-    Yhn = Yhm / np.sqrt(np.sum(Yhm**2, axis=0))
     Rho = np.zeros(Nmod)
-    Rho[nz] = np.sum(Yn * Yhn, axis=0)
-    del(Yn, Yhn, Ym, Yhm)
-
-    # Fisher r-to-z
-    Zr = (np.arctanh(Rho) - np.arctanh(0)) * np.sqrt(Nsub - 3)
-    N = stats.norm()
-    pRho = N.cdf(Zr)
+    pRho = np.ones(Nmod)
+    Rho[nz], pRho[nz] = compute_pearsonr(Y[:, nz], Yhat[:, nz])
 
     # Write output
     print("Writing output ...")
@@ -154,23 +166,34 @@ def main(*args):
         exfile = filename
     else:
         exfile = None
+    ext = fileio.file_extension(filename)
 
-    fileio.save(Yhat.T, 'yhat.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(S2.T, 'ys2.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(Z.T, 'Z.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(Rho, 'Rho.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(pRho, 'pRho.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(RMSE, 'rmse.nii.gz', example=exfile, mask=maskvol)
-    fileio.save(SMSE, 'smse.nii.gz', example=exfile, mask=maskvol)
+    fileio.save(Yhat.T, 'yhat' + ext, example=exfile, mask=maskvol)
+    fileio.save(S2.T, 'ys2' + ext, example=exfile, mask=maskvol)
+    fileio.save(Z.T, 'Z' + ext, example=exfile, mask=maskvol)
+    fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
+    fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
+    fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
+    fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
-wdir = '/Users/andre/data/normative_nimg'
-maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
-filename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
-covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
-#main(filename + '-m ' + maskfile + '-c ' + covfile)
-main()
+##wdir = '/Users/andre/data/normative_nimg'
+#maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
+#filename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
+#covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
+#Nfold = 2
+
+#wdir = '/home/mrstats/andmar/py.sandbox/normative_hcp'
+#filename = os.path.join(wdir, 'tfmri_gambling_cope2.dtseries.nii')
+#covfile = os.path.join(wdir, 'ddscores.txt')
+#Nfold = 2
+
+#wdir = '/home/mrstats/andmar/data/enigma_mdd'
+#maskfile = None
+#filename = os.path.join(wdir, 'Enigma_1st_100sub_resp.txt')
+#covfile = os.path.join(wdir, 'Enigma_1st_100sub_cov.txt')
+#Nfold = 2
 
 # For running from the command line:
-#if __name__ == "__main__":
-#    main(sys.argv[1:])
+if __name__ == "__main__":
+    main(sys.argv[1:])
