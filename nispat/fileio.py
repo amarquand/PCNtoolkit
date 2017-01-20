@@ -9,8 +9,7 @@ CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
                   'dlabel', 'pscalar', 'pdconn', 'dpconn',
                   'pconnseries', 'pconnscalar')
 
-CIFTI_VOL_ATLAS = '/home/mrstats/andmar/data/hcp/data_unpacked/' + \
-                  '100307/MNINonLinear/ROIs/Atlas_ROIs.2.nii.gz'
+CIFTI_VOL_ATLAS = 'Atlas_ROIs.2.nii.gz'
 
 # ------------------------
 # general utility routines
@@ -265,13 +264,13 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         os.system('wb_command -cifti-separate ' + example +
                   ' COLUMN -volume-all ' + niiexname)
         niivol = load_nifti(niiexname, vol=True)
-        if mask is None:        
+        if mask is None:
             mask = create_mask(niivol)
 
         if volatlas is None:
             volatlas = CIFTI_VOL_ATLAS
         fnamev = fstem + '-vol.nii'
-        
+
         save_nifti(data[Nvertr+Nvertl:, :], fnamev, niiexname, mask)
         tmpfiles.extend([fnamev, niiexname])
 
