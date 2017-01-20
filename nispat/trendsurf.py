@@ -22,13 +22,9 @@ if __name__ == "__main__":
     if path not in sys.path:
         sys.path.append(path)
     del path
-    from bayesreg import BLR
+
     import fileio
-    # from fileio import load_nifti, save_nifti, create_mask
-else:
-    # running as module
-    from .bayesreg import BLR
-    from .fileio import load_nifti, save_nifti, create_mask
+    from bayesreg import BLR
 
 
 def load_data(datafile, maskfile=None):
