@@ -28,7 +28,7 @@ if __name__ == "__main__":
     del path
 
     import fileio
-    from gp import GPR, covSqExp
+    import gp
     from utils import compute_pearsonr, CustomCV
 
 
@@ -129,7 +129,8 @@ def main(*args):
                                  np.var(Y, axis=0) != 0))[0]
 
     # starting hyperparameters. Could also do random restarts here
-    hyp0 = np.zeros(3)
+    covfunc = gp.CovSqExp(X)
+    hyp0 = np.zeros(covfunc.get_n_params() + 1)
 
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
@@ -155,8 +156,8 @@ def main(*args):
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
             print("Estimating model ", i+1, "of", len(nz))
-            gpr = GPR(hyp0, covSqExp, Xz[tr, :], Yz[tr, nz[i]])
-            Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covSqExp, Xz[tr, :],
+            gpr = gp.GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
+            Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covfunc, Xz[tr, :],
                                                Yz[tr, nz[i]])
 
             yhat, s2 = gpr.predict(Hyp[nz[i], :, fold], Xz[tr, :],
