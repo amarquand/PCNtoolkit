@@ -5,13 +5,14 @@ Created on Wed Jan 18 14:34:06 2017
 @author: andmar
 """
 from normative import main as run_normative
+import os
 
 wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
 #wdir = '/Users/andre/data/normative_nimg'
 maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
-filename = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
+respfile = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
 covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
-Nfold = 2
+cvfolds = 2
 
 wdir = '/home/mrstats/andmar/py.sandbox/normative_hcp'
 filename = os.path.join(wdir, 'tfmri_gambling_cope2.dtseries.nii')

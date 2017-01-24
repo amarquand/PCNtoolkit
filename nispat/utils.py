@@ -3,6 +3,40 @@ from __future__ import print_function
 import numpy as np
 from scipy import stats
 
+# -----------------
+# Utility functions
+# -----------------
+
+
+def squared_dist(x, z=None):
+    """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
+
+    # do some basic checks
+    if z is None:
+        z = x
+    if len(x.shape) == 1:
+        x = x[:, np.newaxis]
+    if len(z.shape) == 1:
+        z = z[:, np.newaxis]
+
+    nx, dx = x.shape
+    nz, dz = z.shape
+    if dx != dz:
+        raise ValueError("""
+                Cannot compute distance: vectors have different length""")
+
+    # mean centre for numerical stability
+    m = np.mean(np.vstack((np.mean(x, axis=0), np.mean(z, axis=0))), axis=0)
+    x = x - m
+    z = z - m
+
+    xx = np.tile(np.sum((x*x), axis=1)[:, np.newaxis], (1, nz))
+    zz = np.tile(np.sum((z*z), axis=1), (nx, 1))
+
+    dist = (xx - 2*x.dot(z.T) + zz)
+
+    return dist
+    
 
 def compute_pearsonr(A, B):
     """ Manually computes the Pearson correlation between two matrices.
