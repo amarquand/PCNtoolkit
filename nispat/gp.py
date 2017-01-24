@@ -4,118 +4,143 @@ import numpy as np
 from scipy import optimize
 from numpy.linalg import solve, LinAlgError
 from numpy.linalg import cholesky as chol
-
-# -----------------
-# Utility functions
-# -----------------
-
-
-def _sqDist(x, z=None):
-    """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
-
-    # do some basic checks
-    if z is None:
-        z = x
-    if len(x.shape) == 1:
-        x = x[:, np.newaxis]
-    if len(z.shape) == 1:
-        z = z[:, np.newaxis]
-
-    nx, dx = x.shape
-    nz, dz = z.shape
-    if dx != dz:
-        raise ValueError("""
-                Cannot compute distance: vectors have different length""")
-
-    # mean centre for numerical stability
-    m = np.mean(np.vstack((np.mean(x, axis=0), np.mean(z, axis=0))), axis=0)
-    x = x - m
-    z = z - m
-
-    xx = np.tile(np.sum((x*x), axis=1)[:, np.newaxis], (1, nz))
-    zz = np.tile(np.sum((z*z), axis=1), (nx, 1))
-
-    dist = (xx - 2*x.dot(z.T) + zz)
-
-    return dist
+from six import with_metaclass
+from abc import ABCMeta, abstractmethod
+from utils import squared_dist
 
 # --------------------
 # Covariance functions
 # --------------------
 
 
-def covLin(theta, x, z=None, i=None):
+class CovBase(with_metaclass(ABCMeta)):
+    """ Base class for covariance functions.
 
-    if theta[0] is not None:
-        print("hyperparameter specified but not required. Ignoring...")
+        All covariance functions must define 'get_n_params',
+        'cov', 'xcov', 'dcov'"""
 
-    if z is None:
-        z = x
+    def __init__(self, x=None):
+        self.n_params = np.nan
 
-    if i is None:
+    def get_n_params(self):
+        """ Report the number of parameters required """
+
+        assert not np.isnan(self.n_params), \
+            "Covariance function not initialised"
+
+        return self.n_params
+
+    @abstractmethod
+    def cov(self, theta, x, z=None):
+        """ Return the full covariance (or cross-covariance if z is given) """
+
+    @abstractmethod
+    def dcov(self, theta, x, i):
+        """ Return the derivative of the covariance function with respect to
+            the i-th hyperparameter """
+
+
+class CovLin(CovBase):
+    """ Linear covariance function """
+
+    def __init__(self, x=None):
+        self.n_params = 0
+        self.first_call = False
+
+    def cov(self, theta, x, z=None):
+        if not self.first_call and theta is not None and theta[0] is not None:
+            print("CovLin: unnecessary hyperparameter specified. Ignoring...")
+            self.first_call = True
+
+        if z is None:
+            z = x
+
         K = x.dot(z.T)
         return K
-    elif i == 0:
-        return np.asarray(0)
-    else:
-        raise ValueError("Invalid covariance function parameter")
+
+    def dcov(self, theta, x, i):
+        if i == 0:
+            return np.asarray(0)
+        else:
+            raise ValueError("Invalid covariance function parameter")
 
 
-def covSqExp(theta, x, z=None, i=None):
+class CovSqExp(CovBase):
     """ Ordinary squared exponential covariance function.
         The hyperparameters are:
             theta = ( log(ell), log(sf2) )
         where ell is a lengthscale parameter and sf2 is the signal variance
     """
 
-    ell = np.exp(theta[0])
-    sf2 = np.exp(2*theta[1])
+    def __init__(self, x=None):
+        self.n_params = 2
 
-    if z is None:
-        z = x
+    def cov(self, theta, x, z=None):
+        self.ell = np.exp(theta[0])
+        self.sf2 = np.exp(2*theta[1])
 
-    R = _sqDist(x/ell, z/ell)
+        if z is None:
+            z = x
 
-    if i is None:  # return covariance
-        K = sf2*np.exp(-R/2)
+        R = squared_dist(x/self.ell, z/self.ell)
+        K = self.sf2 * np.exp(-R/2)
         return K
-    elif i == 0:   # return derivative of lengthscale parameter
-        dK = sf2*np.exp(-R/2)*R
-        return dK
-    elif i == 1:   # return derivative of signal variance parameter
-        dK = 2*sf2*np.exp(-R/2)
-        return dK
-    else:
-        raise ValueError("Invalid covariance function parameter")
+
+    def dcov(self, theta, x, i):
+        self.ell = np.exp(theta[0])
+        self.sf2 = np.exp(2*theta[1])
+
+        R = squared_dist(x/self.ell, x/self.ell)
+
+        if i == 0:   # return derivative of lengthscale parameter
+            dK = self.sf2 * np.exp(-R/2) * R
+            return dK
+        elif i == 1:   # return derivative of signal variance parameter
+            dK = 2*self.sf2 * np.exp(-R/2)
+            return dK
+        else:
+            raise ValueError("Invalid covariance function parameter")
 
 
-def covSqExpARD(theta, x, z=None, i=None):
+class CovSqExpARD(CovBase):
     """ Squared exponential covariance function with ARD
         The hyperparameters are:
             theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
-    D = x.shape[1]
-    ell = np.exp(theta[0:D])
-    sf2 = np.exp(2*theta[D])
+    def __init__(self, x=None):
+        if x is None:
+            raise ValueError("N x D data matrix must be supplied as input")
+        self.D = x.shape[1]
+        self.n_params = self.D + 1
 
-    if z is None:
-        z = x
+    def cov(self, theta, x, z=None):
+        self.ell = np.exp(theta[0:self.D])
+        self.sf2 = np.exp(2*theta[self.D])
 
-    R = _sqDist(x.dot(np.diag(1./ell)), x.dot(np.diag(1./ell)))
+        if z is None:
+            z = x
 
-    K = sf2*np.exp(-R/2)
-    if i is None:  # return covariance
+        R = squared_dist(x.dot(np.diag(1./self.ell)),
+                         z.dot(np.diag(1./self.ell)))
+        K = self.sf2*np.exp(-R/2)
         return K
-    elif i < D:    # return derivative of lengthscale parameter
-        dK = K*_sqDist(x[:, i]/ell[i], z[:, i]/ell[i])
-        return dK
-    elif i == D:   # return derivative of signal variance parameter
-        dK = 2*K
-        return dK
-    else:
-        raise ValueError("Invalid covariance function parameter")
+
+    def dcov(self, theta, x, i):
+        K = self.cov(theta, x)
+        if i < self.D:    # return derivative of lengthscale parameter
+            dK = K * squared_dist(x[:, i]/self.ell[i], x[:, i]/self.ell[i])
+            return dK
+        elif i == self.D:   # return derivative of signal variance parameter
+            dK = 2*K
+            return dK
+        else:
+            raise ValueError("Invalid covariance function parameter")
+
+# -----------------------
+# Gaussian process models
+# -----------------------
 
 
 class GPR:
@@ -157,7 +182,7 @@ class GPR:
     Written by A. Marquand
     """
 
-    def __init__(self, hyp=None, cov=None, X=None, y=None, n_iter=1000,
+    def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=1000,
                  tol=1e-3, verbose=False):
 
         self.hyp = np.nan
@@ -167,18 +192,18 @@ class GPR:
         self.verbose = verbose
 
         if (hyp is not None) and (X is not None) and (y is not None):
-            self.post(hyp, cov, X, y)
+            self.post(hyp, covfunc, X, y)
 
-    def _updatepost(self, hyp, cov):
+    def _updatepost(self, hyp, covfunc):
 
         hypeq = np.asarray(hyp == self.hyp)
         if hypeq.all() and hasattr(self, 'alpha') and \
-           (hasattr(self, 'cov') and cov == self.cov):
+           (hasattr(self, 'covfunc') and covfunc == self.covfunc):
             return False
         else:
             return True
 
-    def post(self, hyp, cov, X, y):
+    def post(self, hyp, covfunc, X, y):
         """ Generic function to compute posterior distribution.
         """
 
@@ -186,7 +211,7 @@ class GPR:
             X = X[:, np.newaxis]
         self.N, self.D = X.shape
 
-        if not self._updatepost(hyp, cov):
+        if not self._updatepost(hyp, covfunc):
             print("hyperparameters have not changed, using exising posterior")
             return
 
@@ -197,19 +222,19 @@ class GPR:
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
 
-        self.K = cov(theta, X)
+        self.K = covfunc.cov(theta, X)
         self.L = chol(self.K + sn2*np.eye(self.N))
         self.alpha = solve(self.L.T, solve(self.L, y))
         self.hyp = hyp
-        self.cov = cov
+        self.covfunc = covfunc
 
-    def loglik(self, hyp, cov, X, y):
+    def loglik(self, hyp, covfunc, X, y):
         """ Function to compute compute log (marginal) likelihood """
 
         # load or recompute posterior
-        if self._updatepost(hyp, cov):
+        if self._updatepost(hyp, covfunc):
             try:
-                self.post(hyp, cov, X, y)
+                self.post(hyp, covfunc, X, y)
             except (ValueError, LinAlgError):
                 print("Warning: Estimation of posterior distribution failed")
                 self.nlZ = 1/np.finfo(float).eps
@@ -227,7 +252,7 @@ class GPR:
 
         return self.nlZ
 
-    def dloglik(self, hyp, cov, X, y):
+    def dloglik(self, hyp, covfunc, X, y):
         """ Function to compute derivatives """
 
         # hyperparameters
@@ -235,9 +260,9 @@ class GPR:
         theta = hyp[1:]            # (generic) covariance hyperparameters
 
         # load posterior and prior covariance
-        if self._updatepost(hyp, cov):
+        if self._updatepost(hyp, covfunc):
             try:
-                self.post(hyp, cov, X, y)
+                self.post(hyp, covfunc, X, y)
             except (ValueError, LinAlgError):
                 print("Warning: Estimation of posterior distribution failed")
                 dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
@@ -256,7 +281,8 @@ class GPR:
         # covariance parameter(s)
         for par in range(0, len(theta)):
             # compute -0.5*trace(Q.dot(dK/d[theta_i])) efficiently
-            self.dnlZ[par+1] = -0.5*np.sum(np.sum(Q*cov(theta, X, i=par).T))
+            dK = covfunc.dcov(theta, X, i=par)
+            self.dnlZ[par+1] = -0.5*np.sum(np.sum(Q*dK.T))
 
         # make sure the gradient is finite to stop the minimizer getting upset
         if not all(np.isfinite(self.dnlZ)):
@@ -270,16 +296,16 @@ class GPR:
         return self.dnlZ
 
     # model estimation (optimization)
-    def estimate(self, hyp0, cov, X, y, optimizer='cg'):
+    def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
         """ Function to estimate the model """
 
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
-                                   (cov, X, y), disp=True, gtol=self.tol,
+                                   (covfunc, X, y), disp=True, gtol=self.tol,
                                    maxiter=self.n_iter, full_output=1)
 
         elif optimizer.lower() == 'powell':  # Powell's method
-            out = optimize.fmin_powell(self.loglik, hyp0, (cov, X, y),
+            out = optimize.fmin_powell(self.loglik, hyp0, (covfunc, X, y),
                                        full_output=1)
         else:
             raise ValueError("unknown optimizer")
@@ -293,15 +319,15 @@ class GPR:
     def predict(self, hyp, X, y, Xs):
         """ Function to make predictions from the model """
 
-        if self._updatepost(hyp, self.cov):
-            self.post(hyp, self.cov, X, y)
+        if self._updatepost(hyp, self.covfunc):
+            self.post(hyp, self.covfunc, X, y)
 
         # hyperparameters
         sn2 = np.exp(2*hyp[0])     # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
 
-        Ks = self.cov(theta, Xs, X)
-        kss = self.cov(theta, Xs)
+        Ks = self.covfunc.cov(theta, Xs, X)
+        kss = self.covfunc.cov(theta, Xs)
 
         # predictive mean
         ymu = Ks.dot(self.alpha)
