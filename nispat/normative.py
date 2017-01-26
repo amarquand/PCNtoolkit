@@ -129,7 +129,7 @@ def main(*args):
                                  np.var(Y, axis=0) != 0))[0]
 
     # starting hyperparameters. Could also do random restarts here
-    covfunc = gp.CovSqExp(X)
+    covfunc = gp.CovSum(X, ('CovLin', 'CovSqExpARD'))
     hyp0 = np.zeros(covfunc.get_n_params() + 1)
 
     # run cross-validation loop
