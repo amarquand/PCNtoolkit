@@ -48,9 +48,10 @@ class CovLin(CovBase):
         self.first_call = False
 
     def cov(self, theta, x, z=None):
-        if not self.first_call and theta is not None and theta[0] is not None:
-            print("CovLin: unnecessary hyperparameter specified. Ignoring...")
+        if not self.first_call and not theta and theta is not None:
             self.first_call = True
+            if len(theta) > 0 and theta[0] is not None:
+                print("CovLin: ignoring unnecessary hyperparameter ...")
 
         if z is None:
             z = x
@@ -59,10 +60,7 @@ class CovLin(CovBase):
         return K
 
     def dcov(self, theta, x, i):
-        if i == 0:
-            return np.asarray(0)
-        else:
-            raise ValueError("Invalid covariance function parameter")
+        raise ValueError("Invalid covariance function parameter")
 
 
 class CovSqExp(CovBase):
@@ -137,6 +135,61 @@ class CovSqExpARD(CovBase):
             return dK
         else:
             raise ValueError("Invalid covariance function parameter")
+
+
+class CovSum(CovBase):
+    """ Sum of covariance functions. These are passed in as a cell array and
+        intialised automatically. For example:
+
+        C = CovSum(x,(CovLin, CovSqExpARD))
+        C = CovSum.cov(x, )
+
+        The hyperparameters are:
+            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    """
+
+    def __init__(self, x=None, covfuncnames=None):
+        if x is None:
+            raise ValueError("N x D data matrix must be supplied as input")
+        if covfuncnames is None:
+            raise ValueError("A list of covariance functions is required")
+        self.covfuncs = []
+        self.n_params = 0
+        for cname in covfuncnames:
+            covfunc = eval(cname + '(x)')
+            self.n_params += covfunc.get_n_params()
+            self.covfuncs.append(covfunc)
+        self.N, self.D = x.shape
+
+    def cov(self, theta, x, z=None):
+        theta_offset = 0
+        for ci, covfunc in enumerate(self.covfuncs):
+            n_params_c = covfunc.get_n_params()
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+
+            if ci == 0:
+                K = covfunc.cov(theta_c, x, z)
+            else:
+                K += covfunc.cov(theta_c, x, z)
+        return K
+
+    def dcov(self, theta, x, i):
+        theta_offset = 0
+        for covfunc in self.covfuncs:
+            n_params_c = covfunc.get_n_params()
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+
+            if theta_c:  # does the variable have any hyperparameters?
+                if 'dK' not in locals():
+                    dK = covfunc.dcov(theta_c, x, i)
+                else:
+                    dK += covfunc.dcov(theta_c, x, i)
+        return dK
 
 # -----------------------
 # Gaussian process models
