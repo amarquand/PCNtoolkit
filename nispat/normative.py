@@ -20,8 +20,6 @@ import numpy as np
 import argparse
 
 from sklearn.model_selection import KFold
-
-# Test whether this module is being invoked as a script or part of a package
 if __name__ == "__main__":
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     if path not in sys.path:
@@ -29,8 +27,12 @@ if __name__ == "__main__":
     del path
 
     import fileio
-    import gp
+    from gp import GPR, CovSum
     from utils import compute_pearsonr, CustomCV
+else:  # Run as a package (assumes the package is installed)
+    from nispat import fileio
+    from nispat.gp import GPR, CovSum
+    from nispat.utils import compute_pearsonr, CustomCV
 
 
 def load_response_vars(datafile, maskfile=None, vol=True):
@@ -95,15 +97,13 @@ def get_args(*args):
     return respfile, maskfile, covfile, cvfolds, testcov, testresp
 
 
-def main(*args):
-    np.seterr(invalid='ignore')
-
-    respfile, maskfile, covfile, cvfolds, testcov, testresp = get_args(args)
+def estimate(respfile, covfile, maskfile=None, cvfolds=None,
+             testcov=None, testresp=None, outputsuffix=None):
 
     # load data
     print("Processing data in " + respfile)
     X = fileio.load(covfile)
-    Y, maskvol = load_response_vars(respfile, maskfile=maskfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
     Nmod = Y.shape[1]
@@ -111,7 +111,7 @@ def main(*args):
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
-        Yte, testmask = load_response_vars(testresp, maskfile=maskfile)
+        Yte, testmask = load_response_vars(testresp, maskfile)
         testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
 
         # treat as a single train-test split
@@ -130,7 +130,7 @@ def main(*args):
                                  np.var(Y, axis=0) != 0))[0]
 
     # starting hyperparameters. Could also do random restarts here
-    covfunc = gp.CovSum(X, ('CovLin', 'CovSqExpARD'))
+    covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
     hyp0 = np.zeros(covfunc.get_n_params() + 1)
 
     # run cross-validation loop
@@ -157,7 +157,7 @@ def main(*args):
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
             print("Estimating model ", i+1, "of", len(nz))
-            gpr = gp.GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
+            gpr = GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
             Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covfunc, Xz[tr, :],
                                                Yz[tr, nz[i]])
 
@@ -187,8 +187,8 @@ def main(*args):
        fileio.file_type(respfile) == 'nifti':
         exfile = respfile
     else:
-        exfile = None
-    ext = fileio.file_extension(respfile)
+        exfile = None    
+    ext = str(outputsuffix) + fileio.file_extension(respfile)
 
     fileio.save(Yhat[testids, :].T, 'yhat' + ext, example=exfile, mask=maskvol)
     fileio.save(S2[testids, :].T, 'ys2' + ext, example=exfile, mask=maskvol)
@@ -197,6 +197,14 @@ def main(*args):
     fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
     fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
     fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+
+
+def main(*args):
+
+    np.seterr(invalid='ignore')
+
+    respfile, maskfile, covfile, cvfolds, testcov, testresp = get_args(args)
+    estimate(respfile, covfile, maskfile, cvfolds, testcov, testresp)
 
 # For running from the command line:
 if __name__ == "__main__":
