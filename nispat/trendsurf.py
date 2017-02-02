@@ -16,9 +16,7 @@ import numpy as np
 import nibabel as nib
 import argparse
 
-# Test whether this module is being invoked as a script or part of a package
 if __name__ == "__main__":
-    # running as a script
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     if path not in sys.path:
         sys.path.append(path)
@@ -26,6 +24,9 @@ if __name__ == "__main__":
 
     import fileio
     from bayesreg import BLR
+else:  # Run as a package (assumes the package is installed)
+    from nispat import fileio
+    from nispat.bayesreg import BLR
 
 
 def load_data(datafile, maskfile=None):
@@ -94,9 +95,7 @@ def write_nii(data, filename, examplenii, mask):
     nib.save(array_img, filename)
 
 
-def main(*args):
-    np.seterr(invalid='ignore')
-
+def get_args(*args):
     # parse arguments
     parser = argparse.ArgumentParser(description="Trend surface model")
     parser.add_argument("filename")
@@ -113,7 +112,11 @@ def main(*args):
         maskfile = os.path.join(wdir, args.maskfile)
     basis = args.basis
     if args.covfile is not None:
-        print("Ignoring covariate information (not implemented yet).")
+        raise(NotImplementedError, "Covariates not implemented yet.")
+    return filename, maskfile, basis
+
+
+def estimate(filename, maskfile, basis):
 
     # load data
     print("Processing data in", filename)
@@ -170,6 +173,13 @@ def main(*args):
     np.savetxt("rmse.txt", rmse, delimiter='\t', fmt='%5.8f')
     fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
     fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
+
+
+def main(*args):
+    np.seterr(invalid='ignore')
+
+    filename, maskfile, basis = get_args(args)
+    estimate(filename, maskfile, basis)
 
 # For running from the command line:
 if __name__ == "__main__":
