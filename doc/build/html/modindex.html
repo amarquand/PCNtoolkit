@@ -41,13 +41,13 @@
             
   <span class="target" id="module-bayesreg"></span><dl class="class">
 <dt id="bayesreg.BLR">
-<em class="property">class </em><code class="descclassname">bayesreg.</code><code class="descname">BLR</code><span class="sig-paren">(</span><em>n_iter=1000</em>, <em>tol=0.001</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">bayesreg.</code><code class="descname">BLR</code><span class="sig-paren">(</span><em>hyp=None</em>, <em>X=None</em>, <em>y=None</em>, <em>n_iter=1000</em>, <em>tol=0.001</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bayesian linear regression</p>
 <p>Estimation and prediction of Bayesian linear regression models</p>
 <p>Basic usage:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">B</span> <span class="o">=</span> <span class="n">BLR</span><span class="p">()</span>
-<span class="n">hyp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
-<span class="n">ts</span><span class="p">,</span><span class="n">s2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">ts</span><span class="p">,</span><span class="n">s2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where the variables are</p>
@@ -58,7 +58,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>hyp</strong> &#8211; vector of hyperparmaters.</li>
 <li><strong>X</strong> &#8211; N x D data array</li>
-<li><strong>t</strong> &#8211; 1D Array of targets (length N)</li>
+<li><strong>y</strong> &#8211; 1D Array of targets (length N)</li>
 <li><strong>Xs</strong> &#8211; Nte x D array of test cases</li>
 <li><strong>hyp0</strong> &#8211; starting estimates for hyperparameter optimisation</li>
 </ul>
@@ -73,7 +73,7 @@
 </tbody>
 </table>
 <p>The hyperparameters are:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hyp</span> <span class="o">=</span> <span class="p">[</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="n">log</span><span class="p">(</span><span class="n">alpha</span><span class="p">)]</span>  <span class="c1"># hyp is a numpy array</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hyp</span> <span class="o">=</span> <span class="p">(</span> <span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="p">),</span> <span class="n">log</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="p">)</span>  <span class="c1"># hyp is a list or numpy array</span>
 </pre></div>
 </div>
 <p>The implementation and notation mostly follows Bishop (2006).
@@ -88,31 +88,248 @@ Bishop (2006) Pattern Recognition and Machine Learning, Springer</p>
 <p>Written by A. Marquand</p>
 <dl class="method">
 <dt id="bayesreg.BLR.dloglik">
-<code class="descname">dloglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.dloglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.dloglik" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dloglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.dloglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.dloglik" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to compute derivatives</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bayesreg.BLR.estimate">
-<code class="descname">estimate</code><span class="sig-paren">(</span><em>hyp0</em>, <em>X</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.estimate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">estimate</code><span class="sig-paren">(</span><em>hyp0</em>, <em>X</em>, <em>y</em>, <em>optimizer='cg'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to estimate the model</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bayesreg.BLR.loglik">
-<code class="descname">loglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.loglik" title="Permalink to this definition">¶</a></dt>
+<code class="descname">loglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.loglik" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to compute compute log (marginal) likelihood</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bayesreg.BLR.post">
-<code class="descname">post</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.post" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generic function to compute posterior distribution</p>
+<code class="descname">post</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic function to compute posterior distribution.</p>
+<p>This function will save the posterior mean and precision matrix as
+self.m and self.A and will also update internal parameters (e.g.
+N, D and the prior covariance (Sigma) and precision (iSigma).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="bayesreg.BLR.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>t</em>, <em>Xs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>y</em>, <em>Xs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to make predictions from the model</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-gp"></span><dl class="class">
+<dt id="gp.CovBase">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">CovBase</code><span class="sig-paren">(</span><em>x=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for covariance functions.</p>
+<p>All covariance functions must define &#8216;get_n_params&#8217;,
+&#8216;cov&#8217;, &#8216;xcov&#8217;, &#8216;dcov&#8217;</p>
+<dl class="method">
+<dt id="gp.CovBase.cov">
+<code class="descname">cov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovBase.cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovBase.cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the full covariance (or cross-covariance if z is given)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.CovBase.dcov">
+<code class="descname">dcov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovBase.dcov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovBase.dcov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the derivative of the covariance function with respect to
+the i-th hyperparameter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.CovBase.get_n_params">
+<code class="descname">get_n_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovBase.get_n_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovBase.get_n_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the number of parameters required</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gp.CovLin">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">CovLin</code><span class="sig-paren">(</span><em>x=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovLin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovLin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
+<p>Linear covariance function</p>
+<dl class="method">
+<dt id="gp.CovLin.cov">
+<code class="descname">cov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovLin.cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovLin.cov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovLin.dcov">
+<code class="descname">dcov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovLin.dcov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovLin.dcov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovLin.get_n_params">
+<code class="descname">get_n_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gp.CovLin.get_n_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the number of parameters required</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gp.CovSqExp">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">CovSqExp</code><span class="sig-paren">(</span><em>x=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
+<p>Ordinary squared exponential covariance function.
+The hyperparameters are:</p>
+<blockquote>
+<div>theta = ( log(ell), log(sf2) )</div></blockquote>
+<p>where ell is a lengthscale parameter and sf2 is the signal variance</p>
+<dl class="method">
+<dt id="gp.CovSqExp.cov">
+<code class="descname">cov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExp.cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExp.cov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSqExp.dcov">
+<code class="descname">dcov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExp.dcov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExp.dcov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSqExp.get_n_params">
+<code class="descname">get_n_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gp.CovSqExp.get_n_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the number of parameters required</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gp.CovSqExpARD">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">CovSqExpARD</code><span class="sig-paren">(</span><em>x=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExpARD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExpARD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
+<p>Squared exponential covariance function with ARD
+The hyperparameters are:</p>
+<blockquote>
+<div>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</div></blockquote>
+<p>where ell_i are lengthscale parameters and sf2 is the signal variance</p>
+<dl class="method">
+<dt id="gp.CovSqExpARD.cov">
+<code class="descname">cov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExpARD.cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExpARD.cov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSqExpARD.dcov">
+<code class="descname">dcov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExpARD.dcov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSqExpARD.dcov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSqExpARD.get_n_params">
+<code class="descname">get_n_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gp.CovSqExpARD.get_n_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the number of parameters required</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gp.CovSum">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">CovSum</code><span class="sig-paren">(</span><em>x=None</em>, <em>covfuncnames=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
+<p>Sum of covariance functions. These are passed in as a cell array and
+intialised automatically. For example:</p>
+<p>C = CovSum(x,(CovLin, CovSqExpARD))
+C = CovSum.cov(x, )</p>
+<dl class="docutils">
+<dt>The hyperparameters are:</dt>
+<dd>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</dd>
+</dl>
+<p>where ell_i are lengthscale parameters and sf2 is the signal variance</p>
+<dl class="method">
+<dt id="gp.CovSum.cov">
+<code class="descname">cov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSum.cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSum.cov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSum.dcov">
+<code class="descname">dcov</code><span class="sig-paren">(</span><em>theta</em>, <em>x</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSum.dcov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.CovSum.dcov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gp.CovSum.get_n_params">
+<code class="descname">get_n_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gp.CovSum.get_n_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the number of parameters required</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gp.GPR">
+<em class="property">class </em><code class="descclassname">gp.</code><code class="descname">GPR</code><span class="sig-paren">(</span><em>hyp=None</em>, <em>covfunc=None</em>, <em>X=None</em>, <em>y=None</em>, <em>n_iter=1000</em>, <em>tol=0.001</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian process regression</p>
+<p>Estimation and prediction of Gaussian process regression models</p>
+<p>Basic usage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">GPR</span><span class="p">()</span>
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">ys</span><span class="p">,</span><span class="n">ys2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the variables are</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hyp</strong> &#8211; vector of hyperparmaters.</li>
+<li><strong>cov</strong> &#8211; covariance function</li>
+<li><strong>X</strong> &#8211; N x D data array</li>
+<li><strong>y</strong> &#8211; 1D Array of targets (length N)</li>
+<li><strong>Xs</strong> &#8211; Nte x D array of test cases</li>
+<li><strong>hyp0</strong> &#8211; starting estimates for hyperparameter optimisation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns ys:</th><td class="field-body"><p class="first">predictive mean</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns ys2:</th><td class="field-body"><p class="first last">predictive variance</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The hyperparameters are:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hyp</span> <span class="o">=</span> <span class="p">(</span> <span class="n">log</span><span class="p">(</span><span class="n">sn2</span><span class="p">),</span> <span class="p">(</span><span class="n">cov</span> <span class="n">function</span> <span class="n">params</span><span class="p">)</span> <span class="p">)</span>  <span class="c1"># hyp is a list or array</span>
+</pre></div>
+</div>
+<p>The implementation and notation  follows Rasmussen and Williams (2006).
+As in the gpml toolbox, these parameters are estimated using conjugate
+gradient optimisation of the marginal likelihood. Note that there is no
+explicit mean function, thus the gpr routines are limited to modelling
+zero-mean processes.</p>
+<p>Reference:
+C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
+<p>Written by A. Marquand</p>
+<dl class="method">
+<dt id="gp.GPR.dloglik">
+<code class="descname">dloglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>covfunc</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR.dloglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR.dloglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute derivatives</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.GPR.estimate">
+<code class="descname">estimate</code><span class="sig-paren">(</span><em>hyp0</em>, <em>covfunc</em>, <em>X</em>, <em>y</em>, <em>optimizer='cg'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR.estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR.estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to estimate the model</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.GPR.loglik">
+<code class="descname">loglik</code><span class="sig-paren">(</span><em>hyp</em>, <em>covfunc</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR.loglik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR.loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute compute log (marginal) likelihood</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.GPR.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>hyp</em>, <em>covfunc</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic function to compute posterior distribution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gp.GPR.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>hyp</em>, <em>X</em>, <em>y</em>, <em>Xs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#GPR.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gp.GPR.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to make predictions from the model</p>
 </dd></dl>
 
