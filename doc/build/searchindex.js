@@ -1,0 +1,1 @@
+Search.setIndex({envversion:49,filenames:["index","modindex"],objects:{},objnames:{},objtypes:{},terms:{content:0,index:0,modul:0,page:0,search:0},titles:["Spatial methods for neuroimaging","&lt;no title&gt;"],titleterms:{indice:0,method:0,neuroimag:0,spatial:0,tabl:0}})

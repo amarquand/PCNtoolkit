@@ -1,0 +1,479 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gp &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Spatial methods for neuroimaging 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for gp</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">solve</span><span class="p">,</span> <span class="n">LinAlgError</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">cholesky</span> <span class="k">as</span> <span class="n">chol</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="k">import</span> <span class="n">with_metaclass</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">squared_dist</span>
+
+<span class="c1"># --------------------</span>
+<span class="c1"># Covariance functions</span>
+<span class="c1"># --------------------</span>
+
+
+<div class="viewcode-block" id="CovBase"><a class="viewcode-back" href="../modindex.html#gp.CovBase">[docs]</a><span class="k">class</span> <span class="nc">CovBase</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot; Base class for covariance functions.</span>
+
+<span class="sd">        All covariance functions must define &#39;get_n_params&#39;,</span>
+<span class="sd">        &#39;cov&#39;, &#39;xcov&#39;, &#39;dcov&#39;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+<div class="viewcode-block" id="CovBase.get_n_params"><a class="viewcode-back" href="../modindex.html#gp.CovBase.get_n_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Report the number of parameters required &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_params</span><span class="p">),</span> \
+            <span class="s2">&quot;Covariance function not initialised&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="CovBase.cov"><a class="viewcode-back" href="../modindex.html#gp.CovBase.cov">[docs]</a>    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the full covariance (or cross-covariance if z is given) &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="CovBase.dcov"><a class="viewcode-back" href="../modindex.html#gp.CovBase.dcov">[docs]</a>    <span class="k">def</span> <span class="nf">dcov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return the derivative of the covariance function with respect to</span>
+<span class="sd">            the i-th hyperparameter &quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="CovLin"><a class="viewcode-back" href="../modindex.html#gp.CovLin">[docs]</a><span class="k">class</span> <span class="nc">CovLin</span><span class="p">(</span><span class="n">CovBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Linear covariance function &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_call</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="CovLin.cov"><a class="viewcode-back" href="../modindex.html#gp.CovLin.cov">[docs]</a>    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_call</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">theta</span> <span class="ow">and</span> <span class="n">theta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_call</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CovLin: ignoring unnecessary hyperparameter ...&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="n">K</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span></div>
+
+<div class="viewcode-block" id="CovLin.dcov"><a class="viewcode-back" href="../modindex.html#gp.CovLin.dcov">[docs]</a>    <span class="k">def</span> <span class="nf">dcov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid covariance function parameter&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CovSqExp"><a class="viewcode-back" href="../modindex.html#gp.CovSqExp">[docs]</a><span class="k">class</span> <span class="nc">CovSqExp</span><span class="p">(</span><span class="n">CovBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Ordinary squared exponential covariance function.</span>
+<span class="sd">        The hyperparameters are:</span>
+<span class="sd">            theta = ( log(ell), log(sf2) )</span>
+<span class="sd">        where ell is a lengthscale parameter and sf2 is the signal variance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="mi">2</span>
+
+<div class="viewcode-block" id="CovSqExp.cov"><a class="viewcode-back" href="../modindex.html#gp.CovSqExp.cov">[docs]</a>    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="n">R</span> <span class="o">=</span> <span class="n">squared_dist</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">,</span> <span class="n">z</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">)</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span></div>
+
+<div class="viewcode-block" id="CovSqExp.dcov"><a class="viewcode-back" href="../modindex.html#gp.CovSqExp.dcov">[docs]</a>    <span class="k">def</span> <span class="nf">dcov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">R</span> <span class="o">=</span> <span class="n">squared_dist</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">,</span> <span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>   <span class="c1"># return derivative of lengthscale parameter</span>
+            <span class="n">dK</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">R</span>
+            <span class="k">return</span> <span class="n">dK</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>   <span class="c1"># return derivative of signal variance parameter</span>
+            <span class="n">dK</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dK</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid covariance function parameter&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CovSqExpARD"><a class="viewcode-back" href="../modindex.html#gp.CovSqExpARD">[docs]</a><span class="k">class</span> <span class="nc">CovSqExpARD</span><span class="p">(</span><span class="n">CovBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Squared exponential covariance function with ARD</span>
+<span class="sd">        The hyperparameters are:</span>
+<span class="sd">            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</span>
+<span class="sd">        where ell_i are lengthscale parameters and sf2 is the signal variance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;N x D data matrix must be supplied as input&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">+</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="CovSqExpARD.cov"><a class="viewcode-back" href="../modindex.html#gp.CovSqExpARD.cov">[docs]</a>    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">theta</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="n">R</span> <span class="o">=</span> <span class="n">squared_dist</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">)),</span>
+                         <span class="n">z</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">)))</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sf2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span></div>
+
+<div class="viewcode-block" id="CovSqExpARD.dcov"><a class="viewcode-back" href="../modindex.html#gp.CovSqExpARD.dcov">[docs]</a>    <span class="k">def</span> <span class="nf">dcov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>    <span class="c1"># return derivative of lengthscale parameter</span>
+            <span class="n">dK</span> <span class="o">=</span> <span class="n">K</span> <span class="o">*</span> <span class="n">squared_dist</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">dK</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>   <span class="c1"># return derivative of signal variance parameter</span>
+            <span class="n">dK</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">K</span>
+            <span class="k">return</span> <span class="n">dK</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid covariance function parameter&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CovSum"><a class="viewcode-back" href="../modindex.html#gp.CovSum">[docs]</a><span class="k">class</span> <span class="nc">CovSum</span><span class="p">(</span><span class="n">CovBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Sum of covariance functions. These are passed in as a cell array and</span>
+<span class="sd">        intialised automatically. For example:</span>
+
+<span class="sd">        C = CovSum(x,(CovLin, CovSqExpARD))</span>
+<span class="sd">        C = CovSum.cov(x, )</span>
+
+<span class="sd">        The hyperparameters are:</span>
+<span class="sd">            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</span>
+<span class="sd">        where ell_i are lengthscale parameters and sf2 is the signal variance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covfuncnames</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;N x D data matrix must be supplied as input&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">covfuncnames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A list of covariance functions is required&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covfuncs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">cname</span> <span class="ow">in</span> <span class="n">covfuncnames</span><span class="p">:</span>
+            <span class="n">covfunc</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">cname</span> <span class="o">+</span> <span class="s1">&#39;(x)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">+=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">covfuncs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">covfunc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+
+<div class="viewcode-block" id="CovSum.cov"><a class="viewcode-back" href="../modindex.html#gp.CovSum.cov">[docs]</a>    <span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">theta_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">ci</span><span class="p">,</span> <span class="n">covfunc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covfuncs</span><span class="p">):</span>
+            <span class="n">n_params_c</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>
+            <span class="n">theta_c</span> <span class="o">=</span> <span class="p">[</span><span class="n">theta</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span>
+                       <span class="nb">range</span><span class="p">(</span><span class="n">theta_offset</span><span class="p">,</span> <span class="n">theta_offset</span> <span class="o">+</span> <span class="n">n_params_c</span><span class="p">)]</span>
+            <span class="n">theta_offset</span> <span class="o">+=</span> <span class="n">n_params_c</span>
+
+            <span class="k">if</span> <span class="n">ci</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">K</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta_c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">K</span> <span class="o">+=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta_c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span></div>
+
+<div class="viewcode-block" id="CovSum.dcov"><a class="viewcode-back" href="../modindex.html#gp.CovSum.dcov">[docs]</a>    <span class="k">def</span> <span class="nf">dcov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">theta_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">covfunc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfuncs</span><span class="p">:</span>
+            <span class="n">n_params_c</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>
+            <span class="n">theta_c</span> <span class="o">=</span> <span class="p">[</span><span class="n">theta</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span>
+                       <span class="nb">range</span><span class="p">(</span><span class="n">theta_offset</span><span class="p">,</span> <span class="n">theta_offset</span> <span class="o">+</span> <span class="n">n_params_c</span><span class="p">)]</span>
+            <span class="n">theta_offset</span> <span class="o">+=</span> <span class="n">n_params_c</span>
+
+            <span class="k">if</span> <span class="n">theta_c</span><span class="p">:</span>  <span class="c1"># does the variable have any hyperparameters?</span>
+                <span class="k">if</span> <span class="s1">&#39;dK&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+                    <span class="n">dK</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">dcov</span><span class="p">(</span><span class="n">theta_c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dK</span> <span class="o">+=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">dcov</span><span class="p">(</span><span class="n">theta_c</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dK</span></div></div>
+
+<span class="c1"># -----------------------</span>
+<span class="c1"># Gaussian process models</span>
+<span class="c1"># -----------------------</span>
+
+
+<div class="viewcode-block" id="GPR"><a class="viewcode-back" href="../modindex.html#gp.GPR">[docs]</a><span class="k">class</span> <span class="nc">GPR</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Gaussian process regression</span>
+
+<span class="sd">    Estimation and prediction of Gaussian process regression models</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        G = GPR()</span>
+<span class="sd">        hyp = B.estimate(hyp0, cov, X, y)</span>
+<span class="sd">        ys,ys2 = B.predict(hyp, cov, X, y, Xs)</span>
+
+<span class="sd">    where the variables are</span>
+
+<span class="sd">    :param hyp: vector of hyperparmaters.</span>
+<span class="sd">    :param cov: covariance function</span>
+<span class="sd">    :param X: N x D data array</span>
+<span class="sd">    :param y: 1D Array of targets (length N)</span>
+<span class="sd">    :param Xs: Nte x D array of test cases</span>
+<span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
+
+<span class="sd">    :returns ys: predictive mean</span>
+<span class="sd">    :returns ys2: predictive variance</span>
+
+<span class="sd">    The hyperparameters are::</span>
+
+<span class="sd">        hyp = ( log(sn2), (cov function params) )  # hyp is a list or array</span>
+
+<span class="sd">    The implementation and notation  follows Rasmussen and Williams (2006).</span>
+<span class="sd">    As in the gpml toolbox, these parameters are estimated using conjugate</span>
+<span class="sd">    gradient optimisation of the marginal likelihood. Note that there is no</span>
+<span class="sd">    explicit mean function, thus the gpr routines are limited to modelling</span>
+<span class="sd">    zero-mean processes.</span>
+
+<span class="sd">    Reference:</span>
+<span class="sd">    C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</span>
+
+<span class="sd">    Written by A. Marquand</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">covfunc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">tol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>          <span class="c1"># not used at present</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>    <span class="c1"># not used at present</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_updatepost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">):</span>
+
+        <span class="n">hypeq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hyp</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hypeq</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+           <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;covfunc&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">covfunc</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="GPR.post"><a class="viewcode-back" href="../modindex.html#gp.GPR.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generic function to compute posterior distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatepost</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hyperparameters have not changed, using exising posterior&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># hyperparameters</span>
+        <span class="n">sn2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>       <span class="c1"># noise variance</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>            <span class="c1"># (generic) covariance hyperparameters</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;estimating posterior ... | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">chol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">+</span> <span class="n">sn2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span> <span class="o">=</span> <span class="n">covfunc</span></div>
+
+<div class="viewcode-block" id="GPR.loglik"><a class="viewcode-back" href="../modindex.html#gp.GPR.loglik">[docs]</a>    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;</span>
+
+        <span class="c1"># load or recompute posterior</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatepost</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)))</span> <span class="o">+</span> \
+                   <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="c1"># make sure the output is finite to stop the minimizer getting upset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nlZ= &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span></div>
+
+<div class="viewcode-block" id="GPR.dloglik"><a class="viewcode-back" href="../modindex.html#gp.GPR.dloglik">[docs]</a>    <span class="k">def</span> <span class="nf">dloglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;</span>
+
+        <span class="c1"># hyperparameters</span>
+        <span class="n">sn2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>       <span class="c1"># noise variance</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>            <span class="c1"># (generic) covariance hyperparameters</span>
+
+        <span class="c1"># load posterior and prior covariance</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatepost</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
+                <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+                <span class="k">return</span> <span class="n">dnlZ</span>
+
+        <span class="c1"># compute Q = alpha*alpha&#39; - inv(K)</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">-</span> \
+            <span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)))</span>
+
+        <span class="c1"># initialise derivatives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hyp</span><span class="p">))</span>
+
+        <span class="c1"># noise variance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sn2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+
+        <span class="c1"># covariance parameter(s)</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta</span><span class="p">)):</span>
+            <span class="c1"># compute -0.5*trace(Q.dot(dK/d[theta_i])) efficiently</span>
+            <span class="n">dK</span> <span class="o">=</span> <span class="n">covfunc</span><span class="o">.</span><span class="n">dcov</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">par</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="n">par</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Q</span><span class="o">*</span><span class="n">dK</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+
+        <span class="c1"># make sure the gradient is finite to stop the minimizer getting upset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)):</span>
+            <span class="n">bad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dnlZ= &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span></div>
+
+    <span class="c1"># model estimation (optimization)</span>
+<div class="viewcode-block" id="GPR.estimate"><a class="viewcode-back" href="../modindex.html#gp.GPR.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>  <span class="c1"># conjugate gradients</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_cg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dloglik</span><span class="p">,</span>
+                                   <span class="p">(</span><span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">disp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                                   <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;powell&#39;</span><span class="p">:</span>  <span class="c1"># Powell&#39;s method</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_powell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="p">(</span><span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+                                       <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unknown optimizer&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span></div>
+
+<div class="viewcode-block" id="GPR.predict"><a class="viewcode-back" href="../modindex.html#gp.GPR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatepost</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># hyperparameters</span>
+        <span class="n">sn2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>     <span class="c1"># noise variance</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>            <span class="c1"># (generic) covariance hyperparameters</span>
+
+        <span class="n">Ks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="n">kss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
+
+        <span class="c1"># predictive mean</span>
+        <span class="n">ymu</span> <span class="o">=</span> <span class="n">Ks</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+
+        <span class="c1"># predictive variance (for a noisy test input)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="n">Ks</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">ys2</span> <span class="o">=</span> <span class="n">kss</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">sn2</span>
+
+        <span class="k">return</span> <span class="n">ymu</span><span class="p">,</span> <span class="n">ys2</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Andre F. Marquand.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
