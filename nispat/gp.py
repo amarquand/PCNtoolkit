@@ -23,7 +23,6 @@ class CovBase(with_metaclass(ABCMeta)):
             CovFunction.cov()
             CovFunction.xcov()
             CovFunction.dcov()
-        
     """
 
     def __init__(self, x=None):
@@ -219,7 +218,7 @@ class GPR:
 
         G = GPR()
         hyp = B.estimate(hyp0, cov, X, y)
-        ys,ys2 = B.predict(hyp, cov, X, y, Xs)
+        ys, ys2 = B.predict(hyp, cov, X, y, Xs)
 
     where the variables are
 
@@ -230,8 +229,8 @@ class GPR:
     :param Xs: Nte x D array of test cases
     :param hyp0: starting estimates for hyperparameter optimisation
 
-    :returns ys: predictive mean
-    :returns ys2: predictive variance
+    :returns: * ys - predictive mean
+              * ys2 - predictive variance
 
     The hyperparameters are::
 
@@ -321,7 +320,7 @@ class GPR:
         return self.nlZ
 
     def dloglik(self, hyp, covfunc, X, y):
-        """ Function to compute derivatives 
+        """ Function to compute derivatives
         """
 
         # hyperparameters
@@ -366,7 +365,7 @@ class GPR:
 
     # model estimation (optimization)
     def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
-        """ Function to estimate the model 
+        """ Function to estimate the model
         """
 
         if optimizer.lower() == 'cg':  # conjugate gradients
@@ -387,7 +386,7 @@ class GPR:
         return self.hyp
 
     def predict(self, hyp, X, y, Xs):
-        """ Function to make predictions from the model 
+        """ Function to make predictions from the model
         """
 
         if self._updatepost(hyp, self.covfunc):

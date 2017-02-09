@@ -93,7 +93,6 @@
 <span class="sd">            CovFunction.cov()</span>
 <span class="sd">            CovFunction.xcov()</span>
 <span class="sd">            CovFunction.dcov()</span>
-<span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -289,7 +288,7 @@
 
 <span class="sd">        G = GPR()</span>
 <span class="sd">        hyp = B.estimate(hyp0, cov, X, y)</span>
-<span class="sd">        ys,ys2 = B.predict(hyp, cov, X, y, Xs)</span>
+<span class="sd">        ys, ys2 = B.predict(hyp, cov, X, y, Xs)</span>
 
 <span class="sd">    where the variables are</span>
 
@@ -300,8 +299,8 @@
 <span class="sd">    :param Xs: Nte x D array of test cases</span>
 <span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
 
-<span class="sd">    :returns ys: predictive mean</span>
-<span class="sd">    :returns ys2: predictive variance</span>
+<span class="sd">    :returns: * ys - predictive mean</span>
+<span class="sd">              * ys2 - predictive variance</span>
 
 <span class="sd">    The hyperparameters are::</span>
 
@@ -436,7 +435,7 @@
 
     <span class="c1"># model estimation (optimization)</span>
 <div class="viewcode-block" id="GPR.estimate"><a class="viewcode-back" href="../modindex.html#gp.GPR.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to estimate the model </span>
+        <span class="sd">&quot;&quot;&quot; Function to estimate the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>  <span class="c1"># conjugate gradients</span>
@@ -457,7 +456,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span></div>
 
 <div class="viewcode-block" id="GPR.predict"><a class="viewcode-back" href="../modindex.html#gp.GPR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model </span>
+        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updatepost</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">covfunc</span><span class="p">):</span>

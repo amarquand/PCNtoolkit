@@ -91,7 +91,7 @@
 <p>Basic usage:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">B</span> <span class="o">=</span> <span class="n">BLR</span><span class="p">()</span>
 <span class="n">hyp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">ts</span><span class="p">,</span><span class="n">s2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
+<span class="n">ys</span><span class="p">,</span><span class="n">s2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where the variables are</p>
@@ -108,10 +108,11 @@
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns ts:</th><td class="field-body"><p class="first">predictive mean</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns s2:</th><td class="field-body"><p class="first last">predictive variance</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li>ys - predictive mean</li>
+<li>s2 - predictive variance</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -319,7 +320,7 @@ intialised automatically. For example:</p>
 <p>Basic usage:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">GPR</span><span class="p">()</span>
 <span class="n">hyp</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">ys</span><span class="p">,</span><span class="n">ys2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
+<span class="n">ys</span><span class="p">,</span> <span class="n">ys2</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where the variables are</p>
@@ -337,10 +338,11 @@ intialised automatically. For example:</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns ys:</th><td class="field-body"><p class="first">predictive mean</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns ys2:</th><td class="field-body"><p class="first last">predictive variance</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li>ys - predictive mean</li>
+<li>ys2 - predictive variance</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -432,19 +434,16 @@ parameter or (testcov, testresp) should be specified, but not both.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Outputs yhat:</th><td class="field-body">predictive mean</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Outputs ys2:</th><td class="field-body">predictive variance</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Outputs Z:</th><td class="field-body">deviance scores</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Outputs Rho:</th><td class="field-body">Pearson correlation between true and predicted responses</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Outputs pRho:</th><td class="field-body">parametric p-value for this correlation</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Outputs rmse:</th><td class="field-body">root mean squared error between true and predicted responses</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Outputs rmse:</th><td class="field-body">standardised mean squared error</td>
+<tr class="field-odd field"><th class="field-name">Outputs:</th><td class="field-body"><ul class="first last simple">
+<li>yhat - predictive mean</li>
+<li>ys2 - predictive variance</li>
+<li>Z - deviance scores</li>
+<li>Rho - Pearson correlation between true and predicted responses</li>
+<li>pRho - parametric p-value for this correlation</li>
+<li>rmse - root mean squared error between true/predicted responses</li>
+<li>smse - standardised mean squared error</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -467,7 +466,86 @@ same directory (e.g. for custom cross-validation schemes)</p>
 <dl class="function">
 <dt id="normative.main">
 <code class="descclassname">normative.</code><code class="descname">main</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse arguments and estimate model</p>
+</dd></dl>
+
+<span class="target" id="module-trendsurf"></span><dl class="function">
+<dt id="trendsurf.create_basis">
+<code class="descclassname">trendsurf.</code><code class="descname">create_basis</code><span class="sig-paren">(</span><em>X</em>, <em>basis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#create_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.create_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a (polynomial) basis set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="trendsurf.estimate">
+<code class="descclassname">trendsurf.</code><code class="descname">estimate</code><span class="sig-paren">(</span><em>filename</em>, <em>maskfile</em>, <em>basis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.estimate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate a trend surface model</p>
+<p>This will estimate a trend surface model, independently for each subject.
+This is currently fit using a polynomial model of a specified degree.
+The models are estimated on the basis of data stored on disk in ascii or
+neuroimaging data formats (currently nifti only). Ascii data should be in
+tab or space delimited format with the number of voxels in rows and the
+number of subjects in columns. Neuroimaging data will be reshaped
+into the appropriate format</p>
+<p>Basic usage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">estimate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the variables are defined below. Note that either the cfolds
+parameter or (testcov, testresp) should be specified, but not both.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> &#8211; 4-d nifti file containing the images to be estimated</li>
+<li><strong>maskfile</strong> &#8211; nifti mask used to apply to the data</li>
+<li><strong>basis</strong> &#8211; model order for the interpolating polynomial</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>All outputs are written to disk in the same format as the input. These are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Outputs:</th><td class="field-body"><ul class="first last simple">
+<li>yhat - predictive mean</li>
+<li>ys2 - predictive variance</li>
+<li>trendcoeff - coefficients from the trend surface model</li>
+<li>negloglik - Negative log marginal likelihood</li>
+<li>hyp - hyperparameters</li>
+<li>explainedvar - explained variance</li>
+<li>rmse - standardised mean squared error</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="trendsurf.get_args">
+<code class="descclassname">trendsurf.</code><code class="descname">get_args</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.get_args" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="trendsurf.load_data">
+<code class="descclassname">trendsurf.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>datafile</em>, <em>maskfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>load 4d nifti data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="trendsurf.main">
+<code class="descclassname">trendsurf.</code><code class="descname">main</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="trendsurf.write_nii">
+<code class="descclassname">trendsurf.</code><code class="descname">write_nii</code><span class="sig-paren">(</span><em>data</em>, <em>filename</em>, <em>examplenii</em>, <em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trendsurf.html#write_nii"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#trendsurf.write_nii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write output to nifti</p>
+</dd></dl>
 
 </div>
 

@@ -117,6 +117,37 @@ def get_args(*args):
 
 
 def estimate(filename, maskfile, basis):
+    """ Estimate a trend surface model
+
+    This will estimate a trend surface model, independently for each subject.
+    This is currently fit using a polynomial model of a specified degree.
+    The models are estimated on the basis of data stored on disk in ascii or
+    neuroimaging data formats (currently nifti only). Ascii data should be in
+    tab or space delimited format with the number of voxels in rows and the
+    number of subjects in columns. Neuroimaging data will be reshaped
+    into the appropriate format
+
+    Basic usage::
+
+        estimate(filename, maskfile, basis)
+
+    where the variables are defined below. Note that either the cfolds
+    parameter or (testcov, testresp) should be specified, but not both.
+
+    :param filename: 4-d nifti file containing the images to be estimated
+    :param maskfile: nifti mask used to apply to the data
+    :param basis: model order for the interpolating polynomial
+
+    All outputs are written to disk in the same format as the input. These are:
+
+    :outputs: * yhat - predictive mean
+              * ys2 - predictive variance
+              * trendcoeff - coefficients from the trend surface model
+              * negloglik - Negative log marginal likelihood
+              * hyp - hyperparameters
+              * explainedvar - explained variance
+              * rmse - standardised mean squared error
+    """
 
     # load data
     print("Processing data in", filename)
