@@ -130,13 +130,13 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
     All outputs are written to disk in the same format as the input. These are:
 
-    :outputs yhat: predictive mean
-    :outputs ys2: predictive variance
-    :outputs Z: deviance scores
-    :outputs Rho: Pearson correlation between true and predicted responses
-    :outputs pRho: parametric p-value for this correlation
-    :outputs rmse: root mean squared error between true and predicted responses
-    :outputs rmse: standardised mean squared error
+    :outputs: * yhat - predictive mean
+              * ys2 - predictive variance
+              * Z - deviance scores
+              * Rho - Pearson correlation between true and predicted responses
+              * pRho - parametric p-value for this correlation
+              * rmse - root mean squared error between true/predicted responses
+              * smse - standardised mean squared error
 
     The outputsuffix may be useful to estimate multiple normative models in the
     same directory (e.g. for custom cross-validation schemes)
@@ -246,6 +246,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
 
 def main(*args):
+    """ Parse arguments and estimate model
+    """
 
     np.seterr(invalid='ignore')
 

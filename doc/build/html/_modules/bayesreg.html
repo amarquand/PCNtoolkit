@@ -84,7 +84,7 @@
 
 <span class="sd">        B = BLR()</span>
 <span class="sd">        hyp = B.estimate(hyp0, X, y)</span>
-<span class="sd">        ts,s2 = B.predict(hyp, X, y, Xs)</span>
+<span class="sd">        ys,s2 = B.predict(hyp, X, y, Xs)</span>
 
 <span class="sd">    where the variables are</span>
 
@@ -94,8 +94,8 @@
 <span class="sd">    :param Xs: Nte x D array of test cases</span>
 <span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
 
-<span class="sd">    :returns ts: predictive mean</span>
-<span class="sd">    :returns s2: predictive variance</span>
+<span class="sd">    :returns: * ys - predictive mean</span>
+<span class="sd">              * s2 - predictive variance</span>
 
 <span class="sd">    The hyperparameters are::</span>
 

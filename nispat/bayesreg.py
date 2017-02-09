@@ -14,7 +14,7 @@ class BLR:
 
         B = BLR()
         hyp = B.estimate(hyp0, X, y)
-        ts,s2 = B.predict(hyp, X, y, Xs)
+        ys,s2 = B.predict(hyp, X, y, Xs)
 
     where the variables are
 
@@ -24,8 +24,8 @@ class BLR:
     :param Xs: Nte x D array of test cases
     :param hyp0: starting estimates for hyperparameter optimisation
 
-    :returns ts: predictive mean
-    :returns s2: predictive variance
+    :returns: * ys - predictive mean
+              * s2 - predictive variance
 
     The hyperparameters are::
 
