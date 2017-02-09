@@ -1,0 +1,353 @@
+
+
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>normative &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for normative</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/Users/andre/sfw/anaconda3/bin/python</span>
+
+<span class="c1"># ------------------------------------------------------------------------------</span>
+<span class="c1">#  Usage:</span>
+<span class="c1">#  python normative.py -m [maskfile] -k [number of CV folds] -c &lt;covariates&gt;</span>
+<span class="c1">#                      -t [test covariates] -r [test responses] &lt;infile&gt;</span>
+<span class="c1">#</span>
+<span class="c1">#  Either the -k switch or -t switch should be specified, but not both.</span>
+<span class="c1">#  If -t is selected, a set of responses should be provided with the -r switch</span>
+<span class="c1">#</span>
+<span class="c1">#  Written by A. Marquand</span>
+<span class="c1"># ------------------------------------------------------------------------------</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">path</span>
+
+    <span class="kn">import</span> <span class="nn">fileio</span>
+    <span class="kn">from</span> <span class="nn">gp</span> <span class="k">import</span> <span class="n">GPR</span><span class="p">,</span> <span class="n">CovSum</span>
+    <span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">compute_pearsonr</span><span class="p">,</span> <span class="n">CustomCV</span>
+<span class="k">else</span><span class="p">:</span>  <span class="c1"># Run as a package (assumes the package is installed)</span>
+    <span class="kn">from</span> <span class="nn">nispat</span> <span class="k">import</span> <span class="n">fileio</span>
+    <span class="kn">from</span> <span class="nn">nispat.gp</span> <span class="k">import</span> <span class="n">GPR</span><span class="p">,</span> <span class="n">CovSum</span>
+    <span class="kn">from</span> <span class="nn">nispat.utils</span> <span class="k">import</span> <span class="n">compute_pearsonr</span><span class="p">,</span> <span class="n">CustomCV</span>
+
+
+<div class="viewcode-block" id="load_response_vars"><a class="viewcode-back" href="../modindex.html#normative.load_response_vars">[docs]</a><span class="k">def</span> <span class="nf">load_response_vars</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; load response variables (of any data type)&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;nifti&#39;</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="n">vol</span><span class="p">)</span>
+        <span class="n">volmask</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">create_mask</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskfile</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">volmask</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+        <span class="n">volmask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;cifti&#39;</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">Y</span><span class="p">,</span> <span class="n">volmask</span></div>
+
+
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../modindex.html#normative.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse command line arguments&quot;&quot;&quot;</span>
+
+    <span class="c1"># parse arguments</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Trend surface model&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;responses&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;mask file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;maskfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;covariates file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;covfile&quot;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-k&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;cross-validation folds&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cvfolds&quot;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;covariates (test data)&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;testcov&quot;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;responses (test data)&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;testresp&quot;</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">curdir</span><span class="p">)</span>
+    <span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">responses</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">maskfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">maskfile</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">maskfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">maskfile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">covfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;No covariates specified&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">covfile</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">covfile</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">testcov</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">testcov</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">testresp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cvfolds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">cvfolds</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running under &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cvfolds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; fold cross-validation.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test covariates specified&quot;</span><span class="p">)</span>
+        <span class="n">testcov</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">testcov</span>
+        <span class="n">cvfolds</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">testresp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;No test response variables specified&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">testresp</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">testresp</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">cvfolds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring cross-valdation specification (test data given)&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">respfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">covfile</span><span class="p">,</span> <span class="n">cvfolds</span><span class="p">,</span> <span class="n">testcov</span><span class="p">,</span> <span class="n">testresp</span></div>
+
+
+<div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../modindex.html#normative.estimate">[docs]</a><span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">covfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cvfolds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">testcov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputsuffix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Estimate a normative model</span>
+
+<span class="sd">    This will estimate a model in one of two settings according to the</span>
+<span class="sd">    particular parameters specified (see below):</span>
+
+<span class="sd">    * under k-fold cross-validation</span>
+<span class="sd">    * estimating a training dataset then applying to a second test dataset</span>
+
+<span class="sd">    The models are estimated on the basis of data stored on disk in ascii or</span>
+<span class="sd">    neuroimaging data formats (nifti or cifti). Ascii data should be in</span>
+<span class="sd">    tab or space delimited format with the number of subjects in rows and the</span>
+<span class="sd">    number of variables in columns. Neuroimaging data will be reshaped</span>
+<span class="sd">    into the appropriate format</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        estimate(respfile, covfile, [extra_arguments])</span>
+
+<span class="sd">    where the variables are defined below. Note that either the cfolds</span>
+<span class="sd">    parameter or (testcov, testresp) should be specified, but not both.</span>
+
+<span class="sd">    :param respfile: response variables for the normative model</span>
+<span class="sd">    :param covfile: covariates used to predict the response variable</span>
+<span class="sd">    :param maskfile: mask used to apply to the data (nifti only)</span>
+<span class="sd">    :param cvfolds: Number of cross-validation folds</span>
+<span class="sd">    :param testcov: Test covariates</span>
+<span class="sd">    :param testresp: Test responses</span>
+<span class="sd">    :param outputsuffix: Text string to add to the outpug filenames</span>
+
+<span class="sd">    All outputs are written to disk in the same format as the input. These are:</span>
+
+<span class="sd">    :outputs yhat: predictive mean</span>
+<span class="sd">    :outputs ys2: predictive variance</span>
+<span class="sd">    :outputs Z: deviance scores</span>
+<span class="sd">    :outputs Rho: Pearson correlation between true and predicted responses</span>
+<span class="sd">    :outputs pRho: parametric p-value for this correlation</span>
+<span class="sd">    :outputs rmse: root mean squared error between true and predicted responses</span>
+<span class="sd">    :outputs rmse: standardised mean squared error</span>
+
+<span class="sd">    The outputsuffix may be useful to estimate multiple normative models in the</span>
+<span class="sd">    same directory (e.g. for custom cross-validation schemes)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># load data</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing data in &quot;</span> <span class="o">+</span> <span class="n">respfile</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">covfile</span><span class="p">)</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">maskvol</span> <span class="o">=</span> <span class="n">load_response_vars</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">Nmod</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">testcov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># we have a separate test dataset</span>
+        <span class="n">Xte</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">testcov</span><span class="p">)</span>
+        <span class="n">Yte</span><span class="p">,</span> <span class="n">testmask</span> <span class="o">=</span> <span class="n">load_response_vars</span><span class="p">(</span><span class="n">testresp</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">)</span>
+        <span class="n">testids</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">Xte</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># treat as a single train-test split</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">CustomCV</span><span class="p">((</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),),</span> <span class="p">(</span><span class="n">testids</span><span class="p">,))</span>
+
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Y</span><span class="p">,</span> <span class="n">Yte</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="n">Xte</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># we are running under cross-validation</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">cvfolds</span><span class="p">)</span>
+        <span class="n">testids</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># find and remove bad variables from the response variables</span>
+    <span class="c1"># note: the covariates are assumed to have already been checked</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># starting hyperparameters. Could also do random restarts here</span>
+    <span class="n">covfunc</span> <span class="o">=</span> <span class="n">CovSum</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;CovLin&#39;</span><span class="p">,</span> <span class="s1">&#39;CovSqExpARD&#39;</span><span class="p">))</span>
+    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">covfunc</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># run cross-validation loop</span>
+    <span class="n">Yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="n">S2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nmod</span><span class="p">,</span> <span class="n">cvfolds</span><span class="p">))</span>
+    <span class="n">Hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nmod</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hyp0</span><span class="p">),</span> <span class="n">cvfolds</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+        <span class="n">fold</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">te</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># standardize responses and covariates, ignoring invalid entries</span>
+        <span class="n">iy</span><span class="p">,</span> <span class="n">jy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span>
+        <span class="n">mY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span> <span class="n">jy</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span> <span class="n">jy</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Yz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">Yz</span><span class="p">[:,</span> <span class="n">nz</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">nz</span><span class="p">]</span> <span class="o">-</span> <span class="n">mY</span><span class="p">)</span> <span class="o">/</span> <span class="n">sY</span>
+        <span class="n">mX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="p">:],</span>  <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Xz</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">mX</span><span class="p">)</span> <span class="o">/</span> <span class="n">sX</span>
+
+        <span class="c1"># estimate the models for all subjects</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nz</span><span class="p">)):</span>  <span class="c1"># range(0, Nmod):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Estimating model &quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nz</span><span class="p">))</span>
+            <span class="n">gpr</span> <span class="o">=</span> <span class="n">GPR</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">Xz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Yz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+            <span class="n">Hyp</span><span class="p">[</span><span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:,</span> <span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">covfunc</span><span class="p">,</span> <span class="n">Xz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="p">:],</span>
+                                               <span class="n">Yz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+            <span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Hyp</span><span class="p">[</span><span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">:,</span> <span class="n">fold</span><span class="p">],</span> <span class="n">Xz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="p">:],</span>
+                                   <span class="n">Yz</span><span class="p">[</span><span class="n">tr</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">Xz</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="p">:])</span>
+
+            <span class="n">Yhat</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">yhat</span> <span class="o">*</span> <span class="n">sY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">mY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">S2</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">Z</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">-</span> <span class="n">Yhat</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span> <span class="o">/</span> \
+                           <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">S2</span><span class="p">[</span><span class="n">te</span><span class="p">,</span> <span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+            <span class="n">nlZ</span><span class="p">[</span><span class="n">nz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpr</span><span class="o">.</span><span class="n">nlZ</span>
+
+    <span class="c1"># compute performance metrics</span>
+    <span class="n">MSE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Y</span><span class="p">[</span><span class="n">testids</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">Yhat</span><span class="p">[</span><span class="n">testids</span><span class="p">,</span> <span class="p">:])</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">RMSE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MSE</span><span class="p">)</span>
+    <span class="c1"># for the remaining variables, we need to ignore zero variances</span>
+    <span class="n">SMSE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">MSE</span><span class="p">)</span>
+    <span class="n">Rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nmod</span><span class="p">)</span>
+    <span class="n">pRho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Nmod</span><span class="p">)</span>
+    <span class="n">iy</span><span class="p">,</span> <span class="n">jy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">testids</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span>  <span class="c1"># ids for tested samples with nonzero values</span>
+    <span class="n">SMSE</span><span class="p">[</span><span class="n">nz</span><span class="p">]</span> <span class="o">=</span> <span class="n">MSE</span><span class="p">[</span><span class="n">nz</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span> <span class="n">jy</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">Rho</span><span class="p">[</span><span class="n">nz</span><span class="p">],</span> <span class="n">pRho</span><span class="p">[</span><span class="n">nz</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_pearsonr</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span> <span class="n">jy</span><span class="p">],</span> <span class="n">Yhat</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span> <span class="n">jy</span><span class="p">])</span>
+
+    <span class="c1"># Set writing options</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Writing output ...&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">respfile</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;cifti&#39;</span> <span class="ow">or</span> \
+       <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">respfile</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;nifti&#39;</span><span class="p">:</span>
+        <span class="n">exfile</span> <span class="o">=</span> <span class="n">respfile</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">exfile</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">outputsuffix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">outputsuffix</span><span class="p">)</span> <span class="o">+</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_extension</span><span class="p">(</span><span class="n">respfile</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_extension</span><span class="p">(</span><span class="n">respfile</span><span class="p">)</span>
+
+    <span class="c1"># Write output</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Yhat</span><span class="p">[</span><span class="n">testids</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s1">&#39;yhat&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">S2</span><span class="p">[</span><span class="n">testids</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s1">&#39;ys2&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="n">testids</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Rho</span><span class="p">,</span> <span class="s1">&#39;Rho&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">pRho</span><span class="p">,</span> <span class="s1">&#39;pRho&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">RMSE</span><span class="p">,</span> <span class="s1">&#39;rmse&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span>
+    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">SMSE</span><span class="p">,</span> <span class="s1">&#39;smse&#39;</span> <span class="o">+</span> <span class="n">ext</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="n">exfile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskvol</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../modindex.html#normative.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="n">respfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">covfile</span><span class="p">,</span> <span class="n">cvfolds</span><span class="p">,</span> <span class="n">testcov</span><span class="p">,</span> <span class="n">testresp</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">estimate</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">covfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">cvfolds</span><span class="p">,</span> <span class="n">testcov</span><span class="p">,</span> <span class="n">testresp</span><span class="p">)</span></div>
+
+<span class="c1"># For running from the command line:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, Andre F. Marquand.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

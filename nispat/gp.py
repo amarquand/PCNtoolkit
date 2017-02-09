@@ -17,8 +17,13 @@ from utils import squared_dist
 class CovBase(with_metaclass(ABCMeta)):
     """ Base class for covariance functions.
 
-        All covariance functions must define 'get_n_params',
-        'cov', 'xcov', 'dcov'
+        All covariance functions must define the following methods::
+
+            CovFunction.get_n_params()
+            CovFunction.cov()
+            CovFunction.xcov()
+            CovFunction.dcov()
+        
     """
 
     def __init__(self, x=None):
@@ -43,7 +48,7 @@ class CovBase(with_metaclass(ABCMeta)):
 
 
 class CovLin(CovBase):
-    """ Linear covariance function 
+    """ Linear covariance function (no hyperparameters)
     """
 
     def __init__(self, x=None):
@@ -68,9 +73,9 @@ class CovLin(CovBase):
 
 class CovSqExp(CovBase):
     """ Ordinary squared exponential covariance function.
-        The hyperparameters are:
-        
-        theta = ( log(ell), log(sf2) )
+        The hyperparameters are::
+
+            theta = ( log(ell), log(sf2) )
 
         where ell is a lengthscale parameter and sf2 is the signal variance
     """
@@ -107,9 +112,9 @@ class CovSqExp(CovBase):
 
 class CovSqExpARD(CovBase):
     """ Squared exponential covariance function with ARD
-        The hyperparameters are:
+        The hyperparameters are::
         
-        theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+            theta = (log(ell_1, ..., log_ell_D), log(sf2))
         
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
@@ -146,15 +151,15 @@ class CovSqExpARD(CovBase):
 
 class CovSum(CovBase):
     """ Sum of covariance functions. These are passed in as a cell array and
-        intialised automatically. For example:
+        intialised automatically. For example::
 
-        C = CovSum(x,(CovLin, CovSqExpARD))
-        C = CovSum.cov(x, )
+            C = CovSum(x,(CovLin, CovSqExpARD))
+            C = CovSum.cov(x, )
 
-        The hyperparameters are:
-        
-        theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
-        
+        The hyperparameters are::
+
+            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
@@ -218,7 +223,7 @@ class GPR:
 
     where the variables are
 
-    :param hyp: vector of hyperparmaters.
+    :param hyp: vector of hyperparmaters
     :param cov: covariance function
     :param X: N x D data array
     :param y: 1D Array of targets (length N)
