@@ -1,3 +1,6 @@
+Module Index
+************
+
 .. automodule:: bayesreg 
     :members:
     :undoc-members:
