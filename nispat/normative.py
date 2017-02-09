@@ -99,6 +99,48 @@ def get_args(*args):
 
 def estimate(respfile, covfile, maskfile=None, cvfolds=None,
              testcov=None, testresp=None, outputsuffix=None):
+    """ Estimate a normative model
+
+    This will estimate a model in one of two settings according to the
+    particular parameters specified (see below):
+
+    * under k-fold cross-validation
+    * estimating a training dataset then applying to a second test dataset
+
+    The models are estimated on the basis of data stored on disk in ascii or
+    neuroimaging data formats (nifti or cifti). Ascii data should be in
+    tab or space delimited format with the number of subjects in rows and the
+    number of variables in columns. Neuroimaging data will be reshaped
+    into the appropriate format
+
+    Basic usage::
+
+        estimate(respfile, covfile, [extra_arguments])
+
+    where the variables are defined below. Note that either the cfolds
+    parameter or (testcov, testresp) should be specified, but not both.
+
+    :param respfile: response variables for the normative model
+    :param covfile: covariates used to predict the response variable
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param cvfolds: Number of cross-validation folds
+    :param testcov: Test covariates
+    :param testresp: Test responses
+    :param outputsuffix: Text string to add to the outpug filenames
+
+    All outputs are written to disk in the same format as the input. These are:
+
+    :outputs yhat: predictive mean
+    :outputs ys2: predictive variance
+    :outputs Z: deviance scores
+    :outputs Rho: Pearson correlation between true and predicted responses
+    :outputs pRho: parametric p-value for this correlation
+    :outputs rmse: root mean squared error between true and predicted responses
+    :outputs rmse: standardised mean squared error
+
+    The outputsuffix may be useful to estimate multiple normative models in the
+    same directory (e.g. for custom cross-validation schemes)
+    """
 
     # load data
     print("Processing data in " + respfile)
