@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>&lt;no title&gt; &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
+    <title>Module Index &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Spatial methods for neuroimaging 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Spatial methods for neuroimaging" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,7 +40,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <span class="target" id="module-bayesreg"></span><dl class="class">
+  <div class="section" id="module-bayesreg">
+<span id="module-index"></span><h1>Module Index<a class="headerlink" href="#module-bayesreg" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
 <dt id="bayesreg.BLR">
 <em class="property">class </em><code class="descclassname">bayesreg.</code><code class="descname">BLR</code><span class="sig-paren">(</span><em>hyp=None</em>, <em>X=None</em>, <em>y=None</em>, <em>n_iter=1000</em>, <em>tol=0.001</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bayesian linear regression</p>
@@ -178,8 +181,7 @@ the i-th hyperparameter</p>
 <dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Ordinary squared exponential covariance function.
 The hyperparameters are:</p>
-<blockquote>
-<div>theta = ( log(ell), log(sf2) )</div></blockquote>
+<p>theta = ( log(ell), log(sf2) )</p>
 <p>where ell is a lengthscale parameter and sf2 is the signal variance</p>
 <dl class="method">
 <dt id="gp.CovSqExp.cov">
@@ -205,8 +207,7 @@ The hyperparameters are:</p>
 <dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Squared exponential covariance function with ARD
 The hyperparameters are:</p>
-<blockquote>
-<div>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</div></blockquote>
+<p>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</p>
 <p>where ell_i are lengthscale parameters and sf2 is the signal variance</p>
 <dl class="method">
 <dt id="gp.CovSqExpARD.cov">
@@ -234,10 +235,8 @@ The hyperparameters are:</p>
 intialised automatically. For example:</p>
 <p>C = CovSum(x,(CovLin, CovSqExpARD))
 C = CovSum.cov(x, )</p>
-<dl class="docutils">
-<dt>The hyperparameters are:</dt>
-<dd>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</dd>
-</dl>
+<p>The hyperparameters are:</p>
+<p>theta = ( log(ell_1, ..., log_ell_D), log(sf2) )</p>
 <p>where ell_i are lengthscale parameters and sf2 is the signal variance</p>
 <dl class="method">
 <dt id="gp.CovSum.cov">
@@ -335,6 +334,7 @@ C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
 
 </dd></dl>
 
+</div>
 
 
           </div>
@@ -345,6 +345,7 @@ C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Spatial methods for neuroimaging</a></li>
   </ul></li>
 </ul>
 </div>

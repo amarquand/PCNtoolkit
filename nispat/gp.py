@@ -18,7 +18,8 @@ class CovBase(with_metaclass(ABCMeta)):
     """ Base class for covariance functions.
 
         All covariance functions must define 'get_n_params',
-        'cov', 'xcov', 'dcov'"""
+        'cov', 'xcov', 'dcov'
+    """
 
     def __init__(self, x=None):
         self.n_params = np.nan
@@ -42,7 +43,8 @@ class CovBase(with_metaclass(ABCMeta)):
 
 
 class CovLin(CovBase):
-    """ Linear covariance function """
+    """ Linear covariance function 
+    """
 
     def __init__(self, x=None):
         self.n_params = 0
@@ -67,7 +69,9 @@ class CovLin(CovBase):
 class CovSqExp(CovBase):
     """ Ordinary squared exponential covariance function.
         The hyperparameters are:
-            theta = ( log(ell), log(sf2) )
+        
+        theta = ( log(ell), log(sf2) )
+
         where ell is a lengthscale parameter and sf2 is the signal variance
     """
 
@@ -104,7 +108,9 @@ class CovSqExp(CovBase):
 class CovSqExpARD(CovBase):
     """ Squared exponential covariance function with ARD
         The hyperparameters are:
-            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        
+        theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
@@ -146,7 +152,9 @@ class CovSum(CovBase):
         C = CovSum.cov(x, )
 
         The hyperparameters are:
-            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        
+        theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+        
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
@@ -283,7 +291,8 @@ class GPR:
         self.covfunc = covfunc
 
     def loglik(self, hyp, covfunc, X, y):
-        """ Function to compute compute log (marginal) likelihood """
+        """ Function to compute compute log (marginal) likelihood 
+        """
 
         # load or recompute posterior
         if self._updatepost(hyp, covfunc):
@@ -307,7 +316,8 @@ class GPR:
         return self.nlZ
 
     def dloglik(self, hyp, covfunc, X, y):
-        """ Function to compute derivatives """
+        """ Function to compute derivatives 
+        """
 
         # hyperparameters
         sn2 = np.exp(2*hyp[0])       # noise variance
@@ -351,7 +361,8 @@ class GPR:
 
     # model estimation (optimization)
     def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
-        """ Function to estimate the model """
+        """ Function to estimate the model 
+        """
 
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
@@ -371,7 +382,8 @@ class GPR:
         return self.hyp
 
     def predict(self, hyp, X, y, Xs):
-        """ Function to make predictions from the model """
+        """ Function to make predictions from the model 
+        """
 
         if self._updatepost(hyp, self.covfunc):
             self.post(hyp, self.covfunc, X, y)
