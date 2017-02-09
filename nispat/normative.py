@@ -181,15 +181,19 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
     Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
 
-    # Write output
+    # Set writing options
     print("Writing output ...")
     if fileio.file_type(respfile) == 'cifti' or \
        fileio.file_type(respfile) == 'nifti':
         exfile = respfile
     else:
-        exfile = None    
-    ext = str(outputsuffix) + fileio.file_extension(respfile)
+        exfile = None
+    if outputsuffix is not None:
+        ext = str(outputsuffix) + fileio.file_extension(respfile)
+    else:
+        ext = fileio.file_extension(respfile)
 
+    # Write output
     fileio.save(Yhat[testids, :].T, 'yhat' + ext, example=exfile, mask=maskvol)
     fileio.save(S2[testids, :].T, 'ys2' + ext, example=exfile, mask=maskvol)
     fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile, mask=maskvol)
