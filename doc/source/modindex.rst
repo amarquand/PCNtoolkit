@@ -18,3 +18,9 @@ Module Index
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+
+.. automodule:: trendsurf 
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:

@@ -200,13 +200,13 @@
 
 <span class="sd">    All outputs are written to disk in the same format as the input. These are:</span>
 
-<span class="sd">    :outputs yhat: predictive mean</span>
-<span class="sd">    :outputs ys2: predictive variance</span>
-<span class="sd">    :outputs Z: deviance scores</span>
-<span class="sd">    :outputs Rho: Pearson correlation between true and predicted responses</span>
-<span class="sd">    :outputs pRho: parametric p-value for this correlation</span>
-<span class="sd">    :outputs rmse: root mean squared error between true and predicted responses</span>
-<span class="sd">    :outputs rmse: standardised mean squared error</span>
+<span class="sd">    :outputs: * yhat - predictive mean</span>
+<span class="sd">              * ys2 - predictive variance</span>
+<span class="sd">              * Z - deviance scores</span>
+<span class="sd">              * Rho - Pearson correlation between true and predicted responses</span>
+<span class="sd">              * pRho - parametric p-value for this correlation</span>
+<span class="sd">              * rmse - root mean squared error between true/predicted responses</span>
+<span class="sd">              * smse - standardised mean squared error</span>
 
 <span class="sd">    The outputsuffix may be useful to estimate multiple normative models in the</span>
 <span class="sd">    same directory (e.g. for custom cross-validation schemes)</span>
@@ -316,6 +316,8 @@
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../modindex.html#normative.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse arguments and estimate model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 
