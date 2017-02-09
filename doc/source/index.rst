@@ -10,8 +10,8 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-
-
+   
+   modindex.rst
 
 Indices and tables
 ==================
