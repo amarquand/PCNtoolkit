@@ -98,7 +98,7 @@ def get_args(*args):
 
 
 def estimate(respfile, covfile, maskfile=None, cvfolds=None,
-             testcov=None, testresp=None, outputsuffix=None):
+             testcov=None, testresp=None, saveoutput=True, outputsuffix=None):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -126,7 +126,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     :param cvfolds: Number of cross-validation folds
     :param testcov: Test covariates
     :param testresp: Test responses
-    :param outputsuffix: Text string to add to the outpug filenames
+    :param saveoutput: Save the output to disk? Otherwise returned as arrays
+    :param outputsuffix: Text string to add to the output filenames
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -224,25 +225,31 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
 
     # Set writing options
-    print("Writing output ...")
-    if fileio.file_type(respfile) == 'cifti' or \
-       fileio.file_type(respfile) == 'nifti':
-        exfile = respfile
-    else:
-        exfile = None
-    if outputsuffix is not None:
-        ext = str(outputsuffix) + fileio.file_extension(respfile)
-    else:
-        ext = fileio.file_extension(respfile)
+    if saveoutput:
+        print("Writing output ...")
+        if fileio.file_type(respfile) == 'cifti' or \
+           fileio.file_type(respfile) == 'nifti':
+            exfile = respfile
+        else:
+            exfile = None
+        if outputsuffix is not None:
+            ext = str(outputsuffix) + fileio.file_extension(respfile)
+        else:
+            ext = fileio.file_extension(respfile)
 
-    # Write output
-    fileio.save(Yhat[testids, :].T, 'yhat' + ext, example=exfile, mask=maskvol)
-    fileio.save(S2[testids, :].T, 'ys2' + ext, example=exfile, mask=maskvol)
-    fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile, mask=maskvol)
-    fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
-    fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
-    fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
-    fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+        # Write output
+        fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                    example=exfile, mask=maskvol)
+        fileio.save(S2[testids, :].T, 'ys2' + ext,
+                    example=exfile, mask=maskvol)
+        fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile, mask=maskvol)
+        fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
+        fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
+        fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
+        fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+    else:
+        output = (Yhat, S2, Z, Rho, pRho, RMSE, SMSE)
+        return output
 
 
 def main(*args):
