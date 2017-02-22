@@ -162,6 +162,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         Y = np.concatenate((Y, Yte), axis=0)
         X = np.concatenate((X, Xte), axis=0)
+
+        # force the number of cross-validation folds to 1
+        if cvfolds is not None and cvfolds != 1:
+            print("Ignoring cross-valdation specification (test data given)")
+        cvfolds = 1
     else:
         # we are running under cross-validation
         splits = KFold(n_splits=cvfolds)
