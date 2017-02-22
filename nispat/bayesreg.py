@@ -148,7 +148,9 @@ class BLR:
 
         # useful quantities
         XX = X.T.dot(X)
-        Q = linalg.solve(self.A, X.T)
+        S = np.linalg.inv(self.A)  # posterior covariance
+        Q = S.dot(X.T)
+        # Q = linalg.solve(self.A, X.T)
         b = (np.eye(self.D) - beta*Q.dot(X)).dot(Q).dot(y)
 
         # initialise derivatives
@@ -169,14 +171,17 @@ class BLR:
             if len(alpha) == self.D:
                 dSigma = np.zeros((self.D, self.D))
                 dSigma[i, i] = -alpha[i] ** -2
+                diSigma = np.zeros((self.D, self.D))
+                diSigma[i, i] = 1
             else:
                 dSigma = -alpha[i] ** -2*np.eye(self.D)
+                diSigma = np.eye(self.D)
 
-            F = -self.iSigma.dot(dSigma).dot(self.iSigma)
-            c = -beta*F.dot(X.T).dot(y)
+            # F = -self.iSigma.dot(dSigma).dot(self.iSigma)
+            # c = -beta*F.dot(X.T).dot(y)
+            F = diSigma
+            c = -beta*S.dot(F).dot(S).dot(X.T).dot(y)
 
-            #import pdb
-            #pdb.set_trace()
             dnlZ[i+1] = -(-0.5 * np.trace(self.iSigma.dot(dSigma)) +
                           beta * y.T.dot(X).dot(c) -
                           beta * c.T.dot(XX).dot(self.m) -
