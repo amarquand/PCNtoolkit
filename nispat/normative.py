@@ -21,7 +21,7 @@ import argparse
 
 from sklearn.model_selection import KFold
 if __name__ == "__main__":
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
     del path
@@ -149,6 +149,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     Y, maskvol = load_response_vars(respfile, maskfile)
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
     Nmod = Y.shape[1]
 
     if testcov is not None:

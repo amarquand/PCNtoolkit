@@ -112,9 +112,9 @@ class CovSqExp(CovBase):
 class CovSqExpARD(CovBase):
     """ Squared exponential covariance function with ARD
         The hyperparameters are::
-        
+
             theta = (log(ell_1, ..., log_ell_D), log(sf2))
-        
+
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
@@ -248,7 +248,7 @@ class GPR:
     Written by A. Marquand
     """
 
-    def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=1000,
+    def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=100,
                  tol=1e-3, verbose=False):
 
         self.hyp = np.nan
@@ -295,7 +295,7 @@ class GPR:
         self.covfunc = covfunc
 
     def loglik(self, hyp, covfunc, X, y):
-        """ Function to compute compute log (marginal) likelihood 
+        """ Function to compute compute log (marginal) likelihood
         """
 
         # load or recompute posterior
