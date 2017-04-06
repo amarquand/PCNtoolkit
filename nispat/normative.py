@@ -254,6 +254,13 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
         fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
         fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+        if cvfolds is None:
+            fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
+        else:
+            for idx in enumerate(splits.split(X)):
+                fold = idx[0]
+                fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                            ext, example=exfile, mask=maskvol)
     else:
         output = (Yhat, S2, Z, Rho, pRho, RMSE, SMSE)
         return output
