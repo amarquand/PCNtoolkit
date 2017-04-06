@@ -7,7 +7,8 @@ from numpy.linalg import solve, LinAlgError
 from numpy.linalg import cholesky as chol
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
-from utils import squared_dist
+
+from nispat.utils import squared_dist
 
 # --------------------
 # Covariance functions
