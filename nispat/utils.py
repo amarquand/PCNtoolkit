@@ -59,7 +59,8 @@ def compute_pearsonr(A, B):
         of the resulting correlation matrix are of interest. This function
         does not compute the full correlation matrix as an intermediate step"""
 
-    N = A.shape[1]
+    # N = A.shape[1]
+    N = len(A[:, 0])
 
     # first mean centre
     Am = A - np.mean(A, axis=0)
@@ -75,8 +76,9 @@ def compute_pearsonr(A, B):
     # Fisher r-to-z
     Zr = (np.arctanh(Rho) - np.arctanh(0)) * np.sqrt(N - 3)
     N = stats.norm()
-    pRho = 1-N.cdf(Zr)
-
+    pRho = 2*N.cdf(-np.abs(Zr))
+    # pRho = 1-N.cdf(Zr)
+    
     return Rho, pRho
 
 
