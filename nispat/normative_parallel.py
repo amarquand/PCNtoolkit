@@ -28,40 +28,10 @@
 #
 # gratitude to Maarten Mennes, Matthias Ekman and Hong Lee for useful
 # discussions and help around cluster computing.
-#
-# Written by T Wolfers
 # -----------------------------------------------------------------------------
 
 from __future__ import print_function
 from __future__ import division
-
-""" Run parallel normantive modelling.
-    All processing takes place in the processing directory (processing_dir)
-    All inputs should be text files and space seperated
-
-    It is possible to run these functions using...
-
-    * k-fold cross-validation
-    * estimating a training dataset then applying to a second test dataset
-
-    First,the data is split for parallel processing.
-    Second, the splits are submitted to the cluster.
-    Third, the output is collected and combined.
-
-    ** Main functions of normative parallel:
-        * execute_nm     -> executes split, bashwrap and qsub
-        *    split_nm     -> splits matrix (subjects x features) into
-                             vectors (subjects x batches of features)
-        *    bashwrap_nm  -> wraps python functions into a bash script
-        *    qsub_nm      -> executes bashwraped python script
-        * collect_nm      -> checkes, collects and combines output
-        * delete_nm       -> deletes unnessecary folders and files
-
-* witten by Thomas Wolfers
-* guided by Andre Marquand
-* gratitude to Maarten Mennes, Matthias Ekman, Andre Marquand and Hong Lee for
-* useful discussions around cluster computing.
-"""
 
 
 def execute_nm(processing_dir,
