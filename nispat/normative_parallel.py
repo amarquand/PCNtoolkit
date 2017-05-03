@@ -24,10 +24,9 @@
 #        * delete_nm       -> deletes unnessecary folders and files
 #
 # witten by Thomas Wolfers
-# guided by Andre Marquand
 #
-# gratitude to Maarten Mennes, Matthias Ekman and Hong Lee for useful
-# discussions and help around cluster computing.
+# gratitude to Andre Marquand, Maarten Mennes, Matthias Ekman and Hong Lee 
+# for useful discussions and help around cluster computing.
 # -----------------------------------------------------------------------------
 
 from __future__ import print_function
