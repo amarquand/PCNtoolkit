@@ -159,6 +159,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         Yte, testmask = load_response_vars(testresp, maskfile)
         testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
 
+        if len(Yte.shape) == 1:
+            Yte = Yte[:, np.newaxis]
+        if len(Xte.shape) == 1:
+            Xte = Xte[:, np.newaxis]
+
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
 
