@@ -4,6 +4,8 @@ import os
 import numpy as np
 import nibabel as nib
 import tempfile
+import pandas as pd
+import re
 
 CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
                   'dlabel', 'pscalar', 'pdconn', 'dpconn',
@@ -289,15 +291,30 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
 # --------------
 
 
-def load_ascii(filename):
-    # currently very basic functionality.
+def load_pd(filename):
+    # based on pandas
+    x = pd.read_csv(filename,
+                    sep=' ',
+                    header=None)
+    return x
 
+
+def save_pd(data, filename):
+    # based on pandas
+    data.to_csv(filename,
+                index=None,
+                header=None,
+                sep=' ')
+
+
+def load_ascii(filename):
+    # based on pandas
     x = np.loadtxt(filename)
     return x
 
 
 def save_ascii(data, filename):
-
+    # based on pandas
     np.savetxt(filename, data)
 
 # ----------------
@@ -325,3 +342,22 @@ def load(filename, mask=None, text=False, vol=True):
         x = load_ascii(filename)
 
     return x
+
+# -------------------
+# sorting routines for batched in normative parallel
+# -------------------
+
+
+def tryint(s):
+    try:
+        return int(s)
+    except ValueError:
+        return s
+
+
+def alphanum_key(s):
+    return [tryint(c) for c in re.split('([0-9]+)', s)]
+
+
+def sort_nicely(l):
+    return sorted(l, key=alphanum_key)

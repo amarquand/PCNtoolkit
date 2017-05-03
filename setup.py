@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='nispat',
-      version='0.11',
+      version='0.12',
       description='Spatial methods for neuroimaging data',
       url='http://github.com/amarquand/nispat',
       author='Andre Marquand',
