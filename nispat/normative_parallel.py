@@ -17,7 +17,7 @@
 #    ** Main functions of normative parallel:
 #        * execute_nm     -> executes split, bashwrap and qsub
 #        *    split_nm     -> splits matrix (subjects x features) into
-#                             vectors (subjects x batches of features)
+#                             batches (subjects x batches of features)
 #        *    bashwrap_nm  -> wraps python functions into a bash script
 #        *    qsub_nm      -> executes bashwraped python script
 #        * collect_nm      -> checkes, collects and combines output
