@@ -307,7 +307,7 @@ def qsub_nm(job_path, memory, duration):
         * job_path      -> Full path to the job.sh file
         * memory        -> Memory requirements written as string for example
                            4gb or 500mb
-        * duation       -> The approximate duration of the job, a string with
+        * duration       -> The approximate duration of the job, a string with
                            HH:MM:SS for example 01:01:01
 
     ** Output:
