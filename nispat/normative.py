@@ -220,7 +220,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                                    Yz[tr, nz[i]], Xz[te, :])
 
             Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-            S2[te, nz[i]] = np.diag(s2) * sY[i]**2
+            S2[te, nz[i]] = np.diag(s2) + sY[i]**2
             Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
                            np.sqrt(S2[te, nz[i]])
             nlZ[nz[i], fold] = gpr.nlZ
