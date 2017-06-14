@@ -113,11 +113,16 @@ class BLR:
                 nlZ = 1/np.finfo(float).eps
                 return nlZ
 
+        # compute the log determinants in a numerically stable way
+        logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
+        logdetSigma = sum(np.log(np.diag(self.Sigma)))  # Sigma is diagonal
+
+        # compute negative marginal log likelihood
         nlZ = -0.5 * (self.N*np.log(beta) - self.N*np.log(2*np.pi) -
-                      np.log(linalg.det(self.Sigma)) -
+                      logdetSigma -
                       beta*(y-X.dot(self.m)).T.dot(y-X.dot(self.m)) -
                       self.m.T.dot(self.iSigma).dot(self.m) -
-                      np.log(linalg.det(self.A))
+                      logdetA
                       )
 
         # make sure the output is finite to stop the minimizer getting upset
@@ -177,8 +182,6 @@ class BLR:
                 dSigma = -alpha[i] ** -2*np.eye(self.D)
                 diSigma = np.eye(self.D)
 
-            # F = -self.iSigma.dot(dSigma).dot(self.iSigma)
-            # c = -beta*F.dot(X.T).dot(y)
             F = diSigma
             c = -beta*S.dot(F).dot(S).dot(X.T).dot(y)
 
