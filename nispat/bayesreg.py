@@ -47,12 +47,12 @@ class BLR:
     """
 
     def __init__(self, hyp=None, X=None, y=None,
-                 n_iter=1000, tol=1e-3, verbose=False):
+                 n_iter=100, tol=1e-3, verbose=False):
 
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
-        self.n_iter = n_iter    # not used at present
+        self.n_iter = n_iter
         self.verbose = verbose
 
         if (hyp is not None) and (X is not None) and (y is not None):
