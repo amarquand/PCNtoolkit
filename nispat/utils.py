@@ -36,7 +36,7 @@ def squared_dist(x, z=None):
     dist = (xx - 2*x.dot(z.T) + zz)
 
     return dist
-    
+
 
 def compute_pearsonr(A, B):
     """ Manually computes the Pearson correlation between two matrices.

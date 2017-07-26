@@ -241,7 +241,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysl.append(
             nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
     fnamel = fstem + '-left.func.gii'
     nib.save(giil, fnamel)
@@ -253,7 +253,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysr.append(
             nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
     fnamer = fstem + '-right.func.gii'
     nib.save(giir, fnamer)

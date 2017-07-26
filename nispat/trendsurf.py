@@ -32,6 +32,8 @@ else:  # Run as a package (assumes the package is installed)
 def load_data(datafile, maskfile=None):
     """ load 4d nifti data """
     if datafile.endswith("nii.gz") or datafile.endswith("nii"):
+        # we load the data this way rather than fileio.load() because we need
+        # access to the volumetric representation (to know the # coordinates)
         dat = fileio.load_nifti(datafile, vol=True)
         dim = dat.shape
         if len(dim) <= 3:
@@ -58,7 +60,7 @@ def load_data(datafile, maskfile=None):
     return dat, world, mask
 
 
-def create_basis(X, basis):
+def create_basis(X, basis, mask):
     """ Create a (polynomial) basis set """
 
     # check whether we are using a polynomial basis set
@@ -72,7 +74,17 @@ def create_basis(X, basis):
             Phi[:, colid] = X ** d
             colid += dimx
     else:  # custom basis set
-        raise ValueError("Custom basis set is not implemented yet!")
+        if type(basis) is str:
+            print('Loading custom basis set from', basis)
+
+            # Phi_vol = fileio.load_data(basis)
+            # we load the data this way instead so we can apply the same mask
+            Phi_vol = fileio.load_nifti(basis, vol=True)
+            Phi = fileio.vol2vec(Phi_vol, mask)
+            print('Basis set consists of', Phi.shape[1], 'basis functions.')
+            # maskid = np.where(mask.ravel())[0]
+        else:
+            raise ValueError("I don't know what to do with basis:", basis)
 
     return Phi
 
@@ -166,7 +178,7 @@ def estimate(filename, maskfile, basis):
     Xz = (X - mX) / sX
 
     # create basis set and set starting hyperparamters
-    Phi = create_basis(Xz, basis)
+    Phi = create_basis(Xz, basis, mask)
     hyp0 = np.zeros(2)
 
     # estimate the models for all subjects

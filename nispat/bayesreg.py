@@ -2,7 +2,8 @@ from __future__ import print_function
 from __future__ import division
 
 import numpy as np
-from scipy import linalg, optimize
+from scipy import optimize, linalg
+from scipy.linalg import LinAlgError
 
 
 class BLR:
@@ -113,8 +114,14 @@ class BLR:
                 nlZ = 1/np.finfo(float).eps
                 return nlZ
 
-        # compute the log determinants in a numerically stable way
-        logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
+        try:
+            # compute the log determinants in a numerically stable way
+            logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
+        except (ValueError, LinAlgError):
+            print("Warning: Estimation of posterior distribution failed")
+            nlZ = 1/np.finfo(float).eps
+            return nlZ
+
         logdetSigma = sum(np.log(np.diag(self.Sigma)))  # Sigma is diagonal
 
         # compute negative marginal log likelihood
