@@ -115,6 +115,7 @@ def get_args(*args):
     parser.add_argument("-m", help="mask file", dest="maskfile", default=None)
     parser.add_argument("-c", help="covariates file", dest="covfile",
                         default=None)
+    parser.add_argument("-a", help="use ARD", action='store_true')
     args = parser.parse_args()
     wdir = os.path.realpath(os.path.curdir)
     filename = os.path.join(wdir, args.filename)
@@ -125,10 +126,10 @@ def get_args(*args):
     basis = args.basis
     if args.covfile is not None:
         raise(NotImplementedError, "Covariates not implemented yet.")
-    return filename, maskfile, basis
+    return filename, maskfile, basis, args.a
 
 
-def estimate(filename, maskfile, basis):
+def estimate(filename, maskfile, basis, ard):
     """ Estimate a trend surface model
 
     This will estimate a trend surface model, independently for each subject.
@@ -179,7 +180,10 @@ def estimate(filename, maskfile, basis):
 
     # create basis set and set starting hyperparamters
     Phi = create_basis(Xz, basis, mask)
-    hyp0 = np.zeros(2)
+    if ard is True:
+        hyp0 = np.zeros(Phi.shape[1]+1)
+    else:
+        hyp0 = np.zeros(2)
 
     # estimate the models for all subjects
     yhat = np.zeros_like(Yz)
@@ -221,8 +225,8 @@ def estimate(filename, maskfile, basis):
 def main(*args):
     np.seterr(invalid='ignore')
 
-    filename, maskfile, basis = get_args(args)
-    estimate(filename, maskfile, basis)
+    filename, maskfile, basis, ard = get_args(args)
+    estimate(filename, maskfile, basis, ard)
 
 # For running from the command line:
 if __name__ == "__main__":

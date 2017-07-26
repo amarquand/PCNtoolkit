@@ -255,7 +255,7 @@ class GPR:
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
-        self.n_iter = n_iter    # not used at present
+        self.n_iter = n_iter
         self.verbose = verbose
 
         if (hyp is not None) and (X is not None) and (y is not None):
