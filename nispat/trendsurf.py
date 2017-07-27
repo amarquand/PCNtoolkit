@@ -116,6 +116,7 @@ def get_args(*args):
     parser.add_argument("-c", help="covariates file", dest="covfile",
                         default=None)
     parser.add_argument("-a", help="use ARD", action='store_true')
+    parser.add_argument("-o", help="output all measures", action='store_true')
     args = parser.parse_args()
     wdir = os.path.realpath(os.path.curdir)
     filename = os.path.join(wdir, args.filename)
@@ -126,10 +127,10 @@ def get_args(*args):
     basis = args.basis
     if args.covfile is not None:
         raise(NotImplementedError, "Covariates not implemented yet.")
-    return filename, maskfile, basis, args.a
+    return filename, maskfile, basis, args.a, args.o
 
 
-def estimate(filename, maskfile, basis, ard):
+def estimate(filename, maskfile, basis, ard=False, outputall=False):
     """ Estimate a trend surface model
 
     This will estimate a trend surface model, independently for each subject.
@@ -193,12 +194,17 @@ def estimate(filename, maskfile, basis, ard):
     rmse = np.zeros(N)
     ev = np.zeros(N)
     m = np.zeros((N, Phi.shape[1]))
+    bs2 = np.zeros((N, Phi.shape[1]))
     for i in range(0, N):
         print("Estimating model ", i+1, "of", N)
         breg = BLR()
         hyp[i, :] = breg.estimate(hyp0, Phi, Yz[:, i])
         m[i, :] = breg.m
         nlZ[i] = breg.nlZ
+
+        # compute extra measures (e.g. marginal variances)?
+        if outputall:
+            bs2[i] = np.sqrt(np.diag(np.linalg.inv(breg.A)))
 
         # compute predictions and errors
         yhat[:, i], ys2[:, i] = breg.predict(hyp[i, :], Phi, Yz[:, i], Phi)
@@ -221,12 +227,15 @@ def estimate(filename, maskfile, basis, ard):
     fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
     fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
 
+    if outputall:
+        np.savetxt("trendcoeffvar.txt", bs2, delimiter='\t', fmt='%5.8f')
+
 
 def main(*args):
     np.seterr(invalid='ignore')
 
-    filename, maskfile, basis, ard = get_args(args)
-    estimate(filename, maskfile, basis, ard)
+    filename, maskfile, basis, ard, outputall = get_args(args)
+    estimate(filename, maskfile, basis, ard, outputall)
 
 # For running from the command line:
 if __name__ == "__main__":
