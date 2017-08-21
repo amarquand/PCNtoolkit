@@ -90,9 +90,9 @@ class BLR:
         else:
             raise ValueError("hyperparameter vector has invalid length")
 
-        # compute posterior
-        self.A = beta*X.T.dot(X) + self.iSigma          # posterior precision
-        self.m = beta*linalg.solve(self.A, X.T).dot(y)  # posterior mean
+        # compute posterior precision and mean
+        self.A = beta*X.T.dot(X) + self.iSigma
+        self.m = beta*linalg.solve(self.A, X.T, check_finite=False).dot(y)
 
         # save stuff
         self.N = N

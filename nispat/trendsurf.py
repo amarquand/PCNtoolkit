@@ -127,6 +127,7 @@ def get_args(*args):
     basis = args.basis
     if args.covfile is not None:
         raise(NotImplementedError, "Covariates not implemented yet.")
+
     return filename, maskfile, basis, args.a, args.o
 
 
@@ -187,6 +188,8 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False):
         hyp0 = np.zeros(2)
 
     # estimate the models for all subjects
+    if ard:
+        print('ARD is enabled')
     yhat = np.zeros_like(Yz)
     ys2 = np.zeros_like(Yz)
     nlZ = np.zeros(N)
