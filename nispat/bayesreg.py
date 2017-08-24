@@ -243,6 +243,7 @@ class BLR:
         beta = np.exp(hyp[0])
 
         ys = Xs.dot(self.m)
-        s2 = 1/beta + np.diag(Xs.dot(linalg.solve(self.A, Xs.T)))
+        # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
+        s2 = 1/beta + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
 
         return ys, s2
