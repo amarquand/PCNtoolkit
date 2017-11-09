@@ -278,10 +278,6 @@ class GPR:
             X = X[:, np.newaxis]
         self.N, self.D = X.shape
 
-        if not self._updatepost(hyp, covfunc):
-            print("hyperparameters have not changed, using exising posterior")
-            return
-
         # hyperparameters
         sn2 = np.exp(2*hyp[0])       # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
@@ -390,9 +386,9 @@ class GPR:
         """ Function to make predictions from the model
         """
 
-        if self._updatepost(hyp, self.covfunc):
-            self.post(hyp, self.covfunc, X, y)
-
+        # reestimate posterior (avoids numerical problems with optimizer)
+        self.post(hyp, self.covfunc, X, y)
+        
         # hyperparameters
         sn2 = np.exp(2*hyp[0])     # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
