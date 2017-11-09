@@ -267,7 +267,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
                             ext, example=exfile, mask=maskvol)
     else:
-        output = (Yhat, S2, Z, Rho, pRho, RMSE, SMSE)
+        output = (Yhat, S2, Z, Rho, pRho, RMSE, SMSE, Hyp)
         return output
 
 
