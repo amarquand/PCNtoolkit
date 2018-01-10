@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import division
 
+import os
+import sys
 import numpy as np
 from scipy import optimize
 from numpy.linalg import solve, LinAlgError
@@ -8,7 +10,16 @@ from numpy.linalg import cholesky as chol
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 
-from nispat.utils import squared_dist
+
+try:  # Run as a package if installed    
+    from nispat.utils import squared_dist
+except ImportError:
+    pass
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    from utils import squared_dist
 
 # --------------------
 # Covariance functions

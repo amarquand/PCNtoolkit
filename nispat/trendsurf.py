@@ -16,7 +16,11 @@ import numpy as np
 import nibabel as nib
 import argparse
 
-if __name__ == "__main__":
+try:  # Run as a package if installed
+    from nispat import fileio
+    from nispat.bayesreg import BLR
+except ImportError:
+    pass
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
@@ -24,9 +28,7 @@ if __name__ == "__main__":
 
     import fileio
     from bayesreg import BLR
-else:  # Run as a package (assumes the package is installed)
-    from nispat import fileio
-    from nispat.bayesreg import BLR
+
 
 
 def load_data(datafile, maskfile=None):
@@ -131,7 +133,8 @@ def get_args(*args):
     return filename, maskfile, basis, args.a, args.o
 
 
-def estimate(filename, maskfile, basis, ard=False, outputall=False):
+def estimate(filename, maskfile, basis, ard=False, outputall=False,
+             saveoutput=True):
     """ Estimate a trend surface model
 
     This will estimate a trend surface model, independently for each subject.
@@ -221,18 +224,23 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False):
     print("Mean (std) RMSE =", rmse.mean(), "(", rmse.std(), ")")
 
     # Write output
-    print("Writing output ...")
-    np.savetxt("trendcoeff.txt", m, delimiter='\t', fmt='%5.8f')
-    np.savetxt("negloglik.txt", nlZ, delimiter='\t', fmt='%5.8f')
-    np.savetxt("hyp.txt", hyp, delimiter='\t', fmt='%5.8f')
-    np.savetxt("explainedvar.txt", ev, delimiter='\t', fmt='%5.8f')
-    np.savetxt("rmse.txt", rmse, delimiter='\t', fmt='%5.8f')
-    fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
-    fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
+    if saveoutput:
+        print("Writing output ...")
+        np.savetxt("trendcoeff.txt", m, delimiter='\t', fmt='%5.8f')
+        np.savetxt("negloglik.txt", nlZ, delimiter='\t', fmt='%5.8f')
+        np.savetxt("hyp.txt", hyp, delimiter='\t', fmt='%5.8f')
+        np.savetxt("explainedvar.txt", ev, delimiter='\t', fmt='%5.8f')
+        np.savetxt("rmse.txt", rmse, delimiter='\t', fmt='%5.8f')
+        fileio.save_nifti(yhat, 'yhat.nii.gz', filename, mask)
+        fileio.save_nifti(ys2, 'ys2.nii.gz', filename, mask)
 
-    if outputall:
-        np.savetxt("trendcoeffvar.txt", bs2, delimiter='\t', fmt='%5.8f')
-
+        if outputall:
+            np.savetxt("trendcoeffvar.txt", bs2, delimiter='\t', fmt='%5.8f')
+    else:
+        out = [yhat, ys2, nlZ, hyp, rmse, ev, m]
+        if outputall:
+            out.append(bs2)
+        return out
 
 def main(*args):
     np.seterr(invalid='ignore')
