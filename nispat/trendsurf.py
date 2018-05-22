@@ -216,7 +216,7 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
         yhat[:, i], ys2[:, i] = breg.predict(hyp[i, :], Phi, Yz[:, i], Phi)
         yhat[:, i] = yhat[:, i]*sY[i] + mY[i]
         rmse[i] = np.sqrt(np.mean((Y[:, i] - yhat[:, i]) ** 2))
-        ev[i] = 100*(1 - (np.var(yhat[:, i] - Y[:, i]) / np.var(Y[:, i])))
+        ev[i] = 100*(1 - (np.var(Y[:, i] - yhat[:, i]) / np.var(Y[:, i])))
 
         print("Variance explained =", ev[i], "% RMSE =", rmse[i])
 
