@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import division
 
+import os
+import sys
 import numpy as np
 from scipy import optimize
 from numpy.linalg import solve, LinAlgError
@@ -8,7 +10,16 @@ from numpy.linalg import cholesky as chol
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 
-from nispat.utils import squared_dist
+
+try:  # Run as a package if installed    
+    from nispat.utils import squared_dist
+except ImportError:
+    pass
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    from utils import squared_dist
 
 # --------------------
 # Covariance functions
@@ -255,7 +266,7 @@ class GPR:
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
-        self.n_iter = n_iter    # not used at present
+        self.n_iter = n_iter
         self.verbose = verbose
 
         if (hyp is not None) and (X is not None) and (y is not None):
@@ -277,10 +288,6 @@ class GPR:
         if len(X.shape) == 1:
             X = X[:, np.newaxis]
         self.N, self.D = X.shape
-
-        if not self._updatepost(hyp, covfunc):
-            print("hyperparameters have not changed, using exising posterior")
-            return
 
         # hyperparameters
         sn2 = np.exp(2*hyp[0])       # noise variance
@@ -390,9 +397,9 @@ class GPR:
         """ Function to make predictions from the model
         """
 
-        if self._updatepost(hyp, self.covfunc):
-            self.post(hyp, self.covfunc, X, y)
-
+        # reestimate posterior (avoids numerical problems with optimizer)
+        self.post(hyp, self.covfunc, X, y)
+        
         # hyperparameters
         sn2 = np.exp(2*hyp[0])     # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
