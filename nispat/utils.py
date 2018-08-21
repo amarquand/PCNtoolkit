@@ -1,9 +1,7 @@
 from __future__ import print_function
 
-import os
 import numpy as np
 from scipy import stats
-from subprocess import call
 
 # -----------------
 # Utility functions
@@ -38,7 +36,7 @@ def squared_dist(x, z=None):
     dist = (xx - 2*x.dot(z.T) + zz)
 
     return dist
-
+    
 
 def compute_pearsonr(A, B):
     """ Manually computes the Pearson correlation between two matrices.
@@ -83,9 +81,6 @@ def compute_pearsonr(A, B):
     
     return Rho, pRho
 
-# -----------------------
-# Functions for inference
-# -----------------------
 
 class CustomCV:
     """ Custom cross-validation approach. This function does not do much, it
@@ -115,94 +110,3 @@ class CustomCV:
             tr = self.train[i]
             te = self.test[i]
             yield tr, te
-
-# -----------------------
-# Functions for inference
-# -----------------------
-
-def bashwrap(processing_dir, python_path, script_command, job_name,
-             bash_environment=None):
-
-    """ This function wraps normative modelling into a bash script to run it
-    on a torque cluster system.
-
-    ** Input:
-        * processing_dir     -> Full path to the processing dir
-        * python_path        -> Full path to the python distribution
-        * command to execute -> python command to execute
-        * job_name           -> Name for the bash script that is the output of
-                                this function
-        * covfile_path       -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -> Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -> Number of cross validations
-        * testcovfile_path   -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -> Full path to a .txt file that contains all
-                                test features
-        * bash_environment   -> A file containing the necessary commands
-                                for your bash environment to work
-
-    ** Output:
-        * A bash.sh file containing the commands for normative modelling saved
-        to the processing directory
-
-    witten by Thomas Wolfers
-    """
-
-    # change to processing dir
-    os.chdir(processing_dir)
-    output_changedir = ['cd ' + processing_dir + '\n']
-
-    # sets bash environment if necessary
-    if bash_environment is not None:
-        bash_environment = [bash_environment]
-        print("""Your own environment requires in any case:
-              #!/bin/bash\n export and optionally OMP_NUM_THREADS=1\n""")
-    else:
-        bash_lines = '#!/bin/bash\n\n'
-        bash_cores = 'export OMP_NUM_THREADS=1\n'
-        bash_environment = [bash_lines + bash_cores]
-
-    command = [python_path + ' ' + script_command + '\n']
-    
-    # writes bash file into processing dir
-    bash_file_name = os.path.join(processing_dir, job_name + '.sh')
-    with open(bash_file_name, 'w') as bash_file:
-        bash_file.writelines(bash_environment + output_changedir + command)
-
-    # changes permissoins for bash.sh file
-    os.chmod(bash_file_name, 0o700)
-    
-    return bash_file_name
-
-def qsub(job_path, memory, duration, logdir=None):
-    """
-    This function submits a job.sh scipt to the torque custer using the qsub
-    command.
-
-    ** Input:
-        * job_path      -> Full path to the job.sh file
-        * memory        -> Memory requirements written as string for example
-                           4gb or 500mb
-        * duration       -> The approximate duration of the job, a string with
-                           HH:MM:SS for example 01:01:01
-
-    ** Output:
-        * Submission of the job to the (torque) cluster
-
-    witten by Thomas Wolfers
-    """
-    if logdir is None:
-        logdir = os.path.expanduser('~')
-
-    # created qsub command
-    qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                 'mem=' + memory + ',walltime=' + duration + 
-                 ' -e ' + logdir + ' -o ' + logdir]
-
-    # submits job to cluster
-    call(qsub_call, shell=True)
