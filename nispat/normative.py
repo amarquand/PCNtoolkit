@@ -20,7 +20,12 @@ import numpy as np
 import argparse
 
 from sklearn.model_selection import KFold
-if __name__ == "__main__":
+try:  # run as a package if installed
+    from nispat import fileio
+    from nispat.gp import GPR, CovSum
+    from nispat.utils import compute_pearsonr, CustomCV
+except ImportError:
+    pass
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
@@ -29,11 +34,6 @@ if __name__ == "__main__":
     import fileio
     from gp import GPR, CovSum
     from utils import compute_pearsonr, CustomCV
-else:  # Run as a package (assumes the package is installed)
-    from nispat import fileio
-    from nispat.gp import GPR, CovSum
-    from nispat.utils import compute_pearsonr, CustomCV
-
 
 def load_response_vars(datafile, maskfile=None, vol=True):
     """ load response variables (of any data type)"""
@@ -88,8 +88,7 @@ def get_args(*args):
         testcov = args.testcov
         cvfolds = 1
         if args.testresp is None:
-            testresp = None
-            print("No test response variables specified")
+            raise(ValueError, "No test response variables specified")
         else:
             testresp = args.testresp
         if args.cvfolds is not None:
@@ -106,11 +105,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     particular parameters specified (see below):
 
     * under k-fold cross-validation
-        required settings 1) respfile 2) covfile 3) cvfolds>2
     * estimating a training dataset then applying to a second test dataset
-        required sessting 1) respfile 2) covfile 3) testcov 4) testresp
-    * estimating on a training dataset ouput of forward maps mean and se
-        required sessting 1) respfile 2) covfile 3) testcov
 
     The models are estimated on the basis of data stored on disk in ascii or
     neuroimaging data formats (nifti or cifti). Ascii data should be in
@@ -138,7 +133,6 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
     :outputs: * yhat - predictive mean
               * ys2 - predictive variance
-              * Hyp - hyperparameters
               * Z - deviance scores
               * Rho - Pearson correlation between true and predicted responses
               * pRho - parametric p-value for this correlation
@@ -162,16 +156,13 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
+        Yte, testmask = load_response_vars(testresp, maskfile)
         testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
+
+        if len(Yte.shape) == 1:
+            Yte = Yte[:, np.newaxis]
         if len(Xte.shape) == 1:
             Xte = Xte[:, np.newaxis]
-        if testresp is not None:
-            Yte, testmask = load_response_vars(testresp, maskfile)
-            if len(Yte.shape) == 1:
-                Yte = Yte[:, np.newaxis]
-        else:
-            sub_te = Xte.shape[0]
-            Yte = np.zeros([sub_te, Nmod])
 
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
@@ -200,11 +191,9 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
-    Hyp = np.zeros((Nmod, len(hyp0), cvfolds))
-
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
-
+    Hyp = np.zeros((Nmod, len(hyp0), cvfolds))
     for idx in enumerate(splits.split(X)):
         fold = idx[0]
         tr = idx[1][0]
@@ -232,37 +221,20 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
             Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
             S2[te, nz[i]] = np.diag(s2) * sY[i]**2
+            Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
+                           np.sqrt(S2[te, nz[i]])
             nlZ[nz[i], fold] = gpr.nlZ
-            if testcov is None:
-                Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                               np.sqrt(S2[te, nz[i]])
-            else:
-                if testresp is not None:
-                    Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                                   np.sqrt(S2[te, nz[i]])
 
     # compute performance metrics
-    if testcov is None:
-        MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
-        RMSE = np.sqrt(MSE)
-        # for the remaining variables, we need to ignore zero variances
-        SMSE = np.zeros_like(MSE)
-        Rho = np.zeros(Nmod)
-        pRho = np.ones(Nmod)
-        iy, jy = np.ix_(testids, nz)  # ids for tested samples nonzero values
-        SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
-        Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
-    else:
-        if testresp is not None:
-            MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
-            RMSE = np.sqrt(MSE)
-            # for the remaining variables, we need to ignore zero variances
-            SMSE = np.zeros_like(MSE)
-            Rho = np.zeros(Nmod)
-            pRho = np.ones(Nmod)
-            iy, jy = np.ix_(testids, nz)  # ids tested samples nonzero values
-            SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
-            Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
+    MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
+    RMSE = np.sqrt(MSE)
+    # for the remaining variables, we need to ignore zero variances
+    SMSE = np.zeros_like(MSE)
+    Rho = np.zeros(Nmod)
+    pRho = np.ones(Nmod)
+    iy, jy = np.ix_(testids, nz)  # ids for tested samples with nonzero values
+    SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
+    Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
 
     # Set writing options
     if saveoutput:
@@ -278,57 +250,24 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             ext = fileio.file_extension(respfile)
 
         # Write output
-        if testcov is None:
-            fileio.save(Yhat[testids, :].T, 'yhat' + ext,
-                        example=exfile, mask=maskvol)
-            fileio.save(S2[testids, :].T, 'ys2' + ext,
-                        example=exfile, mask=maskvol)
-            fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
-                        mask=maskvol)
-            fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
-            fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
-            fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
-            fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
-            if cvfolds is None:
-                fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
-            else:
-                for idx in enumerate(splits.split(X)):
-                    fold = idx[0]
-                    fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
-                                ext, example=exfile, mask=maskvol)
+        fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                    example=exfile, mask=maskvol)
+        fileio.save(S2[testids, :].T, 'ys2' + ext,
+                    example=exfile, mask=maskvol)
+        fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile, mask=maskvol)
+        fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
+        fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
+        fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
+        fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+        if cvfolds is None:
+            fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
         else:
-            if testresp is None:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
-            else:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
-                            mask=maskvol)
-                fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
-                fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
-                fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
-                fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
-                if cvfolds is None:
-                    fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
-                else:
-                    for idx in enumerate(splits.split(X)):
-                        fold = idx[0]
-                        fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
-                                    ext, example=exfile, mask=maskvol)
+            for idx in enumerate(splits.split(X)):
+                fold = idx[0]
+                fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                            ext, example=exfile, mask=maskvol)
     else:
-        if testcov is None:
-            output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE)
-        else:
-            if testresp is None:
-                output = (Yhat, S2, Hyp)
-            else:
-                output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE)
+        output = (Yhat, S2, Z, Rho, pRho, RMSE, SMSE, Hyp)
         return output
 
 

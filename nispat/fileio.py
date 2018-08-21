@@ -18,7 +18,7 @@ CIFTI_VOL_ATLAS = 'Atlas_ROIs.2.nii.gz'
 # ------------------------
 
 
-def create_mask(data_array, mask, verbose=False):
+def create_mask(data_array, mask=None, verbose=False):
     # create a (volumetric) mask either from an input nifti or the nifti itself
 
     if mask is not None:
@@ -42,7 +42,7 @@ def create_mask(data_array, mask, verbose=False):
     return maskvol
 
 
-def vol2vec(dat, mask, verbose=False):
+def vol2vec(dat, mask=None, verbose=False):
     # vectorise a 3d image
 
     if len(dat.shape) < 4:
@@ -50,7 +50,8 @@ def vol2vec(dat, mask, verbose=False):
     else:
         dim = dat.shape[0:3] + (dat.shape[3],)
 
-    mask = create_mask(dat, mask=mask, verbose=verbose)
+    if mask is None:
+        mask = create_mask(dat, verbose=verbose)
 
     # mask the image
     maskid = np.where(mask.ravel())[0]
@@ -120,9 +121,6 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     img = nib.load(datafile)
     dat = img.get_data()
 
-#    if mask is not None:
-#        mask=load_nifti(mask, vol=True)
-
     if not vol:
         dat = vol2vec(dat, mask)
 
@@ -131,11 +129,6 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
 
 def save_nifti(data, filename, examplenii, mask):
     """ Write output to nifti """
-
-    # load mask
-    if isinstance(mask, str):
-        mask = load_nifti(mask, vol=True)
-        mask = mask != 0
 
     # load example image
     ex_img = nib.load(examplenii)
@@ -248,7 +241,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysl.append(
             nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
     fnamel = fstem + '-left.func.gii'
     nib.save(giil, fnamel)
@@ -260,7 +253,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysr.append(
             nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
     fnamer = fstem + '-right.func.gii'
     nib.save(giir, fnamer)
