@@ -57,7 +57,7 @@ from __future__ import division
         * delete_nm       -> deletes unnessecary folders and files
 
 * witten by Thomas Wolfers
-* guided by Andre Marquand
+
 * gratitude to Maarten Mennes, Matthias Ekman, Andre Marquand and Hong Lee for
 * useful discussions around cluster computing.
 """
