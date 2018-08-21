@@ -58,8 +58,6 @@ from __future__ import division
 
 * witten by Thomas Wolfers
 
-* gratitude to Maarten Mennes, Matthias Ekman, Andre Marquand and Hong Lee for
-* useful discussions around cluster computing.
 """
 
 
