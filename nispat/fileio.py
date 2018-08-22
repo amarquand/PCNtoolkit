@@ -49,8 +49,10 @@ def vol2vec(dat, mask, verbose=False):
         dim = dat.shape[0:3] + (1,)
     else:
         dim = dat.shape[0:3] + (dat.shape[3],)
-
-    mask = create_mask(dat, mask=mask, verbose=verbose)
+        
+    #mask = create_mask(dat, mask=mask, verbose=verbose)
+    if mask is None:
+        mask = create_mask(dat, mask=mask, verbose=verbose)
 
     # mask the image
     maskid = np.where(mask.ravel())[0]

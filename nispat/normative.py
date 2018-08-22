@@ -20,7 +20,13 @@ import numpy as np
 import argparse
 
 from sklearn.model_selection import KFold
-if __name__ == "__main__":
+try:  # run as a package if installed
+    from nispat import fileio
+    from nispat.gp import GPR, CovSum
+    from nispat.utils import compute_pearsonr, CustomCV
+except ImportError:
+    pass
+
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
@@ -29,10 +35,6 @@ if __name__ == "__main__":
     import fileio
     from gp import GPR, CovSum
     from utils import compute_pearsonr, CustomCV
-else:  # Run as a package (assumes the package is installed)
-    from nispat import fileio
-    from nispat.gp import GPR, CovSum
-    from nispat.utils import compute_pearsonr, CustomCV
 
 
 def load_response_vars(datafile, maskfile=None, vol=True):
