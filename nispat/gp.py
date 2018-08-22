@@ -15,10 +15,12 @@ try:  # Run as a package if installed
     from nispat.utils import squared_dist
 except ImportError:
     pass
+
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
     del path
+    
     from utils import squared_dist
 
 # --------------------
