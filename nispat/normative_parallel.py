@@ -211,10 +211,19 @@ def split_nm(processing_dir, respfile_path, batch_size,
     """
 
     # import of necessary modules
-    import numpy as np
     import os
-    import nispat.fileio as fileio
+    import sys
+    import numpy as np
     import pandas as pd
+    try:
+        import nispat.fileio as fileio
+    except ImportError:
+        pass
+        path = os.path.abspath(os.path.dirname(__file__))
+        if path not in sys.path:
+            sys.path.append(path)
+            del path
+        import fileio
 
     # splits response into batches
     if testrespfile_path is None:
@@ -355,7 +364,8 @@ def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:
-        bash_file.writelines(bash_environment + output_changedir + job_call)
+        bash_file.writelines(bash_environment + output_changedir + \
+                             job_call + ["\n"])
 
     # changes permissoins for bash.sh file
     os.chmod(processing_dir + job_name, 0o700)
@@ -405,11 +415,20 @@ def collect_nm(processing_dir, collect=False):
     written by Thomas Wolfers
     """
     # import of necessary modules
+    import os
+    import sys
     import glob
     import numpy as np
-    import os
     import pandas as pd
-    import nispat.fileio as fileio
+    try:
+        import nispat.fileio as fileio
+    except ImportError:
+        pass
+        path = os.path.abspath(os.path.dirname(__file__))
+        if path not in sys.path:
+            sys.path.append(path)
+            del path
+        import fileio
 
     # detect number of subjects, batches, hyperparameters and CV
     file_example = glob.glob(processing_dir + 'batch_1/' + 'resp*.txt')
