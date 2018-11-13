@@ -225,23 +225,38 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
             print("Estimating model ", i+1, "of", len(nz))
-            gpr = GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
-            Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covfunc, Xz[tr, :],
-                                               Yz[tr, nz[i]])
+            try:
+                gpr = GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
+                Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covfunc, Xz[tr, :],
+                                                   Yz[tr, nz[i]])
 
-            yhat, s2 = gpr.predict(Hyp[nz[i], :, fold], Xz[tr, :],
-                                   Yz[tr, nz[i]], Xz[te, :])
+                yhat, s2 = gpr.predict(Hyp[nz[i], :, fold], Xz[tr, :],
+                                       Yz[tr, nz[i]], Xz[te, :])
 
-            Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-            S2[te, nz[i]] = np.diag(s2) * sY[i]**2
-            nlZ[nz[i], fold] = gpr.nlZ
-            if testcov is None:
-                Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                               np.sqrt(S2[te, nz[i]])
-            else:
-                if testresp is not None:
+                Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
+                S2[te, nz[i]] = np.diag(s2) * sY[i]**2
+                nlZ[nz[i], fold] = gpr.nlZ
+                if testcov is None:
                     Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
                                    np.sqrt(S2[te, nz[i]])
+                else:
+                    if testresp is not None:
+                        Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
+                                       np.sqrt(S2[te, nz[i]])
+
+            except:
+                print("Model ", i+1, "of", len(nz), "FAILED!..skipping and writing NaN to outputs")
+                Hyp[nz[i], :, fold] = float('nan')
+
+                Yhat[te, nz[i]] = float('nan')
+                S2[te, nz[i]] = float('nan')
+                nlZ[nz[i], fold] = float('nan')
+                if testcov is None:
+                    Z[te, nz[i]] = float('nan')
+                else:
+                    if testresp is not None:
+                        Z[te, nz[i]] = float('nan')
+
 
     # compute performance metrics
     if testcov is None:
