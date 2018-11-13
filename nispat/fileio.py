@@ -313,7 +313,8 @@ def save_pd(data, filename):
     data.to_csv(filename,
                 index=None,
                 header=None,
-                sep=' ')
+                sep=' ',
+                na_rep='NaN')
 
 
 def load_ascii(filename):
