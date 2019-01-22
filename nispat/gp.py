@@ -135,7 +135,10 @@ class CovSqExpARD(CovBase):
     def __init__(self, x=None):
         if x is None:
             raise ValueError("N x D data matrix must be supplied as input")
-        self.D = x.shape[1]
+        if len(x.shape) == 1:
+            self.D = 1
+        else:
+            self.D = x.shape[1]
         self.n_params = self.D + 1
 
     def cov(self, theta, x, z=None):
@@ -187,7 +190,12 @@ class CovSum(CovBase):
             covfunc = eval(cname + '(x)')
             self.n_params += covfunc.get_n_params()
             self.covfuncs.append(covfunc)
-        self.N, self.D = x.shape
+
+        if len(x.shape) == 1:
+            self.N = len(x)
+            self.D = 1
+        else:
+            self.N, self.D = x.shape
 
     def cov(self, theta, x, z=None):
         theta_offset = 0
@@ -377,6 +385,8 @@ class GPR:
     def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
         """ Function to estimate the model
         """
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
 
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
@@ -398,7 +408,12 @@ class GPR:
     def predict(self, hyp, X, y, Xs):
         """ Function to make predictions from the model
         """
-
+        # ensure X and Xs are multi-dimensional arrays
+        if len(Xs.shape) == 1:
+            Xs = Xs[:, np.newaxis]
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
+            
         # reestimate posterior (avoids numerical problems with optimizer)
         self.post(hyp, self.covfunc, X, y)
         

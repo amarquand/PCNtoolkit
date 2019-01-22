@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
-from gp import GPR, covSqExp, covSqExpARD, covLin
+from gp import GPR, CovSqExp, CovSqExpARD, CovLin
 
 # load from the installed package
 #from nispat.gp import GPR, covSqExp
@@ -165,10 +165,10 @@ N = len(X)
 
 X = np.c_[X, np.ones(N), np.arange(1,N+1)]
 
-cov = covSqExp
+cov = CovSqExp(X)
 hyp0 = np.zeros(3)
 
-cov = covSqExpARD
+cov = CovSqExpARD(X)
 hyp0 = np.zeros(X.shape[1]+2)
 
 #cov = covLin
