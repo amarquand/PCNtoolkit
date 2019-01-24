@@ -1,4 +1,3 @@
-
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 
@@ -23,3 +22,7 @@ class NormBase(with_metaclass(ABCMeta)):
         """ Return the derivative of the covariance function with respect to
             the i-th hyperparameter """
 
+    @property
+    @abstractmethod
+    def n_params(self):
+        """ Report the number of parameters required by the model """
