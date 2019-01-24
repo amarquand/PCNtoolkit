@@ -28,6 +28,7 @@ class NormGPR(NormBase):
         self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
         self.theta = self.theta0
         
+        print("Initialising GPR")
         if (theta is not None) and (X is not None) and (y is not None):
             self.gpr = GPR(theta, self.covfunc, X, y)
             self._n_params = self.covfunc.get_n_params() + 1
@@ -48,7 +49,7 @@ class NormGPR(NormBase):
     def estimate(self, X, y, theta=None):
         if theta is None:
             theta = self.theta0
-        self.gpr = GPR(theta, self.covfunc, X, y)
+            self.gpr = GPR(theta, self.covfunc, X, y)
         self.theta = self.gpr.estimate(theta, self.covfunc, X, y)
         
         return self.theta
@@ -57,5 +58,9 @@ class NormGPR(NormBase):
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gpr.predict(theta, X, y, Xs)
+        
+        # only return the marginal variances
+        if len(s2.shape) == 2:
+            s2 = np.diag(s2)
         
         return yhat, s2
