@@ -4,11 +4,13 @@ from __future__ import division
 import os
 import sys
 import numpy as np
+import torch
 from scipy import optimize
 from numpy.linalg import solve, LinAlgError
 from numpy.linalg import cholesky as chol
     
-from bayesreg import BLR
+#from bayesreg import BLR
+from gp import CovSum
 
 # ----------------------------
 # Random Feature Approximation
@@ -55,13 +57,19 @@ class GPRRFA:
     """
 
     def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=100,
-                 tol=1e-3, verbose=False):
+                 tol=1e-3, n_feat=300, verbose=False):
 
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
         self.n_iter = n_iter
         self.verbose = verbose
+        
+        # covariance function to approximate
+        self.covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
+        self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
+        
+        self.Nf = n_feat
 
         if (hyp is not None) and (X is not None) and (y is not None):
             self.post(hyp, covfunc, X, y)
@@ -83,12 +91,22 @@ class GPRRFA:
             X = X[:, np.newaxis]
         self.N, self.D = X.shape
 
-        # hyperparameters
+        # hyperparameters. Currently assumed to be [log(sn), log(ell)]
         sn2 = np.exp(2*hyp[0])       # noise variance
-        theta = hyp[1:]            # (generic) covariance hyperparameters
+        ell = np.exp(hyp[1:-1])     # (generic) covariance hyperparameters
+        sf2 = np.exp(2*hyp[-1])
 
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
+        
+        Omega = torch.zeros((1,Nf), dtype=torch.double)
+        for f in range(Nf):
+            Omega[:,f] = np.sqrt(ell2_est/Nf) * \
+                         torch.randn((Omega.shape[0], 1))
+        XO = torch.mm(torch.from_numpy(X), Omega) 
+        Phi = np.sqrt(sn2_est/Nf) * torch.cat([torch.cos(XO), torch.sin(XO)])
+        
+        
 
         self.K = covfunc.cov(theta, X)
         self.L = chol(self.K + sn2*np.eye(self.N))
