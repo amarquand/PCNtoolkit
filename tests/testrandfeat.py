@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
-from gp import GPR, CovSqExp, CovSqExpARD, CovLin
+from gp import GPR, CovSqExp, CovSqExpARD, CovLin, CovSum
 from bayesreg import BLR
 
 def plot_dist(x, mean, lb, ub, color_mean=None, color_shading=None):
@@ -16,14 +16,17 @@ def plot_dist(x, mean, lb, ub, color_mean=None, color_shading=None):
     plt.plot(x,mean, color_mean)
 
 def f(X):
-    y = -0.1*X+0.02*X**2+np.sin(0.9*X)
+    y = -0.1*X+0.02*X**2+np.sin(0.9*X)    +np.cos(0.1*X)
+    
+    #y = -X + 0.1*X**2
+    
+    y = -0.1*X+0.02*X**2+0.3*np.sin(0.3*X)
     return 10*y
 
 N = 500
-sn2 = 2
+sn2 = 5 #2
 X = np.random.uniform(-10,10,N)
 Xs = np.linspace(-10,10,100)
-#Xs = np.atleast_2d(np.linspace(-10,10,100)).T
 
 if len(X.shape) < 2:
     X = X[:, np.newaxis]
@@ -33,55 +36,125 @@ if len(Xs.shape) < 2:
 y = f(X) + np.random.normal(0,sn2,X.shape)
 ys = f(Xs)
 
-cov = CovSqExp(X)
-ell2 = 1
-sf2 = 1
-hyp0 = [np.log(0.5*sf2), np.log(0.5*ell2), np.log(0.5*sf2)]
+my = np.mean(y, axis=0)
+sy = np.std(y,  axis=0)
+y = (y - my) / sy
+ys = (ys - my) / sy
 
+# add a polynomial basis expansion to make sure it works with p > 1
+#X = np.c_[X, X **2]
+#Xs = np.c_[Xs, Xs **2]
+X = np.c_[X, np.ones((N,1)) , 0.01*np.random.randn(N,1)]
+Xs = np.c_[Xs, np.ones((Xs.shape[0],1)), 0.01*np.random.randn(Xs.shape[0],1)]
+
+#cov = CovSqExp(X)
 #cov = CovSqExpARD(X)
-#hyp0 = np.zeros(X.shape[1]+2)
+cov = CovSum(X, ('CovLin', 'CovSqExpARD'))
+hyp0 = np.zeros(cov.get_n_params() + 1)
 
 G = GPR(hyp0, cov, X, y)
 hyp = G.estimate(hyp0,cov, X, y)
 yhat,s2 = G.predict(hyp,X,y,Xs)
-
 s2 = np.diag(s2)
 
-[sn2_est, ell2_est, sf2_est] = np.exp(2*hyp)
-#s2 = s2 + sn2_est
+# extract parameters
+sn2_est = np.exp(2*hyp[0])
+ell2_est = np.exp(2*hyp[1:-1])
+sf2_est = np.exp(2*hyp[-1])
+print('sn2 =',sn2_est,'ell =',np.sqrt(ell2_est),'sf2=',sf2_est)
 
-plt.plot(Xs,ys,'r')
-plt.plot(X,y,'xr')
-plt.plot(Xs,yhat,'b')
-plot_dist(Xs.ravel(), yhat.ravel(), 
+plt.plot(Xs[:,0],ys,'r')
+plt.plot(X[:,0],y,'xr')
+plt.plot(Xs[:,0],yhat,'b')
+plot_dist(Xs[:,0].ravel(), yhat.ravel(), 
           yhat.ravel()-2*np.sqrt(s2).ravel(),
           yhat.ravel()+2*np.sqrt(s2).ravel(),'b','b')
 
 # Random feature approximation
-Nf = 300
-Omega = np.zeros((1,Nf))
+# ----------------------------
+Nf = 400
+D = X.shape[1]
+Omega = np.zeros((D,Nf))
 for f in range(Nf):
-    Omega[:,f] = np.random.normal(0, ell2_est, (Omega.shape[0], 1))
+    Omega[:,f] = np.sqrt(ell2_est) * np.random.randn(Omega.shape[0])
 
 XO = X.dot(Omega)
-Phi = np.sqrt(sn2_est/Nf)*np.c_[np.cos(XO),np.sin(XO)]
+Phi = np.sqrt(sf2_est/Nf)*np.c_[np.cos(XO),np.sin(XO)]
 XsO = Xs.dot(Omega)
-Phis = np.sqrt(sn2_est/Nf)*np.c_[np.cos(XsO),np.sin(XsO)]
+Phis = np.sqrt(sf2_est/Nf)*np.c_[np.cos(XsO),np.sin(XsO)]
 
-hyp_blr = np.asarray([np.log(1/sn2_est), np.log(1/sf2_est)])
+# add linear component
+Phi = np.c_[Phi, X]
+Phis = np.c_[Phis, Xs]
+
+#b = np.linalg.pinv(Phi).dot(y)
+#yhat = Phis.dot(b)
+#plt.plot(Xs[:,0],yhat,'k')
+
+#hyp_blr = np.asarray([np.log(1/sn2_est), np.log(1/sf2_est)])
+hyp_blr = np.asarray([np.log(1/sn2_est), np.log(1)])
 B = BLR(hyp_blr, Phi, y)
+B.loglik(hyp_blr, Phi, y)
 yhat_blr, s2_blr = B.predict(hyp_blr, Phi, y, Phis)
-#s2_blr = np.diag(s2_blr)
 
-Omega = torch.zeros((1,Nf), dtype=torch.double)
-for f in range(Nf):
-    Omega[:,f] = torch.sqrt(torch.tensor(ell2_est)) * \
-                 torch.randn((Omega.shape[0], 1))
-
-XO = torch.mm(torch.from_numpy(X), Omega) 
-
-torch.sqrt(sn2_est/Nf) * torch.cat([torch.cos(XO), torch.sin(XO)])
-
-plot_dist(Xs.ravel(), yhat_blr.ravel(), 
+plt.plot(Xs[:,0],yhat_blr,'y')
+plot_dist(Xs[:,0].ravel(), yhat_blr.ravel(), 
           yhat_blr.ravel() - 2*np.sqrt(s2_blr).ravel(),
           yhat_blr.ravel() + 2*np.sqrt(s2_blr).ravel(),'y','y')
+
+
+
+# Random features (torch)
+# -----------------------
+# init
+hyp = torch.tensor(hyp, requires_grad=True)
+# hyp = [log(sn), log(ell), log(sf)]
+#sn2_est = np.exp(2*hyp[0])
+#ell2_est = np.exp(2*hyp[1:-1])
+#sf2_est = np.exp(2*hyp[-1])
+
+Omega = torch.zeros((D,Nf), dtype=torch.double)
+for f in range(Nf):
+    Omega[:,f] = torch.exp(hyp[1:-1]) * \
+                 torch.randn((Omega.shape[0], 1), dtype=torch.double).squeeze()
+
+#Omega = torch.from_numpy(Omega)
+XO = torch.mm(torch.from_numpy(X), Omega) 
+Phi = torch.exp(hyp[-1])/np.sqrt(Nf) * torch.cat((torch.cos(XO), torch.sin(XO)), 1)
+# concatenate linear weights 
+Phi = torch.cat((Phi, torch.from_numpy(X)), 1)
+N, D = Phi.shape
+y = torch.from_numpy(y)
+
+# post
+iSigma = torch.eye(D, dtype=torch.double)
+A = torch.mm(torch.t(Phi), Phi) / torch.exp(2*hyp[0]) + iSigma
+m = torch.mm(torch.gesv(torch.t(Phi), A)[0], y) / torch.exp(2*hyp[0])
+
+# predict
+Xs = torch.from_numpy(Xs)
+XsO = torch.mm(Xs, Omega) 
+Phis = torch.exp(hyp[-1])/np.sqrt(Nf) * torch.cat((torch.cos(XsO), torch.sin(XsO)), 1)
+Phis = torch.cat((Phis, Xs), 1)
+ys = torch.mm(Phis, m)
+
+#s2_blr = sn2_est + torch.diag(torch.mm(Phis, torch.gesv(torch.t(Phis), A)[0]))
+# avoiding computing off-diagonal entries
+s2_blr = torch.exp(2*hyp[0]) + torch.sum(Phis * torch.t(torch.gesv(torch.t(Phis), A)[0]), 1)
+
+
+logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(A))))
+
+#logdetSigma = torch.sum(torch.log(torch.diag(torch.eye(D, dtype=torch.double))))  # Sigma is diagonal
+logdetSigma = 0.
+
+# compute negative marginal log likelihood
+nlZ = -0.5 * (N*torch.log(1/torch.exp(2*hyp[0])) - N*np.log(2*np.pi) -
+              logdetSigma -
+              torch.mm(torch.t(y-torch.mm(Phi,m)), (y-torch.mm(Phi,m)))/torch.exp(2*hyp[0]) -
+              torch.mm(torch.mm(torch.t(m), iSigma), m) -
+              logdetA
+              )
+plot_dist(Xs[:,0].detach().numpy().ravel(), ys.detach().numpy(), 
+          ys.numpy().ravel() - 2*np.sqrt(s2_blr.numpy()).ravel(),
+          ys.numpy().ravel() + 2*np.sqrt(s2_blr.numpy()).ravel(),'k','k')
