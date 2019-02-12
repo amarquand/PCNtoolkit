@@ -1,228 +1,242 @@
 from __future__ import print_function
 from __future__ import division
 
-import os
-import sys
 import numpy as np
 import torch
-from scipy import optimize
-from numpy.linalg import solve, LinAlgError
-from numpy.linalg import cholesky as chol
-    
-#from bayesreg import BLR
-from gp import CovSum
-
-# ----------------------------
-# Random Feature Approximation
-# ----------------------------
 
 
 class GPRRFA:
-    """Gaussian process regression
+    """Random Feature Approximation for Gaussian Process Regression
 
-    Estimation and prediction of Gaussian process regression models
+    Estimation and prediction of Bayesian linear regression models
 
     Basic usage::
 
-        G = GPR()
-        hyp = B.estimate(hyp0, cov, X, y)
-        ys, ys2 = B.predict(hyp, cov, X, y, Xs)
+        R = GPRRFA()
+        hyp = R.estimate(hyp0, X, y)
+        ys,s2 = R.predict(hyp, X, y, Xs)
 
     where the variables are
 
-    :param hyp: vector of hyperparmaters
-    :param cov: covariance function
+    :param hyp: vector of hyperparmaters.
     :param X: N x D data array
     :param y: 1D Array of targets (length N)
     :param Xs: Nte x D array of test cases
     :param hyp0: starting estimates for hyperparameter optimisation
 
     :returns: * ys - predictive mean
-              * ys2 - predictive variance
+              * s2 - predictive variance
 
     The hyperparameters are::
 
-        hyp = ( log(sn2), (cov function params) )  # hyp is a list or array
+        hyp = [ log(sn), log(ell), log(sf) ]  # hyp is a numpy array
 
-    The implementation and notation  follows Rasmussen and Williams (2006).
-    As in the gpml toolbox, these parameters are estimated using conjugate
-    gradient optimisation of the marginal likelihood. Note that there is no
-    explicit mean function, thus the gpr routines are limited to modelling
-    zero-mean processes.
-
-    Reference:
-    C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning
+    where sn^2 is the noise variance, ell are lengthscale parameters and 
+    sf^2 is the signal variance. This provides an approximation to the
+    covariance function: 
+        
+        k(x,z) = x'*z + sn2*exp(0.5*(x-z)'*Lambda*(x-z))
+    
+    where Lambda = diag((ell_1^2, ... ell_D^2))
 
     Written by A. Marquand
     """
 
-    def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=100,
-                 tol=1e-3, n_feat=300, verbose=False):
+    def __init__(self, hyp=None, X=None, y=None, n_feat=None,
+                 n_iter=100, tol=1e-3, verbose=False):
 
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
+        self.Nf = n_feat
         self.n_iter = n_iter
         self.verbose = verbose
-        
-        # covariance function to approximate
-        self.covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
-        self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
-        
-        self.Nf = n_feat
+        self._n_restarts = 5
 
         if (hyp is not None) and (X is not None) and (y is not None):
-            self.post(hyp, covfunc, X, y)
+            self.post(hyp, X, y)
 
-    def _updatepost(self, hyp, covfunc):
+    def _numpy2torch(self, X, y=None, hyp=None):
 
-        hypeq = np.asarray(hyp == self.hyp)
-        if hypeq.all() and hasattr(self, 'alpha') and \
-           (hasattr(self, 'covfunc') and covfunc == self.covfunc):
-            return False
+
+        if type(X) is torch.Tensor:
+           pass
+        elif type(X) is np.ndarray:
+           X = torch.from_numpy(X)
         else:
-            return True
-
-    def post(self, hyp, covfunc, X, y):
+           raise(ValueError, 'Unknown data type (X)')
+        X = X.double()
+        
+        if y is not None:
+            if type(y) is torch.Tensor:
+                pass
+            elif type(y) is np.ndarray:
+                y = torch.from_numpy(y)
+            else:
+                raise(ValueError, 'Unknown data type (y)')
+            
+            if len(y.shape) == 1:
+                y.resize_(y.shape[0],1)
+            y = y.double()
+        
+        if hyp is not None:
+            if type(hyp) is torch.Tensor:
+                pass
+            else:
+                hyp = torch.tensor(hyp, requires_grad=True)
+        
+        return X, y, hyp
+    
+    def get_n_params(self, X):
+        
+        return X.shape[1] + 2
+        
+    def post(self, hyp, X, y):
         """ Generic function to compute posterior distribution.
+
+            This function will save the posterior mean and precision matrix as
+            self.m and self.A and will also update internal parameters (e.g.
+            N, D and the prior covariance (Sigma) and precision (iSigma).
         """
+     
+        # make sure all variables are the right type
+        X, y, hyp = self._numpy2torch(X, y, hyp)
+        
+        self.N, self.Dx = X.shape
+        
+        # ensure the number of features is specified (use 75% as a default)
+        if self.Nf is None:
+            self.Nf = int(0.75 * self.N)
+        
+        self.Omega = torch.zeros((self.Dx, self.Nf), dtype=torch.double)
+        for f in range(self.Nf):
+            self.Omega[:,f] = torch.exp(hyp[1:-1]) * \
+            torch.randn((self.Dx, 1), dtype=torch.double).squeeze()
 
-        if len(X.shape) == 1:
-            X = X[:, np.newaxis]
-        self.N, self.D = X.shape
-
-        # hyperparameters. Currently assumed to be [log(sn), log(ell)]
-        sn2 = np.exp(2*hyp[0])       # noise variance
-        ell = np.exp(hyp[1:-1])     # (generic) covariance hyperparameters
-        sf2 = np.exp(2*hyp[-1])
+        XO = torch.mm(X, self.Omega) 
+        self.Phi = torch.exp(hyp[-1])/np.sqrt(self.Nf) *  \
+                   torch.cat((torch.cos(XO), torch.sin(XO)), 1)
+        
+        # concatenate linear weights 
+        self.Phi = torch.cat((self.Phi, X), 1)
+        self.D = self.Phi.shape[1]
 
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
         
-        Omega = torch.zeros((1,Nf), dtype=torch.double)
-        for f in range(Nf):
-            Omega[:,f] = np.sqrt(ell2_est/Nf) * \
-                         torch.randn((Omega.shape[0], 1))
-        XO = torch.mm(torch.from_numpy(X), Omega) 
-        Phi = np.sqrt(sn2_est/Nf) * torch.cat([torch.cos(XO), torch.sin(XO)])
-        
-        
+        self.A = torch.mm(torch.t(self.Phi), self.Phi) / torch.exp(2*hyp[0]) + \
+                 torch.eye(self.D, dtype=torch.double)
+        self.m = torch.mm(torch.gesv(torch.t(self.Phi), self.A)[0], y) / \
+                 torch.exp(2*hyp[0])
 
-        self.K = covfunc.cov(theta, X)
-        self.L = chol(self.K + sn2*np.eye(self.N))
-        self.alpha = solve(self.L.T, solve(self.L, y))
+        # save hyperparameters
         self.hyp = hyp
-        self.covfunc = covfunc
-
-    def loglik(self, hyp, covfunc, X, y):
-        """ Function to compute compute log (marginal) likelihood
-        """
-
-        # load or recompute posterior
-        if self._updatepost(hyp, covfunc):
-            try:
-                self.post(hyp, covfunc, X, y)
-            except (ValueError, LinAlgError):
-                print("Warning: Estimation of posterior distribution failed")
-                self.nlZ = 1/np.finfo(float).eps
-                return self.nlZ
-
-        self.nlZ = 0.5*y.T.dot(self.alpha) + sum(np.log(np.diag(self.L))) + \
-                   0.5*self.N*np.log(2*np.pi)
-
-        # make sure the output is finite to stop the minimizer getting upset
-        if not np.isfinite(self.nlZ):
-            self.nlZ = 1/np.finfo(float).eps
-
-        if self.verbose:
-            print("nlZ= ", self.nlZ, " | hyp=", hyp)
-
-        return self.nlZ
-
-    def dloglik(self, hyp, covfunc, X, y):
-        """ Function to compute derivatives
-        """
-
-        # hyperparameters
-        sn2 = np.exp(2*hyp[0])       # noise variance
-        theta = hyp[1:]            # (generic) covariance hyperparameters
-
-        # load posterior and prior covariance
-        if self._updatepost(hyp, covfunc):
-            try:
-                self.post(hyp, covfunc, X, y)
-            except (ValueError, LinAlgError):
-                print("Warning: Estimation of posterior distribution failed")
-                dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
-                return dnlZ
-
-    
-        XO = X.dot(Omega)
-        Phi = np.sqrt(sn2_est/Nf)*np.c_[np.cos(XO),np.sin(XO)]
         
-        XsO = Xs.dot(Omega)
-        Phis = np.sqrt(sn2_est/Nf)*np.c_[np.cos(XsO),np.sin(XsO)]
+        # update optimizer iteration count
+        if hasattr(self,'_iterations'):
+            self._iterations += 1
 
-        hyp_blr = np.asarray([np.log(1/sn2_est), np.log(1/sf2_est)])
-        B = BLR(hyp_blr, Phi, y)
-        yhat_blr, s2_blr = B.predict(hyp_blr, Phi, y, Phis)
-        #s2_blr = np.diag(s2_blr)
+    def loglik(self, hyp, X, y):
+        """ Function to compute compute log (marginal) likelihood """
+        X, y, hyp = self._numpy2torch(X, y, hyp)
 
+        # always recompute the posterior
+        self.post(hyp, X, y)
 
+        #logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))
+        try:
+            # compute the log determinants in a numerically stable way
+            logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))
+        except Exception as e:
+            print("Warning: Estimation of posterior distribution failed")
+            print(e)
+            #nlZ = torch.tensor(1/np.finfo(float).eps)
+            nlZ = torch.tensor(np.nan)
+            self._optim_failed = True
+            return nlZ
+        
+        # compute negative marginal log likelihood
+        nlZ = -0.5 * (self.N*torch.log(1/torch.exp(2*hyp[0])) - 
+                      self.N*np.log(2*np.pi) -
+                      torch.mm(torch.t(y - torch.mm(self.Phi,self.m)),
+                               (y - torch.mm(self.Phi,self.m))) / 
+                      torch.exp(2*hyp[0]) -
+                      torch.mm(torch.t(self.m), self.m) - logdetA)
 
         if self.verbose:
-            print("dnlZ= ", self.dnlZ, " | hyp=", hyp)
+            print("nlZ= ", nlZ, " | hyp=", hyp)
 
-        return self.dnlZ
+        # save marginal likelihood
+        self.nlZ = nlZ
+        return nlZ
 
-    # model estimation (optimization)
-    def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
-        """ Function to estimate the model
-        """
-        if len(X.shape) == 1:
-            X = X[:, np.newaxis]
+    def dloglik(self, hyp, X, y):
+        """ Function to compute derivatives """
 
-        if optimizer.lower() == 'cg':  # conjugate gradients
-            out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
-                                   (covfunc, X, y), disp=True, gtol=self.tol,
-                                   maxiter=self.n_iter, full_output=1)
+        print("derivatives not available")
 
-        elif optimizer.lower() == 'powell':  # Powell's method
-            out = optimize.fmin_powell(self.loglik, hyp0, (covfunc, X, y),
-                                       full_output=1)
+        return
+
+
+    def estimate(self, hyp0, X, y, optimizer='lbfgs'):
+        """ Function to estimate the model """
+        
+        if type(hyp0) is torch.Tensor:
+            hyp = hyp0
         else:
-            raise ValueError("unknown optimizer")
+            hyp = torch.tensor(hyp0, requires_grad=True)
+        
+        if optimizer.lower() == 'lbfgs':
+            opt = torch.optim.LBFGS([hyp])
+        else:
+            raise(ValueError, "Optimizer " + " not implemented")
+        self._iterations = 0
+        
+        def closure():
+            opt.zero_grad()
+            nlZ = self.loglik(hyp, X, y)
+            if not torch.isnan(nlZ):
+                nlZ.backward()
+            return nlZ
+        
+        for r in range(self._n_restarts):
+            self._optim_failed = False
+            
+            nlZ = opt.step(closure)
+            
+            if self._optim_failed:
+                print("optimization failed. retrying (", r+1, "of", 
+                      self._n_restarts,")")
+                hyp = torch.randn_like(hyp, requires_grad=True)
+            else:
+                print("Optimzation complete after", self._iterations, 
+                      "evaluations. Function value =", 
+                      nlZ.detach().numpy().squeeze())
+                break
 
-        self.hyp = out[0]
-        self.nlZ = out[1]
-        self.optimizer = optimizer
-
-        return self.hyp
+        return self.hyp.detach().numpy()
 
     def predict(self, hyp, X, y, Xs):
-        """ Function to make predictions from the model
-        """
-        # ensure X and Xs are multi-dimensional arrays
-        if len(Xs.shape) == 1:
-            Xs = Xs[:, np.newaxis]
-        if len(X.shape) == 1:
-            X = X[:, np.newaxis]
-            
-        # reestimate posterior (avoids numerical problems with optimizer)
-        self.post(hyp, self.covfunc, X, y)
+        """ Function to make predictions from the model """
+
+        X, y, hyp = self._numpy2torch(X, y, hyp)
+        Xs, *_ = self._numpy2torch(Xs)
+
+        if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
+            self.post(hyp, X, y)
         
-        # hyperparameters
-        sn2 = np.exp(2*hyp[0])     # noise variance
-        theta = hyp[1:]            # (generic) covariance hyperparameters
+        # generate prediction tensors
+        XsO = torch.mm(Xs, self.Omega) 
+        Phis = torch.exp(hyp[-1])/np.sqrt(self.Nf) * \
+               torch.cat((torch.cos(XsO), torch.sin(XsO)), 1)
+        # add linear component
+        Phis = torch.cat((Phis, Xs), 1)
+        
+        ys = torch.mm(Phis, self.m)
 
-        Ks = self.covfunc.cov(theta, Xs, X)
-        kss = self.covfunc.cov(theta, Xs)
+        # compute diag(Phis*(Phis'\A)) avoiding computing off-diagonal entries
+        s2 = torch.exp(2*hyp[0]) + \
+                torch.sum(Phis * torch.t(torch.gesv(torch.t(Phis), self.A)[0]), 1)
 
-        # predictive mean
-        ymu = Ks.dot(self.alpha)
-
-        # predictive variance (for a noisy test input)
-        v = solve(self.L, Ks.T)
-        ys2 = kss - v.T.dot(v) + sn2
-
-        return ymu, ys2
+        # return output as numpy arrays
+        return ys.detach().numpy().squeeze(), s2.detach().numpy().squeeze()
