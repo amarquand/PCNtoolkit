@@ -231,7 +231,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
-            print("Estimating model ", i+1, "of", len(nz))
+            print("Estimating model ", i+1, "of", len(nz))      
             try:
                 nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
                                alg=alg, configparam=configparam)
