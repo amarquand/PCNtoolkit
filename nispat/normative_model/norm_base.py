@@ -15,12 +15,11 @@ class NormBase(with_metaclass(ABCMeta)):
 
     @abstractmethod
     def estimate(self, X, y):
-        """ Return the full covariance (or cross-covariance if z is given) """
+        """ Estimate the normative model """
 
     @abstractmethod
     def predict(self, X, y, Xs):
-        """ Return the derivative of the covariance function with respect to
-            the i-th hyperparameter """
+        """ Make predictions for new data """
 
     @property
     @abstractmethod
