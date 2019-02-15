@@ -21,7 +21,7 @@ def f(X):
     
     y = -X + 0.1*X**2
     
-    y = -0.1*X+0.02*X**2+0.3*np.sin(0.3*X)
+    #y = -0.1*X+0.02*X**2+0.3*np.sin(0.3*X)
     return 10*y
 
 N = 500
@@ -101,7 +101,7 @@ yhat_blr, s2_blr = B.predict(hyp_blr, Phi, y, Phis)
 #          yhat_blr.ravel() + 2*np.sqrt(s2_blr).ravel(),'y','y')
 
 print('running RFA ...')
-R = GPRRFA(hyp, X, y)
+R = GPRRFA(hyp, X, y, n_feat = Nf)
 hyp = R.estimate(hyp0,X,y)
 yhat_rfa,s2_rfa = R.predict(hyp,X,y,Xs)
 
