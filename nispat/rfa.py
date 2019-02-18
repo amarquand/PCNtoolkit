@@ -4,7 +4,6 @@ from __future__ import division
 import numpy as np
 import torch
 
-
 class GPRRFA:
     """Random Feature Approximation for Gaussian Process Regression
 
@@ -57,7 +56,6 @@ class GPRRFA:
             self.post(hyp, X, y)
 
     def _numpy2torch(self, X, y=None, hyp=None):
-
 
         if type(X) is torch.Tensor:
            pass
@@ -177,14 +175,16 @@ class GPRRFA:
 
         return
 
-
     def estimate(self, hyp0, X, y, optimizer='lbfgs'):
         """ Function to estimate the model """
         
         if type(hyp0) is torch.Tensor:
             hyp = hyp0
+            hyp0.requires_grad_()
         else:
-            hyp = torch.tensor(hyp0, requires_grad=True)
+            hyp = torch.tensor(hyp0, requires_grad=True) 
+        # save the starting values
+        self.hyp0 = hyp
         
         if optimizer.lower() == 'lbfgs':
             opt = torch.optim.LBFGS([hyp])
@@ -208,6 +208,7 @@ class GPRRFA:
                 print("optimization failed. retrying (", r+1, "of", 
                       self._n_restarts,")")
                 hyp = torch.randn_like(hyp, requires_grad=True)
+                self.hyp0 = hyp
             else:
                 print("Optimzation complete after", self._iterations, 
                       "evaluations. Function value =", 

@@ -1,7 +1,9 @@
 import sys
 import numpy as np
 import torch
+from utils import create_poly_basis
 from matplotlib import pyplot as plt
+from sklearn.linear_model import LinearRegression
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
@@ -102,6 +104,12 @@ yhat_blr, s2_blr = B.predict(hyp_blr, Phi, y, Phis)
 
 print('running RFA ...')
 R = GPRRFA(hyp, X, y, n_feat = Nf)
+# find good starting hyperparameters
+lm = LinearRegression()
+lm.fit(create_poly_basis(X,3), y)
+yhat = lm.predict(create_poly_basis(X,3))
+hyp0 = np.zeros(D + 2)
+hyp0[0] = np.log(np.sqrt(np.var(y - yhat)))
 hyp = R.estimate(hyp0,X,y)
 yhat_rfa,s2_rfa = R.predict(hyp,X,y,Xs)
 
