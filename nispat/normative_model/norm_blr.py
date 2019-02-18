@@ -7,7 +7,8 @@ import numpy as np
 
 try:  # run as a package if installed
     from nispat.bayesreg import BLR
-    from nispat.gp.normative_model.normbase import NormBase
+    from nispat.normative_model.normbase import NormBase
+    from nispat.utils import create_poly_basis
 except ImportError:
     pass
 
@@ -18,20 +19,11 @@ except ImportError:
 
     from bayesreg import BLR
     from norm_base import NormBase
+    from utils import create_poly_basis
 
 class NormBLR(NormBase):
     """ Normative modelling based on Bayesian Linear Regression
     """     
-    def _create_poly_basis(self, X, dimpoly): 
-        if len(X.shape) == 1:
-            X = X[:, np.newaxis]
-        Phi = np.zeros((X.shape[0], self.D*dimpoly))
-        colid = np.arange(0, self.D)
-        for d in range(1, dimpoly+1):
-            Phi[:, colid] = X ** d
-            colid += self.D
-        
-        return Phi
             
     def __init__(self, X=None, y=None, theta=None, model_order=3):
         if X is None:
@@ -60,7 +52,7 @@ class NormBLR(NormBase):
         self.theta = self.theta0
         
         if (theta is not None) and (y is not None):
-            self.Phi = self._create_poly_basis(X, self._model_order)
+            self.Phi = create_poly_basis(X, self._model_order)
             self.gpr = BLR(theta, self.Phi, y)
         else:
             self.gpr = BLR()    
@@ -75,7 +67,7 @@ class NormBLR(NormBase):
 
     def estimate(self, X, y, theta=None):
         if not hasattr(self,'Phi'):
-            self.Phi = self._create_poly_basis(X, self._model_order)
+            self.Phi = create_poly_basis(X, self._model_order)
         if len(y.shape) > 1:
             y = y.ravel()
             
@@ -91,7 +83,7 @@ class NormBLR(NormBase):
         if theta is None:
             theta = self.theta
 
-        Phis = self._create_poly_basis(Xs, self._model_order)
+        Phis = create_poly_basis(Xs, self._model_order)
         yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis)
         
         return yhat, s2
