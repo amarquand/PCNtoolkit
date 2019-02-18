@@ -203,7 +203,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
 
-    # starting hyperparameters. Could also do random restarts here
+    # Initialise normative model
     nm = norm_init(X, alg=alg, configparam=configparam)
 
     # run cross-validation loop
