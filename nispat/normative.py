@@ -22,7 +22,7 @@ import argparse
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
     from nispat import fileio
-    from nispat.gp import GPR, CovSum
+    from nispat.norm_utils import norm_init
     from nispat.utils import compute_pearsonr, CustomCV
 except ImportError:
     pass
@@ -30,11 +30,12 @@ except ImportError:
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
+        #sys.path.append(os.path.join(path,'normative_model'))
     del path
 
     import fileio
-    from gp import GPR, CovSum
     from utils import compute_pearsonr, CustomCV
+    from normative_model.norm_utils import norm_init
 
 
 def load_response_vars(datafile, maskfile=None, vol=True):
@@ -68,6 +69,9 @@ def get_args(*args):
                         default=None)
     parser.add_argument("-r", help="responses (test data)", dest="testresp",
                         default=None)
+    parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
+    parser.add_argument("-x", help="algorithm specific config options", 
+                        dest="configparam", default=None)
     args = parser.parse_args()
     wdir = os.path.realpath(os.path.curdir)
     respfile = os.path.join(wdir, args.responses)
@@ -97,11 +101,13 @@ def get_args(*args):
         if args.cvfolds is not None:
             print("Ignoring cross-valdation specification (test data given)")
 
-    return respfile, maskfile, covfile, cvfolds, testcov, testresp
+    return respfile, maskfile, covfile, cvfolds, \
+            testcov, testresp, args.alg, args.configparam
 
 
 def estimate(respfile, covfile, maskfile=None, cvfolds=None,
-             testcov=None, testresp=None, saveoutput=True, outputsuffix=None):
+             testcov=None, testresp=None, alg='gpr', configparam=None,
+             saveoutput=True, outputsuffix=None):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -133,6 +139,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     :param cvfolds: Number of cross-validation folds
     :param testcov: Test covariates
     :param testresp: Test responses
+    :param alg: Algorithm for normative model
+    :param configparam: Parameters controlling the estimation algorithm
     :param saveoutput: Save the output to disk? Otherwise returned as arrays
     :param outputsuffix: Text string to add to the output filenames
 
@@ -195,14 +203,13 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
 
-    # starting hyperparameters. Could also do random restarts here
-    covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
-    hyp0 = np.zeros(covfunc.get_n_params() + 1)
+    # Initialise normative model
+    nm = norm_init(X, alg=alg, configparam=configparam)
 
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
-    Hyp = np.zeros((Nmod, len(hyp0), cvfolds))
+    Hyp = np.zeros((Nmod, nm.n_params, cvfolds))
 
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
@@ -224,18 +231,17 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
-            print("Estimating model ", i+1, "of", len(nz))
+            print("Estimating model ", i+1, "of", len(nz))      
             try:
-                gpr = GPR(hyp0, covfunc, Xz[tr, :], Yz[tr, nz[i]])
-                Hyp[nz[i], :, fold] = gpr.estimate(hyp0, covfunc, Xz[tr, :],
-                                                   Yz[tr, nz[i]])
-
-                yhat, s2 = gpr.predict(Hyp[nz[i], :, fold], Xz[tr, :],
-                                       Yz[tr, nz[i]], Xz[te, :])
+                nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
+                               alg=alg, configparam=configparam)
+                Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
+                yhat, s2 = nm.predict(Xz[tr, :], Yz[tr, nz[i]], Xz[te, :], 
+                                      Hyp[nz[i], :, fold])
 
                 Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-                S2[te, nz[i]] = np.diag(s2) * sY[i]**2
-                nlZ[nz[i], fold] = gpr.nlZ
+                S2[te, nz[i]] = s2 * sY[i]**2
+                nlZ[nz[i], fold] = nm.neg_log_lik
                 if testcov is None:
                     Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
                                    np.sqrt(S2[te, nz[i]])
@@ -244,8 +250,14 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                         Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
                                        np.sqrt(S2[te, nz[i]])
 
-            except:
-                print("Model ", i+1, "of", len(nz), "FAILED!..skipping and writing NaN to outputs")
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print("Model ", i+1, "of", len(nz),
+                      "FAILED!..skipping and writing NaN to outputs")
+                print("Exception:")
+                print(e)
+                print(exc_type, fname, exc_tb.tb_lineno)
                 Hyp[nz[i], :, fold] = float('nan')
 
                 Yhat[te, nz[i]] = float('nan')
@@ -355,8 +367,8 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    respfile, maskfile, covfile, cvfolds, testcov, testresp = get_args(args)
-    estimate(respfile, covfile, maskfile, cvfolds, testcov, testresp)
+    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar = get_args(args)
+    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar)
 
 # For running from the command line:
 if __name__ == "__main__":
