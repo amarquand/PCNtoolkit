@@ -25,7 +25,7 @@ respfile = os.path.join(wdir, 'shoot_data_3mm_n50.nii.gz')
 covfile = os.path.join(wdir, 'covariates_basic_n50.txt')
 testresp = os.path.join(wdir, 'shoot_data_3mm_last100.nii.gz')
 testcov = os.path.join(wdir, 'covariates_basic_last100.txt')
-estimate(respfile, covfile, maskfile, testresp=testresp, testcov=testcov,alg="rfa")#, configparam=4)
+estimate(respfile, covfile, maskfile, testresp=testresp, testcov=testcov)#,alg="rfa")#, configparam=4)
 #cvfolds = 2
 
 
