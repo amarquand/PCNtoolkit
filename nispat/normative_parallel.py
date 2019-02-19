@@ -70,11 +70,13 @@ def execute_nm(processing_dir,
                batch_size,
                memory,
                duration,
-               cluster_spec,
+               cluster_spec='torque',
                cv_folds=None,
                testcovfile_path=None,
                testrespfile_path=None,
-               bash_environment=None):
+               bash_environment=None,
+               alg='gpr',
+               configparam=None):
 
     """
     This function is a motherfunction that executes all parallel normative
@@ -146,7 +148,9 @@ def execute_nm(processing_dir,
                                 respfile_path=batch_respfile_path,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=batch_testrespfile_path,
-                                bash_environment=bash_environment)
+                                bash_environment=bash_environment,
+                                alg=alg,
+                                configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
                             memory=memory,
                             duration=duration)
@@ -161,7 +165,9 @@ def execute_nm(processing_dir,
                                 memory=memory,
                                 cv_folds=cv_folds,
                                 testcovfile_path=testcovfile_path,
-                                testrespfile_path=batch_testrespfile_path)
+                                testrespfile_path=batch_testrespfile_path,
+                                alg=alg,
+                                configparam=configparam)
                     sbatch_nm(job_path=batch_job_path)
 
         if testrespfile_path is None:
@@ -182,7 +188,9 @@ def execute_nm(processing_dir,
                                 cv_folds=cv_folds,
                                 respfile_path=batch_respfile_path,
                                 testcovfile_path=testcovfile_path,
-                                bash_environment=bash_environment)
+                                bash_environment=bash_environment, 
+                                alg=alg,
+                                configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
                             memory=memory,
                             duration=duration)
@@ -196,7 +204,9 @@ def execute_nm(processing_dir,
                                 duration=duration,
                                 memory=memory,
                                 cv_folds=cv_folds,
-                                testcovfile_path=testcovfile_path)
+                                testcovfile_path=testcovfile_path,
+                                alg=alg,
+                                configparam=configparam)
                     sbatch_nm(job_path=batch_job_path)
 
 
@@ -219,7 +229,9 @@ def execute_nm(processing_dir,
                                 respfile_path=batch_respfile_path,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=testrespfile_path,
-                                bash_environment=bash_environment)
+                                bash_environment=bash_environment,
+                                alg=alg,
+                                configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
                             memory=memory,
                             duration=duration)
@@ -234,7 +246,9 @@ def execute_nm(processing_dir,
                                 duration=duration,
                                 cv_folds=cv_folds,
                                 testcovfile_path=testcovfile_path,
-                                testrespfile_path=testrespfile_path)
+                                testrespfile_path=testrespfile_path,
+                                alg=alg,
+                                configparam=configparam)
                     sbatch_nm(job_path=batch_job_path)
 
 
@@ -326,7 +340,8 @@ def split_nm(processing_dir, respfile_path, batch_size,
 def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
                 covfile_path, respfile_path,
                 cv_folds=None, testcovfile_path=None,
-                testrespfile_path=None, bash_environment=None):
+                testrespfile_path=None, bash_environment=None, 
+                alg=None, configparam=None):
 
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
@@ -350,6 +365,8 @@ def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
                                 test features
         * bash_environment   -> A file containing the necessary commands
                                 for your bash environment to work
+        * alg                -> which algorithm to use
+        * configparam        -> configuration parameters for this algorithm
 
     ** Output:
         * A bash.sh file containing the commands for normative modelling saved
@@ -385,14 +402,13 @@ def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
             else:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
                             covfile_path + ' -t ' + testcovfile_path + ' -r ' +
-                            testrespfile_path + ' ' + respfile_path]
+                            testrespfile_path]
 
     if testrespfile_path is None:
         if testcovfile_path is None:
             if cv_folds is not None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -k ' + str(cv_folds) + ' ' +
-                            respfile_path]
+                            covfile_path + ' -k ' + str(cv_folds)]
             else:
                 raise(ValueError, """If the testresponsefile_path and
                                   testcovfile_path are specified cv_folds
@@ -402,13 +418,21 @@ def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
         if testcovfile_path is not None:
             if cv_folds is None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path + ' ' +
-                            respfile_path]
+                            covfile_path + ' -t ' + testcovfile_path]
             else:
                 raise(ValueError, """If the test response file is and
                                   testcovfile is not specified cv_folds
                                   must be NONE""")
-
+    
+    # add algorithm-specific parameters
+    if alg is not None:
+        job_call = [job_call[0] + ' -a ' + alg]
+        if configparam is not None:
+            job_call = [job_call[0] + ' -x ' + str(configparam)]
+    
+    # add responses file
+    job_call = [job_call[0] + ' ' + respfile_path]
+    
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:
         bash_file.writelines(bash_environment + output_changedir + \
@@ -450,7 +474,7 @@ def qsub_nm(job_path, memory, duration):
 def bashwrap_nm_m3(processing_dir, python_path, normative_path, job_name,
                 covfile_path, respfile_path, duration, memory,
                 cv_folds=None, testcovfile_path=None,
-                testrespfile_path=None):
+                testrespfile_path=None, alg=None, configparam=None):
 
     """ This function wraps normative modelling into a bash script to run it
     on the MASSIVE M3 cluster at Monash University, Melbourne, Australia.
@@ -505,14 +529,13 @@ def bashwrap_nm_m3(processing_dir, python_path, normative_path, job_name,
             else:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
                             covfile_path + ' -t ' + testcovfile_path + ' -r ' +
-                            testrespfile_path + ' ' + respfile_path]
+                            testrespfile_path]
 
     if testrespfile_path is None:
         if testcovfile_path is None:
             if cv_folds is not None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -k ' + str(cv_folds) + ' ' +
-                            respfile_path]
+                            covfile_path + ' -k ' + str(cv_folds)]
             else:
                 raise(ValueError, """If the testresponsefile_path and
                                   testcovfile_path are specified cv_folds
@@ -522,13 +545,20 @@ def bashwrap_nm_m3(processing_dir, python_path, normative_path, job_name,
         if testcovfile_path is not None:
             if cv_folds is None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path + ' ' +
-                            respfile_path]
+                            covfile_path + ' -t ' + testcovfile_path]
             else:
                 raise(ValueError, """If the test response file is and
                                   testcovfile is not specified cv_folds
                                   must be NONE""")
-
+    # add algorithm-specific parameters
+    if alg is not None:
+        job_call = [job_call[0] + ' -a ' + alg]
+        if configparam is not None:
+            job_call = [job_call[0] + ' -x ' + str(configparam)]
+    
+    # add responses file
+    job_call = [job_call[0] + ' ' + respfile_path]
+    
     # writes bash file into processing dir
     with open(processing_dir + job_name, 'w') as bash_file:
         bash_file.writelines(bash_environment + output_changedir + job_call + [" | ts \n"])
