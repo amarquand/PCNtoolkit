@@ -30,7 +30,7 @@ cluster = 'torque'
 
 execute_nm(wdir, python_path, normative_path, job_name, covfile,  respfile,
            batch_size, memory, duration, cluster_spec=cluster, 
-           cv_folds=cvfolds, alg='rfa')#, configparam=4)
+           cv_folds=cvfolds)#, alg='rfa')#, configparam=4)
 
 print("waiting for jobs to finish ...")
 time.sleep(60)
