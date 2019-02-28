@@ -7,8 +7,8 @@ Created on Wed Jan 18 14:34:06 2017
 #import nispat
 import os
 import sys
-sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
-from normative import estimate
+#sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+from nispat.normative import estimate
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
 ##wdir = '/Users/andre/data/normative_nimg'
