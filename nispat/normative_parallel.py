@@ -292,11 +292,13 @@ def split_nm(processing_dir, respfile_path, batch_size,
     if testrespfile_path is None:
         if (respfile_extension == '.txt'):
             respfile = fileio.load_ascii(respfile_path)
-            respfile = pd.DataFrame(respfile)
         elif (respfile_extension == '.pkl'):
-            respfile = pd.read_pickle(respfile)
+            respfile = pd.read_pickle(respfile_path)
         else:
             raise(ValueError, """ Unknown file type for responses..""")
+            
+        respfile = pd.DataFrame(respfile)
+        
         numsub = len(respfile.ix[0, :])
         batch_vec = np.arange(0,
                               numsub,
@@ -319,21 +321,20 @@ def split_nm(processing_dir, respfile_path, batch_size,
     else:
         if (respfile_extension == '.txt'):
             respfile = fileio.load_ascii(respfile_path)
-            respfile = pd.DataFrame(respfile)
         elif (respfile_extension == '.pkl'):
-            respfile = pd.read_pickle(respfile)
+            respfile = pd.read_pickle(respfile_path)
         else:
             raise(ValueError, """ Unknown file type for responses..""")
-            
+        respfile = pd.DataFrame(respfile)
+        
         dummy, testrespfile_extension = os.path.splitext(testrespfile_path)
         if (testrespfile_extension == '.txt'):
             testrespfile = fileio.load_ascii(testrespfile_path)
-            testrespfile = pd.DataFrame(testrespfile)
         elif (testrespfile_extension == '.pkl'):
-            respfile = pd.read_pickle(testrespfile)
+            respfile = pd.read_pickle(testrespfile_path)
         else:
             raise(ValueError, """ Unknown file type for test responses..""")
-        
+        testrespfile = pd.DataFrame(testrespfile)
         
         numsub = len(respfile.ix[0, :])
         batch_vec = np.arange(0, numsub,
