@@ -285,11 +285,18 @@ def split_nm(processing_dir, respfile_path, batch_size,
             sys.path.append(path)
             del path
         import fileio
-
+        
+    dummy, respfile_extension = os.path.splitext(respfile_path)
+    
     # splits response into batches
     if testrespfile_path is None:
-        respfile = fileio.load_ascii(respfile_path)
-        respfile = pd.DataFrame(respfile)
+        if (respfile_extension == '.txt'):
+            respfile = fileio.load_ascii(respfile_path)
+            respfile = pd.DataFrame(respfile)
+        elif (respfile_extension == '.pkl'):
+            respfile = pd.read_pickle(respfile)
+        else:
+            raise(ValueError, """ Unknown file type for responses..""")
         numsub = len(respfile.ix[0, :])
         batch_vec = np.arange(0,
                               numsub,
@@ -310,10 +317,24 @@ def split_nm(processing_dir, respfile_path, batch_size,
 
     # splits response and test responsefile into batches
     else:
-        respfile = fileio.load_ascii(respfile_path)
-        respfile = pd.DataFrame(respfile)
-        testrespfile = fileio.load_ascii(testrespfile_path)
-        testrespfile = pd.DataFrame(testrespfile)
+        if (respfile_extension == '.txt'):
+            respfile = fileio.load_ascii(respfile_path)
+            respfile = pd.DataFrame(respfile)
+        elif (respfile_extension == '.pkl'):
+            respfile = pd.read_pickle(respfile)
+        else:
+            raise(ValueError, """ Unknown file type for responses..""")
+            
+        dummy, testrespfile_extension = os.path.splitext(testrespfile_path)
+        if (testrespfile_extension == '.txt'):
+            testrespfile = fileio.load_ascii(testrespfile_path)
+            testrespfile = pd.DataFrame(testrespfile)
+        elif (testrespfile_extension == '.pkl'):
+            respfile = pd.read_pickle(testrespfile)
+        else:
+            raise(ValueError, """ Unknown file type for test responses..""")
+        
+        
         numsub = len(respfile.ix[0, :])
         batch_vec = np.arange(0, numsub,
                               batch_size)
