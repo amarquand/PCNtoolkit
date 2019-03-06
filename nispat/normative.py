@@ -22,7 +22,7 @@ import argparse
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
     from nispat import fileio
-    from nispat.norm_utils import norm_init
+    from nispat.normative_model.norm_utils import norm_init
     from nispat.utils import compute_pearsonr, CustomCV
 except ImportError:
     pass
