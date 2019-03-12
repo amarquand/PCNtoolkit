@@ -67,6 +67,7 @@ def execute_nm(processing_dir,
                job_name,
                covfile_path,
                respfile_path,
+               log_path,
                batch_size,
                memory,
                duration,
@@ -152,6 +153,7 @@ def execute_nm(processing_dir,
                                 alg=alg,
                                 configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
+                            log_path=log_path,
                             memory=memory,
                             duration=duration)
                 elif cluster_spec is 'm3':
@@ -192,6 +194,7 @@ def execute_nm(processing_dir,
                                 alg=alg,
                                 configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
+                            log_path=log_path,
                             memory=memory,
                             duration=duration)
                 elif cluster_spec is 'm3':
@@ -233,6 +236,7 @@ def execute_nm(processing_dir,
                                 alg=alg,
                                 configparam=configparam)
                     qsub_nm(job_path=batch_job_path,
+                            log_path=log_path,
                             memory=memory,
                             duration=duration)
                 elif cluster_spec is 'm3':
@@ -464,7 +468,7 @@ def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
     os.chmod(processing_dir + job_name, 0o700)
 
 
-def qsub_nm(job_path, memory, duration):
+def qsub_nm(job_path, log_path, memory, duration):
     """
     This function submits a job.sh scipt to the torque custer using the qsub
     command.
@@ -487,7 +491,8 @@ def qsub_nm(job_path, memory, duration):
 
     # created qsub command
     qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                 'mem=' + memory + ',walltime=' + duration]
+                 'mem=' + memory + ',walltime=' + duration + ' -o ' + log_path +
+                 ' -e ' + log_path]
 
     # submits job to cluster
     call(qsub_call, shell=True)
