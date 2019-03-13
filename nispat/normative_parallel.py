@@ -67,11 +67,12 @@ def execute_nm(processing_dir,
                job_name,
                covfile_path,
                respfile_path,
-               log_path,
                batch_size,
                memory,
                duration,
                cluster_spec='torque',
+               binary=False,
+               log_path=None,
                cv_folds=None,
                testcovfile_path=None,
                testrespfile_path=None,
@@ -108,20 +109,27 @@ def execute_nm(processing_dir,
                                 test features
         * bash_environment   -> A txt file containing the necessary commands
                                 for your bash environment to work
-
+        * log_path           -> Pathfor saving log files
+        * binary             -> If True uses binary format for response file 
+                                otherwise it is text
     written by Thomas Wolfers
     """
 
     # import of necessary modules
     import glob
 
-    split_nm(processing_dir, respfile_path, batch_size, testrespfile_path)
+    split_nm(processing_dir, respfile_path, batch_size, binary, testrespfile_path)
 
     batch_dir = glob.glob(processing_dir + 'batch_*')
     # print(batch_dir)
     number_of_batches = len(batch_dir)
     # print(number_of_batches)
-
+    
+    if binary:
+        file_extentions = '.pkl'
+    else:
+        file_extentions = '.txt'
+    
     for n in range(1, number_of_batches+1):
         print(n)
 
@@ -134,9 +142,10 @@ def execute_nm(processing_dir,
                 batch_processing_dir = processing_dir + 'batch_' + str(n) + '/'
                 batch_job_name = job_name + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
-                                       str(n) + '.txt')
+                                       str(n) + file_extentions)
                 batch_testrespfile_path = (batch_processing_dir +
-                                           'testresp_batch_' + str(n) + '.txt')
+                                'testresp_batch_' + str(n) + file_extentions)
+                        
                 batch_job_path = batch_processing_dir + batch_job_name
 
                 if cluster_spec is 'torque':
@@ -178,7 +187,7 @@ def execute_nm(processing_dir,
                 batch_processing_dir = processing_dir + 'batch_' + str(n) + '/'
                 batch_job_name = job_name + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
-                                       str(n) + '.txt')
+                                       str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
 
                 if cluster_spec is 'torque':
@@ -219,7 +228,7 @@ def execute_nm(processing_dir,
                                         str(n) + '/')
                 batch_job_name = job_name + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir +
-                                       'resp_batch_' + str(n) + '.txt')
+                                       'resp_batch_' + str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
 
                 if cluster_spec is 'torque':
@@ -256,7 +265,7 @@ def execute_nm(processing_dir,
                     sbatch_nm(job_path=batch_job_path)
 
 
-def split_nm(processing_dir, respfile_path, batch_size,
+def split_nm(processing_dir, respfile_path, batch_size, binary,
              testrespfile_path=None):
 
     """ This function prepares the input files for parallel normative modelling.
@@ -291,16 +300,20 @@ def split_nm(processing_dir, respfile_path, batch_size,
         import fileio
         
     dummy, respfile_extension = os.path.splitext(respfile_path)
-    
+    if (binary and respfile_extension != '.pkl'):
+            raise(ValueError, """If binary is True the file format for the 
+                  testrespfile file must be .pkl""")
+    elif(binary==False and respfile_extension != '.txt'):
+            raise(ValueError, """If binary is False the file format for the 
+                  testrespfile file must be .txt""")
+        
     # splits response into batches
     if testrespfile_path is None:
-        if (respfile_extension == '.txt'):
+        if (binary==False):
             respfile = fileio.load_ascii(respfile_path)
-        elif (respfile_extension == '.pkl'):
-            respfile = pd.read_pickle(respfile_path)
         else:
-            raise(ValueError, """ Unknown file type for responses..""")
-            
+            respfile = pd.read_pickle(respfile_path)
+        
         respfile = pd.DataFrame(respfile)
         
         numsub = len(respfile.ix[0, :])
@@ -318,26 +331,30 @@ def split_nm(processing_dir, respfile_path, batch_size,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
-                fileio.save_pd(resp_batch,
+                if (binary==False):
+                    fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' + resp + '.txt')
-
+                else:
+                    resp_batch.to_pickle(processing_dir + batch + '/' + resp + '.pkl')
+                        
     # splits response and test responsefile into batches
     else:
-        if (respfile_extension == '.txt'):
-            respfile = fileio.load_ascii(respfile_path)
-        elif (respfile_extension == '.pkl'):
-            respfile = pd.read_pickle(respfile_path)
-        else:
-            raise(ValueError, """ Unknown file type for responses..""")
-        respfile = pd.DataFrame(respfile)
-        
         dummy, testrespfile_extension = os.path.splitext(testrespfile_path)
-        if (testrespfile_extension == '.txt'):
+        if (binary and testrespfile_extension != '.pkl'):
+            raise(ValueError, """If binary is True the file format for the 
+                  testrespfile file must be .pkl""")
+        elif(binary==False and testrespfile_extension != '.txt'):
+            raise(ValueError, """If binary is False the file format for the 
+                  testrespfile file must be .txt""")
+        
+        if (binary==False):
+            respfile = fileio.load_ascii(respfile_path)
             testrespfile = fileio.load_ascii(testrespfile_path)
-        elif (testrespfile_extension == '.pkl'):
-            respfile = pd.read_pickle(testrespfile_path)
         else:
-            raise(ValueError, """ Unknown file type for test responses..""")
+            respfile = pd.read_pickle(respfile_path)
+            respfile = pd.read_pickle(testrespfile_path)
+            
+        respfile = pd.DataFrame(respfile)
         testrespfile = pd.DataFrame(testrespfile)
         
         numsub = len(respfile.ix[0, :])
@@ -356,12 +373,16 @@ def split_nm(processing_dir, respfile_path, batch_size,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
-                fileio.save_pd(resp_batch,
+                if (binary==False):
+                    fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' + resp + '.txt')
-                fileio.save_pd(testresp_batch,
+                    fileio.save_pd(testresp_batch,
                                processing_dir + batch + '/' + testresp +
                                '.txt')
-
+                else:
+                    resp_batch.to_pickle(processing_dir + batch + '/' + resp + '.pkl')
+                    testresp_batch.to_pickle(processing_dir + batch + '/' + testresp + '.pkl')
+                        
 
 def bashwrap_nm(processing_dir, python_path, normative_path, job_name,
                 covfile_path, respfile_path,
@@ -490,7 +511,11 @@ def qsub_nm(job_path, log_path, memory, duration):
     from subprocess import call
 
     # created qsub command
-    qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
+    if log_path is None:
+        qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
+                 'mem=' + memory + ',walltime=' + duration]
+    else:
+        qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
                  'mem=' + memory + ',walltime=' + duration + ' -o ' + log_path +
                  ' -e ' + log_path]
 
@@ -617,7 +642,7 @@ def sbatch_nm(job_path):
     call(sbatch_call, shell=True)
 
 
-def collect_nm(processing_dir, collect=False):
+def collect_nm(processing_dir, collect=False, binary=False):
     """This function checks and collects all batches.
 
     ** Input:
@@ -646,10 +671,18 @@ def collect_nm(processing_dir, collect=False):
             sys.path.append(path)
             del path
         import fileio
+    
+    if binary:
+        file_extentions = '.pkl'
+    else:
+        file_extentions = '.txt'
 
     # detect number of subjects, batches, hyperparameters and CV
-    file_example = glob.glob(processing_dir + 'batch_1/' + 'resp*.txt')
-    file_example = fileio.load_pd(file_example[0])
+    file_example = glob.glob(processing_dir + 'batch_1/' + 'resp*' + file_extentions)
+    if binary == False:
+        file_example = fileio.load_pd(file_example[0])
+    else:
+        file_example = pd.read_pickle(file_example[0])
     numsubjects = file_example.shape[0]
     batch_size = file_example.shape[1]
 
