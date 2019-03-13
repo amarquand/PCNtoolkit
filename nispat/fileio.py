@@ -342,6 +342,9 @@ def save(data, filename, example=None, mask=None, text=False):
         save_nifti(data, filename, example, mask)
     elif text or file_type(filename) == 'text':
         save_ascii(data, filename)
+    elif file_type(filename) == 'binary':
+        data = pd.DataFrame(data)
+        data.to_pickle(filename)
 
 
 def load(filename, mask=None, text=False, vol=True):
