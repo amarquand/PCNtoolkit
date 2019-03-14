@@ -75,6 +75,8 @@ def file_type(filename):
         ftype = 'nifti'
     elif filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
         ftype = 'text'
+    elif filename.endswith(('.pkl')):
+        ftype = 'binary'
     else:
         raise ValueError("I don't know what to do with " + filename)
 
@@ -340,6 +342,9 @@ def save(data, filename, example=None, mask=None, text=False):
         save_nifti(data, filename, example, mask)
     elif text or file_type(filename) == 'text':
         save_ascii(data, filename)
+    elif file_type(filename) == 'binary':
+        data = pd.DataFrame(data)
+        data.to_pickle(filename)
 
 
 def load(filename, mask=None, text=False, vol=True):
@@ -350,6 +355,9 @@ def load(filename, mask=None, text=False, vol=True):
         x = load_nifti(filename, mask)
     elif text or file_type(filename) == 'text':
         x = load_ascii(filename)
+    elif file_type(filename) == 'binary':
+        x = pd.read_pickle(filename)
+        x = x.to_numpy()
 
     return x
 
