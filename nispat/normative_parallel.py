@@ -680,7 +680,7 @@ def collect_nm(processing_dir, collect=False, binary=False):
     # detect number of subjects, batches, hyperparameters and CV
     file_example = glob.glob(processing_dir + 'batch_1/' + 'resp*' + file_extentions)
     if binary == False:
-        file_example = fileio.load_pd(file_example[0])
+        file_example = fileio.load(file_example[0])
     else:
         file_example = pd.read_pickle(file_example[0])
     numsubjects = file_example.shape[0]
@@ -688,7 +688,7 @@ def collect_nm(processing_dir, collect=False, binary=False):
 
     all_Hyptxt = glob.glob(processing_dir + 'batch_*/' + 'Hyp*')
     if all_Hyptxt != []:
-        first_Hyptxt = fileio.load_pd(all_Hyptxt[0])
+        first_Hyptxt = fileio.load(all_Hyptxt[0])
         first_Hyptxt = first_Hyptxt.transpose()
         nHyp = len(first_Hyptxt)
         dir_first_Hyptxt = os.path.dirname(all_Hyptxt[0])
@@ -711,90 +711,86 @@ def collect_nm(processing_dir, collect=False, binary=False):
                     pRho = np.ones(batch_size)
                     pRho = pRho.transpose()
                     pRho = pd.Series(pRho)
-                    fileio.save_pd(pRho,
-                                   batch + 'pRho.txt')
-
+                    #fileio.save_pd(pRho, batch + 'pRho.txt')
+                    fileio.save(pRho, batch + 'pRho' + file_extentions)
                 if per_measures:
                     Rho = np.zeros(batch_size)
                     Rho = Rho.transpose()
                     Rho = pd.Series(Rho)
-                    fileio.save_pd(Rho,
-                                   batch + 'Rho.txt')
-
+                    #fileio.save_pd(Rho, batch + 'Rho.txt')
+                    fileio.save(Rho, batch + 'Rho' + file_extentions)
                 if per_measures:
                     rmse = np.zeros(batch_size)
                     rmse = rmse.transpose()
                     rmse = pd.Series(rmse)
-                    fileio.save_pd(rmse,
-                                   batch + 'rmse.txt')
-
+                    #fileio.save_pd(rmse, batch + 'rmse.txt')
+                    fileio.save(rmse, batch + 'rmse' + file_extentions)
                 if per_measures:
                     smse = np.zeros(batch_size)
                     smse = smse.transpose()
                     smse = pd.Series(smse)
-                    fileio.save_pd(smse,
-                                   batch + 'smse.txt')
-
+                    #fileio.save_pd(smse, batch + 'smse.txt')
+                    fileio.save(smse, batch + 'smse' + file_extentions)
                 if per_measures:
                     Z = np.zeros([batch_size,
                                   numsubjects])
                     Z = pd.DataFrame(Z)
-                    fileio.save_pd(Z,
-                                   batch + 'Z.txt')
-
+                    #fileio.save_pd(Z, batch + 'Z.txt')
+                    fileio.save(Z, batch + 'Z' + file_extentions)
                 pRho = np.zeros([batch_size,
                                  numsubjects])
                 pRho = pd.DataFrame(pRho)
-                fileio.save_pd(pRho,
-                               batch + 'pRho.txt')
-
+                #fileio.save_pd(pRho, batch + 'pRho.txt')
+                fileio.save(pRho, batch + 'pRho' + file_extentions)
+                
                 Rho = np.zeros([batch_size,
                                 numsubjects])
                 Rho = pd.DataFrame(Rho)
-                fileio.save_pd(Rho,
-                               batch + 'Rho.txt')
-
+                #fileio.save_pd(Rho, batch + 'Rho.txt')
+                fileio.save(Rho, batch + 'Rho' + file_extentions)
+                
                 rmse = np.zeros([batch_size,
                                 numsubjects])
                 rmse = pd.DataFrame(rmse)
-                fileio.save_pd(rmse,
-                               batch + 'rmse.txt')
-
+                #fileio.save_pd(rmse, batch + 'rmse.txt')
+                fileio.save(rmse, batch + 'rmse' + file_extentions)
+                
                 smse = np.zeros([batch_size,
                                 numsubjects])
                 smse = pd.DataFrame(smse)
-                fileio.save_pd(smse,
-                               batch + 'smse.txt')
-
+                #fileio.save_pd(smse, batch + 'smse.txt')
+                fileio.save(smse, batch + 'smse' + file_extentions)
+                
                 yhat = np.zeros([batch_size,
                                  numsubjects])
                 yhat = pd.DataFrame(yhat)
-                fileio.save_pd(yhat,
-                               batch + 'yhat.txt')
-
+                #fileio.save_pd(yhat, batch + 'yhat.txt')
+                fileio.save(yhat, batch + 'yhat' + file_extentions)
+                
                 ys2 = np.zeros([batch_size,
                                 numsubjects])
                 ys2 = pd.DataFrame(ys2)
-                fileio.save_pd(ys2,
-                               batch + 'ys2.txt')
-
+                #fileio.save_pd(ys2, batch + 'ys2.txt')
+                fileio.save(ys2, batch + 'ys2' + file_extentions)
+                
                 Z = np.zeros([batch_size,
                               numsubjects])
                 Z = pd.DataFrame(Z)
-                fileio.save_pd(Z,
-                               batch + 'Z.txt')
-
+                #fileio.save_pd(Z, batch + 'Z.txt')
+                fileio.save(Z, batch + 'Z' + file_extentions)
+                
                 for n in range(1, n_crossval+1):
                     hyp = np.zeros([batch_size,
                                     nHyp])
                     hyp = pd.DataFrame(hyp)
-                    fileio.save_pd(hyp,
-                                   batch + 'Hyp_' + str(n) + '.txt')
+                    #fileio.save_pd(hyp, batch + 'Hyp_' + str(n) + '.txt')
+                    fileio.save(hyp, batch + 'hyp' + file_extentions)
 
     # list batches that were not executed
     print('Number of batches that failed:' + str(count))
     batch_fail_df = pd.DataFrame(batch_fail)
-    fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches.txt')
+    #fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches.txt')
+    fileio.save(batch_fail_df, processing_dir + 'failed_batches' + file_extentions)
 
     # combines all output files across batches
     if collect is True:
@@ -803,70 +799,70 @@ def collect_nm(processing_dir, collect=False, binary=False):
             pRho_filenames = fileio.sort_nicely(pRho_filenames)
             pRho_dfs = []
             for pRho_filename in pRho_filenames:
-                pRho_dfs.append(fileio.load_pd(pRho_filename))
-                pRho_combined = pd.concat(pRho_dfs,
-                                          ignore_index=True)
-            fileio.save_pd(pRho_combined, processing_dir + 'pRho.txt')
+                pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
+            pRho_combined = pd.concat(pRho_dfs, ignore_index=True)
+            #fileio.save_pd(pRho_combined, processing_dir + 'pRho.txt')
+            fileio.save(pRho_combined, processing_dir + 'pRho' + file_extentions)
 
         Rho_filenames = glob.glob(processing_dir + 'batch_*/' + 'Rho*')
         if pRho_filenames:
             Rho_filenames = fileio.sort_nicely(Rho_filenames)
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
-                Rho_dfs.append(fileio.load_pd(Rho_filename))
-                Rho_combined = pd.concat(Rho_dfs,
-                                         ignore_index=True)
-            fileio.save_pd(Rho_combined, processing_dir + 'Rho.txt')
+                Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
+            Rho_combined = pd.concat(Rho_dfs, ignore_index=True)
+            #fileio.save_pd(Rho_combined, processing_dir + 'Rho.txt')
+            fileio.save(Rho_combined, processing_dir + 'Rho' + file_extentions)
 
         Z_filenames = glob.glob(processing_dir + 'batch_*/' + 'Z*')
         if Z_filenames:
             Z_filenames = fileio.sort_nicely(Z_filenames)
             Z_dfs = []
             for Z_filename in Z_filenames:
-                Z_dfs.append(fileio.load_pd(Z_filename))
-                Z_combined = pd.concat(Z_dfs,
-                                       ignore_index=True)
-            fileio.save_pd(Z_combined, processing_dir + 'Z.txt')
+                Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
+            Z_combined = pd.concat(Z_dfs, ignore_index=True)
+            #fileio.save_pd(Z_combined, processing_dir + 'Z.txt')
+            fileio.save(Z_combined, processing_dir + 'Z' + file_extentions)
 
         yhat_filenames = glob.glob(processing_dir + 'batch_*/' + 'yhat*')
         if yhat_filenames:
             yhat_filenames = fileio.sort_nicely(yhat_filenames)
             yhat_dfs = []
             for yhat_filename in yhat_filenames:
-                yhat_dfs.append(fileio.load_pd(yhat_filename))
-                yhat_combined = pd.concat(yhat_dfs,
-                                          ignore_index=True)
-            fileio.save_pd(yhat_combined, processing_dir + 'yhat.txt')
+                yhat_dfs.append(pd.DataFrame(fileio.load(yhat_filename)))
+            yhat_combined = pd.concat(yhat_dfs, ignore_index=True)
+            #fileio.save_pd(yhat_combined, processing_dir + 'yhat.txt')
+            fileio.save(yhat_combined, processing_dir + 'yhat' + file_extentions)
 
         ys2_filenames = glob.glob(processing_dir + 'batch_*/' + 'ys2*')
         if ys2_filenames:
             ys2_filenames = fileio.sort_nicely(ys2_filenames)
             ys2_dfs = []
             for ys2_filename in ys2_filenames:
-                ys2_dfs.append(fileio.load_pd(ys2_filename))
-                ys2_combined = pd.concat(ys2_dfs,
-                                         ignore_index=True)
-            fileio.save_pd(ys2_combined, processing_dir + 'ys2.txt')
+                ys2_dfs.append(pd.DataFrame(fileio.load(ys2_filename)))
+            ys2_combined = pd.concat(ys2_dfs, ignore_index=True)
+            #fileio.save_pd(ys2_combined, processing_dir + 'ys2.txt')
+            fileio.save(ys2_combined, processing_dir + 'ys2' + file_extentions)
 
         rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'rmse*')
         if rmse_filenames:
             rmse_filenames = fileio.sort_nicely(rmse_filenames)
             rmse_dfs = []
             for rmse_filename in rmse_filenames:
-                rmse_dfs.append(fileio.load_pd(rmse_filename))
-                rmse_combined = pd.concat(rmse_dfs,
-                                          ignore_index=True)
-            fileio.save_pd(rmse_combined, processing_dir + 'rmse.txt')
+                rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
+            rmse_combined = pd.concat(rmse_dfs, ignore_index=True)
+            #fileio.save_pd(rmse_combined, processing_dir + 'rmse.txt')
+            fileio.save(rmse_combined, processing_dir + 'rmse' + file_extentions)
 
         smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'smse*')
         if rmse_filenames:
             smse_filenames = fileio.sort_nicely(smse_filenames)
             smse_dfs = []
             for smse_filename in smse_filenames:
-                smse_dfs.append(fileio.load_pd(smse_filename))
-                smse_combined = pd.concat(smse_dfs,
-                                          ignore_index=True)
-            fileio.save_pd(smse_combined, processing_dir + 'smse.txt')
+                smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
+            smse_combined = pd.concat(smse_dfs, ignore_index=True)
+            #fileio.save_pd(smse_combined, processing_dir + 'smse.txt')
+            fileio.save(smse_combined, processing_dir + 'smse' + file_extentions)
 
         for n in range(1, n_crossval+1):
             Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
@@ -875,12 +871,10 @@ def collect_nm(processing_dir, collect=False, binary=False):
                 Hyp_filenames = fileio.sort_nicely(Hyp_filenames)
                 Hyp_dfs = []
                 for Hyp_filename in Hyp_filenames:
-                    Hyp_dfs.append(fileio.load_pd(Hyp_filename))
-                    Hyp_combined = pd.concat(Hyp_dfs,
-                                             ignore_index=True)
-                fileio.save_pd(Hyp_combined, processing_dir + 'Hyp_' +
-                               str(n) + '.txt')
-
+                    Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
+                Hyp_combined = pd.concat(Hyp_dfs, ignore_index=True)
+                #fileio.save_pd(Hyp_combined, processing_dir + 'Hyp_' + str(n) + '.txt')
+                fileio.save(Hyp_combined, processing_dir + 'Hyp_' + str(n) + file_extentions)
 
 def rerun_nm(processing_dir, memory, duration):
     """This function reruns all failed batched in processing_dir after collect_nm
