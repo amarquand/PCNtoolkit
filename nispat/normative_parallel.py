@@ -876,7 +876,7 @@ def collect_nm(processing_dir, collect=False, binary=False):
                 #fileio.save_pd(Hyp_combined, processing_dir + 'Hyp_' + str(n) + '.txt')
                 fileio.save(Hyp_combined, processing_dir + 'Hyp_' + str(n) + file_extentions)
 
-def rerun_nm(processing_dir, memory, duration):
+def rerun_nm(processing_dir, memory, duration, binary=False):
     """This function reruns all failed batched in processing_dir after collect_nm
     has identified he failed batches
 
@@ -890,9 +890,12 @@ def rerun_nm(processing_dir, memory, duration):
     written by Thomas Wolfers
     """
     import nispat
-
-    failed_batches = nispat.fileio.load_pd(processing_dir +
-                                           'failed_batches.txt')
+    if binary:
+        file_extentions = '.pkl'
+    else:
+        file_extentions = '.txt'
+    failed_batches = nispat.fileio.load(processing_dir +
+                                           'failed_batches' + file_extentions)
     shape = failed_batches.shape
     for n in range(0, shape[0]):
         jobpath = failed_batches.iloc[n, 0]
@@ -923,7 +926,7 @@ def rerun_nm_m3(processing_dir):
         nispat.normative_parallel.sbatch_nm(job_path=jobpath)
 
 
-def delete_nm(processing_dir):
+def delete_nm(processing_dir, binary=False):
     """This function deletes all processing for normative modelling and just
     keeps the combined output.
 
@@ -935,8 +938,11 @@ def delete_nm(processing_dir):
     import shutil
     import glob
     import os
-
+    if binary:
+        file_extentions = '.pkl'
+    else:
+        file_extentions = '.txt'
     for file in glob.glob(processing_dir + 'batch_*/'):
         shutil.rmtree(file)
-    if os.path.exists(processing_dir + 'failed_batches.txt'):
-        os.remove(processing_dir + 'failed_batches.txt')
+    if os.path.exists(processing_dir + 'failed_batches' + file_extentions):
+        os.remove(processing_dir + 'failed_batches' + file_extentions)
