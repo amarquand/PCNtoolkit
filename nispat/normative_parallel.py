@@ -876,7 +876,7 @@ def collect_nm(processing_dir, collect=False, binary=False):
                 #fileio.save_pd(Hyp_combined, processing_dir + 'Hyp_' + str(n) + '.txt')
                 fileio.save(Hyp_combined, processing_dir + 'Hyp_' + str(n) + file_extentions)
 
-def rerun_nm(processing_dir, memory, duration, binary=False):
+def rerun_nm(processing_dir, memory, duration, binary=False, log_path=None):
     """This function reruns all failed batched in processing_dir after collect_nm
     has identified he failed batches
 
@@ -884,7 +884,7 @@ def rerun_nm(processing_dir, memory, duration, binary=False):
         * processing_dir        -> Full path to the processing directory
         * memory        -> Memory requirements written as string for example
                            4gb or 500mb
-        * duation       -> The approximate duration of the job, a string with
+        * duration      -> The approximate duration of the job, a string with
                            HH:MM:SS for example 01:01:01
 
     written by Thomas Wolfers
@@ -898,9 +898,10 @@ def rerun_nm(processing_dir, memory, duration, binary=False):
                                            'failed_batches' + file_extentions)
     shape = failed_batches.shape
     for n in range(0, shape[0]):
-        jobpath = failed_batches.iloc[n, 0]
+        jobpath = failed_batches[n, 0] 
         print(jobpath)
         nispat.normative_parallel.qsub_nm(job_path=jobpath,
+                                          log_path=log_path,
                                           memory=memory,
                                           duration=duration)
 
