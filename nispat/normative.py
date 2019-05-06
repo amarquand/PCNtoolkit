@@ -319,7 +319,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
             fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
             if cvfolds is None:
-                fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
+                fileio.save(Hyp[:,:,0], 'Hyp' + ext, example=exfile, mask=maskvol)
             else:
                 for idx in enumerate(splits.split(X)):
                     fold = idx[0]
@@ -331,7 +331,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                             example=exfile, mask=maskvol)
                 fileio.save(S2[testids, :].T, 'ys2' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
+                fileio.save(Hyp[:,:,0], 'Hyp' + ext,
+                            example=exfile, mask=maskvol)
             else:
                 fileio.save(Yhat[testids, :].T, 'yhat' + ext,
                             example=exfile, mask=maskvol)
@@ -344,7 +345,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
                 fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
                 if cvfolds is None:
-                    fileio.save(Hyp, 'Hyp' + ext, example=exfile, mask=maskvol)
+                    fileio.save(Hyp[:,:,0], 'Hyp' + ext,
+                                example=exfile, mask=maskvol)
                 else:
                     for idx in enumerate(splits.split(X)):
                         fold = idx[0]
