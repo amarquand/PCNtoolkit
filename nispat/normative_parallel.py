@@ -14,8 +14,8 @@
 # Second, the splits are submitted to the cluster.
 # Third, the output is collected and combined.
 #
-# witten by (primarily) T Wolfers, (adaptated) SM Kia
-# discussions with AF Marquand
+# witten by (primarily) T Wolfers, (adaptated) SM Kia, H Huisdens, L Parks, 
+# AF Marquand
 # -----------------------------------------------------------------------------
 
 from __future__ import print_function
@@ -578,7 +578,7 @@ def delete_nm(processing_dir,
     * Input:
         * processing_dir        -> Full path to the processing directory
 
-    written by (primarily) T Wolfers
+    written by (primarily) T Wolfers, (adapted) SM Kia
     """
     import shutil
     import glob
@@ -753,7 +753,7 @@ def rerun_nm(processing_dir,
         * duration               -> The approximate duration of the job, a
                                    string with HH:MM:SS for example 01:01:01
 
-    written by (primarily) T Wolfers
+    written by (primarily) T Wolfers, (adapted) SM Kia
     """
     import nispat
     if binary:
@@ -764,7 +764,7 @@ def rerun_nm(processing_dir,
                                         'failed_batches' + file_extentions)
     shape = failed_batches.shape
     for n in range(0, shape[0]):
-        jobpath = failed_batches.iloc[n, 0]
+        jobpath = failed_batches[n, 0]
         print(jobpath)
         nispat.normative_parallel.qsub_nm(job_path=jobpath,
                                           log_path=log_path,
