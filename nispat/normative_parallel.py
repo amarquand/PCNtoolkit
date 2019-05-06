@@ -14,7 +14,7 @@
 # Second, the splits are submitted to the cluster.
 # Third, the output is collected and combined.
 #
-# witten by (primarily) T Wolfers, (adaptated) SM Kia, H Huisdens, L Parks, 
+# witten by (primarily) T Wolfers, (adaptated) SM Kia, H Huijsdens, L Parks, 
 # AF Marquand
 # -----------------------------------------------------------------------------
 
