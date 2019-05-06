@@ -1,6 +1,6 @@
 How to install nispat?
 
-i) install Anaconda3 ii) create enviornment with " conda create --name norm_mod " iii) activate normative modeling by " source activate norm_mod " iv) install the packages with " conda install " or " pip install "
+i) install Anaconda3 ii) create enviornment with " conda create --name norm_mod " iii) activate environment by " source activate norm_mod " iv) install the required packages below with " conda install " or " pip install "
 
 pip
 nispat
