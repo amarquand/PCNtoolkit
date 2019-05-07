@@ -6,7 +6,6 @@ pip
 nispat
 spyder 
 python 
-nispat 
 pandas 
 scipy 
 nibabel
