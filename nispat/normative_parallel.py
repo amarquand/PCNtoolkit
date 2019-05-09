@@ -287,7 +287,7 @@ def split_nm(processing_dir,
             testrespfile = fileio.load_ascii(testrespfile_path)
         else:
             respfile = pd.read_pickle(respfile_path)
-            respfile = pd.read_pickle(testrespfile_path)
+            testrespfile = pd.read_pickle(testrespfile_path)
 
         respfile = pd.DataFrame(respfile)
         testrespfile = pd.DataFrame(testrespfile)
@@ -360,7 +360,7 @@ def collect_nm(processing_dir,
         file_extentions = '.txt'
 
     # detect number of subjects, batches, hyperparameters and CV
-    file_example = glob.glob(processing_dir + 'batch_1/' + 'resp*' +
+    file_example = glob.glob(processing_dir + 'batch_1/' + 'yhat' +
                              file_extentions)
     if binary is False:
         file_example = fileio.load(file_example[0])
