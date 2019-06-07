@@ -95,6 +95,28 @@ def compute_pearsonr(A, B):
     
     return Rho, pRho
 
+def explained_var(ytrue, ypred):
+    """ Computes the explainde variance of predicted values.
+
+        Basic usage::
+
+        exp_var = explained_var(ytrue, ypred)
+
+        where
+
+        :ytrue: n*p matrix of true values where n is nithe nmber of samples 
+                and p is the number of features. 
+        :ypred: n*p matrix of predicted values where n is nithe nmber of samples 
+                and p is the number of features. 
+
+        :returns exp_var: p dimentional vector of explained variances for each feature.
+        
+     """
+
+    exp_var = 1 - (ytrue - ypred).var(axis = 0) / ytrue.var(axis = 0)
+    
+    return exp_var
+
 # -----------------------
 # Functions for inference
 # -----------------------

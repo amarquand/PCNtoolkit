@@ -383,90 +383,53 @@ def collect_nm(processing_dir,
     batch_fail = []
     for batch in glob.glob(processing_dir + 'batch_*/'):
         filepath = glob.glob(batch + 'yhat*')
-        per_measures = glob.glob(batch + 'pRho*')
         if filepath == []:
             count = count+1
             batch1 = glob.glob(batch + '/*.sh')
             print(batch1)
             batch_fail.append(batch1)
             if collect is True:
-                if per_measures:
-                    pRho = np.ones(batch_size)
-                    pRho = pRho.transpose()
-                    pRho = pd.Series(pRho)
-                    # fileio.save_pd(pRho, batch + 'pRho.txt')
-                    fileio.save(pRho, batch + 'pRho' + file_extentions)
-                if per_measures:
-                    Rho = np.zeros(batch_size)
-                    Rho = Rho.transpose()
-                    Rho = pd.Series(Rho)
-                    # fileio.save_pd(Rho, batch + 'Rho.txt')
-                    fileio.save(Rho, batch + 'Rho' + file_extentions)
-                if per_measures:
-                    rmse = np.zeros(batch_size)
-                    rmse = rmse.transpose()
-                    rmse = pd.Series(rmse)
-                    # fileio.save_pd(rmse, batch + 'rmse.txt')
-                    fileio.save(rmse, batch + 'rmse' + file_extentions)
-                if per_measures:
-                    smse = np.zeros(batch_size)
-                    smse = smse.transpose()
-                    smse = pd.Series(smse)
-                    # fileio.save_pd(smse, batch + 'smse.txt')
-                    fileio.save(smse, batch + 'smse' + file_extentions)
-                if per_measures:
-                    Z = np.zeros([batch_size,
-                                  numsubjects])
-                    Z = pd.DataFrame(Z)
-                    # fileio.save_pd(Z, batch + 'Z.txt')
-                    fileio.save(Z, batch + 'Z' + file_extentions)
-                pRho = np.zeros([batch_size,
-                                 numsubjects])
-                pRho = pd.DataFrame(pRho)
-                # fileio.save_pd(pRho, batch + 'pRho.txt')
+                pRho = np.ones(batch_size)
+                pRho = pRho.transpose()
+                pRho = pd.Series(pRho)
                 fileio.save(pRho, batch + 'pRho' + file_extentions)
-
-                Rho = np.zeros([batch_size,
-                                numsubjects])
-                Rho = pd.DataFrame(Rho)
-                # fileio.save_pd(Rho, batch + 'Rho.txt')
+                
+                Rho = np.zeros(batch_size)
+                Rho = Rho.transpose()
+                Rho = pd.Series(Rho)
                 fileio.save(Rho, batch + 'Rho' + file_extentions)
-
-                rmse = np.zeros([batch_size,
-                                numsubjects])
-                rmse = pd.DataFrame(rmse)
-                # fileio.save_pd(rmse, batch + 'rmse.txt')
+                
+                rmse = np.zeros(batch_size)
+                rmse = rmse.transpose()
+                rmse = pd.Series(rmse)
                 fileio.save(rmse, batch + 'rmse' + file_extentions)
-
-                smse = np.zeros([batch_size,
-                                numsubjects])
-                smse = pd.DataFrame(smse)
-                # fileio.save_pd(smse, batch + 'smse.txt')
+                
+                smse = np.zeros(batch_size)
+                smse = smse.transpose()
+                smse = pd.Series(smse)
                 fileio.save(smse, batch + 'smse' + file_extentions)
+                
+                expv = np.zeros(batch_size)
+                expv = expv.transpose()
+                expv = pd.Series(expv)
+                fileio.save(expv, batch + 'expv' + file_extentions)
 
-                yhat = np.zeros([batch_size,
-                                 numsubjects])
+                yhat = np.zeros([batch_size, numsubjects])
                 yhat = pd.DataFrame(yhat)
-                # fileio.save_pd(yhat, batch + 'yhat.txt')
                 fileio.save(yhat, batch + 'yhat' + file_extentions)
 
-                ys2 = np.zeros([batch_size,
-                                numsubjects])
+                ys2 = np.zeros([batch_size, numsubjects])
                 ys2 = pd.DataFrame(ys2)
-                # fileio.save_pd(ys2, batch + 'ys2.txt')
                 fileio.save(ys2, batch + 'ys2' + file_extentions)
 
-                Z = np.zeros([batch_size,
-                              numsubjects])
+                Z = np.zeros([batch_size, numsubjects])
                 Z = pd.DataFrame(Z)
-                # fileio.save_pd(Z, batch + 'Z.txt')
                 fileio.save(Z, batch + 'Z' + file_extentions)
 
                 for n in range(1, n_crossval+1):
                     hyp = np.zeros([batch_size,
                                     nHyp])
                     hyp = pd.DataFrame(hyp)
-                    # fileio.save_pd(hyp, batch + 'Hyp_' + str(n) + '.txt')
                     fileio.save(hyp, batch + 'hyp' + file_extentions)
 
     # list batches that were not executed
@@ -486,7 +449,6 @@ def collect_nm(processing_dir,
             for pRho_filename in pRho_filenames:
                 pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
             pRho_combined = pd.concat(pRho_dfs, ignore_index=True)
-            # fileio.save_pd(pRho_combined, processing_dir + 'pRho.txt')
             fileio.save(pRho_combined, processing_dir + 'pRho' +
                         file_extentions)
 
@@ -497,7 +459,6 @@ def collect_nm(processing_dir,
             for Rho_filename in Rho_filenames:
                 Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
             Rho_combined = pd.concat(Rho_dfs, ignore_index=True)
-            # fileio.save_pd(Rho_combined, processing_dir + 'Rho.txt')
             fileio.save(Rho_combined, processing_dir + 'Rho' + file_extentions)
 
         Z_filenames = glob.glob(processing_dir + 'batch_*/' + 'Z*')
@@ -507,7 +468,6 @@ def collect_nm(processing_dir,
             for Z_filename in Z_filenames:
                 Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
             Z_combined = pd.concat(Z_dfs, ignore_index=True)
-            # fileio.save_pd(Z_combined, processing_dir + 'Z.txt')
             fileio.save(Z_combined, processing_dir + 'Z' + file_extentions)
 
         yhat_filenames = glob.glob(processing_dir + 'batch_*/' + 'yhat*')
@@ -517,7 +477,6 @@ def collect_nm(processing_dir,
             for yhat_filename in yhat_filenames:
                 yhat_dfs.append(pd.DataFrame(fileio.load(yhat_filename)))
             yhat_combined = pd.concat(yhat_dfs, ignore_index=True)
-            # fileio.save_pd(yhat_combined, processing_dir + 'yhat.txt')
             fileio.save(yhat_combined, processing_dir +
                         'yhat' +
                         file_extentions)
@@ -529,7 +488,6 @@ def collect_nm(processing_dir,
             for ys2_filename in ys2_filenames:
                 ys2_dfs.append(pd.DataFrame(fileio.load(ys2_filename)))
             ys2_combined = pd.concat(ys2_dfs, ignore_index=True)
-            # fileio.save_pd(ys2_combined, processing_dir + 'ys2.txt')
             fileio.save(ys2_combined, processing_dir + 'ys2' + file_extentions)
 
         rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'rmse*')
@@ -539,7 +497,6 @@ def collect_nm(processing_dir,
             for rmse_filename in rmse_filenames:
                 rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
             rmse_combined = pd.concat(rmse_dfs, ignore_index=True)
-            # fileio.save_pd(rmse_combined, processing_dir + 'rmse.txt')
             fileio.save(rmse_combined, processing_dir +
                         'rmse' +
                         file_extentions)
@@ -551,8 +508,17 @@ def collect_nm(processing_dir,
             for smse_filename in smse_filenames:
                 smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
             smse_combined = pd.concat(smse_dfs, ignore_index=True)
-            # fileio.save_pd(smse_combined, processing_dir + 'smse.txt')
             fileio.save(smse_combined, processing_dir + 'smse' +
+                        file_extentions)
+            
+        expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'expv*')
+        if expv_filenames:
+            expv_filenames = fileio.sort_nicely(expv_filenames)
+            expv_dfs = []
+            for expv_filename in expv_filenames:
+                expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
+            expv_combined = pd.concat(expv_dfs, ignore_index=True)
+            fileio.save(expv_combined, processing_dir + 'expv' +
                         file_extentions)
 
         for n in range(1, n_crossval+1):
@@ -564,8 +530,6 @@ def collect_nm(processing_dir,
                 for Hyp_filename in Hyp_filenames:
                     Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
                 Hyp_combined = pd.concat(Hyp_dfs, ignore_index=True)
-                # fileio.save_pd(Hyp_combined, processing_dir + 'Hyp_' +
-                #                str(n) + '.txt')
                 fileio.save(Hyp_combined, processing_dir + 'Hyp_' + str(n) +
                             file_extentions)
 
