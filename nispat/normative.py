@@ -23,7 +23,7 @@ from sklearn.model_selection import KFold
 try:  # run as a package if installed
     from nispat import fileio
     from nispat.normative_model.norm_utils import norm_init
-    from nispat.utils import compute_pearsonr, CustomCV
+    from nispat.utils import compute_pearsonr, CustomCV, explained_var
 except ImportError:
     pass
 
@@ -278,9 +278,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         SMSE = np.zeros_like(MSE)
         Rho = np.zeros(Nmod)
         pRho = np.ones(Nmod)
+        EXPV = np.zeros(Nmod)
         iy, jy = np.ix_(testids, nz)  # ids for tested samples nonzero values
         SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
         Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
+        EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
     else:
         if testresp is not None:
             MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -289,9 +291,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             SMSE = np.zeros_like(MSE)
             Rho = np.zeros(Nmod)
             pRho = np.ones(Nmod)
+            EXPV = np.zeros(Nmod)
             iy, jy = np.ix_(testids, nz)  # ids tested samples nonzero values
             SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
             Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
+            EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
 
     # Set writing options
     if saveoutput:
@@ -318,6 +322,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
             fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
             fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+            fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
             if cvfolds is None:
                 fileio.save(Hyp[:,:,0], 'Hyp' + ext, example=exfile, mask=maskvol)
             else:
@@ -344,6 +349,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
                 fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
                 fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
+                fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
                 if cvfolds is None:
                     fileio.save(Hyp[:,:,0], 'Hyp' + ext,
                                 example=exfile, mask=maskvol)
@@ -354,12 +360,12 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                                     ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
-            output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE)
+            output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE, EXPV)
         else:
             if testresp is None:
                 output = (Yhat, S2, Hyp)
             else:
-                output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE)
+                output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE, EXPV)
         return output
 
 
