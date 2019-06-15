@@ -413,6 +413,11 @@ def collect_nm(processing_dir,
                 expv = expv.transpose()
                 expv = pd.Series(expv)
                 fileio.save(expv, batch + 'expv' + file_extentions)
+                
+                msll = np.zeros(batch_size)
+                msll = msll.transpose()
+                msll = pd.Series(msll)
+                fileio.save(msll, batch + 'msll' + file_extentions)
 
                 yhat = np.zeros([batch_size, numsubjects])
                 yhat = pd.DataFrame(yhat)
@@ -519,6 +524,16 @@ def collect_nm(processing_dir,
                 expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
             expv_combined = pd.concat(expv_dfs, ignore_index=True)
             fileio.save(expv_combined, processing_dir + 'expv' +
+                        file_extentions)
+            
+        msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'msll*')
+        if msll_filenames:
+            msll_filenames = fileio.sort_nicely(msll_filenames)
+            msll_dfs = []
+            for msll_filename in msll_filenames:
+                msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
+            msll_combined = pd.concat(msll_dfs, ignore_index=True)
+            fileio.save(msll_combined, processing_dir + 'msll' +
                         file_extentions)
 
         for n in range(1, n_crossval+1):
