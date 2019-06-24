@@ -6,3 +6,6 @@ from . import utils
 from . import fileio
 from . import normative_parallel
 from . import rfa
+from . import architecture
+from . import NP
+from . import normative_NP

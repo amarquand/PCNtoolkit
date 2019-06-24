@@ -4,6 +4,7 @@ import os
 import numpy as np
 from scipy import stats
 from subprocess import call
+from scipy.stats import genextreme
 
 # -----------------
 # Utility functions
@@ -278,3 +279,43 @@ def qsub(job_path, memory, duration, logdir=None):
 
     # submits job to cluster
     call(qsub_call, shell=True)
+    
+def extreme_value_prob_fit(NPM, perc):
+    n = NPM.shape[0]
+    t = NPM.shape[1]
+    n_perc = int(round(t * perc))
+    m = np.zeros(n)
+    for i in range(n):
+        temp =  np.abs(NPM[i, :])
+        temp = np.sort(temp)
+        temp = temp[t - n_perc:]
+        temp = temp[0:int(np.floor(0.90*temp.shape[0]))]
+        m[i] = np.mean(temp)
+    params = genextreme.fit(m)
+    return params
+    
+def extreme_value_prob(params, NPM, perc):
+    n = NPM.shape[0]
+    t = NPM.shape[1]
+    n_perc = int(round(t * perc))
+    m = np.zeros(n)
+    for i in range(n):
+        temp =  np.abs(NPM[i, :])
+        temp = np.sort(temp)
+        temp = temp[t - n_perc:]
+        temp = temp[0:int(np.floor(0.90*temp.shape[0]))]
+        m[i] = np.mean(temp)
+    if params[0] <= 0:  # if the shape is right tailed for extreme values
+        probs = genextreme.cdf(m,*params)
+    elif params[0] > 0: # if the shape is left tailed for extreme values
+        probs = 1 - genextreme.cdf(m,*params)
+    return probs
+
+def ravel_2D(a):
+    s = a.shape
+    return np.reshape(a,[s[0], np.prod(s[1:])]) 
+
+def unravel_2D(a, s):
+    return np.reshape(a,s)
+
+    
