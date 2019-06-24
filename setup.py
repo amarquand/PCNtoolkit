@@ -8,4 +8,7 @@ setup(name='nispat',
       author_email='a.f.marquand@fcdonders.ru.nl',
       license='GNU GPLv3',
       packages=find_packages(),
+      install_requires=[
+          'sklearn>=0.19.0', 'torch>=1.1.0'
+      ],
       zip_safe=False)
