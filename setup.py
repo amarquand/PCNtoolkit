@@ -9,6 +9,6 @@ setup(name='nispat',
       license='GNU GPLv3',
       packages=find_packages(),
       install_requires=[
-          'sklearn>=0.19.0', 'torch>=1.1.0'
+          'sklearn', 'torch>=1.1.0'
       ],
       zip_safe=False)

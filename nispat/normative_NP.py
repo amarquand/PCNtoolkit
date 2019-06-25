@@ -161,17 +161,17 @@ def estimate(args):
         test_loss = np_loss(y_hat, y_test, z_all, z_context).item()
         print('Test Loss: %f' %(test_loss))
          
-    RMSE = torch.sqrt(torch.mean((y_test - y_hat)**2, dim = 0)).squeeze().cpu().numpy() * mask
+    RMSE = torch.sqrt(torch.mean((y_test - y_hat)**2, dim = 0)).squeeze().cpu().numpy() * np.int32(mask)
     SMSE = RMSE ** 2 / np.var(y_test.cpu().numpy(), axis=0).squeeze()
     Rho, pRho = compute_pearsonr(y_test.cpu().numpy().squeeze(), y_hat.cpu().numpy().squeeze())
-    EXPV = explained_var(y_test.cpu().numpy().squeeze(), y_hat.cpu().numpy().squeeze()) * mask
+    EXPV = explained_var(y_test.cpu().numpy().squeeze(), y_hat.cpu().numpy().squeeze()) * np.int32(mask)
     MSLL = compute_MSLL(y_test.cpu().numpy().squeeze(), y_hat.cpu().numpy().squeeze(), 
                         y_sigma.cpu().numpy().squeeze()**2, train_mean = y_test.cpu().numpy().mean(0), 
-                        train_var = y_test.cpu().numpy().var(0)).squeeze() * mask
+                        train_var = y_test.cpu().numpy().var(0)).squeeze() * np.int32(mask)
                         
     NPMs = (y_test - y_hat) / (y_sigma)
     NPMs = NPMs.squeeze()
-    NPMs = NPMs.cpu().numpy() * mask
+    NPMs = NPMs.cpu().numpy() * np.int32(mask)
     NPMs = np.nan_to_num(NPMs)
     NPMs = NPMs.squeeze()
     
@@ -185,30 +185,30 @@ def estimate(args):
         print('Saving Results to: %s' %(args.outdir))
         exfile = args.testrespfile
         y_hat = y_hat.squeeze().cpu().numpy()
-        y_hat = unravel_2D(response_scaler.inverse_transform(ravel_2D(y_hat)), y_hat.shape)
-        fileio.save(y_hat.transpose([1,2,3,0]).reshape([y_hat.shape[1]*
-                    y_hat.shape[2]*y_hat.shape[3],y_hat.shape[0]]), args.outdir + 
+        y_hat = response_scaler.inverse_transform(ravel_2D(y_hat))
+        y_hat = y_hat[:,mask.flatten()]
+        fileio.save(y_hat.T, args.outdir + 
                     '/yhat.nii.gz', example=exfile, mask=mask)
         ys2 = y_sigma.squeeze().cpu().numpy()
-        ys2 = unravel_2D(response_scaler.inverse_transform(ravel_2D(ys2)), ys2.shape)
+        ys2 = response_scaler.inverse_transform(ravel_2D(ys2))
         ys2 = ys2**2
-        fileio.save(ys2.transpose([1,2,3,0]).reshape([ys2.shape[1]*
-                    ys2.shape[2]*ys2.shape[3],ys2.shape[0]]), args.outdir + 
+        ys2 = ys2[:,mask.flatten()]
+        fileio.save(ys2.T, args.outdir + 
                     '/ys2.nii.gz', example=exfile, mask=mask) 
-        fileio.save(NPMs.transpose([1,2,3,0]).reshape([NPMs.shape[1]*
-                    NPMs.shape[2]*NPMs.shape[3],NPMs.shape[0]]), args.outdir +  
+        NPMs = ravel_2D(NPMs)[:,mask.flatten()]
+        fileio.save(NPMs.T, args.outdir +  
                     '/Z.nii.gz', example=exfile, mask=mask)
-        fileio.save(Rho.flatten(), args.outdir +  
+        fileio.save(Rho.flatten()[mask.flatten()], args.outdir +  
                     '/Rho.nii.gz', example=exfile, mask=mask)
-        fileio.save(pRho.flatten(), args.outdir +  
+        fileio.save(pRho.flatten()[mask.flatten()], args.outdir +  
                     '/pRho.nii.gz', example=exfile, mask=mask)
-        fileio.save(RMSE.flatten(), args.outdir +  
+        fileio.save(RMSE.flatten()[mask.flatten()], args.outdir +  
                     '/rmse.nii.gz', example=exfile, mask=mask)
-        fileio.save(SMSE.flatten(), args.outdir +  
+        fileio.save(SMSE.flatten()[mask.flatten()], args.outdir +  
                     '/smse.nii.gz', example=exfile, mask=mask)
-        fileio.save(EXPV.flatten(), args.outdir +  
+        fileio.save(EXPV.flatten()[mask.flatten()], args.outdir +  
                     '/expv.nii.gz', example=exfile, mask=mask)
-        fileio.save(MSLL.flatten(), args.outdir +  
+        fileio.save(MSLL.flatten()[mask.flatten()], args.outdir +  
                     '/msll.nii.gz', example=exfile, mask=mask)
         
         with open(args.outdir +'model.pkl', 'wb') as handle:
