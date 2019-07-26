@@ -9,3 +9,4 @@ from . import rfa
 from . import architecture
 from . import NP
 from . import normative_NP
+from . import hlr
