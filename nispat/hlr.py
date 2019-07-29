@@ -73,9 +73,9 @@ class HLR:
 
     def predict(self, age, site_id, gender):
         """ Function to make predictions from the model """
-        self.a = theano.shared(age)
-        self.s = theano.shared(site_id)
-        self.g = theano.shared(gender)
+        #self.a = theano.shared(age)
+        #self.s = theano.shared(site_id)
+        #self.g = theano.shared(gender)
         with self.model:
             self.a.set_value(age)
             self.s.set_value(site_id)
