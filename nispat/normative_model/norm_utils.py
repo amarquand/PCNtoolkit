@@ -11,7 +11,7 @@ def norm_init(X, y=None, theta=None, alg='gpr', configparam=None):
     elif alg == 'rfa':
         nm = NormRFA(X, y, theta, configparam)
     elif alg == 'hlr':
-        nm = NormHLR(X, y, configparam = {'age':0, 'site':1, 'gender':2})
+        nm = NormHLR(X, y, configparam)
     else:
         raise(ValueError, "Algorithm " + alg + " not known.")
         

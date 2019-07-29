@@ -37,9 +37,9 @@ class HLR:
 
     def __init__(self, age, site_id, gender, y):
         self.site_num = len(np.unique(site_id))
-        a = theano.shared(age)
-        s = theano.shared(site_id)
-        g = theano.shared(gender)
+        self.a = theano.shared(age)
+        self.s = theano.shared(site_id)
+        self.g = theano.shared(gender)
         with pm.Model() as model:
             # Priors
             mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e5)
@@ -57,7 +57,7 @@ class HLR:
             sigma_y = pm.Uniform('sigma_y', lower=0, upper=100)
             
             # Expected value
-            y_hat = intercepts[s] + a * slopes[g]
+            y_hat = intercepts[self.s] + self.a * slopes[self.g]
             
             # Data likelihood
             y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
@@ -73,13 +73,13 @@ class HLR:
 
     def predict(self, age, site_id, gender):
         """ Function to make predictions from the model """
-        a = theano.shared(age)
-        s = theano.shared(site_id)
-        g = theano.shared(gender)
+        self.a = theano.shared(age)
+        self.s = theano.shared(site_id)
+        self.g = theano.shared(gender)
         with self.model:
-            a.set_value(age)
-            s.set_value(site_id)
-            g.set_value(gender)
+            self.a.set_value(age)
+            self.s.set_value(site_id)
+            self.g.set_value(gender)
             ppc = pm.sample_posterior_predictive(self.trace, samples=500, progressbar=True) 
         
         # Predicting on training set
