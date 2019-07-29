@@ -182,7 +182,10 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         else:
             sub_te = Xte.shape[0]
             Yte = np.zeros([sub_te, Nmod])
-
+  
+        # Initialise normative model
+        nm = norm_init(X, alg=alg, configparam=configparam)
+        
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
 
@@ -193,18 +196,20 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         if cvfolds is not None and cvfolds != 1:
             print("Ignoring cross-valdation specification (test data given)")
         cvfolds = 1
+        
     else:
         # we are running under cross-validation
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
+        # Initialise normative model
+        nm = norm_init(X, alg=alg, configparam=configparam)
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
 
-    # Initialise normative model
-    nm = norm_init(X, alg=alg, configparam=configparam)
+    
 
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
@@ -215,6 +220,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     nlZ = np.zeros((Nmod, cvfolds))
 
     for idx in enumerate(splits.split(X)):
+
         fold = idx[0]
         tr = idx[1][0]
         te = idx[1][1]
