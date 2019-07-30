@@ -51,6 +51,10 @@ class NormHLR(NormBase):
     def n_params(self):
         return 1
     
+    @property
+    def neg_log_lik(self):
+        return -1
+    
     def estimate(self, X, y=None):
         self.hlr.estimate()
         return None
