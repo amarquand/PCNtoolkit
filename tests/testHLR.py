@@ -10,6 +10,8 @@ import pickle
 import numpy as np
 from nispat.normative_model.norm_utils import norm_init
 
+########################### TESTING HLR #######################################
+
 # Simulating the data
 X = np.random.randint(10,90,100)
 Y = np.random.randn(100)
@@ -24,3 +26,5 @@ with open('configs.pkl', 'wb') as file:
 nm = norm_init(X, Y, alg='hlr', configparam='configs.pkl')
 nm.estimate(X, Y)
 yhat, s2 = nm.predict(X, Y, Xs)
+
+###############################################################################
