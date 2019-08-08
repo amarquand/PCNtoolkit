@@ -33,16 +33,17 @@ class NormHBR(NormBase):
     """
 
     def __init__(self, X, y=None, configparam=None):
-
+        self.configparam = configparam
+        
         with open(configparam, 'rb') as handle:
              data = pickle.load(handle)
-        self.confounds = data['confounds']
+        confounds = data['confounds']
         self.type = data['model_type']
         
         if (X is not None):
             self.hbr = HBR(np.squeeze(X), 
-                           np.squeeze(self.confounds['train'][:, 0]), 
-                           np.squeeze(self.confounds['train'][:, 1]), 
+                           np.squeeze(confounds['train'][:, 0]), 
+                           np.squeeze(confounds['train'][:, 1]), 
                            np.squeeze(y), self.type)
         else:
             raise(ValueError, 'please specify covariates')
@@ -61,11 +62,13 @@ class NormHBR(NormBase):
         return None
         
     def predict(self, X, y, Xs, theta=None): 
+        with open(self.configparam, 'rb') as handle:
+             data = pickle.load(handle)
+             
+        confounds = data['confounds']
         yhat, s2 = self.hbr.predict(np.squeeze(Xs), 
-                                    np.squeeze(self.confounds['test'][:, 0]), 
-                                    np.squeeze(self.confounds['test'][:, 1]))
+                                    np.squeeze(confounds['test'][:, 0]), 
+                                    np.squeeze(confounds['test'][:, 1]))
         
-#         yhat, s2 = self.hlr.predict(np.squeeze(Xs[:,self.cov_ind['age']]), 
-#                                    np.squeeze(Xs[:,self.cov_ind['site']]), 
-#                                    np.squeeze(Xs[:,self.cov_ind['gender']]))
+
         return yhat, s2
