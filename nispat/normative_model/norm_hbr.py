@@ -63,12 +63,13 @@ class NormHBR(NormBase):
         
     def predict(self, X, y, Xs, theta=None): 
         with open(self.configparam, 'rb') as handle:
-             data = pickle.load(handle)
+             configparam = pickle.load(handle)
              
-        confounds = data['confounds']
+        confounds = configparam['confounds']
+        pred_type = configparam['prediction']
         yhat, s2 = self.hbr.predict(np.squeeze(Xs), 
                                     np.squeeze(confounds['test'][:, 0]), 
-                                    np.squeeze(confounds['test'][:, 1]))
+                                    np.squeeze(confounds['test'][:, 1]), pred = pred_type)
         
 
         return yhat, s2
