@@ -35,24 +35,31 @@ class HBR:
     Written by S.M. Kia
     """
 
-    def __init__(self, age, site_id, gender, y, model_type = 'lin'):
+    def __init__(self, age, site_id, gender, y, model_type = 'poly2'):
         self.site_num = len(np.unique(site_id))
         self.gender_num = len(np.unique(gender))
         self.model_type = model_type
         if model_type == 'nn':
             age = np.expand_dims(age ,axis = 1)
+            n_hidden = 2
+            n_data = 1
+            init_1 = pm.floatX(np.random.randn(n_data, n_hidden))
+            init_out = pm.floatX(np.random.randn(n_hidden))
+            std_init_1 = pm.floatX(np.ones([n_data, n_hidden]))
+            std_init_out = pm.floatX(np.ones([n_hidden,]))
         self.a = theano.shared(age)
         self.s = theano.shared(site_id)
         self.g = theano.shared(gender)
         with pm.Model() as model:
-            # Priors
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e5)
-            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
-            mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e5)
-            sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5)
+            if model_type != 'nn':
+                # Priors
+                mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e5)
+                sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
+                mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e5)
+                sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5)
             
-            # Random intercepts
-            intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=self.site_num)
+                # Random intercepts
+                intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=self.site_num)
             
             # Expected value
             if model_type == 'lin_rand_int':
@@ -86,13 +93,6 @@ class HBR:
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                 sigma_y = sigma_error[self.g, self.s]
             elif model_type == 'nn':
-                n_hidden = 2
-                n_data = 1
-                init_1 = pm.floatX(np.random.randn(n_data, n_hidden))
-                init_out = pm.floatX(np.random.randn(n_hidden))
-                std_init_1 = pm.floatX(np.ones([n_data, n_hidden]))
-                std_init_out = pm.floatX(np.ones([n_hidden,]))
-                
                 weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1., 
                                  shape=(n_data, n_hidden), 
                                  testval=init_1)
@@ -125,9 +125,7 @@ class HBR:
                 sigma_y = sigma_error[(self.g, self.s)]
                 
             else:
-                raise ValueError('Unknown method:' + model_type)
-            
-            
+                raise ValueError('Unknown method:' + model_type) 
             
             # Data likelihood
             y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
@@ -141,38 +139,35 @@ class HBR:
         
         return self.trace
 
-    def predict(self, age, site_id, gender):
+    def predict(self, age, site_id, gender, pred = None):
         """ Function to make predictions from the model """
-        #self.a = theano.shared(age)
-        #self.s = theano.shared(site_id)
-        #self.g = theano.shared(gender)
+        
         samples = 1000
-        if self.model_type == 'nn':
-            age = np.expand_dims(age ,axis = 1)
-        with self.model:
-            self.a.set_value(age)
-            self.s.set_value(site_id)
-            self.g.set_value(gender)
-            ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
-        
-        # Predicting on training set
-        pred_mean = ppc['y_like'].mean(axis=0)
-        pred_var = ppc['y_like'].var(axis=0)
-        
-        temp = np.zeros([len(age), self.trace.nchains * samples])
-        for i in range(temp.shape[0]):
-            if (self.model_type == 'lin_rand_int' or self.model_type == 'lin_rand_int_slp' or self.model_type == 'lin_rand_int_slp_nse'):
-                temp[i,:] = age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
-            elif self.model_type == 'poly2':
-                temp[i,:] = age[i]**2 * self.trace['mu_prior_slope_2'] + age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
-            elif self.model_type == 'nn':
-                act_1 = pm.math.tanh(age[i,:] * self.trace['w_in_1_grp'])
-                temp[i,:] = theano.tensor.batched_dot(act_1, self.trace['w_1_out_grp'])
-                
-        group_mean = temp.mean(axis=1)
-        group_var = temp.var(axis=1)
+        if pred == 'single':
+            if self.model_type == 'nn':
+                age = np.expand_dims(age ,axis = 1)
+            with self.model:
+                self.a.set_value(age)
+                self.s.set_value(site_id)
+                self.g.set_value(gender)
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            
+            # Predicting on training set
+            pred_mean = ppc['y_like'].mean(axis=0)
+            pred_var = ppc['y_like'].var(axis=0)
+        elif pred == 'group':
+            temp = np.zeros([len(age), self.trace.nchains * samples])
+            for i in range(temp.shape[0]):
+                if (self.model_type == 'lin_rand_int' or self.model_type == 'lin_rand_int_slp' or self.model_type == 'lin_rand_int_slp_nse'):
+                    temp[i,:] = age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
+                elif self.model_type == 'poly2':
+                    temp[i,:] = age[i]**2 * self.trace['mu_prior_slope_2'] + age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
+                elif self.model_type == 'nn':
+                    act_1 = pm.math.tanh(age[i,:] * self.trace['w_in_1_grp'])
+                    temp[i,:] = theano.tensor.batched_dot(act_1, self.trace['w_1_out_grp'])
+                    
+            pred_mean = temp.mean(axis=1)
+            pred_var = temp.var(axis=1)
         
         print('Done!')
-        
-        
         return pred_mean, pred_var
