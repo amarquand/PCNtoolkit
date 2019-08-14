@@ -59,7 +59,7 @@ class HBR:
                 sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5)
             
                 # Random intercepts
-                intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=self.site_num)
+                intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.site_num,))
             
             # Expected value
             if model_type == 'lin_rand_int':
@@ -83,6 +83,13 @@ class HBR:
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                 sigma_y = sigma_error[self.g, self.s]      
+            elif model_type == 'lin_rand_int_nse':
+                # Random slopes
+                slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
+                y_hat = intercepts[self.s] + self.a * slopes[self.g]
+                # Model error
+                sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
+                sigma_y = sigma_error[self.g, self.s]
             elif model_type == 'poly2':
                 slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,self.site_num))
                 mu_prior_slope_2 = pm.Normal('mu_prior_slope_2', mu=0., sigma=1e5)
@@ -152,13 +159,12 @@ class HBR:
                 self.g.set_value(gender)
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
             
-            # Predicting on training set
             pred_mean = ppc['y_like'].mean(axis=0)
             pred_var = ppc['y_like'].var(axis=0)
         elif pred == 'group':
             temp = np.zeros([len(age), self.trace.nchains * samples])
             for i in range(temp.shape[0]):
-                if (self.model_type == 'lin_rand_int' or self.model_type == 'lin_rand_int_slp' or self.model_type == 'lin_rand_int_slp_nse'):
+                if (self.model_type == 'lin_rand_int' or self.model_type == 'lin_rand_int_slp' or self.model_type == 'lin_rand_int_nse' or self.model_type == 'lin_rand_int_slp_nse'):
                     temp[i,:] = age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
                 elif self.model_type == 'poly2':
                     temp[i,:] = age[i]**2 * self.trace['mu_prior_slope_2'] + age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
