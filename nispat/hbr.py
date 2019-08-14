@@ -59,34 +59,34 @@ class HBR:
                 sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5)
             
                 # Random intercepts
-                intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.site_num,))
+                intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.gender_num,self.site_num))
             
             # Expected value
             if model_type == 'lin_rand_int':
                 # Random slopes
                 slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
-                y_hat = intercepts[self.s] + self.a * slopes[self.g]
+                y_hat = intercepts[self.g, self.s] + self.a * slopes[self.g]
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100)
                 sigma_y = sigma_error
             elif model_type == 'lin_rand_int_slp':
                 # Random slopes
                 slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,self.site_num))
-                y_hat = intercepts[self.s] + self.a * slopes[self.g, self.s]
+                y_hat = intercepts[self.g, self.s] + self.a * slopes[self.g, self.s]
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100)
                 sigma_y = sigma_error
             elif model_type == 'lin_rand_int_slp_nse':
                 # Random slopes
                 slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,self.site_num))
-                y_hat = intercepts[self.s] + self.a * slopes[self.g, self.s]
+                y_hat = intercepts[self.g, self.s] + self.a * slopes[self.g, self.s]
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                 sigma_y = sigma_error[self.g, self.s]      
             elif model_type == 'lin_rand_int_nse':
                 # Random slopes
                 slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
-                y_hat = intercepts[self.s] + self.a * slopes[self.g]
+                y_hat = intercepts[self.g, self.s] + self.a * slopes[self.g]
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                 sigma_y = sigma_error[self.g, self.s]
@@ -95,7 +95,7 @@ class HBR:
                 mu_prior_slope_2 = pm.Normal('mu_prior_slope_2', mu=0., sigma=1e5)
                 sigma_prior_slope_2 = pm.HalfCauchy('sigma_prior_slope_2', 5)
                 slopes_2 = pm.Normal('slopes_2', mu=mu_prior_slope_2, sigma=sigma_prior_slope_2, shape=(self.gender_num,self.site_num))
-                y_hat = intercepts[self.s] + self.a * slopes[self.g, self.s] + self.a**2 * slopes_2[self.g, self.s]
+                y_hat = intercepts[self.g, self.s] + self.a * slopes[self.g, self.s] + self.a**2 * slopes_2[self.g, self.s]
                 # Model error
                 sigma_error = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                 sigma_y = sigma_error[self.g, self.s]
