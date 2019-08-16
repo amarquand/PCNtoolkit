@@ -706,10 +706,10 @@ def qsub_nm(job_path,
     # created qsub command
     if log_path is None:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                     'mem=' + memory + ',walltime=' + duration]
+                     'procs=1' + memory + ',mem=' + memory + ',walltime=' + duration]
     else:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path +
-                     ' -l ' + 'mem=' + memory + ',walltime=' + duration +
+                     ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' + duration +
                      ' -o ' + log_path + ' -e ' + log_path]
 
     # submits job to cluster
