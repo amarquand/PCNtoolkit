@@ -73,16 +73,16 @@ class HBR:
                     slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,self.site_num))
                     y_hat = intercepts[(self.g, self.s)] + self.a * slopes[(self.g, self.s)]
                     # Model error
-                    sigma_error_site = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.site_num,))
-                    sigma_error_gender = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,))
+                    sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
+                    sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
                     sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
                 elif model_type == 'lin_rand_int_nse':
                     # Random slopes
                     slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
                     y_hat = intercepts[(self.g, self.s)] + self.a * slopes[(self.g)]
                     # Model error
-                    sigma_error_site = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.site_num,))
-                    sigma_error_gender = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,))
+                    sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
+                    sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
                     sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
                 elif model_type == 'poly2':
                     slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
@@ -91,8 +91,8 @@ class HBR:
                     slopes_2 = pm.Normal('slopes_2', mu=mu_prior_slope_2, sigma=sigma_prior_slope_2, shape=(self.gender_num,))
                     y_hat = intercepts[(self.g, self.s)] + self.a * slopes[(self.g)] + self.a**2 * slopes_2[(self.g)]
                     # Model error
-                    sigma_error_site = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.site_num,))
-                    sigma_error_gender = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,))
+                    sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
+                    sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
                     sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
                 # Data likelihood
                 y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
@@ -133,8 +133,8 @@ class HBR:
                 act_1 = pm.math.tanh(theano.tensor.batched_dot(self.a, weights_in_1))
                 y_hat = theano.tensor.batched_dot(act_1, weights_1_out)
                 
-                sigma_error_site = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.site_num,))
-                sigma_error_gender = pm.Uniform('sigma_error', lower=0, upper=100, shape=(self.gender_num,))
+                sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
+                sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
                 sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
                 # Data likelihood
                 y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
