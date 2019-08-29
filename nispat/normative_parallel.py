@@ -436,6 +436,14 @@ def collect_nm(processing_dir,
                                     nHyp])
                     hyp = pd.DataFrame(hyp)
                     fileio.save(hyp, batch + 'hyp' + file_extentions)
+        else: # if more than 10% of yhat is nan then consider the batch as a failed batch
+            yhat = fileio.load(filepath[0])
+            if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
+                count = count+1
+                batch1 = glob.glob(batch + '/*.sh')
+                print('More than 10% nans in '+ batch1[0])
+                batch_fail.append(batch1)
+
 
     # list batches that were not executed
     print('Number of batches that failed:' + str(count))
