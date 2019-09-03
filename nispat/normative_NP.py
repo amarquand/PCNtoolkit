@@ -28,8 +28,8 @@ from torch import optim
 import numpy as np
 import pickle
 from NP import NP, apply_dropout_test, np_loss
-from sklearn.preprocessing import QuantileTransformer, StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.linear_model import LinearRegression, MultiTaskLasso
 from architecture import Encoder, Decoder
 from nispat.utils import compute_pearsonr, explained_var, compute_MSLL
 from nispat.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
@@ -59,6 +59,8 @@ def get_args(*args):
                         help='number of epochs to train')
     parser.add_argument('--device', type=str, default='cuda', dest='device',
                         help='Either cpu or cuda')
+    parser.add_argument('--fxestimator', type=str, default='MT', dest='estimator',
+                        help='Fixed-effect estimator type.')
 
     args = parser.parse_args()
 
@@ -88,7 +90,7 @@ def estimate(args):
     covariates_scaler = StandardScaler()
     covariates = covariates_scaler.fit_transform(covariates)
     test_covariates = covariates_scaler.transform(test_covariates)
-    response_scaler = QuantileTransformer()
+    response_scaler = MinMaxScaler()
     responses = unravel_2D(response_scaler.fit_transform(ravel_2D(responses)), response_shape)
     test_responses = unravel_2D(response_scaler.transform(ravel_2D(test_responses)), test_responses_shape)
     
@@ -112,22 +114,30 @@ def estimate(args):
     for i in range(factor):
         x_context[:,i,:] = covariates[:,:]
         idx = np.random.randint(0,covariates.shape[0], covariates.shape[0])
-        for j in range(responses.shape[1]):
-            for k in range(responses.shape[2]):
-                for l in range(responses.shape[3]):
-                    reg = LinearRegression()
-                    reg.fit(x_context[idx,i,:].cpu().numpy(), responses[idx,j,k,l].cpu().numpy())
-                    y_context[:,i,j,k,l] = torch.tensor(reg.predict(x_context[:,i,:].cpu().numpy()), device=args.device)    
-                    y_context_test[:,i,j,k,l] = torch.tensor(reg.predict(x_context_test[:,i,:].cpu().numpy()), device=args.device)
+        if args.estimator=='ST':
+            for j in range(responses.shape[1]):
+                for k in range(responses.shape[2]):
+                    for l in range(responses.shape[3]):
+                        reg = LinearRegression()
+                        reg.fit(x_context[idx,i,:].cpu().numpy(), responses[idx,j,k,l].cpu().numpy())
+                        y_context[:,i,j,k,l] = torch.tensor(reg.predict(x_context[:,i,:].cpu().numpy()), device=args.device)    
+                        y_context_test[:,i,j,k,l] = torch.tensor(reg.predict(x_context_test[:,i,:].cpu().numpy()), device=args.device)
+        elif args.estimator=='MT':
+            reg = MultiTaskLasso(alpha=0.1)
+            reg.fit(x_context[idx,i,:].cpu().numpy(), np.reshape(responses[idx,:,:,:].cpu().numpy(), [covariates.shape[0],np.prod(responses.shape[1:])]))
+            y_context[:,i,:,:,:] = torch.tensor(np.reshape(reg.predict(x_context[:,i,:].cpu().numpy()), 
+                     [x_context.shape[0],responses.shape[1],responses.shape[2],responses.shape[3]]), device=args.device)    
+            y_context_test[:,i,:,:,:] = torch.tensor(np.reshape(reg.predict(x_context_test[:,i,:].cpu().numpy()), 
+                          [x_context_test.shape[0],responses.shape[1],responses.shape[2],responses.shape[3]]), device=args.device)    
         print('Fixed-effect %d of %d is computed!' %(i+1, factor))
     
     x_all = x_context
     y_all = responses.unsqueeze(1).expand(-1,factor,-1,-1,-1)
     
     y_test = test_responses.unsqueeze(1)
-    #x_test = test_covariates.view((test_covariates.shape[0],1,test_covariates.shape[1]))
     
     encoder = Encoder(x_context, y_context, args).to(args.device)
+    args.cnn_feature_num = encoder.cnn_feature_num
     decoder = Decoder(x_context, y_context, args).to(args.device)
     model = NP(encoder, decoder, args).to(args.device)
     

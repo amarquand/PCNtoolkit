@@ -14,6 +14,7 @@ args = struct()
 args.batchnum = 10
 args.epochs = 100
 args.device = 'cuda'
+args.estimator = 'MT'
 args.m = 10
 args.respfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/responses.nii.gz'
 args.covfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/covariates.pickle'
