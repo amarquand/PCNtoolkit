@@ -102,8 +102,6 @@ def estimate(args):
     y_context = np.zeros([responses.shape[0], factor, responses.shape[1], 
                          responses.shape[2], responses.shape[3]], dtype=np.float32)
     x_all = np.zeros([covariates.shape[0], factor, covariates.shape[1]], dtype=np.float32)
-    y_all = np.zeros([responses.shape[0], factor, responses.shape[1], 
-                         responses.shape[2], responses.shape[3]], dtype=np.float32)
     x_context_test = np.zeros([test_covariates.shape[0], factor, test_covariates.shape[1]], dtype=np.float32)
     y_context_test = np.zeros([test_responses.shape[0], factor, test_responses.shape[1], 
                          test_responses.shape[2], test_responses.shape[3]], dtype=np.float32)
@@ -131,9 +129,8 @@ def estimate(args):
         print('Fixed-effect %d of %d is computed!' %(i+1, factor))
     
     x_all = x_context
-    y_all = np.expand_dims(responses, axis=1).repeat(factor, axis=1)
-    y_test = np.expand_dims(test_responses, axis=1)
-    del responses, test_responses
+    responses = np.expand_dims(responses, axis=1).repeat(factor, axis=1)
+    test_responses = np.expand_dims(test_responses, axis=1)
     
     ################################## TRAINING #################################  
     
@@ -158,8 +155,8 @@ def estimate(args):
                 y_hat, z_all, z_context, dummy = model(torch.tensor(x_context[idx,:,:], device = args.device), 
                                                    torch.tensor(y_context[idx,:,:,:,:], device = args.device), 
                                                    torch.tensor(x_all[idx,:,:], device = args.device), 
-                                                   torch.tensor(y_all[idx,:,:,:,:], device = args.device))
-                loss = np_loss(y_hat, torch.tensor(y_all[idx,:,:,:,:], device = args.device), z_all, z_context)
+                                                   torch.tensor(responses[idx,:,:,:,:], device = args.device))
+                loss = np_loss(y_hat, torch.tensor(responses[idx,:,:,:,:], device = args.device), z_all, z_context)
                 loss.backward()
                 train_loss += loss.item()
                 optimizer.step()
@@ -172,19 +169,19 @@ def estimate(args):
     model.apply(apply_dropout_test)
     with torch.no_grad():
         y_hat, z_all, z_context, y_sigma = model(torch.tensor(x_context_test, device = args.device),
-                                                 torch.tensor(y_context_test, device = args.device), n = 100)
-        test_loss = np_loss(y_hat, torch.tensor(y_test, device = args.device), z_all, z_context).item()
+                                                 torch.tensor(y_context_test, device = args.device), n = 15)
+        test_loss = np_loss(y_hat, torch.tensor(test_responses, device = args.device), z_all, z_context).item()
         print('Test loss:%f' %(test_loss))
          
-    RMSE = np.sqrt(np.mean((y_test - y_hat.cpu().numpy())**2, axis = 0)).squeeze() * mask
-    SMSE = RMSE ** 2 / np.var(y_test, axis=0).squeeze()
-    Rho, pRho = compute_pearsonr(y_test.squeeze(), y_hat.cpu().numpy().squeeze())
-    EXPV = explained_var(y_test.squeeze(), y_hat.cpu().numpy().squeeze()) * mask
-    MSLL = compute_MSLL(y_test.squeeze(), y_hat.cpu().numpy().squeeze(), 
-                        y_sigma.cpu().numpy().squeeze()**2, train_mean = y_test.mean(0), 
-                        train_var = y_test.var(0)).squeeze() * mask
+    RMSE = np.sqrt(np.mean((test_responses - y_hat.cpu().numpy())**2, axis = 0)).squeeze() * mask
+    SMSE = RMSE ** 2 / np.var(test_responses, axis=0).squeeze()
+    Rho, pRho = compute_pearsonr(test_responses.squeeze(), y_hat.cpu().numpy().squeeze())
+    EXPV = explained_var(test_responses.squeeze(), y_hat.cpu().numpy().squeeze()) * mask
+    MSLL = compute_MSLL(test_responses.squeeze(), y_hat.cpu().numpy().squeeze(), 
+                        y_sigma.cpu().numpy().squeeze()**2, train_mean = test_responses.mean(0), 
+                        train_var = test_responses.var(0)).squeeze() * mask
                         
-    NPMs = (y_test - y_hat.cpu().numpy()) / (y_sigma.cpu().numpy())
+    NPMs = (test_responses - y_hat.cpu().numpy()) / (y_sigma.cpu().numpy())
     NPMs = NPMs.squeeze()
     NPMs = NPMs * mask
     NPMs = np.nan_to_num(NPMs)
