@@ -40,7 +40,7 @@ class NP(nn.Module):
         z_sample = eps.mul(std).add_(mu)
         return z_sample
 
-    def forward(self, x_context, y_context, x_all=None, y_all=None, n = None):
+    def forward(self, x_context, y_context, x_all=None, y_all=None, n = 10):
         y_sigma = None
         z_context = self.xy_to_z_params(x_context, y_context)
         if self.training:
@@ -50,12 +50,12 @@ class NP(nn.Module):
         else:  
             z_all = z_context
             temp = torch.zeros([n,y_context.shape[0],1,y_context.shape[2],y_context.shape[3],
-                                y_context.shape[4]], device = self.device)
+                                y_context.shape[4]], device = 'cpu')
             for i in range(n):
                 z_sample = self.reparameterise(z_all)
                 temp[i,:] = self.decoder.forward(z_sample, x_context)
-            y_hat = torch.mean(temp, dim=0)
-            y_sigma = torch.std(temp, dim=0)
+            y_hat = torch.mean(temp, dim=0).to(self.device)
+            y_sigma = torch.std(temp, dim=0).to(self.device)
         return y_hat, z_all, z_context, y_sigma
     
 ###############################################################################
