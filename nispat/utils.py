@@ -8,7 +8,19 @@ from subprocess import call
 # -----------------
 # Utility functions
 # -----------------
-
+def create_poly_basis(X, dimpoly):
+    """ compute a polynomial basis expansion of the specified order"""
+    
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    D = X.shape[1]
+    Phi = np.zeros((X.shape[0], D*dimpoly))
+    colid = np.arange(0, D)
+    for d in range(1, dimpoly+1):
+        Phi[:, colid] = X ** d
+        colid += D
+        
+    return Phi
 
 def squared_dist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""

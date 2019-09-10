@@ -69,6 +69,6 @@ plt.show()
 ##hyp = np.exp(out[0])
 vari = 1/hyp
 
-print B.nlZ
-print vari
-print B.m
+print(B.nlZ)
+print(vari)
+print(B.m)
