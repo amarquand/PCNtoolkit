@@ -1,21 +1,20 @@
 How to install nispat?
 
-i) install Anaconda3 ii) create enviornment with " conda create --name norm_mod " iii) activate environment by " source activate norm_mod " iv) install the required packages below with " conda install " or " pip install "
+1) install Anaconda3
+2) install pip with  "conda install pip"
 
-pip
-nispat
-spyder 
-python 
-pandas 
-scipy 
-nibabel
-sklearn
-torch
-glob3
+optional, but recommended:
+    a) create enviornment with " conda create --name normative_modeling " 
+    b) activate environment by " source activate normative_modeling " 
 
 
-How to adapt nispat to your environment?
+3) download nispat from github
+4) unzip nispat into download folder 
+5) change dir to download folder using the terminal and execute " pip install nispat-master/ "
 
-You have to adapt routines for the submission of jobs to your cluster environment - execute_nm, bashwrap_nm, qsub_nm, rerun_nm - in normative_parallel.py
+or
 
-Enjoy our code and if you have questions don't hesitate to ask.
+3) clone nispat from github
+4) change dir to download folder using the terminal and execute " pip install nispat/ "
+
+You should be all set now!
