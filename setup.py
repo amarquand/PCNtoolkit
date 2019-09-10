@@ -8,5 +8,5 @@ setup(name='nispat',
       author_email='a.f.marquand@fcdonders.ru.nl',
       license='GNU GPLv3',
       packages=find_packages(),
-      install_requires=['nibabel', 'glob3', 'torch', 'pandas', 'scipy', 'nibabel', 'sklearn']
+      install_requires=['nibabel', 'glob3', 'torch', 'pandas', 'scipy', 'nibabel', 'sklearn'],
       zip_safe=False)
