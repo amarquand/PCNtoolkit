@@ -1,10 +1,20 @@
 How to install nispat?
 
-i) install Anaconda3 
-ii) create enviornment with " conda create --name normative_modeling " 
-iii) activate environment by " source activate normative_modeling " 
-iv) download/clone nispat from github
-v) unzip nispat into download folder 
-vi) change dir to download folder using the terminal and execute " pip install nispat-master/ "
+1) install Anaconda3
+2) install pip with  "conda install pip"
 
-Now you are set!
+optional, but recommended:
+    a) create enviornment with " conda create --name normative_modeling " 
+    b) activate environment by " source activate normative_modeling " 
+
+
+3) download nispat from github
+4) unzip nispat into download folder 
+5) change dir to download folder using the terminal and execute " pip install nispat-master/ "
+
+or
+
+3) clone nispat from github
+4) change dir to download folder using the terminal and execute " pip install nispat/ "
+
+You should be all set now!
