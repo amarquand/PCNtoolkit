@@ -15,10 +15,12 @@ try:  # Run as a package if installed
     from nispat.utils import squared_dist
 except ImportError:
     pass
+
     path = os.path.abspath(os.path.dirname(__file__))
     if path not in sys.path:
         sys.path.append(path)
     del path
+    
     from utils import squared_dist
 
 # --------------------
@@ -86,7 +88,7 @@ class CovSqExp(CovBase):
     """ Ordinary squared exponential covariance function.
         The hyperparameters are::
 
-            theta = ( log(ell), log(sf2) )
+            theta = ( log(ell), log(sf) )
 
         where ell is a lengthscale parameter and sf2 is the signal variance
     """
@@ -125,7 +127,7 @@ class CovSqExpARD(CovBase):
     """ Squared exponential covariance function with ARD
         The hyperparameters are::
 
-            theta = (log(ell_1, ..., log_ell_D), log(sf2))
+            theta = (log(ell_1, ..., log_ell_D), log(sf))
 
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
@@ -133,7 +135,10 @@ class CovSqExpARD(CovBase):
     def __init__(self, x=None):
         if x is None:
             raise ValueError("N x D data matrix must be supplied as input")
-        self.D = x.shape[1]
+        if len(x.shape) == 1:
+            self.D = 1
+        else:
+            self.D = x.shape[1]
         self.n_params = self.D + 1
 
     def cov(self, theta, x, z=None):
@@ -185,15 +190,23 @@ class CovSum(CovBase):
             covfunc = eval(cname + '(x)')
             self.n_params += covfunc.get_n_params()
             self.covfuncs.append(covfunc)
-        self.N, self.D = x.shape
+
+        if len(x.shape) == 1:
+            self.N = len(x)
+            self.D = 1
+        else:
+            self.N, self.D = x.shape
 
     def cov(self, theta, x, z=None):
         theta_offset = 0
         for ci, covfunc in enumerate(self.covfuncs):
-            n_params_c = covfunc.get_n_params()
-            theta_c = [theta[c] for c in
-                       range(theta_offset, theta_offset + n_params_c)]
-            theta_offset += n_params_c
+            try: 
+                n_params_c = covfunc.get_n_params()
+                theta_c = [theta[c] for c in
+                           range(theta_offset, theta_offset + n_params_c)]
+                theta_offset += n_params_c                
+            except Exception as e:
+                print(e)
 
             if ci == 0:
                 K = covfunc.cov(theta_c, x, z)
@@ -284,6 +297,9 @@ class GPR:
     def post(self, hyp, covfunc, X, y):
         """ Generic function to compute posterior distribution.
         """
+        
+        if len(hyp.shape) > 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
 
         if len(X.shape) == 1:
             X = X[:, np.newaxis]
@@ -307,6 +323,11 @@ class GPR:
         """
 
         # load or recompute posterior
+        if self.verbose:
+            print("computing likelihood ... | hyp=", hyp)
+            
+        if len(hyp.shape) > 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
         if self._updatepost(hyp, covfunc):
             try:
                 self.post(hyp, covfunc, X, y)
@@ -331,6 +352,9 @@ class GPR:
         """ Function to compute derivatives
         """
 
+        if len(hyp.shape) > 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+            
         # hyperparameters
         sn2 = np.exp(2*hyp[0])       # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
@@ -375,7 +399,11 @@ class GPR:
     def estimate(self, hyp0, covfunc, X, y, optimizer='cg'):
         """ Function to estimate the model
         """
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
 
+        self.hyp0 = hyp0
+        
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
                                    (covfunc, X, y), disp=True, gtol=self.tol,
@@ -387,7 +415,11 @@ class GPR:
         else:
             raise ValueError("unknown optimizer")
 
-        self.hyp = out[0]
+        # Always return a 1d array. The optimizer sometimes changes dimesnions
+        if len(out[0].shape) > 1:
+            self.hyp = out[0].flatten()
+        else:
+            self.hyp = out[0]
         self.nlZ = out[1]
         self.optimizer = optimizer
 
@@ -396,7 +428,15 @@ class GPR:
     def predict(self, hyp, X, y, Xs):
         """ Function to make predictions from the model
         """
-
+        if len(hyp.shape) > 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+        
+        # ensure X and Xs are multi-dimensional arrays
+        if len(Xs.shape) == 1:
+            Xs = Xs[:, np.newaxis]
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
+            
         # reestimate posterior (avoids numerical problems with optimizer)
         self.post(hyp, self.covfunc, X, y)
         
