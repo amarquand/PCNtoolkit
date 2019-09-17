@@ -375,7 +375,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         else:
             if testresp is None:
-                output = (Yhat[testids, :], S2[testids, :], Hyp[testids, :])
+                output = (Yhat[testids, :], S2[testids, :], Hyp)
             else:
                 output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
