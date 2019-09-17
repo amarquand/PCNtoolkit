@@ -372,12 +372,12 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                                     ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
-            output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         else:
             if testresp is None:
-                output = (Yhat, S2, Hyp)
+                output = (Yhat[testids, :], S2[testids, :], Hyp[testids, :])
             else:
-                output = (Yhat, S2, Hyp, Z, Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
 
