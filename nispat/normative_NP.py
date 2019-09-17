@@ -151,6 +151,7 @@ def estimate(args):
     decoder = Decoder(x_context, y_context, args).to(args.device)
     model = NP(encoder, decoder, args).to(args.device)
     
+    print('Estimating the Random-effect ...')
     k = 1
     epochs = [int(args.epochs/4),int(args.epochs/2),int(args.epochs/5),int(args.epochs-args.epochs/4-args.epochs/2-args.epochs/5)]
     mini_batch_num = args.batchnum
@@ -172,17 +173,17 @@ def estimate(args):
                 loss.backward()
                 train_loss += loss.item()
                 optimizer.step()
-            print('Epoch: %d, Loss:%f, Average Loss:%f' %(k, train_loss, train_loss/y_hat.shape[0]))
+            print('Epoch: %d, Loss:%f, Average Loss:%f' %(k, train_loss, train_loss/responses.shape[0]))
             k += 1
             
     ################################## Evaluation #################################
     
+    print('Predicting on Test Data ...')
     model.eval()
     model.apply(apply_dropout_test)
     with torch.no_grad():
         y_hat, z_all, z_context, y_sigma = model(torch.tensor(x_context_test, device = args.device),
                                                  torch.tensor(y_context_test, device = args.device), n = 15)
-        
     if args.testrespfile is not None:   
         test_loss = np_loss(y_hat[0:test_responses_shape[0],:], 
                             torch.tensor(test_responses, device = args.device), 
@@ -216,7 +217,7 @@ def estimate(args):
     fileio.save(y_hat.T, args.outdir + 
                 '/yhat.nii.gz', example=exfile, mask=mask)
     ys2 = y_sigma.squeeze().cpu().numpy()
-    ys2 = response_scaler.inverse_transform(ravel_2D(ys2))
+    ys2 = ravel_2D(ys2) * (response_scaler.data_max_ - response_scaler.data_min_)
     ys2 = ys2**2
     ys2 = ys2[:,mask.flatten()]
     fileio.save(ys2.T, args.outdir + 
