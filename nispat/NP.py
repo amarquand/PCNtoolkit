@@ -55,7 +55,8 @@ class NP(nn.Module):
                 z_sample = self.reparameterise(z_all)
                 temp[i,:] = self.decoder.forward(z_sample, x_context)
             y_hat = torch.mean(temp, dim=0).to(self.device)
-            y_sigma = torch.std(temp, dim=0).to(self.device)
+            if n > 1:
+                y_sigma = torch.std(temp, dim=0).to(self.device)
         return y_hat, z_all, z_context, y_sigma
     
 ###############################################################################
