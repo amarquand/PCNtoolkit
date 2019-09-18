@@ -4,6 +4,7 @@ import os
 import numpy as np
 from scipy import stats
 from subprocess import call
+from scipy.stats import genextreme
 
 # -----------------
 # Utility functions
@@ -94,6 +95,66 @@ def compute_pearsonr(A, B):
     # pRho = 1-N.cdf(Zr)
     
     return Rho, pRho
+
+def explained_var(ytrue, ypred):
+    """ Computes the explained variance of predicted values.
+
+        Basic usage::
+
+        exp_var = explained_var(ytrue, ypred)
+
+        where
+
+        :ytrue: n*p matrix of true values where n is the number of samples 
+                and p is the number of features. 
+        :ypred: n*p matrix of predicted values where n is the number of samples 
+                and p is the number of features. 
+
+        :returns exp_var: p dimentional vector of explained variances for each feature.
+        
+     """
+
+    exp_var = 1 - (ytrue - ypred).var(axis = 0) / ytrue.var(axis = 0)
+    
+    return exp_var
+
+def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None): 
+    """ Computes the MSLL or MLL (not standardized) if 'train_mean' and 'train_var' are None.
+    
+        Basic usage::
+            
+        MSLL = compute_MSLL(ytrue, ypred, ytrue_sig, noise_variance, train_mean, train_var)
+        
+        where
+        
+        :ytrue          : n*p matrix of true values where n is the number of samples 
+                          and p is the number of features. 
+        :ypred          : n*p matrix of predicted values where n is the number of samples 
+                          and p is the number of features. 
+        :ypred_var      : n*p matrix of summed noise variances and prediction variances where n is the number of samples 
+                          and p is the number of features.
+        :train_mean     : p dimensional vector of mean values of the training data for each feature.
+        :train_var      : p dimensional vector of covariances of the training data for each feature.
+        
+        :returns loss   : p dimensional vector of MSLL or MLL for each feature.
+    
+    """
+    
+    if train_mean is not None and train_var is not None: 
+        
+        # make sure y_train_mean and y_train_sig have right dimensions (subjects x voxels):
+        Y_train_mean = np.repeat(train_mean, ytrue.shape[0], axis = 0)
+        Y_train_sig = np.repeat(train_var, ytrue.shape[0], axis = 0)
+        
+        # compute MSLL:
+        loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var) - 
+                       0.5 * np.log(2 * np.pi * Y_train_sig) + (ytrue - Y_train_mean)**2 / (2 * Y_train_sig), axis = 0)
+        
+    else:   
+        # compute MLL:
+        loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var), axis = 0)
+        
+    return loss
 
 # -----------------------
 # Functions for inference
@@ -218,3 +279,65 @@ def qsub(job_path, memory, duration, logdir=None):
 
     # submits job to cluster
     call(qsub_call, shell=True)
+    
+def extreme_value_prob_fit(NPM, perc):
+    n = NPM.shape[0]
+    t = NPM.shape[1]
+    n_perc = int(round(t * perc))
+    m = np.zeros(n)
+    for i in range(n):
+        temp =  np.abs(NPM[i, :])
+        temp = np.sort(temp)
+        temp = temp[t - n_perc:]
+        temp = temp[0:int(np.floor(0.90*temp.shape[0]))]
+        m[i] = np.mean(temp)
+    params = genextreme.fit(m)
+    return params
+    
+def extreme_value_prob(params, NPM, perc):
+    n = NPM.shape[0]
+    t = NPM.shape[1]
+    n_perc = int(round(t * perc))
+    m = np.zeros(n)
+    for i in range(n):
+        temp =  np.abs(NPM[i, :])
+        temp = np.sort(temp)
+        temp = temp[t - n_perc:]
+        temp = temp[0:int(np.floor(0.90*temp.shape[0]))]
+        m[i] = np.mean(temp)
+    if params[0] <= 0:  # if the shape is right tailed for extreme values
+        probs = genextreme.cdf(m,*params)
+    elif params[0] > 0: # if the shape is left tailed for extreme values
+        probs = 1 - genextreme.cdf(m,*params)
+    return probs
+
+def ravel_2D(a):
+    s = a.shape
+    return np.reshape(a,[s[0], np.prod(s[1:])]) 
+
+def unravel_2D(a, s):
+    return np.reshape(a,s)
+
+def threshold_NPM(NPM, alpha=0.05):
+    """ Compute voxels with significant NPMs and return these. """
+    p_values = stats.norm.cdf(-np.abs(NPM))
+    results = np.zeros(NPM.shape) 
+    for i in range(p_values.shape[3]): 
+        mask = FDR(stats.norm.cdf(p_values[:, :, :, i]), alpha)
+        results[:, :, :, i] = NPM[:, :, :, i] * mask.astype(np.int)
+    return results
+    
+def FDR(p_values, alpha):
+    """ Compute the false discovery rate in all voxels for a subject. """
+    dim = np.shape(p_values)
+    p_values = np.reshape(p_values,[np.prod(dim),])
+    sorted_p_values = np.sort(p_values)
+    sorted_p_values_idx = np.argsort(p_values);  
+    testNum = len(p_values)
+    thresh = ((np.array(range(testNum)) + 1)/np.float(testNum))  * alpha
+    h = sorted_p_values <= thresh
+    unsort = np.argsort(sorted_p_values_idx)
+    h = h[unsort]
+    h = np.reshape(h, dim)
+    return h
+    
