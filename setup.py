@@ -13,7 +13,7 @@ setup(name='nispat',
           'pandas',
           'argparse'
           'nibabel',
-          'tempfile,
+          'tempfile',
           'scipy',
           'six',
           're',
