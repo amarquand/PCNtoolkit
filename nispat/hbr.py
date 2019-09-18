@@ -18,7 +18,7 @@ class HBR:
 
     Basic usage::
 
-        model = HBR(age, site_id, gender, mri_voxel)
+        model = HBR(age, site_id, gender, mri_voxel, model_type)
         trace = model.estimate()
         ys,s2 = model.predict(age, site_id, gender)
 
@@ -28,6 +28,7 @@ class HBR:
     :param site_id: N-vector of site IDs for N subjects
     :param gender: N-vector of genders for N subjects
     :param mri_voxel: N-vector of one voxel values for N subjects
+    :param model_type: string that defines the type of the model
 
     :returns: * ys - predictive mean
               * s2 - predictive variance
@@ -96,6 +97,7 @@ class HBR:
                     sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
                 # Data likelihood
                 y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
+                
         elif model_type == 'nn':
             age = np.expand_dims(age ,axis = 1)
             self.a = theano.shared(age)
@@ -174,10 +176,10 @@ class HBR:
                 elif self.model_type == 'poly2':
                     temp[i,:] = age[i]**2 * self.trace['mu_prior_slope_2'] + age[i] * self.trace['mu_prior_slope'] + self.trace['mu_prior_intercept']
                 elif self.model_type == 'nn':
-                    act_1 = np.tanh(age[i] * self.trace['w_in_1_grp'])
-                    for j in range(self.trace.nchains * samples):
-                        temp[i,j] = np.dot(np.squeeze(act_1[j,:,:]), self.trace['w_1_out_grp'][j,:])
-                    print(i)
+                    raise NotImplementedError("To be implemented")
+                    #act_1 = np.tanh(age[i] * self.trace['w_in_1_grp'])
+                    #for j in range(self.trace.nchains * samples):
+                    #    temp[i,j] = np.dot(np.squeeze(act_1[j,:,:]), self.trace['w_1_out_grp'][j,:])
                     
             pred_mean = temp.mean(axis=1)
             pred_var = temp.var(axis=1)
