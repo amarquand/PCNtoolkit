@@ -8,5 +8,10 @@ setup(name='nispat',
       author_email='a.f.marquand@fcdonders.ru.nl',
       license='GNU GPLv3',
       packages=find_packages(),
-      install_requires=['nibabel', 'glob3', 'torch', 'pandas', 'scipy', 'nibabel', 'sklearn'],
+      install_requires=[
+          'sklearn', 
+          'torch>=1.1.0', 
+          'pymc3>=3.7', 
+          'Theano>=1.0.4' 
+      ],
       zip_safe=False)
