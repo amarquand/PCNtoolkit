@@ -11,7 +11,7 @@ setup(name='nispat',
       install_requires=[
           'numpy',
           'pandas',
-          'argparse'
+          'argparse',
           'nibabel',
           'tempfile',
           'scipy',
