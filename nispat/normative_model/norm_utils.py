@@ -1,6 +1,7 @@
 from norm_blr import NormBLR
 from norm_gpr import NormGPR
 from norm_rfa import NormRFA
+from norm_hbr import NormHBR
 
 def norm_init(X, y=None, theta=None, alg='gpr', configparam=None):
     if alg == 'gpr':
@@ -9,6 +10,8 @@ def norm_init(X, y=None, theta=None, alg='gpr', configparam=None):
         nm = NormBLR(X, y, theta, configparam)
     elif alg == 'rfa':
         nm = NormRFA(X, y, theta, configparam)
+    elif alg == 'hbr':
+        nm = NormHBR(X, y, configparam)
     else:
         raise(ValueError, "Algorithm " + alg + " not known.")
         
