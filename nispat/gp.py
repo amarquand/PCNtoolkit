@@ -259,7 +259,7 @@ class GPR:
 
     The hyperparameters are::
 
-        hyp = ( log(sn2), (cov function params) )  # hyp is a list or array
+        hyp = ( log(sn), (cov function params) )  # hyp is a list or array
 
     The implementation and notation  follows Rasmussen and Williams (2006).
     As in the gpml toolbox, these parameters are estimated using conjugate
