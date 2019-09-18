@@ -8,7 +8,7 @@ Created on Wed Jan 18 14:34:06 2017
 import os
 import sys
 #from nispat.normative import estimate
-sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
 from normative import estimate
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
@@ -19,14 +19,14 @@ from normative import estimate
 #cvfolds = 2
 
 # with test covariates
-wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
+wdir = '/home/preclineu/andmar/py.sandbox/normative_nimg'
 ##wdir = '/Users/andre/data/normative_nimg'
 maskfile = os.path.join(wdir, 'mask_3mm_left_striatum.nii.gz')
 respfile = os.path.join(wdir, 'shoot_data_3mm_n500.nii.gz')
 covfile = os.path.join(wdir, 'covariates_basic_n500.txt')
 testresp = os.path.join(wdir, 'shoot_data_3mm_last100.nii.gz')
 testcov = os.path.join(wdir, 'covariates_basic_last100.txt')
-estimate(respfile, covfile, maskfile, testresp=testresp, testcov=testcov,alg="rfa")#, configparam=4)
+estimate(respfile, covfile, maskfile, testresp=testresp, testcov=testcov)#,alg="rfa")#, configparam=4)
 #cvfolds = 2
 
 

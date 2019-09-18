@@ -8,20 +8,20 @@ Created on Wed Jan 18 14:34:06 2017
 import os
 import sys
 import time
-sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
 from normative_parallel import execute_nm, collect_nm, delete_nm
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_oslo/'
 #respfile = os.path.join(wdir, 'ICA100_oslo15_v2_spaces.txt')
 #covfile = os.path.join(wdir, 'cov_oslo15_spaces.txt')
-wdir = '/home/mrstats/andmar/py.sandbox/normative_batch_test/'
+wdir = '/home/preclineu/andmar/py.sandbox/normative_batch_test/'
 respfile = os.path.join(wdir, 'responses.txt')
 covfile = os.path.join(wdir, 'covariates.txt')
 cvfolds = 2
 #estimate(respfile, covfile, cvfolds=cvfolds)
 
-python_path = '/home/mrstats/andmar/sfw/anaconda3/envs/py36/bin/python'
-normative_path = '/home/mrstats/andmar/sfw/nispat/nispat/normative.py'
+python_path = '/home/preclineu/andmar/sfw/anaconda3/envs/py36/bin/python'
+normative_path = '/home/preclineu/andmar/sfw/nispat/nispat/normative.py'
 job_name = 'nmp_test'
 batch_size = 10
 memory = '4gb'
