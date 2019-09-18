@@ -1,11 +1,6 @@
 # nispat
 Spatial methods for python
 
-<<<<<<< HEAD
-This module contains methods for spatial inference and normative modelling on the basis of neuroimaging data
-
-=======
->>>>>>> master
 How to install nispat?
 
 i) install Anaconda3 ii) create enviornment with " conda create --name normative_modeling " iii) activate environment by " source activate normative_modeling " iv) install the required packages below with " conda install " or " pip install "
