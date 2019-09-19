@@ -714,7 +714,7 @@ def qsub_nm(job_path,
     # created qsub command
     if log_path is None:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                     'procs=1' + memory + ',mem=' + memory + ',walltime=' + duration]
+                     'procs=1' + ',mem=' + memory + ',walltime=' + duration]
     else:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path +
                      ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' + duration +
