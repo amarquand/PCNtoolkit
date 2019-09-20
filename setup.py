@@ -9,15 +9,12 @@ setup(name='nispat',
       license='GNU GPLv3',
       packages=find_packages(),
       install_requires=[
-          'numpy',
-          'pandas',
           'argparse',
           'nibabel',
-          'scipy',
           'six',
           'sklearn', 
           'torch>=1.1.0', 
           'pymc3>=3.7', 
-          'Theano>=1.0.4'           
+          'Theano>=1.0.4'              
       ],
       zip_safe=False)
