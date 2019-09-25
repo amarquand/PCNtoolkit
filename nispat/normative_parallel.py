@@ -748,10 +748,12 @@ def rerun_nm(processing_dir,
     import nispat
     if binary:
         file_extentions = '.pkl'
+        failed_batches = nispat.fileio.load(processing_dir +
+                                        'failed_batches' + file_extentions)
     else:
         file_extentions = '.txt'
-    failed_batches = nispat.fileio.load(processing_dir +
-                                        'failed_batches' + file_extentions)
+        failed_batches = nispat.fileio.load_pd(processing_dir +
+                                       'failed_batches' + file_extentions)
     shape = failed_batches.shape
     for n in range(0, shape[0]):
         jobpath = failed_batches[n, 0]
