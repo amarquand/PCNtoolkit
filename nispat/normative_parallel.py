@@ -448,8 +448,11 @@ def collect_nm(processing_dir,
     # list batches that were not executed
     print('Number of batches that failed:' + str(count))
     batch_fail_df = pd.DataFrame(batch_fail)
-    # fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches.txt')
-    fileio.save(batch_fail_df, processing_dir +
+    if file_extentions == '.txt':
+        fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches'+
+                file_extentions)
+    else:
+        fileio.save(batch_fail_df, processing_dir +
                 'failed_batches' +
                 file_extentions)
 
