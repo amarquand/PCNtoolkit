@@ -315,14 +315,17 @@ def ravel_2D(a):
 def unravel_2D(a, s):
     return np.reshape(a,s)
 
-def threshold_NPM(NPM, alpha=0.05):
-    """ Compute voxels with significant NPMs and return these. """
-    p_values = stats.norm.cdf(-np.abs(NPM))
-    results = np.zeros(NPM.shape) 
-    for i in range(p_values.shape[3]): 
-        mask = FDR(stats.norm.cdf(p_values[:, :, :, i]), alpha)
-        results[:, :, :, i] = NPM[:, :, :, i] * mask.astype(np.int)
-    return results
+def threshold_NPM(NPMs, fdr_thr=0.05, npm_thr=0.1):
+    """ Compute voxels with significant NPMs. """
+    p_values = stats.norm.cdf(-np.abs(NPMs))
+    results = np.zeros(NPMs.shape) 
+    masks = np.full(NPMs.shape, False, dtype=bool)
+    for i in range(p_values.shape[0]): 
+        masks[i,:] = FDR(p_values[i,:], fdr_thr)
+        results[i,] = NPMs[i,:] * masks[i,:].astype(np.int)
+    m = np.sum(masks,axis=0)/masks.shape[0] > npm_thr
+    #m = np.any(masks,axis=0)
+    return results, masks, m
     
 def FDR(p_values, alpha):
     """ Compute the false discovery rate in all voxels for a subject. """
