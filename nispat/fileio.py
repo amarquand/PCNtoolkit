@@ -307,7 +307,7 @@ def load_pd(filename):
     x = pd.read_csv(filename,
                     sep=' ',
                     header=None)
-    return x.to_numpy()
+    return x
 
 
 def save_pd(data, filename):
