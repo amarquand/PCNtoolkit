@@ -25,7 +25,7 @@ class NP(nn.Module):
         self.r_to_z_logvar_dp = nn.Dropout(p = self.dp_level)
         self.r_to_z_logvar = nn.Linear(self.r_dim, self.z_dim)
         self.device = args.device
-        
+        self.type = args.type
         
     def xy_to_z_params(self, x, y):
         r = self.encoder.forward(x, y)
@@ -49,8 +49,11 @@ class NP(nn.Module):
             y_hat = self.decoder.forward(z_sample, x_all)
         else:  
             z_all = z_context
-            temp = torch.zeros([n,y_context.shape[0],1,y_context.shape[2],y_context.shape[3],
-                                y_context.shape[4]], device = 'cpu')
+            if self.type == 'ST':
+                temp = torch.zeros([n,y_context.shape[0], y_context.shape[2]], device = 'cpu')
+            elif self.type == 'MT':
+                temp = torch.zeros([n,y_context.shape[0],1,y_context.shape[2],y_context.shape[3],
+                                y_context.shape[4]], device = 'cpu')                                
             for i in range(n):
                 z_sample = self.reparameterise(z_all)
                 temp[i,:] = self.decoder.forward(z_sample, x_context)
