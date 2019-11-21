@@ -15,9 +15,9 @@ from torch.nn import functional as F
 class NP(nn.Module):
     def __init__(self, encoder, decoder, args):
         super(NP, self).__init__()
-        self.r_dim = decoder.r_dim
-        self.z_dim = decoder.z_dim
-        self.dp_level = 0.1
+        self.r_dim = encoder.r_dim
+        self.z_dim = encoder.z_dim
+        self.dp_level = encoder.dp_level
         self.encoder = encoder
         self.decoder = decoder
         self.r_to_z_mean_dp = nn.Dropout(p = self.dp_level)
@@ -79,4 +79,4 @@ def kl_div_gaussians(mu_q, logvar_q, mu_p, logvar_p):
 def np_loss(y_hat, y, z_all, z_context):
     BCE = F.binary_cross_entropy(torch.squeeze(y_hat), torch.mean(y,dim=1), reduction="sum")
     KLD = kl_div_gaussians(z_all[0], z_all[1], z_context[0], z_context[1])
-    return BCE + KLD
+    return BCE + KLD 
