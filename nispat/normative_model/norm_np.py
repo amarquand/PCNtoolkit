@@ -64,17 +64,17 @@ class Decoder(nn.Module):
         self.dp_level = args.dp
         self.hidden_neuron_num = args.hidden_neuron_num
         
-        self.g_1 = nn.Linear(self.z_dim + x.shape[1], self.hidden_neuron_num)
+        self.g_1 = nn.Linear(self.z_dim, self.hidden_neuron_num)
         self.g_2_dp = nn.Dropout(p=self.dp_level)
         self.g_2 = nn.Linear(self.hidden_neuron_num, self.hidden_neuron_num)
         self.g_3_dp = nn.Dropout(p=self.dp_level)
         self.g_3 = nn.Linear(self.hidden_neuron_num, y.shape[1])
     
     def forward(self, z_sample, x_target):
-        z_x = torch.cat([z_sample, torch.mean(x_target,dim=1)], dim=1)
-        z_x = F.relu(self.g_1(z_x))
-        z_x = F.relu(self.g_2(self.g_2_dp(z_x)))
-        y_hat = torch.sigmoid(self.g_3(self.g_3_dp(z_x)))
+        z = z_sample
+        z = F.relu(self.g_1(z))
+        z = F.relu(self.g_2(self.g_2_dp(z)))
+        y_hat = torch.sigmoid(self.g_3(self.g_3_dp(z)))
         return y_hat
    
 
@@ -136,9 +136,9 @@ class NormNP(NormBase):
         x_context = np.zeros([sample_num, factor_num, X.shape[1]])
         y_context = np.zeros([sample_num, factor_num, 1])
         
-        
+        s = X.std(axis=0)
         for j in range(factor_num):
-            x_context[:,j,:] = X
+            x_context[:,j,:] = X + 0.3 * s * np.random.randn(X.shape[0], X.shape[1])
             y_context[:,j,:] = self.reg[j].predict(x_context[:,j,:])
         
         x_context = torch.tensor(x_context, device=device, dtype = torch.float)
