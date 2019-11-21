@@ -4,7 +4,7 @@ import os
 import numpy as np
 from scipy import stats
 from subprocess import call
-from scipy.stats import genextreme
+from scipy.stats import genextreme, norm
 
 # -----------------
 # Utility functions
@@ -340,4 +340,12 @@ def FDR(p_values, alpha):
     h = h[unsort]
     h = np.reshape(h, dim)
     return h
-    
+
+def calibration_error(Y,m,s,cal_levels):
+    ce = 0
+    for cl in cal_levels:
+        z = np.abs(norm.ppf((1-cl)/2))
+        ub = m + z * s
+        lb = m - z * s
+        ce = ce + np.abs(cl - np.sum(np.logical_and(Y>=lb,Y<=ub))/Y.shape[0])
+    return ce
