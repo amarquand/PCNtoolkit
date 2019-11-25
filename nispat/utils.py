@@ -148,7 +148,7 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         
         # compute MSLL:
         loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var) - 
-                       0.5 * np.log(2 * np.pi * Y_train_sig) + (ytrue - Y_train_mean)**2 / (2 * Y_train_sig), axis = 0)
+                       0.5 * np.log(2 * np.pi * Y_train_sig) - (ytrue - Y_train_mean)**2 / (2 * Y_train_sig), axis = 0)
         
     else:   
         # compute MLL:
