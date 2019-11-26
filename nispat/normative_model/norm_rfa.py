@@ -63,7 +63,7 @@ class NormRFA(NormBase):
         
         return self.theta
 
-    def predict(self, X, y, Xs, theta=None):
+    def predict(self, Xs, X, y, theta=None):
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gprrfa.predict(theta, X, y, Xs)
