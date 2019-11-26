@@ -137,6 +137,8 @@ class NormNP(NormBase):
             args.z_dim = 3
             args.nv = 0.01
         
+        if y.ndim == 1:
+            y = y.reshape(-1,1)
         self.args = args
         self.encoder = Encoder(X, y, args)
         self.decoder = Decoder(X, y, args)
@@ -152,10 +154,12 @@ class NormNP(NormBase):
         return -1
     
     def estimate(self, X, y):
+        if y.ndim == 1:
+            y = y.reshape(-1,1)
         sample_num = X.shape[0]
         batch_size = self.args.batch_size
         factor_num = self.args.m
-        mini_batch_num = int(np.ceil(sample_num/batch_size))
+        mini_batch_num = int(np.floor(sample_num/batch_size))
         device = self.args.device
         
         self.scaler = MinMaxScaler()
@@ -166,7 +170,7 @@ class NormNP(NormBase):
         for i in range(factor_num):
             self.reg.append(LinearRegression())
             idx = np.random.randint(0, sample_num, sample_num)#int(sample_num/10))
-            self.reg[i].fit(X[idx].reshape(-1, 1),y[idx,:])
+            self.reg[i].fit(X[idx,:],y[idx,:])
         
         x_context = np.zeros([sample_num, factor_num, X.shape[1]])
         y_context = np.zeros([sample_num, factor_num, 1])
@@ -202,7 +206,7 @@ class NormNP(NormBase):
                 k += 1
         return None
         
-    def predict(self, Xs): 
+    def predict(self, Xs, X=None, Y=None, theta=None): 
         sample_num = Xs.shape[0]
         factor_num = self.args.m
         x_context_test = np.zeros([sample_num, factor_num, Xs.shape[1]])
@@ -221,4 +225,4 @@ class NormNP(NormBase):
         y_sigma = y_sigma.cpu().numpy() * (self.scaler.data_max_ - self.scaler.data_min_)
         y_sigma_84 = y_sigma_84.cpu().numpy() * (self.scaler.data_max_ - self.scaler.data_min_)
         sigma_al = y_hat - y_hat_84
-        return y_hat, y_sigma**2 + sigma_al**2 #, z_context[0].cpu().numpy(), z_context[1].cpu().numpy()
+        return y_hat.squeeze(), (y_sigma**2 + sigma_al**2).squeeze() #, z_context[0].cpu().numpy(), z_context[1].cpu().numpy()

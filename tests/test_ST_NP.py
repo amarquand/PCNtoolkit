@@ -12,7 +12,7 @@ import torch
 import pickle
 from nispat.normative_model.norm_utils import norm_init
 
-sample_num = 1000
+sample_num = 1114
 X_train = np.random.rand(sample_num,1) * 5 - 2
 Y_train = - 2 * X_train**2 + 2 * X_train + 1 + X_train * np.random.randn(sample_num,1)
 X_test = np.random.rand(sample_num,1) * 5 - 2
