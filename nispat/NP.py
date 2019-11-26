@@ -79,4 +79,4 @@ def kl_div_gaussians(mu_q, logvar_q, mu_p, logvar_p):
 def np_loss(y_hat, y, z_all, z_context):
     BCE = F.binary_cross_entropy(torch.squeeze(y_hat), torch.mean(y,dim=1), reduction="sum")
     KLD = kl_div_gaussians(z_all[0], z_all[1], z_context[0], z_context[1])
-    return BCE + KLD 
+    return BCE + KLD
