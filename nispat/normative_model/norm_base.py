@@ -18,7 +18,7 @@ class NormBase(with_metaclass(ABCMeta)):
         """ Estimate the normative model """
 
     @abstractmethod
-    def predict(self, X, y, Xs):
+    def predict(self, Xs, X, y):
         """ Make predictions for new data """
 
     @property
