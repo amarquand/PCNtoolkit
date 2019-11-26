@@ -184,7 +184,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             Yte = np.zeros([sub_te, Nmod])
   
         # Initialise normative model
-        nm = norm_init(X, alg=alg, configparam=configparam)
+        nm = norm_init(X, Y, alg=alg, configparam=configparam)
         
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
@@ -202,7 +202,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
         # Initialise normative model
-        nm = norm_init(X, alg=alg, configparam=configparam)
+        nm = norm_init(X, Y, alg=alg, configparam=configparam)
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
@@ -242,7 +242,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
                                alg=alg, configparam=configparam)
                 Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
-                yhat, s2 = nm.predict(Xz[tr, :], Yz[tr, nz[i]], Xz[te, :], 
+                yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
                                       Hyp[nz[i], :, fold])
 
                 Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
@@ -290,7 +290,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
         Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
         EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY[jy], sY[jy]**2)
+        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
     else:
         if testresp is not None:
             MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -305,7 +305,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
             Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
             EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY[jy], sY[jy]**2)
+            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
             
     # Set writing options
     if saveoutput:
