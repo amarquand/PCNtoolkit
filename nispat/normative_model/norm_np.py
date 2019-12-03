@@ -183,7 +183,7 @@ class NormNP(NormBase):
         x_context = torch.tensor(x_context, device=device, dtype = torch.float)
         y_context = torch.tensor(y_context, device=device, dtype = torch.float)
         
-        x_all = torch.tensor(X.reshape(-1, 1, 1), device=device, dtype = torch.float)
+        x_all = torch.tensor(np.expand_dims(X,axis=1), device=device, dtype = torch.float)
         y_all = torch.tensor(y.reshape(-1, 1, y.shape[1]), device=device, dtype = torch.float)        
         
         self.model.train()
