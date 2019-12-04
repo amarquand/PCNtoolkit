@@ -77,12 +77,13 @@ def get_args(*args):
     cuda = args.device=='cuda' and torch.cuda.is_available()
     args.device = torch.device("cuda" if cuda else "cpu")
     args.kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
+    args.type= 'MT'
 
     return args
     
 def estimate(args):
     torch.set_default_dtype(torch.float32)
-    
+    args.type = 'MT'
     print('Loading the input Data ...')
     responses = fileio.load_nifti(args.respfile, vol=True).transpose([3,0,1,2])
     response_shape = responses.shape
