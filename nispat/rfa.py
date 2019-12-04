@@ -124,7 +124,7 @@ class GPRRFA:
         
         self.A = torch.mm(torch.t(self.Phi), self.Phi) / torch.exp(2*hyp[0]) + \
                  torch.eye(self.D, dtype=torch.double)
-        self.m = torch.mm(torch.gesv(torch.t(self.Phi), self.A)[0], y) / \
+        self.m = torch.mm(torch.solve(torch.t(self.Phi), self.A)[0], y) / \
                  torch.exp(2*hyp[0])
 
         # save hyperparameters
@@ -237,7 +237,7 @@ class GPRRFA:
 
         # compute diag(Phis*(Phis'\A)) avoiding computing off-diagonal entries
         s2 = torch.exp(2*hyp[0]) + \
-                torch.sum(Phis * torch.t(torch.gesv(torch.t(Phis), self.A)[0]), 1)
+                torch.sum(Phis * torch.t(torch.solve(torch.t(Phis), self.A)[0]), 1)
 
         # return output as numpy arrays
         return ys.detach().numpy().squeeze(), s2.detach().numpy().squeeze()

@@ -61,7 +61,7 @@ class NormHBR(NormBase):
         self.hbr.estimate()
         return None
         
-    def predict(self, X, y, Xs, theta=None): 
+    def predict(self, Xs, X=None, Y=None, theta=None): 
         with open(self.configparam, 'rb') as handle:
              configparam = pickle.load(handle)
              

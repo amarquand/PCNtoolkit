@@ -4,7 +4,7 @@ import os
 import numpy as np
 from scipy import stats
 from subprocess import call
-from scipy.stats import genextreme
+from scipy.stats import genextreme, norm
 
 # -----------------
 # Utility functions
@@ -148,7 +148,7 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         
         # compute MSLL:
         loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var) - 
-                       0.5 * np.log(2 * np.pi * Y_train_sig) + (ytrue - Y_train_mean)**2 / (2 * Y_train_sig), axis = 0)
+                       0.5 * np.log(2 * np.pi * Y_train_sig) - (ytrue - Y_train_mean)**2 / (2 * Y_train_sig), axis = 0)
         
     else:   
         # compute MLL:
@@ -305,10 +305,7 @@ def extreme_value_prob(params, NPM, perc):
         temp = temp[t - n_perc:]
         temp = temp[0:int(np.floor(0.90*temp.shape[0]))]
         m[i] = np.mean(temp)
-    if params[0] <= 0:  # if the shape is right tailed for extreme values
         probs = genextreme.cdf(m,*params)
-    elif params[0] > 0: # if the shape is left tailed for extreme values
-        probs = 1 - genextreme.cdf(m,*params)
     return probs
 
 def ravel_2D(a):
@@ -318,14 +315,17 @@ def ravel_2D(a):
 def unravel_2D(a, s):
     return np.reshape(a,s)
 
-def threshold_NPM(NPM, alpha=0.05):
-    """ Compute voxels with significant NPMs and return these. """
-    p_values = stats.norm.cdf(-np.abs(NPM))
-    results = np.zeros(NPM.shape) 
-    for i in range(p_values.shape[3]): 
-        mask = FDR(stats.norm.cdf(p_values[:, :, :, i]), alpha)
-        results[:, :, :, i] = NPM[:, :, :, i] * mask.astype(np.int)
-    return results
+def threshold_NPM(NPMs, fdr_thr=0.05, npm_thr=0.1):
+    """ Compute voxels with significant NPMs. """
+    p_values = stats.norm.cdf(-np.abs(NPMs))
+    results = np.zeros(NPMs.shape) 
+    masks = np.full(NPMs.shape, False, dtype=bool)
+    for i in range(p_values.shape[0]): 
+        masks[i,:] = FDR(p_values[i,:], fdr_thr)
+        results[i,] = NPMs[i,:] * masks[i,:].astype(np.int)
+    m = np.sum(masks,axis=0)/masks.shape[0] > npm_thr
+    #m = np.any(masks,axis=0)
+    return results, masks, m
     
 def FDR(p_values, alpha):
     """ Compute the false discovery rate in all voxels for a subject. """
@@ -340,4 +340,12 @@ def FDR(p_values, alpha):
     h = h[unsort]
     h = np.reshape(h, dim)
     return h
-    
+
+def calibration_error(Y,m,s,cal_levels):
+    ce = 0
+    for cl in cal_levels:
+        z = np.abs(norm.ppf((1-cl)/2))
+        ub = m + z * s
+        lb = m - z * s
+        ce = ce + np.abs(cl - np.sum(np.logical_and(Y>=lb,Y<=ub))/Y.shape[0])
+    return ce

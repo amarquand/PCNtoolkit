@@ -76,7 +76,7 @@ class HBR:
                     # Model error
                     sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
                     sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
-                    sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
+                    sigma_y = np.sqrt(sigma_error_site[(self.s)]**2 + sigma_error_gender[(self.g)]**2)
                 elif model_type == 'lin_rand_int_nse':
                     # Random slopes
                     slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
@@ -84,7 +84,7 @@ class HBR:
                     # Model error
                     sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
                     sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
-                    sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
+                    sigma_y = np.sqrt(sigma_error_site[(self.s)]**2 + sigma_error_gender[(self.g)]**2)
                 elif model_type == 'poly2':
                     slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope, shape=(self.gender_num,))
                     mu_prior_slope_2 = pm.Normal('mu_prior_slope_2', mu=0., sigma=1e5)
@@ -94,7 +94,7 @@ class HBR:
                     # Model error
                     sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
                     sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
-                    sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
+                    sigma_y = np.sqrt(sigma_error_site[(self.s)]**2 + sigma_error_gender[(self.g)]**2)
                 # Data likelihood
                 y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
                 
@@ -137,7 +137,7 @@ class HBR:
                 
                 sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
                 sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
-                sigma_y = sigma_error_site[(self.s)] + sigma_error_gender[(self.g)]
+                sigma_y = np.sqrt(sigma_error_site[(self.s)]**2 + sigma_error_gender[(self.g)]**2)
                 # Data likelihood
                 y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
             
