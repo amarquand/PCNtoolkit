@@ -36,18 +36,46 @@ class NormHBR(NormBase):
         self.configparam = configparam
         
         with open(configparam, 'rb') as handle:
-             data = pickle.load(handle)
-        confounds = data['confounds']
-        self.type = data['model_type']
+             configs = pickle.load(handle)
         
-        if (X is not None):
-            self.hbr = HBR(np.squeeze(X), 
-                           np.squeeze(confounds['train'][:, 0]), 
-                           np.squeeze(confounds['train'][:, 1]), 
-                           np.squeeze(y), self.type)
+        self.type = configs['model_type']
+        
+        if 'batch_effects_train' in configs:
+            batch_effects_train = configs['batch_effects_train']
         else:
-            raise(ValueError, 'please specify covariates')
-            return
+            batch_effects_train = np.zeros([X.shape[0],2])
+            
+        self.configs = dict()
+        
+        if 'model_type' in configs:
+            self.configs['type'] = configs['model_type']
+        else:
+            self.configs['type'] = 'linear'
+        
+        if 'random_intercept' in configs:
+            self.configs['random_intercept'] = configs['random_intercept']
+        else:
+            self.configs['random_intercept'] = True
+        
+        if 'random_slope' in configs:
+            self.configs['random_slope'] = configs['random_slope']
+        else:
+            self.configs['random_slope'] = True
+            
+        if 'random_noise' in configs:
+            self.configs['random_noise'] = configs['random_noise']
+        else:
+            self.configs['random_noise'] = True
+                
+        if 'hetero_noise' in configs:
+            self.configs['hetero_noise'] = configs['hetero_noise']
+        else:
+            self.configs['hetero_noise'] = False
+            
+        self.hbr = HBR(np.squeeze(X), 
+                           np.squeeze(batch_effects_train[:, 0]), 
+                           np.squeeze(batch_effects_train[:, 1]), 
+                           np.squeeze(y), self.configs)
         
     @property
     def n_params(self):
@@ -65,11 +93,15 @@ class NormHBR(NormBase):
         with open(self.configparam, 'rb') as handle:
              configparam = pickle.load(handle)
              
-        confounds = configparam['confounds']
-        pred_type = configparam['prediction']
+        batch_effects_test = configparam['batch_effects_test']
+        if 'prediction' in configparam:
+            pred_type = configparam['prediction']
+        else:
+            pred_type = 'single'
+            
         yhat, s2 = self.hbr.predict(np.squeeze(Xs), 
-                                    np.squeeze(confounds['test'][:, 0]), 
-                                    np.squeeze(confounds['test'][:, 1]), pred = pred_type)
+                                    np.squeeze(batch_effects_test[:, 0]), 
+                                    np.squeeze(batch_effects_test[:, 1]), pred = pred_type)
         
 
         return yhat, s2
