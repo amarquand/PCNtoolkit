@@ -11,6 +11,12 @@ import numpy as np
 from nispat.normative_model.norm_utils import norm_init
 import matplotlib.pyplot as plt
 
+import pandas as pd
+import pymc3 as pm
+
+def trace_quantiles(x):
+    return pd.DataFrame(pm.quantiles(x, [5, 25, 50, 75, 95]))
+
 ########################### TESTING HBR ################################
 
 # Simulating the data
@@ -40,11 +46,11 @@ with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
 nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
 nm.estimate(X, Y)
-yhat_rand_int, s2_rand_int = nm.predict(X, Y, Xs)
+yhat_rand_int, s2_rand_int = nm.predict(Xs, X, Y)
 configparam['prediction'] = 'group'
 with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
-yhat_rand_int_group, s2_rand_int_group = nm.predict(X, Y, Xs)
+yhat_rand_int_group, s2_rand_int_group = nm.predict(Xs, X, Y)
 
 configparam['prediction'] = 'single'
 configparam['model_type'] = 'lin_rand_int_slp'
@@ -52,11 +58,11 @@ with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
 nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
 nm.estimate(X, Y)
-yhat_rand_int_slp, s2_rand_int_slp = nm.predict(X, Y, Xs)
+yhat_rand_int_slp, s2_rand_int_slp = nm.predict(Xs, X, Y)
 configparam['prediction'] = 'group'
 with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
-yhat_rand_int_slp_group, s2_rand_int_slp_group = nm.predict(X, Y, Xs)
+yhat_rand_int_slp_group, s2_rand_int_slp_group = nm.predict(Xs, X, Y)
 
 configparam['prediction'] = 'single'
 configparam['model_type'] = 'lin_rand_int_slp_nse'
@@ -64,11 +70,11 @@ with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
 nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
 nm.estimate(X, Y)
-yhat_rand_int_slp_nse, s2_rand_int_slp_nse = nm.predict(X, Y, Xs)
+yhat_rand_int_slp_nse, s2_rand_int_slp_nse = nm.predict(Xs, X, Y)
 configparam['prediction'] = 'group'
 with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
-yhat_rand_int_slp_nse_group, s2_rand_int_slp_nse_group = nm.predict(X, Y, Xs)
+yhat_rand_int_slp_nse_group, s2_rand_int_slp_nse_group = nm.predict(Xs, X, Y)
 
 configparam['prediction'] = 'single'
 configparam['model_type'] = 'poly2'
@@ -76,11 +82,11 @@ with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
 nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
 nm.estimate(X, Y)
-yhat_poly2, s2_poly2 = nm.predict(X, Y, Xs)
+yhat_poly2, s2_poly2 = nm.predict(Xs, X, Y)
 configparam['prediction'] = 'group'
 with open('configs.pkl', 'wb') as file:
     pickle.dump(configparam,file)
-yhat_poly2_group, s2_poly2_group = nm.predict(X, Y, Xs)
+yhat_poly2_group, s2_poly2_group = nm.predict(Xs, X, Y)
 
 plt.subplot(2, 2, 1)
 plt.scatter(Xs[configparam['confounds']['test'][:,0]==0,],Ys[configparam['confounds']['test'][:,0]==0,])

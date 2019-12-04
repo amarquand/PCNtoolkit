@@ -14,12 +14,13 @@ args = struct()
 args.batchnum = 10
 args.epochs = 100
 args.device = 'cuda'
-args.estimator = 'MT'
+args.estimator = 'ST'
+args.mask = None
 args.m = 10
-args.respfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/responses.nii.gz'
-args.covfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/covariates.pickle'
-args.testrespfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/test_responses.nii.gz'
-args.testcovfile = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/test_covariates.pickle'
-args.outdir = '/home/preclineu/andmar/data/seykia/ds000030_R1.0.5/Results'
+args.respfile = '/project_freenas/3022017.02/Phenomics/responses.nii.gz'
+args.covfile = '/project_freenas/3022017.02/Phenomics/covariates.pickle'
+args.testrespfile = '/project_freenas/3022017.02/Phenomics/test_responses.nii.gz'
+args.testcovfile = '/project_freenas/3022017.02/Phenomics/test_covariates.pickle'
+args.outdir = '/project_freenas/3022017.02/Phenomics/Results'
 
 estimate(args)

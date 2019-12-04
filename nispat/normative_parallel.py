@@ -448,8 +448,11 @@ def collect_nm(processing_dir,
     # list batches that were not executed
     print('Number of batches that failed:' + str(count))
     batch_fail_df = pd.DataFrame(batch_fail)
-    # fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches.txt')
-    fileio.save(batch_fail_df, processing_dir +
+    if file_extentions == '.txt':
+        fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches'+
+                file_extentions)
+    else:
+        fileio.save(batch_fail_df, processing_dir +
                 'failed_batches' +
                 file_extentions)
 
@@ -745,18 +748,28 @@ def rerun_nm(processing_dir,
     import nispat
     if binary:
         file_extentions = '.pkl'
+        failed_batches = nispat.fileio.load(processing_dir +
+                                       'failed_batches' + file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches[n, 0]
+            print(jobpath)
+            nispat.normative_parallel.qsub_nm(job_path=jobpath,
+                                              log_path=log_path,
+                                              memory=memory,
+                                              duration=duration)
     else:
         file_extentions = '.txt'
-    failed_batches = nispat.fileio.load(processing_dir +
-                                        'failed_batches' + file_extentions)
-    shape = failed_batches.shape
-    for n in range(0, shape[0]):
-        jobpath = failed_batches[n, 0]
-        print(jobpath)
-        nispat.normative_parallel.qsub_nm(job_path=jobpath,
-                                          log_path=log_path,
-                                          memory=memory,
-                                          duration=duration)
+        failed_batches = nispat.fileio.load_pd(processing_dir +
+                                       'failed_batches' + file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches.iloc[n, 0]
+            print(jobpath)
+            nispat.normative_parallel.qsub_nm(job_path=jobpath,
+                                              log_path=log_path,
+                                              memory=memory,
+                                              duration=duration)
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
