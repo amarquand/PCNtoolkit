@@ -130,6 +130,13 @@ class HBR:
                 sigma_prior_slope_1 = pm.HalfCauchy('sigma_prior_slope_1', 5)
                 mu_prior_slope_2 = pm.Normal('mu_prior_slope_2', mu=0., sigma=1e5)
                 sigma_prior_slope_2 = pm.HalfCauchy('sigma_prior_slope_2', 5)
+                if configs['hetero_noise']:
+                    mu_prior_intercept_noise = pm.Normal('mu_prior_intercept_noise', sigma=1e5)
+                    sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
+                    mu_prior_slope_1_noise = pm.Normal('mu_prior_slope_1_noise',sigma=1e5)
+                    sigma_prior_slope_1_noise = pm.HalfCauchy('sigma_prior_slope_1_noise', 5)
+                    mu_prior_slope_2_noise = pm.Normal('mu_prior_slope_2_noise',sigma=1e5)
+                    sigma_prior_slope_2_noise = pm.HalfCauchy('sigma_prior_slope_2_noise', 5)
             
                 if configs['random_intercept']: # Random intercepts
                     intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.gender_num,self.site_num))
@@ -153,8 +160,44 @@ class HBR:
                     y_hat = intercepts[(self.g, self.s)] + self.a * slopes_1[(self.g, self.s)]  + self.a**2 * slopes_2[(self.g, self.s)] 
                     
                 if configs['random_noise']:  # Random Noise
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(self.gender_num,self.site_num))
-                    sigma_y = sigma_noise[(self.g, self.s)]
+                    if configs['hetero_noise']:
+                        if configs['random_intercept']: # Random intercepts
+                            intercepts_noise = pm.Normal('intercepts_noise', 
+                                                         mu=mu_prior_intercept_noise, 
+                                                         sigma=sigma_prior_intercept_noise, 
+                                                         shape=(self.gender_num,self.site_num))
+                        else:
+                            intercepts_noise = pm.Normal('intercepts_noise', 
+                                                         mu=mu_prior_intercept_noise, 
+                                                         sigma=sigma_prior_intercept_noise)
+                        
+                        if configs['random_slope']:  # Random slopes
+                            slopes_1_noise = pm.Normal('slopes_1_noise', mu=mu_prior_slope_1_noise, 
+                                                     sigma=sigma_prior_slope_1_noise, 
+                                                     shape=(self.gender_num,self.site_num))
+                            slopes_2_noise = pm.Normal('slopes_2_noise', mu=mu_prior_slope_2_noise, 
+                                                     sigma=sigma_prior_slope_2_noise, 
+                                                     shape=(self.gender_num,self.site_num))
+                        else:
+                            slopes_1_noise = pm.Normal('slopes_1_noise', 
+                                                     mu=mu_prior_slope_1_noise, 
+                                                     sigma=sigma_prior_slope_1_noise)
+                            slopes_2_noise = pm.Normal('slopes_2_noise', 
+                                                     mu=mu_prior_slope_2_noise, 
+                                                     sigma=sigma_prior_slope_2_noise)
+                        
+                        if (not configs['random_intercept'] and not configs['random_slope']):
+                            sigma_noise = intercepts_noise + self.a * slopes_1_noise + self.a**2 * slopes_2_noise
+                        elif (configs['random_intercept'] and not configs['random_slope']):
+                            sigma_noise = intercepts_noise[(self.g, self.s)] + self.a * slopes_1_noise + self.a**2 * slopes_2_noise
+                        elif (not configs['random_intercept'] and configs['random_slope']):
+                            sigma_noise = intercepts_noise + self.a * slopes_1_noise[(self.g, self.s)] + self.a**2 * slopes_2_noise[(self.g, self.s)]
+                        elif (configs['random_intercept'] and configs['random_slope']):
+                            sigma_noise = intercepts_noise[(self.g, self.s)] + self.a * slopes_1_noise[(self.g, self.s)] + self.a**2 * slopes_2_noise[(self.g, self.s)]
+                        sigma_y = np.abs(sigma_noise) + 1e-3
+                    else:
+                        sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(self.gender_num,self.site_num))
+                        sigma_y = sigma_noise[(self.g, self.s)]
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
                     sigma_y = sigma_noise
