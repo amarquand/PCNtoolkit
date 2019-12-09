@@ -184,7 +184,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             Yte = np.zeros([sub_te, Nmod])
   
         # Initialise normative model
-        nm = norm_init(X, Y, alg=alg, configparam=configparam)
+        nm = norm_init(X, Y[:,0], alg=alg, configparam=configparam)
         
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
@@ -202,7 +202,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
         # Initialise normative model
-        nm = norm_init(X, Y, alg=alg, configparam=configparam)
+        nm = norm_init(X, Y[:,0], alg=alg, configparam=configparam)
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
