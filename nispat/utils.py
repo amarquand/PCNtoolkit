@@ -75,7 +75,7 @@ def compute_pearsonr(A, B):
         does not compute the full correlation matrix as an intermediate step"""
 
     # N = A.shape[1]
-    N = len(A[:, 0])
+    N = A.shape[0]
 
     # first mean centre
     Am = A - np.mean(A, axis=0)
