@@ -71,8 +71,9 @@ class NormHBR(NormBase):
             self.configs['hetero_noise'] = configs['hetero_noise']
         else:
             self.configs['hetero_noise'] = False
-            
-        self.hbr = HBR(np.squeeze(X), 
+        
+        if y is not None:
+            self.hbr = HBR(np.squeeze(X), 
                            np.squeeze(batch_effects_train[:, 0]), 
                            np.squeeze(batch_effects_train[:, 1]), 
                            np.squeeze(y), self.configs)

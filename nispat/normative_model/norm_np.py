@@ -137,12 +137,13 @@ class NormNP(NormBase):
             args.z_dim = 3
             args.nv = 0.01
         
-        if y.ndim == 1:
-            y = y.reshape(-1,1)
-        self.args = args
-        self.encoder = Encoder(X, y, args)
-        self.decoder = Decoder(X, y, args)
-        self.model = NPR(self.encoder, self.decoder, args)
+        if y is not None:
+            if y.ndim == 1:
+                y = y.reshape(-1,1)
+            self.args = args
+            self.encoder = Encoder(X, y, args)
+            self.decoder = Decoder(X, y, args)
+            self.model = NPR(self.encoder, self.decoder, args)
        
         
     @property
