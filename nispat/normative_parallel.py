@@ -298,9 +298,9 @@ def split_nm(processing_dir,
         batch_vec = np.append(batch_vec,
                               numsub)
         for n in range(0, (len(batch_vec) - 1)):
-            resp_batch = respfile.ix[:, (batch_vec[n]): batch_vec[n + 1]]
+            resp_batch = respfile.ix[:, (batch_vec[n]): batch_vec[n + 1]-1]
             testresp_batch = testrespfile.ix[:, (batch_vec[n]): batch_vec[n +
-                                             1]]
+                                             1]-1]
             os.chdir(processing_dir)
             resp = str('resp_batch_' + str(n+1))
             testresp = str('testresp_batch_' + str(n+1))
@@ -463,7 +463,7 @@ def collect_nm(processing_dir,
             pRho_dfs = []
             for pRho_filename in pRho_filenames:
                 pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
-            pRho_dfs = pd.concat(pRho_dfs, ignore_index=True)
+            pRho_dfs = pd.concat(pRho_dfs, ignore_index=True, axis=1)
             fileio.save(pRho_dfs, processing_dir + 'pRho' +
                         file_extentions)
             del pRho_dfs
@@ -474,7 +474,7 @@ def collect_nm(processing_dir,
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
                 Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
-            Rho_dfs = pd.concat(Rho_dfs, ignore_index=True)
+            Rho_dfs = pd.concat(Rho_dfs, ignore_index=True, axis=1)
             fileio.save(Rho_dfs, processing_dir + 'Rho' + file_extentions)
             del Rho_dfs
 
@@ -484,7 +484,7 @@ def collect_nm(processing_dir,
             Z_dfs = []
             for Z_filename in Z_filenames:
                 Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
-            Z_dfs = pd.concat(Z_dfs, ignore_index=True)
+            Z_dfs = pd.concat(Z_dfs, ignore_index=True, axis=1)
             fileio.save(Z_dfs, processing_dir + 'Z' + file_extentions)
             del Z_dfs
             
@@ -494,7 +494,7 @@ def collect_nm(processing_dir,
             yhat_dfs = []
             for yhat_filename in yhat_filenames:
                 yhat_dfs.append(pd.DataFrame(fileio.load(yhat_filename)))
-            yhat_dfs = pd.concat(yhat_dfs, ignore_index=True)
+            yhat_dfs = pd.concat(yhat_dfs, ignore_index=True, axis=1)
             fileio.save(yhat_dfs, processing_dir +
                         'yhat' + file_extentions)
             del yhat_dfs
@@ -505,7 +505,7 @@ def collect_nm(processing_dir,
             ys2_dfs = []
             for ys2_filename in ys2_filenames:
                 ys2_dfs.append(pd.DataFrame(fileio.load(ys2_filename)))
-            ys2_dfs = pd.concat(ys2_dfs, ignore_index=True)
+            ys2_dfs = pd.concat(ys2_dfs, ignore_index=True, axis=1)
             fileio.save(ys2_dfs, processing_dir + 'ys2' + file_extentions)
             del ys2_dfs
 
@@ -515,7 +515,7 @@ def collect_nm(processing_dir,
             rmse_dfs = []
             for rmse_filename in rmse_filenames:
                 rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
-            rmse_dfs = pd.concat(rmse_dfs, ignore_index=True)
+            rmse_dfs = pd.concat(rmse_dfs, ignore_index=True, axis=1)
             fileio.save(rmse_dfs, processing_dir +
                         'rmse' + file_extentions)
             del rmse_dfs
@@ -526,7 +526,7 @@ def collect_nm(processing_dir,
             smse_dfs = []
             for smse_filename in smse_filenames:
                 smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
-            smse_dfs = pd.concat(smse_dfs, ignore_index=True)
+            smse_dfs = pd.concat(smse_dfs, ignore_index=True, axis=1)
             fileio.save(smse_dfs, processing_dir + 'smse' +
                         file_extentions)
             del smse_dfs
@@ -537,7 +537,7 @@ def collect_nm(processing_dir,
             expv_dfs = []
             for expv_filename in expv_filenames:
                 expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
-            expv_dfs = pd.concat(expv_dfs, ignore_index=True)
+            expv_dfs = pd.concat(expv_dfs, ignore_index=True, axis=1)
             fileio.save(expv_dfs, processing_dir + 'expv' +
                         file_extentions)
             del expv_dfs
@@ -548,7 +548,7 @@ def collect_nm(processing_dir,
             msll_dfs = []
             for msll_filename in msll_filenames:
                 msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
-            msll_dfs = pd.concat(msll_dfs, ignore_index=True)
+            msll_dfs = pd.concat(msll_dfs, ignore_index=True, axis=1)
             fileio.save(msll_dfs, processing_dir + 'msll' +
                         file_extentions)
             del msll_dfs
@@ -561,11 +561,13 @@ def collect_nm(processing_dir,
                 Hyp_dfs = []
                 for Hyp_filename in Hyp_filenames:
                     Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
-                Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True)
                 fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
                             file_extentions)
                 del Hyp_dfs
-
+    if not batch_fail:
+        return 1
+    else:
+        return 0
 
 def delete_nm(processing_dir,
               binary=False):
