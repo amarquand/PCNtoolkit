@@ -58,19 +58,33 @@ class HBR:
                     sigma_prior_slope_noise = pm.HalfCauchy('sigma_prior_slope_noise', 5)
             
                 if configs['random_intercept']: # Random intercepts
-                    intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, 
-                                           sigma=sigma_prior_intercept, 
-                                           shape=(self.gender_num,self.site_num))
+                    intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1, 
+                                                  shape=(self.gender_num,self.site_num))
+                    #intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, 
+                    #                       sigma=sigma_prior_intercept, 
+                    #                       shape=(self.gender_num,self.site_num))
                 else:
-                    intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, 
-                                           sigma=sigma_prior_intercept)
+                    #intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, 
+                    #                       sigma=sigma_prior_intercept)
+                    intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1)
+                    
+                intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
+                                              intercepts_offset * sigma_prior_intercept)
+                    
                 
                 if configs['random_slope']:  # Random slopes
-                    slopes = pm.Normal('slopes', mu=mu_prior_slope, 
-                                       sigma=sigma_prior_slope, 
-                                       shape=(self.gender_num,self.site_num))
+                    slopes_offset = pm.Normal('slopes_offset', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
+                    #slopes = pm.Normal('slopes', mu=mu_prior_slope, 
+                    #                   sigma=sigma_prior_slope, 
+                    #                   shape=(self.gender_num,self.site_num))
                 else:
-                    slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope)
+                    #slopes = pm.Normal('slopes', mu=mu_prior_slope, sigma=sigma_prior_slope)
+                    slopes_offset = pm.Normal('slopes_offset', mu=0, sd=1)
+                
+                slopes = pm.Deterministic('slopes', mu_prior_slope + 
+                                                  slopes_offset * sigma_prior_slope)
+                    
                 
                 if (not configs['random_intercept'] and not configs['random_slope']):
                     y_hat = intercepts + self.a * slopes
@@ -84,23 +98,37 @@ class HBR:
                 if configs['random_noise']:  # Random Noise
                     if configs['hetero_noise']:
                         if configs['random_intercept']: # Random intercepts
-                            intercepts_noise = pm.Normal('intercepts_noise', 
-                                                         mu=mu_prior_intercept_noise, 
-                                                         sigma=sigma_prior_intercept_noise, 
-                                                         shape=(self.gender_num,self.site_num))
+                            intercepts_noise_offset = pm.Normal('intercepts_noise_offset'
+                                                                , mu=0, sd=1,
+                                                                shape=(self.gender_num,self.site_num))
+                            #intercepts_noise = pm.Normal('intercepts_noise', 
+                            #                             mu=mu_prior_intercept_noise, 
+                            #                             sigma=sigma_prior_intercept_noise, 
+                            #                             shape=(self.gender_num,self.site_num))
                         else:
-                            intercepts_noise = pm.Normal('intercepts_noise', 
-                                                         mu=mu_prior_intercept_noise, 
-                                                         sigma=sigma_prior_intercept_noise)
+                            #intercepts_noise = pm.Normal('intercepts_noise', 
+                            #                             mu=mu_prior_intercept_noise, 
+                            #                             sigma=sigma_prior_intercept_noise)
+                            intercepts_noise_offset = pm.Normal('intercepts_noise_offset'
+                                                                , mu=0, sd=1)
+                            
+                        intercepts_noise = pm.Deterministic('intercepts_noise', mu_prior_intercept_noise + 
+                                                  intercepts_noise_offset * sigma_prior_intercept_noise)
                         
                         if configs['random_slope']:  # Random slopes
-                            slopes_noise = pm.Normal('slopes_noise', mu=mu_prior_slope_noise, 
-                                                     sigma=sigma_prior_slope_noise, 
-                                                     shape=(self.gender_num,self.site_num))
+                            slopes_noise_offset = pm.Normal('slopes_noise_offset', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
+                            #slopes_noise = pm.Normal('slopes_noise', mu=mu_prior_slope_noise, 
+                            #                         sigma=sigma_prior_slope_noise, 
+                            #                         shape=(self.gender_num,self.site_num))
                         else:
-                            slopes_noise = pm.Normal('slopes_noise', 
-                                                     mu=mu_prior_slope_noise, 
-                                                     sigma=sigma_prior_slope_noise)
+                            #slopes_noise = pm.Normal('slopes_noise', 
+                            #                         mu=mu_prior_slope_noise, 
+                            #                         sigma=sigma_prior_slope_noise)
+                            slopes_noise_offset = pm.Normal('slopes_noise_offset', mu=0, sd=1)
+                            
+                        slopes_noise = pm.Deterministic('slopes_noise', mu_prior_slope_noise + 
+                                                  slopes_noise_offset * sigma_prior_slope_noise)
                         
                         if (not configs['random_intercept'] and not configs['random_slope']):
                             sigma_noise = intercepts_noise + self.a * slopes_noise
@@ -139,16 +167,31 @@ class HBR:
                     sigma_prior_slope_2_noise = pm.HalfCauchy('sigma_prior_slope_2_noise', 5)
             
                 if configs['random_intercept']: # Random intercepts
-                    intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.gender_num,self.site_num))
+                    #intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept, shape=(self.gender_num,self.site_num))
+                    intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1,
+                                                  shape=(self.gender_num,self.site_num))
                 else:
-                    intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept)
+                    #intercepts = pm.Normal('intercepts', mu=mu_prior_intercept, sigma=sigma_prior_intercept)
+                    intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1)
+                    
+                intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
+                                              intercepts_offset * sigma_prior_intercept)
                 
                 if configs['random_slope']:  # Random slopes
-                    slopes_1 = pm.Normal('slopes_1', mu=mu_prior_slope_1, sigma=sigma_prior_slope_1, shape=(self.gender_num,self.site_num))
-                    slopes_2 = pm.Normal('slopes_2', mu=mu_prior_slope_2, sigma=sigma_prior_slope_2, shape=(self.gender_num,self.site_num))
+                    #slopes_1 = pm.Normal('slopes_1', mu=mu_prior_slope_1, sigma=sigma_prior_slope_1, shape=(self.gender_num,self.site_num))
+                    slopes_offset1 = pm.Normal('slopes_offset1', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
+                    #slopes_2 = pm.Normal('slopes_2', mu=mu_prior_slope_2, sigma=sigma_prior_slope_2, shape=(self.gender_num,self.site_num))
+                    slopes_offset2 = pm.Normal('slopes_offset2', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
                 else:
-                    slopes_1 = pm.Normal('slopes_1', mu=mu_prior_slope_1, sigma=sigma_prior_slope_1)
-                    slopes_2 = pm.Normal('slopes_2', mu=mu_prior_slope_2, sigma=sigma_prior_slope_2)
+                    slopes_offset1 = pm.Normal('slopes_offset1', mu=0, sd=1)
+                    slopes_offset2 = pm.Normal('slopes_offset2', mu=0, sd=1)
+                
+                slopes_1 = pm.Deterministic('slopes_1', mu_prior_slope_1 + 
+                                                  slopes_offset1 * sigma_prior_slope_1)
+                slopes_2 = pm.Deterministic('slopes_2', mu_prior_slope_2 + 
+                                                  slopes_offset2 * sigma_prior_slope_2)
                 
                 if (not configs['random_intercept'] and not configs['random_slope']):
                     y_hat = intercepts + self.a * slopes_1 + self.a**2 * slopes_2
@@ -162,30 +205,48 @@ class HBR:
                 if configs['random_noise']:  # Random Noise
                     if configs['hetero_noise']:
                         if configs['random_intercept']: # Random intercepts
-                            intercepts_noise = pm.Normal('intercepts_noise', 
-                                                         mu=mu_prior_intercept_noise, 
-                                                         sigma=sigma_prior_intercept_noise, 
-                                                         shape=(self.gender_num,self.site_num))
+                            #intercepts_noise = pm.Normal('intercepts_noise', 
+                            #                             mu=mu_prior_intercept_noise, 
+                            #                             sigma=sigma_prior_intercept_noise, 
+                            #                             shape=(self.gender_num,self.site_num))
+                            intercepts_noise_offset = pm.Normal('intercepts_noise_offset', mu=0, sd=1,
+                                                  shape=(self.gender_num,self.site_num))
                         else:
-                            intercepts_noise = pm.Normal('intercepts_noise', 
-                                                         mu=mu_prior_intercept_noise, 
-                                                         sigma=sigma_prior_intercept_noise)
+                            #intercepts_noise = pm.Normal('intercepts_noise', 
+                            #                             mu=mu_prior_intercept_noise, 
+                            #                             sigma=sigma_prior_intercept_noise)
+                            intercepts_noise_offset = pm.Normal('intercepts_noise_offset'
+                                                                , mu=0, sd=1)
+                            
+                            intercepts_noise = pm.Deterministic('intercepts_noise', mu_prior_intercept_noise + 
+                                              intercepts_noise_offset * sigma_prior_intercept_noise)
                         
                         if configs['random_slope']:  # Random slopes
-                            slopes_1_noise = pm.Normal('slopes_1_noise', mu=mu_prior_slope_1_noise, 
-                                                     sigma=sigma_prior_slope_1_noise, 
-                                                     shape=(self.gender_num,self.site_num))
-                            slopes_2_noise = pm.Normal('slopes_2_noise', mu=mu_prior_slope_2_noise, 
-                                                     sigma=sigma_prior_slope_2_noise, 
-                                                     shape=(self.gender_num,self.site_num))
+                            #slopes_1_noise = pm.Normal('slopes_1_noise', mu=mu_prior_slope_1_noise, 
+                            #                         sigma=sigma_prior_slope_1_noise, 
+                            #                         shape=(self.gender_num,self.site_num))
+                            slopes_noise_offset1 = pm.Normal('slopes_noise_offset1', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
+                            #slopes_2_noise = pm.Normal('slopes_2_noise', mu=mu_prior_slope_2_noise, 
+                            #                         sigma=sigma_prior_slope_2_noise, 
+                            #                         shape=(self.gender_num,self.site_num))
+                            slopes_noise_offset2 = pm.Normal('slopes_noise_offset2', mu=0, sd=1, 
+                                             shape=(self.gender_num,self.site_num))
                         else:
-                            slopes_1_noise = pm.Normal('slopes_1_noise', 
-                                                     mu=mu_prior_slope_1_noise, 
-                                                     sigma=sigma_prior_slope_1_noise)
-                            slopes_2_noise = pm.Normal('slopes_2_noise', 
-                                                     mu=mu_prior_slope_2_noise, 
-                                                     sigma=sigma_prior_slope_2_noise)
+                            #slopes_1_noise = pm.Normal('slopes_1_noise', 
+                            #                         mu=mu_prior_slope_1_noise, 
+                            #                         sigma=sigma_prior_slope_1_noise)
+                            slopes_noise_offset1 = pm.Normal('slopes_noise_offset1', mu=0, sd=1)
+                            #slopes_2_noise = pm.Normal('slopes_2_noise', 
+                            #                         mu=mu_prior_slope_2_noise, 
+                            #                         sigma=sigma_prior_slope_2_noise)
+                            slopes_noise_offset2 = pm.Normal('slopes_noise_offset2', mu=0, sd=1)
                         
+                        slopes_1_noise = pm.Deterministic('slopes_1_noise', mu_prior_slope_1_noise + 
+                                                  slopes_noise_offset1 * sigma_prior_slope_1_noise)
+                        slopes_2_noise = pm.Deterministic('slopes_2_noise', mu_prior_slope_2_noise + 
+                                                  slopes_noise_offset2 * sigma_prior_slope_2_noise)
+                
                         if (not configs['random_intercept'] and not configs['random_slope']):
                             sigma_noise = intercepts_noise + self.a * slopes_1_noise + self.a**2 * slopes_2_noise
                         elif (configs['random_intercept'] and not configs['random_slope']):
@@ -252,7 +313,7 @@ class HBR:
     def estimate(self):
         """ Function to estimate the model """
         with self.model:
-            self.trace = pm.sample(1000, tune=1000, chains=2)
+            self.trace = pm.sample(1000, tune=1000, chains=2,  target_accept=0.9)
         
         return self.trace
 
