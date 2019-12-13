@@ -322,11 +322,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         # Write output
         if testcov is None:
-            fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+            fileio.save(Yhat[testids, :], 'yhat' + ext,
                         example=exfile, mask=maskvol)
-            fileio.save(S2[testids, :].T, 'ys2' + ext,
+            fileio.save(S2[testids, :], 'ys2' + ext,
                         example=exfile, mask=maskvol)
-            fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
+            fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
                         mask=maskvol)
             fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
             fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
@@ -343,18 +343,18 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                                 ext, example=exfile, mask=maskvol)
         else:
             if testresp is None:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
+                fileio.save(S2[testids, :], 'ys2' + ext,
                             example=exfile, mask=maskvol)
                 fileio.save(Hyp[:,:,0], 'Hyp' + ext,
                             example=exfile, mask=maskvol)
             else:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
+                fileio.save(S2[testids, :], 'ys2' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
+                fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
                             mask=maskvol)
                 fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
                 fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
