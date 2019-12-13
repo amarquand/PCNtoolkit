@@ -337,9 +337,9 @@ def save_ascii(data, filename):
 def save(data, filename, example=None, mask=None, text=False):
 
     if file_type(filename) == 'cifti':
-        save_cifti(data, filename, example, vol=True)
+        save_cifti(data.T, filename, example, vol=True)
     elif file_type(filename) == 'nifti':
-        save_nifti(data, filename, example, mask)
+        save_nifti(data.T, filename, example, mask)
     elif text or file_type(filename) == 'text':
         save_ascii(data, filename)
     elif file_type(filename) == 'binary':
