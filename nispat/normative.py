@@ -58,7 +58,7 @@ def get_args(*args):
     """ Parse command line arguments"""
 
     # parse arguments
-    parser = argparse.ArgumentParser(description="Trend surface model")
+    parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("responses")
     parser.add_argument("-m", help="mask file", dest="maskfile", default=None)
     parser.add_argument("-c", help="covariates file", dest="covfile",
@@ -72,6 +72,8 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
+    parser.add_argument('-s', action='store_false', 
+                        help="Flag to skip standardization.", dest="standardize")
     args = parser.parse_args()
     wdir = os.path.realpath(os.path.curdir)
     respfile = os.path.join(wdir, args.responses)
@@ -102,12 +104,12 @@ def get_args(*args):
             print("Ignoring cross-valdation specification (test data given)")
 
     return respfile, maskfile, covfile, cvfolds, \
-            testcov, testresp, args.alg, args.configparam
+            testcov, testresp, args.alg, args.configparam, args.standardize
 
 
 def estimate(respfile, covfile, maskfile=None, cvfolds=None,
              testcov=None, testresp=None, alg='gpr', configparam=None,
-             saveoutput=True, outputsuffix=None):
+             saveoutput=True, outputsuffix=None, standardize=True):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -229,11 +231,16 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         iy, jy = np.ix_(tr, nz)
         mY = np.mean(Y[iy, jy], axis=0)
         sY = np.std(Y[iy, jy], axis=0)
-        Yz = np.zeros_like(Y)
-        Yz[:, nz] = (Y[:, nz] - mY) / sY
-        mX = np.mean(X[tr, :], axis=0)
-        sX = np.std(X[tr, :],  axis=0)
-        Xz = (X - mX) / sX
+        
+        if standardize:
+            Yz = np.zeros_like(Y)
+            Yz[:, nz] = (Y[:, nz] - mY) / sY
+            mX = np.mean(X[tr, :], axis=0)
+            sX = np.std(X[tr, :],  axis=0)
+            Xz = (X - mX) / sX
+        else:
+            Yz = Y
+            Xz = X
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
@@ -244,9 +251,13 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
                                       Hyp[nz[i], :, fold])
-
-                Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-                S2[te, nz[i]] = s2 * sY[i]**2
+                if standardize:
+                    Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
+                    S2[te, nz[i]] = s2 * sY[i]**2
+                else:
+                    Yhat[te, nz[i]] = yhat
+                    S2[te, nz[i]] = s2
+                    
                 nlZ[nz[i], fold] = nm.neg_log_lik
                 if testcov is None:
                     Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
@@ -387,8 +398,8 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar = get_args(args)
-    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar)
+    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar, standardize = get_args(args)
+    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar, standardize= standardize)
 
 # For running from the command line:
 if __name__ == "__main__":
