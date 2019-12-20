@@ -38,7 +38,8 @@ def execute_nm(processing_dir,
                configparam=None,
                cluster_spec='torque',
                binary=False,
-               log_path=None):
+               log_path=None,
+               standardize=True):
 
     """
     This function is a motherfunction that executes all parallel normative
@@ -120,7 +121,8 @@ def execute_nm(processing_dir,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=batch_testrespfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -148,7 +150,8 @@ def execute_nm(processing_dir,
                                 respfile_path=batch_respfile_path,
                                 testcovfile_path=testcovfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -178,7 +181,8 @@ def execute_nm(processing_dir,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=testrespfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -418,15 +422,15 @@ def collect_nm(processing_dir,
                 msll = pd.Series(msll)
                 fileio.save(msll, batch + 'msll' + file_extentions)
 
-                yhat = np.zeros([batch_size, numsubjects])
+                yhat = np.zeros([numsubjects, batch_size])
                 yhat = pd.DataFrame(yhat)
                 fileio.save(yhat, batch + 'yhat' + file_extentions)
 
-                ys2 = np.zeros([batch_size, numsubjects])
+                ys2 = np.zeros([numsubjects, batch_size])
                 ys2 = pd.DataFrame(ys2)
                 fileio.save(ys2, batch + 'ys2' + file_extentions)
 
-                Z = np.zeros([batch_size, numsubjects])
+                Z = np.zeros([numsubjects, batch_size])
                 Z = pd.DataFrame(Z)
                 fileio.save(Z, batch + 'Z' + file_extentions)
 
@@ -606,7 +610,8 @@ def bashwrap_nm(processing_dir,
                 testcovfile_path=None,
                 testrespfile_path=None,
                 alg=None,
-                configparam=None):
+                configparam=None,
+                standardize=True):
 
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
@@ -686,7 +691,11 @@ def bashwrap_nm(processing_dir,
         job_call = [job_call[0] + ' -a ' + alg]
         if configparam is not None:
             job_call = [job_call[0] + ' -x ' + str(configparam)]
-
+    
+    # add standardization flag if it is false
+    if not standardize:
+        job_call = [job_call[0] + ' -s']
+    
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
 
