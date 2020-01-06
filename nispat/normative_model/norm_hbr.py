@@ -71,6 +71,11 @@ class NormHBR(NormBase):
             self.configs['hetero_noise'] = configs['hetero_noise']
         else:
             self.configs['hetero_noise'] = False
+            
+        if 'noise_model' in configs:
+            self.configs['noise_model'] = configs['noise_model']
+        else:
+            self.configs['noise_model'] = 'linear'
         
         if y is not None:
             self.hbr = HBR(np.squeeze(X), 
