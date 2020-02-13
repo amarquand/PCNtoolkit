@@ -18,6 +18,7 @@ import os
 import sys
 import numpy as np
 import argparse
+import pickle
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -249,8 +250,17 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
                                alg=alg, configparam=configparam)
                 Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
-                yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
+                if (alg == 'hbr'):
+                    if nm.configs['new_site'] == True:
+                        nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
+                        yhat, s2 = nm.predict_on_new_sites(Xz[te, :])
+                    else:    
+                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
                                       Hyp[nz[i], :, fold])
+                else:
+                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
+                                      Hyp[nz[i], :, fold])
+                    
                 if standardize:
                     Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
                     S2[te, nz[i]] = s2 * sY[i]**2
@@ -301,7 +311,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
         Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
         EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+            mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
     else:
         if testresp is not None:
             MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -316,7 +327,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
             Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
             EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+                mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
             
     # Set writing options
     if saveoutput:
@@ -383,12 +395,14 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                                     ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
-            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, 
+                      pRho, RMSE, SMSE, EXPV, MSLL)
         else:
             if testresp is None:
                 output = (Yhat[testids, :], S2[testids, :], Hyp)
             else:
-                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], 
+                          Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
 

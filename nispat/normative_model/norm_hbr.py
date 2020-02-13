@@ -77,6 +77,15 @@ class NormHBR(NormBase):
         else:
             self.configs['noise_model'] = 'linear'
         
+        if 'new_site' in configs:
+            self.configs['new_site'] = configs['new_site']
+            if 'newsite_training_idx' in configs:
+                self.configs['newsite_training_idx'] = configs['newsite_training_idx']
+            else:
+                self.configs['newsite_training_idx'] = np.ones([configs['batch_effects_test'].shape[0]])
+        else:
+            self.configs['new_site'] = False
+            
         if y is not None:
             self.hbr = HBR(np.squeeze(X), 
                            np.squeeze(batch_effects_train[:, 0]), 
@@ -94,7 +103,7 @@ class NormHBR(NormBase):
     def estimate(self, X, y=None):
         self.hbr.estimate()
         return None
-        
+    
     def predict(self, Xs, X=None, Y=None, theta=None): 
         with open(self.configparam, 'rb') as handle:
              configparam = pickle.load(handle)
@@ -107,7 +116,27 @@ class NormHBR(NormBase):
             
         yhat, s2 = self.hbr.predict(np.squeeze(Xs), 
                                     np.squeeze(batch_effects_test[:, 0]), 
-                                    np.squeeze(batch_effects_test[:, 1]), pred = pred_type)
-        
-
+                                    np.squeeze(batch_effects_test[:, 1]), pred = pred_type)      
         return yhat, s2
+    
+    def estimate_on_new_sites(self, X, y):
+        with open(self.configparam, 'rb') as handle:
+             configparam = pickle.load(handle)
+        newsite_training_idx = np.where(configparam['newsite_training_idx'] == 1)
+        sites =  configparam['batch_effects_test'][newsite_training_idx,0].squeeze()
+        gender =  configparam['batch_effects_test'][newsite_training_idx,1].squeeze()
+        self.hbr.estimate_on_new_site(X[newsite_training_idx,].squeeze(), sites,
+                                      gender, y[newsite_training_idx,].squeeze())
+        return None
+    
+    def predict_on_new_sites(self, X): # For the limitations in normative.py, this predicts on all test data.
+        with open(self.configparam, 'rb') as handle:
+             configparam = pickle.load(handle)
+        #newsite_test_idx = np.logical_not(configparam['newsite_training_idx'] == 1)
+        #gender =  configparam['batch_effects_test'][newsite_test_idx,1]
+        gender =  configparam['batch_effects_test'][:,1].squeeze()
+        sites =  configparam['batch_effects_test'][:,0].squeeze()
+        yhat, s2 = self.hbr.predict_on_new_site(X.squeeze(), sites, gender)
+        #yhat, s2 = self.hbr.predict_on_new_site(X[newsite_test_idx,:], gender, new_site_id)
+        return yhat, s2
+        
