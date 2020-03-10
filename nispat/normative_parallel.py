@@ -38,7 +38,8 @@ def execute_nm(processing_dir,
                configparam=None,
                cluster_spec='torque',
                binary=False,
-               log_path=None):
+               log_path=None,
+               standardize=True):
 
     """
     This function is a motherfunction that executes all parallel normative
@@ -120,7 +121,8 @@ def execute_nm(processing_dir,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=batch_testrespfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -148,7 +150,8 @@ def execute_nm(processing_dir,
                                 respfile_path=batch_respfile_path,
                                 testcovfile_path=testcovfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -178,7 +181,8 @@ def execute_nm(processing_dir,
                                 testcovfile_path=testcovfile_path,
                                 testrespfile_path=testrespfile_path,
                                 alg=alg,
-                                configparam=configparam)
+                                configparam=configparam,
+                                standardize=standardize)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -292,16 +296,15 @@ def split_nm(processing_dir,
         respfile = pd.DataFrame(respfile)
         testrespfile = pd.DataFrame(testrespfile)
 
-        numsub = len(respfile.ix[0, :])
+        numsub = respfile.shape[1]
         batch_vec = np.arange(0, numsub,
                               batch_size)
         batch_vec = np.append(batch_vec,
                               numsub)
-        batch_vec = batch_vec-1
         for n in range(0, (len(batch_vec) - 1)):
-            resp_batch = respfile.ix[:, (batch_vec[n] + 1): batch_vec[n + 1]]
-            testresp_batch = testrespfile.ix[:, (batch_vec[n]+1): batch_vec[n +
-                                             1]]
+            resp_batch = respfile.ix[:, (batch_vec[n]): batch_vec[n + 1]-1]
+            testresp_batch = testrespfile.ix[:, (batch_vec[n]): batch_vec[n +
+                                             1]-1]
             os.chdir(processing_dir)
             resp = str('resp_batch_' + str(n+1))
             testresp = str('testresp_batch_' + str(n+1))
@@ -360,8 +363,13 @@ def collect_nm(processing_dir,
         file_extentions = '.txt'
 
     # detect number of subjects, batches, hyperparameters and CV
-    file_example = glob.glob(processing_dir + 'batch_1/' + 'yhat' +
-                             file_extentions)
+    batches = glob.glob(processing_dir + 'batch_*/')
+    file_example = []
+    for batch in batches:
+        if file_example == []:
+            file_example = glob.glob(batch + 'yhat' + file_extentions)
+        else:
+            break
     if binary is False:
         file_example = fileio.load(file_example[0])
     else:
@@ -419,15 +427,15 @@ def collect_nm(processing_dir,
                 msll = pd.Series(msll)
                 fileio.save(msll, batch + 'msll' + file_extentions)
 
-                yhat = np.zeros([batch_size, numsubjects])
+                yhat = np.zeros([numsubjects, batch_size])
                 yhat = pd.DataFrame(yhat)
                 fileio.save(yhat, batch + 'yhat' + file_extentions)
 
-                ys2 = np.zeros([batch_size, numsubjects])
+                ys2 = np.zeros([numsubjects, batch_size])
                 ys2 = pd.DataFrame(ys2)
                 fileio.save(ys2, batch + 'ys2' + file_extentions)
 
-                Z = np.zeros([batch_size, numsubjects])
+                Z = np.zeros([numsubjects, batch_size])
                 Z = pd.DataFrame(Z)
                 fileio.save(Z, batch + 'Z' + file_extentions)
 
@@ -464,9 +472,10 @@ def collect_nm(processing_dir,
             pRho_dfs = []
             for pRho_filename in pRho_filenames:
                 pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
-            pRho_combined = pd.concat(pRho_dfs, ignore_index=True)
-            fileio.save(pRho_combined, processing_dir + 'pRho' +
+            pRho_dfs = pd.concat(pRho_dfs, ignore_index=True, axis=0)
+            fileio.save(pRho_dfs, processing_dir + 'pRho' +
                         file_extentions)
+            del pRho_dfs
 
         Rho_filenames = glob.glob(processing_dir + 'batch_*/' + 'Rho*')
         if pRho_filenames:
@@ -474,8 +483,9 @@ def collect_nm(processing_dir,
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
                 Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
-            Rho_combined = pd.concat(Rho_dfs, ignore_index=True)
-            fileio.save(Rho_combined, processing_dir + 'Rho' + file_extentions)
+            Rho_dfs = pd.concat(Rho_dfs, ignore_index=True, axis=0)
+            fileio.save(Rho_dfs, processing_dir + 'Rho' + file_extentions)
+            del Rho_dfs
 
         Z_filenames = glob.glob(processing_dir + 'batch_*/' + 'Z*')
         if Z_filenames:
@@ -483,19 +493,20 @@ def collect_nm(processing_dir,
             Z_dfs = []
             for Z_filename in Z_filenames:
                 Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
-            Z_combined = pd.concat(Z_dfs, ignore_index=True)
-            fileio.save(Z_combined, processing_dir + 'Z' + file_extentions)
-
+            Z_dfs = pd.concat(Z_dfs, ignore_index=True, axis=1)
+            fileio.save(Z_dfs, processing_dir + 'Z' + file_extentions)
+            del Z_dfs
+            
         yhat_filenames = glob.glob(processing_dir + 'batch_*/' + 'yhat*')
         if yhat_filenames:
             yhat_filenames = fileio.sort_nicely(yhat_filenames)
             yhat_dfs = []
             for yhat_filename in yhat_filenames:
                 yhat_dfs.append(pd.DataFrame(fileio.load(yhat_filename)))
-            yhat_combined = pd.concat(yhat_dfs, ignore_index=True)
-            fileio.save(yhat_combined, processing_dir +
-                        'yhat' +
-                        file_extentions)
+            yhat_dfs = pd.concat(yhat_dfs, ignore_index=True, axis=1)
+            fileio.save(yhat_dfs, processing_dir +
+                        'yhat' + file_extentions)
+            del yhat_dfs
 
         ys2_filenames = glob.glob(processing_dir + 'batch_*/' + 'ys2*')
         if ys2_filenames:
@@ -503,8 +514,9 @@ def collect_nm(processing_dir,
             ys2_dfs = []
             for ys2_filename in ys2_filenames:
                 ys2_dfs.append(pd.DataFrame(fileio.load(ys2_filename)))
-            ys2_combined = pd.concat(ys2_dfs, ignore_index=True)
-            fileio.save(ys2_combined, processing_dir + 'ys2' + file_extentions)
+            ys2_dfs = pd.concat(ys2_dfs, ignore_index=True, axis=1)
+            fileio.save(ys2_dfs, processing_dir + 'ys2' + file_extentions)
+            del ys2_dfs
 
         rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'rmse*')
         if rmse_filenames:
@@ -512,10 +524,10 @@ def collect_nm(processing_dir,
             rmse_dfs = []
             for rmse_filename in rmse_filenames:
                 rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
-            rmse_combined = pd.concat(rmse_dfs, ignore_index=True)
-            fileio.save(rmse_combined, processing_dir +
-                        'rmse' +
-                        file_extentions)
+            rmse_dfs = pd.concat(rmse_dfs, ignore_index=True, axis=0)
+            fileio.save(rmse_dfs, processing_dir +
+                        'rmse' + file_extentions)
+            del rmse_dfs
 
         smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'smse*')
         if rmse_filenames:
@@ -523,9 +535,10 @@ def collect_nm(processing_dir,
             smse_dfs = []
             for smse_filename in smse_filenames:
                 smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
-            smse_combined = pd.concat(smse_dfs, ignore_index=True)
-            fileio.save(smse_combined, processing_dir + 'smse' +
+            smse_dfs = pd.concat(smse_dfs, ignore_index=True, axis=0)
+            fileio.save(smse_dfs, processing_dir + 'smse' +
                         file_extentions)
+            del smse_dfs
             
         expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'expv*')
         if expv_filenames:
@@ -533,9 +546,10 @@ def collect_nm(processing_dir,
             expv_dfs = []
             for expv_filename in expv_filenames:
                 expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
-            expv_combined = pd.concat(expv_dfs, ignore_index=True)
-            fileio.save(expv_combined, processing_dir + 'expv' +
+            expv_dfs = pd.concat(expv_dfs, ignore_index=True, axis=0)
+            fileio.save(expv_dfs, processing_dir + 'expv' +
                         file_extentions)
+            del expv_dfs
             
         msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'msll*')
         if msll_filenames:
@@ -543,9 +557,10 @@ def collect_nm(processing_dir,
             msll_dfs = []
             for msll_filename in msll_filenames:
                 msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
-            msll_combined = pd.concat(msll_dfs, ignore_index=True)
-            fileio.save(msll_combined, processing_dir + 'msll' +
+            msll_dfs = pd.concat(msll_dfs, ignore_index=True, axis=0)
+            fileio.save(msll_dfs, processing_dir + 'msll' +
                         file_extentions)
+            del msll_dfs
 
         for n in range(1, n_crossval+1):
             Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
@@ -555,10 +570,14 @@ def collect_nm(processing_dir,
                 Hyp_dfs = []
                 for Hyp_filename in Hyp_filenames:
                     Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
-                Hyp_combined = pd.concat(Hyp_dfs, ignore_index=True)
-                fileio.save(Hyp_combined, processing_dir + 'Hyp_' + str(n) +
+                Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True, axis=0)
+                fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
                             file_extentions)
-
+                del Hyp_dfs
+    if not batch_fail:
+        return 1
+    else:
+        return 0
 
 def delete_nm(processing_dir,
               binary=False):
@@ -597,7 +616,8 @@ def bashwrap_nm(processing_dir,
                 testcovfile_path=None,
                 testrespfile_path=None,
                 alg=None,
-                configparam=None):
+                configparam=None,
+                standardize=True):
 
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
@@ -677,7 +697,11 @@ def bashwrap_nm(processing_dir,
         job_call = [job_call[0] + ' -a ' + alg]
         if configparam is not None:
             job_call = [job_call[0] + ' -x ' + str(configparam)]
-
+    
+    # add standardization flag if it is false
+    if not standardize:
+        job_call = [job_call[0] + ' -s']
+    
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
 

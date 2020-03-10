@@ -18,6 +18,7 @@ import os
 import sys
 import numpy as np
 import argparse
+import pickle
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -58,7 +59,7 @@ def get_args(*args):
     """ Parse command line arguments"""
 
     # parse arguments
-    parser = argparse.ArgumentParser(description="Trend surface model")
+    parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("responses")
     parser.add_argument("-m", help="mask file", dest="maskfile", default=None)
     parser.add_argument("-c", help="covariates file", dest="covfile",
@@ -72,6 +73,8 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
+    parser.add_argument('-s', action='store_false', 
+                        help="Flag to skip standardization.", dest="standardize")
     args = parser.parse_args()
     wdir = os.path.realpath(os.path.curdir)
     respfile = os.path.join(wdir, args.responses)
@@ -102,12 +105,12 @@ def get_args(*args):
             print("Ignoring cross-valdation specification (test data given)")
 
     return respfile, maskfile, covfile, cvfolds, \
-            testcov, testresp, args.alg, args.configparam
+            testcov, testresp, args.alg, args.configparam, args.standardize
 
 
 def estimate(respfile, covfile, maskfile=None, cvfolds=None,
              testcov=None, testresp=None, alg='gpr', configparam=None,
-             saveoutput=True, outputsuffix=None):
+             saveoutput=True, outputsuffix=None, standardize=True):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -184,7 +187,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             Yte = np.zeros([sub_te, Nmod])
   
         # Initialise normative model
-        nm = norm_init(X, Y, alg=alg, configparam=configparam)
+        nm = norm_init(X, alg=alg, configparam=configparam)
         
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
@@ -202,7 +205,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
         # Initialise normative model
-        nm = norm_init(X, Y, alg=alg, configparam=configparam)
+        nm = norm_init(X, alg=alg, configparam=configparam)
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
@@ -229,11 +232,16 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         iy, jy = np.ix_(tr, nz)
         mY = np.mean(Y[iy, jy], axis=0)
         sY = np.std(Y[iy, jy], axis=0)
-        Yz = np.zeros_like(Y)
-        Yz[:, nz] = (Y[:, nz] - mY) / sY
-        mX = np.mean(X[tr, :], axis=0)
-        sX = np.std(X[tr, :],  axis=0)
-        Xz = (X - mX) / sX
+        
+        if standardize:
+            Yz = np.zeros_like(Y)
+            Yz[:, nz] = (Y[:, nz] - mY) / sY
+            mX = np.mean(X[tr, :], axis=0)
+            sX = np.std(X[tr, :],  axis=0)
+            Xz = (X - mX) / sX
+        else:
+            Yz = Y
+            Xz = X
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
@@ -242,11 +250,24 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
                                alg=alg, configparam=configparam)
                 Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
-                yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
+                if (alg == 'hbr'):
+                    if nm.configs['new_site'] == True:
+                        nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
+                        yhat, s2 = nm.predict_on_new_sites(Xz[te, :])
+                    else:    
+                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
                                       Hyp[nz[i], :, fold])
-
-                Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-                S2[te, nz[i]] = s2 * sY[i]**2
+                else:
+                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
+                                      Hyp[nz[i], :, fold])
+                    
+                if standardize:
+                    Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
+                    S2[te, nz[i]] = s2 * sY[i]**2
+                else:
+                    Yhat[te, nz[i]] = yhat
+                    S2[te, nz[i]] = s2
+                    
                 nlZ[nz[i], fold] = nm.neg_log_lik
                 if testcov is None:
                     Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
@@ -290,7 +311,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
         Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
         EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+            mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
     else:
         if testresp is not None:
             MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -305,7 +327,8 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
             Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
             EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+                mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
             
     # Set writing options
     if saveoutput:
@@ -322,11 +345,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         # Write output
         if testcov is None:
-            fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+            fileio.save(Yhat[testids, :], 'yhat' + ext,
                         example=exfile, mask=maskvol)
-            fileio.save(S2[testids, :].T, 'ys2' + ext,
+            fileio.save(S2[testids, :], 'ys2' + ext,
                         example=exfile, mask=maskvol)
-            fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
+            fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
                         mask=maskvol)
             fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
             fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
@@ -339,22 +362,22 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             else:
                 for idx in enumerate(splits.split(X)):
                     fold = idx[0]
-                    fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                    fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
                                 ext, example=exfile, mask=maskvol)
         else:
             if testresp is None:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
+                fileio.save(S2[testids, :], 'ys2' + ext,
                             example=exfile, mask=maskvol)
                 fileio.save(Hyp[:,:,0], 'Hyp' + ext,
                             example=exfile, mask=maskvol)
             else:
-                fileio.save(Yhat[testids, :].T, 'yhat' + ext,
+                fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :].T, 'ys2' + ext,
+                fileio.save(S2[testids, :], 'ys2' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(Z[testids, :].T, 'Z' + ext, example=exfile,
+                fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
                             mask=maskvol)
                 fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
                 fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
@@ -363,21 +386,23 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
                 fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
                 if cvfolds is None:
-                    fileio.save(Hyp[:,:,0], 'Hyp' + ext,
+                    fileio.save(Hyp[:,:,0].T, 'Hyp' + ext,
                                 example=exfile, mask=maskvol)
                 else:
                     for idx in enumerate(splits.split(X)):
                         fold = idx[0]
-                        fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
                                     ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
-            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, 
+                      pRho, RMSE, SMSE, EXPV, MSLL)
         else:
             if testresp is None:
                 output = (Yhat[testids, :], S2[testids, :], Hyp)
             else:
-                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], 
+                          Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
 
@@ -387,8 +412,8 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar = get_args(args)
-    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar)
+    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar, standardize = get_args(args)
+    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar, standardize= standardize)
 
 # For running from the command line:
 if __name__ == "__main__":
