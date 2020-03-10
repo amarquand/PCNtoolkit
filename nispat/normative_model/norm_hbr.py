@@ -142,20 +142,3 @@ class NormHBR(NormBase):
         yhat, s2 = self.hbr.predict_on_new_site(X.squeeze(), sites, gender)
         return yhat, s2
     
-    def save(self, save_path):
-        try:
-            with open(save_path, 'wb') as handle:
-                pickle.dump(self, handle)
-            return True
-        except Exception as err:
-            print('Error:', err)
-            raise
-    
-    def load(self, load_path):
-        try:
-            with open(load_path, 'rb') as handle:
-                nm = pickle.load(handle)
-            return nm
-        except Exception as err:
-            print('Error:', err)
-            raise
