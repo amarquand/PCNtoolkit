@@ -1,5 +1,6 @@
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
+import pickle
 
 class NormBase(with_metaclass(ABCMeta)):
     """ Base class for normative model back-end.
@@ -25,3 +26,21 @@ class NormBase(with_metaclass(ABCMeta)):
     @abstractmethod
     def n_params(self):
         """ Report the number of parameters required by the model """
+    
+    def save(self, save_path):
+        try:
+            with open(save_path, 'wb') as handle:
+                pickle.dump(self, handle)
+            return True
+        except Exception as err:
+            print('Error:', err)
+            raise
+    
+    def load(self, load_path):
+        try:
+            with open(load_path, 'rb') as handle:
+                nm = pickle.load(handle)
+            return nm
+        except Exception as err:
+            print('Error:', err)
+            raise
