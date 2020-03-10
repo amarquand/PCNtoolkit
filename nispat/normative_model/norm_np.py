@@ -227,3 +227,21 @@ class NormNP(NormBase):
         y_sigma_84 = y_sigma_84.cpu().numpy() * (self.scaler.data_max_ - self.scaler.data_min_)
         sigma_al = y_hat - y_hat_84
         return y_hat.squeeze(), (y_sigma**2 + sigma_al**2).squeeze() #, z_context[0].cpu().numpy(), z_context[1].cpu().numpy()
+    
+    def save(self, save_path):
+        try:
+            with open(save_path, 'wb') as handle:
+                pickle.dump(self, handle)
+            return True
+        except Exception as err:
+            print('Error:', err)
+            raise
+    
+    def load(self, load_path):
+        try:
+            with open(load_path, 'rb') as handle:
+                nm = pickle.load(handle)
+            return nm
+        except Exception as err:
+            print('Error:', err)
+            raise
