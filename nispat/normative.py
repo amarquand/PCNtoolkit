@@ -362,7 +362,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             else:
                 for idx in enumerate(splits.split(X)):
                     fold = idx[0]
-                    fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                    fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
                                 ext, example=exfile, mask=maskvol)
         else:
             if testresp is None:
@@ -386,12 +386,12 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
                 fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
                 if cvfolds is None:
-                    fileio.save(Hyp[:,:,0], 'Hyp' + ext,
+                    fileio.save(Hyp[:,:,0].T, 'Hyp' + ext,
                                 example=exfile, mask=maskvol)
                 else:
                     for idx in enumerate(splits.split(X)):
                         fold = idx[0]
-                        fileio.save(Hyp[:, :, fold], 'Hyp_' + str(fold+1) +
+                        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
                                     ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
