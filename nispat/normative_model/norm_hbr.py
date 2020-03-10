@@ -77,6 +77,11 @@ class NormHBR(NormBase):
         else:
             self.configs['noise_model'] = 'linear'
         
+        if 'nn_hidden_neuron_num' in configs:
+            self.configs['nn_hidden_neuron_num'] = configs['nn_hidden_neuron_num']
+        else:
+            self.configs['nn_hidden_neuron_num'] = 2
+        
         if 'new_site' in configs:
             self.configs['new_site'] = configs['new_site']
             if 'newsite_training_idx' in configs:
@@ -132,11 +137,25 @@ class NormHBR(NormBase):
     def predict_on_new_sites(self, X): # For the limitations in normative.py, this predicts on all test data.
         with open(self.configparam, 'rb') as handle:
              configparam = pickle.load(handle)
-        #newsite_test_idx = np.logical_not(configparam['newsite_training_idx'] == 1)
-        #gender =  configparam['batch_effects_test'][newsite_test_idx,1]
         gender =  configparam['batch_effects_test'][:,1].squeeze()
         sites =  configparam['batch_effects_test'][:,0].squeeze()
         yhat, s2 = self.hbr.predict_on_new_site(X.squeeze(), sites, gender)
-        #yhat, s2 = self.hbr.predict_on_new_site(X[newsite_test_idx,:], gender, new_site_id)
         return yhat, s2
-        
+    
+    def save(self, save_path):
+        try:
+            with open(save_path, 'wb') as handle:
+                pickle.dump(self, handle)
+            return True
+        except Exception as err:
+            print('Error:', err)
+            raise
+    
+    def load(self, load_path):
+        try:
+            with open(load_path, 'rb') as handle:
+                nm = pickle.load(handle)
+            return nm
+        except Exception as err:
+            print('Error:', err)
+            raise
