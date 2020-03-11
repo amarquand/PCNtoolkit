@@ -52,7 +52,7 @@ class NormGPR(NormBase):
             self.gpr = GPR(theta, self.covfunc, X, y)
         self.theta = self.gpr.estimate(theta, self.covfunc, X, y)
         
-        return self.theta
+        return self
 
     def predict(self, Xs, X, y, theta=None):
         if theta is None:
@@ -64,3 +64,4 @@ class NormGPR(NormBase):
             s2 = np.diag(s2)
         
         return yhat, s2
+    

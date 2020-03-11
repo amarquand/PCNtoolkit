@@ -61,7 +61,7 @@ class NormRFA(NormBase):
         self.gprrfa = GPRRFA(theta, X, y)
         self.theta = self.gprrfa.estimate(theta, X, y)
         
-        return self.theta
+        return self
 
     def predict(self, Xs, X, y, theta=None):
         if theta is None:
@@ -69,3 +69,4 @@ class NormRFA(NormBase):
         yhat, s2 = self.gprrfa.predict(theta, X, y, Xs)
         
         return yhat, s2
+    
