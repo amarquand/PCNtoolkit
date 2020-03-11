@@ -165,8 +165,7 @@ class NormNP(NormBase):
         
         self.scaler = MinMaxScaler()
         y = self.scaler.fit_transform(y)
-
-        
+ 
         self.reg = []
         for i in range(factor_num):
             self.reg.append(LinearRegression())
@@ -205,7 +204,7 @@ class NormNP(NormBase):
                     optimizer.step()
                 print('Epoch: %d, Loss:%f' %( k, train_loss))
                 k += 1
-        return None
+        return self
         
     def predict(self, Xs, X=None, Y=None, theta=None): 
         sample_num = Xs.shape[0]

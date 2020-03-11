@@ -18,7 +18,6 @@ import os
 import sys
 import numpy as np
 import argparse
-import pickle
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -151,7 +150,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
     :outputs: * yhat - predictive mean
               * ys2 - predictive variance
-              * Hyp - hyperparameters
+              * nm - normative model
               * Z - deviance scores
               * Rho - Pearson correlation between true and predicted responses
               * pRho - parametric p-value for this correlation
@@ -187,7 +186,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             Yte = np.zeros([sub_te, Nmod])
   
         # Initialise normative model
-        nm = norm_init(X, alg=alg, configparam=configparam)
+        #nm = norm_init(X, alg=alg, configparam=configparam)
         
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
@@ -205,8 +204,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
         # Initialise normative model
-        nm = norm_init(X, alg=alg, configparam=configparam)
+        #nm = norm_init(X, alg=alg, configparam=configparam)
 
+    if not os.path.isdir('Models'):
+        os.mkdir('Models')
+    
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
@@ -217,7 +219,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
-    Hyp = np.zeros((Nmod, nm.n_params, cvfolds))
+    #Hyp = np.zeros((Nmod, nm.n_params, cvfolds))
 
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
@@ -249,18 +251,18 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             try:
                 nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
                                alg=alg, configparam=configparam)
-                Hyp[nz[i], :, fold] = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
                 if (alg == 'hbr'):
                     if nm.configs['new_site'] == True:
-                        nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
+                        nm = nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
                         yhat, s2 = nm.predict_on_new_sites(Xz[te, :])
                     else:    
-                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
-                                      Hyp[nz[i], :, fold])
+                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]])
                 else:
-                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], 
-                                      Hyp[nz[i], :, fold])
-                    
+                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]])
+                
+                nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
+                
                 if standardize:
                     Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
                     S2[te, nz[i]] = s2 * sY[i]**2
@@ -285,7 +287,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 print("Exception:")
                 print(e)
                 print(exc_type, fname, exc_tb.tb_lineno)
-                Hyp[nz[i], :, fold] = float('nan')
+                #Hyp[nz[i], :, fold] = float('nan')
 
                 Yhat[te, nz[i]] = float('nan')
                 S2[te, nz[i]] = float('nan')
@@ -357,21 +359,21 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
             fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
             fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
             fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
-            if cvfolds is None:
-                fileio.save(Hyp[:,:,0], 'Hyp' + ext, example=exfile, mask=maskvol)
-            else:
-                for idx in enumerate(splits.split(X)):
-                    fold = idx[0]
-                    fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
-                                ext, example=exfile, mask=maskvol)
+            #if cvfolds is None:
+            #    fileio.save(Hyp[:,:,0], 'Hyp' + ext, example=exfile, mask=maskvol)
+            #else:
+            #    for idx in enumerate(splits.split(X)):
+            #        fold = idx[0]
+            #        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
+            #                    ext, example=exfile, mask=maskvol)
         else:
             if testresp is None:
                 fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
                 fileio.save(S2[testids, :], 'ys2' + ext,
                             example=exfile, mask=maskvol)
-                fileio.save(Hyp[:,:,0], 'Hyp' + ext,
-                            example=exfile, mask=maskvol)
+                #fileio.save(Hyp[:,:,0], 'Hyp' + ext,
+                #            example=exfile, mask=maskvol)
             else:
                 fileio.save(Yhat[testids, :], 'yhat' + ext,
                             example=exfile, mask=maskvol)
@@ -385,23 +387,23 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
                 fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
                 fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
-                if cvfolds is None:
-                    fileio.save(Hyp[:,:,0].T, 'Hyp' + ext,
-                                example=exfile, mask=maskvol)
-                else:
-                    for idx in enumerate(splits.split(X)):
-                        fold = idx[0]
-                        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
-                                    ext, example=exfile, mask=maskvol)
+                #if cvfolds is None:
+                #    fileio.save(Hyp[:,:,0].T, 'Hyp' + ext,
+                #                example=exfile, mask=maskvol)
+                #else:
+                #    for idx in enumerate(splits.split(X)):
+                #        fold = idx[0]
+                #        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
+                #                    ext, example=exfile, mask=maskvol)
     else:
         if testcov is None:
-            output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], Rho, 
+            output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], Rho, 
                       pRho, RMSE, SMSE, EXPV, MSLL)
         else:
             if testresp is None:
-                output = (Yhat[testids, :], S2[testids, :], Hyp)
+                output = (Yhat[testids, :], S2[testids, :], nm)
             else:
-                output = (Yhat[testids, :], S2[testids, :], Hyp, Z[testids, :], 
+                output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], 
                           Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 

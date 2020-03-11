@@ -107,7 +107,7 @@ class NormHBR(NormBase):
     
     def estimate(self, X, y=None):
         self.hbr.estimate()
-        return None
+        return self
     
     def predict(self, Xs, X=None, Y=None, theta=None): 
         with open(self.configparam, 'rb') as handle:
@@ -132,7 +132,7 @@ class NormHBR(NormBase):
         gender =  configparam['batch_effects_test'][newsite_training_idx,1].squeeze()
         self.hbr.estimate_on_new_site(X[newsite_training_idx,].squeeze(), sites,
                                       gender, y[newsite_training_idx,].squeeze())
-        return None
+        return self
     
     def predict_on_new_sites(self, X): # For the limitations in normative.py, this predicts on all test data.
         with open(self.configparam, 'rb') as handle:
