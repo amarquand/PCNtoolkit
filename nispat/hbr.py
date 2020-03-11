@@ -67,10 +67,10 @@ class HBR:
         self.model_type = configs['type']
         self.noise_model = configs['noise_model']
         self.configs = configs
-        #self.new_site_model = []
-        #self.new_site_trace = []
-        #self.g1 = []
-        #self.a1 = []
+        if self.model_type == 'nn':
+            age = np.expand_dims(age, axis = 1)
+            #age = np.expand_dims(age, axis = 2)
+            age = np.repeat(age, configs['nn_hidden_neuron_num'], axis = 1)
         self.s = theano.shared(site_id)
         self.g = theano.shared(gender)
         self.a = theano.shared(age)
@@ -163,6 +163,45 @@ class HBR:
                     y_hat = intercepts + self.a * slopes_1[(self.g, self.s)]  + self.a**2 * slopes_2[(self.g, self.s)] 
                 elif (configs['random_intercept'] and configs['random_slope']):
                     y_hat = intercepts[(self.g, self.s)] + self.a * slopes_1[(self.g, self.s)]  + self.a**2 * slopes_2[(self.g, self.s)] 
+                    
+            elif self.model_type == 'nn':
+                n_hidden = self.configs['nn_hidden_neuron_num']
+                init_1 = pm.floatX(np.random.randn(n_hidden))
+                init_out = pm.floatX(np.random.randn(n_hidden))
+                std_init_1 = pm.floatX(np.ones([n_hidden]))
+                std_init_out = pm.floatX(np.ones([n_hidden,]))
+                
+                weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1., 
+                                 shape=(n_hidden,), 
+                                 testval=init_1)
+                # Group standard-deviation
+                weights_in_1_grp_sd = pm.HalfNormal('w_in_1_grp_sd', sd=1., 
+                                         shape=(n_hidden,), 
+                                         testval=std_init_1)
+                # Group mean distribution from hidden layer to output
+                weights_1_out_grp = pm.Normal('w_1_out_grp', 0, sd=1., 
+                                          shape=(n_hidden,), 
+                                          testval=init_out)
+                weights_1_out_grp_sd = pm.HalfNormal('w_1_out_grp_sd', sd=1., 
+                                          shape=(n_hidden,), 
+                                          testval=std_init_out)
+                # Separate weights for each different model
+                weights_in_1_raw = pm.Normal('w_in_1', 
+                                             shape=(self.gender_num, self.site_num, n_hidden))
+                # Non-centered specification of hierarchical model
+                weights_in_1 = pm.Deterministic('weights_in_1', weights_in_1_raw * weights_in_1_grp_sd + weights_in_1_grp)
+
+                weights_1_out_raw = pm.Normal('w_1_out', 
+                                              shape=(self.gender_num, self.site_num, n_hidden))
+                weights_1_out = pm.Deterministic('weights_1_out', weights_1_out_raw * weights_1_out_grp_sd + weights_1_out_grp)
+                
+                # Build neural-network using tanh activation function
+                act_1 = pm.math.tanh(self.a *  weights_in_1[(self.g, self.s)].squeeze())
+                y_hat = pm.math.sum(act_1 * weights_1_out[(self.g, self.s)].squeeze(), axis=1)
+                #y_hat = theano.tensor.dot(act_1, 
+                #                    weights_1_out[(self.g, self.s)].squeeze())
+                #act_1 = pm.math.tanh(theano.tensor.batched_dot(self.a, weights_in_1))
+                #y_hat = theano.tensor.batched_dot(act_1, weights_1_out)
                 
             if configs['random_noise']:  # Random Noise
                 if configs['hetero_noise']:
@@ -278,6 +317,44 @@ class HBR:
                             
                         sigma_y = pm.Deterministic('sigma_y', pm.math.log(1 + pm.math.exp(sigma_noise))+1e-3)
                         
+                    elif self.noise_model == 'nn':
+                        n_hidden = self.configs['nn_hidden_neuron_num']
+                        init_1_noise = pm.floatX(np.random.randn(n_hidden))
+                        init_out_noise = pm.floatX(np.random.randn(n_hidden))
+                        std_init_1_noise = pm.floatX(np.ones([n_hidden]))
+                        std_init_out_noise = pm.floatX(np.ones([n_hidden,]))
+                        
+                        weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=1., 
+                                         shape=(n_hidden,), 
+                                         testval=init_1_noise)
+                        # Group standard-deviation
+                        weights_in_1_grp_sd_noise = pm.HalfNormal('w_in_1_grp_sd_noise', sd=1., 
+                                                 shape=(n_hidden,), 
+                                                 testval=std_init_1_noise)
+                        # Group mean distribution from hidden layer to output
+                        weights_1_out_grp_noise = pm.Normal('w_1_out_grp_noise', 0, sd=1., 
+                                                  shape=(n_hidden,), 
+                                                  testval=init_out_noise)
+                        weights_1_out_grp_sd_noise = pm.HalfNormal('w_1_out_grp_sd_noise', sd=1., 
+                                                  shape=(n_hidden,), 
+                                                  testval=std_init_out_noise)
+                        # Separate weights for each different model
+                        weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 
+                                                     shape=(self.gender_num, self.site_num, n_hidden))
+                        # Non-centered specification of hierarchical model
+                        weights_in_1_noise = pm.Deterministic('weights_in_1_noise', 
+                                                              weights_in_1_raw_noise * weights_in_1_grp_sd_noise + weights_in_1_grp_noise)
+        
+                        weights_1_out_raw_noise = pm.Normal('w_1_out_noise', 
+                                                      shape=(self.gender_num, self.site_num, n_hidden))
+                        weights_1_out_noise = pm.Deterministic('weights_1_out_noise', 
+                                                               weights_1_out_raw_noise * weights_1_out_grp_sd_noise + weights_1_out_grp_noise)
+                        
+                        # Build neural-network using tanh activation function
+                        act_1_noise = pm.math.tanh(self.a *  weights_in_1_noise[(self.g, self.s)].squeeze())
+                        sigma_y = pm.math.sum(act_1_noise * weights_1_out_noise[(self.g, self.s)].squeeze(), axis=1)
+                        sigma_y = pm.Deterministic('sigma_y',pm.math.log(1 + pm.math.exp(sigma_y)) + 1e-3)
+                                
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(self.gender_num,self.site_num))
                     sigma_y = sigma_noise[(self.g, self.s)]
@@ -286,57 +363,16 @@ class HBR:
                 sigma_y = sigma_noise
             
             y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
-              
-            
-#        elif self.model_type == 'nn':
-#            age = np.expand_dims(age ,axis = 1)
-#            self.a = theano.shared(age)
-#            n_hidden = 2
-#            n_data = 1
-#            init_1 = pm.floatX(np.random.randn(n_data, n_hidden))
-#            init_out = pm.floatX(np.random.randn(n_hidden))
-#            std_init_1 = pm.floatX(np.ones([n_data, n_hidden]))
-#            std_init_out = pm.floatX(np.ones([n_hidden,]))
-#            with pm.Model() as model:
-#                weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1., 
-#                                 shape=(n_data, n_hidden), 
-#                                 testval=init_1)
-#                # Group standard-deviation
-#                weights_in_1_grp_sd = pm.HalfNormal('w_in_1_grp_sd', sd=1., 
-#                                         shape=(n_data, n_hidden), 
-#                                         testval=std_init_1)
-#                # Group mean distribution from hidden layer to output
-#                weights_1_out_grp = pm.Normal('w_1_out_grp', 0, sd=1., 
-#                                          shape=(n_hidden,), 
-#                                          testval=init_out)
-#                weights_1_out_grp_sd = pm.HalfNormal('w_1_out_grp_sd', sd=1., 
-#                                          shape=(n_hidden,), 
-#                                          testval=std_init_out)
-#                # Separate weights for each different model
-#                weights_in_1_raw = pm.Normal('w_in_1', 
-#                                             shape=(self.gender_num, self.site_num, n_data, n_hidden))
-#                # Non-centered specification of hierarchical model
-#                weights_in_1 = weights_in_1_raw[self.g, self.s,:,:] * weights_in_1_grp_sd + weights_in_1_grp
-#
-#                weights_1_out_raw = pm.Normal('w_1_out', 
-#                                              shape=(self.gender_num, self.site_num, n_hidden))
-#                weights_1_out = weights_1_out_raw[self.g, self.s,:] * weights_1_out_grp_sd + weights_1_out_grp
-#                # Build neural-network using tanh activation function
-#                act_1 = pm.math.tanh(theano.tensor.batched_dot(self.a, weights_in_1))
-#                y_hat = theano.tensor.batched_dot(act_1, weights_1_out)
-#                
-#                sigma_error_site = pm.Uniform('sigma_error_site', lower=0, upper=100, shape=(self.site_num,))
-#                sigma_error_gender = pm.Uniform('sigma_error_gender', lower=0, upper=100, shape=(self.gender_num,))
-#                sigma_y = np.sqrt(sigma_error_site[(self.s)]**2 + sigma_error_gender[(self.g)]**2)
-#                # Data likelihood
-#                y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
             
         self.model = model
 
     def estimate(self):
         """ Function to estimate the model """
         with self.model:
-            self.trace = pm.sample(1000, tune=1000, chains=2,  target_accept=0.9)
+            if self.model_type == 'nn':
+                self.trace = pm.sample(1000, tune=1000, chains=2,  target_accept=0.9, init='advi+adapt_diag')
+            else:    
+                self.trace = pm.sample(1000, tune=1000, chains=2,  target_accept=0.9)
         return self.trace
 
     def predict(self, age, site_id, gender, pred = None):
@@ -346,9 +382,10 @@ class HBR:
         if pred == 'single':
             if self.model_type == 'nn':
                 age = np.expand_dims(age ,axis = 1)
-                self.a = theano.shared(age)
-                self.s = theano.shared(site_id)
-                self.g = theano.shared(gender)
+                age = np.repeat(age, self.configs['nn_hidden_neuron_num'], axis = 1)
+                #self.a = theano.shared(age)
+                #self.s = theano.shared(site_id)
+                #self.g = theano.shared(gender)
             with self.model:
                 self.a.set_value(age)
                 self.s.set_value(site_id)

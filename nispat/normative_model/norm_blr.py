@@ -77,7 +77,7 @@ class NormBLR(NormBase):
 
         self.theta = self.blr.estimate(theta, self.Phi, y)
         
-        return self.theta
+        return self
 
     def predict(self, Xs, X, y, theta=None):
         if theta is None:
@@ -87,3 +87,4 @@ class NormBLR(NormBase):
         yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis)
         
         return yhat, s2
+    

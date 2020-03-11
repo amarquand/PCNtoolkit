@@ -347,6 +347,8 @@ def collect_nm(processing_dir,
     import glob
     import numpy as np
     import pandas as pd
+    import shutil
+    
     try:
         import nispat.fileio as fileio
     except ImportError:
@@ -377,19 +379,21 @@ def collect_nm(processing_dir,
     numsubjects = file_example.shape[0]
     batch_size = file_example.shape[1]
 
-    all_Hyptxt = glob.glob(processing_dir + 'batch_*/' + 'Hyp*')
-    if all_Hyptxt != []:
-        first_Hyptxt = fileio.load(all_Hyptxt[0])
-        first_Hyptxt = first_Hyptxt.transpose()
-        nHyp = len(first_Hyptxt)
-        dir_first_Hyptxt = os.path.dirname(all_Hyptxt[0])
-        all_crossval = glob.glob(dir_first_Hyptxt + '/'+'Hyp*')
-        n_crossval = len(all_crossval)
+    #all_Hyptxt = glob.glob(processing_dir + 'batch_*/' + 'Hyp*')
+    #if all_Hyptxt != []:
+    #    first_Hyptxt = fileio.load(all_Hyptxt[0])
+    #    first_Hyptxt = first_Hyptxt.transpose()
+    #    nHyp = len(first_Hyptxt)
+    #    dir_first_Hyptxt = os.path.dirname(all_Hyptxt[0])
+    #    all_crossval = glob.glob(dir_first_Hyptxt + '/'+'Hyp*')
+    #    n_crossval = len(all_crossval)
 
     # artificially creates files for batches that were not executed
     count = 0
     batch_fail = []
-    for batch in glob.glob(processing_dir + 'batch_*/'):
+    batch_dirs = glob.glob(processing_dir + 'batch_*/')
+    batch_dirs = fileio.sort_nicely(batch_dirs)
+    for batch in batch_dirs:
         filepath = glob.glob(batch + 'yhat*')
         if filepath == []:
             count = count+1
@@ -439,11 +443,15 @@ def collect_nm(processing_dir,
                 Z = pd.DataFrame(Z)
                 fileio.save(Z, batch + 'Z' + file_extentions)
 
-                for n in range(1, n_crossval+1):
-                    hyp = np.zeros([batch_size,
-                                    nHyp])
-                    hyp = pd.DataFrame(hyp)
-                    fileio.save(hyp, batch + 'hyp' + file_extentions)
+                if not os.path.isdir(batch + 'Models'):
+                    os.mkdir('Models')
+                #for n in range(1, n_crossval+1):
+                    #hyp = np.zeros([batch_size,
+                    #                nHyp])
+                    #hyp = pd.DataFrame(hyp)
+                    #fileio.save(hyp, batch + 'hyp' + file_extentions)
+                    
+                    
         else: # if more than 10% of yhat is nan then consider the batch as a failed batch
             yhat = fileio.load(filepath[0])
             if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
@@ -562,18 +570,32 @@ def collect_nm(processing_dir,
                         file_extentions)
             del msll_dfs
 
-        for n in range(1, n_crossval+1):
-            Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
-                                      str(n) + '.*')
-            if Hyp_filenames:
-                Hyp_filenames = fileio.sort_nicely(Hyp_filenames)
-                Hyp_dfs = []
-                for Hyp_filename in Hyp_filenames:
-                    Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
-                Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True, axis=0)
-                fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
-                            file_extentions)
-                del Hyp_dfs
+        #for n in range(1, n_crossval+1):
+        #    Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
+        #                              str(n) + '.*')
+        #    if Hyp_filenames:
+        #        Hyp_filenames = fileio.sort_nicely(Hyp_filenames)
+        #        Hyp_dfs = []
+        #        for Hyp_filename in Hyp_filenames:
+        #            Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
+        #        Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True, axis=0)
+        #        fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
+        #                    file_extentions)
+        #        del Hyp_dfs
+        
+        if not os.path.isdir(processing_dir + 'Models'):
+            os.mkdir(processing_dir + 'Models')
+        batch_dirs = glob.glob(processing_dir + 'batch_*/')
+        if batch_dirs:
+            batch_dirs = fileio.sort_nicely(batch_dirs)
+            for b, batch_dir in enumerate(batch_dirs):
+                src_files = os.listdir(batch_dir + 'Models/')
+                for file_name in src_files:
+                    full_file_name = os.path.join(batch_dir, 'Models', file_name)
+                    if os.path.isfile(full_file_name):
+                        shutil.copy(full_file_name, processing_dir + 'Models/' + 
+                                    str(b+1) + '_'+ file_name)
+        
     if not batch_fail:
         return 1
     else:
