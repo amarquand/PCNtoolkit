@@ -9,13 +9,13 @@ import shutil
 # To fully evaluate the user test cases, this should be run in two ways:
 
 # 1. as a package
-from nispat.normative import estimate
-from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+#from nispat.normative import estimate
+#from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
-#sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-#from normative import estimate
-#from normative_parallel import execute_nm, collect_nm, delete_nm
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+from normative import estimate
+from normative_parallel import execute_nm, collect_nm, delete_nm
 
 # ---------------- Config parameters -----------------------------------------
 
@@ -56,11 +56,9 @@ def save_output(src_dir, dst_dir):
     files.extend(glob.glob(os.path.join(src_dir,'msll*')))
     files.extend(glob.glob(os.path.join(src_dir,'expv*')))
     files.extend(glob.glob(os.path.join(src_dir,'Hyp*')))
-    print(files)
+    files.extend(glob.glob(os.path.join(src_dir,'Models')))
     for f in files:
-        print(f)
         fdir, fnam = os.path.split(f)
-        print(fdir, fnam)
         shutil.move(f, os.path.join(dst_dir,fnam))
     return
 
@@ -86,6 +84,7 @@ cov_file_nii_te = os.path.join(data_dir, 'cov_n100.txt')
 estimate(resp_file_nii, cov_file_nii, mask_file_nii, 
          testresp = resp_file_nii_te, testcov = cov_file_nii_te)
 
+print(os.getcwd())
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
 
