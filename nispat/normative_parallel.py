@@ -327,7 +327,8 @@ def split_nm(processing_dir,
 
 def collect_nm(processing_dir,
                collect=False,
-               binary=False):
+               binary=False,
+               batch_size=None):
     """This function checks and collects all batches.
 
     ** Input:
@@ -348,6 +349,7 @@ def collect_nm(processing_dir,
     import numpy as np
     import pandas as pd
     import shutil
+    import pickle
     
     try:
         import nispat.fileio as fileio
@@ -569,6 +571,29 @@ def collect_nm(processing_dir,
             fileio.save(msll_dfs, processing_dir + 'msll' +
                         file_extentions)
             del msll_dfs
+        
+        meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
+        mY = []
+        sY = []
+        mX = []
+        sX = []
+        if meta_filenames:
+            meta_filenames = fileio.sort_nicely(meta_filenames)
+            with open(meta_filenames[0], 'rb') as file:
+                meta_data = pickle.load(file)
+            if meta_data['standardize']:
+                for meta_filename in meta_filenames:
+                    mY.append(meta_data['mean_resp'])
+                    sY.append(meta_data['std_resp'])
+                    mX.append(meta_data['mean_cov'])
+                    sX.append(meta_data['std_cov'])
+                meta_data['mean_resp'] = np.stack(mY) 
+                meta_data['std_resp'] = np.stack(sY) 
+                meta_data['mean_cov'] = np.stack(mX) 
+                meta_data['std_cov'] = np.stack(sX) 
+                
+            with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 'wb') as file:
+                pickle.dump(meta_data, file)
 
         #for n in range(1, n_crossval+1):
         #    Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
@@ -589,12 +614,15 @@ def collect_nm(processing_dir,
         if batch_dirs:
             batch_dirs = fileio.sort_nicely(batch_dirs)
             for b, batch_dir in enumerate(batch_dirs):
-                src_files = os.listdir(batch_dir + 'Models/')
-                for file_name in src_files:
-                    full_file_name = os.path.join(batch_dir, 'Models', file_name)
+                src_files = glob.glob(batch_dir + 'Models/*.pkl')
+                src_files = fileio.sort_nicely(src_files)
+                for f, full_file_name in enumerate(src_files):
                     if os.path.isfile(full_file_name):
-                        shutil.copy(full_file_name, processing_dir + 'Models/' + 
-                                    str(b+1) + '_'+ file_name)
+                        file_name = full_file_name.split('/')[-1]
+                        n = file_name.split('_')
+                        n[-1] = str(b * batch_size + f) + '.pkl'
+                        n = '_'.join(n)
+                        shutil.copy(full_file_name, processing_dir + 'Models/' + n)
         
     if not batch_fail:
         return 1

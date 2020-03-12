@@ -18,6 +18,7 @@ import os
 import sys
 import numpy as np
 import argparse
+import pickle
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -223,6 +224,11 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
+    
+    mean_resp = []
+    std_resp = []
+    mean_cov = []
+    std_cov = []
 
     for idx in enumerate(splits.split(X)):
 
@@ -234,13 +240,16 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
         iy, jy = np.ix_(tr, nz)
         mY = np.mean(Y[iy, jy], axis=0)
         sY = np.std(Y[iy, jy], axis=0)
-        
         if standardize:
             Yz = np.zeros_like(Y)
             Yz[:, nz] = (Y[:, nz] - mY) / sY
             mX = np.mean(X[tr, :], axis=0)
             sX = np.std(X[tr, :],  axis=0)
             Xz = (X - mX) / sX
+            mean_resp.append(mY)
+            std_resp.append(sY)
+            mean_cov.append(mX)
+            std_cov.append(sX)
         else:
             Yz = Y
             Xz = X
@@ -298,7 +307,12 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                     if testresp is not None:
                         Z[te, nz[i]] = float('nan')
 
-
+    # Saving model meta-data
+    with open('Models/meta_data.md', 'wb') as file:
+        pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
+                     'mean_resp':mean_resp, 'std_resp':std_resp, 
+                     'mean_cov':mean_cov, 'std_cov':std_cov, 'regressor':alg,
+                     'configs':configparam, 'standardize':standardize}, file)    
     # compute performance metrics
     if testcov is None:
         MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -406,6 +420,106 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                 output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], 
                           Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
+
+def predict(model_path, output_path, respfile, covfile, maskfile=None):
+    
+    if not os.path.isdir(model_path):
+        print('Model directory does not exist!')
+        return
+    else:
+        with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+            meta_data = pickle.load(file)
+        nz = meta_data['valid_voxels']
+        cvfolds = meta_data['fold_num']
+        standardize = meta_data['standardize']
+        mY = meta_data['mean_resp']
+        sY = meta_data['std_resp']
+        mX = meta_data['mean_cov']
+        sX = meta_data['std_cov']
+        alg = meta_data['regressor']
+        configparam= meta_data['configs']
+    
+    # load data
+    print("Processing data in " + respfile)
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    Nmod = Y.shape[1]
+
+    # run cross-validation loop
+    Yhat = np.zeros_like(Y)
+    S2 = np.zeros_like(Y)
+    Z = np.zeros_like(Y)
+    
+    for fold in range(cvfolds):
+
+        if standardize:
+            Xz = (X - mX[fold]) / sX[fold]
+        else:
+            Xz = X
+
+        # estimate the models for all subjects
+        for i in range(Y.shape[1]):  # range(0, Nmod):
+            print("Prediction by model ", i+1, "of", Y.shape[1])      
+            nm = norm_init(Xz, Y, 
+                           alg='blr', configparam=None)
+            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
+            yhat, s2 = nm.predict(Xz)
+            if standardize:
+                Yhat[:, i] = yhat * sY[fold][i] + mY[fold][i]
+                S2[:, i] = s2 * sY[fold][i]**2
+            else:
+                Yhat[:, i] = yhat
+                S2[:, i] = s2
+                                    
+        MSE = np.mean((Y - Yhat)**2, axis=0)
+        RMSE = np.sqrt(MSE)
+        # for the remaining variables, we need to ignore zero variances
+        SMSE = np.zeros_like(MSE)
+        Rho = np.zeros(Nmod)
+        pRho = np.ones(Nmod)
+        EXPV = np.zeros(Nmod)
+        MSLL = np.zeros(Nmod)
+        iy, jy = np.ix_(range(Y.shape[0]), range(Y.shape[1]))  # ids tested samples nonzero values
+        SMSE = MSE / np.var(Y[iy, jy], axis=0)
+        Rho, pRho = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
+        EXPV = explained_var(Y[iy, jy], Yhat[iy, jy])
+        #MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+        #    mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+            
+        # Set writing options
+        print("Writing output ...")
+        if fileio.file_type(respfile) == 'cifti' or \
+           fileio.file_type(respfile) == 'nifti':
+            exfile = respfile
+        else:
+            exfile = None
+        
+        ext = fileio.file_extension(respfile)
+    
+        # Write output
+    
+        fileio.save(Yhat, os.path.join(output_path, 'yhat_' + str(fold) + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(S2, os.path.join(output_path,'ys2_' + str(fold) + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(Z, os.path.join(output_path,'Z_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(Rho, os.path.join(output_path,'Rho_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(pRho, os.path.join(output_path,'pRho_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(RMSE, os.path.join(output_path,'rmse_' + str(fold) + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(SMSE, os.path.join(output_path,'smse_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(EXPV, os.path.join(output_path,'expv_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(MSLL, os.path.join(output_path,'msll_' + str(fold) + ext), 
+                    example=exfile, mask=maskvol)
 
 
 def main(*args):
