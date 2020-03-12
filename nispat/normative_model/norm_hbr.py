@@ -35,10 +35,13 @@ class NormHBR(NormBase):
     def __init__(self, X, y=None, configparam=None):
         self.configparam = configparam
         
-        with open(configparam, 'rb') as handle:
-             configs = pickle.load(handle)
+        if configparam is not None:
+            with open(configparam, 'rb') as handle:
+                configs = pickle.load(handle)
+        else:
+            configs = dict()    
         
-        self.type = configs['model_type']
+        #self.type = configs['model_type']
         
         if 'batch_effects_train' in configs:
             batch_effects_train = configs['batch_effects_train']
