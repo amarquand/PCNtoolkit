@@ -47,23 +47,52 @@ class BLR:
     """
 
     def __init__(self, hyp=None, X=None, y=None,
-                 n_iter=100, tol=1e-3, verbose=False):
+                 n_iter=100, tol=1e-3, verbose=False, var_groups=None):
 
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
         self.n_iter = n_iter
         self.verbose = verbose
+        self.var_groups = var_groups 
+        if self.var_groups is not None:
+            self.var_ids = set(self.var_groups)
+            self.var_ids = sorted(list(self.var_ids))
 
         if (hyp is not None) and (X is not None) and (y is not None):
             self.post(hyp, X, y)
+    
+    def _parse_hyps(self, hyp, X):
 
+        N = X.shape[0]
+        
+        # hyperparameters
+        if self.var_groups is None:
+            beta = np.asarray([np.exp(hyp[0])])               # noise precision 
+            self.Lambda_n = np.diag(np.ones(N))*beta
+            self.Sigma_n = np.diag(np.ones(N))/beta
+        else:
+            beta = np.exp(hyp[0:len(self.var_ids)])
+            beta_all = np.ones(N)
+            for v in range(len(self.var_ids)):
+                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
+            self.Lambda_n = np.diag(beta_all)
+            self.Sigma_n = np.diag(1/beta_all)
+         
+        # precision for the coefficients
+        if isinstance(beta, list) or type(beta) is np.ndarray:
+            alpha = np.exp(hyp[len(beta):])
+        else:
+            alpha = np.exp(hyp[1:])
+
+        return beta, alpha
+        
     def post(self, hyp, X, y):
         """ Generic function to compute posterior distribution.
 
             This function will save the posterior mean and precision matrix as
             self.m and self.A and will also update internal parameters (e.g.
-            N, D and the prior covariance (Sigma) and precision (iSigma).
+            N, D and the prior covariance (Sigma_a) and precision (Lambda_a).
         """
 
         N = X.shape[0]
@@ -75,24 +104,23 @@ class BLR:
         if (hyp == self.hyp).all() and hasattr(self, 'N'):
             print("hyperparameters have not changed, exiting")
             return
-
-        # hyperparameters
-        beta = np.exp(hyp[0])    # noise precision
-        alpha = np.exp(hyp[1:])  # precision for the coefficients
+        
+        beta, alpha = self._parse_hyps(hyp, X)
 
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
 
         # prior variance
         if len(alpha) == 1 or len(alpha) == D:
-            self.Sigma = np.diag(np.ones(D))/alpha
-            self.iSigma = np.diag(np.ones(D))*alpha
+            self.Sigma_a = np.diag(np.ones(D))/alpha
+            self.Lambda_a = np.diag(np.ones(D))*alpha
         else:
             raise ValueError("hyperparameter vector has invalid length")
 
         # compute posterior precision and mean
-        self.A = beta*X.T.dot(X) + self.iSigma
-        self.m = beta*linalg.solve(self.A, X.T, check_finite=False).dot(y)
+        self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
+        self.m = linalg.solve(self.A, X.T, 
+                              check_finite=False).dot(self.Lambda_n).dot(y)
 
         # save stuff
         self.N = N
@@ -103,7 +131,7 @@ class BLR:
         """ Function to compute compute log (marginal) likelihood """
 
         # hyperparameters (only beta needed)
-        beta = np.exp(hyp[0])  # noise precision
+        beta, alpha = self._parse_hyps(hyp, X)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
@@ -122,13 +150,15 @@ class BLR:
             nlZ = 1/np.finfo(float).eps
             return nlZ
 
-        logdetSigma = sum(np.log(np.diag(self.Sigma)))  # Sigma is diagonal
+        logdetSigma_a = sum(np.log(np.diag(self.Sigma_a))) # diagonal
+        logdetSigma_n = sum(np.log(np.diag(self.Sigma_n)))
 
         # compute negative marginal log likelihood
-        nlZ = -0.5 * (self.N*np.log(beta) - self.N*np.log(2*np.pi) -
-                      logdetSigma -
-                      beta*(y-X.dot(self.m)).T.dot(y-X.dot(self.m)) -
-                      self.m.T.dot(self.iSigma).dot(self.m) -
+        nlZ = -0.5 * (-self.N*np.log(2*np.pi) -
+                      logdetSigma_n -
+                      logdetSigma_a -
+                      (y-X.dot(self.m)).T.dot(self.Lambda_n).dot(y-X.dot(self.m)) -
+                      self.m.T.dot(self.Lambda_a).dot(self.m) -
                       logdetA
                       )
 
@@ -146,8 +176,7 @@ class BLR:
         """ Function to compute derivatives """
 
         # hyperparameters
-        beta = np.exp(hyp[0])
-        alpha = np.exp(hyp[1:])
+        beta, alpha = self._parse_hyps(hyp, X)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
@@ -159,46 +188,60 @@ class BLR:
                 return dnlZ
 
         # useful quantities
-        XX = X.T.dot(X)
-        S = np.linalg.inv(self.A)  # posterior covariance
-        Q = S.dot(X.T)
-        # Q = linalg.solve(self.A, X.T)
-        b = (np.eye(self.D) - beta*Q.dot(X)).dot(Q).dot(y)
-
+        XLnX = X.T.dot(self.Lambda_n).dot(X)        # inner product design mat
+        S = np.linalg.inv(self.A)                   # posterior covariance
+        # todo: revise implementation to use Cholesky throughout to remove the
+        #       to remove the need to explicitly compute the inverse
+      
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
 
-        # noise precision
-        dnlZ[0] = - (self.N / (2 * beta) - 0.5 * y.dot(y) +
-                     y.dot(X).dot(self.m) +
-                     beta * y.T.dot(X).dot(b) -
-                     0.5 * self.m.T.dot(XX).dot(self.m) -
-                     beta * b.T.dot(self.iSigma).dot(self.m) -
-                     0.5 * np.trace(Q.dot(X))
-                     ) * beta
+        # noise precision parameter(s)
+        for i in range(0, len(beta)):
+            # first compute derivative of Lambda_n with respect to beta
+            dL_n_vec = np.zeros(self.N)
+            if self.var_groups is None:
+                dL_n_vec = np.ones(self.N)
+            else:    
+                dL_n_vec[np.where(self.var_groups == self.var_ids[i])[0]] = 1
+            dLambda_n = np.diag(dL_n_vec)
+            
+            # derivative of posterior parameters with respect to beta
+            XdLnX = X.T.dot(dLambda_n).dot(X)
+            dA = XdLnX
+            b = -S.dot(dA).dot(S).dot(X.T).dot(self.Lambda_n).dot(y) + \
+                 S.dot(X.T).dot(dLambda_n).dot(y)
+            
+            dnlZ[i] = - (0.5 * np.trace(self.Sigma_n.dot(dLambda_n)) -
+                         0.5 * y.dot(dLambda_n).dot(y) +
+                         y.dot(dLambda_n).dot(X).dot(self.m) +
+                         y.T.dot(self.Lambda_n).dot(X).dot(b) -
+                         0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
+                         b.T.dot(X.T).dot(self.Lambda_n).dot(X).dot(self.m) -
+                         b.T.dot(self.Lambda_a).dot(self.m) -
+                         0.5 * np.trace(S.dot(dA))
+                         ) * beta[i]
 
         # scaling parameter(s)
         for i in range(0, len(alpha)):
+            # first compute derivatives with respect to alpha
             # are we using ARD?
             if len(alpha) == self.D:
-                dSigma = np.zeros((self.D, self.D))
-                dSigma[i, i] = -alpha[i] ** -2
-                diSigma = np.zeros((self.D, self.D))
-                diSigma[i, i] = 1
+                dLambda_a = np.zeros((self.D, self.D))
+                dLambda_a[i, i] = 1
             else:
-                dSigma = -alpha[i] ** -2*np.eye(self.D)
-                diSigma = np.eye(self.D)
+                dLambda_a = np.eye(self.D)
 
-            F = diSigma
-            c = -beta*S.dot(F).dot(S).dot(X.T).dot(y)
+            F = dLambda_a
+            c = -S.dot(F).dot(S).dot(X.T).dot(self.Lambda_n).dot(y)
 
-            dnlZ[i+1] = -(-0.5 * np.trace(self.iSigma.dot(dSigma)) +
-                          beta * y.T.dot(X).dot(c) -
-                          beta * c.T.dot(XX).dot(self.m) -
-                          c.T.dot(self.iSigma).dot(self.m) -
-                          0.5 * self.m.T.dot(F).dot(self.m) -
-                          0.5*np.trace(linalg.solve(self.A, F))
-                          ) * alpha[i]
+            dnlZ[i+len(beta)] = -(0.5* np.trace(self.Sigma_a.dot(dLambda_a)) +
+                                  y.T.dot(self.Lambda_n).dot(X).dot(c) -
+                                  c.T.dot(XLnX).dot(self.m) -
+                                  c.T.dot(self.Lambda_a).dot(self.m) -
+                                  0.5 * self.m.T.dot(F).dot(self.m) -
+                                  0.5*np.trace(linalg.solve(self.A, F))
+                                  ) * alpha[i]
 
         # make sure the gradient is finite to stop the minimizer getting upset
         if not all(np.isfinite(dnlZ)):
@@ -233,17 +276,29 @@ class BLR:
 
         return self.hyp
 
-    def predict(self, hyp, X, y, Xs):
+    def predict(self, hyp, X, y, Xs, var_groups_test=None):
         """ Function to make predictions from the model """
 
         if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
             self.post(hyp, X, y)
 
         # hyperparameters
-        beta = np.exp(hyp[0])
+        beta, alpha = self._parse_hyps(hyp, X)
+
+        N_test = Xs.shape[0]
 
         ys = Xs.dot(self.m)
+        
+        if self.var_groups is None:
+            s2n = 1/beta
+        else:
+            if len(var_groups_test) != N_test:
+                raise(ValueError, 'Invalid variance groups for test')
+            # separate variance groups
+            s2n = np.ones(N_test)
+            for v in range(len(self.var_ids)):
+                s2n[var_groups_test == self.var_ids[v]] = 1/beta[v]
+        
         # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
-        s2 = 1/beta + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
-
+        s2 = s2n +  np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
         return ys, s2
