@@ -25,7 +25,7 @@ class NormBLR(NormBase):
     """ Normative modelling based on Bayesian Linear Regression
     """     
             
-    def __init__(self, X=None, y=None, theta=None, model_order=3):
+    def __init__(self, X=None, y=None, theta=None, model_order=1):
         if X is None:
             raise(ValueError, "Data matrix must be specified")
 
@@ -36,7 +36,7 @@ class NormBLR(NormBase):
             
         # Force a default value and check datatype
         if model_order is None:
-            model_order = 3
+            model_order = 1
         elif type(model_order) is not int:
             model_order = int(model_order)
         
@@ -53,9 +53,9 @@ class NormBLR(NormBase):
         
         if (theta is not None) and (y is not None):
             self.Phi = create_poly_basis(X, self._model_order)
-            self.gpr = BLR(theta, self.Phi, y)
+            self.blr = BLR(theta, self.Phi, y)
         else:
-            self.gpr = BLR()    
+            self.blr = BLR()    
             
     @property
     def n_params(self):

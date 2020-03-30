@@ -69,8 +69,8 @@ class BLR:
         # hyperparameters
         if self.var_groups is None:
             beta = np.asarray([np.exp(hyp[0])])               # noise precision 
-            self.Lambda_n = np.diag(np.ones(N))*beta
-            self.Sigma_n = np.diag(np.ones(N))/beta
+            self.Lambda_n = np.diag(np.ones(N)*beta)
+            self.Sigma_n = np.diag(np.ones(N)/beta)
         else:
             beta = np.exp(hyp[0:len(self.var_ids)])
             beta_all = np.ones(N)
@@ -187,15 +187,19 @@ class BLR:
                 dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
                 return dnlZ
 
-        # useful quantities
-        XLnX = X.T.dot(self.Lambda_n).dot(X)        # inner product design mat
-        S = np.linalg.inv(self.A)                   # posterior covariance
-        # todo: revise implementation to use Cholesky throughout to remove the
-        #       to remove the need to explicitly compute the inverse
+        # precompute re-used quantities to maximise speed 
+        # todo: revise implementation to use Cholesky throughout 
+        #       that would remove the need to explicitly compute the inverse
+        S = np.linalg.inv(self.A)                       # posterior covariance
+        SX = S.dot(X.T)
+        XLn = X.T.dot(self.Lambda_n)
+        XLny = XLn.dot(y)
+        SXLny = S.dot(XLny)       
+        XLnXm = XLn.dot(X).dot(self.m)
       
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
-
+ 
         # noise precision parameter(s)
         for i in range(0, len(beta)):
             # first compute derivative of Lambda_n with respect to beta
@@ -206,18 +210,22 @@ class BLR:
                 dL_n_vec[np.where(self.var_groups == self.var_ids[i])[0]] = 1
             dLambda_n = np.diag(dL_n_vec)
             
-            # derivative of posterior parameters with respect to beta
+            # compute quantities used multiple times
             XdLnX = X.T.dot(dLambda_n).dot(X)
             dA = XdLnX
-            b = -S.dot(dA).dot(S).dot(X.T).dot(self.Lambda_n).dot(y) + \
-                 S.dot(X.T).dot(dLambda_n).dot(y)
             
-            dnlZ[i] = - (0.5 * np.trace(self.Sigma_n.dot(dLambda_n)) -
+            # derivative of posterior parameters with respect to beta
+            b = -S.dot(dA).dot(SXLny) + SX.dot(dLambda_n).dot(y)
+            
+            # compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently
+            trSigma_ndLambda_n = sum(np.diag(self.Sigma_n)*np.diag(dLambda_n))
+            
+            dnlZ[i] = - (0.5 * trSigma_ndLambda_n - 
                          0.5 * y.dot(dLambda_n).dot(y) +
                          y.dot(dLambda_n).dot(X).dot(self.m) +
                          y.T.dot(self.Lambda_n).dot(X).dot(b) -
                          0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
-                         b.T.dot(X.T).dot(self.Lambda_n).dot(X).dot(self.m) -
+                         b.T.dot(XLnXm) -
                          b.T.dot(self.Lambda_a).dot(self.m) -
                          0.5 * np.trace(S.dot(dA))
                          ) * beta[i]
@@ -225,19 +233,21 @@ class BLR:
         # scaling parameter(s)
         for i in range(0, len(alpha)):
             # first compute derivatives with respect to alpha
-            # are we using ARD?
-            if len(alpha) == self.D:
+            if len(alpha) == self.D:  # are we using ARD?
                 dLambda_a = np.zeros((self.D, self.D))
                 dLambda_a[i, i] = 1
             else:
                 dLambda_a = np.eye(self.D)
 
             F = dLambda_a
-            c = -S.dot(F).dot(S).dot(X.T).dot(self.Lambda_n).dot(y)
-
-            dnlZ[i+len(beta)] = -(0.5* np.trace(self.Sigma_a.dot(dLambda_a)) +
-                                  y.T.dot(self.Lambda_n).dot(X).dot(c) -
-                                  c.T.dot(XLnX).dot(self.m) -
+            c = -S.dot(F).dot(SXLny)
+            
+            # compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently
+            trSigma_adLambda_a = sum(np.diag(self.Sigma_a)*np.diag(dLambda_a))
+            
+            dnlZ[i+len(beta)] = -(0.5* trSigma_adLambda_a +
+                                  XLny.T.dot(c) -
+                                  c.T.dot(XLnXm) -
                                   c.T.dot(self.Lambda_a).dot(self.m) -
                                   0.5 * self.m.T.dot(F).dot(self.m) -
                                   0.5*np.trace(linalg.solve(self.A, F))
