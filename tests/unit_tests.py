@@ -13,7 +13,9 @@ import shutil
 #from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
+#sys.path.clear()
 sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+#sys.path.append('/home/preclineu/andmar/py.sandbox/unittests/nispat/nispat')
 from normative import estimate
 from normative_parallel import execute_nm, collect_nm, delete_nm
 
@@ -124,7 +126,7 @@ resp_file_tr = os.path.join(data_dir,'resp_big_tr.txt')
 resp_file_te = os.path.join(data_dir,'resp_big_te.txt')
 
 estimate(resp_file_tr, cov_file_tr, testresp=resp_file_te, testcov=cov_file_te,
-         alg=alt_alg, configparam=2)
+         alg=alt_alg, configparam=1)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
