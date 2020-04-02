@@ -422,7 +422,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                           Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
-def predict(model_path, output_path, covfile, respfile=None, maskfile=None):
+def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None):
     
     if not os.path.isdir(model_path):
         print('Model directory does not exist!')
