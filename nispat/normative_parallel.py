@@ -572,6 +572,9 @@ def collect_nm(processing_dir,
                         file_extentions)
             del msll_dfs
         
+        if not os.path.isdir(processing_dir + 'Models'):
+            os.mkdir(processing_dir + 'Models')
+            
         meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
         mY = []
         sY = []
@@ -608,8 +611,6 @@ def collect_nm(processing_dir,
         #                    file_extentions)
         #        del Hyp_dfs
         
-        if not os.path.isdir(processing_dir + 'Models'):
-            os.mkdir(processing_dir + 'Models')
         batch_dirs = glob.glob(processing_dir + 'batch_*/')
         if batch_dirs:
             batch_dirs = fileio.sort_nicely(batch_dirs)

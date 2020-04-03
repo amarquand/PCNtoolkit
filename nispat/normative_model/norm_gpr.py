@@ -23,7 +23,11 @@ class NormGPR(NormBase):
     """ Classical GPR-based normative modelling approach
     """
 
-    def __init__(self, X=None, y=None, theta=None):
+    def __init__(self, **kwargs): #X=None, y=None, theta=None,
+        X = kwargs.pop('X', None)
+        y = kwargs.pop('y', None)
+        theta = kwargs.pop('theta', None)
+
         self.covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
         self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
         self.theta = self.theta0
@@ -46,7 +50,8 @@ class NormGPR(NormBase):
     def neg_log_lik(self):
         return self.gpr.nlZ
 
-    def estimate(self, X, y, theta=None):
+    def estimate(self, X, y, **kwargs):
+        theta = kwargs.pop('theta', None)
         if theta is None:
             theta = self.theta0
             self.gpr = GPR(theta, self.covfunc, X, y)
@@ -54,7 +59,8 @@ class NormGPR(NormBase):
         
         return self
 
-    def predict(self, Xs, X, y, theta=None):
+    def predict(self, Xs, X, y, **kwargs):
+        theta = kwargs.pop('theta', None)
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gpr.predict(theta, X, y, Xs)
