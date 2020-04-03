@@ -25,7 +25,11 @@ class NormBLR(NormBase):
     """ Normative modelling based on Bayesian Linear Regression
     """     
             
-    def __init__(self, X=None, y=None, theta=None, model_order=1):
+    def __init__(self,  **kwargs): #X=None, y=None, theta=None,
+        X = kwargs.pop('X', None)
+        y = kwargs.pop('y', None)
+        theta = kwargs.pop('theta', None)
+
         if X is None:
             raise(ValueError, "Data matrix must be specified")
 
@@ -33,14 +37,43 @@ class NormBLR(NormBase):
             self.D = 1
         else:
             self.D = X.shape[1]
+        
+        # Parse model order
+        if kwargs is None:
+            model_order = 1
+        elif 'configparam' in kwargs:
+            model_order = kwargs.pop('configparam')
+        elif 'model_order' in kwargs: 
+            model_order = kwargs.pop('model_order')
+        else:
+            model_order = 1
             
         # Force a default value and check datatype
         if model_order is None:
             model_order = 1
-        elif type(model_order) is not int:
+        if type(model_order) is not int:
             model_order = int(model_order)
+            
+        if 'var_groups' in kwargs:
+            self.var_groups = kwargs.pop('var_groups')
+            var_ids = set(self.var_groups)
+            var_ids = sorted(list(var_ids))
+            n_beta = len(var_ids)
+        else:
+            self.var_groups = None
+            n_beta = 1
         
-        self._n_params = 1 + self.D * model_order
+        # are we using ARD?
+        if 'use_ard' in kwargs: 
+            self.use_ard = kwargs.pop('use_ard')
+        else:
+            self.use_ard = False
+        if self.use_ard:
+            n_alpha = self.D * model_order
+        else:
+            n_alpha = 1
+        
+        self._n_params = n_alpha + n_beta
         self._model_order = model_order
         
         print("initialising BLR ( order", model_order, ")")
@@ -65,7 +98,9 @@ class NormBLR(NormBase):
     def neg_log_lik(self):
         return self.blr.nlZ
 
-    def estimate(self, X, y, theta=None):
+    def estimate(self, X, y, **kwargs):
+        theta = kwargs.pop('theta', None)
+        
         if not hasattr(self,'Phi'):
             self.Phi = create_poly_basis(X, self._model_order)
         if len(y.shape) > 1:
@@ -73,18 +108,27 @@ class NormBLR(NormBase):
             
         if theta is None:
             theta = self.theta0
-            self.blr = BLR(theta, self.Phi, y)
+            self.blr = BLR(theta, self.Phi, y, var_groups=self.var_groups)
 
         self.theta = self.blr.estimate(theta, self.Phi, y)
         
         return self
 
-    def predict(self, Xs, X, y, theta=None):
+    def predict(self, Xs, X, y, **kwargs):
+        theta = kwargs.pop('theta', None)
+        
         if theta is None:
             theta = self.theta
 
         Phis = create_poly_basis(Xs, self._model_order)
-        yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis)
+        
+        if 'var_groups_test' in kwargs:
+            var_groups_te = kwargs.pop('var_groups_test')
+        else:
+            var_groups_te = None
+            
+        yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis, 
+                                    var_groups_test=var_groups_te)
         
         return yhat, s2
     
