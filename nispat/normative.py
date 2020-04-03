@@ -19,6 +19,7 @@ import sys
 import numpy as np
 import argparse
 import pickle
+import glob
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -108,9 +109,10 @@ def get_args(*args):
             testcov, testresp, args.alg, args.configparam, args.standardize
 
 
-def estimate(respfile, covfile, maskfile=None, cvfolds=None,
-             testcov=None, testresp=None, alg='gpr', configparam=None,
-             saveoutput=True, outputsuffix=None, standardize=True):
+def estimate(respfile, covfile, **kwargs):
+             #maskfile=None, cvfolds=None,
+             #testcov=None, testresp=None, alg='gpr', 
+             #saveoutput=True, outputsuffix=None, standardize=True, **kwargs):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -161,6 +163,18 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     The outputsuffix may be useful to estimate multiple normative models in the
     same directory (e.g. for custom cross-validation schemes)
     """
+    
+    # parse keyword arguments 
+    maskfile = kwargs.pop('maskfile',None)
+    cvfolds = kwargs.pop('cvfolds', None)
+    testcov = kwargs.pop('testcov', None)
+    testresp = kwargs.pop('testresp',None)
+    alg = kwargs.pop('alg','gpr')
+    saveoutput = kwargs.pop('saveoutput',True)
+    outputsuffix = kwargs.pop('outputsuffix',None)
+    standardize = kwargs.pop('standardize',True)
+    # For backward compatibilty
+    configparam = kwargs.get('configparam', None) # use get (may be passed on)
 
     # load data
     print("Processing data in " + respfile)
@@ -215,8 +229,6 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
 
-    
-
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
@@ -256,19 +268,18 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
 
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
-            print("Estimating model ", i+1, "of", len(nz))      
+            print("Estimating model ", i+1, "of", len(nz))
             try:
-                nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], 
-                               alg=alg, configparam=configparam)
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])
+                nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs) 
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])     
                 if (alg == 'hbr'):
                     if nm.configs['new_site'] == True:
                         nm = nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
                         yhat, s2 = nm.predict_on_new_sites(Xz[te, :])
                     else:    
-                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]])
+                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 else:
-                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]])
+                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
                 nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
                 
@@ -421,7 +432,7 @@ def estimate(respfile, covfile, maskfile=None, cvfolds=None,
                           Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
-def predict(model_path, output_path, respfile, covfile, maskfile=None):
+def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None):
     
     if not os.path.isdir(model_path):
         print('Model directory does not exist!')
@@ -429,43 +440,38 @@ def predict(model_path, output_path, respfile, covfile, maskfile=None):
     else:
         with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
             meta_data = pickle.load(file)
-        nz = meta_data['valid_voxels']
         cvfolds = meta_data['fold_num']
         standardize = meta_data['standardize']
         mY = meta_data['mean_resp']
         sY = meta_data['std_resp']
         mX = meta_data['mean_cov']
         sX = meta_data['std_cov']
-        alg = meta_data['regressor']
-        configparam= meta_data['configs']
     
     # load data
-    print("Processing data in " + respfile)
+    print("Laoding data ...")
     X = fileio.load(covfile)
-    Y, maskvol = load_response_vars(respfile, maskfile)
-    if len(Y.shape) == 1:
-        Y = Y[:, np.newaxis]
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
-    Nmod = Y.shape[1]
+    
+    sample_num = X.shape[0]
+    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*.pkl')))
 
     # run cross-validation loop
-    Yhat = np.zeros_like(Y)
-    S2 = np.zeros_like(Y)
-    Z = np.zeros_like(Y)
+    Yhat = np.zeros([sample_num, feature_num])
+    S2 = np.zeros([sample_num, feature_num])
+    Z = np.zeros([sample_num, feature_num])
     
     for fold in range(cvfolds):
-
+        
         if standardize:
             Xz = (X - mX[fold]) / sX[fold]
         else:
             Xz = X
-
+            
         # estimate the models for all subjects
-        for i in range(Y.shape[1]):  # range(0, Nmod):
-            print("Prediction by model ", i+1, "of", Y.shape[1])      
-            nm = norm_init(Xz, Y, 
-                           alg='blr', configparam=None)
+        for i in range(feature_num):
+            print("Prediction by model ", i+1, "of", feature_num)      
+            nm = norm_init(Xz, alg='blr', configparam=None)
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
             yhat, s2 = nm.predict(Xz)
             if standardize:
@@ -474,53 +480,63 @@ def predict(model_path, output_path, respfile, covfile, maskfile=None):
             else:
                 Yhat[:, i] = yhat
                 S2[:, i] = s2
-                                    
-        MSE = np.mean((Y - Yhat)**2, axis=0)
-        RMSE = np.sqrt(MSE)
-        # for the remaining variables, we need to ignore zero variances
-        SMSE = np.zeros_like(MSE)
-        Rho = np.zeros(Nmod)
-        pRho = np.ones(Nmod)
-        EXPV = np.zeros(Nmod)
-        MSLL = np.zeros(Nmod)
-        iy, jy = np.ix_(range(Y.shape[0]), range(Y.shape[1]))  # ids tested samples nonzero values
-        SMSE = MSE / np.var(Y[iy, jy], axis=0)
-        Rho, pRho = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
-        EXPV = explained_var(Y[iy, jy], Yhat[iy, jy])
-        #MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
-        #    mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
-            
-        # Set writing options
-        print("Writing output ...")
-        if fileio.file_type(respfile) == 'cifti' or \
-           fileio.file_type(respfile) == 'nifti':
-            exfile = respfile
-        else:
-            exfile = None
         
-        ext = fileio.file_extension(respfile)
-    
-        # Write output
-    
-        fileio.save(Yhat, os.path.join(output_path, 'yhat_' + str(fold) + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(S2, os.path.join(output_path,'ys2_' + str(fold) + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(Z, os.path.join(output_path,'Z_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(Rho, os.path.join(output_path,'Rho_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(pRho, os.path.join(output_path,'pRho_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(RMSE, os.path.join(output_path,'rmse_' + str(fold) + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(SMSE, os.path.join(output_path,'smse_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(EXPV, os.path.join(output_path,'expv_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(MSLL, os.path.join(output_path,'msll_' + str(fold) + ext), 
-                    example=exfile, mask=maskvol)
-
+        if respfile is None:
+            return (Yhat, S2)
+        
+        else:
+            # Set writing options
+            print("Evaluations and Writing outputs ...")      
+            if fileio.file_type(respfile) == 'cifti' or \
+               fileio.file_type(respfile) == 'nifti':
+                exfile = respfile
+            else:
+                exfile = None
+            ext = fileio.file_extension(respfile)    
+            
+            Y, maskvol = load_response_vars(respfile, maskfile)
+            if len(Y.shape) == 1:
+                Y = Y[:, np.newaxis]
+            Nmod = Y.shape[1]
+            
+            Z = (Y - Yhat) / np.sqrt(S2)
+            
+            MSE = np.mean((Y - Yhat)**2, axis=0)
+            RMSE = np.sqrt(MSE)
+            # for the remaining variables, we need to ignore zero variances
+            SMSE = np.zeros_like(MSE)
+            Rho = np.zeros(Nmod)
+            pRho = np.ones(Nmod)
+            EXPV = np.zeros(Nmod)
+            MSLL = np.zeros(Nmod)
+            iy, jy = np.ix_(range(Y.shape[0]), range(Y.shape[1]))  # ids tested samples nonzero values
+            SMSE = MSE / np.var(Y[iy, jy], axis=0)
+            Rho, pRho = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
+            EXPV = explained_var(Y[iy, jy], Yhat[iy, jy])
+            #MSLL = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+            #    mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+            
+            # Write output
+            fileio.save(Yhat, os.path.join(output_path, 'yhat_' + str(fold) + ext),
+                        example=exfile, mask=maskvol)
+            fileio.save(S2, os.path.join(output_path,'ys2_' + str(fold) + ext),
+                        example=exfile, mask=maskvol)
+            fileio.save(Z, os.path.join(output_path,'Z_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            fileio.save(Rho, os.path.join(output_path,'Rho_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            fileio.save(pRho, os.path.join(output_path,'pRho_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            fileio.save(RMSE, os.path.join(output_path,'rmse_' + str(fold) + ext),
+                        example=exfile, mask=maskvol)
+            fileio.save(SMSE, os.path.join(output_path,'smse_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            fileio.save(EXPV, os.path.join(output_path,'expv_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            fileio.save(MSLL, os.path.join(output_path,'msll_' + str(fold) + ext), 
+                        example=exfile, mask=maskvol)
+            
+            return (Yhat, S2, Z)
 
 def main(*args):
     """ Parse arguments and estimate model
@@ -528,8 +544,16 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cvfolds, tcfile, trfile, alg, cfpar, standardize = get_args(args)
-    estimate(rfile, cfile, mfile, cvfolds, tcfile, trfile, alg, cfpar, standardize= standardize)
+    rfile, mfile, cfile, cv, tcfile, trfile, alg, cfg, std = get_args(args)
+    estimate(rfile, cfile,
+             maskfile = mfile,
+             cvfolds = cv,
+             testcov = tcfile,
+             testresp = trfile,
+             alg = alg,
+             configparam = cfg,
+             saveoutput = True,
+             standardize = std)
 
 # For running from the command line:
 if __name__ == "__main__":

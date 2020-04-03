@@ -15,7 +15,6 @@ import shutil
 # 2. by appending to the path
 #sys.path.clear()
 sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-#sys.path.append('/home/preclineu/andmar/py.sandbox/unittests/nispat/nispat')
 from normative import estimate
 from normative_parallel import execute_nm, collect_nm, delete_nm
 
@@ -83,7 +82,7 @@ cov_file_nii = os.path.join(data_dir, 'cov_n50.txt')
 resp_file_nii_te = os.path.join(data_dir, 'resp_n100.nii.gz')
 cov_file_nii_te = os.path.join(data_dir, 'cov_n100.txt')
 
-estimate(resp_file_nii, cov_file_nii, mask_file_nii, 
+estimate(resp_file_nii, cov_file_nii, maskfile=mask_file_nii, 
          testresp = resp_file_nii_te, testcov = cov_file_nii_te)
 
 print(os.getcwd())
@@ -93,7 +92,7 @@ test_num, tdir = update_test_counter(test_num, test_dir)
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
 
-estimate(resp_file_nii, cov_file_nii, mask_file_nii, cvfolds = 2)
+estimate(resp_file_nii, cov_file_nii, maskfile = mask_file_nii, cvfolds = 2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -104,15 +103,15 @@ print("----------------------------------------------------------------------")
 resp_file_txt = os.path.join(data_dir, 'resp.txt')
 cov_file_txt = os.path.join(data_dir, 'cov.txt')
 
-estimate(resp_file_txt, cov_file_txt, 
-         testresp = resp_file_txt, testcov = cov_file_txt ,alg=alt_alg)
+estimate(resp_file_txt, cov_file_txt, testresp = resp_file_txt, 
+         testcov = cov_file_txt ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
 
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
-estimate(resp_file_txt, cov_file_txt, cvfolds=2 ,alg=alt_alg)
+estimate(resp_file_txt, cov_file_txt, cvfolds=2 ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
