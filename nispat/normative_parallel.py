@@ -21,6 +21,25 @@
 from __future__ import print_function
 from __future__ import division
 
+import os
+import sys
+import glob
+import shutil
+import pickle
+import numpy as np
+import pandas as pd
+from subprocess import call
+
+try:
+    import nispat.fileio as fileio
+except ImportError:
+    pass
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+        del path
+    import fileio
+
 
 def execute_nm(processing_dir,
                python_path,
@@ -31,15 +50,7 @@ def execute_nm(processing_dir,
                batch_size,
                memory,
                duration,
-               cv_folds=None,
-               testcovfile_path=None,
-               testrespfile_path=None,
-               alg='gpr',
-               configparam=None,
-               cluster_spec='torque',
-               binary=False,
-               log_path=None,
-               standardize=True):
+               **kwargs):
 
     """
     This function is a motherfunction that executes all parallel normative
@@ -74,15 +85,22 @@ def execute_nm(processing_dir,
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
-
-    # import of necessary modules
-    import glob
-
+    
+    cv_folds = kwargs.get('cv_folds', None)
+    testcovfile_path = kwargs.get('testcovfile_path', None)
+    testrespfile_path= kwargs.get('testrespfile_path', None)
+    #alg = kwargs.get('alg', 'gpr')
+    #configparam = kwargs.get('configparam', None)
+    cluster_spec = kwargs.pop('cluster_spec', 'torque')
+    log_path = kwargs.pop('log_path', None)
+    #standardize = kwargs.get('standardize', True)
+    binary = kwargs.pop('binary', False)
+    
     split_nm(processing_dir,
              respfile_path,
              batch_size,
              binary,
-             testrespfile_path)
+             **kwargs)
 
     batch_dir = glob.glob(processing_dir + 'batch_*')
     # print(batch_dir)
@@ -111,18 +129,28 @@ def execute_nm(processing_dir,
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-                    bashwrap_nm(processing_dir=batch_processing_dir,
-                                python_path=python_path,
-                                normative_path=normative_path,
-                                job_name=batch_job_name,
-                                covfile_path=covfile_path,
-                                cv_folds=cv_folds,
-                                respfile_path=batch_respfile_path,
-                                testcovfile_path=testcovfile_path,
-                                testrespfile_path=batch_testrespfile_path,
-                                alg=alg,
-                                configparam=configparam,
-                                standardize=standardize)
+#                    bashwrap_nm(processing_dir=batch_processing_dir,
+#                                python_path=python_path,
+#                                normative_path=normative_path,
+#                                job_name=batch_job_name,
+#                                covfile_path=covfile_path,
+#                                cv_folds=cv_folds,
+#                                respfile_path=batch_respfile_path,
+#                                testcovfile_path=testcovfile_path,
+#                                testrespfile_path=batch_testrespfile_path,
+#                                alg=alg,
+#                                configparam=configparam,
+#                                standardize=standardize)
+                    # update the response file 
+                    kwargs.update({'testrespfile_path': \
+                                   batch_testrespfile_path})
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -141,17 +169,24 @@ def execute_nm(processing_dir,
                                        str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-                    bashwrap_nm(processing_dir=batch_processing_dir,
-                                python_path=python_path,
-                                normative_path=normative_path,
-                                job_name=batch_job_name,
-                                covfile_path=covfile_path,
-                                cv_folds=cv_folds,
-                                respfile_path=batch_respfile_path,
-                                testcovfile_path=testcovfile_path,
-                                alg=alg,
-                                configparam=configparam,
-                                standardize=standardize)
+#                    bashwrap_nm(processing_dir=batch_processing_dir,
+#                                python_path=python_path,
+#                                normative_path=normative_path,
+#                                job_name=batch_job_name,
+#                                covfile_path=covfile_path,
+#                                cv_folds=cv_folds,
+#                                respfile_path=batch_respfile_path,
+#                                testcovfile_path=testcovfile_path,
+#                                alg=alg,
+#                                configparam=configparam,
+#                                standardize=standardize)
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -171,18 +206,25 @@ def execute_nm(processing_dir,
                                        file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-                    bashwrap_nm(processing_dir=batch_processing_dir,
-                                python_path=python_path,
-                                normative_path=normative_path,
-                                job_name=batch_job_name,
-                                covfile_path=covfile_path,
-                                cv_folds=cv_folds,
-                                respfile_path=batch_respfile_path,
-                                testcovfile_path=testcovfile_path,
-                                testrespfile_path=testrespfile_path,
-                                alg=alg,
-                                configparam=configparam,
-                                standardize=standardize)
+#                    bashwrap_nm(processing_dir=batch_processing_dir,
+#                                python_path=python_path,
+#                                normative_path=normative_path,
+#                                job_name=batch_job_name,
+#                                covfile_path=covfile_path,
+#                                cv_folds=cv_folds,
+#                                respfile_path=batch_respfile_path,
+#                                testcovfile_path=testcovfile_path,
+#                                testrespfile_path=testrespfile_path,
+#                                alg=alg,
+#                                configparam=configparam,
+#                                standardize=standardize)
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
@@ -201,7 +243,7 @@ def split_nm(processing_dir,
              respfile_path,
              batch_size,
              binary,
-             testrespfile_path=None):
+             **kwargs):
 
     """ This function prepares the input files for normative_parallel.
 
@@ -219,22 +261,8 @@ def split_nm(processing_dir,
 
     witten by (primarily) T Wolfers (adapted) SM Kia
     """
-
-    # import of necessary modules
-    import os
-    import sys
-    import numpy as np
-    import pandas as pd
-
-    try:
-        import nispat.fileio as fileio
-    except ImportError:
-        pass
-        path = os.path.abspath(os.path.dirname(__file__))
-        if path not in sys.path:
-            sys.path.append(path)
-            del path
-        import fileio
+    
+    testrespfile_path = kwargs.pop('testrespfile_path', None)
 
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != '.pkl'):
@@ -342,24 +370,6 @@ def collect_nm(processing_dir,
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
-    # import of necessary modules
-    import os
-    import sys
-    import glob
-    import numpy as np
-    import pandas as pd
-    import shutil
-    import pickle
-    
-    try:
-        import nispat.fileio as fileio
-    except ImportError:
-        pass
-        path = os.path.abspath(os.path.dirname(__file__))
-        if path not in sys.path:
-            sys.path.append(path)
-            del path
-        import fileio
 
     if binary:
         file_extentions = '.pkl'
@@ -640,9 +650,7 @@ def delete_nm(processing_dir,
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
-    import shutil
-    import glob
-    import os
+    
     if binary:
         file_extentions = '.pkl'
     else:
@@ -663,12 +671,7 @@ def bashwrap_nm(processing_dir,
                 job_name,
                 covfile_path,
                 respfile_path,
-                cv_folds=None,
-                testcovfile_path=None,
-                testrespfile_path=None,
-                alg=None,
-                configparam=None,
-                standardize=True):
+                **kwargs):
 
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
@@ -699,10 +702,15 @@ def bashwrap_nm(processing_dir,
 
     witten by (primarily) T Wolfers
     """
-
-    # import of necessary modules
-    import os
-
+    
+    # here we use pop not get to remove the arguments as they used 
+    cv_folds = kwargs.pop('cv_folds',None)
+    testcovfile_path = kwargs.pop('testcovfile_path', None)
+    testrespfile_path = kwargs.pop('testrespfile_path', None)
+    alg = kwargs.pop('alg', None)
+    configparam = kwargs.pop('configparam', None)
+    standardize = kwargs.pop('standardize', True)
+    
     # change to processing dir
     os.chdir(processing_dir)
     output_changedir = ['cd ' + processing_dir + '\n']
@@ -755,6 +763,10 @@ def bashwrap_nm(processing_dir,
     
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
+    
+    # add in optional arguments. 
+    for k in kwargs:
+        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:
@@ -785,9 +797,6 @@ def qsub_nm(job_path,
 
     witten by (primarily) T Wolfers, (adapted) SM Kia
     """
-
-    # import of necessary modules
-    from subprocess import call
 
     # created qsub command
     if log_path is None:
@@ -820,31 +829,31 @@ def rerun_nm(processing_dir,
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
-    import nispat
+
     if binary:
         file_extentions = '.pkl'
-        failed_batches = nispat.fileio.load(processing_dir +
+        failed_batches = fileio.load(processing_dir +
                                        'failed_batches' + file_extentions)
         shape = failed_batches.shape
         for n in range(0, shape[0]):
             jobpath = failed_batches[n, 0]
             print(jobpath)
-            nispat.normative_parallel.qsub_nm(job_path=jobpath,
-                                              log_path=log_path,
-                                              memory=memory,
-                                              duration=duration)
+            qsub_nm(job_path=jobpath,
+                    log_path=log_path,
+                    memory=memory,
+                    duration=duration)
     else:
         file_extentions = '.txt'
-        failed_batches = nispat.fileio.load_pd(processing_dir +
+        failed_batches = fileio.load_pd(processing_dir +
                                        'failed_batches' + file_extentions)
         shape = failed_batches.shape
         for n in range(0, shape[0]):
             jobpath = failed_batches.iloc[n, 0]
             print(jobpath)
-            nispat.normative_parallel.qsub_nm(job_path=jobpath,
-                                              log_path=log_path,
-                                              memory=memory,
-                                              duration=duration)
+            qsub_nm(job_path=jobpath,
+                    log_path=log_path,
+                    memory=memory,
+                    duration=duration)
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
