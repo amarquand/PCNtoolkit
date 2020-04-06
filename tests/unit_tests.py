@@ -9,14 +9,14 @@ import shutil
 # To fully evaluate the user test cases, this should be run in two ways:
 
 # 1. as a package
-#from nispat.normative import estimate
-#from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+from nispat.normative import estimate
+from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
 #sys.path.clear()
-sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-from normative import estimate
-from normative_parallel import execute_nm, collect_nm, delete_nm
+#sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+#from normative import estimate
+#from normative_parallel import execute_nm, collect_nm, delete_nm
 
 # ---------------- Config parameters -----------------------------------------
 
@@ -125,7 +125,7 @@ resp_file_tr = os.path.join(data_dir,'resp_big_tr.txt')
 resp_file_te = os.path.join(data_dir,'resp_big_te.txt')
 
 estimate(resp_file_tr, cov_file_tr, testresp=resp_file_te, testcov=cov_file_te,
-         alg=alt_alg, configparam=1)
+         alg=alt_alg, configparam=1, savemodel=True)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -142,6 +142,6 @@ execute_nm(tdir, python_path, normative_path, job_name, cov_file_par,
            resp_file_par, batch_size, memory, duration, cluster_spec=cluster, 
            cv_folds=2, log_path=tdir, binary=bin_flag)
 
-# to be run after qusub jobs complete
+# to be run after qsub jobs complete
 #collect_nm(tdir, collect=True, binary=bin_flag)
 #delete_nm(tdir, binary=bin_flag)
