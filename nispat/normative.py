@@ -76,18 +76,23 @@ def get_args(*args):
                         dest="configparam", default=None)
     parser.add_argument('-s', action='store_false', 
                         help="Flag to skip standardization.", dest="standardize")
+    parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
+    
     args = parser.parse_args()
+    
+    # Process required  arguemnts 
     wdir = os.path.realpath(os.path.curdir)
     respfile = os.path.join(wdir, args.responses)
-    if args.maskfile is None:
-        maskfile = None
-    else:
-        maskfile = os.path.join(wdir, args.maskfile)
     if args.covfile is None:
         raise(ValueError, "No covariates specified")
     else:
         covfile = args.covfile
-
+    
+    # Process optional arguments
+    if args.maskfile is None:
+        maskfile = None
+    else:
+        maskfile = os.path.join(wdir, args.maskfile)
     if args.testcov is None:
         testcov = None
         testresp = None
@@ -105,14 +110,19 @@ def get_args(*args):
         if args.cvfolds is not None:
             print("Ignoring cross-valdation specification (test data given)")
 
+    # Process addtional keyword arguments. These are always added as strings
+    kw_args = {}
+    for kw in args.keyword_args:
+        kw_arg = kw.split('=')
+    
+        exec("kw_args.update({'" +  kw_arg[0] + "' : " + 
+                              "'" + str(kw_arg[1]) + "'" + "})")
+    
     return respfile, maskfile, covfile, cvfolds, \
-            testcov, testresp, args.alg, args.configparam, args.standardize
-
+            testcov, testresp, args.alg, \
+            args.configparam, args.standardize, kw_args
 
 def estimate(respfile, covfile, **kwargs):
-             #maskfile=None, cvfolds=None,
-             #testcov=None, testresp=None, alg='gpr', 
-             #saveoutput=True, outputsuffix=None, standardize=True, **kwargs):
     """ Estimate a normative model
 
     This will estimate a model in one of two settings according to the
@@ -171,9 +181,11 @@ def estimate(respfile, covfile, **kwargs):
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
     saveoutput = kwargs.pop('saveoutput',True)
+    savemodel = kwargs.pop('savemodel',False)
     outputsuffix = kwargs.pop('outputsuffix',None)
     standardize = kwargs.pop('standardize',True)
-    # For backward compatibilty
+
+    # This is added for backward compatibilty.
     configparam = kwargs.get('configparam', None) # use get (may be passed on)
 
     # load data
@@ -221,7 +233,7 @@ def estimate(respfile, covfile, **kwargs):
         # Initialise normative model
         #nm = norm_init(X, alg=alg, configparam=configparam)
 
-    if not os.path.isdir('Models'):
+    if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
     
     # find and remove bad variables from the response variables
@@ -269,8 +281,8 @@ def estimate(respfile, covfile, **kwargs):
         # estimate the models for all subjects
         for i in range(0, len(nz)):  # range(0, Nmod):
             print("Estimating model ", i+1, "of", len(nz))
-            try:
-                nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs) 
+            nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
+            try: 
                 nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])     
                 if (alg == 'hbr'):
                     if nm.configs['new_site'] == True:
@@ -281,7 +293,8 @@ def estimate(respfile, covfile, **kwargs):
                 else:
                     yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
-                nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
+                if savemodel:
+                    nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
                 
                 if standardize:
                     Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
@@ -317,13 +330,15 @@ def estimate(respfile, covfile, **kwargs):
                 else:
                     if testresp is not None:
                         Z[te, nz[i]] = float('nan')
+    if savemodel:
+        print('Saving model meta-data...')
+        with open('Models/meta_data.md', 'wb') as file:
+            pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
+                         'mean_resp':mean_resp, 'std_resp':std_resp, 
+                         'mean_cov':mean_cov, 'std_cov':std_cov, 
+                         'regressor':alg, 'configs':configparam,
+                         'standardize':standardize}, file)    
 
-    # Saving model meta-data
-    with open('Models/meta_data.md', 'wb') as file:
-        pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
-                     'mean_resp':mean_resp, 'std_resp':std_resp, 
-                     'mean_cov':mean_cov, 'std_cov':std_cov, 'regressor':alg,
-                     'configs':configparam, 'standardize':standardize}, file)    
     # compute performance metrics
     if testcov is None:
         MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
@@ -448,7 +463,7 @@ def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None)
         sX = meta_data['std_cov']
     
     # load data
-    print("Laoding data ...")
+    print("Loading data ...")
     X = fileio.load(covfile)
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
@@ -544,16 +559,31 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cv, tcfile, trfile, alg, cfg, std = get_args(args)
-    estimate(rfile, cfile,
-             maskfile = mfile,
-             cvfolds = cv,
-             testcov = tcfile,
-             testresp = trfile,
-             alg = alg,
-             configparam = cfg,
-             saveoutput = True,
-             standardize = std)
+    rfile, mfile, cfile, cv, tcfile, trfile, alg, cfg, std, kw = get_args(args)
+    
+    # collect required arguments
+    pos_args = ['rfile', 'cfile']
+    
+    # collect basic keyword arguments controlling model estimation
+    kw_args = ['maskfile=mfile',
+               'cvfolds=cv',
+               'testcov=tcfile',
+               'testresp=trfile',
+               'alg=alg',
+               'configparam=cfg',
+               'saveoutput=True',
+               'standardize=std']
+    
+    # add additional keyword arguments
+    for k in kw:
+        kw_args.append(k + '=' + "'" + kw[k] + "'")
+    all_args = ', '.join(pos_args + kw_args)
+
+    # estimate normative model
+    exec('estimate(' + all_args + ')')
+    #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
+    #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
+    #         standardize=std)
 
 # For running from the command line:
 if __name__ == "__main__":
