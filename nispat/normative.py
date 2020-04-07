@@ -180,13 +180,13 @@ def estimate(respfile, covfile, **kwargs):
     testcov = kwargs.pop('testcov', None)
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
-    saveoutput = kwargs.pop('saveoutput',True)
-    savemodel = kwargs.pop('savemodel',False)
+    saveoutput = kwargs.pop('saveoutput','True')=='True'
+    savemodel = kwargs.pop('savemodel','False')=='True'
     outputsuffix = kwargs.pop('outputsuffix',None)
     standardize = kwargs.pop('standardize',True)
-
-    # This is added for backward compatibilty.
-    configparam = kwargs.get('configparam', None) # use get (may be passed on)
+    trbefile = kwargs.pop('trbefile',None) # tarining batch effects file address
+    tsbefile = kwargs.pop('tsbefile',None) # test batch effects file address
+    nstsfile = kwargs.pop('nstsfile',None) # New site traininging samples file
 
     # load data
     print("Processing data in " + respfile)
@@ -197,6 +197,18 @@ def estimate(respfile, covfile, **kwargs):
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
     Nmod = Y.shape[1]
+    
+    if trbefile is not None:
+        batch_effects_train = fileio.load(trbefile)
+    else:
+        batch_effects_train = np.zeros([X.shape[0],2])
+    kwargs['batch_effects_train'] = batch_effects_train
+    
+    if nstsfile is not None:
+        newsite_training_idx = fileio.load(nstsfile)
+    else:
+        newsite_training_idx = None
+    kwargs['newsite_training_idx'] = newsite_training_idx
 
     if testcov is not None:
         # we have a separate test dataset
@@ -211,7 +223,13 @@ def estimate(respfile, covfile, **kwargs):
         else:
             sub_te = Xte.shape[0]
             Yte = np.zeros([sub_te, Nmod])
-  
+        
+        if tsbefile is not None:
+            batch_effects_test = fileio.load(tsbefile)
+        else:
+            batch_effects_test = np.zeros([Xte.shape[0],2])
+        kwargs['batch_effects_test'] = batch_effects_test
+    
         # Initialise normative model
         #nm = norm_init(X, alg=alg, configparam=configparam)
         
@@ -336,8 +354,7 @@ def estimate(respfile, covfile, **kwargs):
             pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
                          'mean_cov':mean_cov, 'std_cov':std_cov, 
-                         'regressor':alg, 'configs':configparam,
-                         'standardize':standardize}, file)    
+                         'regressor':alg, 'standardize':standardize}, file)    
 
     # compute performance metrics
     if testcov is None:
@@ -447,7 +464,8 @@ def estimate(respfile, covfile, **kwargs):
                           Rho, pRho, RMSE, SMSE, EXPV, MSLL)
         return output
 
-def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None):
+def predict(model_path, covfile, respfile=None, output_path=None,  
+            maskfile=None, **kwargs):
     
     if not os.path.isdir(model_path):
         print('Model directory does not exist!')
@@ -461,6 +479,8 @@ def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None)
         sY = meta_data['std_resp']
         mX = meta_data['mean_cov']
         sX = meta_data['std_cov']
+    
+    batch_effects_test = kwargs.pop('batch_effects_test',None)
     
     # load data
     print("Loading data ...")
@@ -488,6 +508,7 @@ def predict(model_path, covfile, output_path=None, respfile=None, maskfile=None)
             print("Prediction by model ", i+1, "of", feature_num)      
             nm = norm_init(Xz, alg='blr', configparam=None)
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
+            nm.configs['batch_effects_test'] = batch_effects_test
             yhat, s2 = nm.predict(Xz)
             if standardize:
                 Yhat[:, i] = yhat * sY[fold][i] + mY[fold][i]
@@ -571,7 +592,6 @@ def main(*args):
                'testresp=trfile',
                'alg=alg',
                'configparam=cfg',
-               'saveoutput=True',
                'standardize=std']
     
     # add additional keyword arguments
