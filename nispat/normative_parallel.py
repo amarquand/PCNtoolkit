@@ -89,11 +89,8 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
-    #alg = kwargs.get('alg', 'gpr')
-    #configparam = kwargs.get('configparam', None)
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.pop('log_path', None)
-    #standardize = kwargs.get('standardize', True)
     binary = kwargs.pop('binary', False)
     
     split_nm(processing_dir,
@@ -121,7 +118,7 @@ def execute_nm(processing_dir,
             else:
                 # specified train/test split
                 batch_processing_dir = processing_dir + 'batch_' + str(n) + '/'
-                batch_job_name = job_name + str(n) + '.sh'
+                batch_job_name = job_name + '_' + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
                                        str(n) + file_extentions)
                 batch_testrespfile_path = (batch_processing_dir +
