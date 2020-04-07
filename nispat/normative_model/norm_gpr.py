@@ -32,7 +32,6 @@ class NormGPR(NormBase):
         self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
         self.theta = self.theta0
         
-        print("Initialising GPR")
         if (theta is not None) and (X is not None) and (y is not None):
             self.gpr = GPR(theta, self.covfunc, X, y)
             self._n_params = self.covfunc.get_n_params() + 1
