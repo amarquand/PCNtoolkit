@@ -506,7 +506,7 @@ def predict(model_path, covfile, respfile=None, output_path=None,
         # estimate the models for all subjects
         for i in range(feature_num):
             print("Prediction by model ", i+1, "of", feature_num)      
-            nm = norm_init(Xz, alg='blr', configparam=None)
+            nm = norm_init(Xz)
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
             nm.configs['batch_effects_test'] = batch_effects_test
             yhat, s2 = nm.predict(Xz)
