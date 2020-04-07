@@ -278,7 +278,7 @@ def split_nm(processing_dir,
 
         respfile = pd.DataFrame(respfile)
 
-        numsub = len(respfile.ix[0, :])
+        numsub = len(respfile.iloc[0, :])
         batch_vec = np.arange(0,
                               numsub,
                               batch_size)
@@ -286,8 +286,8 @@ def split_nm(processing_dir,
                               numsub)
         batch_vec = batch_vec-1
         for n in range(0, (len(batch_vec) - 1)):
-            resp_batch = respfile.ix[:,
-                                     (batch_vec[n] + 1): batch_vec[n + 1]]
+            resp_batch = respfile.iloc[:,
+                                     (batch_vec[n]): batch_vec[n + 1]]
             os.chdir(processing_dir)
             resp = str('resp_batch_' + str(n+1))
             batch = str('batch_' + str(n+1))
@@ -327,9 +327,9 @@ def split_nm(processing_dir,
         batch_vec = np.append(batch_vec,
                               numsub)
         for n in range(0, (len(batch_vec) - 1)):
-            resp_batch = respfile.ix[:, (batch_vec[n]): batch_vec[n + 1]-1]
-            testresp_batch = testrespfile.ix[:, (batch_vec[n]): batch_vec[n +
-                                             1]-1]
+            resp_batch = respfile.iloc[:, (batch_vec[n]): batch_vec[n + 1]]
+            testresp_batch = testrespfile.iloc[:, (batch_vec[n]): batch_vec[n +
+                                             1]]
             os.chdir(processing_dir)
             resp = str('resp_batch_' + str(n+1))
             testresp = str('testresp_batch_' + str(n+1))
