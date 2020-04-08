@@ -125,7 +125,7 @@ resp_file_tr = os.path.join(data_dir,'resp_big_tr.txt')
 resp_file_te = os.path.join(data_dir,'resp_big_te.txt')
 
 estimate(resp_file_tr, cov_file_tr, testresp=resp_file_te, testcov=cov_file_te,
-         alg=alt_alg, configparam=1, savemodel=True)
+         alg=alt_alg, configparam=1, savemodel='True')
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)

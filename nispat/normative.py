@@ -184,7 +184,7 @@ def estimate(respfile, covfile, **kwargs):
     savemodel = kwargs.pop('savemodel','False')=='True'
     outputsuffix = kwargs.pop('outputsuffix',None)
     standardize = kwargs.pop('standardize',True)
-    trbefile = kwargs.pop('trbefile',None) # tarining batch effects file address
+    trbefile = kwargs.pop('trbefile',None) # training batch effects file address
     tsbefile = kwargs.pop('tsbefile',None) # test batch effects file address
 
     # load data
@@ -234,7 +234,7 @@ def estimate(respfile, covfile, **kwargs):
 
         # force the number of cross-validation folds to 1
         if cvfolds is not None and cvfolds != 1:
-            print("Ignoring cross-valdation specification (test data given)")
+            print("Ignoring cross-validation specification (test data given)")
         cvfolds = 1
         
     else:
@@ -704,11 +704,12 @@ def main(*args):
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
 
-    # estimate normative model
+    # estimate normative model. The basic syntax is:
+    # estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
+    #          testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
+    #          standardize=std)
+    
     exec('estimate(' + all_args + ')')
-    #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
-    #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
-    #         standardize=std)
 
 # For running from the command line:
 if __name__ == "__main__":
