@@ -186,7 +186,6 @@ def estimate(respfile, covfile, **kwargs):
     standardize = kwargs.pop('standardize',True)
     trbefile = kwargs.pop('trbefile',None) # tarining batch effects file address
     tsbefile = kwargs.pop('tsbefile',None) # test batch effects file address
-    nstsfile = kwargs.pop('nstsfile',None) # New site traininging samples file
 
     # load data
     print("Processing data in " + respfile)
@@ -204,12 +203,6 @@ def estimate(respfile, covfile, **kwargs):
         batch_effects_train = np.zeros([X.shape[0],2])
     kwargs['batch_effects_train'] = batch_effects_train
     
-    if nstsfile is not None:
-        newsite_training_idx = fileio.load(nstsfile)
-    else:
-        newsite_training_idx = None
-    kwargs['newsite_training_idx'] = newsite_training_idx
-
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -302,14 +295,8 @@ def estimate(respfile, covfile, **kwargs):
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
             try: 
                 nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])     
-                if (alg == 'hbr'):
-                    if nm.configs['new_site'] == True:
-                        nm = nm.estimate_on_new_sites(Xz[te, :], Y[te, nz[i]]) # The test/train division is done internally
-                        yhat, s2 = nm.predict_on_new_sites(Xz[te, :])
-                    else:    
-                        yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
-                else:
-                    yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
+                
+                yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
                 if savemodel:
                     nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
@@ -573,6 +560,124 @@ def predict(model_path, covfile, respfile=None, output_path=None,
                         example=exfile, mask=maskvol)
             
             return (Yhat, S2, Z)
+
+
+def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None, 
+             testresp=None, tsbefile=None, maskfile=None):
+    
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+    if not os.path.isdir(os.path.join(output_path,'Models')):
+         transferred_models_path = os.path.join(output_path,'Models')
+         os.mkdir(transferred_models_path)
+    
+    # load data
+    print("Loading data ...")
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    feature_num = Y.shape[1]
+    mY = np.mean(Y, axis=0)
+    sY = np.std(Y, axis=0)
+    
+    if trbefile is not None:
+        batch_effects_train = fileio.load(trbefile)
+    else:
+        batch_effects_train = np.zeros([X.shape[0],2])
+    
+    if testcov is not None:
+        # we have a separate test dataset
+        Xte = fileio.load(testcov)
+        if len(Xte.shape) == 1:
+            Xte = Xte[:, np.newaxis]
+        ts_sample_num = Xte.shape[0]
+        if testresp is not None:
+            Yte, testmask = load_response_vars(testresp, maskfile)
+            if len(Yte.shape) == 1:
+                Yte = Yte[:, np.newaxis]
+            if not os.path.isdir(os.path.join(output_path,'Results')):
+                results_path = os.path.join(output_path,'Results')
+                os.mkdir(results_path)
+        else:
+            Yte = np.zeros([ts_sample_num, feature_num])
+        
+        if tsbefile is not None:
+            batch_effects_test = fileio.load(tsbefile)
+        else:
+            batch_effects_test = np.zeros([Xte.shape[0],2])
+
+    Yhat = np.zeros([ts_sample_num, feature_num])
+    S2 = np.zeros([ts_sample_num, feature_num])
+    Z = np.zeros([ts_sample_num, feature_num])
+    
+    # estimate the models for all subjects
+    for i in range(feature_num):
+        print("Transferting model ", i+1, "of", feature_num)      
+        nm = norm_init(X)
+        nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+        
+        nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
+        
+        nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + str(i) + '.pkl'))
+        
+        if testcov is not None:
+            yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+            Yhat[:, i] = yhat
+            S2[:, i] = s2
+   
+    if testresp is None:
+        return (Yhat, S2)
+    else:
+        # Set writing options
+        print("Evaluations and Writing outputs ...")      
+        if fileio.file_type(testresp) == 'cifti' or \
+           fileio.file_type(testresp) == 'nifti':
+            exfile = testresp
+        else:
+            exfile = None
+        ext = fileio.file_extension(testresp)    
+        
+        Z = (Yte - Yhat) / np.sqrt(S2)
+        
+        MSE = np.mean((Yte - Yhat)**2, axis=0)
+        RMSE = np.sqrt(MSE)
+        # for the remaining variables, we need to ignore zero variances
+        SMSE = np.zeros_like(MSE)
+        Rho = np.zeros(feature_num)
+        pRho = np.ones(feature_num)
+        EXPV = np.zeros(feature_num)
+        MSLL = np.zeros(feature_num)
+        iy, jy = np.ix_(range(feature_num), range(feature_num))  # ids tested samples nonzero values
+        SMSE = MSE / np.var(Yte[iy, jy], axis=0)
+        Rho, pRho = compute_pearsonr(Yte[iy, jy], Yhat[iy, jy])
+        EXPV = explained_var(Yte[iy, jy], Yhat[iy, jy])
+        MSLL = compute_MSLL(Yte[iy, jy], Yhat[iy, jy], S2[iy, jy], 
+            mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+        
+        # Write output
+        fileio.save(Yhat, os.path.join(results_path, 'yhat' + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(S2, os.path.join(results_path,'ys2' + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(Z, os.path.join(results_path,'Z' + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(Rho, os.path.join(results_path,'Rho' + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(pRho, os.path.join(results_path,'pRho' + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(RMSE, os.path.join(results_path,'rmse' + ext),
+                    example=exfile, mask=maskvol)
+        fileio.save(SMSE, os.path.join(results_path,'smse' + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(EXPV, os.path.join(results_path,'expv' + ext), 
+                    example=exfile, mask=maskvol)
+        fileio.save(MSLL, os.path.join(results_path,'msll' + ext), 
+                    example=exfile, mask=maskvol)
+        
+        return (Yhat, S2, Z)
 
 def main(*args):
     """ Parse arguments and estimate model
