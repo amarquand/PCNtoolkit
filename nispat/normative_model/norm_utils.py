@@ -4,17 +4,17 @@ from norm_rfa import NormRFA
 from norm_hbr import NormHBR
 from norm_np import NormNP
 
-def norm_init(X, y=None, theta=None, alg='gpr', configparam=None):
+def norm_init(X, y=None, theta=None, alg='gpr', **kwargs):
     if alg == 'gpr':
-        nm = NormGPR(X, y, theta)
+        nm = NormGPR(X=X, y=y, theta=theta, **kwargs)
     elif alg =='blr':
-        nm = NormBLR(X, y, theta, configparam)
+        nm = NormBLR(X=X, y=y, theta=theta, **kwargs)
     elif alg == 'rfa':
-        nm = NormRFA(X, y, theta, configparam)
+        nm = NormRFA(X=X, y=y, theta=theta, **kwargs)
     elif alg == 'hbr':
-        nm = NormHBR(X, y, configparam)
+        nm = NormHBR(X=X, y=y, **kwargs)
     elif alg == 'np':
-        nm = NormNP(X, y, configparam)
+        nm = NormNP(X=X, y=y, **kwargs)
     else:
         raise(ValueError, "Algorithm " + alg + " not known.")
         

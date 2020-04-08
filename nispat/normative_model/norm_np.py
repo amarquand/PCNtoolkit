@@ -165,8 +165,7 @@ class NormNP(NormBase):
         
         self.scaler = MinMaxScaler()
         y = self.scaler.fit_transform(y)
-
-        
+ 
         self.reg = []
         for i in range(factor_num):
             self.reg.append(LinearRegression())
@@ -205,7 +204,7 @@ class NormNP(NormBase):
                     optimizer.step()
                 print('Epoch: %d, Loss:%f' %( k, train_loss))
                 k += 1
-        return None
+        return self
         
     def predict(self, Xs, X=None, Y=None, theta=None): 
         sample_num = Xs.shape[0]
@@ -228,20 +227,3 @@ class NormNP(NormBase):
         sigma_al = y_hat - y_hat_84
         return y_hat.squeeze(), (y_sigma**2 + sigma_al**2).squeeze() #, z_context[0].cpu().numpy(), z_context[1].cpu().numpy()
     
-    def save(self, save_path):
-        try:
-            with open(save_path, 'wb') as handle:
-                pickle.dump(self, handle)
-            return True
-        except Exception as err:
-            print('Error:', err)
-            raise
-    
-    def load(self, load_path):
-        try:
-            with open(load_path, 'rb') as handle:
-                nm = pickle.load(handle)
-            return nm
-        except Exception as err:
-            print('Error:', err)
-            raise
