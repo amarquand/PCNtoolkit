@@ -13,6 +13,7 @@ from nispat.normative import estimate
 from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
+#sys.path.clear()
 #sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
 #from normative import estimate
 #from normative_parallel import execute_nm, collect_nm, delete_nm
@@ -56,11 +57,9 @@ def save_output(src_dir, dst_dir):
     files.extend(glob.glob(os.path.join(src_dir,'msll*')))
     files.extend(glob.glob(os.path.join(src_dir,'expv*')))
     files.extend(glob.glob(os.path.join(src_dir,'Hyp*')))
-    print(files)
+    files.extend(glob.glob(os.path.join(src_dir,'Models')))
     for f in files:
-        print(f)
         fdir, fnam = os.path.split(f)
-        print(fdir, fnam)
         shutil.move(f, os.path.join(dst_dir,fnam))
     return
 
@@ -83,16 +82,17 @@ cov_file_nii = os.path.join(data_dir, 'cov_n50.txt')
 resp_file_nii_te = os.path.join(data_dir, 'resp_n100.nii.gz')
 cov_file_nii_te = os.path.join(data_dir, 'cov_n100.txt')
 
-estimate(resp_file_nii, cov_file_nii, mask_file_nii, 
+estimate(resp_file_nii, cov_file_nii, maskfile=mask_file_nii, 
          testresp = resp_file_nii_te, testcov = cov_file_nii_te)
 
+print(os.getcwd())
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
 
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
 
-estimate(resp_file_nii, cov_file_nii, mask_file_nii, cvfolds = 2)
+estimate(resp_file_nii, cov_file_nii, maskfile = mask_file_nii, cvfolds = 2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -103,15 +103,15 @@ print("----------------------------------------------------------------------")
 resp_file_txt = os.path.join(data_dir, 'resp.txt')
 cov_file_txt = os.path.join(data_dir, 'cov.txt')
 
-estimate(resp_file_txt, cov_file_txt, 
-         testresp = resp_file_txt, testcov = cov_file_txt ,alg=alt_alg)
+estimate(resp_file_txt, cov_file_txt, testresp = resp_file_txt, 
+         testcov = cov_file_txt ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
 
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
-estimate(resp_file_txt, cov_file_txt, cvfolds=2 ,alg=alt_alg)
+estimate(resp_file_txt, cov_file_txt, cvfolds=2 ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -125,7 +125,7 @@ resp_file_tr = os.path.join(data_dir,'resp_big_tr.txt')
 resp_file_te = os.path.join(data_dir,'resp_big_te.txt')
 
 estimate(resp_file_tr, cov_file_tr, testresp=resp_file_te, testcov=cov_file_te,
-         alg=alt_alg, configparam=2)
+         alg=alt_alg, configparam=1, savemodel='True')
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -142,6 +142,6 @@ execute_nm(tdir, python_path, normative_path, job_name, cov_file_par,
            resp_file_par, batch_size, memory, duration, cluster_spec=cluster, 
            cv_folds=2, log_path=tdir, binary=bin_flag)
 
-# to be run after qusub jobs complete
+# to be run after qsub jobs complete
 #collect_nm(tdir, collect=True, binary=bin_flag)
 #delete_nm(tdir, binary=bin_flag)

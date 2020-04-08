@@ -4,13 +4,13 @@
 import os
 import sys
 
-sys.path.append('/Users/andre/sfw/nispat/nispat')
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
 from trendsurf import estimate
 from line_profiler import LineProfiler
 from bayesreg import BLR
 
 # with test covariates
-wdir = '/Users/andre/data/ismael/trendsurf_python'
+wdir = '/home/preclineu/andmar/py.sandbox/unittests'
 maskfile = os.path.join(wdir, 'mask.nii.gz')
 datafile = os.path.join(wdir, 'spect_data2_first5.nii.gz')
 basis = os.path.join(wdir, 'bfs/icp_basis_s8.nii.gz')
