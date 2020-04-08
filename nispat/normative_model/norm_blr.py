@@ -4,6 +4,7 @@ from __future__ import division
 import os
 import sys
 import numpy as np
+import pandas as pd
 
 try:  # run as a package if installed
     from nispat.bayesreg import BLR
@@ -55,7 +56,11 @@ class NormBLR(NormBase):
             model_order = int(model_order)
             
         if 'var_groups' in kwargs:
-            self.var_groups = kwargs.pop('var_groups')
+            var_groups_file = kwargs.pop('var_groups')
+            if var_groups_file.endswith('.pkl'):
+                self.var_groups = pd.read_pickle(var_groups_file)
+            else:
+                self.var_groups = np.loadtxt(var_groups_file)
             var_ids = set(self.var_groups)
             var_ids = sorted(list(var_ids))
             n_beta = len(var_ids)
@@ -123,7 +128,11 @@ class NormBLR(NormBase):
         Phis = create_poly_basis(Xs, self._model_order)
         
         if 'var_groups_test' in kwargs:
-            var_groups_te = kwargs.pop('var_groups_test')
+            var_groups_test_file = kwargs.pop('var_groups_test')
+            if var_groups_test_file.endswith('.pkl'):
+                var_groups_te = pd.read_pickle(var_groups_test_file)
+            else:
+                var_groups_te = np.loadtxt(var_groups_test_file)
         else:
             var_groups_te = None
             
