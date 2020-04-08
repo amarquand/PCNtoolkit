@@ -126,18 +126,6 @@ def execute_nm(processing_dir,
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-#                    bashwrap_nm(processing_dir=batch_processing_dir,
-#                                python_path=python_path,
-#                                normative_path=normative_path,
-#                                job_name=batch_job_name,
-#                                covfile_path=covfile_path,
-#                                cv_folds=cv_folds,
-#                                respfile_path=batch_respfile_path,
-#                                testcovfile_path=testcovfile_path,
-#                                testrespfile_path=batch_testrespfile_path,
-#                                alg=alg,
-#                                configparam=configparam,
-#                                standardize=standardize)
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
@@ -166,17 +154,6 @@ def execute_nm(processing_dir,
                                        str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-#                    bashwrap_nm(processing_dir=batch_processing_dir,
-#                                python_path=python_path,
-#                                normative_path=normative_path,
-#                                job_name=batch_job_name,
-#                                covfile_path=covfile_path,
-#                                cv_folds=cv_folds,
-#                                respfile_path=batch_respfile_path,
-#                                testcovfile_path=testcovfile_path,
-#                                alg=alg,
-#                                configparam=configparam,
-#                                standardize=standardize)
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -203,18 +180,6 @@ def execute_nm(processing_dir,
                                        file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec is 'torque':
-#                    bashwrap_nm(processing_dir=batch_processing_dir,
-#                                python_path=python_path,
-#                                normative_path=normative_path,
-#                                job_name=batch_job_name,
-#                                covfile_path=covfile_path,
-#                                cv_folds=cv_folds,
-#                                respfile_path=batch_respfile_path,
-#                                testcovfile_path=testcovfile_path,
-#                                testrespfile_path=testrespfile_path,
-#                                alg=alg,
-#                                configparam=configparam,
-#                                standardize=standardize)
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -579,7 +544,8 @@ def collect_nm(processing_dir,
                         file_extentions)
             del msll_dfs
         
-        if not os.path.isdir(processing_dir + 'Models'):
+        if not os.path.isdir(processing_dir + 'Models') and \
+           os.path.exists(os.path.join(batches[0], 'Models')):
             os.mkdir(processing_dir + 'Models')
             
         meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
