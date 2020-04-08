@@ -81,19 +81,18 @@ class NormHBR(NormBase):
                                     pred = pred_type)      
         return yhat, s2
     
-    def estimate_on_new_sites(self, X, y):
+    def estimate_on_new_sites(self, X, y, batch_effects):
         
-        newsite_training_idx = np.where(self.configs['newsite_training_idx'] == 1)
-        sites =  self.configs['batch_effects_test'][newsite_training_idx,0].squeeze()
-        gender =  self.configs['batch_effects_test'][newsite_training_idx,1].squeeze()
-        self.hbr.estimate_on_new_site(X[newsite_training_idx,].squeeze(), sites,
-                                      gender, y[newsite_training_idx,].squeeze())
+        sites =  batch_effects[:,0].squeeze()
+        gender =  batch_effects[:,1].squeeze()
+        self.hbr.estimate_on_new_site(X.squeeze(), sites,
+                                      gender, y.squeeze())
         return self
     
-    def predict_on_new_sites(self, X): # For the limitations in normative.py, this predicts on all test data.
+    def predict_on_new_sites(self, X, batch_effects):
     
-        gender =  self.configs['batch_effects_test'][:,1].squeeze()
-        sites =  self.configs['batch_effects_test'][:,0].squeeze()
+        gender =  batch_effects[:,1].squeeze()
+        sites =  batch_effects[:,0].squeeze()
         yhat, s2 = self.hbr.predict_on_new_site(X.squeeze(), sites, gender)
         return yhat, s2
     
