@@ -12,9 +12,9 @@ from __future__ import division
 import os
 import sys
 import numpy as np
-from nispat import fileio
 
 try:  # run as a package if installed
+    from nispat import fileio
     from nispat.normative_model.normbase import NormBase
     from nispat.hbr import HBR 
 except ImportError:
@@ -24,7 +24,7 @@ except ImportError:
     if path not in sys.path:
         sys.path.append(path)
     del path
-
+    import fileio
     from hbr import HBR
     from norm_base import NormBase
 
