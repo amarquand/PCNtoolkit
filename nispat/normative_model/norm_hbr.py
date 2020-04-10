@@ -14,6 +14,7 @@ import sys
 import numpy as np
 
 try:  # run as a package if installed
+    from nispat import fileio
     from nispat.normative_model.normbase import NormBase
     from nispat.hbr import HBR 
 except ImportError:
@@ -23,7 +24,7 @@ except ImportError:
     if path not in sys.path:
         sys.path.append(path)
     del path
-
+    import fileio
     from hbr import HBR
     from norm_base import NormBase
 
@@ -35,10 +36,20 @@ class NormHBR(NormBase):
         
         self.configs = dict()
         X = kwargs.pop('X')
-        y = kwargs.pop('y', None)
-        batch_effects_train = kwargs.pop('batch_effects_train')
+        y = kwargs.pop('y', None)    
+        
+        trbefile = kwargs.pop('trbefile',None) 
+        if trbefile is not None:
+            batch_effects_train = fileio.load(trbefile)
+        else:
+            batch_effects_train = np.zeros([X.shape[0],2])
         self.configs['batch_effects_train'] = batch_effects_train
-        batch_effects_test = kwargs.pop('batch_effects_test')
+        
+        tsbefile = kwargs.pop('tsbefile',None) 
+        if tsbefile is not None:
+            batch_effects_test = fileio.load(tsbefile)
+        else:
+            batch_effects_test = None
         self.configs['batch_effects_test'] = batch_effects_test
         
         self.configs['type'] = kwargs.pop('model_type', 'linear')
