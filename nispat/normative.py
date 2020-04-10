@@ -62,6 +62,8 @@ def get_args(*args):
     # parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("responses")
+    parser.add_argument("-f", help="Function to call", dest="func", 
+                        default="estimate")
     parser.add_argument("-m", help="mask file", dest="maskfile", default=None)
     parser.add_argument("-c", help="covariates file", dest="covfile",
                         default=None)
@@ -119,7 +121,7 @@ def get_args(*args):
                               "'" + str(kw_arg[1]) + "'" + "})")
     
     return respfile, maskfile, covfile, cvfolds, \
-            testcov, testresp, args.alg, \
+            testcov, testresp, args.func, args.alg, \
             args.configparam, args.standardize, kw_args
             
 
@@ -170,7 +172,7 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
 def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None, 
                  results=None, save_path=''):
     
-    print("Writing output ...")
+    print("Writing outputs ...")
     if fileio.file_type(respfile) == 'cifti' or \
        fileio.file_type(respfile) == 'nifti':
         exfile = respfile
@@ -397,7 +399,6 @@ def estimate(respfile, covfile, **kwargs):
         
     # Set writing options
     if saveoutput:
-        print("Writing outputs ...")
         if (run_cv or testresp is not None):
             save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
                          outputsuffix=outputsuffix)
@@ -412,7 +413,7 @@ def estimate(respfile, covfile, **kwargs):
             output = (Yhat[testids, :], S2[testids, :], nm)
         
         return output
-
+    
 def predict(model_path, covfile, respfile=None, output_path=None,  
             maskfile=None, **kwargs):
     
@@ -456,7 +457,8 @@ def predict(model_path, covfile, respfile=None, output_path=None,
         for i in range(feature_num):
             print("Prediction by model ", i+1, "of", feature_num)      
             nm = norm_init(Xz)
-            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
+            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                      str(i) + '.pkl'))
             if batch_effects_test is not None:
                 nm.configs['batch_effects_test'] = batch_effects_test
             yhat, s2 = nm.predict(Xz)
@@ -486,19 +488,35 @@ def predict(model_path, covfile, respfile=None, output_path=None,
                          results=results, save_path=output_path)
             
             return (Yhat, S2, Z)
-
-
-def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None, 
-             testresp=None, tsbefile=None, maskfile=None):
+    
+    
+def transfer(respfile, covfile, testcov=None, testresp=None, maskfile=None, 
+             **kwargs):
+    
+    if (not 'model_path' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())) or \
+        (not 'trbefile' in list(kwargs.keys())):
+            return
+    else:
+        model_path = kwargs.pop('model_path')
+        output_path = kwargs.pop('output_path')
+        trbefile = kwargs.pop('trbefile')
+    
+    tsbefile = kwargs.pop('tsbefile', None)
+    
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
     
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
-    if not os.path.isdir(os.path.join(output_path,'Models')):
-        transferred_models_path = os.path.join(output_path,'Models')
+        
+    transferred_models_path = os.path.join(output_path,'Models')
+    if not os.path.isdir(transferred_models_path):
         os.mkdir(transferred_models_path)
-    if not os.path.isdir(os.path.join(output_path,'Results')):
-        results_path = os.path.join(output_path,'Results')
-        os.mkdir(results_path)
+    
     
     # load data
     print("Loading data ...")
@@ -541,13 +559,23 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
     
     # estimate the models for all subjects
     for i in range(feature_num):
-        print("Transferting model ", i+1, "of", feature_num)      
+              
         nm = norm_init(X)
-        nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+        if batch_size is not None: # when using nirmative_parallel
+            print("Transferting model ", job_id*batch_size+i)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + '.pkl'))
+        else:
+            print("Transferting model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
-        
-        nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + str(i) + '.pkl'))
+        if batch_size is not None: 
+            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+                             str(job_id*batch_size+i) + '.pkl'))
+        else:
+            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+                             str(i) + '.pkl'))
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
@@ -555,7 +583,7 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
             S2[:, i] = s2
    
     if testresp is None:
-        save_results(respfile, Yhat, S2, maskvol, save_path=results_path)
+        save_results(respfile, Yhat, S2, maskvol)
         return (Yhat, S2)
     else:
         Z = (Yte - Yhat) / np.sqrt(S2)
@@ -564,8 +592,7 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
         results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
                 
         print("Writing outputs ...")
-        save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results, 
-                     save_path=results_path)
+        save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results)
         
         return (Yhat, S2, Z)
 
@@ -575,7 +602,7 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cv, tcfile, trfile, alg, cfg, std, kw = get_args(args)
+    rfile, mfile, cfile, cv, tcfile, trfile, func, alg, cfg, std, kw = get_args(args)
     
     # collect required arguments
     pos_args = ['rfile', 'cfile']
@@ -595,7 +622,7 @@ def main(*args):
     all_args = ', '.join(pos_args + kw_args)
 
     # estimate normative model
-    exec('estimate(' + all_args + ')')
+    exec(func + '(' + all_args + ')')
     #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
     #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
     #         standardize=std)

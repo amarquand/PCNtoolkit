@@ -50,6 +50,7 @@ def execute_nm(processing_dir,
                batch_size,
                memory,
                duration,
+               func='estimate',
                **kwargs):
 
     """
@@ -108,9 +109,11 @@ def execute_nm(processing_dir,
         file_extentions = '.pkl'
     else:
         file_extentions = '.txt'
-
+    
+    kwargs.update({'batch_size':str(batch_size)})
     for n in range(1, number_of_batches+1):
         print(n)
+        kwargs.update({'job_id':str(n)})
         if testrespfile_path is not None:
             if cv_folds is not None:
                 raise(ValueError, """If the response file is specified
@@ -135,6 +138,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -142,7 +146,8 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
         if testrespfile_path is None:
@@ -160,6 +165,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -167,7 +173,8 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
             else:
@@ -186,6 +193,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -193,7 +201,8 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
 
@@ -634,6 +643,7 @@ def bashwrap_nm(processing_dir,
                 job_name,
                 covfile_path,
                 respfile_path,
+                func='estimate',
                 **kwargs):
 
     """ This function wraps normative modelling into a bash script to run it
@@ -692,13 +702,14 @@ def bashwrap_nm(processing_dir,
             else:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
                             covfile_path + ' -t ' + testcovfile_path + ' -r ' +
-                            testrespfile_path]
+                            testrespfile_path + ' -f ' + func]
 
     if testrespfile_path is None:
         if testcovfile_path is None:
             if cv_folds is not None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -k ' + str(cv_folds)]
+                            covfile_path + ' -k ' + str(cv_folds) + 
+                            ' -f ' + func]
             else:
                 raise(ValueError, """If the testresponsefile_path and
                                   testcovfile_path are specified cv_folds
@@ -708,7 +719,8 @@ def bashwrap_nm(processing_dir,
         if testcovfile_path is not None:
             if cv_folds is None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path]
+                            covfile_path + ' -t ' + testcovfile_path + 
+                            ' -f ' + func]
             else:
                 raise(ValueError, """If the test response file is and
                                   testcovfile is not specified cv_folds
