@@ -397,22 +397,22 @@ def collect_nm(processing_dir,
                 rmse = np.zeros(batch_size)
                 rmse = rmse.transpose()
                 rmse = pd.Series(rmse)
-                fileio.save(rmse, batch + 'rmse' + file_extentions)
+                fileio.save(rmse, batch + 'RMSE' + file_extentions)
                 
                 smse = np.zeros(batch_size)
                 smse = smse.transpose()
                 smse = pd.Series(smse)
-                fileio.save(smse, batch + 'smse' + file_extentions)
+                fileio.save(smse, batch + 'SMSE' + file_extentions)
                 
                 expv = np.zeros(batch_size)
                 expv = expv.transpose()
                 expv = pd.Series(expv)
-                fileio.save(expv, batch + 'expv' + file_extentions)
+                fileio.save(expv, batch + 'EXPV' + file_extentions)
                 
                 msll = np.zeros(batch_size)
                 msll = msll.transpose()
                 msll = pd.Series(msll)
-                fileio.save(msll, batch + 'msll' + file_extentions)
+                fileio.save(msll, batch + 'MSLL' + file_extentions)
 
                 yhat = np.zeros([numsubjects, batch_size])
                 yhat = pd.DataFrame(yhat)
@@ -509,7 +509,7 @@ def collect_nm(processing_dir,
             fileio.save(ys2_dfs, processing_dir + 'ys2' + file_extentions)
             del ys2_dfs
 
-        rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'rmse*')
+        rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'RMSE*')
         if rmse_filenames:
             rmse_filenames = fileio.sort_nicely(rmse_filenames)
             rmse_dfs = []
@@ -517,39 +517,39 @@ def collect_nm(processing_dir,
                 rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
             rmse_dfs = pd.concat(rmse_dfs, ignore_index=True, axis=0)
             fileio.save(rmse_dfs, processing_dir +
-                        'rmse' + file_extentions)
+                        'RMSE' + file_extentions)
             del rmse_dfs
 
-        smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'smse*')
+        smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'SMSE*')
         if rmse_filenames:
             smse_filenames = fileio.sort_nicely(smse_filenames)
             smse_dfs = []
             for smse_filename in smse_filenames:
                 smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
             smse_dfs = pd.concat(smse_dfs, ignore_index=True, axis=0)
-            fileio.save(smse_dfs, processing_dir + 'smse' +
+            fileio.save(smse_dfs, processing_dir + 'SMSE' +
                         file_extentions)
             del smse_dfs
             
-        expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'expv*')
+        expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'EXPV*')
         if expv_filenames:
             expv_filenames = fileio.sort_nicely(expv_filenames)
             expv_dfs = []
             for expv_filename in expv_filenames:
                 expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
             expv_dfs = pd.concat(expv_dfs, ignore_index=True, axis=0)
-            fileio.save(expv_dfs, processing_dir + 'expv' +
+            fileio.save(expv_dfs, processing_dir + 'EXPV' +
                         file_extentions)
             del expv_dfs
             
-        msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'msll*')
+        msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'MSLL*')
         if msll_filenames:
             msll_filenames = fileio.sort_nicely(msll_filenames)
             msll_dfs = []
             for msll_filename in msll_filenames:
                 msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
             msll_dfs = pd.concat(msll_dfs, ignore_index=True, axis=0)
-            fileio.save(msll_dfs, processing_dir + 'msll' +
+            fileio.save(msll_dfs, processing_dir + 'MSLL' +
                         file_extentions)
             del msll_dfs
         
@@ -577,21 +577,9 @@ def collect_nm(processing_dir,
                 meta_data['mean_cov'] = np.stack(mX) 
                 meta_data['std_cov'] = np.stack(sX) 
                 
-            with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 'wb') as file:
+            with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 
+                      'wb') as file:
                 pickle.dump(meta_data, file)
-
-        #for n in range(1, n_crossval+1):
-        #    Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
-        #                              str(n) + '.*')
-        #    if Hyp_filenames:
-        #        Hyp_filenames = fileio.sort_nicely(Hyp_filenames)
-        #        Hyp_dfs = []
-        #        for Hyp_filename in Hyp_filenames:
-        #            Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
-        #        Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True, axis=0)
-        #        fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
-        #                    file_extentions)
-        #        del Hyp_dfs
         
         batch_dirs = glob.glob(processing_dir + 'batch_*/')
         if batch_dirs:
