@@ -30,6 +30,7 @@ class NormBLR(NormBase):
         X = kwargs.pop('X', None)
         y = kwargs.pop('y', None)
         theta = kwargs.pop('theta', None)
+        self.optim_alg = kwargs.pop('optimizer','cg')
 
         if X is None:
             raise(ValueError, "Data matrix must be specified")
@@ -115,7 +116,8 @@ class NormBLR(NormBase):
             theta = self.theta0
             self.blr = BLR(theta, self.Phi, y, var_groups=self.var_groups)
 
-        self.theta = self.blr.estimate(theta, self.Phi, y)
+        self.theta = self.blr.estimate(theta, self.Phi, y, 
+                                       optimizer=self.optim_alg)
         
         return self
 
