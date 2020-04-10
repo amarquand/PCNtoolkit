@@ -121,6 +121,78 @@ def get_args(*args):
     return respfile, maskfile, covfile, cvfolds, \
             testcov, testresp, args.alg, \
             args.configparam, args.standardize, kw_args
+            
+
+def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
+             metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']):
+    
+    feature_num = Y.shape[1]
+    
+    # find and remove bad variables from the response variables
+    nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
+                                 np.var(Y, axis=0) != 0))[0]
+    
+    MSE = np.mean((Y - Yhat)**2, axis=0)
+    
+    results = dict()
+    
+    if 'RMSE' in metrics:
+        RMSE = np.sqrt(MSE)
+        results['RMSE'] = RMSE
+    
+    if 'Rho' in metrics:
+        Rho = np.zeros(feature_num)
+        pRho = np.ones(feature_num)    
+        Rho[nz], pRho[nz] = compute_pearsonr(Y[:,nz], Yhat[:,nz])
+        results['Rho'] = Rho
+        results['pRho'] = pRho
+        
+    if 'SMSE' in metrics:
+        SMSE = np.zeros_like(MSE)
+        SMSE[nz] = MSE[nz] / np.var(Y[:,nz], axis=0)
+        results['SMSE'] = SMSE
+    
+    if 'EXPV' in metrics:
+        EXPV = np.zeros(feature_num)
+        EXPV[nz] = explained_var(Y[:,nz], Yhat[:,nz])
+        results['EXPV'] = EXPV
+        
+    if 'MSLL' in metrics:
+        if ((S2 is not None) and (mY is not None) and (sY is not None)):
+            MSLL = np.zeros(feature_num)
+            MSLL[nz] = compute_MSLL(Y[:,nz], Yhat[:,nz], S2[:,nz], 
+                                    mY[nz].reshape(-1,1).T, 
+                                    (sY[nz]**2).reshape(-1,1).T)
+            results['MSLL'] = MSLL
+    
+    return results
+
+def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None, 
+                 results=None, save_path=''):
+    
+    print("Writing output ...")
+    if fileio.file_type(respfile) == 'cifti' or \
+       fileio.file_type(respfile) == 'nifti':
+        exfile = respfile
+    else:
+        exfile = None
+    if outputsuffix is not None:
+        ext = str(outputsuffix) + fileio.file_extension(respfile)
+    else:
+        ext = fileio.file_extension(respfile)
+        
+    fileio.save(Yhat, os.path.join(save_path, 'yhat' + ext), example=exfile, 
+                                   mask=maskvol)
+    fileio.save(S2, os.path.join(save_path, 'ys2' + ext), example=exfile, 
+                mask=maskvol)
+    if Z is not None:
+        fileio.save(Z, os.path.join(save_path, 'Z' + ext), example=exfile, 
+                    mask=maskvol)
+
+    if results is not None:        
+        for metric in list(results.keys()):
+            fileio.save(results[metric], os.path.join(save_path, metric + ext), 
+                        example=exfile, mask=maskvol)
 
 def estimate(respfile, covfile, **kwargs):
     """ Estimate a normative model
@@ -129,7 +201,7 @@ def estimate(respfile, covfile, **kwargs):
     particular parameters specified (see below):
 
     * under k-fold cross-validation
-        required settings 1) respfile 2) covfile 3) cvfolds>2
+        required settings 1) respfile 2) covfile 3) cvfolds>=2
     * estimating a training dataset then applying to a second test dataset
         required sessting 1) respfile 2) covfile 3) testcov 4) testresp
     * estimating on a training dataset ouput of forward maps mean and se
@@ -184,8 +256,9 @@ def estimate(respfile, covfile, **kwargs):
     savemodel = kwargs.pop('savemodel','False')=='True'
     outputsuffix = kwargs.pop('outputsuffix',None)
     standardize = kwargs.pop('standardize',True)
-    trbefile = kwargs.pop('trbefile',None) # training batch effects file address
-    tsbefile = kwargs.pop('tsbefile',None) # test batch effects file address
+    
+    if savemodel and not os.path.isdir('Models'):
+        os.mkdir('Models')
 
     # load data
     print("Processing data in " + respfile)
@@ -197,14 +270,10 @@ def estimate(respfile, covfile, **kwargs):
         X = X[:, np.newaxis]
     Nmod = Y.shape[1]
     
-    if trbefile is not None:
-        batch_effects_train = fileio.load(trbefile)
-    else:
-        batch_effects_train = np.zeros([X.shape[0],2])
-    kwargs['batch_effects_train'] = batch_effects_train
-    
-    if testcov is not None:
-        # we have a separate test dataset
+    if testcov is not None: # we have a separate test dataset
+        
+        run_cv = False
+        cvfolds = 1
         Xte = fileio.load(testcov)
         testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
         if len(Xte.shape) == 1:
@@ -216,37 +285,19 @@ def estimate(respfile, covfile, **kwargs):
         else:
             sub_te = Xte.shape[0]
             Yte = np.zeros([sub_te, Nmod])
-        
-        if tsbefile is not None:
-            batch_effects_test = fileio.load(tsbefile)
-        else:
-            batch_effects_test = np.zeros([Xte.shape[0],2])
-        kwargs['batch_effects_test'] = batch_effects_test
-    
-        # Initialise normative model
-        #nm = norm_init(X, alg=alg, configparam=configparam)
-        
+            
         # treat as a single train-test split
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
 
         Y = np.concatenate((Y, Yte), axis=0)
         X = np.concatenate((X, Xte), axis=0)
-
-        # force the number of cross-validation folds to 1
-        if cvfolds is not None and cvfolds != 1:
-            print("Ignoring cross-validation specification (test data given)")
-        cvfolds = 1
         
     else:
+        run_cv = True
         # we are running under cross-validation
         splits = KFold(n_splits=cvfolds)
         testids = range(0, X.shape[0])
-        # Initialise normative model
-        #nm = norm_init(X, alg=alg, configparam=configparam)
 
-    if savemodel and not os.path.isdir('Models'):
-        os.mkdir('Models')
-    
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
@@ -255,8 +306,6 @@ def estimate(respfile, covfile, **kwargs):
     # run cross-validation loop
     Yhat = np.zeros_like(Y)
     S2 = np.zeros_like(Y)
-    #Hyp = np.zeros((Nmod, nm.n_params, cvfolds))
-
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
     
@@ -275,6 +324,8 @@ def estimate(respfile, covfile, **kwargs):
         iy, jy = np.ix_(tr, nz)
         mY = np.mean(Y[iy, jy], axis=0)
         sY = np.std(Y[iy, jy], axis=0)
+        mean_resp.append(mY)
+        std_resp.append(sY)
         if standardize:
             Yz = np.zeros_like(Y)
             Yz[:, nz] = (Y[:, nz] - mY) / sY
@@ -290,7 +341,7 @@ def estimate(respfile, covfile, **kwargs):
             Xz = X
 
         # estimate the models for all subjects
-        for i in range(0, len(nz)):  # range(0, Nmod):
+        for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
             try: 
@@ -309,13 +360,9 @@ def estimate(respfile, covfile, **kwargs):
                     S2[te, nz[i]] = s2
                     
                 nlZ[nz[i], fold] = nm.neg_log_lik
-                if testcov is None:
+                if (run_cv or testresp is not None):
                     Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
                                    np.sqrt(S2[te, nz[i]])
-                else:
-                    if testresp is not None:
-                        Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                                       np.sqrt(S2[te, nz[i]])
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -325,7 +372,6 @@ def estimate(respfile, covfile, **kwargs):
                 print("Exception:")
                 print(e)
                 print(exc_type, fname, exc_tb.tb_lineno)
-                #Hyp[nz[i], :, fold] = float('nan')
 
                 Yhat[te, nz[i]] = float('nan')
                 S2[te, nz[i]] = float('nan')
@@ -344,111 +390,27 @@ def estimate(respfile, covfile, **kwargs):
                          'regressor':alg, 'standardize':standardize}, file)    
 
     # compute performance metrics
-    if testcov is None:
-        MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
-        RMSE = np.sqrt(MSE)
-        # for the remaining variables, we need to ignore zero variances
-        SMSE = np.zeros_like(MSE)
-        Rho = np.zeros(Nmod)
-        pRho = np.ones(Nmod)
-        EXPV = np.zeros(Nmod)
-        MSLL = np.zeros(Nmod)
-        iy, jy = np.ix_(testids, nz)  # ids for tested samples nonzero values
-        SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
-        Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
-        EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-        MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
-            mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
-    else:
-        if testresp is not None:
-            MSE = np.mean((Y[testids, :] - Yhat[testids, :])**2, axis=0)
-            RMSE = np.sqrt(MSE)
-            # for the remaining variables, we need to ignore zero variances
-            SMSE = np.zeros_like(MSE)
-            Rho = np.zeros(Nmod)
-            pRho = np.ones(Nmod)
-            EXPV = np.zeros(Nmod)
-            MSLL = np.zeros(Nmod)
-            iy, jy = np.ix_(testids, nz)  # ids tested samples nonzero values
-            SMSE[nz] = MSE[nz] / np.var(Y[iy, jy], axis=0)
-            Rho[nz], pRho[nz] = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
-            EXPV[nz] = explained_var(Y[iy, jy], Yhat[iy, jy])
-            MSLL[nz] = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
-                mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
-            
+    if (run_cv or testresp is not None):
+        print("Evaluating the model ...")
+        results = evaluate(Y[testids, :], Yhat[testids, :], S2=S2[testids, :], 
+                           mY=mean_resp[0], sY=std_resp[0])
+        
     # Set writing options
     if saveoutput:
-        print("Writing output ...")
-        if fileio.file_type(respfile) == 'cifti' or \
-           fileio.file_type(respfile) == 'nifti':
-            exfile = respfile
+        print("Writing outputs ...")
+        if (run_cv or testresp is not None):
+            save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
+                         outputsuffix=outputsuffix)
+            
         else:
-            exfile = None
-        if outputsuffix is not None:
-            ext = str(outputsuffix) + fileio.file_extension(respfile)
-        else:
-            ext = fileio.file_extension(respfile)
-
-        # Write output
-        if testcov is None:
-            fileio.save(Yhat[testids, :], 'yhat' + ext,
-                        example=exfile, mask=maskvol)
-            fileio.save(S2[testids, :], 'ys2' + ext,
-                        example=exfile, mask=maskvol)
-            fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
-                        mask=maskvol)
-            fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
-            fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
-            fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
-            fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
-            fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
-            fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
-            #if cvfolds is None:
-            #    fileio.save(Hyp[:,:,0], 'Hyp' + ext, example=exfile, mask=maskvol)
-            #else:
-            #    for idx in enumerate(splits.split(X)):
-            #        fold = idx[0]
-            #        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
-            #                    ext, example=exfile, mask=maskvol)
-        else:
-            if testresp is None:
-                fileio.save(Yhat[testids, :], 'yhat' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :], 'ys2' + ext,
-                            example=exfile, mask=maskvol)
-                #fileio.save(Hyp[:,:,0], 'Hyp' + ext,
-                #            example=exfile, mask=maskvol)
-            else:
-                fileio.save(Yhat[testids, :], 'yhat' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(S2[testids, :], 'ys2' + ext,
-                            example=exfile, mask=maskvol)
-                fileio.save(Z[testids, :], 'Z' + ext, example=exfile,
-                            mask=maskvol)
-                fileio.save(Rho, 'Rho' + ext, example=exfile, mask=maskvol)
-                fileio.save(pRho, 'pRho' + ext, example=exfile, mask=maskvol)
-                fileio.save(RMSE, 'rmse' + ext, example=exfile, mask=maskvol)
-                fileio.save(SMSE, 'smse' + ext, example=exfile, mask=maskvol)
-                fileio.save(EXPV, 'expv' + ext, example=exfile, mask=maskvol)
-                fileio.save(MSLL, 'msll' + ext, example=exfile, mask=maskvol)
-                #if cvfolds is None:
-                #    fileio.save(Hyp[:,:,0].T, 'Hyp' + ext,
-                #                example=exfile, mask=maskvol)
-                #else:
-                #    for idx in enumerate(splits.split(X)):
-                #        fold = idx[0]
-                #        fileio.save(Hyp[:, :, fold].T, 'Hyp_' + str(fold+1) +
-                #                    ext, example=exfile, mask=maskvol)
+            save_results(respfile, Yhat, S2, maskvol,outputsuffix=outputsuffix)
+                
     else:
-        if testcov is None:
-            output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], Rho, 
-                      pRho, RMSE, SMSE, EXPV, MSLL)
+        if (run_cv or testresp is not None):
+            output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], results)
         else:
-            if testresp is None:
-                output = (Yhat[testids, :], S2[testids, :], nm)
-            else:
-                output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], 
-                          Rho, pRho, RMSE, SMSE, EXPV, MSLL)
+            output = (Yhat[testids, :], S2[testids, :], nm)
+        
         return output
 
 def predict(model_path, covfile, respfile=None, output_path=None,  
@@ -467,7 +429,7 @@ def predict(model_path, covfile, respfile=None, output_path=None,
         mX = meta_data['mean_cov']
         sX = meta_data['std_cov']
     
-    batch_effects_test = kwargs.pop('batch_effects_test',None)
+    batch_effects_test = kwargs.pop('batch_effects_test', None)
     
     # load data
     print("Loading data ...")
@@ -495,7 +457,8 @@ def predict(model_path, covfile, respfile=None, output_path=None,
             print("Prediction by model ", i+1, "of", feature_num)      
             nm = norm_init(Xz)
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + str(i) + '.pkl'))
-            nm.configs['batch_effects_test'] = batch_effects_test
+            if batch_effects_test is not None:
+                nm.configs['batch_effects_test'] = batch_effects_test
             yhat, s2 = nm.predict(Xz)
             if standardize:
                 Yhat[:, i] = yhat * sY[fold][i] + mY[fold][i]
@@ -508,56 +471,19 @@ def predict(model_path, covfile, respfile=None, output_path=None,
             return (Yhat, S2)
         
         else:
-            # Set writing options
-            print("Evaluations and Writing outputs ...")      
-            if fileio.file_type(respfile) == 'cifti' or \
-               fileio.file_type(respfile) == 'nifti':
-                exfile = respfile
-            else:
-                exfile = None
-            ext = fileio.file_extension(respfile)    
-            
             Y, maskvol = load_response_vars(respfile, maskfile)
             if len(Y.shape) == 1:
                 Y = Y[:, np.newaxis]
-            Nmod = Y.shape[1]
             
             Z = (Y - Yhat) / np.sqrt(S2)
             
-            MSE = np.mean((Y - Yhat)**2, axis=0)
-            RMSE = np.sqrt(MSE)
-            # for the remaining variables, we need to ignore zero variances
-            SMSE = np.zeros_like(MSE)
-            Rho = np.zeros(Nmod)
-            pRho = np.ones(Nmod)
-            EXPV = np.zeros(Nmod)
-            MSLL = np.zeros(Nmod)
-            iy, jy = np.ix_(range(Y.shape[0]), range(Y.shape[1]))  # ids tested samples nonzero values
-            SMSE = MSE / np.var(Y[iy, jy], axis=0)
-            Rho, pRho = compute_pearsonr(Y[iy, jy], Yhat[iy, jy])
-            EXPV = explained_var(Y[iy, jy], Yhat[iy, jy])
-            #MSLL = compute_MSLL(Y[iy, jy], Yhat[iy, jy], S2[iy, jy], 
-            #    mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
+            print("Evaluating the model ...")
+            results = evaluate(Y, Yhat, S2=S2, 
+                               metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
             
-            # Write output
-            fileio.save(Yhat, os.path.join(output_path, 'yhat_' + str(fold) + ext),
-                        example=exfile, mask=maskvol)
-            fileio.save(S2, os.path.join(output_path,'ys2_' + str(fold) + ext),
-                        example=exfile, mask=maskvol)
-            fileio.save(Z, os.path.join(output_path,'Z_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
-            fileio.save(Rho, os.path.join(output_path,'Rho_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
-            fileio.save(pRho, os.path.join(output_path,'pRho_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
-            fileio.save(RMSE, os.path.join(output_path,'rmse_' + str(fold) + ext),
-                        example=exfile, mask=maskvol)
-            fileio.save(SMSE, os.path.join(output_path,'smse_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
-            fileio.save(EXPV, os.path.join(output_path,'expv_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
-            fileio.save(MSLL, os.path.join(output_path,'msll_' + str(fold) + ext), 
-                        example=exfile, mask=maskvol)
+            print("Evaluations Writing outputs ...")
+            save_results(respfile, Yhat, S2, maskvol, Z=Z, outputsuffix=str(fold), 
+                         results=results, save_path=output_path)
             
             return (Yhat, S2, Z)
 
@@ -568,8 +494,11 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
     if not os.path.isdir(os.path.join(output_path,'Models')):
-         transferred_models_path = os.path.join(output_path,'Models')
-         os.mkdir(transferred_models_path)
+        transferred_models_path = os.path.join(output_path,'Models')
+        os.mkdir(transferred_models_path)
+    if not os.path.isdir(os.path.join(output_path,'Results')):
+        results_path = os.path.join(output_path,'Results')
+        os.mkdir(results_path)
     
     # load data
     print("Loading data ...")
@@ -598,9 +527,6 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
             Yte, testmask = load_response_vars(testresp, maskfile)
             if len(Yte.shape) == 1:
                 Yte = Yte[:, np.newaxis]
-            if not os.path.isdir(os.path.join(output_path,'Results')):
-                results_path = os.path.join(output_path,'Results')
-                os.mkdir(results_path)
         else:
             Yte = np.zeros([ts_sample_num, feature_num])
         
@@ -629,53 +555,17 @@ def transfer(model_path, covfile, respfile, trbefile, output_path, testcov=None,
             S2[:, i] = s2
    
     if testresp is None:
+        save_results(respfile, Yhat, S2, maskvol, save_path=results_path)
         return (Yhat, S2)
     else:
-        # Set writing options
-        print("Evaluations and Writing outputs ...")      
-        if fileio.file_type(testresp) == 'cifti' or \
-           fileio.file_type(testresp) == 'nifti':
-            exfile = testresp
-        else:
-            exfile = None
-        ext = fileio.file_extension(testresp)    
-        
         Z = (Yte - Yhat) / np.sqrt(S2)
-        
-        MSE = np.mean((Yte - Yhat)**2, axis=0)
-        RMSE = np.sqrt(MSE)
-        # for the remaining variables, we need to ignore zero variances
-        SMSE = np.zeros_like(MSE)
-        Rho = np.zeros(feature_num)
-        pRho = np.ones(feature_num)
-        EXPV = np.zeros(feature_num)
-        MSLL = np.zeros(feature_num)
-        iy, jy = np.ix_(range(feature_num), range(feature_num))  # ids tested samples nonzero values
-        SMSE = MSE / np.var(Yte[iy, jy], axis=0)
-        Rho, pRho = compute_pearsonr(Yte[iy, jy], Yhat[iy, jy])
-        EXPV = explained_var(Yte[iy, jy], Yhat[iy, jy])
-        MSLL = compute_MSLL(Yte[iy, jy], Yhat[iy, jy], S2[iy, jy], 
-            mY.reshape(-1,1).T, (sY**2).reshape(-1,1).T)
-        
-        # Write output
-        fileio.save(Yhat, os.path.join(results_path, 'yhat' + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(S2, os.path.join(results_path,'ys2' + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(Z, os.path.join(results_path,'Z' + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(Rho, os.path.join(results_path,'Rho' + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(pRho, os.path.join(results_path,'pRho' + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(RMSE, os.path.join(results_path,'rmse' + ext),
-                    example=exfile, mask=maskvol)
-        fileio.save(SMSE, os.path.join(results_path,'smse' + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(EXPV, os.path.join(results_path,'expv' + ext), 
-                    example=exfile, mask=maskvol)
-        fileio.save(MSLL, os.path.join(results_path,'msll' + ext), 
-                    example=exfile, mask=maskvol)
+    
+        print("Evaluating the model ...")
+        results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+                
+        print("Writing outputs ...")
+        save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results, 
+                     save_path=results_path)
         
         return (Yhat, S2, Z)
 
@@ -704,12 +594,11 @@ def main(*args):
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
 
-    # estimate normative model. The basic syntax is:
-    # estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
-    #          testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
-    #          standardize=std)
-    
+    # estimate normative model
     exec('estimate(' + all_args + ')')
+    #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
+    #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
+    #         standardize=std)
 
 # For running from the command line:
 if __name__ == "__main__":
