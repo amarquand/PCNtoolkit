@@ -511,6 +511,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
     
+    outputsuffix = kwargs.pop('outputsuffix', None)
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -592,7 +593,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             S2[:, i] = s2
    
     if testresp is None:
-        save_results(respfile, Yhat, S2, maskvol)
+        save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
         return (Yhat, S2)
     else:
         Z = (Yte - Yhat) / np.sqrt(S2)
@@ -600,8 +601,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         print("Evaluating the model ...")
         results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
                 
-        print("Writing outputs ...")
-        save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results)
+        save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
+                     outputsuffix=outputsuffix)
         
         return (Yhat, S2, Z)
 
