@@ -13,7 +13,7 @@ Now you are set!
 
 
 ## Install on a shared resource
-Make sure conda is available on the system
+Make sure conda is available on the system.
 Otherwise install it first from https://www.anaconda.com/ 
 
 ```
@@ -23,13 +23,13 @@ conda --version
 Create a conda environment in a shared location
 
 ```
-conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/onda/normative_modeling/1.2.2
+conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/conda/normative_modeling/1.2.2
 ```
 
 Activate the conda environment 
 
 ```
-conda activate /shared/onda/normative_modeling/1.2.2
+conda activate /shared/onda/cnormative_modeling/1.2.2
 ```
 
 Install other dependencies
