@@ -50,6 +50,7 @@ def execute_nm(processing_dir,
                batch_size,
                memory,
                duration,
+               func='estimate',
                **kwargs):
 
     """
@@ -108,9 +109,11 @@ def execute_nm(processing_dir,
         file_extentions = '.pkl'
     else:
         file_extentions = '.txt'
-
+    
+    kwargs.update({'batch_size':str(batch_size)})
     for n in range(1, number_of_batches+1):
         print(n)
+        kwargs.update({'job_id':str(n)})
         if testrespfile_path is not None:
             if cv_folds is not None:
                 raise(ValueError, """If the response file is specified
@@ -135,6 +138,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -142,14 +146,15 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
         if testrespfile_path is None:
             if testcovfile_path is not None:
                 # forward model
                 batch_processing_dir = processing_dir + 'batch_' + str(n) + '/'
-                batch_job_name = job_name + str(n) + '.sh'
+                batch_job_name = job_name + '_' + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
                                        str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
@@ -160,6 +165,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -167,14 +173,15 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
             else:
                 # cross-validation
                 batch_processing_dir = (processing_dir + 'batch_' +
                                         str(n) + '/')
-                batch_job_name = job_name + str(n) + '.sh'
+                batch_job_name = job_name + '_' + str(n) + '.sh'
                 batch_respfile_path = (batch_processing_dir +
                                        'resp_batch_' + str(n) +
                                        file_extentions)
@@ -186,6 +193,7 @@ def execute_nm(processing_dir,
                                 batch_job_name,
                                 covfile_path,
                                 batch_respfile_path,
+                                func=func,
                                 **kwargs)
                     qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -193,7 +201,8 @@ def execute_nm(processing_dir,
                             duration=duration)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir)
+                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                **kwargs)
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
 
@@ -243,28 +252,27 @@ def split_nm(processing_dir,
 
         respfile = pd.DataFrame(respfile)
 
-        numsub = len(respfile.iloc[0, :])
+        numsub = respfile.shape[1]
         batch_vec = np.arange(0,
                               numsub,
                               batch_size)
         batch_vec = np.append(batch_vec,
                               numsub)
-        batch_vec = batch_vec-1
+        
         for n in range(0, (len(batch_vec) - 1)):
-            resp_batch = respfile.iloc[:,
-                                     (batch_vec[n]): batch_vec[n + 1]]
+            resp_batch = respfile.iloc[:, (batch_vec[n]): batch_vec[n + 1]]
             os.chdir(processing_dir)
             resp = str('resp_batch_' + str(n+1))
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
-                if (binary==False):
-                    fileio.save_pd(resp_batch,
-                                   processing_dir + batch + '/' +
-                                   resp + '.txt')
-                else:
-                    resp_batch.to_pickle(processing_dir + batch + '/' +
-                                         resp + '.pkl')
+            if (binary==False):
+                fileio.save_pd(resp_batch,
+                               processing_dir + batch + '/' +
+                               resp + '.txt')
+            else:
+                resp_batch.to_pickle(processing_dir + batch + '/' +
+                                     resp + '.pkl')
 
     # splits response and test responsefile into batches
     else:
@@ -301,24 +309,28 @@ def split_nm(processing_dir,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
-                if (binary==False):
-                    fileio.save_pd(resp_batch,
-                                   processing_dir + batch + '/' +
-                                   resp + '.txt')
-                    fileio.save_pd(testresp_batch,
-                                   processing_dir + batch + '/' + testresp +
-                                   '.txt')
-                else:
-                    resp_batch.to_pickle(processing_dir + batch + '/' +
-                                         resp + '.pkl')
-                    testresp_batch.to_pickle(processing_dir + batch + '/' +
-                                             testresp + '.pkl')
+            if (binary==False):
+                fileio.save_pd(resp_batch,
+                               processing_dir + batch + '/' +
+                               resp + '.txt')
+                fileio.save_pd(testresp_batch,
+                               processing_dir + batch + '/' + testresp +
+                               '.txt')
+            else:
+                resp_batch.to_pickle(processing_dir + batch + '/' +
+                                     resp + '.pkl')
+                testresp_batch.to_pickle(processing_dir + batch + '/' +
+                                         testresp + '.pkl')
 
 
 def collect_nm(processing_dir,
+               job_name,
+               func='estimate',
                collect=False,
                binary=False,
-               batch_size=None):
+               batch_size=None,
+               outputsuffix=''):
+    
     """This function checks and collects all batches.
 
     ** Input:
@@ -343,7 +355,7 @@ def collect_nm(processing_dir,
     file_example = []
     for batch in batches:
         if file_example == []:
-            file_example = glob.glob(batch + 'yhat' + file_extentions)
+            file_example = glob.glob(batch + 'yhat' + outputsuffix + file_extentions)
         else:
             break
     if binary is False:
@@ -353,84 +365,70 @@ def collect_nm(processing_dir,
     numsubjects = file_example.shape[0]
     batch_size = file_example.shape[1]
 
-    #all_Hyptxt = glob.glob(processing_dir + 'batch_*/' + 'Hyp*')
-    #if all_Hyptxt != []:
-    #    first_Hyptxt = fileio.load(all_Hyptxt[0])
-    #    first_Hyptxt = first_Hyptxt.transpose()
-    #    nHyp = len(first_Hyptxt)
-    #    dir_first_Hyptxt = os.path.dirname(all_Hyptxt[0])
-    #    all_crossval = glob.glob(dir_first_Hyptxt + '/'+'Hyp*')
-    #    n_crossval = len(all_crossval)
-
     # artificially creates files for batches that were not executed
     count = 0
     batch_fail = []
     batch_dirs = glob.glob(processing_dir + 'batch_*/')
     batch_dirs = fileio.sort_nicely(batch_dirs)
     for batch in batch_dirs:
-        filepath = glob.glob(batch + 'yhat*')
+        filepath = glob.glob(batch + 'yhat' + outputsuffix + '*')
         if filepath == []:
             count = count+1
-            batch1 = glob.glob(batch + '/*.sh')
+            batch1 = glob.glob(batch + '/' + job_name + '*.sh')
             print(batch1)
             batch_fail.append(batch1)
             if collect is True:
                 pRho = np.ones(batch_size)
                 pRho = pRho.transpose()
                 pRho = pd.Series(pRho)
-                fileio.save(pRho, batch + 'pRho' + file_extentions)
+                fileio.save(pRho, batch + 'pRho' + outputsuffix + file_extentions)
                 
                 Rho = np.zeros(batch_size)
                 Rho = Rho.transpose()
                 Rho = pd.Series(Rho)
-                fileio.save(Rho, batch + 'Rho' + file_extentions)
+                fileio.save(Rho, batch + 'Rho' + outputsuffix + file_extentions)
                 
                 rmse = np.zeros(batch_size)
                 rmse = rmse.transpose()
                 rmse = pd.Series(rmse)
-                fileio.save(rmse, batch + 'rmse' + file_extentions)
+                fileio.save(rmse, batch + 'RMSE' + outputsuffix + file_extentions)
                 
                 smse = np.zeros(batch_size)
                 smse = smse.transpose()
                 smse = pd.Series(smse)
-                fileio.save(smse, batch + 'smse' + file_extentions)
+                fileio.save(smse, batch + 'SMSE' + outputsuffix + file_extentions)
                 
                 expv = np.zeros(batch_size)
                 expv = expv.transpose()
                 expv = pd.Series(expv)
-                fileio.save(expv, batch + 'expv' + file_extentions)
+                fileio.save(expv, batch + 'EXPV' + outputsuffix + file_extentions)
                 
                 msll = np.zeros(batch_size)
                 msll = msll.transpose()
                 msll = pd.Series(msll)
-                fileio.save(msll, batch + 'msll' + file_extentions)
+                fileio.save(msll, batch + 'MSLL' + outputsuffix + file_extentions)
 
                 yhat = np.zeros([numsubjects, batch_size])
                 yhat = pd.DataFrame(yhat)
-                fileio.save(yhat, batch + 'yhat' + file_extentions)
+                fileio.save(yhat, batch + 'yhat' + outputsuffix + file_extentions)
 
                 ys2 = np.zeros([numsubjects, batch_size])
                 ys2 = pd.DataFrame(ys2)
-                fileio.save(ys2, batch + 'ys2' + file_extentions)
+                fileio.save(ys2, batch + 'ys2' + outputsuffix + file_extentions)
 
                 Z = np.zeros([numsubjects, batch_size])
                 Z = pd.DataFrame(Z)
-                fileio.save(Z, batch + 'Z' + file_extentions)
+                fileio.save(Z, batch + 'Z' + outputsuffix + file_extentions)
 
                 if not os.path.isdir(batch + 'Models'):
                     os.mkdir('Models')
-                #for n in range(1, n_crossval+1):
-                    #hyp = np.zeros([batch_size,
-                    #                nHyp])
-                    #hyp = pd.DataFrame(hyp)
-                    #fileio.save(hyp, batch + 'hyp' + file_extentions)
                     
                     
         else: # if more than 10% of yhat is nan then consider the batch as a failed batch
             yhat = fileio.load(filepath[0])
             if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
                 count = count+1
-                batch1 = glob.glob(batch + '/*.sh')
+                batch1 = glob.glob(batch + '/' + job_name + '*.sh')
                 print('More than 10% nans in '+ batch1[0])
                 batch_fail.append(batch1)
 
@@ -448,155 +446,156 @@ def collect_nm(processing_dir,
 
     # combines all output files across batches
     if collect is True:
-        pRho_filenames = glob.glob(processing_dir + 'batch_*/' + 'pRho*')
+        pRho_filenames = glob.glob(processing_dir + 'batch_*/' + 'pRho' + 
+                                   outputsuffix + '*')
         if pRho_filenames:
             pRho_filenames = fileio.sort_nicely(pRho_filenames)
             pRho_dfs = []
             for pRho_filename in pRho_filenames:
                 pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
             pRho_dfs = pd.concat(pRho_dfs, ignore_index=True, axis=0)
-            fileio.save(pRho_dfs, processing_dir + 'pRho' +
+            fileio.save(pRho_dfs, processing_dir + 'pRho' + outputsuffix +
                         file_extentions)
             del pRho_dfs
 
-        Rho_filenames = glob.glob(processing_dir + 'batch_*/' + 'Rho*')
+        Rho_filenames = glob.glob(processing_dir + 'batch_*/' + 'Rho' + 
+                                   outputsuffix + '*')
         if pRho_filenames:
             Rho_filenames = fileio.sort_nicely(Rho_filenames)
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
                 Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
             Rho_dfs = pd.concat(Rho_dfs, ignore_index=True, axis=0)
-            fileio.save(Rho_dfs, processing_dir + 'Rho' + file_extentions)
+            fileio.save(Rho_dfs, processing_dir + 'Rho' + outputsuffix +
+                        file_extentions)
             del Rho_dfs
 
-        Z_filenames = glob.glob(processing_dir + 'batch_*/' + 'Z*')
+        Z_filenames = glob.glob(processing_dir + 'batch_*/' + 'Z' + 
+                                   outputsuffix + '*')
         if Z_filenames:
             Z_filenames = fileio.sort_nicely(Z_filenames)
             Z_dfs = []
             for Z_filename in Z_filenames:
                 Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
             Z_dfs = pd.concat(Z_dfs, ignore_index=True, axis=1)
-            fileio.save(Z_dfs, processing_dir + 'Z' + file_extentions)
+            fileio.save(Z_dfs, processing_dir + 'Z' + outputsuffix +
+                        file_extentions)
             del Z_dfs
             
-        yhat_filenames = glob.glob(processing_dir + 'batch_*/' + 'yhat*')
+        yhat_filenames = glob.glob(processing_dir + 'batch_*/' + 'yhat' + 
+                                   outputsuffix + '*')
         if yhat_filenames:
             yhat_filenames = fileio.sort_nicely(yhat_filenames)
             yhat_dfs = []
             for yhat_filename in yhat_filenames:
                 yhat_dfs.append(pd.DataFrame(fileio.load(yhat_filename)))
             yhat_dfs = pd.concat(yhat_dfs, ignore_index=True, axis=1)
-            fileio.save(yhat_dfs, processing_dir +
-                        'yhat' + file_extentions)
+            fileio.save(yhat_dfs, processing_dir + 'yhat' + outputsuffix +
+                        file_extentions)
             del yhat_dfs
 
-        ys2_filenames = glob.glob(processing_dir + 'batch_*/' + 'ys2*')
+        ys2_filenames = glob.glob(processing_dir + 'batch_*/' + 'ys2' + 
+                                   outputsuffix + '*')
         if ys2_filenames:
             ys2_filenames = fileio.sort_nicely(ys2_filenames)
             ys2_dfs = []
             for ys2_filename in ys2_filenames:
                 ys2_dfs.append(pd.DataFrame(fileio.load(ys2_filename)))
             ys2_dfs = pd.concat(ys2_dfs, ignore_index=True, axis=1)
-            fileio.save(ys2_dfs, processing_dir + 'ys2' + file_extentions)
+            fileio.save(ys2_dfs, processing_dir + 'ys2' + outputsuffix +
+                        file_extentions)
             del ys2_dfs
 
-        rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'rmse*')
+        rmse_filenames = glob.glob(processing_dir + 'batch_*/' + 'RMSE' + 
+                                   outputsuffix + '*')
         if rmse_filenames:
             rmse_filenames = fileio.sort_nicely(rmse_filenames)
             rmse_dfs = []
             for rmse_filename in rmse_filenames:
                 rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
             rmse_dfs = pd.concat(rmse_dfs, ignore_index=True, axis=0)
-            fileio.save(rmse_dfs, processing_dir +
-                        'rmse' + file_extentions)
+            fileio.save(rmse_dfs, processing_dir + 'RMSE' + outputsuffix +
+                        file_extentions)
             del rmse_dfs
 
-        smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'smse*')
+        smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'SMSE' + 
+                                   outputsuffix + '*')
         if rmse_filenames:
             smse_filenames = fileio.sort_nicely(smse_filenames)
             smse_dfs = []
             for smse_filename in smse_filenames:
                 smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
             smse_dfs = pd.concat(smse_dfs, ignore_index=True, axis=0)
-            fileio.save(smse_dfs, processing_dir + 'smse' +
+            fileio.save(smse_dfs, processing_dir + 'SMSE' + outputsuffix +
                         file_extentions)
             del smse_dfs
             
-        expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'expv*')
+        expv_filenames = glob.glob(processing_dir + 'batch_*/' + 'EXPV' + 
+                                   outputsuffix + '*')
         if expv_filenames:
             expv_filenames = fileio.sort_nicely(expv_filenames)
             expv_dfs = []
             for expv_filename in expv_filenames:
                 expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
             expv_dfs = pd.concat(expv_dfs, ignore_index=True, axis=0)
-            fileio.save(expv_dfs, processing_dir + 'expv' +
+            fileio.save(expv_dfs, processing_dir + 'EXPV' + outputsuffix +
                         file_extentions)
             del expv_dfs
             
-        msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'msll*')
+        msll_filenames = glob.glob(processing_dir + 'batch_*/' + 'MSLL' + 
+                                   outputsuffix + '*')
         if msll_filenames:
             msll_filenames = fileio.sort_nicely(msll_filenames)
             msll_dfs = []
             for msll_filename in msll_filenames:
                 msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
             msll_dfs = pd.concat(msll_dfs, ignore_index=True, axis=0)
-            fileio.save(msll_dfs, processing_dir + 'msll' +
+            fileio.save(msll_dfs, processing_dir + 'MSLL' + outputsuffix +
                         file_extentions)
             del msll_dfs
         
-        if not os.path.isdir(processing_dir + 'Models') and \
-           os.path.exists(os.path.join(batches[0], 'Models')):
-            os.mkdir(processing_dir + 'Models')
-            
-        meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
-        mY = []
-        sY = []
-        mX = []
-        sX = []
-        if meta_filenames:
-            meta_filenames = fileio.sort_nicely(meta_filenames)
-            with open(meta_filenames[0], 'rb') as file:
-                meta_data = pickle.load(file)
-            if meta_data['standardize']:
-                for meta_filename in meta_filenames:
-                    mY.append(meta_data['mean_resp'])
-                    sY.append(meta_data['std_resp'])
-                    mX.append(meta_data['mean_cov'])
-                    sX.append(meta_data['std_cov'])
-                meta_data['mean_resp'] = np.stack(mY) 
-                meta_data['std_resp'] = np.stack(sY) 
-                meta_data['mean_cov'] = np.stack(mX) 
-                meta_data['std_cov'] = np.stack(sX) 
+        if func != 'predict':
+            if not os.path.isdir(processing_dir + 'Models') and \
+               os.path.exists(os.path.join(batches[0], 'Models')):
+                os.mkdir(processing_dir + 'Models')
                 
-            with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 'wb') as file:
-                pickle.dump(meta_data, file)
-
-        #for n in range(1, n_crossval+1):
-        #    Hyp_filenames = glob.glob(processing_dir + 'batch_*/' + 'Hyp_' +
-        #                              str(n) + '.*')
-        #    if Hyp_filenames:
-        #        Hyp_filenames = fileio.sort_nicely(Hyp_filenames)
-        #        Hyp_dfs = []
-        #        for Hyp_filename in Hyp_filenames:
-        #            Hyp_dfs.append(pd.DataFrame(fileio.load(Hyp_filename)))
-        #        Hyp_dfs = pd.concat(Hyp_dfs, ignore_index=True, axis=0)
-        #        fileio.save(Hyp_dfs, processing_dir + 'Hyp_' + str(n) +
-        #                    file_extentions)
-        #        del Hyp_dfs
-        
-        batch_dirs = glob.glob(processing_dir + 'batch_*/')
-        if batch_dirs:
-            batch_dirs = fileio.sort_nicely(batch_dirs)
-            for b, batch_dir in enumerate(batch_dirs):
-                src_files = glob.glob(batch_dir + 'Models/*.pkl')
-                src_files = fileio.sort_nicely(src_files)
-                for f, full_file_name in enumerate(src_files):
-                    if os.path.isfile(full_file_name):
-                        file_name = full_file_name.split('/')[-1]
-                        n = file_name.split('_')
-                        n[-1] = str(b * batch_size + f) + '.pkl'
-                        n = '_'.join(n)
-                        shutil.copy(full_file_name, processing_dir + 'Models/' + n)
+            meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
+            mY = []
+            sY = []
+            mX = []
+            sX = []
+            if meta_filenames:
+                meta_filenames = fileio.sort_nicely(meta_filenames)
+                with open(meta_filenames[0], 'rb') as file:
+                    meta_data = pickle.load(file)
+                if meta_data['standardize']:
+                    for meta_filename in meta_filenames:
+                        mY.append(meta_data['mean_resp'])
+                        sY.append(meta_data['std_resp'])
+                        mX.append(meta_data['mean_cov'])
+                        sX.append(meta_data['std_cov'])
+                    meta_data['mean_resp'] = np.stack(mY) 
+                    meta_data['std_resp'] = np.stack(sY) 
+                    meta_data['mean_cov'] = np.stack(mX) 
+                    meta_data['std_cov'] = np.stack(sX) 
+                    
+                with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 
+                          'wb') as file:
+                    pickle.dump(meta_data, file)
+            
+            batch_dirs = glob.glob(processing_dir + 'batch_*/')
+            if batch_dirs:
+                batch_dirs = fileio.sort_nicely(batch_dirs)
+                for b, batch_dir in enumerate(batch_dirs):
+                    src_files = glob.glob(batch_dir + 'Models/*.pkl')
+                    src_files = fileio.sort_nicely(src_files)
+                    for f, full_file_name in enumerate(src_files):
+                        if os.path.isfile(full_file_name):
+                            file_name = full_file_name.split('/')[-1]
+                            n = file_name.split('_')
+                            n[-1] = str(b * batch_size + f) + '.pkl'
+                            n = '_'.join(n)
+                            shutil.copy(full_file_name, processing_dir + 'Models/' + n)
         
     if not batch_fail:
         return 1
@@ -634,6 +633,7 @@ def bashwrap_nm(processing_dir,
                 job_name,
                 covfile_path,
                 respfile_path,
+                func='estimate',
                 **kwargs):
 
     """ This function wraps normative modelling into a bash script to run it
@@ -692,23 +692,25 @@ def bashwrap_nm(processing_dir,
             else:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
                             covfile_path + ' -t ' + testcovfile_path + ' -r ' +
-                            testrespfile_path]
+                            testrespfile_path + ' -f ' + func]
 
     if testrespfile_path is None:
         if testcovfile_path is None:
             if cv_folds is not None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -k ' + str(cv_folds)]
-            else:
-                raise(ValueError, """If the testresponsefile_path and
-                                  testcovfile_path are specified cv_folds
-                                  must be larger than or equal to two(2)""")
+                            covfile_path + ' -k ' + str(cv_folds) + 
+                            ' -f ' + func]
+            #else:
+            #    raise(ValueError, """If the testresponsefile_path and
+            #                      testcovfile_path are specified cv_folds
+            #                      must be larger than or equal to two(2)""")
 
     if testrespfile_path is None:
         if testcovfile_path is not None:
             if cv_folds is None:
                 job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path]
+                            covfile_path + ' -t ' + testcovfile_path + 
+                            ' -f ' + func]
             else:
                 raise(ValueError, """If the test response file is and
                                   testcovfile is not specified cv_folds

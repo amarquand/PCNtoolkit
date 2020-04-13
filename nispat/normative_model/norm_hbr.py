@@ -83,7 +83,13 @@ class NormHBR(NormBase):
     
     def predict(self, Xs, X=None, Y=None, **kwargs): 
         
-        batch_effects_test = self.configs['batch_effects_test']
+        tsbefile = kwargs.pop('tsbefile',None) 
+        if tsbefile is not None:
+            batch_effects_test = fileio.load(tsbefile)
+        else:
+            batch_effects_test = np.zeros([Xs.shape[0],2])    
+        self.configs['batch_effects_test'] = batch_effects_test
+        
         pred_type = self.configs['pred_type']
         
         yhat, s2 = self.hbr.predict(np.squeeze(Xs), 
