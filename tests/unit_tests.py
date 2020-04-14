@@ -82,7 +82,7 @@ cov_file_nii = os.path.join(data_dir, 'cov_n50.txt')
 resp_file_nii_te = os.path.join(data_dir, 'resp_n100.nii.gz')
 cov_file_nii_te = os.path.join(data_dir, 'cov_n100.txt')
 
-estimate(resp_file_nii, cov_file_nii, maskfile=mask_file_nii, 
+estimate(cov_file_nii, resp_file_nii, maskfile=mask_file_nii, 
          testresp = resp_file_nii_te, testcov = cov_file_nii_te)
 
 print(os.getcwd())
@@ -92,7 +92,7 @@ test_num, tdir = update_test_counter(test_num, test_dir)
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
 
-estimate(resp_file_nii, cov_file_nii, maskfile = mask_file_nii, cvfolds = 2)
+estimate(cov_file_nii, resp_file_nii, maskfile = mask_file_nii, cvfolds = 2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -103,7 +103,7 @@ print("----------------------------------------------------------------------")
 resp_file_txt = os.path.join(data_dir, 'resp.txt')
 cov_file_txt = os.path.join(data_dir, 'cov.txt')
 
-estimate(resp_file_txt, cov_file_txt, testresp = resp_file_txt, 
+estimate(cov_file_txt, resp_file_txt, testresp = resp_file_txt, 
          testcov = cov_file_txt ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
@@ -111,7 +111,7 @@ test_num, tdir = update_test_counter(test_num, test_dir)
 
 print(test_num, "Testing again using the same data under cross-validation")
 print("----------------------------------------------------------------------")
-estimate(resp_file_txt, cov_file_txt, cvfolds=2 ,alg=alt_alg, configparam=2)
+estimate(cov_file_txt, resp_file_txt, cvfolds=2 ,alg=alt_alg, configparam=2)
 
 save_output(os.getcwd(), tdir)
 test_num, tdir = update_test_counter(test_num, test_dir)
@@ -124,7 +124,7 @@ cov_file_te = os.path.join(data_dir,'cov_big_te.txt')
 resp_file_tr = os.path.join(data_dir,'resp_big_tr.txt')
 resp_file_te = os.path.join(data_dir,'resp_big_te.txt')
 
-estimate(resp_file_tr, cov_file_tr, testresp=resp_file_te, testcov=cov_file_te,
+estimate(cov_file_tr, resp_file_tr, testresp=resp_file_te, testcov=cov_file_te,
          alg=alt_alg, configparam=1, savemodel='True')
 
 save_output(os.getcwd(), tdir)
@@ -143,5 +143,5 @@ execute_nm(tdir, python_path, normative_path, job_name, cov_file_par,
            cv_folds=2, log_path=tdir, binary=bin_flag)
 
 # to be run after qsub jobs complete
-#collect_nm(tdir, collect=True, binary=bin_flag)
+#collect_nm(tdir, job_name, collect=True, binary=bin_flag)
 #delete_nm(tdir, binary=bin_flag)

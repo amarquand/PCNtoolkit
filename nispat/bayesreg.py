@@ -134,7 +134,7 @@ class BLR:
         beta, alpha = self._parse_hyps(hyp, X)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
+        if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             try:
                 self.post(hyp, X, y)
             except ValueError:
@@ -179,7 +179,7 @@ class BLR:
         beta, alpha = self._parse_hyps(hyp, X)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
+        if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             try:
                 self.post(hyp, X, y)
             except ValueError:
@@ -289,7 +289,7 @@ class BLR:
     def predict(self, hyp, X, y, Xs, var_groups_test=None):
         """ Function to make predictions from the model """
 
-        if (hyp != self.hyp).all() or not(hasattr(self, 'A')):
+        if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             self.post(hyp, X, y)
 
         # hyperparameters
