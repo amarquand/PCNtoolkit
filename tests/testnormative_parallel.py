@@ -14,7 +14,6 @@ respfile = os.path.join(data_dir, 'ICA100_oslo15_v2_spaces.txt')
 covfile = os.path.join(data_dir, 'cov_oslo15_spaces.txt')
 
 cvfolds = 2
-#estimate(respfile, covfile, cvfolds=cvfolds)
 
 python_path = '/.../.conda/envs/python3/bin/python'
 normative_path = '/.../nispat/nispat/normative.py'
@@ -32,6 +31,6 @@ execute_nm(processing_dir, python_path, normative_path, job_name, covfile,  resp
 print("waiting for jobs to finish ...")
 time.sleep(60)
 
-collect_nm(processing_dir, collect=True)
+collect_nm(processing_dir, job_name, collect=True)
 #delete_nm(procedssing_dir)
 
