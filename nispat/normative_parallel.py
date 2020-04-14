@@ -352,98 +352,89 @@ def collect_nm(processing_dir,
 
     # detect number of subjects, batches, hyperparameters and CV
     batches = glob.glob(processing_dir + 'batch_*/')
-    file_example = []
-    for batch in batches:
-        if file_example == []:
-            file_example = glob.glob(batch + 'yhat' + outputsuffix + file_extentions)
-        else:
-            break
-    if binary is False:
-        file_example = fileio.load(file_example[0])
-    else:
-        file_example = pd.read_pickle(file_example[0])
-    numsubjects = file_example.shape[0]
-    batch_size = file_example.shape[1]
-
-    # artificially creates files for batches that were not executed
+    
     count = 0
     batch_fail = []
-    batch_dirs = glob.glob(processing_dir + 'batch_*/')
-    batch_dirs = fileio.sort_nicely(batch_dirs)
-    for batch in batch_dirs:
-        filepath = glob.glob(batch + 'yhat' + outputsuffix + '*')
-        if filepath == []:
-            count = count+1
-            batch1 = glob.glob(batch + '/' + job_name + '*.sh')
-            print(batch1)
-            batch_fail.append(batch1)
-            if collect is True:
-                pRho = np.ones(batch_size)
-                pRho = pRho.transpose()
-                pRho = pd.Series(pRho)
-                fileio.save(pRho, batch + 'pRho' + outputsuffix + file_extentions)
-                
-                Rho = np.zeros(batch_size)
-                Rho = Rho.transpose()
-                Rho = pd.Series(Rho)
-                fileio.save(Rho, batch + 'Rho' + outputsuffix + file_extentions)
-                
-                rmse = np.zeros(batch_size)
-                rmse = rmse.transpose()
-                rmse = pd.Series(rmse)
-                fileio.save(rmse, batch + 'RMSE' + outputsuffix + file_extentions)
-                
-                smse = np.zeros(batch_size)
-                smse = smse.transpose()
-                smse = pd.Series(smse)
-                fileio.save(smse, batch + 'SMSE' + outputsuffix + file_extentions)
-                
-                expv = np.zeros(batch_size)
-                expv = expv.transpose()
-                expv = pd.Series(expv)
-                fileio.save(expv, batch + 'EXPV' + outputsuffix + file_extentions)
-                
-                msll = np.zeros(batch_size)
-                msll = msll.transpose()
-                msll = pd.Series(msll)
-                fileio.save(msll, batch + 'MSLL' + outputsuffix + file_extentions)
-
-                yhat = np.zeros([numsubjects, batch_size])
-                yhat = pd.DataFrame(yhat)
-                fileio.save(yhat, batch + 'yhat' + outputsuffix + file_extentions)
-
-                ys2 = np.zeros([numsubjects, batch_size])
-                ys2 = pd.DataFrame(ys2)
-                fileio.save(ys2, batch + 'ys2' + outputsuffix + file_extentions)
-
-                Z = np.zeros([numsubjects, batch_size])
-                Z = pd.DataFrame(Z)
-                fileio.save(Z, batch + 'Z' + outputsuffix + file_extentions)
-
-                if not os.path.isdir(batch + 'Models'):
-                    os.mkdir('Models')
-                    
-                    
-        else: # if more than 10% of yhat is nan then consider the batch as a failed batch
-            yhat = fileio.load(filepath[0])
-            if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
+    
+    if func != 'fit':
+        file_example = []
+        for batch in batches:
+            if file_example == []:
+                file_example = glob.glob(batch + 'yhat' + outputsuffix + file_extentions)
+            else:
+                break
+        if binary is False:
+            file_example = fileio.load(file_example[0])
+        else:
+            file_example = pd.read_pickle(file_example[0])
+        numsubjects = file_example.shape[0]
+        batch_size = file_example.shape[1]
+    
+        # artificially creates files for batches that were not executed
+        batch_dirs = glob.glob(processing_dir + 'batch_*/')
+        batch_dirs = fileio.sort_nicely(batch_dirs)
+        for batch in batch_dirs:
+            filepath = glob.glob(batch + 'yhat' + outputsuffix + '*')
+            if filepath == []:
                 count = count+1
                 batch1 = glob.glob(batch + '/' + job_name + '*.sh')
-                print('More than 10% nans in '+ batch1[0])
+                print(batch1)
                 batch_fail.append(batch1)
-
-
-    # list batches that were not executed
-    print('Number of batches that failed:' + str(count))
-    batch_fail_df = pd.DataFrame(batch_fail)
-    if file_extentions == '.txt':
-        fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches'+
-                file_extentions)
-    else:
-        fileio.save(batch_fail_df, processing_dir +
-                'failed_batches' +
-                file_extentions)
-
+                if collect is True:
+                    pRho = np.ones(batch_size)
+                    pRho = pRho.transpose()
+                    pRho = pd.Series(pRho)
+                    fileio.save(pRho, batch + 'pRho' + outputsuffix + file_extentions)
+                    
+                    Rho = np.zeros(batch_size)
+                    Rho = Rho.transpose()
+                    Rho = pd.Series(Rho)
+                    fileio.save(Rho, batch + 'Rho' + outputsuffix + file_extentions)
+                    
+                    rmse = np.zeros(batch_size)
+                    rmse = rmse.transpose()
+                    rmse = pd.Series(rmse)
+                    fileio.save(rmse, batch + 'RMSE' + outputsuffix + file_extentions)
+                    
+                    smse = np.zeros(batch_size)
+                    smse = smse.transpose()
+                    smse = pd.Series(smse)
+                    fileio.save(smse, batch + 'SMSE' + outputsuffix + file_extentions)
+                    
+                    expv = np.zeros(batch_size)
+                    expv = expv.transpose()
+                    expv = pd.Series(expv)
+                    fileio.save(expv, batch + 'EXPV' + outputsuffix + file_extentions)
+                    
+                    msll = np.zeros(batch_size)
+                    msll = msll.transpose()
+                    msll = pd.Series(msll)
+                    fileio.save(msll, batch + 'MSLL' + outputsuffix + file_extentions)
+    
+                    yhat = np.zeros([numsubjects, batch_size])
+                    yhat = pd.DataFrame(yhat)
+                    fileio.save(yhat, batch + 'yhat' + outputsuffix + file_extentions)
+    
+                    ys2 = np.zeros([numsubjects, batch_size])
+                    ys2 = pd.DataFrame(ys2)
+                    fileio.save(ys2, batch + 'ys2' + outputsuffix + file_extentions)
+    
+                    Z = np.zeros([numsubjects, batch_size])
+                    Z = pd.DataFrame(Z)
+                    fileio.save(Z, batch + 'Z' + outputsuffix + file_extentions)
+    
+                    if not os.path.isdir(batch + 'Models'):
+                        os.mkdir('Models')
+                        
+                        
+            else: # if more than 10% of yhat is nan then consider the batch as a failed batch
+                yhat = fileio.load(filepath[0])
+                if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
+                    count = count+1
+                    batch1 = glob.glob(batch + '/' + job_name + '*.sh')
+                    print('More than 10% nans in '+ batch1[0])
+                    batch_fail.append(batch1)
+    
     # combines all output files across batches
     if collect is True:
         pRho_filenames = glob.glob(processing_dir + 'batch_*/' + 'pRho' + 
@@ -460,7 +451,7 @@ def collect_nm(processing_dir,
 
         Rho_filenames = glob.glob(processing_dir + 'batch_*/' + 'Rho' + 
                                    outputsuffix + '*')
-        if pRho_filenames:
+        if Rho_filenames:
             Rho_filenames = fileio.sort_nicely(Rho_filenames)
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
@@ -520,7 +511,7 @@ def collect_nm(processing_dir,
 
         smse_filenames = glob.glob(processing_dir + 'batch_*/' + 'SMSE' + 
                                    outputsuffix + '*')
-        if rmse_filenames:
+        if smse_filenames:
             smse_filenames = fileio.sort_nicely(smse_filenames)
             smse_dfs = []
             for smse_filename in smse_filenames:
@@ -588,15 +579,32 @@ def collect_nm(processing_dir,
                 batch_dirs = fileio.sort_nicely(batch_dirs)
                 for b, batch_dir in enumerate(batch_dirs):
                     src_files = glob.glob(batch_dir + 'Models/*.pkl')
-                    src_files = fileio.sort_nicely(src_files)
-                    for f, full_file_name in enumerate(src_files):
-                        if os.path.isfile(full_file_name):
-                            file_name = full_file_name.split('/')[-1]
-                            n = file_name.split('_')
-                            n[-1] = str(b * batch_size + f) + '.pkl'
-                            n = '_'.join(n)
-                            shutil.copy(full_file_name, processing_dir + 'Models/' + n)
-        
+                    if src_files:
+                        src_files = fileio.sort_nicely(src_files)
+                        for f, full_file_name in enumerate(src_files):
+                            if os.path.isfile(full_file_name):
+                                file_name = full_file_name.split('/')[-1]
+                                n = file_name.split('_')
+                                n[-1] = str(b * batch_size + f) + '.pkl'
+                                n = '_'.join(n)
+                                shutil.copy(full_file_name, processing_dir + 'Models/' + n)
+                    elif func=='fit':
+                        count = count+1
+                        batch1 = glob.glob(batch_dir + '/' + job_name + '*.sh')
+                        print('Failed batch: ' + batch1[0])
+                        batch_fail.append(batch1)
+                        
+    # list batches that were not executed
+    print('Number of batches that failed:' + str(count))
+    batch_fail_df = pd.DataFrame(batch_fail)
+    if file_extentions == '.txt':
+        fileio.save_pd(batch_fail_df, processing_dir + 'failed_batches'+
+                file_extentions)
+    else:
+        fileio.save(batch_fail_df, processing_dir +
+            'failed_batches' +
+            file_extentions)
+
     if not batch_fail:
         return 1
     else:
@@ -683,39 +691,23 @@ def bashwrap_nm(processing_dir,
     bash_environment = [bash_lines + bash_cores]
 
     # creates call of function for normative modelling
-    if testrespfile_path is not None:
-        if testcovfile_path is not None:
-            if cv_folds is not None:
-                raise(ValueError, """If the testrespfile_path and
-                                  testcovfile_path are not specified
-                                  cv_folds must be equal to None""")
-            else:
-                job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path + ' -r ' +
-                            testrespfile_path + ' -f ' + func]
-
-    if testrespfile_path is None:
-        if testcovfile_path is None:
-            if cv_folds is not None:
-                job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -k ' + str(cv_folds) + 
-                            ' -f ' + func]
-            #else:
-            #    raise(ValueError, """If the testresponsefile_path and
-            #                      testcovfile_path are specified cv_folds
-            #                      must be larger than or equal to two(2)""")
-
-    if testrespfile_path is None:
-        if testcovfile_path is not None:
-            if cv_folds is None:
-                job_call = [python_path + ' ' + normative_path + ' -c ' +
-                            covfile_path + ' -t ' + testcovfile_path + 
-                            ' -f ' + func]
-            else:
-                raise(ValueError, """If the test response file is and
-                                  testcovfile is not specified cv_folds
-                                  must be NONE""")
-
+    if (testrespfile_path is not None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -r ' +
+                    testrespfile_path + ' -f ' + func]
+    elif (testrespfile_path is None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -f ' + func]
+    elif cv_folds is not None:
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -k ' + str(cv_folds) +  ' -f ' + func]
+    elif func != 'estimate':
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path +  ' -f ' + func]
+    else:
+        raise(ValueError, """For 'estimate' function either testcov or cvfold
+              must be specified.""")
+        
     # add algorithm-specific parameters
     if alg is not None:
         job_call = [job_call[0] + ' -a ' + alg]
