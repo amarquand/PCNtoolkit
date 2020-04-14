@@ -95,7 +95,7 @@ def get_args(*args):
         maskfile = None
     else:
         maskfile = os.path.join(wdir, args.maskfile)
-    if args.testcov is None:
+    if args.testcov is None and args.cvfolds is not None:
         testcov = None
         testresp = None
         cvfolds = int(args.cvfolds)
@@ -272,7 +272,7 @@ def estimate(covfile, respfile, **kwargs):
         X = X[:, np.newaxis]
     Nmod = Y.shape[1]
     
-    if testcov is not None: # we have a separate test dataset
+    if (testcov is not None) and (cvfolds is None): # we have a separate test dataset
         
         run_cv = False
         cvfolds = 1
@@ -414,6 +414,75 @@ def estimate(covfile, respfile, **kwargs):
             output = (Yhat[testids, :], S2[testids, :], nm)
         
         return output
+
+
+def fit(covfile, respfile, **kwargs):
+    
+    # parse keyword arguments 
+    maskfile = kwargs.pop('maskfile',None)
+    alg = kwargs.pop('alg','gpr')
+    savemodel = kwargs.pop('savemodel','True')=='True'
+    standardize = kwargs.pop('standardize',True)
+    
+    if savemodel and not os.path.isdir('Models'):
+        os.mkdir('Models')
+
+    # load data
+    print("Processing data in " + respfile)
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    
+    # find and remove bad variables from the response variables
+    # note: the covariates are assumed to have already been checked
+    nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
+                                 np.var(Y, axis=0) != 0))[0]
+
+    mean_resp = []
+    std_resp = []
+    mean_cov = []
+    std_cov = []
+
+    # standardize responses and covariates, ignoring invalid entries
+    mY = np.mean(Y[:, nz], axis=0)
+    sY = np.std(Y[:, nz], axis=0)
+    mean_resp.append(mY)
+    std_resp.append(sY)
+    if standardize:
+        Yz = np.zeros_like(Y)
+        Yz[:, nz] = (Y[:, nz] - mY) / sY
+        mX = np.mean(X, axis=0)
+        sX = np.std(X,  axis=0)
+        Xz = (X - mX) / sX
+        mean_resp.append(mY)
+        std_resp.append(sY)
+        mean_cov.append(mX)
+        std_cov.append(sX)
+    else:
+        Yz = Y
+        Xz = X
+
+    # estimate the models for all subjects
+    for i in range(0, len(nz)):  
+        print("Estimating model ", i+1, "of", len(nz))
+        nm = norm_init(Xz, Yz[:, nz[i]], alg=alg, **kwargs)
+        nm = nm.estimate(Xz, Yz[:, nz[i]])     
+            
+        if savemodel:
+            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + '.pkl' )
+
+    if savemodel:
+        print('Saving model meta-data...')
+        with open('Models/meta_data.md', 'wb') as file:
+            pickle.dump({'valid_voxels':nz,
+                         'mean_resp':mean_resp, 'std_resp':std_resp, 
+                         'mean_cov':mean_cov, 'std_cov':std_cov, 
+                         'regressor':alg, 'standardize':standardize}, file)
+        
+    return nm
 
     
 def predict(covfile, respfile=None, maskfile=None, **kwargs):
