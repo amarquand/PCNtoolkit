@@ -26,7 +26,7 @@ respfile = os.path.join(wdir, 'shoot_data_3mm_n500.nii.gz')
 covfile = os.path.join(wdir, 'covariates_basic_n500.txt')
 testresp = os.path.join(wdir, 'shoot_data_3mm_last100.nii.gz')
 testcov = os.path.join(wdir, 'covariates_basic_last100.txt')
-estimate(respfile, covfile, maskfile=maskfile, testresp=testresp, testcov=testcov,alg="blr")#, configparam=4)
+estimate(covfile, respfile, maskfile=maskfile, testresp=testresp, testcov=testcov,alg="blr")#, configparam=4)
 #cvfolds = 2
 
 
@@ -39,7 +39,7 @@ estimate(respfile, covfile, maskfile=maskfile, testresp=testresp, testcov=testco
 #respfile = os.path.join(wdir, 'ICA100_oslo15_v2.txt')
 #covfile = os.path.join(wdir, 'cov_oslo15_v2.txt')
 #cvfolds = 2
-#nispat.normative.estimate(respfile, covfile, cvfolds=cvfolds)
+#nispat.normative.estimate(covfile, respfile,  cvfolds=cvfolds)
 
 #wdir = '/home/mrstats/andmar/data/enigma_mdd'
 #maskfile = None
