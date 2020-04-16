@@ -650,10 +650,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
         if batch_size is not None: 
-            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+            nm.save(os.path.join(transferred_models_path, 'NM_0_' + 
                              str(job_id*batch_size+i) + '.pkl'))
         else:
-            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+            nm.save(os.path.join(transferred_models_path, 'NM_0_' + 
                              str(i) + '.pkl'))
         
         if testcov is not None:
