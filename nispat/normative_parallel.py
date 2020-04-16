@@ -545,7 +545,7 @@ def collect_nm(processing_dir,
                         file_extentions)
             del msll_dfs
         
-        if func != 'predict':
+        if func != 'predict' and func != 'transfer':
             if not os.path.isdir(processing_dir + 'Models') and \
                os.path.exists(os.path.join(batches[0], 'Models')):
                 os.mkdir(processing_dir + 'Models')
