@@ -5,6 +5,8 @@ import numpy as np
 from scipy import stats
 from subprocess import call
 from scipy.stats import genextreme, norm
+from six import with_metaclass
+from abc import ABCMeta, abstractmethod
 
 # -----------------
 # Utility functions
@@ -155,6 +157,250 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var), axis = 0)
         
     return loss
+
+class WarpBase(with_metaclass(ABCMeta)):
+    """ Base class for likelihood warping following:
+        Rios and Torab (2019) Compositionally-warped Gaussian processes
+        https://www.sciencedirect.com/science/article/pii/S0893608019301856
+
+        All Warps must define the following methods::
+
+            Warp.get_n_params() - return number of parameters
+            Warp.f() - warping function (Non-Gaussian field -> Gaussian)
+            Warp.invf() - inverse warp
+            Warp.df() - derivatives
+            Warp.warp_predictions() - compute predictive distribution
+    """
+
+    def __init__(self):
+        self.n_params = np.nan
+
+    def get_n_params(self):
+        """ Report the number of parameters required """
+
+        assert not np.isnan(self.n_params), \
+            "Warp function not initialised"
+
+        return self.n_params
+
+    def warp_predictions(self, mu, s2, param, percentiles=[0.025, 0.975]):
+        """ Compute the warped predictions from a gaussian predictive
+            distribution, specifed by a mean (mu) and variance (s2)
+            
+            :param mu: Gassian predictive mean 
+            :param s2: Predictive variance
+            :param param: warping parameters
+            :param percentiles: Desired percentiles of the warped likelihood
+
+            :returns: * median - median of the predictive distribution
+                      * pred_interval - predictive interval(s)
+        """
+
+        # Compute percentiles of a standard Gaussian
+        N = norm
+        Z = N.ppf(percentiles)
+        
+        # find the median (using mu = median)
+        median = self.invf(mu, param)
+
+        # compute the predictive intervals (non-stationary)
+        pred_interval = np.zeros((len(mu), len(Z)))
+        for i, z in enumerate(Z):
+            pred_interval[:,i] = self.invf(mu + np.sqrt(s2)*z, param)
+
+        return median, pred_interval
+    
+    @abstractmethod
+    def f(self, x, param):
+        """ Evaluate the warping function (mapping non-Gaussian respone 
+            variables to Gaussian variables)"""
+
+    @abstractmethod
+    def invf(self, y, param):
+        """ Evaluate the warping function (mapping Gaussian latent variables 
+            to non-Gaussian response variables) """
+
+    @abstractmethod
+    def df(self, x, param):
+        """ Return the derivative of the warp, dw(x)/dx """
+
+class WarpAffine(WarpBase):
+    """ Affine warp
+        y = a + b*x
+    """
+
+    def __init__(self):
+        self.n_params = 2
+    
+    def _get_params(self, param):
+        if len(param) != self.n_params:
+            raise(ValueError, 
+                  'number of parameters must be ' + str(self.n_params))
+        return param[0], param[1]
+
+    def f(self, x, params):
+        a, b = self._get_params(params)
+        
+        y = a + b*x 
+        return y
+    
+    def invf(self, y, params):
+        a, b = self._get_params(params)
+        
+        x = (y - a) / b 
+       
+        return x
+
+    def df(self, x, params):
+        a, b = self._get_params(params)
+        
+        df = np.ones(x.shape)*b
+        return df
+
+class WarpBoxCox(WarpBase):
+    """ Box cox transform having a single parameter (lambda), i.e.
+        
+        y = (sign(x) * abs(x) ** lamda - 1) / lambda 
+        
+        This follows the generalization in Bicken and Doksum (1981) JASA 76
+        and allows x to assume negative values. 
+    """
+
+    def __init__(self):
+        self.n_params = 1
+    
+    def _get_params(self, param):
+        
+        return np.exp(param)
+
+    def f(self, x, params):
+        lam = self._get_params(params)
+        
+        if lam == 0:
+            y = np.log(x)
+        else:
+            y = (np.sign(x) * np.abs(x) ** lam - 1) / lam 
+        return y
+    
+    def invf(self, y, params):
+        lam = self._get_params(params)
+     
+        if lam == 0:
+            x = np.exp(y)
+        else:
+            x = np.sign(lam * y + 1) * np.abs(lam * y + 1) ** (1 / lam)
+
+        return x
+
+    def df(self, x, params):
+        lam = self._get_params(params)
+        
+        dx = np.abs(x) ** (lam - 1)
+        
+        return dx
+
+class WarpSinArcsinh(WarpBase):
+    """ Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by 
+    
+        y = sinh(b *  arcsinh(x) - a)
+    
+        see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
+    """
+
+    def __init__(self):
+        self.n_params = 2
+    
+    def _get_params(self, param):
+        if len(param) != self.n_params:
+            raise(ValueError, 
+                  'number of parameters must be ' + str(self.n_params))
+        return param[0], param[1]
+
+    def f(self, x, params):
+        a, b = self._get_params(params)
+        
+        y = np.sinh(b * np.arcsinh(x) - a)
+        return y
+    
+    def invf(self, y, params):
+        a, b = self._get_params(params)
+     
+        x = np.sinh((np.arcsinh(y)+a)/b)
+        
+        return x
+
+    def df(self, x, params):
+        a, b = self._get_params(params)
+        
+        dx = (b *np.cosh(b * np.arcsinh(x) - a))/np.sqrt(1 + x ** 2)
+        
+        return dx
+    
+class WarpCompose(WarpBase):
+    """ Composition of warps. These are passed in as an array and
+        intialised automatically. For example::
+
+            W = WarpCompose(('WarpBoxCox', 'WarpAffine'))
+
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    """
+
+    def __init__(self, warpnames=None):
+
+        if warpnames is None:
+            raise ValueError("A list of warp functions is required")
+        self.warps = []
+        self.n_params = 0
+        for wname in warpnames:
+            warp = eval(wname + '()')
+            self.n_params += warp.get_n_params()
+            self.warps.append(warp)
+
+    def f(self, x, theta):
+        theta_offset = 0
+
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+            theta_c = [theta[c] for c in
+                          range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c                
+
+            if ci == 0:
+                fw = warp.f(x, theta_c)
+            else:
+                fw = warp.f(fw, theta_c)
+        return fw
+
+    def invf(self, x, theta):
+        theta_offset = 0
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+            
+            if ci == 0:
+                finvw = warp.invf(x, theta_c)
+            else:
+                finvw = warp.invf(finvw, theta_c)
+            
+        return finvw
+    
+    def df(self, x, theta):
+        theta_offset = 0
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+            
+            if ci == 0:
+                dfw = warp.df(x, theta_c)
+            else:
+                dfw = warp.df(dfw, theta_c)
+            
+        return dfw
 
 # -----------------------
 # Functions for inference
