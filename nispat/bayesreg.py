@@ -47,7 +47,8 @@ class BLR:
     """
 
     def __init__(self, hyp=None, X=None, y=None,
-                 n_iter=100, tol=1e-3, verbose=False, var_groups=None):
+                 n_iter=100, tol=1e-3, verbose=False, 
+                 var_groups=None, warp=None):
 
         self.hyp = np.nan
         self.nlZ = np.nan
@@ -59,8 +60,14 @@ class BLR:
             self.var_ids = set(self.var_groups)
             self.var_ids = sorted(list(self.var_ids))
 
-        if (hyp is not None) and (X is not None) and (y is not None):
-            self.post(hyp, X, y)
+        # set up warped likelihood
+        if warp is None:
+            self.warp = None
+            self.n_warp_param = 0
+        else:
+            self.warp = warp
+            self.n_warp_param = warp.get_n_params()
+        self.gamma = None
     
     def _parse_hyps(self, hyp, X):
 
@@ -78,14 +85,22 @@ class BLR:
                 beta_all[self.var_groups == self.var_ids[v]] = beta[v]
             self.Lambda_n = np.diag(beta_all)
             self.Sigma_n = np.diag(1/beta_all)
-         
+        
+        # parameters for warping the likelhood function
+        n_lik_param = len(beta)
+        if self.warp is not None:
+            gamma = hyp[n_lik_param:(n_lik_param + self.n_warp_param)]
+            n_lik_param += self.n_warp_param
+        else:
+            gamma = None
+
         # precision for the coefficients
         if isinstance(beta, list) or type(beta) is np.ndarray:
-            alpha = np.exp(hyp[len(beta):])
+            alpha = np.exp(hyp[n_lik_param:])
         else:
             alpha = np.exp(hyp[1:])
 
-        return beta, alpha
+        return beta, alpha, gamma
         
     def post(self, hyp, X, y):
         """ Generic function to compute posterior distribution.
@@ -105,7 +120,7 @@ class BLR:
             print("hyperparameters have not changed, exiting")
             return
         
-        beta, alpha = self._parse_hyps(hyp, X)
+        beta, alpha, gamma = self._parse_hyps(hyp, X)
 
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
@@ -130,9 +145,16 @@ class BLR:
     def loglik(self, hyp, X, y):
         """ Function to compute compute log (marginal) likelihood """
 
-        # hyperparameters (only beta needed)
-        beta, alpha = self._parse_hyps(hyp, X)
+        # hyperparameters (alpha not needed)
+        beta, alpha, gamma = self._parse_hyps(hyp, X) 
 
+        # warp the likelihood?
+        if self.warp is not None:
+            if self.verbose:
+                print('warping input...')
+            y_unwarped = y
+            y = self.warp.f(y, gamma)
+            
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             try:
@@ -141,7 +163,7 @@ class BLR:
                 print("Warning: Estimation of posterior distribution failed")
                 nlZ = 1/np.finfo(float).eps
                 return nlZ
-
+                    
         try:
             # compute the log determinants in a numerically stable way
             logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
@@ -161,6 +183,10 @@ class BLR:
                       self.m.T.dot(self.Lambda_a).dot(self.m) -
                       logdetA
                       )
+        
+        if self.warp is not None:
+            # add in the Jacobian 
+            nlZ = nlZ - sum(np.log(self.warp.df(y_unwarped, gamma)))
 
         # make sure the output is finite to stop the minimizer getting upset
         if not np.isfinite(nlZ):
@@ -176,7 +202,11 @@ class BLR:
         """ Function to compute derivatives """
 
         # hyperparameters
-        beta, alpha = self._parse_hyps(hyp, X)
+        beta, alpha, gamma = self._parse_hyps(hyp, X)
+        
+        if self.warp is not None:
+            raise ValueError('optimization with derivatives is not yet ' + \
+                             'supported for warped liklihood')
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
@@ -289,11 +319,17 @@ class BLR:
     def predict(self, hyp, X, y, Xs, var_groups_test=None):
         """ Function to make predictions from the model """
 
+        # hyperparameters
+        beta, alpha, gamma = self._parse_hyps(hyp, X)
+
+        # warp the likelihood?
+        if self.warp is not None:
+            if self.verbose:
+                print('warping input...')
+            y = self.warp.f(y, gamma)
+
         if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             self.post(hyp, X, y)
-
-        # hyperparameters
-        beta, alpha = self._parse_hyps(hyp, X)
 
         N_test = Xs.shape[0]
 
@@ -310,5 +346,6 @@ class BLR:
                 s2n[var_groups_test == self.var_ids[v]] = 1/beta[v]
         
         # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
-        s2 = s2n +  np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
+        s2 = s2n + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
+        
         return ys, s2
