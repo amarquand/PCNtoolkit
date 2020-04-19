@@ -1,48 +1,55 @@
-# -*- coding: utf-8 -*-
 import sys
 sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
 import numpy as np
 import scipy as sp
 from matplotlib import pyplot as plt
+import bspline
+from bspline import splinelab
 from bayesreg import BLR
+from gp import GPR
+from utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
 
-#from gp import GPR, CovSqExp
+print('First do a simple evaluation of B-splines regression...')
 
-X = np.arange(0,10,0.1)
+# generate some data
+X = np.arange(0,10,0.05)
+Xs =  np.arange(0,10,0.01)
 N = len(X)
 dimpoly = 3
 
-# generate some data
-Phi = np.zeros((X.shape[0],dimpoly))
+# Polynomial basis (used for data generation)
+Phip = np.zeros((X.shape[0],dimpoly))
 colid = np.arange(0,1)
 for d in range(1,dimpoly+1):
-    Phi[:,colid] = np.vstack(X ** d)
+    Phip[:,colid] = np.vstack(X ** d)
     colid += 1
-    
-# generate test data
-Xs =  np.arange(0,10,0.01)
-Phis = np.zeros((Xs.shape[0],dimpoly))
+Phips = np.zeros((Xs.shape[0],dimpoly))
 colid = np.arange(0,1)
 for d in range(1,dimpoly+1):
-    Phis[:,colid] = np.vstack(Xs ** d)
+    Phips[:,colid] = np.vstack(Xs ** d)
     colid += 1
 
 # generative model
 b = [0.5, -0.1, 0.005]  # true regression coefficients
 s2 = 0.05               # noise variance
-y = Phi.dot(b) + np.random.normal(0,s2,N)
+y = Phip.dot(b) + np.random.normal(0,s2,N)
 
-yid = range(0,N,1)
+# cubic B-spline basis (used for regression)
+p = 3       # order of spline (3 = cubic)
+nknots = 5  # number of knots (endpoints only counted once)
+knots = np.linspace(0,10,nknots)
+k = splinelab.augknt(knots, p)       # pad the knot vector
+B = bspline.Bspline(k, p) 
+Phi = np.array([B(i) for i in X])
+Phis = np.array([B(i) for i in Xs])
 
 hyp0 = np.zeros(2)
 #hyp0 = np.zeros(4) # use ARD
-B = BLR(hyp0, Phi[yid,:], y[yid])#,var_groups=np.ones(N))
-B.loglik(hyp0, Phi[yid,:], y[yid])
-B.dloglik(hyp0, Phi[yid,:], y[yid])
-hyp = B.estimate(hyp0, Phi[yid,:], y[yid])
+B = BLR(hyp0, Phi, y)
+hyp = B.estimate(hyp0, Phi, y, optimizer='powell')
 
 yhat,s2 = B.predict(hyp, Phi, y, Phis)
-plt.fill_between(Xs,yhat-1.96*np.sqrt(s2), yhat+1.96*np.sqrt(s2), alpha = 0.2)
+plt.fill_between(Xs, yhat-1.96*np.sqrt(s2), yhat+1.96*np.sqrt(s2), alpha = 0.2)
 plt.scatter(X,y)
 plt.plot(Xs,yhat)
 plt.show()
@@ -51,7 +58,44 @@ print(B.nlZ)
 print(1/hyp)
 print(B.m)
 
-print("Estimating a model with heteroskedastic noise ...")
+print('demonstrate likelihood warping ...' )
+# generative model
+b = [0.4, -0.01, 0.]  # true regression coefficients
+s2 = 0.1              # noise variance
+y = Phip.dot(b) + 2*np.random.exponential(1,N)
+plt.scatter(X,y)
+
+W = WarpBoxCox()
+#W = WarpSinArcsinh()
+
+Phix = X[:, np.newaxis]
+Phixs = Xs[:, np.newaxis]
+
+hyp0 = 0.1*np.ones(2+W.get_n_params())
+Bw = BLR(hyp0, Phi, y, warp=W)
+hyp = Bw.estimate(hyp0, Phi, y, optimizer='powell')
+yhat, s2 = Bw.predict(hyp, Phi, y, Phis)
+
+warp_param = hyp[1:W.get_n_params()+1] 
+med, pr_int = W.warp_predictions(yhat, s2, warp_param)
+
+plt.plot(Xs, med, 'b')
+plt.fill_between(Xs, pr_int[:,0], pr_int[:,1], alpha = 0.2,color='blue')
+
+# for the Box-Cox warp use closed form expression for the mode (+ve support)
+if len(warp_param == 1):
+    lam = np.exp(warp_param[0])
+    mod = (0.5*(1+lam*yhat + np.sqrt((1+lam*yhat)**2 + 4*s2*lam*(lam-1))))**(1/lam)
+    plt.plot(Xs,mod,'b--')
+    plt.legend(('median','mode'))
+plt.show()
+
+xx=np.linspace(-5,5,100)
+plt.plot(xx,W.invf(xx,warp_param))
+plt.title('estimated warping function')
+plt.show()
+
+print("Estimate a model with heteroskedastic noise ...")
 # set up some indicator variables for the variance groups
 n_site = 3
 idx = []
@@ -75,7 +119,7 @@ cols = ['blue','red','green']
 b0 = [-0.5, 0.25, -0.3] # intercepts
 bh = [-0.025, 0.001, 0] # slopes
 s2h = [0.01, 0.2, 0.1] # noise
-y = Phi.dot(bh)
+y = Phip.dot(bh)
 
 # add intercepts and heteroskedastic noise
 for s in range(n_site):
@@ -93,10 +137,10 @@ for s in range(n_site):
     Phis = np.concatenate((Phis, site_te), axis=1)
 
 hyp0=np.zeros(4)
-Bh = BLR(hyp0,Phi,y,var_groups=sids)
-Bh.loglik(hyp0,Phi[yid,:],y[yid])
-Bh.dloglik(hyp0,Phi[yid,:],y[yid])
-hyp = Bh.estimate(hyp0,Phi[yid,:],y[yid])
+Bh = BLR(hyp0, Phi, y, var_groups=sids)
+Bh.loglik(hyp0, Phi, y)
+Bh.dloglik(hyp0, Phi, y)
+hyp = Bh.estimate(hyp0, Phi, y)
 
 yhat,s2 = Bh.predict(hyp, Phi, y, Phis, var_groups_test=sids_te)
 
@@ -107,23 +151,4 @@ for s in range(n_site):
                      yhat[idx_te[s]] - 1.96 * np.sqrt(s2[idx_te[s]]), 
                      yhat[idx_te[s]] + 1.96 * np.sqrt(s2[idx_te[s]]),
                      alpha=0.2, color=cols[s])
-
-## run GP for comparison
-#y = y-y.mean()
-#hyp0 = np.zeros(3)
-#G = GPR(hyp0, covSqExp, Phi[yid,:], y[yid])
-#G.loglik(hyp0, covSqExp, Phi[yid,:], y[yid])
-#G.dloglik(hyp0, covSqExp, Phi[yid,:], y[yid])
-#hyp = G.estimate(hyp0,covSqExp, Phi[yid,:], y[yid])
-#
-#yhat,s2 = G.predict(hyp0,Phi[yid,:],y[yid],Phi)
-#
-#plt.plot(X,y)
-#plt.plot(X,yhat)
-#plt.show()
-    
-# check gradients
-##sp.optimize.check_grad(B.loglik, B.dloglik, np.array([0, 0]), Phi,y)
-#
-##out = sp.optimize.fmin_cg(B.loglik,hyp0,B.dloglik,(Phi,y),full_output=1)
-##hyp = np.exp(out[0])
+plt.show()
