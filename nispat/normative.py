@@ -103,7 +103,7 @@ def get_args(*args):
     else:
         print("Test covariates specified")
         testcov = args.testcov
-        cvfolds = 1
+        cvfolds = None
         if args.testresp is None:
             testresp = None
             print("No test response variables specified")
