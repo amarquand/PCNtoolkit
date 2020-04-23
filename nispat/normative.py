@@ -347,7 +347,7 @@ def estimate(covfile, respfile, **kwargs):
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
             try: 
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])     
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
