@@ -469,7 +469,7 @@ def fit(covfile, respfile, **kwargs):
     for i in range(0, len(nz)):  
         print("Estimating model ", i+1, "of", len(nz))
         nm = norm_init(Xz, Yz[:, nz[i]], alg=alg, **kwargs)
-        nm = nm.estimate(Xz, Yz[:, nz[i]])     
+        nm = nm.estimate(Xz, Yz[:, nz[i]], **kwargs)     
             
         if savemodel:
             nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + '.pkl' )
@@ -497,13 +497,16 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         print('Models directory does not exist!')
         return
     else:
-        with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
-            meta_data = pickle.load(file)
-        standardize = meta_data['standardize']
-        mY = meta_data['mean_resp']
-        sY = meta_data['std_resp']
-        mX = meta_data['mean_cov']
-        sX = meta_data['std_cov']
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            standardize = meta_data['standardize']
+            mY = meta_data['mean_resp']
+            sY = meta_data['std_resp']
+            mX = meta_data['mean_cov']
+            sX = meta_data['std_cov']
+        else:
+            standardize = False
 
     if batch_size is not None:
         batch_size = int(batch_size)
@@ -541,11 +544,11 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         yhat, s2 = nm.predict(Xz, **kwargs)
         
         if standardize:
-            Yhat[:, i] = yhat * sY[0][i] + mY[0][i]
-            S2[:, i] = s2 * sY[0][i]**2
+            Yhat[:, i] = yhat.squeeze() * sY[0][i] + mY[0][i]
+            S2[:, i] = s2.squeeze() * sY[0][i]**2
         else:
-            Yhat[:, i] = yhat
-            S2[:, i] = s2
+            Yhat[:, i] = yhat.squeeze()
+            S2[:, i] = s2.squeeze()
     
     if respfile is None:
         return (Yhat, S2)
@@ -591,12 +594,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
-        
-    transferred_models_path = os.path.join(output_path,'Models')
-    if not os.path.isdir(transferred_models_path):
-        os.mkdir(transferred_models_path)
-    
-    
+            
     # load data
     print("Loading data ...")
     X = fileio.load(covfile)
@@ -650,16 +648,16 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
         if batch_size is not None: 
-            nm.save(os.path.join(transferred_models_path, 'NM_0_' + 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
                              str(job_id*batch_size+i) + '.pkl'))
         else:
-            nm.save(os.path.join(transferred_models_path, 'NM_0_' + 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
                              str(i) + '.pkl'))
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
-            Yhat[:, i] = yhat
-            S2[:, i] = s2
+            Yhat[:, i] = yhat.squeeze()
+            S2[:, i] = s2.squeeze()
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
