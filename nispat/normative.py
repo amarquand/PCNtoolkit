@@ -582,6 +582,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         model_path = kwargs.pop('model_path')
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
+        batch_effects_train = fileio.load(trbefile)
+
     
     outputsuffix = kwargs.pop('outputsuffix', None)
     tsbefile = kwargs.pop('tsbefile', None)
@@ -605,12 +607,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         X = X[:, np.newaxis]
     feature_num = Y.shape[1]
     mY = np.mean(Y, axis=0)
-    sY = np.std(Y, axis=0)
-    
-    if trbefile is not None:
-        batch_effects_train = fileio.load(trbefile)
-    else:
-        batch_effects_train = np.zeros([X.shape[0],2])
+    sY = np.std(Y, axis=0)    
     
     if testcov is not None:
         # we have a separate test dataset
