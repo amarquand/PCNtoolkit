@@ -42,10 +42,9 @@ class NormHBR(NormBase):
         self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
         self.configs['hetero_noise'] = kwargs.pop('hetero_noise', 'False') == 'True'
+        self.configs['skewed_likelihood'] = kwargs.pop('skewed_likelihood', 'False') == 'True'
         self.configs['noise_model'] = kwargs.pop('noise_model', 'linear')
         self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
-        self.configs['transfer'] = kwargs.pop('new_site', 'False') == 'True'
-        self.configs['newsite_training_idx'] = kwargs.pop('newsite_training_idx', None)
         self.configs['pred_type'] = kwargs.pop('pred_type', 'single')
 
         self.hbr = HBR(self.configs)

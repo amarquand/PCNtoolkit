@@ -17,7 +17,7 @@ from functools import reduce
 from scipy import stats
 
 
-def from_posterior(param, samples, distribution = None, half = False, freedom=10):
+def from_posterior(param, samples, distribution = None, half = False, freedom=100):
     
     if len(samples.shape)>1:
         shape = samples.shape[1:]
@@ -221,7 +221,20 @@ def linear_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if idx[0].shape[0]!=0:
                     sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise)
             
-        y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
+        if configs['skewed_likelihood']:
+            skewness = pm.Uniform('skewness', lower=-10, upper=10, shape=(batch_effects_size))
+            alpha = theano.tensor.zeros(y_shape)
+            for be in be_idx:
+                a = []
+                for i, b in enumerate(be):
+                    a.append(batch_effects[:,i]==b)             
+                idx = reduce(np.logical_and, a).nonzero()
+                if idx[0].shape[0]!=0:
+                    alpha = theano.tensor.set_subtensor(alpha[idx,0], skewness[be])
+        else:
+            alpha = 0
+        
+        y_like = pm.SkewNormal('y_like', mu=y_hat, sigma=sigma_y, alpha=alpha, observed=y)
 
     return model
 
@@ -418,7 +431,20 @@ def poly2_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if idx[0].shape[0]!=0:
                     sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise)
             
-        y_like = pm.Normal('y_like', mu=y_hat, sigma=sigma_y, observed=y)
+        if configs['skewed_likelihood']:
+            skewness = pm.Uniform('skewness', lower=-10, upper=10, shape=(batch_effects_size))
+            alpha = theano.tensor.zeros(y_shape)
+            for be in be_idx:
+                a = []
+                for i, b in enumerate(be):
+                    a.append(batch_effects[:,i]==b)             
+                idx = reduce(np.logical_and, a).nonzero()
+                if idx[0].shape[0]!=0:
+                    alpha = theano.tensor.set_subtensor(alpha[idx,0], skewness[be])
+        else:
+            alpha = 0
+        
+        y_like = pm.SkewNormal('y_like', mu=y_hat, sigma=sigma_y, alpha=alpha, observed=y)
 
     return model
     
@@ -477,7 +503,7 @@ class HBR:
                 self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
                 
-        self.model = model
+        #self.model = model
         return self.trace
 
     def predict(self, X, batch_effects, pred = 'single'):
@@ -530,7 +556,7 @@ class HBR:
                 trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
                 
-        self.model = model
+        #self.model = model
         self.trace = trace    
         return trace
         
