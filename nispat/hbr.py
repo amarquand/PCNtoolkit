@@ -15,6 +15,32 @@ import theano
 from itertools import product
 from functools import reduce
 from scipy import stats
+import bspline
+from bspline import splinelab
+
+
+
+def bspline_fit(X, order, nknots):
+    
+    X = X.squeeze()
+    if len(X.shape) > 1:
+        raise ValueError('Bspline method only works for a single covariate.')
+    
+    knots = np.linspace(X.min(), X.max(), nknots)
+    k = splinelab.augknt(knots, order)
+    bsp_basis = bspline.Bspline(k, order)
+    
+    return bsp_basis
+
+def bspline_transform(X, bsp_basis):
+    
+    X = X.squeeze()
+    if len(X.shape) > 1:
+        raise ValueError('Bspline method only works for a single covariate.')
+        
+    X_transformed = np.array([bsp_basis(i) for i in X])
+    
+    return X_transformed
 
 
 def from_posterior(param, samples, distribution = None, half = False, freedom=100):
@@ -494,16 +520,22 @@ class HBR:
             
         if self.model_type == 'linear': 
             with linear_hbr(X, y, batch_effects, self.batch_effects_size, 
-                               self.configs) as model:    
+                               self.configs):    
                 self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
         elif self.model_type == 'poly2': 
             with poly2_hbr(X, y, batch_effects, self.batch_effects_size, 
-                               self.configs) as model:    
+                               self.configs):    
+                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                                       cores=1)
+        elif self.model_type == 'bspline': 
+            self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
+            X = bspline_transform(X, self.bsp)
+            with linear_hbr(X, y, batch_effects, self.batch_effects_size, 
+                               self.configs):    
                 self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
                 
-        #self.model = model
         return self.trace
 
     def predict(self, X, batch_effects, pred = 'single'):
@@ -522,6 +554,10 @@ class HBR:
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
             elif self.model_type == 'poly2': 
                 with poly2_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                    ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            elif self.model_type == 'bspline': 
+                X = bspline_transform(X, self.bsp)
+                with linear_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
             
             pred_mean = ppc['y_like'].mean(axis=0)
@@ -547,16 +583,22 @@ class HBR:
             
         if self.model_type == 'linear': 
             with linear_hbr(X, y, batch_effects, self.batch_effects_size, 
-                               self.configs, trace = self.trace) as model:    
+                               self.configs, trace = self.trace):    
                 trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
         elif self.model_type == 'poly2': 
             with poly2_hbr(X, y, batch_effects, self.batch_effects_size, 
-                               self.configs, trace = self.trace) as model:    
+                               self.configs, trace = self.trace):    
+                trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                                       cores=1)
+        if self.model_type == 'bspline': 
+            #self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
+            X = bspline_transform(X, self.bsp)
+            with linear_hbr(X, y, batch_effects, self.batch_effects_size, 
+                               self.configs, trace = self.trace):    
                 trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
                 
-        #self.model = model
         self.trace = trace    
         return trace
         
@@ -576,6 +618,10 @@ class HBR:
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
         elif self.model_type == 'poly2': 
             with poly2_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+        elif self.model_type == 'bspline': 
+            X = bspline_transform(X, self.bsp)
+            with linear_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
         
         pred_mean = ppc['y_like'].mean(axis=0)

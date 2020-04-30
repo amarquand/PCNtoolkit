@@ -38,6 +38,9 @@ class NormHBR(NormBase):
         self.configs['trbefile'] = kwargs.pop('trbefile',None) 
         self.configs['tsbefile'] = kwargs.pop('tsbefile',None) 
         self.configs['type'] = kwargs.pop('model_type', 'linear')
+        if self.configs['type'] == 'bspline':
+            self.configs['order'] = int(kwargs.pop('order', '3'))
+            self.configs['nknots'] = int(kwargs.pop('nknots', '5'))
         self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
         self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
