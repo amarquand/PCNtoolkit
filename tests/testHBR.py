@@ -27,8 +27,7 @@ n_grps = 2          # Number of batches in data
 n_samples = 500     # Number of samples in each group (use a list for different
                     # sample numbers across different batches)
 
-model_types = ['linear', 'poly2', 'bspline'] # models to try
-
+model_types = ['linear', 'poly2', 'bspline', 'nn']  # models to try
 
 ############################## Data Simulation ################################
 
@@ -42,6 +41,7 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     
     
 for model_type in model_types:
+    
     nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type,
                    random_intercept='True', random_slope='True', random_noise='True', 
                    hetero_noise='True', skewed_likelihood='False')
@@ -71,6 +71,7 @@ for model_type in model_types:
 
 
 ############################## Normative Modelling Test #######################
+        
 
 model_type = model_types[0]
 
