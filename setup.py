@@ -14,8 +14,10 @@ setup(name='nispat',
           'six',
           'sklearn', 
           'bspline',
+          'matplotlib',
+          'pandas>=0.25.3',
           'torch>=1.1.0', 
           'pymc3>=3.7', 
-          'Theano>=1.0.4'           
+          'Theano==1.0.4'           
       ],
       zip_safe=False)
