@@ -7,6 +7,10 @@ from subprocess import call
 from scipy.stats import genextreme, norm
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
+import pickle
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import make_regression
 
 # -----------------
 # Utility functions
@@ -587,6 +591,7 @@ def FDR(p_values, alpha):
     h = np.reshape(h, dim)
     return h
 
+
 def calibration_error(Y,m,s,cal_levels):
     ce = 0
     for cl in cal_levels:
@@ -595,3 +600,109 @@ def calibration_error(Y,m,s,cal_levels):
         lb = m - z * s
         ce = ce + np.abs(cl - np.sum(np.logical_and(Y>=lb,Y<=ub))/Y.shape[0])
     return ce
+
+
+def simulate_data(n_samples=100, n_features=1, n_grps=1, working_dir=None, 
+                       plot=False, random_state=None, noise=None):
+    """
+    This function simulates linear synthetic data for testing nispat methods.
+    
+    - Inputs:
+        
+        - n_samples: number of samples in each group of the training and test sets. 
+        If it is an int then the same sample number will be used for all groups. 
+        It can be also a list of size of n_grps that decides the number of samples 
+        in each group (default=100).
+        
+        - n_features: A positive integer that decides the number of features 
+        (default=1).
+        
+        - n_grps: A positive integer that decides the number of groups in data
+        (default=1).
+        
+        - working_dir: Directory to save data (default=None). 
+        
+        - plot: Boolean to plot the simulated training data (default=False).
+        
+        - random_state: random state for generating random numbers (Default=None).
+        
+        - noise: Type of added noise to the data. The options are 'gaussian', 
+        'exponential', and 'hetero_gaussian' (The defauls is None.). 
+    
+    - Outputs:
+        
+        - X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+    
+    """
+    
+    if isinstance(n_samples, int):
+        n_samples = [n_samples for i in range(n_grps)]
+        
+    X_train, Y_train, X_test, Y_test = [], [], [], []
+    grp_id_train, grp_id_test = [], []
+    coef = []
+    for i in range(n_grps):
+        bias = np.random.randint(-10, high=10)
+        
+        X_temp, Y_temp, coef_temp = make_regression(n_samples=n_samples[i]*2, 
+                                    n_features=n_features, n_targets=1, 
+                                    noise=10 * np.random.rand(), bias=bias, 
+                                    n_informative=1, coef=True, 
+                                    random_state=random_state)
+        coef.append(coef_temp/100)
+        X_train.append(X_temp[:X_temp.shape[0]//2])
+        Y_train.append(Y_temp[:X_temp.shape[0]//2]/100)
+        X_test.append(X_temp[X_temp.shape[0]//2:])
+        Y_test.append(Y_temp[X_temp.shape[0]//2:]/100)
+        grp_id = np.repeat(i, X_temp.shape[0])
+        grp_id_train.append(grp_id[:X_temp.shape[0]//2])
+        grp_id_test.append(grp_id[X_temp.shape[0]//2:])
+        
+        if noise == 'hetero_gaussian':
+            t = np.random.randint(1,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
+                        * np.log(1 + np.exp(X_train[i][:,0]))
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
+                        * np.log(1 + np.exp(X_test[i][:,0]))
+        elif noise == 'gaussian':
+            t = np.random.randint(1,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0])/t
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0])/t
+        elif noise == 'exponential':
+            t = np.random.randint(1,3)
+            Y_train[i] = Y_train[i] + np.random.exponential(1, Y_train[i].shape[0]) / t
+            Y_test[i] = Y_test[i] + np.random.exponential(1, Y_test[i].shape[0]) / t
+            
+    X_train = np.vstack(X_train)
+    X_test = np.vstack(X_test)
+    Y_train = np.concatenate(Y_train)
+    Y_test = np.concatenate(Y_test)
+    grp_id_train = np.expand_dims(np.concatenate(grp_id_train), axis=1)
+    grp_id_test = np.expand_dims(np.concatenate(grp_id_test), axis=1)
+    
+    for i in range(n_features):
+        plt.figure()
+        for j in range(n_grps):
+            plt.scatter(X_train[grp_id_train[:,0]==j,i],
+                Y_train[grp_id_train[:,0]==j,], label='Group ' + str(j))
+        plt.xlabel('X' + str(i))
+        plt.ylabel('Y')
+        plt.legend()
+        
+    if working_dir is not None:
+        if not os.path.isdir(working_dir):
+            os.mkdir(working_dir)
+        with open(os.path.join(working_dir ,'trbefile.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(grp_id_train),file)
+        with open(os.path.join(working_dir ,'tsbefile.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(grp_id_test),file)
+        with open(os.path.join(working_dir ,'X_train.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(X_train),file)
+        with open(os.path.join(working_dir ,'X_test.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(X_test),file)
+        with open(os.path.join(working_dir ,'Y_train.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(Y_train),file)
+        with open(os.path.join(working_dir ,'Y_test.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(Y_test),file)
+        
+    return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
