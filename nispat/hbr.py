@@ -493,31 +493,39 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden))
     init_out = pm.floatX(np.random.randn(n_hidden))
     
+    std_init_1 = pm.floatX(np.ones([feature_num, n_hidden]))
+    std_init_2 = pm.floatX(np.ones([n_hidden, n_hidden]))
+    std_init_out = pm.floatX(np.ones([n_hidden,]))
+    
     # And initialize random weights between each layer for sigma_noise:
     init_1_noise = pm.floatX(np.random.randn(feature_num, n_hidden))
     init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden))
     init_out_noise = pm.floatX(np.random.randn(n_hidden))
     
+    std_init_1_noise = pm.floatX(np.ones([feature_num, n_hidden]))
+    std_init_2_noise = pm.floatX(np.ones([n_hidden, n_hidden]))
+    std_init_out_noise = pm.floatX(np.ones([n_hidden,]))
+    
     with pm.Model() as model:
         
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
-                                            distribution='normal')
+                                            distribution='normal', freedom=1)
             
             weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', trace['w_in_1_grp_sd'], 
-                                            distribution='hnormal')
+                                            distribution='hnormal', freedom=1)
             
             weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'], 
-                                            distribution='normal') 
+                                            distribution='normal', freedom=1) 
             
             weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'], 
-                                            distribution='hnormal') 
+                                            distribution='hnormal', freedom=1) 
             
             weights_2_out_grp = from_posterior('w_2_out_grp', trace['w_2_out_grp'], 
                                             distribution='normal') 
             
             weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', trace['w_2_out_grp_sd'], 
-                                            distribution='hnormal')
+                                            distribution='hnormal', freedom=1)
             
         else:
             # Group the mean distribution for input to the hidden layer:
@@ -525,21 +533,24 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                          shape=(feature_num, n_hidden), testval=init_1)
             
             # Group standard deviation:
-            weights_in_1_grp_sd = pm.HalfNormal('w_in_1_grp_sd', sd=1.)
+            weights_in_1_grp_sd = pm.HalfNormal('w_in_1_grp_sd', sd=1., 
+                                         shape=(feature_num, n_hidden), testval=std_init_1)
             
             # Group the mean distribution for hidden layer 1 to hidden layer 2:
             weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1, 
                                         shape=(n_hidden, n_hidden), testval=init_2)
             
             # Group standard deviation:
-            weights_1_2_grp_sd = pm.HalfNormal('w_1_2_grp_sd', sd=1.)
+            weights_1_2_grp_sd = pm.HalfNormal('w_1_2_grp_sd', sd=1., 
+                                        shape=(n_hidden, n_hidden), testval=std_init_2)
             
             # Group the mean distribution for hidden to output:
             weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=1, 
                                           shape=(n_hidden,), testval=init_out)
             
             # Group standard deviation:
-            weights_2_out_grp_sd = pm.HalfNormal('w_2_out_grp_sd', sd=1.)
+            weights_2_out_grp_sd = pm.HalfNormal('w_2_out_grp_sd', sd=1., 
+                                          shape=(n_hidden,), testval=std_init_out)
             
         # Now create separate weights for each group, by doing
         # weights * group_sd + group_mean, we make sure the new weights are
@@ -575,46 +586,58 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # # Used when estimating/predicting on a new site
                     weights_in_1_grp_noise = from_posterior('w_in_1_grp_noise', 
                                                             trace['w_in_1_grp_noise'], 
-                                                            distribution='normal')
+                                                            distribution='normal',
+                                                            freedom=1)
                     
                     weights_in_1_grp_sd_noise = from_posterior('w_in_1_grp_sd_noise', 
                                                                trace['w_in_1_grp_sd_noise'], 
-                                                               distribution='hnormal')
+                                                               distribution='hnormal',
+                                                               freedom=1)
                     
                     weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise', 
                                                            trace['w_1_2_grp_noise'], 
-                                                           distribution='normal')
+                                                           distribution='normal',
+                                                           freedom=1)
                     
                     weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise', 
                                                               trace['w_1_2_grp_sd_noise'], 
-                                                              distribution='hnormal')
+                                                              distribution='hnormal',
+                                                              freedom=1)
                     
                     weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise', 
                                                              trace['w_2_out_grp_noise'], 
-                                                             distribution='normal')
+                                                             distribution='normal',
+                                                             freedom=1)
                     
                     weights_2_out_grp_sd_noise = from_posterior('w_2_out_grp_sd_noise', 
                                                                 trace['w_2_out_grp_sd_noise'], 
-                                                                distribution='hnormal')
+                                                                distribution='hnormal',
+                                                                freedom=1)
                     
                 else:
                     # The input layer to the first hidden layer:
                     weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=1, 
                                                shape=(feature_num,n_hidden), 
                                                testval=init_1_noise)
-                    weights_in_1_grp_sd_noise = pm.HalfNormal('w_in_1_grp_sd_noise', sd=1.)
+                    weights_in_1_grp_sd_noise = pm.HalfNormal('w_in_1_grp_sd_noise', sd=1., 
+                                               shape=(feature_num,n_hidden), 
+                                               testval=std_init_1_noise)
                     
                     # The first hidden layer to second hidden layer:
                     weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1, 
                                                       shape=(n_hidden, n_hidden), 
                                                       testval=init_2_noise)
-                    weights_1_2_grp_sd_noise = pm.HalfNormal('w_1_2_grp_sd_noise', sd=1.)
+                    weights_1_2_grp_sd_noise = pm.HalfNormal('w_1_2_grp_sd_noise', sd=1., 
+                                                      shape=(n_hidden, n_hidden), 
+                                                      testval=std_init_2_noise)
                     
                     # The second hidden layer to output layer:
                     weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=1, 
                                                         shape=(n_hidden,), 
                                                         testval=init_out_noise)
-                    weights_2_out_grp_sd_noise = pm.HalfNormal('w_2_out_grp_sd_noise', sd=1.) 
+                    weights_2_out_grp_sd_noise = pm.HalfNormal('w_2_out_grp_sd_noise', sd=1., 
+                                                        shape=(n_hidden,), 
+                                                        testval=std_init_out_noise)
             
                 # Now create separate weights for each group:
                 weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 
@@ -637,9 +660,9 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         a.append(batch_effects[:,i]==b) 
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        act_1_noise = pm.math.tanh(theano.tensor.dot(X[idx,:], weights_in_1_noise[be]))
-                        act_2_noise = pm.math.tanh(theano.tensor.dot(act_1_noise, weights_1_2_noise[be]))
-                        temp = pm.math.log1pexp(theano.tensor.dot(act_2_noise, weights_2_out_noise[be]))
+                        act_1_noise = pm.math.sigmoid(theano.tensor.dot(X[idx,:], weights_in_1_noise[be]))
+                        act_2_noise = pm.math.sigmoid(theano.tensor.dot(act_1_noise, weights_1_2_noise[be]))
+                        temp = pm.math.log1pexp(theano.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
                         sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], temp)
                 
             else: # homoscedastic noise:
@@ -743,6 +766,11 @@ class HBR:
                                self.configs):    
                 self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
+        elif self.model_type == 'nn': 
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
+                               self.configs):    
+                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                                       cores=1, init='advi+adapt_diag')
                 
         return self.trace
 
@@ -766,6 +794,9 @@ class HBR:
             elif self.model_type == 'bspline': 
                 X = bspline_transform(X, self.bsp)
                 with linear_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                    ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            elif self.model_type == 'nn': 
+                with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
             
             pred_mean = ppc['y_like'].mean(axis=0)
@@ -806,6 +837,11 @@ class HBR:
                                self.configs, trace = self.trace):    
                 trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
                                        cores=1)
+        elif self.model_type == 'nn': 
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
+                               self.configs, trace = self.trace):    
+                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                                       cores=1, init='advi+adapt_diag')
                 
         self.trace = trace    
         return trace
@@ -831,7 +867,10 @@ class HBR:
             X = bspline_transform(X, self.bsp)
             with linear_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
-        
+        elif self.model_type == 'nn': 
+                with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                    ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            
         pred_mean = ppc['y_like'].mean(axis=0)
         pred_var = ppc['y_like'].var(axis=0)
         

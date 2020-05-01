@@ -38,18 +38,27 @@ class NormHBR(NormBase):
         self.configs['trbefile'] = kwargs.pop('trbefile',None) 
         self.configs['tsbefile'] = kwargs.pop('tsbefile',None) 
         self.configs['type'] = kwargs.pop('model_type', 'linear')
+        self.configs['skewed_likelihood'] = kwargs.pop('skewed_likelihood', 'False') == 'True'
+        self.configs['pred_type'] = kwargs.pop('pred_type', 'single')
+        self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
+        
         if self.configs['type'] == 'bspline':
             self.configs['order'] = int(kwargs.pop('order', '3'))
             self.configs['nknots'] = int(kwargs.pop('nknots', '5'))
-        self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
-        self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
-        self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
-        self.configs['hetero_noise'] = kwargs.pop('hetero_noise', 'False') == 'True'
-        self.configs['skewed_likelihood'] = kwargs.pop('skewed_likelihood', 'False') == 'True'
-        self.configs['noise_model'] = kwargs.pop('noise_model', 'linear')
-        self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
-        self.configs['pred_type'] = kwargs.pop('pred_type', 'single')
-
+        elif self.configs['type'] == 'nn':
+            self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
+        elif self.configs['type'] == 'linear' or self.configs['type'] == 'poly2':
+            self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
+            self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
+        else:
+            raise ValueError("Unknown model type, please specify from 'linear', \
+                             'poly2', 'bspline', or 'nn'.")
+            
+        if self.configs['random_noise']:
+            self.configs['hetero_noise'] = kwargs.pop('hetero_noise', 'False') == 'True'
+            if self.configs['hetero_noise']:
+                self.configs['noise_model'] = kwargs.pop('noise_model', 'linear')
+            
         self.hbr = HBR(self.configs)
         
     @property
