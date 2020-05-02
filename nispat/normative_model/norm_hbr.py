@@ -45,6 +45,8 @@ class NormHBR(NormBase):
         if self.configs['type'] == 'bspline':
             self.configs['order'] = int(kwargs.pop('order', '3'))
             self.configs['nknots'] = int(kwargs.pop('nknots', '5'))
+            self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
+            self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         elif self.configs['type'] == 'nn':
             self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
         elif self.configs['type'] == 'linear' or self.configs['type'] == 'poly2':
