@@ -160,7 +160,7 @@ def linear_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     mu_prior_intercept_noise = from_posterior('mu_prior_intercept_noise', 
                                                             trace['mu_prior_intercept_noise'], 
-                                                            distribution='normal')
+                                                            distribution='hnormal')
                     sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
                                                            trace['sigma_prior_intercept_noise'], 
                                                            distribution='hcauchy')
@@ -179,10 +179,10 @@ def linear_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     sigma_prior_slope_noise = pm.HalfCauchy('sigma_prior_slope_noise', 
                                                             5, shape=(feature_num,))
                 if configs['random_intercept']: 
-                    intercepts_noise_offset = pm.HalfNormal('intercepts_noise_offset',
+                    intercepts_noise_offset = pm.Normal('intercepts_noise_offset',
                                                         sd=1, shape=(batch_effects_size))
                 else:
-                    intercepts_noise_offset = pm.HalfNormal('intercepts_noise_offset',
+                    intercepts_noise_offset = pm.Normal('intercepts_noise_offset',
                                                                     sd=1)
                     
                 intercepts_noise = pm.Deterministic('intercepts_noise',
@@ -360,7 +360,7 @@ def poly2_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     mu_prior_intercept_noise = from_posterior('mu_prior_intercept_noise', 
                                                             trace['mu_prior_intercept_noise'],
-                                                            distribution='normal')
+                                                            distribution='hnormal')
                     sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
                                                            trace['sigma_prior_intercept_noise'], 
                                                            distribution='hcauchy')
@@ -385,10 +385,10 @@ def poly2_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     sigma_prior_slope_2_noise = pm.HalfCauchy('sigma_prior_slope_2_noise', 5, shape=(feature_num,))
                     
                 if configs['random_intercept']: 
-                    intercepts_noise_offset = pm.HalfNormal('intercepts_noise_offset',
+                    intercepts_noise_offset = pm.Normal('intercepts_noise_offset',
                                                         sd=1, shape=(batch_effects_size))
                 else:
-                    intercepts_noise_offset = pm.HalfNormal('intercepts_noise_offset',
+                    intercepts_noise_offset = pm.Normal('intercepts_noise_offset',
                                                                     sd=1) 
                 intercepts_noise = pm.Deterministic('intercepts_noise',
                                                     mu_prior_intercept_noise + 
