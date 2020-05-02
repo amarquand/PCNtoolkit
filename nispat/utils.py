@@ -602,12 +602,14 @@ def calibration_error(Y,m,s,cal_levels):
     return ce
 
 
-def simulate_data(n_samples=100, n_features=1, n_grps=1, working_dir=None, 
-                       plot=False, random_state=None, noise=None):
+def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1, 
+                  working_dir=None, plot=False, random_state=None, noise=None):
     """
     This function simulates linear synthetic data for testing nispat methods.
     
     - Inputs:
+        
+        - method: simulate 'linear' or 'non-linear' function.
         
         - n_samples: number of samples in each group of the training and test sets. 
         If it is an int then the same sample number will be used for all groups. 
@@ -644,11 +646,21 @@ def simulate_data(n_samples=100, n_features=1, n_grps=1, working_dir=None,
     for i in range(n_grps):
         bias = np.random.randint(-10, high=10)
         
-        X_temp, Y_temp, coef_temp = make_regression(n_samples=n_samples[i]*2, 
+        if method == 'linear':
+            X_temp, Y_temp, coef_temp = make_regression(n_samples=n_samples[i]*2, 
                                     n_features=n_features, n_targets=1, 
                                     noise=10 * np.random.rand(), bias=bias, 
                                     n_informative=1, coef=True, 
                                     random_state=random_state)
+        elif method == 'non-linear':
+            X_temp = np.random.randint(-2,6,[2*n_samples[i], n_features]) \
+                    + np.random.randn(2*n_samples[i], n_features)
+            Y_temp = X_temp[:,0] * 20 * np.random.rand() + np.random.randint(10,100) \
+                        * np.sin(2 * np.random.rand() + 2 * np.pi /5 * X_temp[:,0]) 
+            coef_temp = 0
+        else:
+            raise ValueError("Unknow method. Please specify valid method among \
+                             'linear' or  'non-linear'.")
         coef.append(coef_temp/100)
         X_train.append(X_temp[:X_temp.shape[0]//2])
         Y_train.append(Y_temp[:X_temp.shape[0]//2]/100)
@@ -659,13 +671,13 @@ def simulate_data(n_samples=100, n_features=1, n_grps=1, working_dir=None,
         grp_id_test.append(grp_id[X_temp.shape[0]//2:])
         
         if noise == 'hetero_gaussian':
-            t = np.random.randint(1,10)
+            t = np.random.randint(5,10)
             Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
                         * np.log(1 + np.exp(X_train[i][:,0]))
             Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
                         * np.log(1 + np.exp(X_test[i][:,0]))
         elif noise == 'gaussian':
-            t = np.random.randint(1,10)
+            t = np.random.randint(3,10)
             Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0])/t
             Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0])/t
         elif noise == 'exponential':
