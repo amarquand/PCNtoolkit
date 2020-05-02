@@ -30,7 +30,7 @@ class NormBase(with_metaclass(ABCMeta)):
     def save(self, save_path):
         try:
             with open(save_path, 'wb') as handle:
-                pickle.dump(self, handle)
+                pickle.dump(self, handle, -1)
             return True
         except Exception as err:
             print('Error:', err)
