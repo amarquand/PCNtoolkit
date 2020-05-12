@@ -41,6 +41,9 @@ class NormHBR(NormBase):
         self.configs['skewed_likelihood'] = kwargs.pop('skewed_likelihood', 'False') == 'True'
         self.configs['pred_type'] = kwargs.pop('pred_type', 'single')
         self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
+        self.configs['n_samples'] = int(kwargs.pop('n_samples', '1000'))
+        self.configs['n_tuning'] = int(kwargs.pop('n_tuning', '500'))
+        self.configs['n_chains'] = int(kwargs.pop('n_chains', '1'))
         
         if self.configs['type'] == 'bspline':
             self.configs['order'] = int(kwargs.pop('order', '3'))

@@ -127,9 +127,9 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                trace['sigma_prior_slope'], 
                                                distribution='hcauchy')
         else:
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e5)
+            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
             sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
-            mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e5, shape=(feature_num,))
+            mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e3, shape=(feature_num,))
             sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5, shape=(feature_num,))
         
         if configs['random_intercept']: 
@@ -188,10 +188,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                        distribution='hcauchy')
                 else:
                     mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', 
-                                                             sigma=1e5)
+                                                             sigma=1e3)
                     sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
                     mu_prior_slope_noise = pm.Normal('mu_prior_slope_noise',  mu=0., 
-                                                     sigma=1e5, shape=(feature_num,))
+                                                     sigma=1e3, shape=(feature_num,))
                     sigma_prior_slope_noise = pm.HalfCauchy('sigma_prior_slope_noise', 
                                                             5, shape=(feature_num,))
                 if configs['random_intercept']: 
@@ -398,7 +398,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             if idx[0].shape[0] != 0:
                 act_1 = pm.math.tanh(theano.tensor.dot(X[idx,:], weights_in_1[be]))
                 act_2 = pm.math.tanh(theano.tensor.dot(act_1, weights_1_2[be]))
-                y_hat = intercepts[be] + theano.tensor.set_subtensor(y_hat[idx,0], theano.tensor.dot(act_2, weights_2_out[be]))
+                y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(act_2, weights_2_out[be]))
         
         # If we want to estimate varying noise terms across groups:
         if configs['random_noise']:
@@ -452,6 +452,9 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     weights_2_out_grp_sd_noise = pm.HalfCauchy('w_2_out_grp_sd_noise', 5, 
                                                         shape=(n_hidden,), 
                                                         testval=std_init_out_noise)
+                    
+                    #mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', sigma=1e3)
+                    #sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
             
                 # Now create separate weights for each group:
                 weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 0, sd=1,
@@ -465,6 +468,12 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 weights_2_out_raw_noise = pm.Normal('w_2_out_noise', 0, sd=1,
                                                     shape=(batch_effects_size + [n_hidden]))
                 weights_2_out_noise = weights_2_out_raw_noise * weights_2_out_grp_sd_noise + weights_2_out_grp_noise
+                
+                #intercepts_offset_noise = pm.Normal('intercepts_offset_noise', mu=0, sd=1, 
+                #                          shape=(batch_effects_size))
+       
+                #intercepts_noise = pm.Deterministic('intercepts_noise', mu_prior_intercept_noise + 
+                #                      intercepts_offset_noise * sigma_prior_intercept_noise)
                 
                 # Build the neural network and estimate the sigma_y:
                 sigma_y = theano.tensor.zeros(y.shape)
@@ -565,25 +574,26 @@ class HBR:
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, 
                                        cores=1, init='advi+adapt_diag')
                 
         return self.trace
@@ -596,7 +606,7 @@ class HBR:
         if len(batch_effects.shape)==1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         
-        samples = 1000
+        samples = self.configs['n_samples']
         if pred == 'single':
             y = np.zeros([X.shape[0],1])
             if self.model_type == 'linear': 
@@ -638,28 +648,28 @@ class HBR:
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         if self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
-                                       cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                self.trace = pm.sample(1000, tune=500, chains=1,  target_accept=0.8, 
+                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'], target_accept=0.8, 
                                        cores=1, init='advi+adapt_diag')
                 
-        self.trace = trace    
-        return trace
+        return self.trace
         
     
     def predict_on_new_site(self, X, batch_effects):
@@ -670,7 +680,7 @@ class HBR:
         if len(batch_effects.shape)==1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         
-        samples = 1000
+        samples = self.configs['n_samples']
         y = np.zeros([X.shape[0],1])
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
