@@ -594,7 +594,7 @@ class HBR:
                                self.configs):    
                 self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  target_accept=0.8, 
-                                       cores=1, init='advi+adapt_diag')
+                                       cores=1) # init='advi+adapt_diag')
                 
         return self.trace
 
@@ -667,7 +667,7 @@ class HBR:
                                self.configs, trace = self.trace):    
                 self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'], target_accept=0.8, 
-                                       cores=1, init='advi+adapt_diag')
+                                       cores=1) #, init='advi+adapt_diag')
                 
         return self.trace
         
