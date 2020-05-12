@@ -512,7 +512,7 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
     
-    if (output_path is not '') and (not os.path.isdir(output_path)):
+    if (output_path != '') and (not os.path.isdir(output_path)):
         os.mkdir(output_path)
     
     # load data

@@ -48,7 +48,7 @@ class NormHBR(NormBase):
             self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
             self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         elif self.configs['type'] == 'polynomial':
-            self.configs['order'] = int(kwargs.pop('order', '2'))
+            self.configs['order'] = int(kwargs.pop('order', '3'))
             self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
             self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         elif self.configs['type'] == 'nn':

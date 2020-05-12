@@ -59,7 +59,7 @@ def create_poly_basis(X, order):
     return Phi
 
 
-def from_posterior(param, samples, distribution = None, half = False, freedom=100):
+def from_posterior(param, samples, distribution = None, half = False, freedom=10):
     
     if len(samples.shape)>1:
         shape = samples.shape[1:]
@@ -316,62 +316,76 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
-                                            distribution='normal', freedom=1)
+                                            distribution='normal')
             
             weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', trace['w_in_1_grp_sd'], 
-                                            distribution='hnormal', freedom=1)
+                                            distribution='hcauchy')
             
             weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'], 
-                                            distribution='normal', freedom=1) 
+                                            distribution='normal') 
             
             weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'], 
-                                            distribution='hnormal', freedom=1) 
+                                            distribution='hcauchy') 
             
             weights_2_out_grp = from_posterior('w_2_out_grp', trace['w_2_out_grp'], 
                                             distribution='normal') 
             
             weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', trace['w_2_out_grp_sd'], 
-                                            distribution='hnormal', freedom=1)
+                                            distribution='hcauchy')
+            
+            mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
+                                                distribution='normal')
+            sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
+                                                distribution='hcauchy')
             
         else:
             # Group the mean distribution for input to the hidden layer:
-            weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1, 
+            weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=10, 
                                          shape=(feature_num, n_hidden), testval=init_1)
             
             # Group standard deviation:
-            weights_in_1_grp_sd = pm.HalfNormal('w_in_1_grp_sd', sd=1., 
+            weights_in_1_grp_sd = pm.HalfCauchy('w_in_1_grp_sd', 5, 
                                          shape=(feature_num, n_hidden), testval=std_init_1)
             
             # Group the mean distribution for hidden layer 1 to hidden layer 2:
-            weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1, 
+            weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=10, 
                                         shape=(n_hidden, n_hidden), testval=init_2)
             
             # Group standard deviation:
-            weights_1_2_grp_sd = pm.HalfNormal('w_1_2_grp_sd', sd=1., 
+            weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 5., 
                                         shape=(n_hidden, n_hidden), testval=std_init_2)
             
             # Group the mean distribution for hidden to output:
-            weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=1, 
+            weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=10, 
                                           shape=(n_hidden,), testval=init_out)
             
             # Group standard deviation:
-            weights_2_out_grp_sd = pm.HalfNormal('w_2_out_grp_sd', sd=1., 
+            weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 5., 
                                           shape=(n_hidden,), testval=std_init_out)
+            
+            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
+            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
             
         # Now create separate weights for each group, by doing
         # weights * group_sd + group_mean, we make sure the new weights are
         # coming from the (group_mean, group_sd) distribution.
-        weights_in_1_raw = pm.Normal('w_in_1', 
+        weights_in_1_raw = pm.Normal('w_in_1', 0, sd=1,
                                      shape=(batch_effects_size + [feature_num, n_hidden]))
         weights_in_1 = weights_in_1_raw * weights_in_1_grp_sd + weights_in_1_grp
         
-        weights_1_2_raw = pm.Normal('w_1_2', 
+        weights_1_2_raw = pm.Normal('w_1_2', 0, sd=1,
                                     shape=(batch_effects_size + [n_hidden, n_hidden]))
         weights_1_2 = weights_1_2_raw * weights_1_2_grp_sd + weights_1_2_grp
         
-        weights_2_out_raw = pm.Normal('w_2_out', 
+        weights_2_out_raw = pm.Normal('w_2_out', 0, sd=1,
                                       shape=(batch_effects_size + [n_hidden]))
         weights_2_out = weights_2_out_raw * weights_2_out_grp_sd + weights_2_out_grp
+        
+        intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1, 
+                                          shape=(batch_effects_size))
+       
+        intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
+                                      intercepts_offset * sigma_prior_intercept)
             
         # Build the neural network and estimate y_hat:
         y_hat = theano.tensor.zeros(y.shape)
@@ -384,7 +398,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             if idx[0].shape[0] != 0:
                 act_1 = pm.math.tanh(theano.tensor.dot(X[idx,:], weights_in_1[be]))
                 act_2 = pm.math.tanh(theano.tensor.dot(act_1, weights_1_2[be]))
-                y_hat = theano.tensor.set_subtensor(y_hat[idx,0], theano.tensor.dot(act_2, weights_2_out[be]))
+                y_hat = intercepts[be] + theano.tensor.set_subtensor(y_hat[idx,0], theano.tensor.dot(act_2, weights_2_out[be]))
         
         # If we want to estimate varying noise terms across groups:
         if configs['random_noise']:
@@ -392,69 +406,63 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # # Used when estimating/predicting on a new site
                     weights_in_1_grp_noise = from_posterior('w_in_1_grp_noise', 
                                                             trace['w_in_1_grp_noise'], 
-                                                            distribution='normal',
-                                                            freedom=1)
+                                                            distribution='normal')
                     
                     weights_in_1_grp_sd_noise = from_posterior('w_in_1_grp_sd_noise', 
                                                                trace['w_in_1_grp_sd_noise'], 
-                                                               distribution='hnormal',
-                                                               freedom=1)
+                                                               distribution='hcauchy')
                     
                     weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise', 
                                                            trace['w_1_2_grp_noise'], 
-                                                           distribution='normal',
-                                                           freedom=1)
+                                                           distribution='normal')
                     
                     weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise', 
                                                               trace['w_1_2_grp_sd_noise'], 
-                                                              distribution='hnormal',
-                                                              freedom=1)
+                                                              distribution='hcauchy')
                     
                     weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise', 
                                                              trace['w_2_out_grp_noise'], 
-                                                             distribution='normal',
-                                                             freedom=1)
+                                                             distribution='normal')
                     
                     weights_2_out_grp_sd_noise = from_posterior('w_2_out_grp_sd_noise', 
                                                                 trace['w_2_out_grp_sd_noise'], 
-                                                                distribution='hnormal',
-                                                                freedom=1)
+                                                                distribution='hcauchy')
                     
                 else:
                     # The input layer to the first hidden layer:
-                    weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=1, 
+                    weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=10, 
                                                shape=(feature_num,n_hidden), 
                                                testval=init_1_noise)
-                    weights_in_1_grp_sd_noise = pm.HalfNormal('w_in_1_grp_sd_noise', sd=1., 
+                    weights_in_1_grp_sd_noise = pm.HalfCauchy('w_in_1_grp_sd_noise', 5, 
                                                shape=(feature_num,n_hidden), 
                                                testval=std_init_1_noise)
                     
                     # The first hidden layer to second hidden layer:
-                    weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1, 
+                    weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=10, 
                                                       shape=(n_hidden, n_hidden), 
                                                       testval=init_2_noise)
-                    weights_1_2_grp_sd_noise = pm.HalfNormal('w_1_2_grp_sd_noise', sd=1., 
+                    weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 5, 
                                                       shape=(n_hidden, n_hidden), 
                                                       testval=std_init_2_noise)
                     
                     # The second hidden layer to output layer:
-                    weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=1, 
+                    weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=10, 
                                                         shape=(n_hidden,), 
                                                         testval=init_out_noise)
-                    weights_2_out_grp_sd_noise = pm.HalfNormal('w_2_out_grp_sd_noise', sd=1., 
+                    weights_2_out_grp_sd_noise = pm.HalfCauchy('w_2_out_grp_sd_noise', 5, 
                                                         shape=(n_hidden,), 
                                                         testval=std_init_out_noise)
             
                 # Now create separate weights for each group:
-                weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 
+                weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 0, sd=1,
                                                    shape=(batch_effects_size + [feature_num, n_hidden]))
                 weights_in_1_noise = weights_in_1_raw_noise * weights_in_1_grp_sd_noise + weights_in_1_grp_noise
                 
-                weights_1_2_raw_noise = pm.Normal('w_1_2_noise', 
+                weights_1_2_raw_noise = pm.Normal('w_1_2_noise', 0, sd=1,
                                                   shape=(batch_effects_size + [n_hidden, n_hidden]))
                 weights_1_2_noise = weights_1_2_raw_noise * weights_1_2_grp_sd_noise + weights_1_2_grp_noise
                 
-                weights_2_out_raw_noise = pm.Normal('w_2_out_noise', 
+                weights_2_out_raw_noise = pm.Normal('w_2_out_noise', 0, sd=1,
                                                     shape=(batch_effects_size + [n_hidden]))
                 weights_2_out_noise = weights_2_out_raw_noise * weights_2_out_grp_sd_noise + weights_2_out_grp_noise
                 
