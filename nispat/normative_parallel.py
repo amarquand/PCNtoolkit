@@ -329,7 +329,7 @@ def collect_nm(processing_dir,
                collect=False,
                binary=False,
                batch_size=None,
-               outputsuffix=''):
+               outputsuffix='_estimate'):
     
     """This function checks and collects all batches.
 

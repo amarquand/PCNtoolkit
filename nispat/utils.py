@@ -10,6 +10,8 @@ from abc import ABCMeta, abstractmethod
 import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
+import bspline
+from bspline import splinelab
 from sklearn.datasets import make_regression
 
 # -----------------
@@ -28,6 +30,18 @@ def create_poly_basis(X, dimpoly):
         colid += D
         
     return Phi
+
+def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
+    """ compute a Bspline basis set where:
+        
+        :param p: order of spline (3 = cubic)
+        :param nknots: number of knots (endpoints only counted once)
+    """
+    
+    knots = np.linspace(xmin, xmax, nknots)
+    k = splinelab.augknt(knots, p)       # pad the knot vector
+    B = bspline.Bspline(k, p) 
+    return B
 
 def squared_dist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
