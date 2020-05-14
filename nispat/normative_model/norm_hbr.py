@@ -76,6 +76,7 @@ class NormHBR(NormBase):
     def neg_log_lik(self):
         return -1
     
+    
     def estimate(self, X, y, **kwargs):
         
         trbefile = kwargs.pop('trbefile',None) 
@@ -83,11 +84,12 @@ class NormHBR(NormBase):
             batch_effects_train = fileio.load(trbefile)
         else:
             print('Could not find batch-effects file! Initilizing all as zeros ...')
-            batch_effects_train = np.zeros([X.shape[0],2])
+            batch_effects_train = np.zeros([X.shape[0],1])
 
         self.hbr.estimate(X, y, batch_effects_train)
         
         return self
+    
     
     def predict(self, Xs, X=None, Y=None, **kwargs): 
         
@@ -96,7 +98,7 @@ class NormHBR(NormBase):
             batch_effects_test = fileio.load(tsbefile)
         else:
             print('Could not find batch-effects file! Initilizing all as zeros ...')
-            batch_effects_test = np.zeros([Xs.shape[0],2])    
+            batch_effects_test = np.zeros([Xs.shape[0],1])    
         
         pred_type = self.configs['pred_type']
         
@@ -104,13 +106,20 @@ class NormHBR(NormBase):
         
         return yhat.squeeze(), s2.squeeze()
     
+    
     def estimate_on_new_sites(self, X, y, batch_effects):
     
         self.hbr.estimate_on_new_site(X, y, batch_effects)
         return self
+    
     
     def predict_on_new_sites(self, X, batch_effects):
     
         yhat, s2 = self.hbr.predict_on_new_site(X, batch_effects)
         return yhat, s2
     
+    
+    def  generate(self, X, batch_effects, samples=10):
+        
+        generated_samples = self.hbr.generate(X, batch_effects, samples)
+        return generated_samples

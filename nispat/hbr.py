@@ -571,6 +571,8 @@ class HBR:
         for i in range(self.batch_effects_num):
             self.batch_effects_size.append(len(np.unique(batch_effects[:,i])))
             
+        self.X_range = np.stack((X.min(axis=0), X.max(axis=0)))
+            
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
@@ -701,3 +703,38 @@ class HBR:
         pred_var = ppc['y_like'].var(axis=0)
         
         return pred_mean, pred_var
+    
+
+    def generate(self, X, batch_effects, samples):
+        """ Function to generate samples from posterior predictive distribution """
+        
+        if len(X.shape)==1:
+            X = np.expand_dims(X, axis=1)
+        if len(batch_effects.shape)==1:
+            batch_effects = np.expand_dims(batch_effects, axis=1)
+                
+        y = np.zeros([X.shape[0],1])
+        if self.model_type == 'linear': 
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+        elif self.model_type == 'polynomial':
+            X = create_poly_basis(X, self.configs['order'])
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+        elif self.model_type == 'bspline': 
+            X = bspline_transform(X, self.bsp)
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+        elif self.model_type == 'nn': 
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+        
+        generated_samples = np.reshape(ppc['y_like'].squeeze().T, [X.shape[0]*samples, 1])
+        X = np.repeat(X, samples)
+        if len(X.shape)==1:
+            X = np.expand_dims(X, axis=1)
+        batch_effects = np.repeat(batch_effects, samples)
+        if len(batch_effects.shape)==1:
+            batch_effects = np.expand_dims(batch_effects, axis=1)
+        
+        return X, batch_effects, generated_samples
