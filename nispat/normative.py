@@ -20,6 +20,7 @@ import numpy as np
 import argparse
 import pickle
 import glob
+import pandas as pd
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -256,7 +257,7 @@ def estimate(covfile, respfile, **kwargs):
     alg = kwargs.pop('alg','gpr')
     saveoutput = kwargs.pop('saveoutput','True')=='True'
     savemodel = kwargs.pop('savemodel','False')=='True'
-    outputsuffix = kwargs.pop('outputsuffix',None)
+    outputsuffix = kwargs.pop('outputsuffix','_estimate')
     standardize = kwargs.pop('standardize',True)
     
     if savemodel and not os.path.isdir('Models'):
@@ -491,7 +492,7 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
     output_path = kwargs.pop('output_path', '')
-    outputsuffix = kwargs.pop('outputsuffix', None)
+    outputsuffix = kwargs.pop('outputsuffix', '_predict')
         
     if not os.path.isdir(model_path):
         print('Models directory does not exist!')
@@ -574,18 +575,22 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
 def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None, 
              **kwargs):
     
-    if (not 'model_path' in list(kwargs.keys())) or \
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model transferring is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
         (not 'output_path' in list(kwargs.keys())) or \
         (not 'trbefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
             return
     else:
         model_path = kwargs.pop('model_path')
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
         batch_effects_train = fileio.load(trbefile)
-
     
-    outputsuffix = kwargs.pop('outputsuffix', None)
+    outputsuffix = kwargs.pop('outputsuffix', '_transfer')
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -669,6 +674,90 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                      outputsuffix=outputsuffix)
         
         return (Yhat, S2, Z)
+
+
+def extend(covfile, respfile, maskfile=None, **kwargs):
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model extention is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())) or \
+        (not 'trbefile' in list(kwargs.keys())) or \
+        (not 'dummycovfile' in list(kwargs.keys()))or \
+        (not 'dummybefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path = kwargs.pop('model_path')
+        output_path = kwargs.pop('output_path')
+        trbefile = kwargs.pop('trbefile')
+        dummycovfile = kwargs.pop('dummycovfile')
+        dummybefile = kwargs.pop('dummybefile')
+    
+    informative_prior = kwargs.pop('job_id', 'False') == 'True'
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+    
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+            
+    # load data
+    print("Loading data ...")
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    batch_effects_train = fileio.load(trbefile)
+    X_dummy = fileio.load(dummycovfile)
+    batch_effects_dummy = fileio.load(dummybefile)
+    
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    if len(X_dummy.shape) == 1:
+        X_dummy = X_dummy[:, np.newaxis]
+    feature_num = Y.shape[1]
+    
+    # estimate the models for all subjects
+    for i in range(feature_num):
+              
+        nm = norm_init(X)
+        if batch_size is not None: # when using nirmative_parallel
+            print("Extending model ", job_id*batch_size+i)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + '.pkl'))
+        else:
+            print("Extending model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+        
+            
+        X_dummy, batch_effects_dummy, Y_dummy = nm.generate(X_dummy, 
+                                                            batch_effects_dummy)
+        
+        if informative_prior:
+            nm = nm.estimate_on_new_sites(np.concatenate((X_dummy, X)), 
+                         np.concatenate((Y_dummy, Y[:,i:i+1])), 
+                         np.concatenate((batch_effects_dummy, batch_effects_train)))
+                         
+        else:
+            with open('betempfile.pkl', 'wb')  as file:
+                pickle.dump(pd.DataFrame(np.concatenate((batch_effects_dummy, 
+                                                     batch_effects_train))), file)
+            nm = nm.estimate(np.concatenate((X_dummy, X)), 
+                         np.concatenate((Y_dummy, Y[:,i:i+1])), 
+                         trbefile='betempfile.pkl')
+        
+        if batch_size is not None: 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + '.pkl'))
+        else:
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + '.pkl'))
+
 
 def main(*args):
     """ Parse arguments and estimate model
