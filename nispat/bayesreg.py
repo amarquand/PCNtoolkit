@@ -318,18 +318,23 @@ class BLR:
 
     def predict(self, hyp, X, y, Xs, var_groups_test=None):
         """ Function to make predictions from the model """
-
-        # hyperparameters
-        beta, alpha, gamma = self._parse_hyps(hyp, X)
-
-        # warp the likelihood?
-        if self.warp is not None:
-            if self.verbose:
-                print('warping input...')
-            y = self.warp.f(y, gamma)
-
-        if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
-            self.post(hyp, X, y)
+        
+        if X is None or y is None:
+            # set hyperparameters. we can use an array of zeros because 
+            beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
+        else:
+            
+            # set hyperparameters
+            beta, alpha, gamma = self._parse_hyps(hyp, X)
+            
+            # do we need to re-estimate the posterior?
+            if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
+                # warp the likelihood?
+                if self.warp is not None:
+                    if self.verbose:
+                        print('warping input...')
+                    y = self.warp.f(y, gamma) 
+                self.post(hyp, X, y)
 
         N_test = Xs.shape[0]
 

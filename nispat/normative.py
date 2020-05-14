@@ -255,10 +255,16 @@ def estimate(covfile, respfile, **kwargs):
     testcov = kwargs.pop('testcov', None)
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
-    saveoutput = kwargs.pop('saveoutput','True')=='True'
-    savemodel = kwargs.pop('savemodel','False')=='True'
     outputsuffix = kwargs.pop('outputsuffix','_estimate')
-    standardize = kwargs.pop('standardize',True)
+    standardize = kwargs.pop('standardize','True')
+    if type(standardize) is str:
+        standardize = standardize=='True'
+    saveoutput = kwargs.pop('saveoutput','True')
+    if type(saveoutput) is str:
+        saveoutput = saveoutput=='True'
+    savemodel = kwargs.pop('savemodel','False')
+    if type(savemodel) is str:
+        savemodel = savemodel=='True'
     
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')

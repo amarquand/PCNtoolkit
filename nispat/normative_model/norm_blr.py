@@ -84,12 +84,17 @@ class NormBLR(NormBase):
         # Configure warped likelihood
         if 'warp' in kwargs:
             warp_str = kwargs.pop('warp')
-            exec('self.warp =' + warp_str + '()')
-            n_gamma = self.warp.get_n_params()
+            if warp_str is None:
+                self.warp = None
+                n_gamma = 0
+            else:
+                # set up warp
+                exec('self.warp =' + warp_str + '()')
+                n_gamma = self.warp.get_n_params()
         else:
             self.warp = None
             n_gamma = 0
-        
+
         self._n_params = n_alpha + n_beta + n_gamma
         self._model_order = model_order
         
@@ -134,7 +139,7 @@ class NormBLR(NormBase):
         
         return self
 
-    def predict(self, Xs, X, y, **kwargs):
+    def predict(self, Xs, X=None, y=None, **kwargs):
         theta = kwargs.pop('theta', None)
         
         if theta is None:
