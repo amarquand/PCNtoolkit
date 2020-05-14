@@ -44,6 +44,7 @@ class NormHBR(NormBase):
         self.configs['n_samples'] = int(kwargs.pop('n_samples', '1000'))
         self.configs['n_tuning'] = int(kwargs.pop('n_tuning', '500'))
         self.configs['n_chains'] = int(kwargs.pop('n_chains', '1'))
+        self.configs['target_accept'] = float(kwargs.pop('target_accept', '0.8'))
         
         if self.configs['type'] == 'bspline':
             self.configs['order'] = int(kwargs.pop('order', '3'))
@@ -79,7 +80,7 @@ class NormHBR(NormBase):
     
     def estimate(self, X, y, **kwargs):
         
-        trbefile = kwargs.pop('trbefile',None) 
+        trbefile = kwargs.pop('trbefile', None) 
         if trbefile is not None:
             batch_effects_train = fileio.load(trbefile)
         else:
@@ -93,7 +94,7 @@ class NormHBR(NormBase):
     
     def predict(self, Xs, X=None, Y=None, **kwargs): 
         
-        tsbefile = kwargs.pop('tsbefile',None) 
+        tsbefile = kwargs.pop('tsbefile', None) 
         if tsbefile is not None:
             batch_effects_test = fileio.load(tsbefile)
         else:
@@ -119,7 +120,25 @@ class NormHBR(NormBase):
         return yhat, s2
     
     
-    def  generate(self, X, batch_effects, samples=10):
+    def extend(self, X, y, batch_effects, X_dummy, batch_effects_dummy, 
+               samples=10, informative_prior=False):
         
-        generated_samples = self.hbr.generate(X, batch_effects, samples)
-        return generated_samples
+        X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(X_dummy, 
+                                                batch_effects_dummy, samples)
+        if informative_prior:
+            self.hbr.estimate_on_new_sites(np.concatenate((X_dummy, X)), 
+                         np.concatenate((Y_dummy, y)), 
+                         np.concatenate((batch_effects_dummy, batch_effects)))
+        else:
+            self.hbr.estimate(np.concatenate((X_dummy, X)), 
+                         np.concatenate((Y_dummy, y)), 
+                         np.concatenate((batch_effects_dummy, batch_effects)))
+        
+        return self
+    
+    
+    def generate(self, X, batch_effects, samples=10):
+        
+        X, batch_effects, generated_samples = self.hbr.generate(X, batch_effects, 
+                                                                samples)
+        return X, batch_effects, generated_samples

@@ -570,32 +570,41 @@ class HBR:
         self.batch_effects_size = []
         for i in range(self.batch_effects_num):
             self.batch_effects_size.append(len(np.unique(batch_effects[:,i])))
-            
-        self.X_range = np.stack((X.min(axis=0), X.max(axis=0)))
-            
+        
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, 
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'], 
+                                       target_accept=self.configs['target_accept'], 
                                        cores=1) # init='advi+adapt_diag')
                 
         return self.trace
@@ -650,25 +659,36 @@ class HBR:
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'],  
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         if self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'],  target_accept=0.8, cores=1)
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'], 
+                                       target_accept=self.configs['target_accept'], 
+                                       cores=1)
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
-                self.trace = pm.sample(self.configs['n_samples'], tune=self.configs['n_tuning'], 
-                                       chains=self.configs['n_chains'], target_accept=0.8, 
+                self.trace = pm.sample(self.configs['n_samples'], 
+                                       tune=self.configs['n_tuning'], 
+                                       chains=self.configs['n_chains'], 
+                                       target_accept=self.configs['target_accept'], 
                                        cores=1) #, init='advi+adapt_diag')
                 
         return self.trace

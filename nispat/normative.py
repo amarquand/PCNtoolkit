@@ -20,7 +20,6 @@ import numpy as np
 import argparse
 import pickle
 import glob
-import pandas as pd
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
@@ -531,7 +530,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     sample_num = X.shape[0]
     feature_num = len(glob.glob(os.path.join(model_path, 'NM_*.pkl')))
 
-    # run cross-validation loop
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
     Z = np.zeros([sample_num, feature_num])
@@ -646,7 +644,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     for i in range(feature_num):
               
         nm = norm_init(X)
-        if batch_size is not None: # when using nirmative_parallel
+        if batch_size is not None: # when using normative_parallel
             print("Transferting model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
                                       str(job_id*batch_size+i) + '.pkl'))
@@ -703,6 +701,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         dummybefile = kwargs.pop('dummybefile')
     
     informative_prior = kwargs.pop('job_id', 'False') == 'True'
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
     if batch_size is not None:
@@ -740,22 +739,8 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
             print("Extending model ", i+1, "of", feature_num)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
         
-            
-        X_dummy, batch_effects_dummy, Y_dummy = nm.generate(X_dummy, 
-                                                            batch_effects_dummy)
-        
-        if informative_prior:
-            nm = nm.estimate_on_new_sites(np.concatenate((X_dummy, X)), 
-                         np.concatenate((Y_dummy, Y[:,i:i+1])), 
-                         np.concatenate((batch_effects_dummy, batch_effects_train)))
-                         
-        else:
-            with open('betempfile.pkl', 'wb')  as file:
-                pickle.dump(pd.DataFrame(np.concatenate((batch_effects_dummy, 
-                                                     batch_effects_train))), file)
-            nm = nm.estimate(np.concatenate((X_dummy, X)), 
-                         np.concatenate((Y_dummy, Y[:,i:i+1])), 
-                         trbefile='betempfile.pkl')
+        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, batch_effects_dummy, 
+               samples=generation_factor, informative_prior=informative_prior)
         
         if batch_size is not None: 
             nm.save(os.path.join(output_path, 'NM_0_' + 
@@ -790,11 +775,8 @@ def main(*args):
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
 
-    # estimate normative model
+    # Executing the target function
     exec(func + '(' + all_args + ')')
-    #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
-    #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
-    #         standardize=std)
 
 # For running from the command line:
 if __name__ == "__main__":
