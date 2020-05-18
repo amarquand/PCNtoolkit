@@ -142,3 +142,4 @@ class NormHBR(NormBase):
         X, batch_effects, generated_samples = self.hbr.generate(X, batch_effects, 
                                                                 samples)
         return X, batch_effects, generated_samples
+    
