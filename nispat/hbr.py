@@ -340,27 +340,27 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             
         else:
             # Group the mean distribution for input to the hidden layer:
-            weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=10, 
+            weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1, 
                                          shape=(feature_num, n_hidden), testval=init_1)
             
             # Group standard deviation:
-            weights_in_1_grp_sd = pm.HalfCauchy('w_in_1_grp_sd', 5, 
+            weights_in_1_grp_sd = pm.HalfCauchy('w_in_1_grp_sd', 1., 
                                          shape=(feature_num, n_hidden), testval=std_init_1)
             
             # Group the mean distribution for hidden layer 1 to hidden layer 2:
-            weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=10, 
+            weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1, 
                                         shape=(n_hidden, n_hidden), testval=init_2)
             
             # Group standard deviation:
-            weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 5., 
+            weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 1., 
                                         shape=(n_hidden, n_hidden), testval=std_init_2)
             
             # Group the mean distribution for hidden to output:
-            weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=10, 
+            weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=1, 
                                           shape=(n_hidden,), testval=init_out)
             
             # Group standard deviation:
-            weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 5., 
+            weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 1., 
                                           shape=(n_hidden,), testval=std_init_out)
             
             mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
@@ -430,26 +430,26 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     
                 else:
                     # The input layer to the first hidden layer:
-                    weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=10, 
+                    weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=1, 
                                                shape=(feature_num,n_hidden), 
                                                testval=init_1_noise)
-                    weights_in_1_grp_sd_noise = pm.HalfCauchy('w_in_1_grp_sd_noise', 5, 
+                    weights_in_1_grp_sd_noise = pm.HalfCauchy('w_in_1_grp_sd_noise', 1, 
                                                shape=(feature_num,n_hidden), 
                                                testval=std_init_1_noise)
                     
                     # The first hidden layer to second hidden layer:
-                    weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=10, 
+                    weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1, 
                                                       shape=(n_hidden, n_hidden), 
                                                       testval=init_2_noise)
-                    weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 5, 
+                    weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 1, 
                                                       shape=(n_hidden, n_hidden), 
                                                       testval=std_init_2_noise)
                     
                     # The second hidden layer to output layer:
-                    weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=10, 
+                    weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=1, 
                                                         shape=(n_hidden,), 
                                                         testval=init_out_noise)
-                    weights_2_out_grp_sd_noise = pm.HalfCauchy('w_2_out_grp_sd_noise', 5, 
+                    weights_2_out_grp_sd_noise = pm.HalfCauchy('w_2_out_grp_sd_noise', 1, 
                                                         shape=(n_hidden,), 
                                                         testval=std_init_out_noise)
                     
@@ -578,7 +578,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       init=self.configs['init'], n_init=50000, cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
