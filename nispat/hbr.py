@@ -295,22 +295,22 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     y = theano.shared(y)
     
     # Initialize random weights between each layer for the mu:
-    init_1 = pm.floatX(np.random.randn(feature_num, n_hidden))
-    init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden))
-    init_out = pm.floatX(np.random.randn(n_hidden))
+    init_1 = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
+    init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
+    init_out = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1/n_hidden)) 
     
-    std_init_1 = pm.floatX(np.ones([feature_num, n_hidden]))
-    std_init_2 = pm.floatX(np.ones([n_hidden, n_hidden]))
-    std_init_out = pm.floatX(np.ones([n_hidden,]))
+    std_init_1 = pm.floatX(np.random.rand(feature_num, n_hidden))
+    std_init_2 = pm.floatX(np.random.rand(n_hidden, n_hidden))
+    std_init_out = pm.floatX(np.random.rand(n_hidden))
     
     # And initialize random weights between each layer for sigma_noise:
-    init_1_noise = pm.floatX(np.random.randn(feature_num, n_hidden))
-    init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden))
-    init_out_noise = pm.floatX(np.random.randn(n_hidden))
+    init_1_noise = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
+    init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
+    init_out_noise = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1/n_hidden)) 
     
-    std_init_1_noise = pm.floatX(np.ones([feature_num, n_hidden]))
-    std_init_2_noise = pm.floatX(np.ones([n_hidden, n_hidden]))
-    std_init_out_noise = pm.floatX(np.ones([n_hidden,]))
+    std_init_1_noise = pm.floatX(np.random.rand(feature_num, n_hidden))
+    std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
+    std_init_out_noise = pm.floatX(np.random.rand(n_hidden))
     
     with pm.Model() as model:
         
@@ -758,3 +758,4 @@ class HBR:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         
         return X, batch_effects, generated_samples
+    
