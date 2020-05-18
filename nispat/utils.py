@@ -13,6 +13,7 @@ import pandas as pd
 import bspline
 from bspline import splinelab
 from sklearn.datasets import make_regression
+import pymc3 as pm
 
 # -----------------
 # Utility functions
@@ -732,3 +733,27 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
             pickle.dump(pd.DataFrame(Y_test),file)
         
     return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+
+
+def divergence_plot(nm, ylim=None):
+    
+    if nm.hbr.configs['n_chains'] > 1:
+        a = pm.summary(nm.hbr.trace).round(2)
+        plt.figure()
+        plt.hist(a['r_hat'],10)
+        plt.title('Gelman-Rubin diagnostic for divergence')
+
+    divergent = nm.hbr.trace['diverging']
+        
+    tracedf = pm.trace_to_dataframe(nm.hbr.trace)
+    
+    _, ax = plt.subplots(2, 1, figsize=(15, 4), sharex=True, sharey=True)
+    ax[0].plot(tracedf.values[divergent == 0].T, color='k', alpha=.05)
+    ax[0].set_title('No Divergences', fontsize=10)
+    ax[1].plot(tracedf.values[divergent == 1].T, color='C2', lw=.5, alpha=.5)
+    ax[1].set_title('Divergences', fontsize=10)
+    plt.ylim(ylim)
+    plt.xticks(range(tracedf.shape[1]), list(tracedf.columns))
+    plt.xticks(rotation=90, fontsize=7)
+    plt.tight_layout()
+    plt.show()
