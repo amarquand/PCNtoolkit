@@ -578,7 +578,7 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, cores=1)
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -587,7 +587,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
@@ -597,7 +598,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
@@ -605,7 +607,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'], 
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1) # init='advi+adapt_diag')
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
                 
         return self.trace
 
@@ -663,7 +666,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -672,7 +676,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'],  
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         if self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -681,7 +686,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'], 
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1)
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
@@ -689,7 +695,8 @@ class HBR:
                                        tune=self.configs['n_tuning'], 
                                        chains=self.configs['n_chains'], 
                                        target_accept=self.configs['target_accept'], 
-                                       cores=1) #, init='advi+adapt_diag')
+                                       init=self.configs['init'], n_init=50000, 
+                                       cores=self.configs['cores'])
                 
         return self.trace
         
