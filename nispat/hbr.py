@@ -158,17 +158,21 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             idx = reduce(np.logical_and, a).nonzero()
             if idx[0].shape[0] != 0:
                 if (not configs['random_intercept'] and not configs['random_slope']):
-                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts + theano.tensor.dot(X[idx,:], 
-                                     slopes))
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], 
+                                        intercepts + theano.tensor.dot(X[idx,:], 
+                                                                       slopes))
                 elif (configs['random_intercept'] and not configs['random_slope']):
-                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(X[idx,:], 
-                                     slopes))
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], 
+                                    intercepts[be] + theano.tensor.dot(X[idx,:],
+                                              slopes))
                 elif (not configs['random_intercept'] and configs['random_slope']):
-                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts + theano.tensor.dot(X[idx,:], 
-                                     slopes[be]))
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], 
+                                    intercepts + theano.tensor.dot(X[idx,:], 
+                                                                   slopes[be]))
                 elif (configs['random_intercept'] and configs['random_slope']):        
-                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(X[idx,:], 
-                                     slopes[be]))
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], 
+                                    intercepts[be] + theano.tensor.dot(X[idx,:], 
+                                              slopes[be]))
         
         if configs['random_noise']:
             if configs['hetero_noise']:
@@ -363,7 +367,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 1., 
                                           shape=(n_hidden,), testval=std_init_out)
             
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
+            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e2)
             sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
             
         # Now create separate weights for each group, by doing
@@ -766,4 +770,38 @@ class HBR:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         
         return X, batch_effects, generated_samples
+    
+    
+    def sample_prior_predictive(self, X, batch_effects, samples):
+        """ Function to sample from prior predictive distribution """
+        
+        if len(X.shape)==1:
+            X = np.expand_dims(X, axis=1)
+        if len(batch_effects.shape)==1:
+            batch_effects = np.expand_dims(batch_effects, axis=1)
+            
+        self.batch_effects_num = batch_effects.shape[1]
+        self.batch_effects_size = []
+        for i in range(self.batch_effects_num):
+            self.batch_effects_size.append(len(np.unique(batch_effects[:,i])))
+                
+        y = np.zeros([X.shape[0],1])
+        
+        if self.model_type == 'linear': 
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_prior_predictive(samples=samples) 
+        elif self.model_type == 'polynomial':
+            X = create_poly_basis(X, self.configs['order'])
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_prior_predictive(samples=samples) 
+        elif self.model_type == 'bspline': 
+            self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
+            X = bspline_transform(X, self.bsp)
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_prior_predictive(samples=samples) 
+        elif self.model_type == 'nn': 
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+                ppc = pm.sample_prior_predictive(samples=samples) 
+        
+        return ppc
     
