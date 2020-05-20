@@ -9,14 +9,14 @@ import shutil
 # To fully evaluate the user test cases, this should be run in two ways:
 
 # 1. as a package
-from nispat.normative import estimate
-from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+#from nispat.normative import estimate
+#from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
 #sys.path.clear()
-#sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-#from normative import estimate
-#from normative_parallel import execute_nm, collect_nm, delete_nm
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+from normative import estimate
+from normative_parallel import execute_nm, collect_nm, delete_nm
 
 # ---------------- Config parameters -----------------------------------------
 
