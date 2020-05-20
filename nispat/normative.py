@@ -173,16 +173,22 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
                  results=None, save_path=''):
     
     print("Writing outputs ...")
-    if fileio.file_type(respfile) == 'cifti' or \
-       fileio.file_type(respfile) == 'nifti':
-        exfile = respfile
-    else:
+    if respfile is None:
         exfile = None
-    if outputsuffix is not None:
-        ext = str(outputsuffix) + fileio.file_extension(respfile)
+        file_ext = '.pkl'
     else:
-        ext = fileio.file_extension(respfile)
-        
+        if fileio.file_type(respfile) == 'cifti' or \
+           fileio.file_type(respfile) == 'nifti':
+            exfile = respfile
+        else:
+            exfile = None
+        file_ext = fileio.file_extension(respfile)
+
+    if outputsuffix is not None:
+        ext = str(outputsuffix) + file_ext
+    else:
+        ext = file_ext
+
     fileio.save(Yhat, os.path.join(save_path, 'yhat' + ext), example=exfile, 
                                    mask=maskvol)
     fileio.save(S2, os.path.join(save_path, 'ys2' + ext), example=exfile, 
@@ -499,6 +505,9 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     output_path = kwargs.pop('output_path', '')
     outputsuffix = kwargs.pop('outputsuffix', '_predict')
         
+    if respfile is not None and not os.path.exists(respfile):
+        print("Response file does not exist. Only returning predictions")
+        respfile = None
     if not os.path.isdir(model_path):
         print('Models directory does not exist!')
         return
@@ -554,8 +563,10 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
-    
+
     if respfile is None:
+        save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
+        
         return (Yhat, S2)
     
     else:
