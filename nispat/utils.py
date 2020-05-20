@@ -737,7 +737,7 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
 
 def divergence_plot(nm, ylim=None):
     
-    if nm.hbr.configs['n_chains'] > 1:
+    if nm.hbr.configs['n_chains'] > 1 and nm.hbr.model_type != 'nn':
         a = pm.summary(nm.hbr.trace).round(2)
         plt.figure()
         plt.hist(a['r_hat'],10)

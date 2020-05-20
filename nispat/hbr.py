@@ -772,7 +772,7 @@ class HBR:
         return X, batch_effects, generated_samples
     
     
-    def sample_prior_predictive(self, X, batch_effects, samples):
+    def sample_prior_predictive(self, X, batch_effects, samples, trace=None):
         """ Function to sample from prior predictive distribution """
         
         if len(X.shape)==1:
@@ -788,19 +788,23 @@ class HBR:
         y = np.zeros([X.shape[0],1])
         
         if self.model_type == 'linear': 
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
+                     trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
         elif self.model_type == 'polynomial':
             X = create_poly_basis(X, self.configs['order'])
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
+                     trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
+                     trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
         elif self.model_type == 'nn': 
-            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
+                        trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
         
         return ppc
