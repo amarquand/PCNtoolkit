@@ -72,10 +72,10 @@ def from_posterior(param, samples, distribution = None, half = False, freedom=10
         x = np.linspace(smin, smax, 1000)
         y = stats.gaussian_kde(samples)(x)
         if half:
-            x = np.concatenate([x, [x[-1] + 0.05 * width]])
+            x = np.concatenate([x, [x[-1] + 0.1 * width]])
             y = np.concatenate([y, [0]])
         else:
-            x = np.concatenate([[x[0] - 0.05 * width], x, [x[-1] + 0.05 * width]])
+            x = np.concatenate([[x[0] - 0.1 * width], x, [x[-1] + 0.1 * width]])
             y = np.concatenate([[0], y, [0]])
         return pm.distributions.Interpolated(param, x, y)
     elif (distribution=='normal'):
@@ -116,10 +116,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         if trace is not None: # Used for transferring the priors
             mu_prior_intercept = from_posterior('mu_prior_intercept', 
                                                     trace['mu_prior_intercept'], 
-                                                    distribution='normal')
-            sigma_prior_intercept = from_posterior('sigma_prior_intercept', 
-                                                   trace['sigma_prior_intercept'], 
-                                                   distribution='hcauchy')
+                                                    distribution=None)
             mu_prior_slope = from_posterior('mu_prior_slope', 
                                             trace['mu_prior_slope'], 
                                             distribution='normal')
@@ -127,8 +124,8 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                trace['sigma_prior_slope'], 
                                                distribution='hcauchy')
         else:
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
-            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
+            #mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
+            mu_prior_intercept = pm.Uniform('mu_prior_intercept', lower=-100, upper=100)
             mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e3, shape=(feature_num,))
             sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5, shape=(feature_num,))
         
@@ -139,7 +136,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1)
        
         intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
-                                      intercepts_offset * sigma_prior_intercept)
+                                      intercepts_offset)
         
         if configs['random_slope']:  # Random slopes
             slopes_offset = pm.Normal('slopes_offset', mu=0, sd=1, 
@@ -180,10 +177,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     mu_prior_intercept_noise = from_posterior('mu_prior_intercept_noise', 
                                                             trace['mu_prior_intercept_noise'], 
-                                                            distribution='hnormal')
-                    sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
-                                                           trace['sigma_prior_intercept_noise'], 
-                                                           distribution='hcauchy')
+                                                            distribution=None)
+                    #sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
+                    #                                       trace['sigma_prior_intercept_noise'], 
+                    #                                       distribution='hcauchy')
                     mu_prior_slope_noise = from_posterior('mu_prior_slope_noise', 
                                                     trace['mu_prior_slope_noise'], 
                                                     distribution='normal')
@@ -191,9 +188,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                        trace['sigma_prior_slope_noise'], 
                                                        distribution='hcauchy')
                 else:
-                    mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', 
-                                                             sigma=1e3)
-                    sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
+                    #mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', 
+                    #                                         sigma=1e3)
+                    mu_prior_intercept_noise = pm.Uniform('mu_prior_intercept_noise', 
+                                                          lower=0, upper=100)
+                    #sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
                     mu_prior_slope_noise = pm.Normal('mu_prior_slope_noise',  mu=0., 
                                                      sigma=1e3, shape=(feature_num,))
                     sigma_prior_slope_noise = pm.HalfCauchy('sigma_prior_slope_noise', 
@@ -207,7 +206,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     
                 intercepts_noise = pm.Deterministic('intercepts_noise',
                                                     mu_prior_intercept_noise + 
-                                          intercepts_noise_offset * sigma_prior_intercept_noise)
+                                                    intercepts_noise_offset)
     
                 if configs['random_slope']:
                     slopes_noise_offset = pm.Normal('slopes_noise_offset', mu=0, sd=1, 
@@ -242,7 +241,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                    intercepts_noise[be] + theano.tensor.dot(X[idx,:], 
                                                                    slopes_noise[be]))
                               
-                sigma_y = pm.Deterministic('sigma_y', pm.math.log1pexp(sigma_noise) + 1e-5)
+                sigma_y = pm.math.log1pexp(sigma_noise) + 1e-5
                         
             else:
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
@@ -338,9 +337,9 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                             distribution='hcauchy')
             
             mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
-                                                distribution='normal')
-            sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
-                                                distribution='hcauchy')
+                                                distribution=None)
+            #sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
+            #                                    distribution='hcauchy')
             
         else:
             # Group the mean distribution for input to the hidden layer:
@@ -367,8 +366,9 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 1., 
                                           shape=(n_hidden,), testval=std_init_out)
             
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e2)
-            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
+            #mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e2)
+            mu_prior_intercept = pm.Uniform('mu_prior_intercept', lower=-100, upper=100)
+            #sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
             
         # Now create separate weights for each group, by doing
         # weights * group_sd + group_mean, we make sure the new weights are
@@ -389,7 +389,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                           shape=(batch_effects_size))
        
         intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
-                                      intercepts_offset * sigma_prior_intercept)
+                                      intercepts_offset)
             
         # Build the neural network and estimate y_hat:
         y_hat = theano.tensor.zeros(y.shape)
