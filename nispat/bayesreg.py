@@ -136,6 +136,8 @@ class BLR:
         self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
         self.m = linalg.solve(self.A, X.T, 
                               check_finite=False).dot(self.Lambda_n).dot(y)
+        #self.m = linalg.lstsq(self.A, X.T, 
+        #                      check_finite=False)[0].dot(self.Lambda_n).dot(y)
 
         # save stuff
         self.N = N
