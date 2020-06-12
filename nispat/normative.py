@@ -262,6 +262,8 @@ def estimate(covfile, respfile, **kwargs):
     alg = kwargs.pop('alg','gpr')
     outputsuffix = kwargs.pop('outputsuffix','_estimate')
     standardize = kwargs.pop('standardize','True')
+    warp = kwargs.get('warp', None)
+    
     if type(standardize) is str:
         standardize = standardize=='True'
     saveoutput = kwargs.pop('saveoutput','True')
@@ -327,6 +329,11 @@ def estimate(covfile, respfile, **kwargs):
     std_resp = []
     mean_cov = []
     std_cov = []
+    
+    if warp is not None:
+        Ywarp = np.zeros_like(Yhat)
+        mean_resp_warp = []
+        std_resp_warp = []
 
     for idx in enumerate(splits.split(X)):
 
@@ -374,9 +381,24 @@ def estimate(covfile, respfile, **kwargs):
                     S2[te, nz[i]] = s2
                     
                 nlZ[nz[i], fold] = nm.neg_log_lik
+                
                 if (run_cv or testresp is not None):
-                    Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                                   np.sqrt(S2[te, nz[i]])
+                    # warp the labels?
+                    if warp is not None:
+                        warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                        Ywarp[te, nz[i]] = nm.blr.warp.f(Y[te, nz[i]], warp_param)
+                        Ytest = Ywarp[te, nz[i]]
+                        
+                        # Save warped mean of the training data (for MSLL)
+                        iy, jy = np.ix_(tr, nz)
+                        Ytr = nm.blr.warp.f(Y[iy, jy], warp_param)
+                        mean_resp_warp.append(np.mean(Ytr, axis=0))
+                        std_resp_warp.append(np.std(Ytr, axis=0))
+                    else:
+                        Ytest = Y[te, nz[i]] 
+                    
+                    Z[te, nz[i]] = (Ytest - Yhat[te, nz[i]]) / \
+                                    np.sqrt(S2[te, nz[i]])
 
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -406,8 +428,17 @@ def estimate(covfile, respfile, **kwargs):
     # compute performance metrics
     if (run_cv or testresp is not None):
         print("Evaluating the model ...")
-        results = evaluate(Y[testids, :], Yhat[testids, :], S2=S2[testids, :], 
-                           mY=mean_resp[0], sY=std_resp[0])
+        if warp is None:
+            Ytest = Y[testids, :]
+            mYtr = mean_resp[0]
+            sYtr = std_resp[0]
+        else:
+            Ytest = Ywarp[testids, :]
+            mYtr = mean_resp_warp[0]
+            sYtr = std_resp_warp[0]
+        
+        results = evaluate(Ytest, Yhat[testids, :], S2=S2[testids, :], 
+                           mY=mYtr, sY=sYtr)
         
     # Set writing options
     if saveoutput:
@@ -573,6 +604,12 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         Y, maskvol = load_response_vars(respfile, maskfile)
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
+        
+        # warp the targets?
+        if 'blr' in dir(nm):
+            if nm.blr.warp is not None:
+                warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                Y = nm.blr.warp.f(Y, warp_param)
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
