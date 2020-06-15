@@ -673,6 +673,13 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
             Y_temp = X_temp[:,0] * 20 * np.random.rand() + np.random.randint(10,100) \
                         * np.sin(2 * np.random.rand() + 2 * np.pi /5 * X_temp[:,0]) 
             coef_temp = 0
+        elif method == 'combined':
+            X_temp = np.random.randint(-2,6,[2*n_samples[i], n_features]) \
+                    + np.random.randn(2*n_samples[i], n_features)
+            Y_temp = (X_temp[:,0]**3) * np.random.uniform(0, 0.5) \
+                    + X_temp[:,0] * 20 * np.random.rand() \
+                    + np.random.randint(10, 100)
+            coef_temp = 0
         else:
             raise ValueError("Unknow method. Please specify valid method among \
                              'linear' or  'non-linear'.")
@@ -699,7 +706,12 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
             t = np.random.randint(1,3)
             Y_train[i] = Y_train[i] + np.random.exponential(1, Y_train[i].shape[0]) / t
             Y_test[i] = Y_test[i] + np.random.exponential(1, Y_test[i].shape[0]) / t
-            
+        elif noise == 'hetero_gaussian_smaller':
+            t = np.random.randint(5,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
+                        * np.log(1 + np.exp(0.3 * X_train[i][:,0]))
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
+                        * np.log(1 + np.exp(0.3 * X_test[i][:,0]))
     X_train = np.vstack(X_train)
     X_test = np.vstack(X_test)
     Y_train = np.concatenate(Y_train)
