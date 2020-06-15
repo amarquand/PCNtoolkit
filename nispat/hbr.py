@@ -287,6 +287,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
 def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     
     n_hidden = configs['nn_hidden_neuron_num']
+    n_layers = configs['nn_hidden_layers_num']
+    if n_layers > 2:
+        print('Using ' + str(n_layers) + ' layers was not implemented yet. \
+              The number of layers has to be less than 3.')
+    
     feature_num = X.shape[1]
     batch_effects_num = batch_effects.shape[1]
     all_idx = []
@@ -299,24 +304,26 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     
     # Initialize random weights between each layer for the mu:
     init_1 = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
-    init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
     init_out = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1/n_hidden)) 
     
     std_init_1 = pm.floatX(np.random.rand(feature_num, n_hidden))
-    std_init_2 = pm.floatX(np.random.rand(n_hidden, n_hidden))
     std_init_out = pm.floatX(np.random.rand(n_hidden))
     
     # And initialize random weights between each layer for sigma_noise:
     init_1_noise = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
-    init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
     init_out_noise = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1/n_hidden)) 
     
     std_init_1_noise = pm.floatX(np.random.rand(feature_num, n_hidden))
-    std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
     std_init_out_noise = pm.floatX(np.random.rand(n_hidden))
     
+    # If there are two hidden layers, then initialize weights for the second layer:
+    if n_layers >= 2:
+        init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
+        std_init_2 = pm.floatX(np.random.rand(n_hidden, n_hidden))
+        init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1/n_hidden))
+        std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
+    
     with pm.Model() as model:
-        
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
                                             distribution='normal')
@@ -324,12 +331,13 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', trace['w_in_1_grp_sd'], 
                                             distribution='hcauchy')
             
-            weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'], 
-                                            distribution='normal') 
-            
-            weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'], 
-                                            distribution='hcauchy') 
-            
+            if n_layers >= 2:
+                weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'], 
+                                                distribution='normal') 
+                
+                weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'], 
+                                                distribution='hcauchy') 
+                
             weights_2_out_grp = from_posterior('w_2_out_grp', trace['w_2_out_grp'], 
                                             distribution='normal') 
             
@@ -350,14 +358,15 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             weights_in_1_grp_sd = pm.HalfCauchy('w_in_1_grp_sd', 1., 
                                          shape=(feature_num, n_hidden), testval=std_init_1)
             
-            # Group the mean distribution for hidden layer 1 to hidden layer 2:
-            weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1, 
-                                        shape=(n_hidden, n_hidden), testval=init_2)
-            
-            # Group standard deviation:
-            weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 1., 
-                                        shape=(n_hidden, n_hidden), testval=std_init_2)
-            
+            if n_layers >= 2:
+                # Group the mean distribution for hidden layer 1 to hidden layer 2:
+                weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1, 
+                                            shape=(n_hidden, n_hidden), testval=init_2)
+                
+                # Group standard deviation:
+                weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 1., 
+                                            shape=(n_hidden, n_hidden), testval=std_init_2)
+                
             # Group the mean distribution for hidden to output:
             weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=1, 
                                           shape=(n_hidden,), testval=init_out)
@@ -377,10 +386,11 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                      shape=(batch_effects_size + [feature_num, n_hidden]))
         weights_in_1 = weights_in_1_raw * weights_in_1_grp_sd + weights_in_1_grp
         
-        weights_1_2_raw = pm.Normal('w_1_2', 0, sd=1,
-                                    shape=(batch_effects_size + [n_hidden, n_hidden]))
-        weights_1_2 = weights_1_2_raw * weights_1_2_grp_sd + weights_1_2_grp
-        
+        if n_layers >= 2:
+            weights_1_2_raw = pm.Normal('w_1_2', 0, sd=1,
+                                        shape=(batch_effects_size + [n_hidden, n_hidden]))
+            weights_1_2 = weights_1_2_raw * weights_1_2_grp_sd + weights_1_2_grp
+            
         weights_2_out_raw = pm.Normal('w_2_out', 0, sd=1,
                                       shape=(batch_effects_size + [n_hidden]))
         weights_2_out = weights_2_out_raw * weights_2_out_grp_sd + weights_2_out_grp
@@ -401,9 +411,12 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             idx = reduce(np.logical_and, a).nonzero()
             if idx[0].shape[0] != 0:
                 act_1 = pm.math.tanh(theano.tensor.dot(X[idx,:], weights_in_1[be]))
-                act_2 = pm.math.tanh(theano.tensor.dot(act_1, weights_1_2[be]))
-                y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(act_2, weights_2_out[be]))
-        
+                if n_layers >= 2:
+                    act_2 = pm.math.tanh(theano.tensor.dot(act_1, weights_1_2[be]))
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(act_2, weights_2_out[be]))
+                else:
+                    y_hat = theano.tensor.set_subtensor(y_hat[idx,0], intercepts[be] + theano.tensor.dot(act_1, weights_2_out[be]))
+                    
         # If we want to estimate varying noise terms across groups:
         if configs['random_noise']:
             if configs['hetero_noise']:
@@ -416,14 +429,15 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                                trace['w_in_1_grp_sd_noise'], 
                                                                distribution='hcauchy')
                     
-                    weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise', 
-                                                           trace['w_1_2_grp_noise'], 
-                                                           distribution='normal')
-                    
-                    weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise', 
-                                                              trace['w_1_2_grp_sd_noise'], 
-                                                              distribution='hcauchy')
-                    
+                    if n_layers >= 2:
+                        weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise', 
+                                                               trace['w_1_2_grp_noise'], 
+                                                               distribution='normal')
+                        
+                        weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise', 
+                                                                  trace['w_1_2_grp_sd_noise'], 
+                                                                  distribution='hcauchy')
+                        
                     weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise', 
                                                              trace['w_2_out_grp_noise'], 
                                                              distribution='normal')
@@ -441,14 +455,16 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                shape=(feature_num,n_hidden), 
                                                testval=std_init_1_noise)
                     
-                    # The first hidden layer to second hidden layer:
-                    weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1, 
-                                                      shape=(n_hidden, n_hidden), 
-                                                      testval=init_2_noise)
-                    weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 1, 
-                                                      shape=(n_hidden, n_hidden), 
-                                                      testval=std_init_2_noise)
                     
+                    # The first hidden layer to second hidden layer:
+                    if n_layers >= 2:
+                        weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1, 
+                                                          shape=(n_hidden, n_hidden), 
+                                                          testval=init_2_noise)
+                        weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 1, 
+                                                          shape=(n_hidden, n_hidden), 
+                                                          testval=std_init_2_noise)
+                        
                     # The second hidden layer to output layer:
                     weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=1, 
                                                         shape=(n_hidden,), 
@@ -465,10 +481,11 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                                    shape=(batch_effects_size + [feature_num, n_hidden]))
                 weights_in_1_noise = weights_in_1_raw_noise * weights_in_1_grp_sd_noise + weights_in_1_grp_noise
                 
-                weights_1_2_raw_noise = pm.Normal('w_1_2_noise', 0, sd=1,
-                                                  shape=(batch_effects_size + [n_hidden, n_hidden]))
-                weights_1_2_noise = weights_1_2_raw_noise * weights_1_2_grp_sd_noise + weights_1_2_grp_noise
-                
+                if n_layers >= 2:
+                    weights_1_2_raw_noise = pm.Normal('w_1_2_noise', 0, sd=1,
+                                                      shape=(batch_effects_size + [n_hidden, n_hidden]))
+                    weights_1_2_noise = weights_1_2_raw_noise * weights_1_2_grp_sd_noise + weights_1_2_grp_noise
+                    
                 weights_2_out_raw_noise = pm.Normal('w_2_out_noise', 0, sd=1,
                                                     shape=(batch_effects_size + [n_hidden]))
                 weights_2_out_noise = weights_2_out_raw_noise * weights_2_out_grp_sd_noise + weights_2_out_grp_noise
@@ -487,9 +504,12 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         a.append(batch_effects[:,i]==b) 
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        act_1_noise = pm.math.sigmoid(theano.tensor.dot(X[idx,:], weights_in_1_noise[be]))
-                        act_2_noise = pm.math.sigmoid(theano.tensor.dot(act_1_noise, weights_1_2_noise[be]))
-                        temp = pm.math.log1pexp(theano.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
+                        act_1_noise = pm.math.tanh(theano.tensor.dot(X[idx,:], weights_in_1_noise[be]))
+                        if n_layers >= 2:
+                            act_2_noise = pm.math.tanh(theano.tensor.dot(act_1_noise, weights_1_2_noise[be]))
+                            temp = pm.math.log1pexp(theano.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
+                        else:
+                            temp = pm.math.log1pexp(theano.tensor.dot(act_1_noise, weights_2_out_noise[be])) + 1e-5
                         sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], temp)
                 
             else: # homoscedastic noise:
