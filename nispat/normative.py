@@ -263,7 +263,8 @@ def estimate(covfile, respfile, **kwargs):
     outputsuffix = kwargs.pop('outputsuffix','_estimate')
     standardize = kwargs.pop('standardize','True')
     warp = kwargs.get('warp', None)
-    
+
+    # convert from strings if necessary
     if type(standardize) is str:
         standardize = standardize=='True'
     saveoutput = kwargs.pop('saveoutput','True')
@@ -332,8 +333,8 @@ def estimate(covfile, respfile, **kwargs):
     
     if warp is not None:
         Ywarp = np.zeros_like(Yhat)
-        mean_resp_warp = []
-        std_resp_warp = []
+        mean_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
+        std_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
 
     for idx in enumerate(splits.split(X)):
 
@@ -353,14 +354,12 @@ def estimate(covfile, respfile, **kwargs):
             mX = np.mean(X[tr, :], axis=0)
             sX = np.std(X[tr, :],  axis=0)
             Xz = (X - mX) / sX
-            mean_resp.append(mY)
-            std_resp.append(sY)
             mean_cov.append(mX)
             std_cov.append(sX)
         else:
             Yz = Y
             Xz = X
-
+            
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
@@ -390,16 +389,15 @@ def estimate(covfile, respfile, **kwargs):
                         Ytest = Ywarp[te, nz[i]]
                         
                         # Save warped mean of the training data (for MSLL)
-                        iy, jy = np.ix_(tr, nz)
-                        Ytr = nm.blr.warp.f(Y[iy, jy], warp_param)
-                        mean_resp_warp.append(np.mean(Ytr, axis=0))
-                        std_resp_warp.append(np.std(Ytr, axis=0))
+                        yw = nm.blr.warp.f(Y[tr, nz[i]], warp_param)
+                        mean_resp_warp[fold][i] = np.mean(yw)
+                        std_resp_warp[fold][i] = np.std(yw)
                     else:
                         Ytest = Y[te, nz[i]] 
                     
                     Z[te, nz[i]] = (Ytest - Yhat[te, nz[i]]) / \
-                                    np.sqrt(S2[te, nz[i]])
-
+                                    np.sqrt(S2[te, nz[i]])       
+                    
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -417,6 +415,8 @@ def estimate(covfile, respfile, **kwargs):
                 else:
                     if testresp is not None:
                         Z[te, nz[i]] = float('nan')
+
+
     if savemodel:
         print('Saving model meta-data...')
         with open('Models/meta_data.md', 'wb') as file:
@@ -429,16 +429,14 @@ def estimate(covfile, respfile, **kwargs):
     if (run_cv or testresp is not None):
         print("Evaluating the model ...")
         if warp is None:
-            Ytest = Y[testids, :]
-            mYtr = mean_resp[0]
-            sYtr = std_resp[0]
+            results = evaluate(Y[testids, :], Yhat[testids, :], 
+                               S2=S2[testids, :], mY=mean_resp[0], 
+                               sY=std_resp[0])
         else:
-            Ytest = Ywarp[testids, :]
-            mYtr = mean_resp_warp[0]
-            sYtr = std_resp_warp[0]
+            results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
+                               S2=S2[testids, :], mY=mean_resp_warp[0], 
+                               sY=std_resp_warp[0])
         
-        results = evaluate(Ytest, Yhat[testids, :], S2=S2[testids, :], 
-                           mY=mYtr, sY=sYtr)
         
     # Set writing options
     if saveoutput:
