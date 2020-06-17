@@ -59,6 +59,7 @@ class NormHBR(NormBase):
             self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
         elif self.configs['type'] == 'nn':
             self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
+            self.configs['nn_hidden_layers_num'] = int(kwargs.pop('nn_hidden_layers_num', '2'))
         elif self.configs['type'] == 'linear':
             self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
             self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
