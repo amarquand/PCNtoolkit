@@ -20,7 +20,8 @@ except ImportError:
 
     from bayesreg import BLR
     from norm_base import NormBase
-    from utils import create_poly_basis
+    from utils import create_poly_basis, WarpBoxCox, \
+                      WarpAffine, WarpCompose, WarpSinArcsinh
 
 class NormBLR(NormBase):
     """ Normative modelling based on Bayesian Linear Regression
@@ -30,7 +31,7 @@ class NormBLR(NormBase):
         X = kwargs.pop('X', None)
         y = kwargs.pop('y', None)
         theta = kwargs.pop('theta', None)
-        self.optim_alg = kwargs.pop('optimizer','cg')
+        self.optim_alg = kwargs.pop('optimizer','powell')
 
         if X is None:
             raise(ValueError, "Data matrix must be specified")
@@ -55,7 +56,8 @@ class NormBLR(NormBase):
             model_order = 1
         if type(model_order) is not int:
             model_order = int(model_order)
-            
+        
+        # configure variance groups (e.g. site specific variance)
         if 'var_groups' in kwargs:
             var_groups_file = kwargs.pop('var_groups')
             if var_groups_file.endswith('.pkl'):
@@ -79,7 +81,21 @@ class NormBLR(NormBase):
         else:
             n_alpha = 1
         
-        self._n_params = n_alpha + n_beta
+        # Configure warped likelihood
+        if 'warp' in kwargs:
+            warp_str = kwargs.pop('warp')
+            if warp_str is None:
+                self.warp = None
+                n_gamma = 0
+            else:
+                # set up warp
+                exec('self.warp =' + warp_str + '()')
+                n_gamma = self.warp.get_n_params()
+        else:
+            self.warp = None
+            n_gamma = 0
+
+        self._n_params = n_alpha + n_beta + n_gamma
         self._model_order = model_order
         
         print("initialising BLR ( order", model_order, ")")
@@ -114,14 +130,16 @@ class NormBLR(NormBase):
             
         if theta is None:
             theta = self.theta0
-            self.blr = BLR(theta, self.Phi, y, var_groups=self.var_groups)
+            self.blr = BLR(theta, self.Phi, y, 
+                           var_groups=self.var_groups,
+                           warp=self.warp)
 
         self.theta = self.blr.estimate(theta, self.Phi, y, 
                                        optimizer=self.optim_alg)
         
         return self
 
-    def predict(self, Xs, X, y, **kwargs):
+    def predict(self, Xs, X=None, y=None, **kwargs):
         theta = kwargs.pop('theta', None)
         
         if theta is None:

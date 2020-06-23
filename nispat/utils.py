@@ -5,6 +5,15 @@ import numpy as np
 from scipy import stats
 from subprocess import call
 from scipy.stats import genextreme, norm
+from six import with_metaclass
+from abc import ABCMeta, abstractmethod
+import pickle
+import matplotlib.pyplot as plt
+import pandas as pd
+import bspline
+from bspline import splinelab
+from sklearn.datasets import make_regression
+import pymc3 as pm
 
 # -----------------
 # Utility functions
@@ -22,6 +31,18 @@ def create_poly_basis(X, dimpoly):
         colid += D
         
     return Phi
+
+def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
+    """ compute a Bspline basis set where:
+        
+        :param p: order of spline (3 = cubic)
+        :param nknots: number of knots (endpoints only counted once)
+    """
+    
+    knots = np.linspace(xmin, xmax, nknots)
+    k = splinelab.augknt(knots, p)       # pad the knot vector
+    B = bspline.Bspline(k, p) 
+    return B
 
 def squared_dist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
@@ -155,6 +176,250 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         loss = np.mean(0.5 * np.log(2 * np.pi * ypred_var) + (ytrue - ypred)**2 / (2 * ypred_var), axis = 0)
         
     return loss
+
+class WarpBase(with_metaclass(ABCMeta)):
+    """ Base class for likelihood warping following:
+        Rios and Torab (2019) Compositionally-warped Gaussian processes
+        https://www.sciencedirect.com/science/article/pii/S0893608019301856
+
+        All Warps must define the following methods::
+
+            Warp.get_n_params() - return number of parameters
+            Warp.f() - warping function (Non-Gaussian field -> Gaussian)
+            Warp.invf() - inverse warp
+            Warp.df() - derivatives
+            Warp.warp_predictions() - compute predictive distribution
+    """
+
+    def __init__(self):
+        self.n_params = np.nan
+
+    def get_n_params(self):
+        """ Report the number of parameters required """
+
+        assert not np.isnan(self.n_params), \
+            "Warp function not initialised"
+
+        return self.n_params
+
+    def warp_predictions(self, mu, s2, param, percentiles=[0.025, 0.975]):
+        """ Compute the warped predictions from a gaussian predictive
+            distribution, specifed by a mean (mu) and variance (s2)
+            
+            :param mu: Gassian predictive mean 
+            :param s2: Predictive variance
+            :param param: warping parameters
+            :param percentiles: Desired percentiles of the warped likelihood
+
+            :returns: * median - median of the predictive distribution
+                      * pred_interval - predictive interval(s)
+        """
+
+        # Compute percentiles of a standard Gaussian
+        N = norm
+        Z = N.ppf(percentiles)
+        
+        # find the median (using mu = median)
+        median = self.invf(mu, param)
+
+        # compute the predictive intervals (non-stationary)
+        pred_interval = np.zeros((len(mu), len(Z)))
+        for i, z in enumerate(Z):
+            pred_interval[:,i] = self.invf(mu + np.sqrt(s2)*z, param)
+
+        return median, pred_interval
+    
+    @abstractmethod
+    def f(self, x, param):
+        """ Evaluate the warping function (mapping non-Gaussian respone 
+            variables to Gaussian variables)"""
+
+    @abstractmethod
+    def invf(self, y, param):
+        """ Evaluate the warping function (mapping Gaussian latent variables 
+            to non-Gaussian response variables) """
+
+    @abstractmethod
+    def df(self, x, param):
+        """ Return the derivative of the warp, dw(x)/dx """
+
+class WarpAffine(WarpBase):
+    """ Affine warp
+        y = a + b*x
+    """
+
+    def __init__(self):
+        self.n_params = 2
+    
+    def _get_params(self, param):
+        if len(param) != self.n_params:
+            raise(ValueError, 
+                  'number of parameters must be ' + str(self.n_params))
+        return param[0], param[1]
+
+    def f(self, x, params):
+        a, b = self._get_params(params)
+        
+        y = a + b*x 
+        return y
+    
+    def invf(self, y, params):
+        a, b = self._get_params(params)
+        
+        x = (y - a) / b 
+       
+        return x
+
+    def df(self, x, params):
+        a, b = self._get_params(params)
+        
+        df = np.ones(x.shape)*b
+        return df
+
+class WarpBoxCox(WarpBase):
+    """ Box cox transform having a single parameter (lambda), i.e.
+        
+        y = (sign(x) * abs(x) ** lamda - 1) / lambda 
+        
+        This follows the generalization in Bicken and Doksum (1981) JASA 76
+        and allows x to assume negative values. 
+    """
+
+    def __init__(self):
+        self.n_params = 1
+    
+    def _get_params(self, param):
+        
+        return np.exp(param)
+
+    def f(self, x, params):
+        lam = self._get_params(params)
+        
+        if lam == 0:
+            y = np.log(x)
+        else:
+            y = (np.sign(x) * np.abs(x) ** lam - 1) / lam 
+        return y
+    
+    def invf(self, y, params):
+        lam = self._get_params(params)
+     
+        if lam == 0:
+            x = np.exp(y)
+        else:
+            x = np.sign(lam * y + 1) * np.abs(lam * y + 1) ** (1 / lam)
+
+        return x
+
+    def df(self, x, params):
+        lam = self._get_params(params)
+        
+        dx = np.abs(x) ** (lam - 1)
+        
+        return dx
+
+class WarpSinArcsinh(WarpBase):
+    """ Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by 
+    
+        y = sinh(b *  arcsinh(x) - a)
+    
+        see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
+    """
+
+    def __init__(self):
+        self.n_params = 2
+    
+    def _get_params(self, param):
+        if len(param) != self.n_params:
+            raise(ValueError, 
+                  'number of parameters must be ' + str(self.n_params))
+        return param[0], param[1]
+
+    def f(self, x, params):
+        a, b = self._get_params(params)
+        
+        y = np.sinh(b * np.arcsinh(x) - a)
+        return y
+    
+    def invf(self, y, params):
+        a, b = self._get_params(params)
+     
+        x = np.sinh((np.arcsinh(y)+a)/b)
+        
+        return x
+
+    def df(self, x, params):
+        a, b = self._get_params(params)
+        
+        dx = (b *np.cosh(b * np.arcsinh(x) - a))/np.sqrt(1 + x ** 2)
+        
+        return dx
+    
+class WarpCompose(WarpBase):
+    """ Composition of warps. These are passed in as an array and
+        intialised automatically. For example::
+
+            W = WarpCompose(('WarpBoxCox', 'WarpAffine'))
+
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    """
+
+    def __init__(self, warpnames=None):
+
+        if warpnames is None:
+            raise ValueError("A list of warp functions is required")
+        self.warps = []
+        self.n_params = 0
+        for wname in warpnames:
+            warp = eval(wname + '()')
+            self.n_params += warp.get_n_params()
+            self.warps.append(warp)
+
+    def f(self, x, theta):
+        theta_offset = 0
+
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+            theta_c = [theta[c] for c in
+                          range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c                
+
+            if ci == 0:
+                fw = warp.f(x, theta_c)
+            else:
+                fw = warp.f(fw, theta_c)
+        return fw
+
+    def invf(self, x, theta):
+        theta_offset = 0
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+            
+            if ci == 0:
+                finvw = warp.invf(x, theta_c)
+            else:
+                finvw = warp.invf(finvw, theta_c)
+            
+        return finvw
+    
+    def df(self, x, theta):
+        theta_offset = 0
+        for ci, warp in enumerate(self.warps):
+            n_params_c = warp.get_n_params()
+
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+            
+            if ci == 0:
+                dfw = warp.df(x, theta_c)
+            else:
+                dfw = warp.df(dfw, theta_c)
+            
+        return dfw
 
 # -----------------------
 # Functions for inference
@@ -341,6 +606,7 @@ def FDR(p_values, alpha):
     h = np.reshape(h, dim)
     return h
 
+
 def calibration_error(Y,m,s,cal_levels):
     ce = 0
     for cl in cal_levels:
@@ -349,3 +615,157 @@ def calibration_error(Y,m,s,cal_levels):
         lb = m - z * s
         ce = ce + np.abs(cl - np.sum(np.logical_and(Y>=lb,Y<=ub))/Y.shape[0])
     return ce
+
+
+def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1, 
+                  working_dir=None, plot=False, random_state=None, noise=None):
+    """
+    This function simulates linear synthetic data for testing nispat methods.
+    
+    - Inputs:
+        
+        - method: simulate 'linear' or 'non-linear' function.
+        
+        - n_samples: number of samples in each group of the training and test sets. 
+        If it is an int then the same sample number will be used for all groups. 
+        It can be also a list of size of n_grps that decides the number of samples 
+        in each group (default=100).
+        
+        - n_features: A positive integer that decides the number of features 
+        (default=1).
+        
+        - n_grps: A positive integer that decides the number of groups in data
+        (default=1).
+        
+        - working_dir: Directory to save data (default=None). 
+        
+        - plot: Boolean to plot the simulated training data (default=False).
+        
+        - random_state: random state for generating random numbers (Default=None).
+        
+        - noise: Type of added noise to the data. The options are 'gaussian', 
+        'exponential', and 'hetero_gaussian' (The defauls is None.). 
+    
+    - Outputs:
+        
+        - X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+    
+    """
+    
+    if isinstance(n_samples, int):
+        n_samples = [n_samples for i in range(n_grps)]
+        
+    X_train, Y_train, X_test, Y_test = [], [], [], []
+    grp_id_train, grp_id_test = [], []
+    coef = []
+    for i in range(n_grps):
+        bias = np.random.randint(-10, high=10)
+        
+        if method == 'linear':
+            X_temp, Y_temp, coef_temp = make_regression(n_samples=n_samples[i]*2, 
+                                    n_features=n_features, n_targets=1, 
+                                    noise=10 * np.random.rand(), bias=bias, 
+                                    n_informative=1, coef=True, 
+                                    random_state=random_state)
+        elif method == 'non-linear':
+            X_temp = np.random.randint(-2,6,[2*n_samples[i], n_features]) \
+                    + np.random.randn(2*n_samples[i], n_features)
+            Y_temp = X_temp[:,0] * 20 * np.random.rand() + np.random.randint(10,100) \
+                        * np.sin(2 * np.random.rand() + 2 * np.pi /5 * X_temp[:,0]) 
+            coef_temp = 0
+        elif method == 'combined':
+            X_temp = np.random.randint(-2,6,[2*n_samples[i], n_features]) \
+                    + np.random.randn(2*n_samples[i], n_features)
+            Y_temp = (X_temp[:,0]**3) * np.random.uniform(0, 0.5) \
+                    + X_temp[:,0] * 20 * np.random.rand() \
+                    + np.random.randint(10, 100)
+            coef_temp = 0
+        else:
+            raise ValueError("Unknow method. Please specify valid method among \
+                             'linear' or  'non-linear'.")
+        coef.append(coef_temp/100)
+        X_train.append(X_temp[:X_temp.shape[0]//2])
+        Y_train.append(Y_temp[:X_temp.shape[0]//2]/100)
+        X_test.append(X_temp[X_temp.shape[0]//2:])
+        Y_test.append(Y_temp[X_temp.shape[0]//2:]/100)
+        grp_id = np.repeat(i, X_temp.shape[0])
+        grp_id_train.append(grp_id[:X_temp.shape[0]//2])
+        grp_id_test.append(grp_id[X_temp.shape[0]//2:])
+        
+        if noise == 'hetero_gaussian':
+            t = np.random.randint(5,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
+                        * np.log(1 + np.exp(X_train[i][:,0]))
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
+                        * np.log(1 + np.exp(X_test[i][:,0]))
+        elif noise == 'gaussian':
+            t = np.random.randint(3,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0])/t
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0])/t
+        elif noise == 'exponential':
+            t = np.random.randint(1,3)
+            Y_train[i] = Y_train[i] + np.random.exponential(1, Y_train[i].shape[0]) / t
+            Y_test[i] = Y_test[i] + np.random.exponential(1, Y_test[i].shape[0]) / t
+        elif noise == 'hetero_gaussian_smaller':
+            t = np.random.randint(5,10)
+            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
+                        * np.log(1 + np.exp(0.3 * X_train[i][:,0]))
+            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
+                        * np.log(1 + np.exp(0.3 * X_test[i][:,0]))
+    X_train = np.vstack(X_train)
+    X_test = np.vstack(X_test)
+    Y_train = np.concatenate(Y_train)
+    Y_test = np.concatenate(Y_test)
+    grp_id_train = np.expand_dims(np.concatenate(grp_id_train), axis=1)
+    grp_id_test = np.expand_dims(np.concatenate(grp_id_test), axis=1)
+    
+    for i in range(n_features):
+        plt.figure()
+        for j in range(n_grps):
+            plt.scatter(X_train[grp_id_train[:,0]==j,i],
+                Y_train[grp_id_train[:,0]==j,], label='Group ' + str(j))
+        plt.xlabel('X' + str(i))
+        plt.ylabel('Y')
+        plt.legend()
+        
+    if working_dir is not None:
+        if not os.path.isdir(working_dir):
+            os.mkdir(working_dir)
+        with open(os.path.join(working_dir ,'trbefile.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(grp_id_train),file)
+        with open(os.path.join(working_dir ,'tsbefile.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(grp_id_test),file)
+        with open(os.path.join(working_dir ,'X_train.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(X_train),file)
+        with open(os.path.join(working_dir ,'X_test.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(X_test),file)
+        with open(os.path.join(working_dir ,'Y_train.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(Y_train),file)
+        with open(os.path.join(working_dir ,'Y_test.pkl'), 'wb') as file:
+            pickle.dump(pd.DataFrame(Y_test),file)
+        
+    return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+
+
+def divergence_plot(nm, ylim=None):
+    
+    if nm.hbr.configs['n_chains'] > 1 and nm.hbr.model_type != 'nn':
+        a = pm.summary(nm.hbr.trace).round(2)
+        plt.figure()
+        plt.hist(a['r_hat'],10)
+        plt.title('Gelman-Rubin diagnostic for divergence')
+
+    divergent = nm.hbr.trace['diverging']
+        
+    tracedf = pm.trace_to_dataframe(nm.hbr.trace)
+    
+    _, ax = plt.subplots(2, 1, figsize=(15, 4), sharex=True, sharey=True)
+    ax[0].plot(tracedf.values[divergent == 0].T, color='k', alpha=.05)
+    ax[0].set_title('No Divergences', fontsize=10)
+    ax[1].plot(tracedf.values[divergent == 1].T, color='C2', lw=.5, alpha=.5)
+    ax[1].set_title('Divergences', fontsize=10)
+    plt.ylim(ylim)
+    plt.xticks(range(tracedf.shape[1]), list(tracedf.columns))
+    plt.xticks(rotation=90, fontsize=7)
+    plt.tight_layout()
+    plt.show()
