@@ -9,14 +9,14 @@ import shutil
 # To fully evaluate the user test cases, this should be run in two ways:
 
 # 1. as a package
-from nispat.normative import estimate
-from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+#from nispat.normative import estimate
+#from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # 2. by appending to the path
 #sys.path.clear()
-#sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-#from normative import estimate
-#from normative_parallel import execute_nm, collect_nm, delete_nm
+sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+from normative import estimate
+from normative_parallel import execute_nm, collect_nm, delete_nm
 
 # ---------------- Config parameters -----------------------------------------
 
@@ -52,10 +52,10 @@ def save_output(src_dir, dst_dir):
     files.extend(glob.glob(os.path.join(src_dir,'ys2*')))
     files.extend(glob.glob(os.path.join(src_dir,'Rho*')))
     files.extend(glob.glob(os.path.join(src_dir,'pRho*')))
-    files.extend(glob.glob(os.path.join(src_dir,'rmse*')))
-    files.extend(glob.glob(os.path.join(src_dir,'smse*')))
-    files.extend(glob.glob(os.path.join(src_dir,'msll*')))
-    files.extend(glob.glob(os.path.join(src_dir,'expv*')))
+    files.extend(glob.glob(os.path.join(src_dir,'RMSE*')))
+    files.extend(glob.glob(os.path.join(src_dir,'SMSE*')))
+    files.extend(glob.glob(os.path.join(src_dir,'MSLL*')))
+    files.extend(glob.glob(os.path.join(src_dir,'EXPV*')))
     files.extend(glob.glob(os.path.join(src_dir,'Hyp*')))
     files.extend(glob.glob(os.path.join(src_dir,'Models')))
     for f in files:

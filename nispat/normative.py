@@ -95,7 +95,7 @@ def get_args(*args):
         maskfile = None
     else:
         maskfile = os.path.join(wdir, args.maskfile)
-    if args.testcov is None:
+    if args.testcov is None and args.cvfolds is not None:
         testcov = None
         testresp = None
         cvfolds = int(args.cvfolds)
@@ -103,7 +103,7 @@ def get_args(*args):
     else:
         print("Test covariates specified")
         testcov = args.testcov
-        cvfolds = 1
+        cvfolds = None
         if args.testresp is None:
             testresp = None
             print("No test response variables specified")
@@ -173,16 +173,22 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
                  results=None, save_path=''):
     
     print("Writing outputs ...")
-    if fileio.file_type(respfile) == 'cifti' or \
-       fileio.file_type(respfile) == 'nifti':
-        exfile = respfile
-    else:
+    if respfile is None:
         exfile = None
-    if outputsuffix is not None:
-        ext = str(outputsuffix) + fileio.file_extension(respfile)
+        file_ext = '.pkl'
     else:
-        ext = fileio.file_extension(respfile)
-        
+        if fileio.file_type(respfile) == 'cifti' or \
+           fileio.file_type(respfile) == 'nifti':
+            exfile = respfile
+        else:
+            exfile = None
+        file_ext = fileio.file_extension(respfile)
+
+    if outputsuffix is not None:
+        ext = str(outputsuffix) + file_ext
+    else:
+        ext = file_ext
+
     fileio.save(Yhat, os.path.join(save_path, 'yhat' + ext), example=exfile, 
                                    mask=maskvol)
     fileio.save(S2, os.path.join(save_path, 'ys2' + ext), example=exfile, 
@@ -254,10 +260,19 @@ def estimate(covfile, respfile, **kwargs):
     testcov = kwargs.pop('testcov', None)
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
-    saveoutput = kwargs.pop('saveoutput','True')=='True'
-    savemodel = kwargs.pop('savemodel','False')=='True'
-    outputsuffix = kwargs.pop('outputsuffix',None)
-    standardize = kwargs.pop('standardize',True)
+    outputsuffix = kwargs.pop('outputsuffix','_estimate')
+    standardize = kwargs.pop('standardize','True')
+    warp = kwargs.get('warp', None)
+
+    # convert from strings if necessary
+    if type(standardize) is str:
+        standardize = standardize=='True'
+    saveoutput = kwargs.pop('saveoutput','True')
+    if type(saveoutput) is str:
+        saveoutput = saveoutput=='True'
+    savemodel = kwargs.pop('savemodel','False')
+    if type(savemodel) is str:
+        savemodel = savemodel=='True'
     
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
@@ -272,7 +287,7 @@ def estimate(covfile, respfile, **kwargs):
         X = X[:, np.newaxis]
     Nmod = Y.shape[1]
     
-    if testcov is not None: # we have a separate test dataset
+    if (testcov is not None) and (cvfolds is None): # we have a separate test dataset
         
         run_cv = False
         cvfolds = 1
@@ -315,6 +330,11 @@ def estimate(covfile, respfile, **kwargs):
     std_resp = []
     mean_cov = []
     std_cov = []
+    
+    if warp is not None:
+        Ywarp = np.zeros_like(Yhat)
+        mean_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
+        std_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
 
     for idx in enumerate(splits.split(X)):
 
@@ -334,20 +354,18 @@ def estimate(covfile, respfile, **kwargs):
             mX = np.mean(X[tr, :], axis=0)
             sX = np.std(X[tr, :],  axis=0)
             Xz = (X - mX) / sX
-            mean_resp.append(mY)
-            std_resp.append(sY)
             mean_cov.append(mX)
             std_cov.append(sX)
         else:
             Yz = Y
             Xz = X
-
+            
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
             try: 
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]])     
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
@@ -362,10 +380,24 @@ def estimate(covfile, respfile, **kwargs):
                     S2[te, nz[i]] = s2
                     
                 nlZ[nz[i], fold] = nm.neg_log_lik
+                
                 if (run_cv or testresp is not None):
-                    Z[te, nz[i]] = (Y[te, nz[i]] - Yhat[te, nz[i]]) / \
-                                   np.sqrt(S2[te, nz[i]])
-
+                    # warp the labels?
+                    if warp is not None:
+                        warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                        Ywarp[te, nz[i]] = nm.blr.warp.f(Y[te, nz[i]], warp_param)
+                        Ytest = Ywarp[te, nz[i]]
+                        
+                        # Save warped mean of the training data (for MSLL)
+                        yw = nm.blr.warp.f(Y[tr, nz[i]], warp_param)
+                        mean_resp_warp[fold][i] = np.mean(yw)
+                        std_resp_warp[fold][i] = np.std(yw)
+                    else:
+                        Ytest = Y[te, nz[i]] 
+                    
+                    Z[te, nz[i]] = (Ytest - Yhat[te, nz[i]]) / \
+                                    np.sqrt(S2[te, nz[i]])       
+                    
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -383,6 +415,8 @@ def estimate(covfile, respfile, **kwargs):
                 else:
                     if testresp is not None:
                         Z[te, nz[i]] = float('nan')
+
+
     if savemodel:
         print('Saving model meta-data...')
         with open('Models/meta_data.md', 'wb') as file:
@@ -394,8 +428,15 @@ def estimate(covfile, respfile, **kwargs):
     # compute performance metrics
     if (run_cv or testresp is not None):
         print("Evaluating the model ...")
-        results = evaluate(Y[testids, :], Yhat[testids, :], S2=S2[testids, :], 
-                           mY=mean_resp[0], sY=std_resp[0])
+        if warp is None:
+            results = evaluate(Y[testids, :], Yhat[testids, :], 
+                               S2=S2[testids, :], mY=mean_resp[0], 
+                               sY=std_resp[0])
+        else:
+            results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
+                               S2=S2[testids, :], mY=mean_resp_warp[0], 
+                               sY=std_resp_warp[0])
+        
         
     # Set writing options
     if saveoutput:
@@ -415,6 +456,75 @@ def estimate(covfile, respfile, **kwargs):
         
         return output
 
+
+def fit(covfile, respfile, **kwargs):
+    
+    # parse keyword arguments 
+    maskfile = kwargs.pop('maskfile',None)
+    alg = kwargs.pop('alg','gpr')
+    savemodel = kwargs.pop('savemodel','True')=='True'
+    standardize = kwargs.pop('standardize',True)
+    
+    if savemodel and not os.path.isdir('Models'):
+        os.mkdir('Models')
+
+    # load data
+    print("Processing data in " + respfile)
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    
+    # find and remove bad variables from the response variables
+    # note: the covariates are assumed to have already been checked
+    nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
+                                 np.var(Y, axis=0) != 0))[0]
+
+    mean_resp = []
+    std_resp = []
+    mean_cov = []
+    std_cov = []
+
+    # standardize responses and covariates, ignoring invalid entries
+    mY = np.mean(Y[:, nz], axis=0)
+    sY = np.std(Y[:, nz], axis=0)
+    mean_resp.append(mY)
+    std_resp.append(sY)
+    if standardize:
+        Yz = np.zeros_like(Y)
+        Yz[:, nz] = (Y[:, nz] - mY) / sY
+        mX = np.mean(X, axis=0)
+        sX = np.std(X,  axis=0)
+        Xz = (X - mX) / sX
+        mean_resp.append(mY)
+        std_resp.append(sY)
+        mean_cov.append(mX)
+        std_cov.append(sX)
+    else:
+        Yz = Y
+        Xz = X
+
+    # estimate the models for all subjects
+    for i in range(0, len(nz)):  
+        print("Estimating model ", i+1, "of", len(nz))
+        nm = norm_init(Xz, Yz[:, nz[i]], alg=alg, **kwargs)
+        nm = nm.estimate(Xz, Yz[:, nz[i]], **kwargs)     
+            
+        if savemodel:
+            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + '.pkl' )
+
+    if savemodel:
+        print('Saving model meta-data...')
+        with open('Models/meta_data.md', 'wb') as file:
+            pickle.dump({'valid_voxels':nz,
+                         'mean_resp':mean_resp, 'std_resp':std_resp, 
+                         'mean_cov':mean_cov, 'std_cov':std_cov, 
+                         'regressor':alg, 'standardize':standardize}, file)
+        
+    return nm
+
     
 def predict(covfile, respfile=None, maskfile=None, **kwargs):
     
@@ -422,25 +532,31 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
     output_path = kwargs.pop('output_path', '')
-    outputsuffix = kwargs.pop('outputsuffix', None)
+    outputsuffix = kwargs.pop('outputsuffix', '_predict')
         
+    if respfile is not None and not os.path.exists(respfile):
+        print("Response file does not exist. Only returning predictions")
+        respfile = None
     if not os.path.isdir(model_path):
         print('Models directory does not exist!')
         return
     else:
-        with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
-            meta_data = pickle.load(file)
-        standardize = meta_data['standardize']
-        mY = meta_data['mean_resp']
-        sY = meta_data['std_resp']
-        mX = meta_data['mean_cov']
-        sX = meta_data['std_cov']
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            standardize = meta_data['standardize']
+            mY = meta_data['mean_resp']
+            sY = meta_data['std_resp']
+            mX = meta_data['mean_cov']
+            sX = meta_data['std_cov']
+        else:
+            standardize = False
 
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
     
-    if (output_path is not '') and (not os.path.isdir(output_path)):
+    if (output_path != '') and (not os.path.isdir(output_path)):
         os.mkdir(output_path)
     
     # load data
@@ -452,7 +568,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     sample_num = X.shape[0]
     feature_num = len(glob.glob(os.path.join(model_path, 'NM_*.pkl')))
 
-    # run cross-validation loop
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
     Z = np.zeros([sample_num, feature_num])
@@ -472,19 +587,27 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         yhat, s2 = nm.predict(Xz, **kwargs)
         
         if standardize:
-            Yhat[:, i] = yhat * sY[0][i] + mY[0][i]
-            S2[:, i] = s2 * sY[0][i]**2
+            Yhat[:, i] = yhat.squeeze() * sY[0][i] + mY[0][i]
+            S2[:, i] = s2.squeeze() * sY[0][i]**2
         else:
-            Yhat[:, i] = yhat
-            S2[:, i] = s2
-    
+            Yhat[:, i] = yhat.squeeze()
+            S2[:, i] = s2.squeeze()
+
     if respfile is None:
+        save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
+        
         return (Yhat, S2)
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
+        
+        # warp the targets?
+        if 'blr' in dir(nm):
+            if nm.blr.warp is not None:
+                warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                Y = nm.blr.warp.f(Y, warp_param)
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
@@ -502,16 +625,22 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
 def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None, 
              **kwargs):
     
-    if (not 'model_path' in list(kwargs.keys())) or \
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model transferring is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
         (not 'output_path' in list(kwargs.keys())) or \
         (not 'trbefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
             return
     else:
         model_path = kwargs.pop('model_path')
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
+        batch_effects_train = fileio.load(trbefile)
     
-    outputsuffix = kwargs.pop('outputsuffix', None)
+    outputsuffix = kwargs.pop('outputsuffix', '_transfer')
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -522,12 +651,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
-        
-    transferred_models_path = os.path.join(output_path,'Models')
-    if not os.path.isdir(transferred_models_path):
-        os.mkdir(transferred_models_path)
-    
-    
+            
     # load data
     print("Loading data ...")
     X = fileio.load(covfile)
@@ -538,12 +662,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         X = X[:, np.newaxis]
     feature_num = Y.shape[1]
     mY = np.mean(Y, axis=0)
-    sY = np.std(Y, axis=0)
-    
-    if trbefile is not None:
-        batch_effects_train = fileio.load(trbefile)
-    else:
-        batch_effects_train = np.zeros([X.shape[0],2])
+    sY = np.std(Y, axis=0)    
     
     if testcov is not None:
         # we have a separate test dataset
@@ -571,7 +690,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     for i in range(feature_num):
               
         nm = norm_init(X)
-        if batch_size is not None: # when using nirmative_parallel
+        if batch_size is not None: # when using normative_parallel
             print("Transferting model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
                                       str(job_id*batch_size+i) + '.pkl'))
@@ -581,16 +700,16 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
         if batch_size is not None: 
-            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
                              str(job_id*batch_size+i) + '.pkl'))
         else:
-            nm.save(os.path.join(transferred_models_path, 'NM_transfered_' + 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
                              str(i) + '.pkl'))
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
-            Yhat[:, i] = yhat
-            S2[:, i] = s2
+            Yhat[:, i] = yhat.squeeze()
+            S2[:, i] = s2.squeeze()
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
@@ -605,6 +724,77 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                      outputsuffix=outputsuffix)
         
         return (Yhat, S2, Z)
+
+
+def extend(covfile, respfile, maskfile=None, **kwargs):
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model extention is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())) or \
+        (not 'trbefile' in list(kwargs.keys())) or \
+        (not 'dummycovfile' in list(kwargs.keys()))or \
+        (not 'dummybefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path = kwargs.pop('model_path')
+        output_path = kwargs.pop('output_path')
+        trbefile = kwargs.pop('trbefile')
+        dummycovfile = kwargs.pop('dummycovfile')
+        dummybefile = kwargs.pop('dummybefile')
+    
+    informative_prior = kwargs.pop('job_id', 'False') == 'True'
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+    
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+            
+    # load data
+    print("Loading data ...")
+    X = fileio.load(covfile)
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    batch_effects_train = fileio.load(trbefile)
+    X_dummy = fileio.load(dummycovfile)
+    batch_effects_dummy = fileio.load(dummybefile)
+    
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    if len(X_dummy.shape) == 1:
+        X_dummy = X_dummy[:, np.newaxis]
+    feature_num = Y.shape[1]
+    
+    # estimate the models for all subjects
+    for i in range(feature_num):
+              
+        nm = norm_init(X)
+        if batch_size is not None: # when using nirmative_parallel
+            print("Extending model ", job_id*batch_size+i)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + '.pkl'))
+        else:
+            print("Extending model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+        
+        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, batch_effects_dummy, 
+               samples=generation_factor, informative_prior=informative_prior)
+        
+        if batch_size is not None: 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + '.pkl'))
+        else:
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + '.pkl'))
+
 
 def main(*args):
     """ Parse arguments and estimate model
@@ -631,11 +821,8 @@ def main(*args):
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
 
-    # estimate normative model
+    # Executing the target function
     exec(func + '(' + all_args + ')')
-    #estimate(rfile, cfile, maskfile=mfile, cvfolds=cv,testcov=tcfile,
-    #         testresp=trfile, alg=alg,configparam=cfg, saveoutput=True, 
-    #         standardize=std)
 
 # For running from the command line:
 if __name__ == "__main__":

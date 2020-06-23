@@ -6,239 +6,90 @@ Created on Mon Jul 29 13:26:35 2019
 @author: seykia
 """
 
-import pickle
+import os
 import numpy as np
 from nispat.normative_model.norm_utils import norm_init
+from nispat.utils import simulate_data
 import matplotlib.pyplot as plt
-from nispat.utils import calibration_error
-
-import pandas as pd
-import pymc3 as pm
-
-def trace_quantiles(x):
-    return pd.DataFrame(pm.quantiles(x, [5, 25, 50, 75, 95]))
-
-########################### TESTING HBR ################################
-
-# Simulating the data
-training_samples_num = 200
-test_samples_num = 81
-configparam = dict()
-
-configparam['confounds'] = dict()
-configparam['batch_effects_train'] = np.random.randint(0,2,[training_samples_num,2]) 
-configparam['batch_effects_test'] = np.random.randint(0,2,[test_samples_num,2])
-configparam['batch_effects_train'][:,1] = 0
-configparam['batch_effects_test'][:,1] = 0
+from nispat.normative import estimate
+from warnings import filterwarnings
+filterwarnings('ignore')
 
 
-X = np.random.randint(10,91,training_samples_num)
-Y = np.zeros([training_samples_num,])
-Y[configparam['batch_effects_train'][:,0]==0,] = X[configparam['batch_effects_train'][:,0]==0,] * \
-                                            0.2 + X[configparam['batch_effects_train'][:,0]==0,] * \
-                                            0.25 * np.random.randn(np.sum(configparam['batch_effects_train'][:,0]==0))
-Y[configparam['batch_effects_train'][:,0]==1,] = X[configparam['batch_effects_train'][:,0]==1,] * \
-                                            0.85 + 2 + 5 * np.random.randn(np.sum(configparam['batch_effects_train'][:,0]==1))
-Y = Y + np.random.randn(training_samples_num)
-
-Xs = np.arange(10,91)
-Ys = np.zeros([test_samples_num,])
-Ys[configparam['batch_effects_test'][:,0]==0,] = Xs[configparam['batch_effects_test'][:,0]==0,] * \
-                                            0.2 + Xs[configparam['batch_effects_test'][:,0]==0,] * \
-                                            0.25 * np.random.randn(np.sum(configparam['batch_effects_test'][:,0]==0))
-Ys[configparam['batch_effects_test'][:,0]==1,] = Xs[configparam['batch_effects_test'][:,0]==1,] * \
-                                            0.85 + 2 + 5 * np.random.randn(np.sum(configparam['batch_effects_test'][:,0]==1))
+########################### Experiment Settings ###############################
 
 
-# Trivial Model
-configparam['model_type'] = 'linear'
-configparam['random_intercept'] = False
-configparam['random_slope'] = False
-configparam['random_noise'] = False
-configparam['hetero_noise'] = False
-with open('configs.pkl', 'wb') as file:
-    pickle.dump(configparam,file)
+working_dir = '/home/preclineu/seykia/temp/tests/'  # Specift a working directory
+                                                    # to save data and results.
+
+simulation_method = 'non-linear' # 'linear'
+n_features = 1      # The number of input features of X
+n_grps = 2          # Number of batches in data 
+n_samples = 500     # Number of samples in each group (use a list for different
+                    # sample numbers across different batches)
+
+model_types = ['linear', 'polynomial', 'bspline', 'nn']  # models to try
+
+############################## Data Simulation ################################
+
+
+X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
+    simulate_data(simulation_method, n_samples, n_features, n_grps, 
+                  working_dir=working_dir, plot=True, noise='hetero_gaussian')
     
-nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
-nm.estimate(X, Y)
-yhat_trivial, s2_trivial = nm.predict(Xs)
-cal_er_trivial = calibration_error(Ys[configparam['batch_effects_test'][:,0]==0,],
-                                   yhat_trivial[configparam['batch_effects_test'][:,0]==0,],
-                                   np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==0,]),
-                                   [0.05,0.25,0.5,0.75,0.95]) + \
-                 calibration_error(Ys[configparam['batch_effects_test'][:,0]==1,],
-                                   yhat_trivial[configparam['batch_effects_test'][:,0]==1,],
-                                   np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==1,]),
-                                   [0.05,0.25,0.5,0.75,0.95])
-rmse_trivial = np.sqrt(np.mean((Ys - yhat_trivial)**2, axis = 0))                                   
 
-
-
-# Random Intercept and Slope
-configparam['model_type'] = 'linear'
-configparam['random_intercept'] = True
-configparam['random_slope'] = True
-configparam['random_noise'] = False
-configparam['hetero_noise'] = False
-with open('configs.pkl', 'wb') as file:
-    pickle.dump(configparam,file)
+################################# Methods Tests ###############################
     
-nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
-nm.estimate(X, Y)
-yhat_rand_int_slp , s2_rand_int_slp = nm.predict(Xs)
-cal_er_rand_int_slp = calibration_error(Ys[configparam['batch_effects_test'][:,0]==0,],
-                                   yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==0,],
-                                   np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==0,]),
-                                   [0.05,0.25,0.5,0.75,0.95]) + \
-                       calibration_error(Ys[configparam['batch_effects_test'][:,0]==1,],
-                                   yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==1,],
-                                   np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==1,]),
-                                   [0.05,0.25,0.5,0.75,0.95])
-rmse_rand_int_slp = np.sqrt(np.mean((Ys - yhat_rand_int_slp)**2, axis = 0))
-
-
-
-# Random Intercept and Slope and Noise
-configparam['model_type'] = 'linear'
-configparam['random_intercept'] = True
-configparam['random_slope'] = True
-configparam['random_noise'] = True
-configparam['hetero_noise'] = False
-with open('configs.pkl', 'wb') as file:
-    pickle.dump(configparam,file)
     
-nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
-nm.estimate(X, Y)
-yhat_rand_int_slp_nse , s2_rand_int_slp_nse = nm.predict(Xs)
-cal_er_rand_int_slp_nse = calibration_error(Ys[configparam['batch_effects_test'][:,0]==0,],
-                                   yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,],
-                                   np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,]),
-                                   [0.05,0.25,0.5,0.75,0.95]) + \
-                           calibration_error(Ys[configparam['batch_effects_test'][:,0]==1,],
-                                   yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,],
-                                   np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,]),
-                                   [0.05,0.25,0.5,0.75,0.95])
-rmse_rand_int_slp_nse = np.sqrt(np.mean((Ys - yhat_rand_int_slp_nse)**2, axis = 0))
-
-
-
-# Heteroskedastic Noise Model
-configparam['model_type'] = 'linear'
-configparam['random_intercept'] = True
-configparam['random_slope'] = True
-configparam['random_noise'] = True
-configparam['hetero_noise'] = True
-with open('configs.pkl', 'wb') as file:
-    pickle.dump(configparam,file)
+for model_type in model_types:
     
-nm = norm_init(X, Y, alg='hbr', configparam='configs.pkl')
-nm.estimate(X, Y)
-yhat_hetero , s2_hetero = nm.predict(Xs)
-cal_er_hetero = calibration_error(Ys[configparam['batch_effects_test'][:,0]==0,],
-                                   yhat_hetero[configparam['batch_effects_test'][:,0]==0,],
-                                   np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==0,]),
-                                   [0.05,0.25,0.5,0.75,0.95]) + \
-                 calibration_error(Ys[configparam['batch_effects_test'][:,0]==1,],
-                                   yhat_hetero[configparam['batch_effects_test'][:,0]==1,],
-                                   np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==1,]),
-                                   [0.05,0.25,0.5,0.75,0.95])
-rmse_hetero = np.sqrt(np.mean((Ys - yhat_hetero)**2, axis = 0))
+    nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type,
+                   random_intercept='True', random_slope='True', random_noise='True', 
+                   hetero_noise='True', skewed_likelihood='False', order='3')
+    nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
+    yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
+    
+    for i in range(n_features):
+        sorted_idx = X_test[:,i].argsort(axis=0).squeeze()
+        temp_X = X_test[sorted_idx,i]
+        temp_Y = Y_test[sorted_idx,]
+        temp_be = grp_id_test[sorted_idx,:].squeeze()
+        temp_yhat = yhat[sorted_idx,]
+        temp_s2 = ys2[sorted_idx,]
+        
+        plt.figure()
+        for j in range(n_grps):
+            plt.scatter(temp_X[temp_be==j,], temp_Y[temp_be==j,], 
+                        label='Group' + str(j))
+            plt.plot(temp_X[temp_be==j,], temp_yhat[[temp_be==j,]])
+            plt.fill_between(temp_X[temp_be==j,], temp_yhat[temp_be==j,] - 
+                             1.96 * np.sqrt(temp_s2[temp_be==j,]), 
+                             temp_yhat[temp_be==j,] + 
+                             1.96 * np.sqrt(temp_s2[temp_be==j,]),
+                             color='gray', alpha=0.2)
+        plt.title('Model %s, Feature %d' %(model_type, i))
+        plt.legend()
 
 
+############################## Normative Modelling Test #######################
+        
+
+model_type = model_types[0]
+
+covfile = working_dir + 'X_train.pkl'
+respfile = working_dir + 'Y_train.pkl'
+testcov = working_dir + 'X_test.pkl'
+testresp = working_dir + 'Y_test.pkl'
+trbefile = working_dir + 'trbefile.pkl'
+tsbefile = working_dir + 'tsbefile.pkl'
+
+os.chdir(working_dir)
+
+estimate(covfile, respfile, testcov=testcov, testresp=testresp, trbefile=trbefile, 
+         tsbefile=tsbefile, alg='hbr', outputsuffix='_' + model_type, 
+         standardize=False, model_type=model_type, random_intercept='True', 
+         random_slope='True', random_noise='True', hetero_noise= 'True', 
+         skewed_likelihood='False', savemodel='True', saveoutput='True')
 
 
-plt.subplot(2, 2, 1)
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==0,],
-            Ys[configparam['batch_effects_test'][:,0]==0,], label='Group 1')
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==1,],
-            Ys[configparam['batch_effects_test'][:,0]==1,], label='Group 2')
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==0,],
-         yhat_trivial[[configparam['batch_effects_test'][:,0]==0,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==0,], 
-                 yhat_trivial[configparam['batch_effects_test'][:,0]==0,] - 
-                 1.96 * np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==0,]), 
-                 yhat_trivial[configparam['batch_effects_test'][:,0]==0,] + 
-                 1.96 * np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==0,]),
-                 color='gray', alpha=0.2)
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==1,],
-         yhat_trivial[[configparam['batch_effects_test'][:,0]==1,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==1,], 
-                 yhat_trivial[configparam['batch_effects_test'][:,0]==1,] - 
-                 1.96 * np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==1,]), 
-                 yhat_trivial[configparam['batch_effects_test'][:,0]==1,] + 
-                 1.96 * np.sqrt(s2_trivial[configparam['batch_effects_test'][:,0]==1,]),
-                 color='gray', alpha=0.2)
-plt.title('Trivial Model, RMSE=%2f, CE=%2f' %(rmse_trivial, cal_er_trivial))
-plt.legend()
-
-plt.subplot(2, 2, 2)
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==0,],
-            Ys[configparam['batch_effects_test'][:,0]==0,], label='Group 1')
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==1,],
-            Ys[configparam['batch_effects_test'][:,0]==1,], label='Group 2')
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==0,],
-         yhat_rand_int_slp[[configparam['batch_effects_test'][:,0]==0,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==0,], 
-                 yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==0,] 
-                 - 1.96 * np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==0,]), 
-                 yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==0,] + 
-                 1.96 * np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==0,]),
-                 color='gray', alpha=0.2)
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==1,],
-         yhat_rand_int_slp[[configparam['batch_effects_test'][:,0]==1,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==1,], 
-                 yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==1,] - 
-                 1.96 * np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==1,]), 
-                 yhat_rand_int_slp[configparam['batch_effects_test'][:,0]==1,] + 
-                 1.96 * np.sqrt(s2_rand_int_slp[configparam['batch_effects_test'][:,0]==1,]),
-                 color='gray', alpha=0.2)
-plt.title('Random Intercept and Slope, RMSE=%2f, CE=%2f' %(rmse_rand_int_slp, cal_er_rand_int_slp))
-plt.legend()
-
-plt.subplot(2, 2, 3)
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==0,],
-            Ys[configparam['batch_effects_test'][:,0]==0,], label='Group 1')
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==1,],
-            Ys[configparam['batch_effects_test'][:,0]==1,], label='Group 2')
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==0,],
-         yhat_rand_int_slp_nse[[configparam['batch_effects_test'][:,0]==0,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==0,], 
-                 yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,] - 
-                 1.96 * np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,]), 
-                 yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,] + 
-                 1.96 * np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==0,]),
-                 color='gray', alpha=0.2)
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==1,],
-         yhat_rand_int_slp_nse[[configparam['batch_effects_test'][:,0]==1,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==1,], 
-                 yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,] - 
-                 1.96 * np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,]), 
-                 yhat_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,] + 
-                 1.96 * np.sqrt(s2_rand_int_slp_nse[configparam['batch_effects_test'][:,0]==1,]),
-                 color='gray', alpha=0.2)
-plt.title('Random Intercept and Slope and Noise, RMSE=%2f, CE=%2f' %(rmse_rand_int_slp_nse, cal_er_rand_int_slp_nse))
-plt.legend()
-
-plt.subplot(2, 2, 4)
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==0,],
-            Ys[configparam['batch_effects_test'][:,0]==0,], label='Group 1')
-plt.scatter(Xs[configparam['batch_effects_test'][:,0]==1,],
-            Ys[configparam['batch_effects_test'][:,0]==1,], label='Group 2')
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==0,],
-         yhat_hetero[[configparam['batch_effects_test'][:,0]==0,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==0,], 
-                 yhat_hetero[configparam['batch_effects_test'][:,0]==0,] - 
-                 1.96 * np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==0,]), 
-                 yhat_hetero[configparam['batch_effects_test'][:,0]==0,] + 
-                 1.96 * np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==0,]),
-                 color='gray', alpha=0.2)
-plt.plot(Xs[configparam['batch_effects_test'][:,0]==1,],
-         yhat_hetero[[configparam['batch_effects_test'][:,0]==1,]])
-plt.fill_between(Xs[configparam['batch_effects_test'][:,0]==1,], 
-                 yhat_hetero[configparam['batch_effects_test'][:,0]==1,] - 
-                 1.96 * np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==1,]), 
-                 yhat_hetero[configparam['batch_effects_test'][:,0]==1,] + 
-                 1.96 * np.sqrt(s2_hetero[configparam['batch_effects_test'][:,0]==1,]),
-                 color='gray', alpha=0.2)
-plt.title('Heteroskedastic Noise Model, RMSE=%2f, CE=%2f' %(rmse_hetero, cal_er_hetero))
-plt.legend()
+###############################################################################

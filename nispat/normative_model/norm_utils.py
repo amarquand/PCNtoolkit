@@ -12,7 +12,7 @@ def norm_init(X, y=None, theta=None, alg='gpr', **kwargs):
     elif alg == 'rfa':
         nm = NormRFA(X=X, y=y, theta=theta, **kwargs)
     elif alg == 'hbr':
-        nm = NormHBR(X=X, y=y, **kwargs)
+        nm = NormHBR(**kwargs)
     elif alg == 'np':
         nm = NormNP(X=X, y=y, **kwargs)
     else:
