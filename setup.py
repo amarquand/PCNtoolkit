@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='nispat',
-      version='0.12',
+      version='0.13',
       description='Spatial methods for neuroimaging data',
       url='http://github.com/amarquand/nispat',
       author='Andre Marquand',
@@ -13,8 +13,11 @@ setup(name='nispat',
           'nibabel',
           'six',
           'sklearn', 
+          'bspline',
+          'matplotlib',
+          'pandas>=0.25.3',
           'torch>=1.1.0', 
           'pymc3>=3.7', 
-          'Theano>=1.0.4'              
+          'Theano==1.0.4'           
       ],
       zip_safe=False)
