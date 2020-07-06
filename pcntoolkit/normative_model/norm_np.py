@@ -20,8 +20,8 @@ from sklearn.preprocessing import MinMaxScaler
 import pickle
 
 try:  # run as a package if installed
-    from nispat.normative_model.normbase import NormBase
-    from nispat.NPR import NPR, np_loss
+    from pcntoolkit.normative_model.normbase import NormBase
+    from pcntoolkit.NPR import NPR, np_loss
 except ImportError:
     pass
 

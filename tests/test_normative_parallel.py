@@ -4,10 +4,10 @@ Created on Wed Jan 18 14:34:06 2017
 
 @author: andmar
 """
-#import nispat
+#import pcntoolkit
 import os
 import time
-from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+from pcntoolkit.normative_parallel import execute_nm, collect_nm, delete_nm
 
 data_dir = '/home/preclineu/andmar/py.sandbox/normative_oslo/'
 respfile = os.path.join(data_dir, 'ICA100_oslo15_v2_spaces.txt')
@@ -16,7 +16,7 @@ covfile = os.path.join(data_dir, 'cov_oslo15_spaces.txt')
 cvfolds = 2
 
 python_path = '/.../.conda/envs/python3/bin/python'
-normative_path = '/.../nispat/nispat/normative.py'
+normative_path = '/.../PCNtoolkit/pcntoolkit/normative.py'
 processing_dir= '/.../'
 job_name = 'nmp_test'
 batch_size = 10
