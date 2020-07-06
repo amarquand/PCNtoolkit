@@ -60,6 +60,10 @@ class NormHBR(NormBase):
         elif self.configs['type'] == 'nn':
             self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
             self.configs['nn_hidden_layers_num'] = int(kwargs.pop('nn_hidden_layers_num', '2'))
+            if self.configs['nn_hidden_layers_num'] > 2:
+                raise ValueError("Using " + str(self.configs['nn_hidden_layers_num']) \
+                                 + " layers was not implemented. The number of " \
+                                 + " layers has to be less than 3.")
         elif self.configs['type'] == 'linear':
             self.configs['random_intercept'] = kwargs.pop('random_intercept', 'True') == 'True'
             self.configs['random_slope'] = kwargs.pop('random_slope', 'True') == 'True'
