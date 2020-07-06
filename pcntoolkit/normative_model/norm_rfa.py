@@ -6,8 +6,8 @@ import sys
 import numpy as np
 
 try:  # run as a package if installed
-    from nispat.normative_model.normbase import NormBase
-    from nispat.rfa import GPRRFA 
+    from pcntoolkit.normative_model.normbase import NormBase
+    from pcntoolkit.rfa import GPRRFA 
 except ImportError:
     pass
 

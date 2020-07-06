@@ -9,11 +9,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # load as a module
-sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+sys.path.append('/home/mrstats/andmar/sfw/PCNtoolkit/pcntoolkit')
 from gp import GPR, CovSqExp, CovSqExpARD, CovLin
 
 # load from the installed package
-#from nispat.gp import GPR, covSqExp
+#from pcntoolkit.gp import GPR, covSqExp
 
 X = np.asarray([2.08397042775073,
 -0.821018066101379,

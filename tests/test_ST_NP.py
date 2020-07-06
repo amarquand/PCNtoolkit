@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import pickle
-from nispat.normative_model.norm_utils import norm_init
+from pcntoolkit.normative_model.norm_utils import norm_init
 
 sample_num = 1114
 X_train = np.random.rand(sample_num,1) * 5 - 2
