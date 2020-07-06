@@ -31,9 +31,9 @@ from NP import NP, apply_dropout_test, np_loss
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.linear_model import LinearRegression, MultiTaskLasso
 from architecture import Encoder, Decoder
-from nispat.utils import compute_pearsonr, explained_var, compute_MSLL
-from nispat.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
-from nispat import fileio
+from pcntoolkit.utils import compute_pearsonr, explained_var, compute_MSLL
+from pcntoolkit.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
+from pcntoolkit import fileio
 import os
 
  

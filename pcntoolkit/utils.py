@@ -620,7 +620,7 @@ def calibration_error(Y,m,s,cal_levels):
 def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1, 
                   working_dir=None, plot=False, random_state=None, noise=None):
     """
-    This function simulates linear synthetic data for testing nispat methods.
+    This function simulates linear synthetic data for testing pcntoolkit methods.
     
     - Inputs:
         

@@ -23,9 +23,9 @@ import glob
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
-    from nispat import fileio
-    from nispat.normative_model.norm_utils import norm_init
-    from nispat.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
+    from pcntoolkit import fileio
+    from pcntoolkit.normative_model.norm_utils import norm_init
+    from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
 except ImportError:
     pass
 

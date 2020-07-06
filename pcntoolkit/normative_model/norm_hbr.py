@@ -14,9 +14,9 @@ import sys
 import numpy as np
 
 try:  # run as a package if installed
-    from nispat import fileio
-    from nispat.normative_model.normbase import NormBase
-    from nispat.hbr import HBR 
+    from pcntoolkit import fileio
+    from pcntoolkit.normative_model.normbase import NormBase
+    from pcntoolkit.hbr import HBR 
 except ImportError:
     pass
 

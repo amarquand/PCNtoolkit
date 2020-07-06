@@ -6,7 +6,7 @@ Created on Mon Jun 24 16:54:07 2019
 @author: seykia
 """
 
-from nispat.normative_NP import estimate
+from pcntoolkit.normative_NP import estimate
 
 class struct(object):
     pass
