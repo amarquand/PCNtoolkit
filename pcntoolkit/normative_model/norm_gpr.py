@@ -6,8 +6,8 @@ import sys
 import numpy as np
 
 try:  # run as a package if installed
-    from nispat.gp import GPR, CovSum
-    from nispat.gp.normative_model.normbase import NormBase
+    from pcntoolkit.gp import GPR, CovSum
+    from pcntoolkit.gp.normative_model.normbase import NormBase
 except ImportError:
     pass
 

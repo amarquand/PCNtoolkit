@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 # load as a module
-sys.path.append('/home/mrstats/andmar/sfw/nispat/nispat')
+sys.path.append('/home/mrstats/andmar/sfw/PCNtoolkit/pcntoolkit')
 from gp import GPR, CovSqExp, CovSqExpARD, CovLin, CovSum
 from bayesreg import BLR
 from rfa import GPRRFA
