@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 try:  # run as a package if installed
-    from nispat.bayesreg import BLR
-    from nispat.normative_model.normbase import NormBase
-    from nispat.utils import create_poly_basis
+    from pcntoolkit.bayesreg import BLR
+    from pcntoolkit.normative_model.normbase import NormBase
+    from pcntoolkit.utils import create_poly_basis
 except ImportError:
     pass
 

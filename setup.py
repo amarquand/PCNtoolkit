@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
-setup(name='nispat',
-      version='0.13',
-      description='Spatial methods for neuroimaging data',
+setup(name='pcntoolkit',
+      version='0.14',
+      description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/nispat',
       author='Andre Marquand',
-      author_email='a.f.marquand@fcdonders.ru.nl',
+      author_email='a.marquand@donders.ru.nl',
       license='GNU GPLv3',
       packages=find_packages(),
       install_requires=[

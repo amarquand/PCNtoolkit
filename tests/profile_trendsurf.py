@@ -1,10 +1,10 @@
 # NOTE: must be run with kernprof (otherwise the inmports get screwed up)
 
-#import nispat
+#import pcntoolkit
 import os
 import sys
 
-sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 from trendsurf import estimate
 from line_profiler import LineProfiler
 from bayesreg import BLR

@@ -9,19 +9,19 @@ import shutil
 # To fully evaluate the user test cases, this should be run in two ways:
 
 # 1. as a package
-#from nispat.normative import estimate
-#from nispat.normative_parallel import execute_nm, collect_nm, delete_nm
+from pcntoolkit.normative import estimate
+from pcntoolkit.normative_parallel import execute_nm, collect_nm, delete_nm
 
-# 2. by appending to the path
-#sys.path.clear()
-sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
-from normative import estimate
-from normative_parallel import execute_nm, collect_nm, delete_nm
+## 2. by appending to the path
+##sys.path.clear()
+#sys.path.append('/home/preclineu/andmar/sfw/pcntoolkit/pcntoolkit')
+#from normative import estimate
+#from normative_parallel import execute_nm, collect_nm, delete_nm
 
 # ---------------- Config parameters -----------------------------------------
 
 # General config parameters
-normative_path = '/home/preclineu/andmar/sfw/nispat/nispat/normative.py'
+normative_path = '/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit/normative.py'
 python_path='/home/preclineu/andmar/sfw/anaconda3/envs/py36/bin/python'
 data_dir = '/home/preclineu/andmar/data/nispat_unit_test_data/'
 test_dir = '/home/preclineu/andmar/py.sandbox/unittests/unit_test_results'

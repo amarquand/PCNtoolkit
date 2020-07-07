@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 import numpy as np
 import scipy as sp
 from matplotlib import pyplot as plt
