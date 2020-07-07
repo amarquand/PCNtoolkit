@@ -4,11 +4,11 @@ Created on Wed Jan 18 14:34:06 2017
 
 @author: andmar
 """
-#import nispat
+#import pcntoolkit
 import os
 import sys
-#from nispat.normative import estimate
-sys.path.append('/home/preclineu/andmar/sfw/nispat/nispat')
+#from pcntoolkit.normative import estimate
+sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 from normative import estimate
 
 #wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
@@ -39,7 +39,7 @@ estimate(covfile, respfile, maskfile=maskfile, testresp=testresp, testcov=testco
 #respfile = os.path.join(wdir, 'ICA100_oslo15_v2.txt')
 #covfile = os.path.join(wdir, 'cov_oslo15_v2.txt')
 #cvfolds = 2
-#nispat.normative.estimate(covfile, respfile,  cvfolds=cvfolds)
+#pcntoolkit.normative.estimate(covfile, respfile,  cvfolds=cvfolds)
 
 #wdir = '/home/mrstats/andmar/data/enigma_mdd'
 #maskfile = None

@@ -8,10 +8,10 @@ Created on Mon Jul 29 13:26:35 2019
 
 import os
 import numpy as np
-from nispat.normative_model.norm_utils import norm_init
-from nispat.utils import simulate_data
+from pcntoolkit.normative_model.norm_utils import norm_init
+from pcntoolkit.utils import simulate_data
 import matplotlib.pyplot as plt
-from nispat.normative import estimate
+from pcntoolkit.normative import estimate
 from warnings import filterwarnings
 filterwarnings('ignore')
 

@@ -31,7 +31,7 @@ import pandas as pd
 from subprocess import call
 
 try:
-    import nispat.fileio as fileio
+    import pcntoolkit.fileio as fileio
 except ImportError:
     pass
     path = os.path.abspath(os.path.dirname(__file__))
