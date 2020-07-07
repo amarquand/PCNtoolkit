@@ -320,7 +320,7 @@ class BLR:
 
     def predict(self, hyp, X, y, Xs, var_groups_test=None):
         """ Function to make predictions from the model """
-        
+
         if X is None or y is None:
             # set hyperparameters. we can use an array of zeros because 
             beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
