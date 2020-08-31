@@ -130,6 +130,13 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
     
     feature_num = Y.shape[1]
     
+    # Remove metrics that cannot be computed with only a single data point 
+    if Y.shape[0] == 1:
+        if 'MSLL' in metrics:
+            metrics.remove('MSLL')
+        if 'SMSE' in metrics:
+            metrics.remove('SMSE')
+    
     # find and remove bad variables from the response variables
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
                                  np.var(Y, axis=0) != 0))[0]
@@ -163,8 +170,8 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
         if ((S2 is not None) and (mY is not None) and (sY is not None)):
             MSLL = np.zeros(feature_num)
             MSLL[nz] = compute_MSLL(Y[:,nz], Yhat[:,nz], S2[:,nz], 
-                                    mY[nz].reshape(-1,1).T, 
-                                    (sY[nz]**2).reshape(-1,1).T)
+                                    mY.reshape(-1,1).T, 
+                                    (sY**2).reshape(-1,1).T)
             results['MSLL'] = MSLL
     
     return results
@@ -292,18 +299,18 @@ def estimate(covfile, respfile, **kwargs):
         run_cv = False
         cvfolds = 1
         Xte = fileio.load(testcov)
-        testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
         if len(Xte.shape) == 1:
-            Xte = Xte[:, np.newaxis]
+            Xte = Xte[:, np.newaxis].T
         if testresp is not None:
             Yte, testmask = load_response_vars(testresp, maskfile)
             if len(Yte.shape) == 1:
-                Yte = Yte[:, np.newaxis]
+                Yte = Yte[:, np.newaxis].T
         else:
             sub_te = Xte.shape[0]
             Yte = np.zeros([sub_te, Nmod])
             
         # treat as a single train-test split
+        testids = range(X.shape[0], X.shape[0]+Xte.shape[0])
         splits = CustomCV((range(0, X.shape[0]),), (testids,))
 
         Y = np.concatenate((Y, Yte), axis=0)
