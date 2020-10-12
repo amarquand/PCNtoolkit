@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pcntoolkit',
-      version='0.15',
+      version='0.16',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/nispat',
       author='Andre Marquand',
