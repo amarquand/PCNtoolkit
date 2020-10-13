@@ -1,18 +1,24 @@
-# PCNtoolkit
+# Predictive Clinial Neuroscience Toolkit
 Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for normative modelling, spatial statistics and pattern recognition 
 
 ## Install on your local machine
 
-i) install Anaconda3 ii) create enviornment with " conda create --name normative_modeling " iii) activate environment by " source activate normative_modeling " iv) install the required packages below with " conda install " or " pip install "
+i) install Anaconda3 ii) create enviornment with " conda create --name env_name" iii) activate environment by " source activate env_name" iv) install the required packages below with " conda install "
 
 ```
-conda install pip " " conda install spyder " " conda install pandas " " conda install scipy " " pip install nibabel " " pip install sklearn " " pip install torch " " pip install glob3 
+conda install pip spyder pandas scipy
 ```
 
-v) download/clone from https://github.com/amarquand/PCNtoolkit/ vi) unzip into download folder vii) change dir to download folder using the terminal and execute " pip install PCNtoolkit-master/ "
+v) install PCNtoolkit
+
+```
+pip install pcntoolkit
+```
+
+Alternatively, download/clone from https://github.com/amarquand/PCNtoolkit/, unzip into download folder and execute " pip install PCNtoolkit-master/ "
 
 
-## Install on a shared resource
+## Alternative method to install on a shared resource
 Make sure conda is available on the system.
 Otherwise install it first from https://www.anaconda.com/ 
 
