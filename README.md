@@ -9,7 +9,7 @@ i) install anaconda3 ii) create enviornment with "conda create --name env_name" 
 conda install pip spyder pandas scipy
 ```
 
-v) install PCNtoolkit
+v) install PCNtoolkit (plus dependencies)
 
 ```
 pip install pcntoolkit
