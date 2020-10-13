@@ -1,4 +1,4 @@
-# Predictive Clinial Neuroscience Toolkit
+# Predictive Clinical Neuroscience Toolkit
 Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for normative modelling, spatial statistics and pattern recognition 
 
 ## Basic installation (on a local machine)
@@ -65,4 +65,10 @@ Test
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```
 
-# Quickstart usage
+## Quickstart usage
+
+For normative modelling, functionality is handled by the normative.py script, which can be run from the command line, e.g.
+
+```
+# python normative.py -c /path/to/training/covariates -t /path/to/test/covariates -r /path/to/test/response/variables /path/to/my/training/response/variables
+```
