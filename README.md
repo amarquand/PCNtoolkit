@@ -1,9 +1,10 @@
 # Predictive Clinial Neuroscience Toolkit
 Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for normative modelling, spatial statistics and pattern recognition 
 
+# Installation
 ## Install on your local machine
 
-i) install Anaconda3 ii) create enviornment with " conda create --name env_name" iii) activate environment by " source activate env_name" iv) install the required packages below with " conda install "
+i) install anaconda3 ii) create enviornment with " conda create --name env_name" iii) activate environment by " source activate env_name" iv) install the required packages below with " conda install "
 
 ```
 conda install pip spyder pandas scipy
@@ -35,7 +36,7 @@ conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/conda/normative_mo
 Activate the conda environment 
 
 ```
-conda activate /shared/onda/cnormative_modeling/1.2.2
+conda activate /shared/conda/normative_modeling/1.2.2
 ```
 
 Install other dependencies
@@ -43,7 +44,6 @@ Install other dependencies
 ```
 conda install -y spyder pandas scipy 
 ```
-
 
 Install pip dependencies
 
@@ -69,3 +69,4 @@ Test
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```
 
+# Quickstart usage
