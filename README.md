@@ -3,7 +3,7 @@ Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for
 
 ## Basic installation (on a local machine)
 
-i) install anaconda3 ii) create enviornment with "conda create --name env_name" iii) activate environment by "source activate env_name" iv) install the required packages below with "conda install "
+i) install anaconda3 ii) create enviornment with "conda create --name env_name" iii) activate environment by "source activate env_name" iv) install required conda packages
 
 ```
 conda install pip spyder pandas scipy
