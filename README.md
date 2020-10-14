@@ -6,7 +6,7 @@ Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for
 i) install anaconda3 ii) create enviornment with "conda create --name env_name" iii) activate environment by "source activate env_name" iv) install required conda packages
 
 ```
-conda install pip spyder pandas scipy
+conda install pip pandas scipy
 ```
 
 v) install PCNtoolkit (plus dependencies)
@@ -38,7 +38,7 @@ conda activate /shared/conda/normative_modeling/1.2.2
 Install other dependencies
 
 ```
-conda install -y spyder pandas scipy 
+conda install -y pandas scipy 
 ```
 
 Install pip dependencies
