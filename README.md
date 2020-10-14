@@ -1,5 +1,5 @@
 # Predictive Clinical Neuroscience Toolkit
-Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for normative modelling, spatial statistics and pattern recognition 
+Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for normative modelling, spatial statistics and pattern recognition. A quickstart guide for running some of the major functions is provided at the bottom of this page
 
 ## Basic installation (on a local machine)
 
