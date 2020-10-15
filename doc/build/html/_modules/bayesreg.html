@@ -2,38 +2,27 @@
 
 <!doctype html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>bayesreg &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
-    
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bayesreg &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
     <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <!--[if lt IE 9]>
-    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <script src="_static/css3-mediaqueries.js"></script>
     <![endif]-->
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -43,24 +32,11 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">bayesreg</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -68,11 +44,12 @@
           <div class="body" role="main">
             
   <h1>Source code for bayesreg</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">linalg</span><span class="p">,</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span> <span class="p">,</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">LinAlgError</span>
 
 
 <div class="viewcode-block" id="BLR"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR">[docs]</a><span class="k">class</span> <span class="nc">BLR</span><span class="p">:</span>
@@ -115,24 +92,68 @@
 <span class="sd">    Written by A. Marquand</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                 <span class="n">var_groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>          <span class="c1"># not used at present</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>    <span class="c1"># not used at present</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">=</span> <span class="n">var_groups</span> 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># set up warped likelihood</span>
+        <span class="k">if</span> <span class="n">warp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="n">warp</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span> <span class="o">=</span> <span class="n">warp</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">def</span> <span class="nf">_parse_hyps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 
+        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># hyperparameters</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>               <span class="c1"># noise precision </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">beta</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">/</span><span class="n">beta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)])</span>
+            <span class="n">beta_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)):</span>
+                <span class="n">beta_all</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span> <span class="o">=</span> <span class="n">beta</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">beta_all</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">beta_all</span><span class="p">)</span>
+        
+        <span class="c1"># parameters for warping the likelhood function</span>
+        <span class="n">n_lik_param</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span><span class="p">:(</span><span class="n">n_lik_param</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span><span class="p">)]</span>
+            <span class="n">n_lik_param</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># precision for the coefficients</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="k">return</span> <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span>
+        
 <div class="viewcode-block" id="BLR.post"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generic function to compute posterior distribution.</span>
 
 <span class="sd">            This function will save the posterior mean and precision matrix as</span>
 <span class="sd">            self.m and self.A and will also update internal parameters (e.g.</span>
-<span class="sd">            N, D and the prior covariance (Sigma) and precision (iSigma).</span>
+<span class="sd">            N, D and the prior covariance (Sigma_a) and precision (Lambda_a).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -144,24 +165,25 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hyperparameters have not changed, exiting&quot;</span><span class="p">)</span>
             <span class="k">return</span>
-
-        <span class="c1"># hyperparameters</span>
-        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>    <span class="c1"># noise precision</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>  <span class="c1"># precision for the coefficients</span>
+        
+        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;estimating posterior ... | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
 
         <span class="c1"># prior variance</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="n">D</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">/</span><span class="n">alpha</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">*</span><span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">/</span><span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">*</span><span class="n">alpha</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;hyperparameter vector has invalid length&quot;</span><span class="p">)</span>
 
-        <span class="c1"># compute posterior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span>          <span class="c1"># posterior precision</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>  <span class="c1"># posterior mean</span>
+        <span class="c1"># compute posterior precision and mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> 
+                              <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="c1">#self.m = linalg.lstsq(self.A, X.T, </span>
+        <span class="c1">#                      check_finite=False)[0].dot(self.Lambda_n).dot(y)</span>
 
         <span class="c1"># save stuff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span>
@@ -171,24 +193,48 @@
 <div class="viewcode-block" id="BLR.loglik"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.loglik">[docs]</a>    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;</span>
 
-        <span class="c1"># hyperparameters (only beta needed)</span>
-        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># noise precision</span>
+        <span class="c1"># hyperparameters (alpha not needed)</span>
+        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> 
 
+        <span class="c1"># warp the likelihood?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warping input...&#39;</span><span class="p">)</span>
+            <span class="n">y_unwarped</span> <span class="o">=</span> <span class="n">y</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+            
         <span class="c1"># load posterior and prior covariance</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
                 <span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
                 <span class="k">return</span> <span class="n">nlZ</span>
+                    
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># compute the log determinants in a numerically stable way</span>
+            <span class="n">logdetA</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+            <span class="k">return</span> <span class="n">nlZ</span>
 
-        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span>
-                      <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma</span><span class="p">))</span> <span class="o">-</span>
-                      <span class="n">beta</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span> <span class="o">-</span>
-                      <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                      <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))</span>
+        <span class="n">logdetSigma_a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)))</span> <span class="c1"># diagonal</span>
+        <span class="n">logdetSigma_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span><span class="p">)))</span>
+
+        <span class="c1"># compute negative marginal log likelihood</span>
+        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span>
+                      <span class="n">logdetSigma_n</span> <span class="o">-</span>
+                      <span class="n">logdetSigma_a</span> <span class="o">-</span>
+                      <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span> <span class="o">-</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
+                      <span class="n">logdetA</span>
                       <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># add in the Jacobian </span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">y_unwarped</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)))</span>
 
         <span class="c1"># make sure the output is finite to stop the minimizer getting upset</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nlZ</span><span class="p">):</span>
@@ -204,11 +250,14 @@
         <span class="sd">&quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;</span>
 
         <span class="c1"># hyperparameters</span>
-        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;optimization with derivatives is not yet &#39;</span> <span class="o">+</span> \
+                             <span class="s1">&#39;supported for warped liklihood&#39;</span><span class="p">)</span>
 
         <span class="c1"># load posterior and prior covariance</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -216,44 +265,71 @@
                 <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
                 <span class="k">return</span> <span class="n">dnlZ</span>
 
-        <span class="c1"># useful quantities</span>
-        <span class="n">XX</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">Q</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span> <span class="o">-</span> <span class="n">beta</span><span class="o">*</span><span class="n">Q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-
+        <span class="c1"># precompute re-used quantities to maximise speed </span>
+        <span class="c1"># todo: revise implementation to use Cholesky throughout </span>
+        <span class="c1">#       that would remove the need to explicitly compute the inverse</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>                       <span class="c1"># posterior covariance</span>
+        <span class="n">SX</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">XLn</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span>
+        <span class="n">XLny</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">SXLny</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLny</span><span class="p">)</span>       
+        <span class="n">XLnXm</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+      
         <span class="c1"># initialise derivatives</span>
         <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-        <span class="c1"># noise precision</span>
-        <span class="n">dnlZ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span>
-                     <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">+</span>
-                     <span class="n">beta</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span>
-                     <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XX</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                     <span class="n">beta</span> <span class="o">*</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                     <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
-                     <span class="p">)</span> <span class="o">*</span> <span class="n">beta</span>
+ 
+        <span class="c1"># noise precision parameter(s)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)):</span>
+            <span class="c1"># first compute derivative of Lambda_n with respect to beta</span>
+            <span class="n">dL_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dL_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>    
+                <span class="n">dL_n_vec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">dLambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dL_n_vec</span><span class="p">)</span>
+            
+            <span class="c1"># compute quantities used multiple times</span>
+            <span class="n">XdLnX</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">dA</span> <span class="o">=</span> <span class="n">XdLnX</span>
+            
+            <span class="c1"># derivative of posterior parameters with respect to beta</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span> <span class="o">+</span> <span class="n">SX</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            
+            <span class="c1"># compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently</span>
+            <span class="n">trSigma_ndLambda_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">))</span>
+            
+            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">trSigma_ndLambda_n</span> <span class="o">-</span> 
+                         <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span>
+                         <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">+</span>
+                         <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span>
+                         <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XdLnX</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>    
+                         <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span> <span class="o">-</span>
+                         <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
+                         <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+                         <span class="p">)</span> <span class="o">*</span> <span class="n">beta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="c1"># scaling parameter(s)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)):</span>
-            <span class="c1"># are we using ARD?</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>
-                <span class="n">dSigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
-                <span class="n">dSigma</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="o">-</span><span class="mi">2</span>
+            <span class="c1"># first compute derivatives with respect to alpha</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>  <span class="c1"># are we using ARD?</span>
+                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+                <span class="n">dLambda_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">dSigma</span> <span class="o">=</span> <span class="o">-</span><span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
 
-            <span class="n">F</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="p">)</span>
-            <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">beta</span><span class="o">*</span><span class="n">F</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-
-            <span class="c1">#import pdb</span>
-            <span class="c1">#pdb.set_trace()</span>
-            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dSigma</span><span class="p">))</span> <span class="o">+</span>
-                          <span class="n">beta</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span>
-                          <span class="n">beta</span> <span class="o">*</span> <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XX</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                          <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iSigma</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                          <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                          <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
-                          <span class="p">)</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">F</span> <span class="o">=</span> <span class="n">dLambda_a</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span>
+            
+            <span class="c1"># compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently</span>
+            <span class="n">trSigma_adLambda_a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_a</span><span class="p">))</span>
+            
+            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span> <span class="n">trSigma_adLambda_a</span> <span class="o">+</span>
+                                  <span class="n">XLny</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span>
+                                  <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span> <span class="o">-</span>
+                                  <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
+                                  <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
+                                  <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
+                                  <span class="p">)</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="c1"># make sure the gradient is finite to stop the minimizer getting upset</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dnlZ</span><span class="p">)):</span>
@@ -288,22 +364,62 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span></div>
 
-<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">):</span>
+<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">var_groups_test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># set hyperparameters. we can use an array of zeros because </span>
+            <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            
+            <span class="c1"># set hyperparameters</span>
+            <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            
+            <span class="c1"># do we need to re-estimate the posterior?</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
+                <span class="c1"># warp the likelihood?</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warping input...&#39;</span><span class="p">)</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-        <span class="c1"># hyperparameters</span>
-        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">N_test</span> <span class="o">=</span> <span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">ys</span> <span class="o">=</span> <span class="n">Xs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-        <span class="n">s2</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Xs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)))</span>
-
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s2n</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_groups_test</span><span class="p">)</span> <span class="o">!=</span> <span class="n">N_test</span><span class="p">:</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Invalid variance groups for test&#39;</span><span class="p">)</span>
+            <span class="c1"># separate variance groups</span>
+            <span class="n">s2n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N_test</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)):</span>
+                <span class="n">s2n</span><span class="p">[</span><span class="n">var_groups_test</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        
+        <span class="c1"># compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">s2n</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Xs</span><span class="o">*</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
         <span class="k">return</span> <span class="n">ys</span><span class="p">,</span> <span class="n">s2</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -317,13 +433,14 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">bayesreg</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2016, Andre F. Marquand.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+        &#169; Copyright 2020, Andre F. Marquand.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>
