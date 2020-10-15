@@ -2,38 +2,27 @@
 
 <!doctype html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>trendsurf &#8212; Spatial methods for neuroimaging 0.1 documentation</title>
-    
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>trendsurf &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
     <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <!--[if lt IE 9]>
-    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <script src="_static/css3-mediaqueries.js"></script>
     <![endif]-->
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -43,24 +32,11 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">trendsurf</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -77,8 +53,8 @@
 <span class="c1">#  Written by A. Marquand</span>
 <span class="c1"># ------------------------------------------------------------------------------</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -86,22 +62,26 @@
 <span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
+<span class="k">try</span><span class="p">:</span>  <span class="c1"># Run as a package if installed</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">fileio</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit.bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">del</span> <span class="n">path</span>
 
     <span class="kn">import</span> <span class="nn">fileio</span>
-    <span class="kn">from</span> <span class="nn">bayesreg</span> <span class="k">import</span> <span class="n">BLR</span>
-<span class="k">else</span><span class="p">:</span>  <span class="c1"># Run as a package (assumes the package is installed)</span>
-    <span class="kn">from</span> <span class="nn">nispat</span> <span class="k">import</span> <span class="n">fileio</span>
-    <span class="kn">from</span> <span class="nn">nispat.bayesreg</span> <span class="k">import</span> <span class="n">BLR</span>
+    <span class="kn">from</span> <span class="nn">bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
+
 
 
 <div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../modindex.html#trendsurf.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; load 4d nifti data &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">datafile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;nii.gz&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">datafile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;nii&quot;</span><span class="p">):</span>
+        <span class="c1"># we load the data this way rather than fileio.load() because we need</span>
+        <span class="c1"># access to the volumetric representation (to know the # coordinates)</span>
         <span class="n">dat</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
@@ -128,7 +108,7 @@
     <span class="k">return</span> <span class="n">dat</span><span class="p">,</span> <span class="n">world</span><span class="p">,</span> <span class="n">mask</span></div>
 
 
-<div class="viewcode-block" id="create_basis"><a class="viewcode-back" href="../modindex.html#trendsurf.create_basis">[docs]</a><span class="k">def</span> <span class="nf">create_basis</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">basis</span><span class="p">):</span>
+<div class="viewcode-block" id="create_basis"><a class="viewcode-back" href="../modindex.html#trendsurf.create_basis">[docs]</a><span class="k">def</span> <span class="nf">create_basis</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Create a (polynomial) basis set &quot;&quot;&quot;</span>
 
     <span class="c1"># check whether we are using a polynomial basis set</span>
@@ -142,7 +122,17 @@
             <span class="n">Phi</span><span class="p">[:,</span> <span class="n">colid</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span> <span class="o">**</span> <span class="n">d</span>
             <span class="n">colid</span> <span class="o">+=</span> <span class="n">dimx</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># custom basis set</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Custom basis set is not implemented yet!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading custom basis set from&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+
+            <span class="c1"># Phi_vol = fileio.load_data(basis)</span>
+            <span class="c1"># we load the data this way instead so we can apply the same mask</span>
+            <span class="n">Phi_vol</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Phi</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">vol2vec</span><span class="p">(</span><span class="n">Phi_vol</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Basis set consists of&#39;</span><span class="p">,</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;basis functions.&#39;</span><span class="p">)</span>
+            <span class="c1"># maskid = np.where(mask.ravel())[0]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;I don&#39;t know what to do with basis:&quot;</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">Phi</span></div>
 
@@ -173,6 +163,8 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;mask file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;maskfile&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;covariates file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;covfile&quot;</span><span class="p">,</span>
                         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-a&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;use ARD&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output all measures&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
     <span class="n">wdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">curdir</span><span class="p">)</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
@@ -183,10 +175,12 @@
     <span class="n">basis</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">basis</span>
     <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">covfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="s2">&quot;Covariates not implemented yet.&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span></div>
+
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">o</span></div>
 
 
-<div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../modindex.html#trendsurf.estimate">[docs]</a><span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">):</span>
+<div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../modindex.html#trendsurf.estimate">[docs]</a><span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">ard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">outputall</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">saveoutput</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Estimate a trend surface model</span>
 
 <span class="sd">    This will estimate a trend surface model, independently for each subject.</span>
@@ -236,10 +230,15 @@
     <span class="n">Xz</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">mX</span><span class="p">)</span> <span class="o">/</span> <span class="n">sX</span>
 
     <span class="c1"># create basis set and set starting hyperparamters</span>
-    <span class="n">Phi</span> <span class="o">=</span> <span class="n">create_basis</span><span class="p">(</span><span class="n">Xz</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
-    <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Phi</span> <span class="o">=</span> <span class="n">create_basis</span><span class="p">(</span><span class="n">Xz</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ard</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hyp0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="c1"># estimate the models for all subjects</span>
+    <span class="k">if</span> <span class="n">ard</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ARD is enabled&#39;</span><span class="p">)</span>
     <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Yz</span><span class="p">)</span>
     <span class="n">ys2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Yz</span><span class="p">)</span>
     <span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
@@ -247,6 +246,7 @@
     <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
     <span class="n">ev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">bs2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Estimating model &quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
         <span class="n">breg</span> <span class="o">=</span> <span class="n">BLR</span><span class="p">()</span>
@@ -254,11 +254,15 @@
         <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">breg</span><span class="o">.</span><span class="n">m</span>
         <span class="n">nlZ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">breg</span><span class="o">.</span><span class="n">nlZ</span>
 
+        <span class="c1"># compute extra measures (e.g. marginal variances)?</span>
+        <span class="k">if</span> <span class="n">outputall</span><span class="p">:</span>
+            <span class="n">bs2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">breg</span><span class="o">.</span><span class="n">A</span><span class="p">)))</span>
+
         <span class="c1"># compute predictions and errors</span>
         <span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">ys2</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">breg</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">Yz</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">Phi</span><span class="p">)</span>
         <span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">sY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">mY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">rmse</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-        <span class="n">ev</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])))</span>
+        <span class="n">ev</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">yhat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])))</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Variance explained =&quot;</span><span class="p">,</span> <span class="n">ev</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;% RMSE =&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -266,28 +270,51 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean (std) RMSE =&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
     <span class="c1"># Write output</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Writing output ...&quot;</span><span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;trendcoeff.txt&quot;</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;negloglik.txt&quot;</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;hyp.txt&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;explainedvar.txt&quot;</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;rmse.txt&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fileio</span><span class="o">.</span><span class="n">save_nifti</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="s1">&#39;yhat.nii.gz&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-    <span class="n">fileio</span><span class="o">.</span><span class="n">save_nifti</span><span class="p">(</span><span class="n">ys2</span><span class="p">,</span> <span class="s1">&#39;ys2.nii.gz&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">saveoutput</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Writing output ...&quot;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;trendcoeff.txt&quot;</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;negloglik.txt&quot;</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;hyp.txt&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;explainedvar.txt&quot;</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;rmse.txt&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">fileio</span><span class="o">.</span><span class="n">save_nifti</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="s1">&#39;yhat.nii.gz&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">fileio</span><span class="o">.</span><span class="n">save_nifti</span><span class="p">(</span><span class="n">ys2</span><span class="p">,</span> <span class="s1">&#39;ys2.nii.gz&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">outputall</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;trendcoeffvar.txt&quot;</span><span class="p">,</span> <span class="n">bs2</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%5.8f</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">yhat</span><span class="p">,</span> <span class="n">ys2</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">outputall</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bs2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../modindex.html#trendsurf.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 
-    <span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-    <span class="n">estimate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span></div>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">ard</span><span class="p">,</span> <span class="n">outputall</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">estimate</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">ard</span><span class="p">,</span> <span class="n">outputall</span><span class="p">)</span></div>
 
 <span class="c1"># For running from the command line:</span>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -301,13 +328,14 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Spatial methods for neuroimaging 0.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">trendsurf</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2016, Andre F. Marquand.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+        &#169; Copyright 2020, Andre F. Marquand.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>
