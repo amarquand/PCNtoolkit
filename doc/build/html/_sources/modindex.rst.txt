@@ -24,3 +24,21 @@ Module Index
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+    
+.. automodule:: rfa 
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. automodule:: fileio
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. automodule:: utils
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
