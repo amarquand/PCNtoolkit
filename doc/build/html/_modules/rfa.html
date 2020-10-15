@@ -1,0 +1,331 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rfa &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">rfa</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rfa</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<div class="viewcode-block" id="GPRRFA"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA">[docs]</a><span class="k">class</span> <span class="nc">GPRRFA</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Random Feature Approximation for Gaussian Process Regression</span>
+
+<span class="sd">    Estimation and prediction of Bayesian linear regression models</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        R = GPRRFA()</span>
+<span class="sd">        hyp = R.estimate(hyp0, X, y)</span>
+<span class="sd">        ys,s2 = R.predict(hyp, X, y, Xs)</span>
+
+<span class="sd">    where the variables are</span>
+
+<span class="sd">    :param hyp: vector of hyperparmaters.</span>
+<span class="sd">    :param X: N x D data array</span>
+<span class="sd">    :param y: 1D Array of targets (length N)</span>
+<span class="sd">    :param Xs: Nte x D array of test cases</span>
+<span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
+
+<span class="sd">    :returns: * ys - predictive mean</span>
+<span class="sd">              * s2 - predictive variance</span>
+
+<span class="sd">    The hyperparameters are::</span>
+
+<span class="sd">        hyp = [ log(sn), log(ell), log(sf) ]  # hyp is a numpy array</span>
+
+<span class="sd">    where sn^2 is the noise variance, ell are lengthscale parameters and </span>
+<span class="sd">    sf^2 is the signal variance. This provides an approximation to the</span>
+<span class="sd">    covariance function::</span>
+<span class="sd">        </span>
+<span class="sd">        k(x,z) = x&#39;*z + sn2*exp(0.5*(x-z)&#39;*Lambda*(x-z))</span>
+<span class="sd">    </span>
+<span class="sd">    where Lambda = diag((ell_1^2, ... ell_D^2))</span>
+
+<span class="sd">    Written by A. Marquand</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_feat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>          <span class="c1"># not used at present</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="o">=</span> <span class="n">n_feat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span> <span class="o">=</span> <span class="mi">5</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_numpy2torch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+           <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+           <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Unknown data type (X)&#39;</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Unknown data type (y)&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">resize_</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">hyp</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span>
+    
+<div class="viewcode-block" id="GPRRFA.get_n_params"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.get_n_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span></div>
+        
+<div class="viewcode-block" id="GPRRFA.post"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Generic function to compute posterior distribution.</span>
+
+<span class="sd">            This function will save the posterior mean and precision matrix as</span>
+<span class="sd">            self.m and self.A and will also update internal parameters (e.g.</span>
+<span class="sd">            N, D and the prior covariance (Sigma) and precision (iSigma).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+     
+        <span class="c1"># make sure all variables are the right type</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dx</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="c1"># ensure the number of features is specified (use 75% as a default)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Dx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">[:,</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> \
+            <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Dx</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+        <span class="n">XO</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">)</span> <span class="o">*</span>  \
+                   <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">XO</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">XO</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># concatenate linear weights </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span> <span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;estimating posterior ... | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
+                 <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> \
+                 <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># save hyperparameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span>
+        
+        <span class="c1"># update optimizer iteration count</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;_iterations&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="GPRRFA.loglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.loglik">[docs]</a>    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+
+        <span class="c1"># always recompute the posterior</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="c1">#logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># compute the log determinants in a numerically stable way</span>
+            <span class="n">logdetA</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="c1">#nlZ = torch.tensor(1/np.finfo(float).eps)</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">nlZ</span>
+        
+        <span class="c1"># compute negative marginal log likelihood</span>
+        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> 
+                      <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span>
+                      <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)),</span>
+                               <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)))</span> <span class="o">/</span> 
+                      <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span>
+                      <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span> <span class="n">logdetA</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nlZ= &quot;</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+
+        <span class="c1"># save marginal likelihood</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span>
+        <span class="k">return</span> <span class="n">nlZ</span></div>
+
+<div class="viewcode-block" id="GPRRFA.dloglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.dloglik">[docs]</a>    <span class="k">def</span> <span class="nf">dloglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;derivatives not available&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="GPRRFA.estimate"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">hyp0</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp0</span>
+            <span class="n">hyp0</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+        <span class="c1"># save the starting values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp</span>
+        
+        <span class="k">if</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;lbfgs&#39;</span><span class="p">:</span>
+            <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">hyp</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;Optimizer &quot;</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
+            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">nlZ</span><span class="p">):</span>
+                <span class="n">nlZ</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">nlZ</span>
+        
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span> <span class="o">=</span> <span class="kc">False</span>
+            
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;optimization failed. retrying (&quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span> 
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span><span class="p">,</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+                <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimzation complete after&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span><span class="p">,</span> 
+                      <span class="s2">&quot;evaluations. Function value =&quot;</span><span class="p">,</span> 
+                      <span class="n">nlZ</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GPRRFA.predict"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;</span>
+
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        <span class="n">Xs</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="c1"># generate prediction tensors</span>
+        <span class="n">XsO</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">)</span> 
+        <span class="n">Phis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">)</span> <span class="o">*</span> \
+               <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">XsO</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">XsO</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># add linear component</span>
+        <span class="n">Phis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">Phis</span><span class="p">,</span> <span class="n">Xs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">ys</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">Phis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="c1"># compute diag(Phis*(Phis&#39;\A)) avoiding computing off-diagonal entries</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
+                <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Phis</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">Phis</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># return output as numpy arrays</span>
+        <span class="k">return</span> <span class="n">ys</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">rfa</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Andre F. Marquand.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
