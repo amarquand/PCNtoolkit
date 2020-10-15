@@ -73,6 +73,8 @@ For normative modelling, functionality is handled by the normative.py script, wh
 # python normative.py -c /path/to/training/covariates -t /path/to/test/covariates -r /path/to/test/response/variables /path/to/my/training/response/variables
 ```
 
+For more information, please see the [documentation](https://github.com/amarquand/PCNtoolkit/wiki/Documentation)
+
 An in-depth practical tutorial for running normative modelling on a real-world dataset can be found here: 
 
 https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo
