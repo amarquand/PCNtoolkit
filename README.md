@@ -77,4 +77,4 @@ For more information, please see the following resources:
 
 * [documentation](https://github.com/amarquand/PCNtoolkit/wiki/PCNtookit-documentation)
 * [developer documentation](https://amarquand.github.io/PCNtoolkit/doc/build/html/)
-* a tutorial and worked through example of normative modelling applied to a real-world dataset see [here](https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo)
+* a tutorial and worked through example on a [real-world dataset](https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo)
