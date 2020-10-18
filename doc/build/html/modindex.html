@@ -365,24 +365,14 @@ C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
 <dt id="normative.estimate">
 <code class="sig-prename descclassname">normative.</code><code class="sig-name descname">estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covfile</span></em>, <em class="sig-param"><span class="n">respfile</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate a normative model</p>
-<p>This will estimate a model in one of two settings according to the
-particular parameters specified (see below):</p>
+<p>This will estimate a model in one of two settings according to theparticular parameters specified (see below)</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt>under k-fold cross-validation</dt><dd><p>required settings 1) respfile 2) covfile 3) cvfolds&gt;=2</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>estimating a training dataset then applying to a second test dataset</dt><dd><p>required sessting 1) respfile 2) covfile 3) testcov 4) testresp</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>estimating on a training dataset ouput of forward maps mean and se</dt><dd><p>required sessting 1) respfile 2) covfile 3) testcov</p>
-</dd>
-</dl>
-</li>
+<li><p>under k-fold cross-validation.
+requires respfile, covfile and cvfolds&gt;=2</p></li>
+<li><p>estimating a training dataset then applying to a second test dataset.
+requires respfile, covfile, testcov and testresp.</p></li>
+<li><p>estimating on a training dataset ouput of forward maps mean and se. 
+requires respfile, covfile and testcov</p></li>
 </ul>
 <p>The models are estimated on the basis of data stored on disk in ascii or
 neuroimaging data formats (nifti or cifti). Ascii data should be in
@@ -390,7 +380,7 @@ tab or space delimited format with the number of subjects in rows and the
 number of variables in columns. Neuroimaging data will be reshaped
 into the appropriate format</p>
 <p>Basic usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">estimate</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">covfile</span><span class="p">,</span> <span class="p">[</span><span class="n">extra_arguments</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span><span class="p">,</span> <span class="n">respfile</span><span class="p">,</span> <span class="p">[</span><span class="n">extra_arguments</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>where the variables are defined below. Note that either the cfolds
@@ -433,7 +423,34 @@ same directory (e.g. for custom cross-validation schemes)</p>
 <dl class="py function">
 <dt id="normative.evaluate">
 <code class="sig-prename descclassname">normative.</code><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Y</span></em>, <em class="sig-param"><span class="n">Yhat</span></em>, <em class="sig-param"><span class="n">S2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metrics</span><span class="o">=</span><span class="default_value">['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Compute error metrics
+This function will compute error metrics based on a set of predictions Yhat
+and a set of true response variables Y, namely:</p>
+<ul class="simple">
+<li><p>Rho: Pearson correlation</p></li>
+<li><p>RMSE: root mean squared error</p></li>
+<li><p>SMSE: standardized mean squared error</p></li>
+<li><p>EXPV: explained variance</p></li>
+</ul>
+<p>If the predictive variance is also specified the log loss will be computed
+(which also takes into account the predictive variance). If the mean and 
+standard deviation are also specified these will be used to standardize 
+this, yielding the mean standardized log loss</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Y</strong> – N x P array of true response variables</p></li>
+<li><p><strong>Yhat</strong> – N x P array of predicted response variables</p></li>
+<li><p><strong>S2</strong> – predictive variance</p></li>
+<li><p><strong>mY</strong> – mean of the training set</p></li>
+<li><p><strong>sY</strong> – standard deviation of the training set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns metrics</dt>
+<dd class="field-even"><p>evaluation metrics</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="normative.extend">
@@ -466,7 +483,40 @@ same directory (e.g. for custom cross-validation schemes)</p>
 <dl class="py function">
 <dt id="normative.predict">
 <code class="sig-prename descclassname">normative.</code><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covfile</span></em>, <em class="sig-param"><span class="n">respfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maskfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Make predictions on the basis of a pre-estimated normative model 
+If only the covariates are specified then only predicted mean and variance 
+will be returned. If the test responses are also specified then quantities
+That depend on those will also be returned (Z scores and error metrics)</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">predict</span><span class="p">(</span><span class="n">covfile</span><span class="p">,</span> <span class="p">[</span><span class="n">extra_arguments</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>where the variables are defined below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>covfile</strong> – test covariates used to predict the response variable</p></li>
+<li><p><strong>respfile</strong> – test response variables for the normative model</p></li>
+<li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
+<li><p><strong>model_path</strong> – Directory containing the normative model and metadata</p></li>
+<li><p><strong>output_path</strong> – Directory to store the results</p></li>
+<li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
+<li><p><strong>batch_size</strong> – compute in batches with specified size</p></li>
+<li><p><strong>job_id</strong> – batch id</p></li>
+</ul>
+</dd>
+</dl>
+<p>All outputs are written to disk in the same format as the input. These are:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Outputs</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p>Yhat - predictive mean</p></li>
+<li><p>S2 - predictive variance</p></li>
+<li><p>Z - Z scores</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="normative.save_results">
