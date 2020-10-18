@@ -173,6 +173,29 @@
 
 <div class="viewcode-block" id="evaluate"><a class="viewcode-back" href="../modindex.html#normative.evaluate">[docs]</a><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">Yhat</span><span class="p">,</span> <span class="n">S2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mY</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sY</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Rho&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;SMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;EXPV&#39;</span><span class="p">,</span> <span class="s1">&#39;MSLL&#39;</span><span class="p">]):</span>
+    <span class="sd">&#39;&#39;&#39; Compute error metrics</span>
+<span class="sd">    This function will compute error metrics based on a set of predictions Yhat</span>
+<span class="sd">    and a set of true response variables Y, namely:</span>
+<span class="sd">    </span>
+<span class="sd">    * Rho: Pearson correlation</span>
+<span class="sd">    * RMSE: root mean squared error</span>
+<span class="sd">    * SMSE: standardized mean squared error</span>
+<span class="sd">    * EXPV: explained variance</span>
+<span class="sd">        </span>
+<span class="sd">    If the predictive variance is also specified the log loss will be computed</span>
+<span class="sd">    (which also takes into account the predictive variance). If the mean and </span>
+<span class="sd">    standard deviation are also specified these will be used to standardize </span>
+<span class="sd">    this, yielding the mean standardized log loss</span>
+<span class="sd">    </span>
+<span class="sd">    :param Y: N x P array of true response variables</span>
+<span class="sd">    :param Yhat: N x P array of predicted response variables</span>
+<span class="sd">    :param S2: predictive variance</span>
+<span class="sd">    :param mY: mean of the training set</span>
+<span class="sd">    :param sY: standard deviation of the training set</span>
+
+<span class="sd">    :returns metrics: evaluation metrics</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="n">feature_num</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     
@@ -258,15 +281,14 @@
 <div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../modindex.html#normative.estimate">[docs]</a><span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="n">covfile</span><span class="p">,</span> <span class="n">respfile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Estimate a normative model</span>
 
-<span class="sd">    This will estimate a model in one of two settings according to the</span>
-<span class="sd">    particular parameters specified (see below):</span>
-
-<span class="sd">    * under k-fold cross-validation</span>
-<span class="sd">        required settings 1) respfile 2) covfile 3) cvfolds&gt;=2</span>
-<span class="sd">    * estimating a training dataset then applying to a second test dataset</span>
-<span class="sd">        required sessting 1) respfile 2) covfile 3) testcov 4) testresp</span>
-<span class="sd">    * estimating on a training dataset ouput of forward maps mean and se</span>
-<span class="sd">        required sessting 1) respfile 2) covfile 3) testcov</span>
+<span class="sd">    This will estimate a model in one of two settings according to theparticular parameters specified (see below)</span>
+<span class="sd">        </span>
+<span class="sd">    * under k-fold cross-validation.</span>
+<span class="sd">      requires respfile, covfile and cvfolds&gt;=2</span>
+<span class="sd">    * estimating a training dataset then applying to a second test dataset.</span>
+<span class="sd">      requires respfile, covfile, testcov and testresp.</span>
+<span class="sd">    * estimating on a training dataset ouput of forward maps mean and se. </span>
+<span class="sd">      requires respfile, covfile and testcov</span>
 
 <span class="sd">    The models are estimated on the basis of data stored on disk in ascii or</span>
 <span class="sd">    neuroimaging data formats (nifti or cifti). Ascii data should be in</span>
@@ -276,7 +298,7 @@
 
 <span class="sd">    Basic usage::</span>
 
-<span class="sd">        estimate(respfile, covfile, [extra_arguments])</span>
+<span class="sd">        estimate(covfile, respfile, [extra_arguments])</span>
 
 <span class="sd">    where the variables are defined below. Note that either the cfolds</span>
 <span class="sd">    parameter or (testcov, testresp) should be specified, but not both.</span>
@@ -580,6 +602,34 @@
 
     
 <div class="viewcode-block" id="predict"><a class="viewcode-back" href="../modindex.html#normative.predict">[docs]</a><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">covfile</span><span class="p">,</span> <span class="n">respfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Make predictions on the basis of a pre-estimated normative model </span>
+<span class="sd">    If only the covariates are specified then only predicted mean and variance </span>
+<span class="sd">    will be returned. If the test responses are also specified then quantities</span>
+<span class="sd">    That depend on those will also be returned (Z scores and error metrics)</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        predict(covfile, [extra_arguments])</span>
+
+<span class="sd">    where the variables are defined below.</span>
+
+<span class="sd">    :param covfile: test covariates used to predict the response variable</span>
+<span class="sd">    :param respfile: test response variables for the normative model</span>
+<span class="sd">    :param maskfile: mask used to apply to the data (nifti only)</span>
+<span class="sd">    :param model_path: Directory containing the normative model and metadata</span>
+<span class="sd">    :param output_path: Directory to store the results</span>
+<span class="sd">    :param outputsuffix: Text string to add to the output filenames</span>
+<span class="sd">    :param batch_size: compute in batches with specified size</span>
+<span class="sd">    :param job_id: batch id</span>
+
+<span class="sd">    All outputs are written to disk in the same format as the input. These are:</span>
+
+<span class="sd">    :outputs: * Yhat - predictive mean</span>
+<span class="sd">              * S2 - predictive variance</span>
+<span class="sd">              * Z - Z scores</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
     
     <span class="n">model_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;model_path&#39;</span><span class="p">,</span> <span class="s1">&#39;Models&#39;</span><span class="p">)</span>
     <span class="n">job_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;job_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
