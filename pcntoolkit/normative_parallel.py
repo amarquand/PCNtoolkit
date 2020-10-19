@@ -1,7 +1,7 @@
 #!/.../anaconda/bin/python/
 
 # -----------------------------------------------------------------------------
-# Run parallel normantive modelling.
+# Run parallel normative modelling.
 # All processing takes place in the processing directory (processing_dir)
 # All inputs should be text files or binaries and space seperated
 #
@@ -54,11 +54,11 @@ def execute_nm(processing_dir,
                **kwargs):
 
     """
-    This function is a motherfunction that executes all parallel normative
+    This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
 
-    ** Input:
+    :Parameters:
         * processing_dir     -> Full path to the processing dir
         * python_path        -> Full path to the python distribution
         * normative_path     -> Full path to the normative.py
@@ -218,7 +218,7 @@ def split_nm(processing_dir,
 
     """ This function prepares the input files for normative_parallel.
 
-    ** Input:
+    :Parameters:
         * processing_dir    -> Full path to the folder of processing
         * respfile_path     -> Full path to the responsefile.txt
                                (subjects x features)
@@ -227,7 +227,7 @@ def split_nm(processing_dir,
                                (subjects x features)
         * binary            -> If True binary file
 
-    ** Output:
+    :outputs:
         * The creation of a folder struture for batch-wise processing
 
     witten by (primarily) T Wolfers (adapted) SM Kia
@@ -333,14 +333,16 @@ def collect_nm(processing_dir,
     
     """This function checks and collects all batches.
 
-    ** Input:
+    :Parameters:
         * processing_dir        -> Full path to the processing directory
         * collect               -> If True data is checked for failed batches
                                 and collected; if False data is just checked
+        * binary                -> Results in pkl format? 
 
-    ** Output:
+    :ouptuts:
         * Text files containing all results accross all batches the combined
-          output
+          output (written to disk)
+        * returns 0 if batches fail, 1 otherwise
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
@@ -615,8 +617,9 @@ def delete_nm(processing_dir,
     """This function deletes all processing for normative modelling and just
     keeps the combined output.
 
-    * Input:
+    :Parameters:
         * processing_dir        -> Full path to the processing directory
+        * binary                -> Results in pkl format? 
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
@@ -647,7 +650,7 @@ def bashwrap_nm(processing_dir,
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    ** Input:
+    :Parameters:
         * processing_dir     -> Full path to the processing dir
         * python_path        -> Full path to the python distribution
         * normative_path     -> Full path to the normative.py
@@ -667,11 +670,11 @@ def bashwrap_nm(processing_dir,
         * alg                -> which algorithm to use
         * configparam        -> configuration parameters for this algorithm
 
-    ** Output:
+    :outputs:
         * A bash.sh file containing the commands for normative modelling saved
-        to the processing directory
+          to the processing directory (written to disk)
 
-    witten by (primarily) T Wolfers
+    written by (primarily) T Wolfers
     """
     
     # here we use pop not get to remove the arguments as they used 

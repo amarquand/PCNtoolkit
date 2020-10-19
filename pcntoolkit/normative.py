@@ -574,7 +574,7 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     :param model_path: Directory containing the normative model and metadata
     :param output_path: Directory to store the results
     :param outputsuffix: Text string to add to the output filenames
-    :param batch_size: compute in batches with specified size
+    :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
 
     All outputs are written to disk in the same format as the input. These are:
@@ -681,6 +681,33 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     
 def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None, 
              **kwargs):
+    '''
+    Transfer learning on the basis of a pre-estimated normative model by using 
+    the posterior distribution over the parameters as an informed prior for 
+    new data. currently only supported for HBR.
+    
+    Basic usage::
+
+        transfer(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: test covariates used to predict the response variable
+    :param respfile: test response variables for the normative model
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param testcov: Test covariates
+    :param testresp: Test responses
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: Training batch effects file
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+
+    All outputs are written to disk in the same format as the input. These are:
+
+    :outputs: * Yhat - predictive mean
+              * S2 - predictive variance
+              * Z - Z scores
+    '''
     
     alg = kwargs.pop('alg')
     if alg != 'hbr':
