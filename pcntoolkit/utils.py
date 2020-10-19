@@ -79,9 +79,7 @@ def compute_pearsonr(A, B):
 
         Basic usage::
 
-        compute_pearsonr(A, B)
-
-        where
+            compute_pearsonr(A, B)
 
         :param A: an N * M data array
         :param cov: an N * M array
@@ -91,9 +89,9 @@ def compute_pearsonr(A, B):
 
         Notes::
 
-        This function is useful when M is large and only the diagonal entries
-        of the resulting correlation matrix are of interest. This function
-        does not compute the full correlation matrix as an intermediate step"""
+            This function is useful when M is large and only the diagonal entries
+            of the resulting correlation matrix are of interest. This function
+            does not compute the full correlation matrix as an intermediate step"""
 
     # N = A.shape[1]
     N = A.shape[0]
@@ -122,7 +120,7 @@ def explained_var(ytrue, ypred):
 
         Basic usage::
 
-        exp_var = explained_var(ytrue, ypred)
+            exp_var = explained_var(ytrue, ypred)
 
         where
 
@@ -144,21 +142,23 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
     
         Basic usage::
             
-        MSLL = compute_MSLL(ytrue, ypred, ytrue_sig, noise_variance, train_mean, train_var)
+            MSLL = compute_MSLL(ytrue, ypred, ytrue_sig, noise_variance, train_mean, train_var)
         
         where
         
-        :ytrue          : n*p matrix of true values where n is the number of samples 
-                          and p is the number of features. 
-        :ypred          : n*p matrix of predicted values where n is the number of samples 
-                          and p is the number of features. 
-        :ypred_var      : n*p matrix of summed noise variances and prediction variances where n is the number of samples 
-                          and p is the number of features.
-        :train_mean     : p dimensional vector of mean values of the training data for each feature.
-        :train_var      : p dimensional vector of covariances of the training data for each feature.
+        :param ytrue     : n*p matrix of true values where n is the number of samples 
+                           and p is the number of features. 
+        :param ypred     : n*p matrix of predicted values where n is the number of samples 
+                           and p is the number of features. 
+        :param ypred_var : n*p matrix of summed noise variances and prediction variances where n is the number of samples 
+                           and p is the number of features.
+            
+        :param train_mean: p dimensional vector of mean values of the training data for each feature.
         
-        :returns loss   : p dimensional vector of MSLL or MLL for each feature.
-    
+        :param train_var : p dimensional vector of covariances of the training data for each feature.
+
+        :returns loss    : p dimensional vector of MSLL or MLL for each feature.
+
     """
     
     if train_mean is not None and train_var is not None: 
@@ -464,29 +464,18 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    ** Input:
-        * processing_dir     -> Full path to the processing dir
-        * python_path        -> Full path to the python distribution
-        * command to execute -> python command to execute
-        * job_name           -> Name for the bash script that is the output of
-                                this function
-        * covfile_path       -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -> Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -> Number of cross validations
-        * testcovfile_path   -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -> Full path to a .txt file that contains all
-                                test features
-        * bash_environment   -> A file containing the necessary commands
-                                for your bash environment to work
-
-    ** Output:
-        * A bash.sh file containing the commands for normative modelling saved
-        to the processing directory
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param script_command: python command to execute
+    :param job_name: Name for the bash script output by this function
+    :param covfile_path: Full path to covariates
+    :param respfile_path: Full path to response variables
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to test covariates
+    :param testrespfile_path: Full path to tes responses
+    :param bash_environment: A file containing enviornment specific commands
+                                
+    :returns: A .sh file containing the commands for normative modelling
 
     witten by Thomas Wolfers
     """
@@ -622,33 +611,23 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
     """
     This function simulates linear synthetic data for testing pcntoolkit methods.
     
-    - Inputs:
-        
-        - method: simulate 'linear' or 'non-linear' function.
-        
-        - n_samples: number of samples in each group of the training and test sets. 
+    :param method: simulate 'linear' or 'non-linear' function.
+    :param n_samples: number of samples in each group of the training and test sets. 
         If it is an int then the same sample number will be used for all groups. 
         It can be also a list of size of n_grps that decides the number of samples 
         in each group (default=100).
-        
-        - n_features: A positive integer that decides the number of features 
+    :param n_features: A positive integer that decides the number of features 
         (default=1).
-        
-        - n_grps: A positive integer that decides the number of groups in data
+    :param n_grps: A positive integer that decides the number of groups in data
         (default=1).
-        
-        - working_dir: Directory to save data (default=None). 
-        
-        - plot: Boolean to plot the simulated training data (default=False).
-        
-        - random_state: random state for generating random numbers (Default=None).
-        
-        - noise: Type of added noise to the data. The options are 'gaussian', 
+    :param working_dir: Directory to save data (default=None). 
+    :param plot: Boolean to plot the simulated training data (default=False).
+    :param random_state: random state for generating random numbers (Default=None).
+    :param noise: Type of added noise to the data. The options are 'gaussian', 
         'exponential', and 'hetero_gaussian' (The defauls is None.). 
     
-    - Outputs:
-        
-        - X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+    :returns:
+         X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
     
     """
     

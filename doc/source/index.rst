@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Spatial methods for neuroimaging
-================================
+Predictive Clinical Neuroscience toolkit
+========================================
 
 Contents:
 
