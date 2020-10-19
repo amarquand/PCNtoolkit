@@ -620,7 +620,7 @@
 <span class="sd">    :param model_path: Directory containing the normative model and metadata</span>
 <span class="sd">    :param output_path: Directory to store the results</span>
 <span class="sd">    :param outputsuffix: Text string to add to the output filenames</span>
-<span class="sd">    :param batch_size: compute in batches with specified size</span>
+<span class="sd">    :param batch_size: batch size (for use with normative_parallel)</span>
 <span class="sd">    :param job_id: batch id</span>
 
 <span class="sd">    All outputs are written to disk in the same format as the input. These are:</span>
@@ -727,6 +727,33 @@
     
 <div class="viewcode-block" id="transfer"><a class="viewcode-back" href="../modindex.html#normative.transfer">[docs]</a><span class="k">def</span> <span class="nf">transfer</span><span class="p">(</span><span class="n">covfile</span><span class="p">,</span> <span class="n">respfile</span><span class="p">,</span> <span class="n">testcov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">testresp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
              <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Transfer learning on the basis of a pre-estimated normative model by using </span>
+<span class="sd">    the posterior distribution over the parameters as an informed prior for </span>
+<span class="sd">    new data. currently only supported for HBR.</span>
+<span class="sd">    </span>
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        transfer(covfile, respfile [extra_arguments])</span>
+
+<span class="sd">    where the variables are defined below.</span>
+
+<span class="sd">    :param covfile: test covariates used to predict the response variable</span>
+<span class="sd">    :param respfile: test response variables for the normative model</span>
+<span class="sd">    :param maskfile: mask used to apply to the data (nifti only)</span>
+<span class="sd">    :param testcov: Test covariates</span>
+<span class="sd">    :param testresp: Test responses</span>
+<span class="sd">    :param model_path: Directory containing the normative model and metadata</span>
+<span class="sd">    :param trbefile: Training batch effects file</span>
+<span class="sd">    :param batch_size: batch size (for use with normative_parallel)</span>
+<span class="sd">    :param job_id: batch id</span>
+
+<span class="sd">    All outputs are written to disk in the same format as the input. These are:</span>
+
+<span class="sd">    :outputs: * Yhat - predictive mean</span>
+<span class="sd">              * S2 - predictive variance</span>
+<span class="sd">              * Z - Z scores</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="n">alg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;alg&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">alg</span> <span class="o">!=</span> <span class="s1">&#39;hbr&#39;</span><span class="p">:</span>
