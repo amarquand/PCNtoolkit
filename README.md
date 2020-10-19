@@ -3,7 +3,7 @@ Predictive Clinical Neuroscience software toolkit (formerly nispat). Methods for
 
 ## Basic installation (on a local machine)
 
-i) install anaconda3 ii) create enviornment with "conda create --name env_name" iii) activate environment by "source activate env_name" iv) install required conda packages
+i) install anaconda3 ii) create enviornment with "conda create --name <env_name>" iii) activate environment by "source activate <env_name>" iv) install required conda packages
 
 ```
 conda install pip pandas scipy
@@ -26,13 +26,13 @@ conda --version
 Create a conda environment in a shared location
 
 ```
-conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/conda/normative_modeling/1.2.2
+conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/conda/<env_name>
 ```
 
 Activate the conda environment 
 
 ```
-conda activate /shared/conda/normative_modeling/1.2.2
+conda activate /shared/conda/<env_name>
 ```
 
 Install other dependencies
