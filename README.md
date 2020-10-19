@@ -75,6 +75,6 @@ For normative modelling, functionality is handled by the normative.py script, wh
 
 For more information, please see the following resources:
 
-* [documentation](https://github.com/amarquand/PCNtoolkit/wiki/PCNtookit-documentation)
+* [documentation](https://github.com/amarquand/PCNtoolkit/wiki/Home)
 * [developer documentation](https://amarquand.github.io/PCNtoolkit/doc/build/html/)
 * a tutorial and worked through example on a [real-world dataset](https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo)
