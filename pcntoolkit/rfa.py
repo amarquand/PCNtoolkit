@@ -32,7 +32,7 @@ class GPRRFA:
 
     where sn^2 is the noise variance, ell are lengthscale parameters and 
     sf^2 is the signal variance. This provides an approximation to the
-    covariance function: 
+    covariance function::
         
         k(x,z) = x'*z + sn2*exp(0.5*(x-z)'*Lambda*(x-z))
     

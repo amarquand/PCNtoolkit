@@ -127,6 +127,29 @@ def get_args(*args):
 
 def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
              metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']):
+    ''' Compute error metrics
+    This function will compute error metrics based on a set of predictions Yhat
+    and a set of true response variables Y, namely:
+    
+    * Rho: Pearson correlation
+    * RMSE: root mean squared error
+    * SMSE: standardized mean squared error
+    * EXPV: explained variance
+        
+    If the predictive variance is also specified the log loss will be computed
+    (which also takes into account the predictive variance). If the mean and 
+    standard deviation are also specified these will be used to standardize 
+    this, yielding the mean standardized log loss
+    
+    :param Y: N x P array of true response variables
+    :param Yhat: N x P array of predicted response variables
+    :param S2: predictive variance
+    :param mY: mean of the training set
+    :param sY: standard deviation of the training set
+
+    :returns metrics: evaluation metrics
+    
+    '''
     
     feature_num = Y.shape[1]
     
@@ -212,15 +235,14 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
 def estimate(covfile, respfile, **kwargs):
     """ Estimate a normative model
 
-    This will estimate a model in one of two settings according to the
-    particular parameters specified (see below):
-
-    * under k-fold cross-validation
-        required settings 1) respfile 2) covfile 3) cvfolds>=2
-    * estimating a training dataset then applying to a second test dataset
-        required sessting 1) respfile 2) covfile 3) testcov 4) testresp
-    * estimating on a training dataset ouput of forward maps mean and se
-        required sessting 1) respfile 2) covfile 3) testcov
+    This will estimate a model in one of two settings according to theparticular parameters specified (see below)
+        
+    * under k-fold cross-validation.
+      requires respfile, covfile and cvfolds>=2
+    * estimating a training dataset then applying to a second test dataset.
+      requires respfile, covfile, testcov and testresp.
+    * estimating on a training dataset ouput of forward maps mean and se. 
+      requires respfile, covfile and testcov
 
     The models are estimated on the basis of data stored on disk in ascii or
     neuroimaging data formats (nifti or cifti). Ascii data should be in
@@ -230,7 +252,7 @@ def estimate(covfile, respfile, **kwargs):
 
     Basic usage::
 
-        estimate(respfile, covfile, [extra_arguments])
+        estimate(covfile, respfile, [extra_arguments])
 
     where the variables are defined below. Note that either the cfolds
     parameter or (testcov, testresp) should be specified, but not both.
@@ -534,6 +556,34 @@ def fit(covfile, respfile, **kwargs):
 
     
 def predict(covfile, respfile=None, maskfile=None, **kwargs):
+    '''
+    Make predictions on the basis of a pre-estimated normative model 
+    If only the covariates are specified then only predicted mean and variance 
+    will be returned. If the test responses are also specified then quantities
+    That depend on those will also be returned (Z scores and error metrics)
+
+    Basic usage::
+
+        predict(covfile, [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: test covariates used to predict the response variable
+    :param respfile: test response variables for the normative model
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param model_path: Directory containing the normative model and metadata
+    :param output_path: Directory to store the results
+    :param outputsuffix: Text string to add to the output filenames
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+
+    All outputs are written to disk in the same format as the input. These are:
+
+    :outputs: * Yhat - predictive mean
+              * S2 - predictive variance
+              * Z - Z scores
+    '''
+    
     
     model_path = kwargs.pop('model_path', 'Models')
     job_id = kwargs.pop('job_id', None)
@@ -631,6 +681,33 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     
 def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None, 
              **kwargs):
+    '''
+    Transfer learning on the basis of a pre-estimated normative model by using 
+    the posterior distribution over the parameters as an informed prior for 
+    new data. currently only supported for HBR.
+    
+    Basic usage::
+
+        transfer(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: test covariates used to predict the response variable
+    :param respfile: test response variables for the normative model
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param testcov: Test covariates
+    :param testresp: Test responses
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: Training batch effects file
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+
+    All outputs are written to disk in the same format as the input. These are:
+
+    :outputs: * Yhat - predictive mean
+              * S2 - predictive variance
+              * Z - Z scores
+    '''
     
     alg = kwargs.pop('alg')
     if alg != 'hbr':
