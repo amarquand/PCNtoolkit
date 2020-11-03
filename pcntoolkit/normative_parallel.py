@@ -144,6 +144,22 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                elif cluster_spec is 'sbatch':
+                    # update the response file 
+                    kwargs.update({'testrespfile_path': \
+                                   batch_testrespfile_path})
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
+                                **kwargs)
+                    qsub_nm(job_path=batch_job_path,
+                            log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
@@ -171,6 +187,19 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                elif cluster_spec is 'sbatch':
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
+                                **kwargs)
+                    qsub_nm(job_path=batch_job_path,
+                            log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
@@ -199,6 +228,19 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                elif cluster_spec is 'sbatch':
+                    bashwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
+                                **kwargs)
+                    qsub_nm(job_path=batch_job_path,
+                            log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
@@ -817,3 +859,147 @@ def rerun_nm(processing_dir,
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
+
+def sbatchwrap_nm(processing_dir,
+                  python_path,
+                  normative_path,
+                  job_name,
+                  covfile_path,
+                  respfile_path,
+                  memory,
+                  duration,
+                  func='estimate',
+                  **kwargs):
+
+    """ This function wraps normative modelling into a bash script to run it
+    on a torque cluster system.
+
+    :Parameters:
+        * processing_dir     -> Full path to the processing dir
+        * python_path        -> Full path to the python distribution
+        * normative_path     -> Full path to the normative.py
+        * job_name           -> Name for the bash script that is the output of
+                                this function
+        * covfile_path       -> Full path to a .txt file that contains all
+                                covariats (subjects x covariates) for the
+                                responsefile
+        * respfile_path      -> Full path to a .txt that contains all features
+                                (subjects x features)
+        * cv_folds           -> Number of cross validations
+        * testcovfile_path   -> Full path to a .txt file that contains all
+                                covariats (subjects x covariates) for the
+                                testresponse file
+        * testrespfile_path  -> Full path to a .txt file that contains all
+                                test features
+        * alg                -> which algorithm to use
+        * configparam        -> configuration parameters for this algorithm
+
+    :outputs:
+        * A bash.sh file containing the commands for normative modelling saved
+          to the processing directory (written to disk)
+
+    written by (primarily) T Wolfers
+    """
+    
+    # here we use pop not get to remove the arguments as they used 
+    cv_folds = kwargs.pop('cv_folds',None)
+    testcovfile_path = kwargs.pop('testcovfile_path', None)
+    testrespfile_path = kwargs.pop('testrespfile_path', None)
+    alg = kwargs.pop('alg', None)
+    configparam = kwargs.pop('configparam', None)
+    standardize = kwargs.pop('standardize', True)
+    
+    # change to processing dir
+    os.chdir(processing_dir)
+    output_changedir = ['cd ' + processing_dir + '\n']
+
+    bash_init='#!/bin/bash\n'
+    sbatch_jobname='#SBATCH --job-name=' + processing_dir + '\n'
+    sbatch_account='#SBATCH --account=p33_norment\n'
+    sbatch_nodes='#SBATCH --nodes=1\n'
+    sbatch_tasks='#SBATCH --ntasks=1\n'
+    sbatch_time='#SBATCH --time=' + str(duration) + '\n'
+    sbatch_memory='#SBATCH --mem-per-cpu=' + str(memory) + '\n'
+    sbatch_module='module purge\n'
+    sbatch_anaconda='module load anaconda3\n'
+    sbatch_exit='set -o errexit\n'
+
+    echo -n "This script is running on "
+    hostname
+    
+    bash_environment = [sbatch_init + 
+                        sbatch_jobname +
+                        sbatch_account +
+                        sbatch_nodes +
+                        sbatch_tasks +
+                        sbatch_time +
+                        sbatch_module +
+                        sbatch_anaconda]
+
+    # creates call of function for normative modelling
+    if (testrespfile_path is not None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -r ' +
+                    testrespfile_path + ' -f ' + func]
+    elif (testrespfile_path is None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -f ' + func]
+    elif cv_folds is not None:
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -k ' + str(cv_folds) +  ' -f ' + func]
+    elif func != 'estimate':
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path +  ' -f ' + func]
+    else:
+        raise(ValueError, """For 'estimate' function either testcov or cvfold
+              must be specified.""")
+        
+    # add algorithm-specific parameters
+    if alg is not None:
+        job_call = [job_call[0] + ' -a ' + alg]
+        if configparam is not None:
+            job_call = [job_call[0] + ' -x ' + str(configparam)]
+    
+    # add standardization flag if it is false
+    if not standardize:
+        job_call = [job_call[0] + ' -s']
+    
+    # add responses file
+    job_call = [job_call[0] + ' ' + respfile_path]
+    
+    # add in optional arguments. 
+    for k in kwargs:
+        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+
+    # writes bash file into processing dir
+    with open(processing_dir+job_name, 'w') as bash_file:
+        bash_file.writelines(bash_environment + output_changedir + \
+                             job_call + ["\n"] + [sbatch_exit])
+
+    # changes permissoins for bash.sh file
+    os.chmod(processing_dir + job_name, 0o700)
+
+def sbatch_nm(job_path,
+              log_path):
+    """
+    This function submits a job.sh scipt to the torque custer using the qsub
+    command.
+
+    ** Input:
+        * job_path      -> Full path to the job.sh file
+        * memory        -> Memory requirements written as string for example
+                           4gb or 500mb
+        * duation       -> The approximate duration of the job, a string with
+                           HH:MM:SS for example 01:01:01
+
+    ** Output:
+        * Submission of the job to the (torque) cluster
+
+    witten by (primarily) T Wolfers, (adapted) SM Kia
+    """
+
+    # created qsub command
+    sbatch_call = ['sbatch ' + job_path]
+
+    # submits job to cluster
+    call(sbatch_call, shell=True)
