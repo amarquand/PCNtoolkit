@@ -148,7 +148,7 @@ def execute_nm(processing_dir,
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
-                    bashwrap_nm(batch_processing_dir,
+                    sbatchwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
                                 batch_job_name,
@@ -158,13 +158,13 @@ def execute_nm(processing_dir,
                                 memory=memory,
                                 duration=duration,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
+                    sbatch_nm(job_path=batch_job_path,
                             log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
-                                **kwargs)
-                    qsub_nm(processing_dir=batch_processing_dir)
+                    sbatchwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                  **kwargs)
+                    sbatch_nm(processing_dir=batch_processing_dir)
                     # ]
         if testrespfile_path is None:
             if testcovfile_path is not None:
@@ -188,7 +188,7 @@ def execute_nm(processing_dir,
                             memory=memory,
                             duration=duration)
                 elif cluster_spec is 'sbatch':
-                    bashwrap_nm(batch_processing_dir,
+                    sbatchwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
                                 batch_job_name,
@@ -198,8 +198,8 @@ def execute_nm(processing_dir,
                                 memory=memory,
                                 duration=duration,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
-                            log_path=log_path)
+                    sbatch_nm(job_path=batch_job_path,
+                              log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
@@ -229,7 +229,7 @@ def execute_nm(processing_dir,
                             memory=memory,
                             duration=duration)
                 elif cluster_spec is 'sbatch':
-                    bashwrap_nm(batch_processing_dir,
+                    sbatchwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
                                 batch_job_name,
@@ -239,7 +239,7 @@ def execute_nm(processing_dir,
                                 memory=memory,
                                 duration=duration,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
+                    sbatch_nm(job_path=batch_job_path,
                             log_path=log_path)
                 elif cluster_spec is 'new':
                     # this part requires addition in different envioronment [
