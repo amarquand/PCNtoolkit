@@ -14,6 +14,7 @@ import bspline
 from bspline import splinelab
 from sklearn.datasets import make_regression
 import pymc3 as pm
+from io import StringIO
 
 # -----------------
 # Utility functions
@@ -748,3 +749,122 @@ def divergence_plot(nm, ylim=None):
     plt.xticks(rotation=90, fontsize=7)
     plt.tight_layout()
     plt.show()
+    
+    
+def load_freesurfer_measure(measure, data_path, subjects_list):
+    
+    """
+    This is a utility function to load different Freesurfer measures in a pandas
+    Dataframe.
+    
+    Inputs:
+        - measure: a string that defines the type of Freesurfer measure we want 
+        to load. The options include:
+            - 'NumVert': Number of Vertices in each cortical area based on Destrieux atlas.
+            - 'SurfArea: Surface area for each cortical area based on Destrieux atlas.
+            - 'GrayVol': Gary matter volume in each cortical area based on Destrieux atlas.
+            - 'ThickAvg': Average Cortical thinckness in each cortical area based on Destrieux atlas.
+            - 'ThickStd': STD of Cortical thinckness in each cortical area based on Destrieux atlas.
+            - 'MeanCurv': Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.
+            - 'GausCurv': Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.
+            - 'FoldInd': Folding Index in each cortical area based on Destrieux atlas.
+            - 'CurvInd': Intrinsic Curvature Index in each cortical area based on Destrieux atlas.
+            - 'brain': Brain Segmentation Statistics from aseg.stats file.
+            - 'subcortical_volumes': Subcortical areas volume.
+            
+        - data_path: a string that specifies the path to the main Freesurfer folder.
+        
+        - subjects_list: A Pythin list containing the list of subject names to load the data for. 
+        The subject names should match the folder name for each subject's Freesurfer data folder.
+        
+    Outputs:
+        - df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.
+        - missing_subs: A Python list of subject names that miss the target Freesurefr measures.
+            
+    """
+    
+    df = pd.DataFrame()
+    missing_subs = []
+    
+    if measure in ['NumVert', 'SurfArea', 'GrayVol', 'ThickAvg', 
+                   'ThickStd', 'MeanCurv', 'GausCurv', 'FoldInd', 'CurvInd']:
+        l = ['NumVert', 'SurfArea', 'GrayVol', 'ThickAvg', 
+                   'ThickStd', 'MeanCurv', 'GausCurv', 'FoldInd', 'CurvInd']
+        col = l.index(measure) + 1
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+           
+                a = pd.read_csv(data_path + sub + '/stats/lh.aparc.a2009s.stats', 
+                                delimiter='\s+', comment='#', header=None)
+                temp = dict(zip(a[0], a[col]))
+                for key in list(temp.keys()):
+                    temp['L_'+key] = temp.pop(key)
+                data.update(temp)
+               
+                a = pd.read_csv(data_path + sub + '/stats/rh.aparc.a2009s.stats', 
+                                delimiter='\s+', comment='#', header=None)
+                temp = dict(zip(a[0], a[col]))
+                for key in list(temp.keys()):
+                    temp['R_'+key] = temp.pop(key)
+                data.update(temp)
+                
+                df_temp = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, df_temp])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    elif measure == 'brain':
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+                s = StringIO()
+                with open(data_path + sub + '/stats/aseg.stats') as f:
+                    for line in f:
+                        if line.startswith('# Measure'):
+                            s.write(line)
+                s.seek(0) # "rewind" to the beginning of the StringIO object
+                a = pd.read_csv(s, header=None) # with further parameters?
+                data_brain = dict(zip(a[1], a[3]))
+                data.update(data_brain)
+                df_temp = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, df_temp])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    elif measure == 'subcortical_volumes':
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+                s = StringIO()
+                with open(data_path + sub + '/stats/aseg.stats') as f:
+                    for line in f:
+                        if line.startswith('# Measure'):
+                            s.write(line)
+                s.seek(0) # "rewind" to the beginning of the StringIO object
+                a = pd.read_csv(s, header=None) # with further parameters?
+                a = dict(zip(a[1], a[3]))
+                if ' eTIV' in a.keys():
+                    tiv = a[' eTIV']
+                else:
+                    tiv = a[' ICV']
+                a = pd.read_csv(data_path + sub + '/stats/aseg.stats', delimiter='\s+', comment='#', header=None)
+                data_vol = dict(zip(a[4]+'_mm3', a[3]))
+                for key in data_vol.keys():
+                    data_vol[key] = data_vol[key]/tiv
+                data.update(data_vol)
+                data = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, data])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    return df, missing_subs
