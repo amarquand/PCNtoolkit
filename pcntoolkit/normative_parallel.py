@@ -987,15 +987,12 @@ def sbatch_nm(job_path,
 
     ** Input:
         * job_path      -> Full path to the job.sh file
-        * memory        -> Memory requirements written as string for example
-                           4gb or 500mb
-        * duation       -> The approximate duration of the job, a string with
-                           HH:MM:SS for example 01:01:01
+        * log_path      -> The logs are currently stored in the working dir
 
     ** Output:
         * Submission of the job to the (torque) cluster
 
-    witten by (primarily) T Wolfers, (adapted) SM Kia
+    witten by (primarily) T Wolfers
     """
 
     # created qsub command
@@ -1003,3 +1000,69 @@ def sbatch_nm(job_path,
 
     # submits job to cluster
     call(sbatch_call, shell=True)
+    
+    def rerun_nm(processing_dir,
+                 memory,
+                 duration,
+                 new_memory=False,
+                 new_duration=False,
+                 binary=False,
+                 **kwargs):
+    """
+    This function reruns all failed batched in processing_dir after collect_nm
+    has identified he failed batches
+
+    * Input:
+        * processing_dir        -> Full path to the processing directory
+        * memory                -> Memory requirements written as string
+                                   for example 4gb or 500mb
+        * duration              -> The approximate duration of the job, a
+                                   string with HH:MM:SS for example 01:01:01
+        * new_memory            -> If you want to change the memory 
+                                    you have to indicate it here.
+        * new_duration          -> If you want to change the duration 
+                                    you have to indicate it here.
+    * Outputs:
+        * Reruns failed batches. 
+
+    written by (primarily) T Wolfers
+    """
+    log_path = kwargs.pop('log_path', None)
+
+    if binary:
+        file_extentions = '.pkl'
+        failed_batches = fileio.load(processing_dir +
+                                     'failed_batches' + 
+                                     file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end='')
+            if new_memory != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(memory, new_memory), end='')
+            sbatch_nm(jobpath,
+                      log_path)
+    else:
+        file_extentions = '.txt'
+        failed_batches = fileio.load_pd(processing_dir +
+                                       'failed_batches' + file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches.iloc[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end='')
+            if new_memory != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(memory, new_memory), end='')
+            sbatch_nm(jobpath,
+                      log_path)
