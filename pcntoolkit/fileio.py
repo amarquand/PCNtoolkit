@@ -17,6 +17,15 @@ CIFTI_VOL_ATLAS = 'Atlas_ROIs.2.nii.gz'
 # general utility routines
 # ------------------------
 
+def predictive_interval(s2_forward,
+                        cov_forward,
+                        multiplicator):
+  # calculates a predictive interval
+  PI=np.zeros(len(cov_forward))
+  for i,xdot in enumerate(cov_forward):
+    s=np.sqrt(s2_forward[i])
+    PI[i]=multiplicator*s
+  return PI
 
 def create_mask(data_array, mask, verbose=False):
     # create a (volumetric) mask either from an input nifti or the nifti itself
