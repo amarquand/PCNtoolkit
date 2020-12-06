@@ -134,8 +134,8 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     img = nib.load(datafile)
     dat = img.get_data()
 
-  if mask is not None:
-    mask=load_nifti(mask, vol=True)
+    if mask is not None:
+        mask=load_nifti(mask, vol=True)
 
     if not vol:
         dat = vol2vec(dat, mask)
