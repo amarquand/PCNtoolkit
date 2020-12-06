@@ -45,13 +45,13 @@ except ImportError:
 
 def execute_nm(processing_dir,
                python_path,
-               normative_path,
                job_name,
                covfile_path,
                respfile_path,
                batch_size,
                memory,
                duration,
+               normative_path=None,
                func='estimate',
                **kwargs):
 
@@ -63,7 +63,9 @@ def execute_nm(processing_dir,
     :Parameters:
         * processing_dir     -> Full path to the processing dir
         * python_path        -> Full path to the python distribution
-        * normative_path     -> Full path to the normative.py
+        * normative_path     -> Full path to the normative.py. If None (default)
+                                then it will automatically retrieves the path from 
+                                the installed packeage.
         * job_name           -> Name for the bash script that is the output of
                                 this function
         * covfile_path       -> Full path to a .txt file that contains all
@@ -89,6 +91,9 @@ def execute_nm(processing_dir,
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
     
+    if normative_path is None:
+        normative_path = ptk.__path__[0] + '/normative.py'
+        
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
