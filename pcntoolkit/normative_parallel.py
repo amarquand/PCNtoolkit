@@ -26,11 +26,13 @@ import sys
 import glob
 import shutil
 import pickle
+import fileinput
 import numpy as np
 import pandas as pd
 from subprocess import call
 
 try:
+    import pcntoolkit as ptk
     import pcntoolkit.fileio as fileio
 except ImportError:
     pass
@@ -128,7 +130,7 @@ def execute_nm(processing_dir,
                                            'testresp_batch_' +
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
@@ -144,7 +146,7 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'sbatch':
+                elif cluster_spec == 'sbatch':
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
@@ -160,7 +162,7 @@ def execute_nm(processing_dir,
                                 **kwargs)
                     sbatch_nm(job_path=batch_job_path,
                             log_path=log_path)
-                elif cluster_spec is 'new':
+                elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     sbatchwrap_nm(processing_dir=batch_processing_dir, func=func,
                                   **kwargs)
@@ -174,7 +176,7 @@ def execute_nm(processing_dir,
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
                                        str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -187,7 +189,7 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'sbatch':
+                elif cluster_spec == 'sbatch':
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -200,7 +202,7 @@ def execute_nm(processing_dir,
                                 **kwargs)
                     sbatch_nm(job_path=batch_job_path,
                               log_path=log_path)
-                elif cluster_spec is 'new':
+                elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
                                 **kwargs)
@@ -215,7 +217,7 @@ def execute_nm(processing_dir,
                                        'resp_batch_' + str(n) +
                                        file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -228,7 +230,7 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'sbatch':
+                elif cluster_spec == 'sbatch':
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -241,7 +243,7 @@ def execute_nm(processing_dir,
                                 **kwargs)
                     sbatch_nm(job_path=batch_job_path,
                             log_path=log_path)
-                elif cluster_spec is 'new':
+                elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
                                 **kwargs)
@@ -913,7 +915,7 @@ def sbatchwrap_nm(processing_dir,
     os.chdir(processing_dir)
     output_changedir = ['cd ' + processing_dir + '\n']
 
-    bash_init='#!/bin/bash\n'
+    sbatch_init='#!/bin/bash\n'
     sbatch_jobname='#SBATCH --job-name=' + processing_dir + '\n'
     sbatch_account='#SBATCH --account=p33_norment\n'
     sbatch_nodes='#SBATCH --nodes=1\n'
@@ -924,8 +926,8 @@ def sbatchwrap_nm(processing_dir,
     sbatch_anaconda='module load anaconda3\n'
     sbatch_exit='set -o errexit\n'
 
-    echo -n "This script is running on "
-    hostname
+    #echo -n "This script is running on "
+    #hostname
     
     bash_environment = [sbatch_init + 
                         sbatch_jobname +
@@ -1008,61 +1010,61 @@ def sbatch_nm(job_path,
                  new_duration=False,
                  binary=False,
                  **kwargs):
-    """
-    This function reruns all failed batched in processing_dir after collect_nm
-    has identified he failed batches
-
-    * Input:
-        * processing_dir        -> Full path to the processing directory
-        * memory                -> Memory requirements written as string
-                                   for example 4gb or 500mb
-        * duration              -> The approximate duration of the job, a
-                                   string with HH:MM:SS for example 01:01:01
-        * new_memory            -> If you want to change the memory 
-                                    you have to indicate it here.
-        * new_duration          -> If you want to change the duration 
-                                    you have to indicate it here.
-    * Outputs:
-        * Reruns failed batches. 
-
-    written by (primarily) T Wolfers
-    """
-    log_path = kwargs.pop('log_path', None)
-
-    if binary:
-        file_extentions = '.pkl'
-        failed_batches = fileio.load(processing_dir +
-                                     'failed_batches' + 
-                                     file_extentions)
-        shape = failed_batches.shape
-        for n in range(0, shape[0]):
-            jobpath = failed_batches[n, 0]
-            print(jobpath)
-            if new_duration != False:
-                with fileinput.FileInput(jobpath, inplace=True) as file:
-                    for line in file:
-                        print(line.replace(duration, new_duration), end='')
-            if new_memory != False:
-                with fileinput.FileInput(jobpath, inplace=True) as file:
-                    for line in file:
-                        print(line.replace(memory, new_memory), end='')
-            sbatch_nm(jobpath,
-                      log_path)
-    else:
-        file_extentions = '.txt'
-        failed_batches = fileio.load_pd(processing_dir +
-                                       'failed_batches' + file_extentions)
-        shape = failed_batches.shape
-        for n in range(0, shape[0]):
-            jobpath = failed_batches.iloc[n, 0]
-            print(jobpath)
-            if new_duration != False:
-                with fileinput.FileInput(jobpath, inplace=True) as file:
-                    for line in file:
-                        print(line.replace(duration, new_duration), end='')
-            if new_memory != False:
-                with fileinput.FileInput(jobpath, inplace=True) as file:
-                    for line in file:
-                        print(line.replace(memory, new_memory), end='')
-            sbatch_nm(jobpath,
-                      log_path)
+        """
+        This function reruns all failed batched in processing_dir after collect_nm
+        has identified he failed batches
+    
+        * Input:
+            * processing_dir        -> Full path to the processing directory
+            * memory                -> Memory requirements written as string
+                                       for example 4gb or 500mb
+            * duration              -> The approximate duration of the job, a
+                                       string with HH:MM:SS for example 01:01:01
+            * new_memory            -> If you want to change the memory 
+                                        you have to indicate it here.
+            * new_duration          -> If you want to change the duration 
+                                        you have to indicate it here.
+        * Outputs:
+            * Reruns failed batches. 
+    
+        written by (primarily) T Wolfers
+        """
+        log_path = kwargs.pop('log_path', None)
+    
+        if binary:
+            file_extentions = '.pkl'
+            failed_batches = fileio.load(processing_dir +
+                                         'failed_batches' + 
+                                         file_extentions)
+            shape = failed_batches.shape
+            for n in range(0, shape[0]):
+                jobpath = failed_batches[n, 0]
+                print(jobpath)
+                if new_duration != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(duration, new_duration), end='')
+                if new_memory != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(memory, new_memory), end='')
+                sbatch_nm(jobpath,
+                          log_path)
+        else:
+            file_extentions = '.txt'
+            failed_batches = fileio.load_pd(processing_dir +
+                                           'failed_batches' + file_extentions)
+            shape = failed_batches.shape
+            for n in range(0, shape[0]):
+                jobpath = failed_batches.iloc[n, 0]
+                print(jobpath)
+                if new_duration != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(duration, new_duration), end='')
+                if new_memory != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(memory, new_memory), end='')
+                sbatch_nm(jobpath,
+                          log_path)
