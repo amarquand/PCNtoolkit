@@ -244,7 +244,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 sigma_y = pm.math.log1pexp(sigma_noise) + 1e-5
                         
             else:
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
+                if trace is not None: # Used for transferring the priors
+                    upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
+                                                    
+                else:
+                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
                 sigma_y = theano.tensor.zeros(y_shape)
                 for be in be_idx:
                     a = []
@@ -255,7 +260,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise[be])
         
         else:
-            sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
+            if trace is not None: # Used for transferring the priors
+                upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound)
+            else:
+                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
+                
             sigma_y = theano.tensor.zeros(y_shape)
             for be in be_idx:
                 a = []
@@ -507,7 +517,12 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], temp)
                 
             else: # homoscedastic noise:
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
+                if trace is not None: # Used for transferring the priors
+                    upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
+                else:
+                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
+                    
                 sigma_y = theano.tensor.zeros(y.shape)
                 for be in be_idx:
                     a = []
@@ -518,7 +533,11 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise[be])
         
         else: # do not allow for random noise terms across groups:
-            sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
+            if trace is not None: # Used for transferring the priors
+                upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound)
+            else:
+                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
             sigma_y = theano.tensor.zeros(y.shape)
             for be in be_idx:
                 a = []
