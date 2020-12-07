@@ -34,6 +34,7 @@ from subprocess import call
 try:
     import pcntoolkit as ptk
     import pcntoolkit.fileio as fileio
+    from pcntoolkit import configs
 except ImportError:
     pass
     path = os.path.abspath(os.path.dirname(__file__))
@@ -41,6 +42,9 @@ except ImportError:
         sys.path.append(path)
         del path
     import fileio
+    import configs
+    
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 def execute_nm(processing_dir,
@@ -321,7 +325,7 @@ def split_nm(processing_dir,
                                resp + '.txt')
             else:
                 resp_batch.to_pickle(processing_dir + batch + '/' +
-                                     resp + '.pkl')
+                                     resp + '.pkl', protocol=PICKLE_PROTOCOL)
 
     # splits response and test responsefile into batches
     else:
@@ -367,9 +371,9 @@ def split_nm(processing_dir,
                                '.txt')
             else:
                 resp_batch.to_pickle(processing_dir + batch + '/' +
-                                     resp + '.pkl')
+                                     resp + '.pkl', protocol=PICKLE_PROTOCOL)
                 testresp_batch.to_pickle(processing_dir + batch + '/' +
-                                         testresp + '.pkl')
+                                         testresp + '.pkl', protocol=PICKLE_PROTOCOL)
 
 
 def collect_nm(processing_dir,
@@ -623,7 +627,7 @@ def collect_nm(processing_dir,
                     
                 with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 
                           'wb') as file:
-                    pickle.dump(meta_data, file)
+                    pickle.dump(meta_data, file, protocol=PICKLE_PROTOCOL)
             
             batch_dirs = glob.glob(processing_dir + 'batch_*/')
             if batch_dirs:
