@@ -24,6 +24,7 @@ import glob
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
     from pcntoolkit import fileio
+    from pcntoolkit import configs
     from pcntoolkit.normative_model.norm_utils import norm_init
     from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
 except ImportError:
@@ -36,9 +37,11 @@ except ImportError:
     del path
 
     import fileio
+    import configs
     from utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
     from normative_model.norm_utils import norm_init
 
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 def load_response_vars(datafile, maskfile=None, vol=True):
     """ load response variables (of any data type)"""
@@ -452,7 +455,7 @@ def estimate(covfile, respfile, **kwargs):
             pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
                          'mean_cov':mean_cov, 'std_cov':std_cov, 
-                         'regressor':alg, 'standardize':standardize}, file)    
+                         'regressor':alg, 'standardize':standardize}, file, protocol=PICKLE_PROTOCOL)    
 
     # compute performance metrics
     if (run_cv or testresp is not None):
@@ -550,7 +553,7 @@ def fit(covfile, respfile, **kwargs):
             pickle.dump({'valid_voxels':nz,
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
                          'mean_cov':mean_cov, 'std_cov':std_cov, 
-                         'regressor':alg, 'standardize':standardize}, file)
+                         'regressor':alg, 'standardize':standardize}, file, protocol=PICKLE_PROTOCOL)
         
     return nm
 

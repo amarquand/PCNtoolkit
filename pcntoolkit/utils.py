@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import numpy as np
 from scipy import stats
 from subprocess import call
@@ -15,6 +16,19 @@ from bspline import splinelab
 from sklearn.datasets import make_regression
 import pymc3 as pm
 from io import StringIO
+
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
+    
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 # -----------------
 # Utility functions
@@ -712,17 +726,17 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
         if not os.path.isdir(working_dir):
             os.mkdir(working_dir)
         with open(os.path.join(working_dir ,'trbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_train),file)
+            pickle.dump(pd.DataFrame(grp_id_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'tsbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_test),file)
+            pickle.dump(pd.DataFrame(grp_id_test),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'X_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_train),file)
+            pickle.dump(pd.DataFrame(X_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'X_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_test),file)
+            pickle.dump(pd.DataFrame(X_test),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'Y_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_train),file)
+            pickle.dump(pd.DataFrame(Y_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'Y_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_test),file)
+            pickle.dump(pd.DataFrame(Y_test),file, protocol=PICKLE_PROTOCOL)
         
     return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
 
