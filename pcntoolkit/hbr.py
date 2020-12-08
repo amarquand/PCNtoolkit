@@ -96,6 +96,24 @@ def from_posterior(param, samples, distribution = None, half = False, freedom=10
             return pm.HalfCauchy(param, freedom*temp[1])
         else:
             return pm.HalfCauchy(param, freedom*temp[1], shape=shape)
+    elif (distribution=='uniform'):
+        upper_bound = np.percentile(samples, 95)
+        lower_bound = np.percentile(samples, 5)
+        r = np.abs(upper_bound - lower_bound)
+        if shape is None:
+            return pm.Uniform(param, lower=lower_bound-freedom*r, 
+                              upper=upper_bound+freedom*r)
+        else:
+            return pm.Uniform(param, lower=lower_bound-freedom*r, 
+                              upper=upper_bound+freedom*r, shape=shape)
+    elif (distribution=='huniform'):
+        upper_bound = np.percentile(samples, 95)
+        lower_bound = np.percentile(samples, 5)
+        r = np.abs(upper_bound - lower_bound)
+        if shape is None:
+            return pm.Uniform(param, lower=0, upper=upper_bound + freedom*r)
+        else:
+            return pm.Uniform(param, lower=0, upper=upper_bound + freedom*r, shape=shape)
     
 
 def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
@@ -116,7 +134,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         if trace is not None: # Used for transferring the priors
             mu_prior_intercept = from_posterior('mu_prior_intercept', 
                                                     trace['mu_prior_intercept'], 
-                                                    distribution=None)
+                                                    distribution='uniform')
             mu_prior_slope = from_posterior('mu_prior_slope', 
                                             trace['mu_prior_slope'], 
                                             distribution='normal')
@@ -177,7 +195,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     mu_prior_intercept_noise = from_posterior('mu_prior_intercept_noise', 
                                                             trace['mu_prior_intercept_noise'], 
-                                                            distribution=None)
+                                                            distribution='huniform')
                     #sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
                     #                                       trace['sigma_prior_intercept_noise'], 
                     #                                       distribution='hcauchy')
@@ -245,8 +263,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         
             else:
                 if trace is not None: # Used for transferring the priors
-                    upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
+                    sigma_noise = from_posterior('sigma_noise', 
+                                                    trace['sigma_noise'], 
+                                                    distribution='huniform', shape=(batch_effects_size))
+                    #upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                    #sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
                                                     
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
@@ -261,8 +282,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         
         else:
             if trace is not None: # Used for transferring the priors
-                upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound)
+                sigma_noise = from_posterior('sigma_noise', 
+                                                    trace['sigma_noise'], 
+                                                    distribution='huniform')
+                #upper_bound =  np.percentile(trace['sigma_noise'], 95)
+                #sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound)
             else:
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
                 
@@ -351,7 +375,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                             distribution='hcauchy')
             
             mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
-                                                distribution=None)
+                                                distribution='uniform')
             #sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
             #                                    distribution='hcauchy')
             
@@ -518,8 +542,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 
             else: # homoscedastic noise:
                 if trace is not None: # Used for transferring the priors
-                    upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
+                    sigma_noise = from_posterior('sigma_noise', trace['sigma_noise'], 
+                                                 distribution='huniform', shape=(batch_effects_size))
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
                     
@@ -534,8 +558,9 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         
         else: # do not allow for random noise terms across groups:
             if trace is not None: # Used for transferring the priors
-                upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound)
+                sigma_noise = from_posterior('sigma_noise', 
+                                             trace['sigma_noise'], 
+                                             distribution='huniform')
             else:
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
             sigma_y = theano.tensor.zeros(y.shape)
@@ -750,18 +775,18 @@ class HBR:
         samples = self.configs['n_samples']
         y = np.zeros([X.shape[0],1])
         if self.model_type == 'linear': 
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
         elif self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
         elif self.model_type == 'nn': 
-            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
                 ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
             
         pred_mean = ppc['y_like'].mean(axis=0)
