@@ -265,7 +265,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     sigma_noise = from_posterior('sigma_noise', 
                                                     trace['sigma_noise'], 
-                                                    distribution='huniform', shape=(batch_effects_size))
+                                                    distribution='huniform')
                     #upper_bound =  np.percentile(trace['sigma_noise'], 95)
                     #sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=upper_bound, shape=(batch_effects_size))
                                                     
@@ -543,7 +543,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             else: # homoscedastic noise:
                 if trace is not None: # Used for transferring the priors
                     sigma_noise = from_posterior('sigma_noise', trace['sigma_noise'], 
-                                                 distribution='huniform', shape=(batch_effects_size))
+                                                 distribution='huniform')
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
                     
