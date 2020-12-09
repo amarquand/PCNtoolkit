@@ -379,7 +379,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                             distribution='hcauchy')
             
             mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
-                                                distribution='uniform')
+                                                distribution=None)
             #sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
             #                                    distribution='hcauchy')
             
