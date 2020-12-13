@@ -633,14 +633,14 @@ def collect_nm(processing_dir,
             if batch_dirs:
                 batch_dirs = fileio.sort_nicely(batch_dirs)
                 for b, batch_dir in enumerate(batch_dirs):
-                    src_files = glob.glob(batch_dir + 'Models/*.pkl')
+                    src_files = glob.glob(batch_dir + 'Models/NM*' + outputsuffix + '.pkl')
                     if src_files:
                         src_files = fileio.sort_nicely(src_files)
                         for f, full_file_name in enumerate(src_files):
                             if os.path.isfile(full_file_name):
                                 file_name = full_file_name.split('/')[-1]
                                 n = file_name.split('_')
-                                n[-1] = str(b * batch_size + f) + '.pkl'
+                                n[-2] = str(b * batch_size + f)
                                 n = '_'.join(n)
                                 shutil.copy(full_file_name, processing_dir + 'Models/' + n)
                     elif func=='fit':
