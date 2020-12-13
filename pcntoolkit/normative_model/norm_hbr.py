@@ -35,6 +35,7 @@ class NormHBR(NormBase):
     def __init__(self, **kwargs):
         
         self.configs = dict()
+        self.configs['transferred'] = False
         self.configs['trbefile'] = kwargs.pop('trbefile',None) 
         self.configs['tsbefile'] = kwargs.pop('tsbefile',None) 
         self.configs['type'] = kwargs.pop('model_type', 'linear')
@@ -110,7 +111,10 @@ class NormHBR(NormBase):
         
         pred_type = self.configs['pred_type']
         
-        yhat, s2 = self.hbr.predict(Xs, batch_effects_test, pred = pred_type)     
+        if self.configs['transferred'] == False:
+            yhat, s2 = self.hbr.predict(Xs, batch_effects_test, pred = pred_type)
+        else: 
+            raise ValueError("This is a transferred model. Please use predict_on_new_sites function.")
         
         return yhat.squeeze(), s2.squeeze()
     
@@ -118,6 +122,7 @@ class NormHBR(NormBase):
     def estimate_on_new_sites(self, X, y, batch_effects):
     
         self.hbr.estimate_on_new_site(X, y, batch_effects)
+        self.configs['transferred'] = True
         return self
     
     

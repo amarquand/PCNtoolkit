@@ -402,7 +402,7 @@ def estimate(covfile, respfile, **kwargs):
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
                 if savemodel:
-                    nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + '.pkl' )
+                    nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + outputsuffix + '.pkl' )
                 
                 if standardize:
                     Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
@@ -496,6 +496,7 @@ def fit(covfile, respfile, **kwargs):
     alg = kwargs.pop('alg','gpr')
     savemodel = kwargs.pop('savemodel','True')=='True'
     standardize = kwargs.pop('standardize',True)
+    outputsuffix = kwargs.pop('outputsuffix','_fit')
     
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
@@ -545,7 +546,7 @@ def fit(covfile, respfile, **kwargs):
         nm = nm.estimate(Xz, Yz[:, nz[i]], **kwargs)     
             
         if savemodel:
-            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + '.pkl' )
+            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + outputsuffix + '.pkl' )
 
     if savemodel:
         print('Saving model meta-data...')
@@ -574,7 +575,9 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     :param covfile: test covariates used to predict the response variable
     :param respfile: test response variables for the normative model
     :param maskfile: mask used to apply to the data (nifti only)
-    :param model_path: Directory containing the normative model and metadata
+    :param model_path: Directory containing the normative model and metadata.
+     When using parallel prediction, do not pass the model path. It will be automatically
+     decided.
     :param output_path: Directory to store the results
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
@@ -593,6 +596,8 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     batch_size = kwargs.pop('batch_size', None)
     output_path = kwargs.pop('output_path', '')
     outputsuffix = kwargs.pop('outputsuffix', '_predict')
+    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    alg = kwargs.pop('alg')
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -626,7 +631,7 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         X = X[:, np.newaxis]
     
     sample_num = X.shape[0]
-    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*.pkl')))
+    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*' + inputsuffix + '.pkl')))
 
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
@@ -643,8 +648,13 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         print("Prediction by model ", i+1, "of", feature_num)      
         nm = norm_init(Xz)
         nm = nm.load(os.path.join(model_path, 'NM_' + str(0) + '_' + 
-                                  str(i) + '.pkl'))
-        yhat, s2 = nm.predict(Xz, **kwargs)
+                                  str(i) + inputsuffix + '.pkl'))
+        if (alg!='hbr' or nm.configs['transferred']==False):
+            yhat, s2 = nm.predict(Xz, **kwargs)
+        else:
+            tsbefile = kwargs.pop('tsbefile') 
+            batch_effects_test = fileio.load(tsbefile)
+            yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
         if standardize:
             Yhat[:, i] = yhat.squeeze() * sY[0][i] + mY[0][i]
@@ -728,6 +738,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         batch_effects_train = fileio.load(trbefile)
     
     outputsuffix = kwargs.pop('outputsuffix', '_transfer')
+    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -778,20 +789,22 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
               
         nm = norm_init(X)
         if batch_size is not None: # when using normative_parallel
-            print("Transferting model ", job_id*batch_size+i)
+            print("Transferring model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + '.pkl'))
+                                      str(job_id*batch_size+i) + inputsuffix + '.pkl'))
         else:
-            print("Transferting model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+            print("Transferring model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + inputsuffix + '.pkl'))
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
         if batch_size is not None: 
             nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(job_id*batch_size+i) + '.pkl'))
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
         else:
             nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(i) + '.pkl'))
+                             str(i) + outputsuffix + '.pkl'))
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
@@ -833,6 +846,8 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         dummycovfile = kwargs.pop('dummycovfile')
         dummybefile = kwargs.pop('dummybefile')
     
+    outputsuffix = kwargs.pop('outputsuffix', '_extend')
+    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
     informative_prior = kwargs.pop('job_id', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
@@ -867,20 +882,22 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         if batch_size is not None: # when using nirmative_parallel
             print("Extending model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + '.pkl'))
+                                      str(job_id*batch_size+i) + inputsuffix + '.pkl'))
         else:
             print("Extending model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + '.pkl'))
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + inputsuffix +'.pkl'))
         
         nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, batch_effects_dummy, 
                samples=generation_factor, informative_prior=informative_prior)
         
         if batch_size is not None: 
             nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(job_id*batch_size+i) + '.pkl'))
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
         else:
             nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(i) + '.pkl'))
+                             str(i) + outputsuffix + '.pkl'))
 
 
 def main(*args):
