@@ -337,6 +337,22 @@ class WarpSinArcsinh(WarpBase):
     """ Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by 
     
         y = sinh(b *  arcsinh(x) - a)
+        
+        Using the parametrisation of Rios et al, Neural Networks 118 (2017)
+        where a controls skew and b controls kurtosis, such that:
+            a = 0 : symmetric
+            a > 0 : positive skew
+            a < 0 : negative skew
+            b = 0 : mesokurtic
+            b > 0 : leptokurtic
+            b < 0 : platykurtic
+        
+        However, it is more convenentent to use an alternative 
+        parameterisation, where
+
+        y = sinh(b * arcsinh(x) - epsilon * b)
+        
+        and a = -epsilon*b
     
         see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
     """
@@ -348,7 +364,13 @@ class WarpSinArcsinh(WarpBase):
         if len(param) != self.n_params:
             raise(ValueError, 
                   'number of parameters must be ' + str(self.n_params))
-        return param[0], param[1]
+
+        epsilon = param[0]
+        b = param[1]
+        a = -epsilon*b
+        
+        return a, b
+        #return param[0], param[1]
 
     def f(self, x, params):
         a, b = self._get_params(params)
