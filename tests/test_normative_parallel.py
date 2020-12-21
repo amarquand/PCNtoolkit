@@ -15,9 +15,9 @@ covfile = os.path.join(data_dir, 'cov_oslo15_spaces.txt')
 
 cvfolds = 2
 
-python_path = '/.../.conda/envs/python3/bin/python'
-normative_path = '/.../PCNtoolkit/pcntoolkit/normative.py'
-processing_dir= '/.../'
+python_path = '/home/preclineu/andmar/sfw/anaconda3/envs/py36/bin/python'
+normative_path = '/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit/normative.py'
+processing_dir= '/home/preclineu/andmar/py.sandbox/demo/'
 job_name = 'nmp_test'
 batch_size = 10
 memory = '4gb'
