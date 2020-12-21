@@ -108,7 +108,7 @@ class NormBLR(NormBase):
         
         if (theta is not None) and (y is not None):
             self.Phi = create_poly_basis(X, self._model_order)
-            self.blr = BLR(theta, self.Phi, y)
+            self.blr = BLR(theta, self.Phi, y, warp=self.warp, **kwargs)
         else:
             self.blr = BLR()    
             
@@ -142,8 +142,9 @@ class NormBLR(NormBase):
     def predict(self, Xs, X=None, y=None, **kwargs):
         theta = kwargs.pop('theta', None)
         
-        if theta is None:
-            theta = self.theta
+        #if theta is None:
+        #    theta = self.theta
+        theta = self.theta # always use the estimated coefficients
 
         Phis = create_poly_basis(Xs, self._model_order)
         
