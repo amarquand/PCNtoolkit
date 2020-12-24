@@ -343,14 +343,14 @@ class WarpSinArcsinh(WarpBase):
             a = 0 : symmetric
             a > 0 : positive skew
             a < 0 : negative skew
-            b = 0 : mesokurtic
-            b > 0 : leptokurtic
-            b < 0 : platykurtic
+            b = 1 : mesokurtic
+            b > 1 : leptokurtic
+            b < 1 : platykurtic
         
-        However, it is more convenentent to use an alternative 
+        where b > 0. However, it is more convenentent to use an alternative 
         parameterisation, where
 
-        y = sinh(b * arcsinh(x) - epsilon * b)
+        y = sinh(b * arcsinh(x) + epsilon * b)
         
         and a = -epsilon*b
     
@@ -366,11 +366,10 @@ class WarpSinArcsinh(WarpBase):
                   'number of parameters must be ' + str(self.n_params))
 
         epsilon = param[0]
-        b = param[1]
+        b = np.exp(param[1])
         a = -epsilon*b
         
         return a, b
-        #return param[0], param[1]
 
     def f(self, x, params):
         a, b = self._get_params(params)
