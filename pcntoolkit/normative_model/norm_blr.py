@@ -31,6 +31,7 @@ class NormBLR(NormBase):
         X = kwargs.pop('X', None)
         y = kwargs.pop('y', None)
         theta = kwargs.pop('theta', None)
+        verb_flag = kwargs.pop('verbose', False)
         self.optim_alg = kwargs.pop('optimizer','powell')
 
         if X is None:
@@ -108,9 +109,10 @@ class NormBLR(NormBase):
         
         if (theta is not None) and (y is not None):
             self.Phi = create_poly_basis(X, self._model_order)
-            self.blr = BLR(theta, self.Phi, y, warp=self.warp, **kwargs)
+            self.blr = BLR(theta, self.Phi, y, warp=self.warp, 
+                           verbose=verb_flag)
         else:
-            self.blr = BLR()    
+            self.blr = BLR(verbose=verb_flag)    
             
     @property
     def n_params(self):
@@ -122,6 +124,7 @@ class NormBLR(NormBase):
 
     def estimate(self, X, y, **kwargs):
         theta = kwargs.pop('theta', None)
+        verb_flag = kwargs.pop('verbose', False)
         
         if not hasattr(self,'Phi'):
             self.Phi = create_poly_basis(X, self._model_order)
@@ -131,8 +134,8 @@ class NormBLR(NormBase):
         if theta is None:
             theta = self.theta0
             self.blr = BLR(theta, self.Phi, y, 
-                           var_groups=self.var_groups,
-                           warp=self.warp)
+                           var_groups=self.var_groups, 
+                           warp=self.warp, verbose=verb_flag)
 
         self.theta = self.blr.estimate(theta, self.Phi, y, 
                                        optimizer=self.optim_alg)
