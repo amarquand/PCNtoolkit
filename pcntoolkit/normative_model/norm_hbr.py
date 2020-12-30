@@ -48,6 +48,7 @@ class NormHBR(NormBase):
         self.configs['target_accept'] = float(kwargs.pop('target_accept', '0.8'))
         self.configs['init'] = kwargs.pop('init', 'jitter+adapt_diag')
         self.configs['cores'] = int(kwargs.pop('cores', '1'))
+        self.configs['freedom'] = int(kwargs.pop('freedom', '1'))
         
         if self.configs['type'] == 'bspline':
             self.configs['order'] = int(kwargs.pop('order', '3'))
