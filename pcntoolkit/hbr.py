@@ -59,7 +59,7 @@ def create_poly_basis(X, order):
     return Phi
 
 
-def from_posterior(param, samples, distribution=None, half=False, freedom=10):
+def from_posterior(param, samples, distribution=None, half=False, freedom=1):
     
     if len(samples.shape)>1:
         shape = samples.shape[1:]
@@ -70,14 +70,17 @@ def from_posterior(param, samples, distribution=None, half=False, freedom=10):
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
         x = np.linspace(smin, smax, 1000)
-        y = stats.gaussian_kde(samples)(x)
+        y = stats.gaussian_kde(np.ravel(samples))(x)
         if half:
             x = np.concatenate([x, [x[-1] + 0.1 * width]])
             y = np.concatenate([y, [0]])
         else:
             x = np.concatenate([[x[0] - 0.1 * width], x, [x[-1] + 0.1 * width]])
             y = np.concatenate([[0], y, [0]])
-        return pm.distributions.Interpolated(param, x, y)
+        if shape is None:
+            return pm.distributions.Interpolated(param, x, y)
+        else:
+            return pm.distributions.Interpolated(param, x, y, shape=shape)
     elif (distribution=='normal'):
         temp = stats.norm.fit(samples)
         if shape is None:
@@ -134,22 +137,21 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         if trace is not None: # Used for transferring the priors
             mu_prior_intercept = from_posterior('mu_prior_intercept', 
                                                     trace['mu_prior_intercept'], 
-                                                    distribution='normal')
-            sigma_prior_intercept = from_posterior('sigma_prior_intercept', 
-                                               trace['sigma_prior_intercept'], 
-                                               distribution='hcauchy')
+                                                    distribution='normal', freedom=configs['freedom'])
+            log_sigma_prior_intercept = from_posterior('log_sigma_prior_intercept', 
+                                               trace['log_sigma_prior_intercept'], freedom=configs['freedom'], 
+                                               distribution='normal')
             mu_prior_slope = from_posterior('mu_prior_slope', 
                                             trace['mu_prior_slope'], 
-                                            distribution='normal')
-            sigma_prior_slope = from_posterior('sigma_prior_slope', 
-                                               trace['sigma_prior_slope'], 
-                                               distribution='hcauchy')
+                                            distribution='normal', freedom=configs['freedom'])
+            log_sigma_prior_slope = from_posterior('log_sigma_prior_slope', 
+                                               trace['log_sigma_prior_slope'], 
+                                               distribution='normal', freedom=configs['freedom'])
         else:
             mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
-            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
-            #mu_prior_intercept = pm.Uniform('mu_prior_intercept', lower=-100, upper=100)
+            log_sigma_prior_intercept = pm.Normal('log_sigma_prior_intercept', mu=0., sigma=2.5)
             mu_prior_slope = pm.Normal('mu_prior_slope', mu=0., sigma=1e3, shape=(feature_num,))
-            sigma_prior_slope = pm.HalfCauchy('sigma_prior_slope', 5, shape=(feature_num,))
+            log_sigma_prior_slope = pm.Normal('log_sigma_prior_slope', mu=0., sigma=2.5, shape=(feature_num,))
         
         if configs['random_intercept']: 
             intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1, 
@@ -158,7 +160,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1)
        
         intercepts = pm.Deterministic('intercepts', mu_prior_intercept + 
-                                      intercepts_offset * sigma_prior_intercept)
+                                      intercepts_offset * pm.math.exp(log_sigma_prior_intercept))
         
         if configs['random_slope']:  # Random slopes
             slopes_offset = pm.Normal('slopes_offset', mu=0, sd=1, 
@@ -167,7 +169,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             slopes_offset = pm.Normal('slopes_offset', mu=0, sd=1)
             
         slopes = pm.Deterministic('slopes', mu_prior_slope + 
-                                          slopes_offset * sigma_prior_slope)
+                                          slopes_offset * pm.math.exp(log_sigma_prior_slope))
         
         y_hat = theano.tensor.zeros(y_shape)
         for be in be_idx:
@@ -199,26 +201,24 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     mu_prior_intercept_noise = from_posterior('mu_prior_intercept_noise', 
                                                             trace['mu_prior_intercept_noise'], 
-                                                            distribution='hnormal')
-                    sigma_prior_intercept_noise = from_posterior('sigma_prior_intercept_noise', 
-                                                           trace['sigma_prior_intercept_noise'], 
-                                                           distribution='hcauchy')
+                                                            distribution='hnormal', freedom=configs['freedom'])
+                    log_sigma_prior_intercept_noise = from_posterior('log_sigma_prior_intercept_noise', 
+                                                           trace['log_sigma_prior_intercept_noise'], 
+                                                           distribution='normal', freedom=configs['freedom'])
                     mu_prior_slope_noise = from_posterior('mu_prior_slope_noise', 
                                                     trace['mu_prior_slope_noise'], 
-                                                    distribution='normal')
-                    sigma_prior_slope_noise = from_posterior('sigma_prior_slope_noise', 
-                                                       trace['sigma_prior_slope_noise'], 
-                                                       distribution='hcauchy')
+                                                    distribution='normal', freedom=configs['freedom'])
+                    log_sigma_prior_slope_noise = from_posterior('log_sigma_prior_slope_noise', 
+                                                       trace['log_sigma_prior_slope_noise'], 
+                                                       distribution='normal', freedom=configs['freedom'])
                 else:
                     mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', 
                                                              sigma=1e3)
-                    #mu_prior_intercept_noise = pm.Uniform('mu_prior_intercept_noise', 
-                    #                                      lower=0, upper=100)
-                    sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
+                    log_sigma_prior_intercept_noise = pm.Normal('log_sigma_prior_intercept_noise', mu=0., sigma=2.5)
                     mu_prior_slope_noise = pm.Normal('mu_prior_slope_noise',  mu=0., 
                                                      sigma=1e3, shape=(feature_num,))
-                    sigma_prior_slope_noise = pm.HalfCauchy('sigma_prior_slope_noise', 
-                                                            5, shape=(feature_num,))
+                    log_sigma_prior_slope_noise = pm.Normal('log_sigma_prior_slope_noise', 
+                                                            mu=0., sigma=2.5, shape=(feature_num,))
                 if configs['random_intercept']: 
                     intercepts_noise_offset = pm.Normal('intercepts_noise_offset',
                                                         sd=1, shape=(batch_effects_size))
@@ -229,7 +229,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 intercepts_noise = pm.Deterministic('intercepts_noise',
                                                     mu_prior_intercept_noise + 
                                                     intercepts_noise_offset * 
-                                                    sigma_prior_intercept_noise)
+                                                    pm.math.exp(log_sigma_prior_intercept_noise))
     
                 if configs['random_slope']:
                     slopes_noise_offset = pm.Normal('slopes_noise_offset', mu=0, sd=1, 
@@ -238,7 +238,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     slopes_noise_offset = pm.Normal('slopes_noise_offset', mu=0, sd=1)
                     
                 slopes_noise = pm.Deterministic('slopes_noise', mu_prior_slope_noise + 
-                                          slopes_noise_offset * sigma_prior_slope_noise)
+                                          slopes_noise_offset * pm.math.exp(log_sigma_prior_slope_noise))
                 
                 sigma_noise = theano.tensor.zeros(y_shape)
                 for be in be_idx:
@@ -268,11 +268,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         
             else:
                 if trace is not None: # Used for transferring the priors
-                    upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2*upper_bound, shape=(batch_effects_size))
+                    log_sigma_noise = from_posterior('log_sigma_noise', 
+                                               trace['log_sigma_noise'], 
+                                               distribution=None, freedom=configs['freedom'])
                                                     
                 else:
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
+                    log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5, shape=(batch_effects_size))
                 sigma_y = theano.tensor.zeros(y_shape)
                 for be in be_idx:
                     a = []
@@ -280,14 +281,15 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         a.append(batch_effects[:,i]==b)             
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0]!=0:
-                        sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise[be])
+                        sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], pm.math.exp(log_sigma_noise[be]))
         
         else:
             if trace is not None: 
-                upper_bound =  np.percentile(trace['sigma_noise'], 95)
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2*upper_bound)
+                log_sigma_noise = from_posterior('log_sigma_noise', 
+                                               trace['log_sigma_noise'], 
+                                               distribution=None, freedom=configs['freedom'])
             else:
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
+                log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5)
                 
             sigma_y = theano.tensor.zeros(y_shape)
             for be in be_idx:
@@ -297,7 +299,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                     
                 idx = reduce(np.logical_and, a).nonzero()
                 if idx[0].shape[0]!=0:
-                    sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], sigma_noise)
+                    sigma_y = theano.tensor.set_subtensor(sigma_y[idx,0], pm.math.exp(log_sigma_noise))
             
         if configs['skewed_likelihood']:
             skewness = pm.Uniform('skewness', lower=-10, upper=10, shape=(batch_effects_size))
@@ -355,28 +357,28 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     with pm.Model() as model:
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
-                                            distribution='normal')
+                                            distribution='normal', freedom=configs['freedom'])
             
             weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', trace['w_in_1_grp_sd'], 
-                                            distribution='hcauchy')
+                                            distribution='hcauchy', freedom=configs['freedom'])
             
             if n_layers == 2:
                 weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'], 
-                                                distribution='normal') 
+                                                distribution='normal', freedom=configs['freedom']) 
                 
                 weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'], 
-                                                distribution='hcauchy') 
+                                                distribution='hcauchy', freedom=configs['freedom']) 
                 
             weights_2_out_grp = from_posterior('w_2_out_grp', trace['w_2_out_grp'], 
-                                            distribution='normal') 
+                                            distribution='normal', freedom=configs['freedom']) 
             
             weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', trace['w_2_out_grp_sd'], 
-                                            distribution='hcauchy')
+                                            distribution='hcauchy', freedom=configs['freedom'])
             
             mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
-                                                distribution='normal')
+                                                distribution='normal', freedom=configs['freedom'])
             sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
-                                                distribution='hcauchy')
+                                                distribution='hcauchy', freedom=configs['freedom'])
             
         else:
             # Group the mean distribution for input to the hidden layer:
@@ -452,28 +454,28 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # # Used when estimating/predicting on a new site
                     weights_in_1_grp_noise = from_posterior('w_in_1_grp_noise', 
                                                             trace['w_in_1_grp_noise'], 
-                                                            distribution='normal')
+                                                            distribution='normal', freedom=configs['freedom'])
                     
                     weights_in_1_grp_sd_noise = from_posterior('w_in_1_grp_sd_noise', 
                                                                trace['w_in_1_grp_sd_noise'], 
-                                                               distribution='hcauchy')
+                                                               distribution='hcauchy', freedom=configs['freedom'])
                     
                     if n_layers == 2:
                         weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise', 
                                                                trace['w_1_2_grp_noise'], 
-                                                               distribution='normal')
+                                                               distribution='normal', freedom=configs['freedom'])
                         
                         weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise', 
                                                                   trace['w_1_2_grp_sd_noise'], 
-                                                                  distribution='hcauchy')
+                                                                  distribution='hcauchy', freedom=configs['freedom'])
                         
                     weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise', 
                                                              trace['w_2_out_grp_noise'], 
-                                                             distribution='normal')
+                                                             distribution='normal', freedom=configs['freedom'])
                     
                     weights_2_out_grp_sd_noise = from_posterior('w_2_out_grp_sd_noise', 
                                                                 trace['w_2_out_grp_sd_noise'], 
-                                                                distribution='hcauchy')
+                                                                distribution='hcauchy', freedom=configs['freedom'])
                     
                 else:
                     # The input layer to the first hidden layer:
