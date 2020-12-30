@@ -319,6 +319,7 @@ def split_nm(processing_dir,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
+                os.makedirs(processing_dir + batch + '/Models/')
             if (binary==False):
                 fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' +
@@ -362,6 +363,7 @@ def split_nm(processing_dir,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
+                os.makedirs(processing_dir + batch + '/Models/')
             if (binary==False):
                 fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' +
