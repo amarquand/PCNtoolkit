@@ -1,11 +1,23 @@
 from __future__ import print_function
 
 import os
+import sys
 import numpy as np
 import nibabel as nib
 import tempfile
 import pandas as pd
 import re
+
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
 
 CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
                   'dlabel', 'pscalar', 'pdconn', 'dpconn',
@@ -13,10 +25,22 @@ CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
 
 CIFTI_VOL_ATLAS = 'Atlas_ROIs.2.nii.gz'
 
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
+
 # ------------------------
 # general utility routines
 # ------------------------
 
+def predictive_interval(s2_forward,
+                        cov_forward,
+                        multiplicator):
+  # calculates a predictive interval
+  
+    PI=np.zeros(len(cov_forward))
+    for i,xdot in enumerate(cov_forward):
+        s=np.sqrt(s2_forward[i])
+        PI[i]=multiplicator*s
+    return PI
 
 def create_mask(data_array, mask, verbose=False):
     # create a (volumetric) mask either from an input nifti or the nifti itself
@@ -124,8 +148,8 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     img = nib.load(datafile)
     dat = img.get_data()
 
-#    if mask is not None:
-#        mask=load_nifti(mask, vol=True)
+    if mask is not None:
+        mask=load_nifti(mask, vol=True)
 
     if not vol:
         dat = vol2vec(dat, mask)
@@ -344,7 +368,7 @@ def save(data, filename, example=None, mask=None, text=False):
         save_ascii(data, filename)
     elif file_type(filename) == 'binary':
         data = pd.DataFrame(data)
-        data.to_pickle(filename)
+        data.to_pickle(filename, protocol=PICKLE_PROTOCOL)
 
 
 def load(filename, mask=None, text=False, vol=True):

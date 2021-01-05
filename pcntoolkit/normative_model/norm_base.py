@@ -1,6 +1,20 @@
+import os
+import sys
 from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 import pickle
+
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
+
 
 class NormBase(with_metaclass(ABCMeta)):
     """ Base class for normative model back-end.
@@ -30,7 +44,7 @@ class NormBase(with_metaclass(ABCMeta)):
     def save(self, save_path):
         try:
             with open(save_path, 'wb') as handle:
-                pickle.dump(self, handle, -1)
+                pickle.dump(self, handle, protocol=configs.PICKLE_PROTOCOL)
             return True
         except Exception as err:
             print('Error:', err)
