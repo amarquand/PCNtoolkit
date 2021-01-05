@@ -26,12 +26,15 @@ import sys
 import glob
 import shutil
 import pickle
+import fileinput
 import numpy as np
 import pandas as pd
 from subprocess import call
 
 try:
+    import pcntoolkit as ptk
     import pcntoolkit.fileio as fileio
+    from pcntoolkit import configs
 except ImportError:
     pass
     path = os.path.abspath(os.path.dirname(__file__))
@@ -39,17 +42,20 @@ except ImportError:
         sys.path.append(path)
         del path
     import fileio
+    import configs
+    
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 def execute_nm(processing_dir,
                python_path,
-               normative_path,
                job_name,
                covfile_path,
                respfile_path,
                batch_size,
                memory,
                duration,
+               normative_path=None,
                func='estimate',
                **kwargs):
 
@@ -61,7 +67,9 @@ def execute_nm(processing_dir,
     :Parameters:
         * processing_dir     -> Full path to the processing dir
         * python_path        -> Full path to the python distribution
-        * normative_path     -> Full path to the normative.py
+        * normative_path     -> Full path to the normative.py. If None (default)
+                                then it will automatically retrieves the path from 
+                                the installed packeage.
         * job_name           -> Name for the bash script that is the output of
                                 this function
         * covfile_path       -> Full path to a .txt file that contains all
@@ -87,6 +95,9 @@ def execute_nm(processing_dir,
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
     
+    if normative_path is None:
+        normative_path = ptk.__path__[0] + '/normative.py'
+        
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
@@ -128,7 +139,7 @@ def execute_nm(processing_dir,
                                            'testresp_batch_' +
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
@@ -144,11 +155,27 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'new':
-                    # this part requires addition in different envioronment [
-                    bashwrap_nm(processing_dir=batch_processing_dir, func=func,
+                elif cluster_spec == 'sbatch':
+                    # update the response file 
+                    kwargs.update({'testrespfile_path': \
+                                   batch_testrespfile_path})
+                    sbatchwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
                                 **kwargs)
-                    qsub_nm(processing_dir=batch_processing_dir)
+                    sbatch_nm(job_path=batch_job_path,
+                            log_path=log_path)
+                elif cluster_spec == 'new':
+                    # this part requires addition in different envioronment [
+                    sbatchwrap_nm(processing_dir=batch_processing_dir, func=func,
+                                  **kwargs)
+                    sbatch_nm(processing_dir=batch_processing_dir)
                     # ]
         if testrespfile_path is None:
             if testcovfile_path is not None:
@@ -158,7 +185,7 @@ def execute_nm(processing_dir,
                 batch_respfile_path = (batch_processing_dir + 'resp_batch_' +
                                        str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -171,7 +198,20 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'new':
+                elif cluster_spec == 'sbatch':
+                    sbatchwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
+                                **kwargs)
+                    sbatch_nm(job_path=batch_job_path,
+                              log_path=log_path)
+                elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
                                 **kwargs)
@@ -186,7 +226,7 @@ def execute_nm(processing_dir,
                                        'resp_batch_' + str(n) +
                                        file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
-                if cluster_spec is 'torque':
+                if cluster_spec == 'torque':
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -199,7 +239,20 @@ def execute_nm(processing_dir,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                elif cluster_spec is 'new':
+                elif cluster_spec == 'sbatch':
+                    sbatchwrap_nm(batch_processing_dir,
+                                python_path,
+                                normative_path,
+                                batch_job_name,
+                                covfile_path,
+                                batch_respfile_path,
+                                func=func,
+                                memory=memory,
+                                duration=duration,
+                                **kwargs)
+                    sbatch_nm(job_path=batch_job_path,
+                            log_path=log_path)
+                elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
                                 **kwargs)
@@ -266,13 +319,14 @@ def split_nm(processing_dir,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
+                os.makedirs(processing_dir + batch + '/Models/')
             if (binary==False):
                 fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' +
                                resp + '.txt')
             else:
                 resp_batch.to_pickle(processing_dir + batch + '/' +
-                                     resp + '.pkl')
+                                     resp + '.pkl', protocol=PICKLE_PROTOCOL)
 
     # splits response and test responsefile into batches
     else:
@@ -309,6 +363,7 @@ def split_nm(processing_dir,
             batch = str('batch_' + str(n+1))
             if not os.path.exists(processing_dir + batch):
                 os.makedirs(processing_dir + batch)
+                os.makedirs(processing_dir + batch + '/Models/')
             if (binary==False):
                 fileio.save_pd(resp_batch,
                                processing_dir + batch + '/' +
@@ -318,9 +373,9 @@ def split_nm(processing_dir,
                                '.txt')
             else:
                 resp_batch.to_pickle(processing_dir + batch + '/' +
-                                     resp + '.pkl')
+                                     resp + '.pkl', protocol=PICKLE_PROTOCOL)
                 testresp_batch.to_pickle(processing_dir + batch + '/' +
-                                         testresp + '.pkl')
+                                         testresp + '.pkl', protocol=PICKLE_PROTOCOL)
 
 
 def collect_nm(processing_dir,
@@ -574,20 +629,20 @@ def collect_nm(processing_dir,
                     
                 with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 
                           'wb') as file:
-                    pickle.dump(meta_data, file)
+                    pickle.dump(meta_data, file, protocol=PICKLE_PROTOCOL)
             
             batch_dirs = glob.glob(processing_dir + 'batch_*/')
             if batch_dirs:
                 batch_dirs = fileio.sort_nicely(batch_dirs)
                 for b, batch_dir in enumerate(batch_dirs):
-                    src_files = glob.glob(batch_dir + 'Models/*.pkl')
+                    src_files = glob.glob(batch_dir + 'Models/NM*' + outputsuffix + '.pkl')
                     if src_files:
                         src_files = fileio.sort_nicely(src_files)
                         for f, full_file_name in enumerate(src_files):
                             if os.path.isfile(full_file_name):
                                 file_name = full_file_name.split('/')[-1]
                                 n = file_name.split('_')
-                                n[-1] = str(b * batch_size + f) + '.pkl'
+                                n[-2] = str(b * batch_size + f)
                                 n = '_'.join(n)
                                 shutil.copy(full_file_name, processing_dir + 'Models/' + n)
                     elif func=='fit':
@@ -817,3 +872,210 @@ def rerun_nm(processing_dir,
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
+
+def sbatchwrap_nm(processing_dir,
+                  python_path,
+                  normative_path,
+                  job_name,
+                  covfile_path,
+                  respfile_path,
+                  memory,
+                  duration,
+                  func='estimate',
+                  **kwargs):
+
+    """ This function wraps normative modelling into a bash script to run it
+    on a torque cluster system.
+
+    :Parameters:
+        * processing_dir     -> Full path to the processing dir
+        * python_path        -> Full path to the python distribution
+        * normative_path     -> Full path to the normative.py
+        * job_name           -> Name for the bash script that is the output of
+                                this function
+        * covfile_path       -> Full path to a .txt file that contains all
+                                covariats (subjects x covariates) for the
+                                responsefile
+        * respfile_path      -> Full path to a .txt that contains all features
+                                (subjects x features)
+        * cv_folds           -> Number of cross validations
+        * testcovfile_path   -> Full path to a .txt file that contains all
+                                covariats (subjects x covariates) for the
+                                testresponse file
+        * testrespfile_path  -> Full path to a .txt file that contains all
+                                test features
+        * alg                -> which algorithm to use
+        * configparam        -> configuration parameters for this algorithm
+
+    :outputs:
+        * A bash.sh file containing the commands for normative modelling saved
+          to the processing directory (written to disk)
+
+    written by (primarily) T Wolfers
+    """
+    
+    # here we use pop not get to remove the arguments as they used 
+    cv_folds = kwargs.pop('cv_folds',None)
+    testcovfile_path = kwargs.pop('testcovfile_path', None)
+    testrespfile_path = kwargs.pop('testrespfile_path', None)
+    alg = kwargs.pop('alg', None)
+    configparam = kwargs.pop('configparam', None)
+    standardize = kwargs.pop('standardize', True)
+    
+    # change to processing dir
+    os.chdir(processing_dir)
+    output_changedir = ['cd ' + processing_dir + '\n']
+
+    sbatch_init='#!/bin/bash\n'
+    sbatch_jobname='#SBATCH --job-name=' + processing_dir + '\n'
+    sbatch_account='#SBATCH --account=p33_norment\n'
+    sbatch_nodes='#SBATCH --nodes=1\n'
+    sbatch_tasks='#SBATCH --ntasks=1\n'
+    sbatch_time='#SBATCH --time=' + str(duration) + '\n'
+    sbatch_memory='#SBATCH --mem-per-cpu=' + str(memory) + '\n'
+    sbatch_module='module purge\n'
+    sbatch_anaconda='module load anaconda3\n'
+    sbatch_exit='set -o errexit\n'
+
+    #echo -n "This script is running on "
+    #hostname
+    
+    bash_environment = [sbatch_init + 
+                        sbatch_jobname +
+                        sbatch_account +
+                        sbatch_nodes +
+                        sbatch_tasks +
+                        sbatch_time +
+                        sbatch_module +
+                        sbatch_anaconda]
+
+    # creates call of function for normative modelling
+    if (testrespfile_path is not None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -r ' +
+                    testrespfile_path + ' -f ' + func]
+    elif (testrespfile_path is None) and (testcovfile_path is not None):
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -t ' + testcovfile_path + ' -f ' + func]
+    elif cv_folds is not None:
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -k ' + str(cv_folds) +  ' -f ' + func]
+    elif func != 'estimate':
+        job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path +  ' -f ' + func]
+    else:
+        raise(ValueError, """For 'estimate' function either testcov or cvfold
+              must be specified.""")
+        
+    # add algorithm-specific parameters
+    if alg is not None:
+        job_call = [job_call[0] + ' -a ' + alg]
+        if configparam is not None:
+            job_call = [job_call[0] + ' -x ' + str(configparam)]
+    
+    # add standardization flag if it is false
+    if not standardize:
+        job_call = [job_call[0] + ' -s']
+    
+    # add responses file
+    job_call = [job_call[0] + ' ' + respfile_path]
+    
+    # add in optional arguments. 
+    for k in kwargs:
+        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+
+    # writes bash file into processing dir
+    with open(processing_dir+job_name, 'w') as bash_file:
+        bash_file.writelines(bash_environment + output_changedir + \
+                             job_call + ["\n"] + [sbatch_exit])
+
+    # changes permissoins for bash.sh file
+    os.chmod(processing_dir + job_name, 0o700)
+
+def sbatch_nm(job_path,
+              log_path):
+    """
+    This function submits a job.sh scipt to the torque custer using the qsub
+    command.
+
+    ** Input:
+        * job_path      -> Full path to the job.sh file
+        * log_path      -> The logs are currently stored in the working dir
+
+    ** Output:
+        * Submission of the job to the (torque) cluster
+
+    witten by (primarily) T Wolfers
+    """
+
+    # created qsub command
+    sbatch_call = ['sbatch ' + job_path]
+
+    # submits job to cluster
+    call(sbatch_call, shell=True)
+    
+    def rerun_nm(processing_dir,
+                 memory,
+                 duration,
+                 new_memory=False,
+                 new_duration=False,
+                 binary=False,
+                 **kwargs):
+        """
+        This function reruns all failed batched in processing_dir after collect_nm
+        has identified he failed batches
+    
+        * Input:
+            * processing_dir        -> Full path to the processing directory
+            * memory                -> Memory requirements written as string
+                                       for example 4gb or 500mb
+            * duration              -> The approximate duration of the job, a
+                                       string with HH:MM:SS for example 01:01:01
+            * new_memory            -> If you want to change the memory 
+                                        you have to indicate it here.
+            * new_duration          -> If you want to change the duration 
+                                        you have to indicate it here.
+        * Outputs:
+            * Reruns failed batches. 
+    
+        written by (primarily) T Wolfers
+        """
+        log_path = kwargs.pop('log_path', None)
+    
+        if binary:
+            file_extentions = '.pkl'
+            failed_batches = fileio.load(processing_dir +
+                                         'failed_batches' + 
+                                         file_extentions)
+            shape = failed_batches.shape
+            for n in range(0, shape[0]):
+                jobpath = failed_batches[n, 0]
+                print(jobpath)
+                if new_duration != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(duration, new_duration), end='')
+                if new_memory != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(memory, new_memory), end='')
+                sbatch_nm(jobpath,
+                          log_path)
+        else:
+            file_extentions = '.txt'
+            failed_batches = fileio.load_pd(processing_dir +
+                                           'failed_batches' + file_extentions)
+            shape = failed_batches.shape
+            for n in range(0, shape[0]):
+                jobpath = failed_batches.iloc[n, 0]
+                print(jobpath)
+                if new_duration != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(duration, new_duration), end='')
+                if new_memory != False:
+                    with fileinput.FileInput(jobpath, inplace=True) as file:
+                        for line in file:
+                            print(line.replace(memory, new_memory), end='')
+                sbatch_nm(jobpath,
+                          log_path)

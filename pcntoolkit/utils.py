@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import numpy as np
 from scipy import stats
 from subprocess import call
@@ -14,6 +15,20 @@ import bspline
 from bspline import splinelab
 from sklearn.datasets import make_regression
 import pymc3 as pm
+from io import StringIO
+
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
+    
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 # -----------------
 # Utility functions
@@ -322,6 +337,22 @@ class WarpSinArcsinh(WarpBase):
     """ Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by 
     
         y = sinh(b *  arcsinh(x) - a)
+        
+        Using the parametrisation of Rios et al, Neural Networks 118 (2017)
+        where a controls skew and b controls kurtosis, such that:
+            a = 0 : symmetric
+            a > 0 : positive skew
+            a < 0 : negative skew
+            b = 1 : mesokurtic
+            b > 1 : leptokurtic
+            b < 1 : platykurtic
+        
+        where b > 0. However, it is more convenentent to use an alternative 
+        parameterisation, where
+
+        y = sinh(b * arcsinh(x) + epsilon * b)
+        
+        and a = -epsilon*b
     
         see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
     """
@@ -333,7 +364,12 @@ class WarpSinArcsinh(WarpBase):
         if len(param) != self.n_params:
             raise(ValueError, 
                   'number of parameters must be ' + str(self.n_params))
-        return param[0], param[1]
+
+        epsilon = param[0]
+        b = np.exp(param[1])
+        a = -epsilon*b
+        
+        return a, b
 
     def f(self, x, params):
         a, b = self._get_params(params)
@@ -711,17 +747,17 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
         if not os.path.isdir(working_dir):
             os.mkdir(working_dir)
         with open(os.path.join(working_dir ,'trbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_train),file)
+            pickle.dump(pd.DataFrame(grp_id_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'tsbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_test),file)
+            pickle.dump(pd.DataFrame(grp_id_test),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'X_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_train),file)
+            pickle.dump(pd.DataFrame(X_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'X_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_test),file)
+            pickle.dump(pd.DataFrame(X_test),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'Y_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_train),file)
+            pickle.dump(pd.DataFrame(Y_train),file, protocol=PICKLE_PROTOCOL)
         with open(os.path.join(working_dir ,'Y_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_test),file)
+            pickle.dump(pd.DataFrame(Y_test),file, protocol=PICKLE_PROTOCOL)
         
     return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
 
@@ -748,3 +784,122 @@ def divergence_plot(nm, ylim=None):
     plt.xticks(rotation=90, fontsize=7)
     plt.tight_layout()
     plt.show()
+    
+    
+def load_freesurfer_measure(measure, data_path, subjects_list):
+    
+    """
+    This is a utility function to load different Freesurfer measures in a pandas
+    Dataframe.
+    
+    Inputs:
+        - measure: a string that defines the type of Freesurfer measure we want 
+        to load. The options include:
+            - 'NumVert': Number of Vertices in each cortical area based on Destrieux atlas.
+            - 'SurfArea: Surface area for each cortical area based on Destrieux atlas.
+            - 'GrayVol': Gary matter volume in each cortical area based on Destrieux atlas.
+            - 'ThickAvg': Average Cortical thinckness in each cortical area based on Destrieux atlas.
+            - 'ThickStd': STD of Cortical thinckness in each cortical area based on Destrieux atlas.
+            - 'MeanCurv': Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.
+            - 'GausCurv': Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.
+            - 'FoldInd': Folding Index in each cortical area based on Destrieux atlas.
+            - 'CurvInd': Intrinsic Curvature Index in each cortical area based on Destrieux atlas.
+            - 'brain': Brain Segmentation Statistics from aseg.stats file.
+            - 'subcortical_volumes': Subcortical areas volume.
+            
+        - data_path: a string that specifies the path to the main Freesurfer folder.
+        
+        - subjects_list: A Pythin list containing the list of subject names to load the data for. 
+        The subject names should match the folder name for each subject's Freesurfer data folder.
+        
+    Outputs:
+        - df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.
+        - missing_subs: A Python list of subject names that miss the target Freesurefr measures.
+            
+    """
+    
+    df = pd.DataFrame()
+    missing_subs = []
+    
+    if measure in ['NumVert', 'SurfArea', 'GrayVol', 'ThickAvg', 
+                   'ThickStd', 'MeanCurv', 'GausCurv', 'FoldInd', 'CurvInd']:
+        l = ['NumVert', 'SurfArea', 'GrayVol', 'ThickAvg', 
+                   'ThickStd', 'MeanCurv', 'GausCurv', 'FoldInd', 'CurvInd']
+        col = l.index(measure) + 1
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+           
+                a = pd.read_csv(data_path + sub + '/stats/lh.aparc.a2009s.stats', 
+                                delimiter='\s+', comment='#', header=None)
+                temp = dict(zip(a[0], a[col]))
+                for key in list(temp.keys()):
+                    temp['L_'+key] = temp.pop(key)
+                data.update(temp)
+               
+                a = pd.read_csv(data_path + sub + '/stats/rh.aparc.a2009s.stats', 
+                                delimiter='\s+', comment='#', header=None)
+                temp = dict(zip(a[0], a[col]))
+                for key in list(temp.keys()):
+                    temp['R_'+key] = temp.pop(key)
+                data.update(temp)
+                
+                df_temp = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, df_temp])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    elif measure == 'brain':
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+                s = StringIO()
+                with open(data_path + sub + '/stats/aseg.stats') as f:
+                    for line in f:
+                        if line.startswith('# Measure'):
+                            s.write(line)
+                s.seek(0) # "rewind" to the beginning of the StringIO object
+                a = pd.read_csv(s, header=None) # with further parameters?
+                data_brain = dict(zip(a[1], a[3]))
+                data.update(data_brain)
+                df_temp = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, df_temp])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    elif measure == 'subcortical_volumes':
+        for i, sub in enumerate(subjects_list):
+            try:
+                data = dict()
+                s = StringIO()
+                with open(data_path + sub + '/stats/aseg.stats') as f:
+                    for line in f:
+                        if line.startswith('# Measure'):
+                            s.write(line)
+                s.seek(0) # "rewind" to the beginning of the StringIO object
+                a = pd.read_csv(s, header=None) # with further parameters?
+                a = dict(zip(a[1], a[3]))
+                if ' eTIV' in a.keys():
+                    tiv = a[' eTIV']
+                else:
+                    tiv = a[' ICV']
+                a = pd.read_csv(data_path + sub + '/stats/aseg.stats', delimiter='\s+', comment='#', header=None)
+                data_vol = dict(zip(a[4]+'_mm3', a[3]))
+                for key in data_vol.keys():
+                    data_vol[key] = data_vol[key]/tiv
+                data.update(data_vol)
+                data = pd.DataFrame(data,index=[sub])         
+                df = pd.concat([df, data])
+                print('%d / %d: %s is done!' %(i, len(subjects_list), sub))
+            except:
+                missing_subs.append(sub)
+                print('%d / %d: %s is missing!' %(i, len(subjects_list), sub))
+                continue
+    
+    return df, missing_subs
