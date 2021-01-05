@@ -47,6 +47,7 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">call</span>
@@ -60,6 +61,20 @@
 <span class="kn">from</span> <span class="nn">bspline</span> <span class="kn">import</span> <span class="n">splinelab</span>
 <span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
 <span class="kn">import</span> <span class="nn">pymc3</span> <span class="k">as</span> <span class="nn">pm</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="k">try</span><span class="p">:</span>  <span class="c1"># run as a package if installed</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">configs</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">path</span>
+    <span class="kn">import</span> <span class="nn">configs</span>
+    
+<span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
 
 <span class="c1"># -----------------</span>
 <span class="c1"># Utility functions</span>
@@ -368,6 +383,22 @@
     <span class="sd">&quot;&quot;&quot; Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by </span>
 <span class="sd">    </span>
 <span class="sd">        y = sinh(b *  arcsinh(x) - a)</span>
+<span class="sd">        </span>
+<span class="sd">        Using the parametrisation of Rios et al, Neural Networks 118 (2017)</span>
+<span class="sd">        where a controls skew and b controls kurtosis, such that:</span>
+<span class="sd">            a = 0 : symmetric</span>
+<span class="sd">            a &gt; 0 : positive skew</span>
+<span class="sd">            a &lt; 0 : negative skew</span>
+<span class="sd">            b = 1 : mesokurtic</span>
+<span class="sd">            b &gt; 1 : leptokurtic</span>
+<span class="sd">            b &lt; 1 : platykurtic</span>
+<span class="sd">        </span>
+<span class="sd">        where b &gt; 0. However, it is more convenentent to use an alternative </span>
+<span class="sd">        parameterisation, where</span>
+
+<span class="sd">        y = sinh(b * arcsinh(x) + epsilon * b)</span>
+<span class="sd">        </span>
+<span class="sd">        and a = -epsilon*b</span>
 <span class="sd">    </span>
 <span class="sd">        see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -379,7 +410,12 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span><span class="p">:</span>
             <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> 
                   <span class="s1">&#39;number of parameters must be &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_params</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">param</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="n">epsilon</span><span class="o">*</span><span class="n">b</span>
+        
+        <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
 
 <div class="viewcode-block" id="WarpSinArcsinh.f"><a class="viewcode-back" href="../modindex.html#utils.WarpSinArcsinh.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
@@ -757,17 +793,17 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">working_dir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;trbefile.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grp_id_train</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grp_id_train</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;tsbefile.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grp_id_test</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grp_id_test</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;X_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;X_test.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_train</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_train</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span> <span class="p">,</span><span class="s1">&#39;Y_test.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test</span><span class="p">),</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test</span><span class="p">),</span><span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
         
     <span class="k">return</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span> <span class="n">grp_id_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">,</span> <span class="n">grp_id_test</span><span class="p">,</span> <span class="n">coef</span></div>
 
@@ -794,6 +830,125 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+    
+    
+<div class="viewcode-block" id="load_freesurfer_measure"><a class="viewcode-back" href="../modindex.html#utils.load_freesurfer_measure">[docs]</a><span class="k">def</span> <span class="nf">load_freesurfer_measure</span><span class="p">(</span><span class="n">measure</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">subjects_list</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a utility function to load different Freesurfer measures in a pandas</span>
+<span class="sd">    Dataframe.</span>
+<span class="sd">    </span>
+<span class="sd">    Inputs:</span>
+<span class="sd">        - measure: a string that defines the type of Freesurfer measure we want </span>
+<span class="sd">        to load. The options include:</span>
+<span class="sd">            - &#39;NumVert&#39;: Number of Vertices in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;SurfArea: Surface area for each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;GrayVol&#39;: Gary matter volume in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;ThickAvg&#39;: Average Cortical thinckness in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;ThickStd&#39;: STD of Cortical thinckness in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;MeanCurv&#39;: Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;GausCurv&#39;: Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;FoldInd&#39;: Folding Index in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;CurvInd&#39;: Intrinsic Curvature Index in each cortical area based on Destrieux atlas.</span>
+<span class="sd">            - &#39;brain&#39;: Brain Segmentation Statistics from aseg.stats file.</span>
+<span class="sd">            - &#39;subcortical_volumes&#39;: Subcortical areas volume.</span>
+<span class="sd">            </span>
+<span class="sd">        - data_path: a string that specifies the path to the main Freesurfer folder.</span>
+<span class="sd">        </span>
+<span class="sd">        - subjects_list: A Pythin list containing the list of subject names to load the data for. </span>
+<span class="sd">        The subject names should match the folder name for each subject&#39;s Freesurfer data folder.</span>
+<span class="sd">        </span>
+<span class="sd">    Outputs:</span>
+<span class="sd">        - df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.</span>
+<span class="sd">        - missing_subs: A Python list of subject names that miss the target Freesurefr measures.</span>
+<span class="sd">            </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">missing_subs</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">if</span> <span class="n">measure</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NumVert&#39;</span><span class="p">,</span> <span class="s1">&#39;SurfArea&#39;</span><span class="p">,</span> <span class="s1">&#39;GrayVol&#39;</span><span class="p">,</span> <span class="s1">&#39;ThickAvg&#39;</span><span class="p">,</span> 
+                   <span class="s1">&#39;ThickStd&#39;</span><span class="p">,</span> <span class="s1">&#39;MeanCurv&#39;</span><span class="p">,</span> <span class="s1">&#39;GausCurv&#39;</span><span class="p">,</span> <span class="s1">&#39;FoldInd&#39;</span><span class="p">,</span> <span class="s1">&#39;CurvInd&#39;</span><span class="p">]:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NumVert&#39;</span><span class="p">,</span> <span class="s1">&#39;SurfArea&#39;</span><span class="p">,</span> <span class="s1">&#39;GrayVol&#39;</span><span class="p">,</span> <span class="s1">&#39;ThickAvg&#39;</span><span class="p">,</span> 
+                   <span class="s1">&#39;ThickStd&#39;</span><span class="p">,</span> <span class="s1">&#39;MeanCurv&#39;</span><span class="p">,</span> <span class="s1">&#39;GausCurv&#39;</span><span class="p">,</span> <span class="s1">&#39;FoldInd&#39;</span><span class="p">,</span> <span class="s1">&#39;CurvInd&#39;</span><span class="p">]</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">measure</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+           
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="n">sub</span> <span class="o">+</span> <span class="s1">&#39;/stats/lh.aparc.a2009s.stats&#39;</span><span class="p">,</span> 
+                                <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="n">col</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;L_&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+               
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="n">sub</span> <span class="o">+</span> <span class="s1">&#39;/stats/rh.aparc.a2009s.stats&#39;</span><span class="p">,</span> 
+                                <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="n">col</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;R_&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+                
+                <span class="n">df_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">sub</span><span class="p">])</span>         
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">df_temp</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is done!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">missing_subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is missing!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+                <span class="k">continue</span>
+    
+    <span class="k">elif</span> <span class="n">measure</span> <span class="o">==</span> <span class="s1">&#39;brain&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="n">sub</span> <span class="o">+</span> <span class="s1">&#39;/stats/aseg.stats&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# Measure&#39;</span><span class="p">):</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># &quot;rewind&quot; to the beginning of the StringIO object</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># with further parameters?</span>
+                <span class="n">data_brain</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data_brain</span><span class="p">)</span>
+                <span class="n">df_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">sub</span><span class="p">])</span>         
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">df_temp</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is done!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">missing_subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is missing!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+                <span class="k">continue</span>
+    
+    <span class="k">elif</span> <span class="n">measure</span> <span class="o">==</span> <span class="s1">&#39;subcortical_volumes&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="n">sub</span> <span class="o">+</span> <span class="s1">&#39;/stats/aseg.stats&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;# Measure&#39;</span><span class="p">):</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># &quot;rewind&quot; to the beginning of the StringIO object</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># with further parameters?</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="s1">&#39; eTIV&#39;</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">tiv</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s1">&#39; eTIV&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tiv</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s1">&#39; ICV&#39;</span><span class="p">]</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_path</span> <span class="o">+</span> <span class="n">sub</span> <span class="o">+</span> <span class="s1">&#39;/stats/aseg.stats&#39;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                <span class="n">data_vol</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_mm3&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data_vol</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">data_vol</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_vol</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">/</span><span class="n">tiv</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data_vol</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">sub</span><span class="p">])</span>         
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">data</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is done!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">missing_subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> / </span><span class="si">%d</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> is missing!&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">subjects_list</span><span class="p">),</span> <span class="n">sub</span><span class="p">))</span>
+                <span class="k">continue</span>
+    
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">missing_subs</span></div>
 </pre></div>
 
             <div class="clearer"></div>
