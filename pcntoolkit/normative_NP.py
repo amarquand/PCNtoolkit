@@ -36,7 +36,16 @@ from pcntoolkit.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2
 from pcntoolkit import fileio
 import os
 
- 
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
 
 def get_args(*args):
     """ Parse command line arguments"""
@@ -243,7 +252,7 @@ def estimate(args):
     with open(args.outdir +'model.pkl', 'wb') as handle:
          pickle.dump({'model':model, 'covariates_scaler':covariates_scaler,
                       'response_scaler': response_scaler, 'EVD_params':EVD_params,
-                      'abnormal_probs':abnormal_probs}, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                      'abnormal_probs':abnormal_probs}, handle, protocol=configs.PICKLE_PROTOCOL)
     
 ###############################################################################
     print('DONE!')
