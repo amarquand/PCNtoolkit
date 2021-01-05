@@ -72,12 +72,15 @@
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">fileinput</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">call</span>
 
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pcntoolkit</span> <span class="k">as</span> <span class="nn">ptk</span>
     <span class="kn">import</span> <span class="nn">pcntoolkit.fileio</span> <span class="k">as</span> <span class="nn">fileio</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">configs</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="k">pass</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
@@ -85,17 +88,20 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">del</span> <span class="n">path</span>
     <span class="kn">import</span> <span class="nn">fileio</span>
+    <span class="kn">import</span> <span class="nn">configs</span>
+    
+<span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
 
 
 <div class="viewcode-block" id="execute_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.execute_nm">[docs]</a><span class="k">def</span> <span class="nf">execute_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span>
                <span class="n">python_path</span><span class="p">,</span>
-               <span class="n">normative_path</span><span class="p">,</span>
                <span class="n">job_name</span><span class="p">,</span>
                <span class="n">covfile_path</span><span class="p">,</span>
                <span class="n">respfile_path</span><span class="p">,</span>
                <span class="n">batch_size</span><span class="p">,</span>
                <span class="n">memory</span><span class="p">,</span>
                <span class="n">duration</span><span class="p">,</span>
+               <span class="n">normative_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">func</span><span class="o">=</span><span class="s1">&#39;estimate&#39;</span><span class="p">,</span>
                <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -107,7 +113,9 @@
 <span class="sd">    :Parameters:</span>
 <span class="sd">        * processing_dir     -&gt; Full path to the processing dir</span>
 <span class="sd">        * python_path        -&gt; Full path to the python distribution</span>
-<span class="sd">        * normative_path     -&gt; Full path to the normative.py</span>
+<span class="sd">        * normative_path     -&gt; Full path to the normative.py. If None (default)</span>
+<span class="sd">                                then it will automatically retrieves the path from </span>
+<span class="sd">                                the installed packeage.</span>
 <span class="sd">        * job_name           -&gt; Name for the bash script that is the output of</span>
 <span class="sd">                                this function</span>
 <span class="sd">        * covfile_path       -&gt; Full path to a .txt file that contains all</span>
@@ -133,6 +141,9 @@
 <span class="sd">    written by (primarily) T Wolfers, (adapted) SM Kia</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
+    <span class="k">if</span> <span class="n">normative_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">normative_path</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/normative.py&#39;</span>
+        
     <span class="n">cv_folds</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cv_folds&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;testcovfile_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">testrespfile_path</span><span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;testrespfile_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -174,7 +185,7 @@
                                            <span class="s1">&#39;testresp_batch_&#39;</span> <span class="o">+</span>
                                            <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
                 <span class="n">batch_job_path</span> <span class="o">=</span> <span class="n">batch_processing_dir</span> <span class="o">+</span> <span class="n">batch_job_name</span>
-                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
                     <span class="c1"># update the response file </span>
                     <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;testrespfile_path&#39;</span><span class="p">:</span> \
                                    <span class="n">batch_testrespfile_path</span><span class="p">})</span>
@@ -190,11 +201,27 @@
                             <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">,</span>
                             <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
                             <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
-                    <span class="c1"># this part requires addition in different envioronment [</span>
-                    <span class="n">bashwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;sbatch&#39;</span><span class="p">:</span>
+                    <span class="c1"># update the response file </span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;testrespfile_path&#39;</span><span class="p">:</span> \
+                                   <span class="n">batch_testrespfile_path</span><span class="p">})</span>
+                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">batch_processing_dir</span><span class="p">,</span>
+                                <span class="n">python_path</span><span class="p">,</span>
+                                <span class="n">normative_path</span><span class="p">,</span>
+                                <span class="n">batch_job_name</span><span class="p">,</span>
+                                <span class="n">covfile_path</span><span class="p">,</span>
+                                <span class="n">batch_respfile_path</span><span class="p">,</span>
+                                <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+                                <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
+                                <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
                                 <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                    <span class="n">qsub_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">)</span>
+                    <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">job_path</span><span class="o">=</span><span class="n">batch_job_path</span><span class="p">,</span>
+                            <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
+                    <span class="c1"># this part requires addition in different envioronment [</span>
+                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">)</span>
                     <span class="c1"># ]</span>
         <span class="k">if</span> <span class="n">testrespfile_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">testcovfile_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -204,7 +231,7 @@
                 <span class="n">batch_respfile_path</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_processing_dir</span> <span class="o">+</span> <span class="s1">&#39;resp_batch_&#39;</span> <span class="o">+</span>
                                        <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
                 <span class="n">batch_job_path</span> <span class="o">=</span> <span class="n">batch_processing_dir</span> <span class="o">+</span> <span class="n">batch_job_name</span>
-                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
                     <span class="n">bashwrap_nm</span><span class="p">(</span><span class="n">batch_processing_dir</span><span class="p">,</span>
                                 <span class="n">python_path</span><span class="p">,</span>
                                 <span class="n">normative_path</span><span class="p">,</span>
@@ -217,7 +244,20 @@
                             <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">,</span>
                             <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
                             <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;sbatch&#39;</span><span class="p">:</span>
+                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">batch_processing_dir</span><span class="p">,</span>
+                                <span class="n">python_path</span><span class="p">,</span>
+                                <span class="n">normative_path</span><span class="p">,</span>
+                                <span class="n">batch_job_name</span><span class="p">,</span>
+                                <span class="n">covfile_path</span><span class="p">,</span>
+                                <span class="n">batch_respfile_path</span><span class="p">,</span>
+                                <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+                                <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
+                                <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">job_path</span><span class="o">=</span><span class="n">batch_job_path</span><span class="p">,</span>
+                              <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
                     <span class="c1"># this part requires addition in different envioronment [</span>
                     <span class="n">bashwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
                                 <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -232,7 +272,7 @@
                                        <span class="s1">&#39;resp_batch_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span>
                                        <span class="n">file_extentions</span><span class="p">)</span>
                 <span class="n">batch_job_path</span> <span class="o">=</span> <span class="n">batch_processing_dir</span> <span class="o">+</span> <span class="n">batch_job_name</span>
-                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span>
                     <span class="n">bashwrap_nm</span><span class="p">(</span><span class="n">batch_processing_dir</span><span class="p">,</span>
                                 <span class="n">python_path</span><span class="p">,</span>
                                 <span class="n">normative_path</span><span class="p">,</span>
@@ -245,7 +285,20 @@
                             <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">,</span>
                             <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
                             <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="ow">is</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;sbatch&#39;</span><span class="p">:</span>
+                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">batch_processing_dir</span><span class="p">,</span>
+                                <span class="n">python_path</span><span class="p">,</span>
+                                <span class="n">normative_path</span><span class="p">,</span>
+                                <span class="n">batch_job_name</span><span class="p">,</span>
+                                <span class="n">covfile_path</span><span class="p">,</span>
+                                <span class="n">batch_respfile_path</span><span class="p">,</span>
+                                <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+                                <span class="n">memory</span><span class="o">=</span><span class="n">memory</span><span class="p">,</span>
+                                <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">job_path</span><span class="o">=</span><span class="n">batch_job_path</span><span class="p">,</span>
+                            <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
                     <span class="c1"># this part requires addition in different envioronment [</span>
                     <span class="n">bashwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
                                 <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -312,13 +365,14 @@
             <span class="n">batch</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;batch_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/Models/&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">binary</span><span class="o">==</span><span class="kc">False</span><span class="p">):</span>
                 <span class="n">fileio</span><span class="o">.</span><span class="n">save_pd</span><span class="p">(</span><span class="n">resp_batch</span><span class="p">,</span>
                                <span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
                                <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">resp_batch</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                     <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
+                                     <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
 
     <span class="c1"># splits response and test responsefile into batches</span>
     <span class="k">else</span><span class="p">:</span>
@@ -355,6 +409,7 @@
             <span class="n">batch</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;batch_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/Models/&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">binary</span><span class="o">==</span><span class="kc">False</span><span class="p">):</span>
                 <span class="n">fileio</span><span class="o">.</span><span class="n">save_pd</span><span class="p">(</span><span class="n">resp_batch</span><span class="p">,</span>
                                <span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
@@ -364,9 +419,9 @@
                                <span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">resp_batch</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                     <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
+                                     <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
                 <span class="n">testresp_batch</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                         <span class="n">testresp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span></div>
+                                         <span class="n">testresp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.collect_nm">[docs]</a><span class="k">def</span> <span class="nf">collect_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span>
@@ -620,20 +675,20 @@
                     
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models&#39;</span><span class="p">,</span> <span class="s1">&#39;meta_data.md&#39;</span><span class="p">),</span> 
                           <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">meta_data</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">meta_data</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
             
             <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">batch_dirs</span><span class="p">:</span>
                 <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">batch_dirs</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">batch_dir</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batch_dirs</span><span class="p">):</span>
-                    <span class="n">src_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/*.pkl&#39;</span><span class="p">)</span>
+                    <span class="n">src_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/NM*&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">src_files</span><span class="p">:</span>
                         <span class="n">src_files</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">src_files</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">full_file_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">src_files</span><span class="p">):</span>
                             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">):</span>
                                 <span class="n">file_name</span> <span class="o">=</span> <span class="n">full_file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                                 <span class="n">n</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
-                                <span class="n">n</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+                                <span class="n">n</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span>
                                 <span class="n">n</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
                                 <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/&#39;</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">func</span><span class="o">==</span><span class="s1">&#39;fit&#39;</span><span class="p">:</span>
@@ -863,6 +918,213 @@
 
 <span class="c1"># COPY the rotines above here and aadapt those to your cluster</span>
 <span class="c1"># bashwarp_nm; qsub_nm; rerun_nm</span>
+
+<div class="viewcode-block" id="sbatchwrap_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatchwrap_nm">[docs]</a><span class="k">def</span> <span class="nf">sbatchwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span>
+                  <span class="n">python_path</span><span class="p">,</span>
+                  <span class="n">normative_path</span><span class="p">,</span>
+                  <span class="n">job_name</span><span class="p">,</span>
+                  <span class="n">covfile_path</span><span class="p">,</span>
+                  <span class="n">respfile_path</span><span class="p">,</span>
+                  <span class="n">memory</span><span class="p">,</span>
+                  <span class="n">duration</span><span class="p">,</span>
+                  <span class="n">func</span><span class="o">=</span><span class="s1">&#39;estimate&#39;</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; This function wraps normative modelling into a bash script to run it</span>
+<span class="sd">    on a torque cluster system.</span>
+
+<span class="sd">    :Parameters:</span>
+<span class="sd">        * processing_dir     -&gt; Full path to the processing dir</span>
+<span class="sd">        * python_path        -&gt; Full path to the python distribution</span>
+<span class="sd">        * normative_path     -&gt; Full path to the normative.py</span>
+<span class="sd">        * job_name           -&gt; Name for the bash script that is the output of</span>
+<span class="sd">                                this function</span>
+<span class="sd">        * covfile_path       -&gt; Full path to a .txt file that contains all</span>
+<span class="sd">                                covariats (subjects x covariates) for the</span>
+<span class="sd">                                responsefile</span>
+<span class="sd">        * respfile_path      -&gt; Full path to a .txt that contains all features</span>
+<span class="sd">                                (subjects x features)</span>
+<span class="sd">        * cv_folds           -&gt; Number of cross validations</span>
+<span class="sd">        * testcovfile_path   -&gt; Full path to a .txt file that contains all</span>
+<span class="sd">                                covariats (subjects x covariates) for the</span>
+<span class="sd">                                testresponse file</span>
+<span class="sd">        * testrespfile_path  -&gt; Full path to a .txt file that contains all</span>
+<span class="sd">                                test features</span>
+<span class="sd">        * alg                -&gt; which algorithm to use</span>
+<span class="sd">        * configparam        -&gt; configuration parameters for this algorithm</span>
+
+<span class="sd">    :outputs:</span>
+<span class="sd">        * A bash.sh file containing the commands for normative modelling saved</span>
+<span class="sd">          to the processing directory (written to disk)</span>
+
+<span class="sd">    written by (primarily) T Wolfers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># here we use pop not get to remove the arguments as they used </span>
+    <span class="n">cv_folds</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cv_folds&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;testcovfile_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;testrespfile_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">alg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;alg&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">configparam</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;configparam&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">standardize</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># change to processing dir</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">)</span>
+    <span class="n">output_changedir</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cd &#39;</span> <span class="o">+</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">]</span>
+
+    <span class="n">sbatch_init</span><span class="o">=</span><span class="s1">&#39;#!/bin/bash</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_jobname</span><span class="o">=</span><span class="s1">&#39;#SBATCH --job-name=&#39;</span> <span class="o">+</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_account</span><span class="o">=</span><span class="s1">&#39;#SBATCH --account=p33_norment</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_nodes</span><span class="o">=</span><span class="s1">&#39;#SBATCH --nodes=1</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_tasks</span><span class="o">=</span><span class="s1">&#39;#SBATCH --ntasks=1</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_time</span><span class="o">=</span><span class="s1">&#39;#SBATCH --time=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_memory</span><span class="o">=</span><span class="s1">&#39;#SBATCH --mem-per-cpu=&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">memory</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_module</span><span class="o">=</span><span class="s1">&#39;module purge</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_anaconda</span><span class="o">=</span><span class="s1">&#39;module load anaconda3</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="n">sbatch_exit</span><span class="o">=</span><span class="s1">&#39;set -o errexit</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+    <span class="c1">#echo -n &quot;This script is running on &quot;</span>
+    <span class="c1">#hostname</span>
+    
+    <span class="n">bash_environment</span> <span class="o">=</span> <span class="p">[</span><span class="n">sbatch_init</span> <span class="o">+</span> 
+                        <span class="n">sbatch_jobname</span> <span class="o">+</span>
+                        <span class="n">sbatch_account</span> <span class="o">+</span>
+                        <span class="n">sbatch_nodes</span> <span class="o">+</span>
+                        <span class="n">sbatch_tasks</span> <span class="o">+</span>
+                        <span class="n">sbatch_time</span> <span class="o">+</span>
+                        <span class="n">sbatch_module</span> <span class="o">+</span>
+                        <span class="n">sbatch_anaconda</span><span class="p">]</span>
+
+    <span class="c1"># creates call of function for normative modelling</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">testrespfile_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">testcovfile_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">python_path</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">normative_path</span> <span class="o">+</span> <span class="s1">&#39; -c &#39;</span> <span class="o">+</span>
+                    <span class="n">covfile_path</span> <span class="o">+</span> <span class="s1">&#39; -t &#39;</span> <span class="o">+</span> <span class="n">testcovfile_path</span> <span class="o">+</span> <span class="s1">&#39; -r &#39;</span> <span class="o">+</span>
+                    <span class="n">testrespfile_path</span> <span class="o">+</span> <span class="s1">&#39; -f &#39;</span> <span class="o">+</span> <span class="n">func</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">testrespfile_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">testcovfile_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">python_path</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">normative_path</span> <span class="o">+</span> <span class="s1">&#39; -c &#39;</span> <span class="o">+</span>
+                    <span class="n">covfile_path</span> <span class="o">+</span> <span class="s1">&#39; -t &#39;</span> <span class="o">+</span> <span class="n">testcovfile_path</span> <span class="o">+</span> <span class="s1">&#39; -f &#39;</span> <span class="o">+</span> <span class="n">func</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">cv_folds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">python_path</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">normative_path</span> <span class="o">+</span> <span class="s1">&#39; -c &#39;</span> <span class="o">+</span>
+                    <span class="n">covfile_path</span> <span class="o">+</span> <span class="s1">&#39; -k &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cv_folds</span><span class="p">)</span> <span class="o">+</span>  <span class="s1">&#39; -f &#39;</span> <span class="o">+</span> <span class="n">func</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;estimate&#39;</span><span class="p">:</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">python_path</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">normative_path</span> <span class="o">+</span> <span class="s1">&#39; -c &#39;</span> <span class="o">+</span>
+                    <span class="n">covfile_path</span> <span class="o">+</span>  <span class="s1">&#39; -f &#39;</span> <span class="o">+</span> <span class="n">func</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;For &#39;estimate&#39; function either testcov or cvfold</span>
+<span class="s2">              must be specified.&quot;&quot;&quot;</span><span class="p">)</span>
+        
+    <span class="c1"># add algorithm-specific parameters</span>
+    <span class="k">if</span> <span class="n">alg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -a &#39;</span> <span class="o">+</span> <span class="n">alg</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">configparam</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -x &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">configparam</span><span class="p">)]</span>
+    
+    <span class="c1"># add standardization flag if it is false</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">standardize</span><span class="p">:</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -s&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># add responses file</span>
+    <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">respfile_path</span><span class="p">]</span>
+    
+    <span class="c1"># add in optional arguments. </span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+
+    <span class="c1"># writes bash file into processing dir</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">+</span><span class="n">job_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">bash_file</span><span class="p">:</span>
+        <span class="n">bash_file</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">bash_environment</span> <span class="o">+</span> <span class="n">output_changedir</span> <span class="o">+</span> \
+                             <span class="n">job_call</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">sbatch_exit</span><span class="p">])</span>
+
+    <span class="c1"># changes permissoins for bash.sh file</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">job_name</span><span class="p">,</span> <span class="mo">0o700</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatch_nm">[docs]</a><span class="k">def</span> <span class="nf">sbatch_nm</span><span class="p">(</span><span class="n">job_path</span><span class="p">,</span>
+              <span class="n">log_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function submits a job.sh scipt to the torque custer using the qsub</span>
+<span class="sd">    command.</span>
+
+<span class="sd">    ** Input:</span>
+<span class="sd">        * job_path      -&gt; Full path to the job.sh file</span>
+<span class="sd">        * log_path      -&gt; The logs are currently stored in the working dir</span>
+
+<span class="sd">    ** Output:</span>
+<span class="sd">        * Submission of the job to the (torque) cluster</span>
+
+<span class="sd">    witten by (primarily) T Wolfers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># created qsub command</span>
+    <span class="n">sbatch_call</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sbatch &#39;</span> <span class="o">+</span> <span class="n">job_path</span><span class="p">]</span>
+
+    <span class="c1"># submits job to cluster</span>
+    <span class="n">call</span><span class="p">(</span><span class="n">sbatch_call</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">rerun_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span>
+                 <span class="n">memory</span><span class="p">,</span>
+                 <span class="n">duration</span><span class="p">,</span>
+                 <span class="n">new_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">new_duration</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">binary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function reruns all failed batched in processing_dir after collect_nm</span>
+<span class="sd">        has identified he failed batches</span>
+<span class="sd">    </span>
+<span class="sd">        * Input:</span>
+<span class="sd">            * processing_dir        -&gt; Full path to the processing directory</span>
+<span class="sd">            * memory                -&gt; Memory requirements written as string</span>
+<span class="sd">                                       for example 4gb or 500mb</span>
+<span class="sd">            * duration              -&gt; The approximate duration of the job, a</span>
+<span class="sd">                                       string with HH:MM:SS for example 01:01:01</span>
+<span class="sd">            * new_memory            -&gt; If you want to change the memory </span>
+<span class="sd">                                        you have to indicate it here.</span>
+<span class="sd">            * new_duration          -&gt; If you want to change the duration </span>
+<span class="sd">                                        you have to indicate it here.</span>
+<span class="sd">        * Outputs:</span>
+<span class="sd">            * Reruns failed batches. </span>
+<span class="sd">    </span>
+<span class="sd">        written by (primarily) T Wolfers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;log_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">binary</span><span class="p">:</span>
+            <span class="n">file_extentions</span> <span class="o">=</span> <span class="s1">&#39;.pkl&#39;</span>
+            <span class="n">failed_batches</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span>
+                                         <span class="s1">&#39;failed_batches&#39;</span> <span class="o">+</span> 
+                                         <span class="n">file_extentions</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">failed_batches</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">jobpath</span> <span class="o">=</span> <span class="n">failed_batches</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">jobpath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_duration</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">new_duration</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_memory</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">new_memory</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span>
+                          <span class="n">log_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_extentions</span> <span class="o">=</span> <span class="s1">&#39;.txt&#39;</span>
+            <span class="n">failed_batches</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load_pd</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span>
+                                           <span class="s1">&#39;failed_batches&#39;</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">failed_batches</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">jobpath</span> <span class="o">=</span> <span class="n">failed_batches</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">jobpath</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_duration</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">new_duration</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_memory</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">new_memory</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">jobpath</span><span class="p">,</span>
+                          <span class="n">log_path</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
