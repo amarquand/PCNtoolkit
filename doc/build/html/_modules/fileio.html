@@ -47,11 +47,23 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">try</span><span class="p">:</span>  <span class="c1"># run as a package if installed</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">configs</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">path</span>
+    <span class="kn">import</span> <span class="nn">configs</span>
 
 <span class="n">CIFTI_MAPPINGS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;dconn&#39;</span><span class="p">,</span> <span class="s1">&#39;dtseries&#39;</span><span class="p">,</span> <span class="s1">&#39;pconn&#39;</span><span class="p">,</span> <span class="s1">&#39;ptseries&#39;</span><span class="p">,</span> <span class="s1">&#39;dscalar&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;dlabel&#39;</span><span class="p">,</span> <span class="s1">&#39;pscalar&#39;</span><span class="p">,</span> <span class="s1">&#39;pdconn&#39;</span><span class="p">,</span> <span class="s1">&#39;dpconn&#39;</span><span class="p">,</span>
@@ -59,10 +71,22 @@
 
 <span class="n">CIFTI_VOL_ATLAS</span> <span class="o">=</span> <span class="s1">&#39;Atlas_ROIs.2.nii.gz&#39;</span>
 
+<span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
+
 <span class="c1"># ------------------------</span>
 <span class="c1"># general utility routines</span>
 <span class="c1"># ------------------------</span>
 
+<div class="viewcode-block" id="predictive_interval"><a class="viewcode-back" href="../modindex.html#fileio.predictive_interval">[docs]</a><span class="k">def</span> <span class="nf">predictive_interval</span><span class="p">(</span><span class="n">s2_forward</span><span class="p">,</span>
+                        <span class="n">cov_forward</span><span class="p">,</span>
+                        <span class="n">multiplicator</span><span class="p">):</span>
+  <span class="c1"># calculates a predictive interval</span>
+  
+    <span class="n">PI</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cov_forward</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">xdot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cov_forward</span><span class="p">):</span>
+        <span class="n">s</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s2_forward</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">PI</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">multiplicator</span><span class="o">*</span><span class="n">s</span>
+    <span class="k">return</span> <span class="n">PI</span></div>
 
 <div class="viewcode-block" id="create_mask"><a class="viewcode-back" href="../modindex.html#fileio.create_mask">[docs]</a><span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># create a (volumetric) mask either from an input nifti or the nifti itself</span>
@@ -170,8 +194,8 @@
     <span class="n">img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
     <span class="n">dat</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 
-<span class="c1">#    if mask is not None:</span>
-<span class="c1">#        mask=load_nifti(mask, vol=True)</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">vol</span><span class="p">:</span>
         <span class="n">dat</span> <span class="o">=</span> <span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
@@ -390,7 +414,7 @@
         <span class="n">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;binary&#39;</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+        <span class="n">data</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="load"><a class="viewcode-back" href="../modindex.html#fileio.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
