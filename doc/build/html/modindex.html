@@ -498,7 +498,9 @@ That depend on those will also be returned (Z scores and error metrics)</p>
 <li><p><strong>covfile</strong> – test covariates used to predict the response variable</p></li>
 <li><p><strong>respfile</strong> – test response variables for the normative model</p></li>
 <li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
-<li><p><strong>model_path</strong> – Directory containing the normative model and metadata</p></li>
+<li><p><strong>model_path</strong> – Directory containing the normative model and metadata.
+When using parallel prediction, do not pass the model path. It will be automatically
+decided.</p></li>
 <li><p><strong>output_path</strong> – Directory to store the results</p></li>
 <li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
 <li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
@@ -659,7 +661,7 @@ keeps the combined output.</p>
 
 <dl class="py function">
 <dt id="normative_parallel.execute_nm">
-<code class="sig-prename descclassname">normative_parallel.</code><code class="sig-name descname">execute_nm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">processing_dir</span></em>, <em class="sig-param"><span class="n">python_path</span></em>, <em class="sig-param"><span class="n">normative_path</span></em>, <em class="sig-param"><span class="n">job_name</span></em>, <em class="sig-param"><span class="n">covfile_path</span></em>, <em class="sig-param"><span class="n">respfile_path</span></em>, <em class="sig-param"><span class="n">batch_size</span></em>, <em class="sig-param"><span class="n">memory</span></em>, <em class="sig-param"><span class="n">duration</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'estimate'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#execute_nm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">normative_parallel.</code><code class="sig-name descname">execute_nm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">processing_dir</span></em>, <em class="sig-param"><span class="n">python_path</span></em>, <em class="sig-param"><span class="n">job_name</span></em>, <em class="sig-param"><span class="n">covfile_path</span></em>, <em class="sig-param"><span class="n">respfile_path</span></em>, <em class="sig-param"><span class="n">batch_size</span></em>, <em class="sig-param"><span class="n">memory</span></em>, <em class="sig-param"><span class="n">duration</span></em>, <em class="sig-param"><span class="n">normative_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'estimate'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#execute_nm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is a mother function that executes all parallel normative
 modelling routines. Different specifications are possible using the sub-
 functions.</p>
@@ -668,7 +670,12 @@ functions.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p>processing_dir     -&gt; Full path to the processing dir</p></li>
 <li><p>python_path        -&gt; Full path to the python distribution</p></li>
-<li><p>normative_path     -&gt; Full path to the normative.py</p></li>
+<li><dl class="simple">
+<dt>normative_path     -&gt; Full path to the normative.py. If None (default)</dt><dd><p>then it will automatically retrieves the path from 
+the installed packeage.</p>
+</dd>
+</dl>
+</li>
 <li><dl class="simple">
 <dt>job_name           -&gt; Name for the bash script that is the output of</dt><dd><p>this function</p>
 </dd>
@@ -773,6 +780,78 @@ has identified he failed batches</p>
 </li>
 </ul>
 <p>written by (primarily) T Wolfers, (adapted) SM Kia</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="normative_parallel.sbatch_nm">
+<code class="sig-prename descclassname">normative_parallel.</code><code class="sig-name descname">sbatch_nm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_path</span></em>, <em class="sig-param"><span class="n">log_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatch_nm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative_parallel.sbatch_nm" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function submits a job.sh scipt to the torque custer using the qsub
+command.</p>
+<dl class="simple">
+<dt>** Input:</dt><dd><ul class="simple">
+<li><p>job_path      -&gt; Full path to the job.sh file</p></li>
+<li><p>log_path      -&gt; The logs are currently stored in the working dir</p></li>
+</ul>
+</dd>
+<dt>** Output:</dt><dd><ul class="simple">
+<li><p>Submission of the job to the (torque) cluster</p></li>
+</ul>
+</dd>
+</dl>
+<p>witten by (primarily) T Wolfers</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="normative_parallel.sbatchwrap_nm">
+<code class="sig-prename descclassname">normative_parallel.</code><code class="sig-name descname">sbatchwrap_nm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">processing_dir</span></em>, <em class="sig-param"><span class="n">python_path</span></em>, <em class="sig-param"><span class="n">normative_path</span></em>, <em class="sig-param"><span class="n">job_name</span></em>, <em class="sig-param"><span class="n">covfile_path</span></em>, <em class="sig-param"><span class="n">respfile_path</span></em>, <em class="sig-param"><span class="n">memory</span></em>, <em class="sig-param"><span class="n">duration</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'estimate'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatchwrap_nm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative_parallel.sbatchwrap_nm" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function wraps normative modelling into a bash script to run it
+on a torque cluster system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p>processing_dir     -&gt; Full path to the processing dir</p></li>
+<li><p>python_path        -&gt; Full path to the python distribution</p></li>
+<li><p>normative_path     -&gt; Full path to the normative.py</p></li>
+<li><dl class="simple">
+<dt>job_name           -&gt; Name for the bash script that is the output of</dt><dd><p>this function</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>covfile_path       -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
+responsefile</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>respfile_path      -&gt; Full path to a .txt that contains all features</dt><dd><p>(subjects x features)</p>
+</dd>
+</dl>
+</li>
+<li><p>cv_folds           -&gt; Number of cross validations</p></li>
+<li><dl class="simple">
+<dt>testcovfile_path   -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
+testresponse file</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>testrespfile_path  -&gt; Full path to a .txt file that contains all</dt><dd><p>test features</p>
+</dd>
+</dl>
+</li>
+<li><p>alg                -&gt; which algorithm to use</p></li>
+<li><p>configparam        -&gt; configuration parameters for this algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><ul class="simple">
+<li><p>A bash.sh file containing the commands for normative modelling saved
+to the processing directory (written to disk)</p></li>
+</ul>
+</dd>
+</dl>
+<p>written by (primarily) T Wolfers</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1007,6 +1086,11 @@ N, D and the prior covariance (Sigma) and precision (iSigma).</p>
 <dl class="py function">
 <dt id="fileio.load_pd">
 <code class="sig-prename descclassname">fileio.</code><code class="sig-name descname">load_pd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#load_pd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fileio.load_pd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="fileio.predictive_interval">
+<code class="sig-prename descclassname">fileio.</code><code class="sig-name descname">predictive_interval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s2_forward</span></em>, <em class="sig-param"><span class="n">cov_forward</span></em>, <em class="sig-param"><span class="n">multiplicator</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#predictive_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fileio.predictive_interval" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1338,6 +1422,20 @@ distribution, specifed by a mean (mu) and variance (s2)</p>
 <dd><p>Bases: <a class="reference internal" href="#utils.WarpBase" title="utils.WarpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">utils.WarpBase</span></code></a></p>
 <p>Sin-hyperbolic arcsin warp having two parameters (a, b) and defined by</p>
 <p>y = sinh(b *  arcsinh(x) - a)</p>
+<p>Using the parametrisation of Rios et al, Neural Networks 118 (2017)
+where a controls skew and b controls kurtosis, such that:</p>
+<blockquote>
+<div><p>a = 0 : symmetric
+a &gt; 0 : positive skew
+a &lt; 0 : negative skew
+b = 1 : mesokurtic
+b &gt; 1 : leptokurtic
+b &lt; 1 : platykurtic</p>
+</div></blockquote>
+<p>where b &gt; 0. However, it is more convenentent to use an alternative 
+parameterisation, where</p>
+<p>y = sinh(b * arcsinh(x) + epsilon * b)</p>
+<p>and a = -epsilon*b</p>
 <p>see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)</p>
 <dl class="py method">
 <dt id="utils.WarpSinArcsinh.df">
@@ -1537,6 +1635,45 @@ and p is the number of features.</p>
 <dt id="utils.extreme_value_prob_fit">
 <code class="sig-prename descclassname">utils.</code><code class="sig-name descname">extreme_value_prob_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">NPM</span></em>, <em class="sig-param"><span class="n">perc</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#extreme_value_prob_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.extreme_value_prob_fit" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt id="utils.load_freesurfer_measure">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">load_freesurfer_measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="n">data_path</span></em>, <em class="sig-param"><span class="n">subjects_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#load_freesurfer_measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.load_freesurfer_measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a utility function to load different Freesurfer measures in a pandas
+Dataframe.</p>
+<dl>
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p>measure: a string that defines the type of Freesurfer measure we want</p></li>
+</ul>
+<dl class="simple">
+<dt>to load. The options include:</dt><dd><ul class="simple">
+<li><p>‘NumVert’: Number of Vertices in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘SurfArea: Surface area for each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘GrayVol’: Gary matter volume in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘ThickAvg’: Average Cortical thinckness in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘ThickStd’: STD of Cortical thinckness in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘MeanCurv’: Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘GausCurv’: Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘FoldInd’: Folding Index in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘CurvInd’: Intrinsic Curvature Index in each cortical area based on Destrieux atlas.</p></li>
+<li><p>‘brain’: Brain Segmentation Statistics from aseg.stats file.</p></li>
+<li><p>‘subcortical_volumes’: Subcortical areas volume.</p></li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>data_path: a string that specifies the path to the main Freesurfer folder.</p></li>
+<li><p>subjects_list: A Pythin list containing the list of subject names to load the data for.</p></li>
+</ul>
+<p>The subject names should match the folder name for each subject’s Freesurfer data folder.</p>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p>df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.</p></li>
+<li><p>missing_subs: A Python list of subject names that miss the target Freesurefr measures.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="utils.qsub">
