@@ -270,10 +270,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     log_sigma_noise = from_posterior('log_sigma_noise', 
                                                trace['log_sigma_noise'], 
-                                               distribution=None, freedom=configs['freedom'])
+                                               distribution='normal', freedom=configs['freedom'])
                                                     
                 else:
-                    log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5, shape=(batch_effects_size))
+                    #log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5, shape=(batch_effects_size))
+                    log_sigma_noise = pm.Normal('log_sigma_noise', mu=0., sigma=2.5, shape=(batch_effects_size))
                 sigma_y = theano.tensor.zeros(y_shape)
                 for be in be_idx:
                     a = []
@@ -287,9 +288,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             if trace is not None: 
                 log_sigma_noise = from_posterior('log_sigma_noise', 
                                                trace['log_sigma_noise'], 
-                                               distribution=None, freedom=configs['freedom'])
+                                               distribution='normal', freedom=configs['freedom'])
             else:
-                log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5)
+                #log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5)
+                log_sigma_noise = pm.Normal('log_sigma_noise', mu=0., sigma=2.5)
                 
             sigma_y = theano.tensor.zeros(y_shape)
             for be in be_idx:
