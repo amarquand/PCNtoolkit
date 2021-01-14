@@ -5,6 +5,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from ast import literal_eval
 
 try:  # run as a package if installed
     from pcntoolkit.bayesreg import BLR
@@ -27,12 +28,13 @@ class NormBLR(NormBase):
     """ Normative modelling based on Bayesian Linear Regression
     """     
             
-    def __init__(self,  **kwargs): #X=None, y=None, theta=None,
+    def __init__(self,  **kwargs):
         X = kwargs.pop('X', None)
         y = kwargs.pop('y', None)
         theta = kwargs.pop('theta', None)
-        verb_flag = kwargs.pop('verbose', False)
-        self.optim_alg = kwargs.pop('optimizer','powell')
+        if isinstance(theta, str):
+            theta = np.array(literal_eval(theta))
+        self.optim_alg = kwargs.get('optimizer','powell')
 
         if X is None:
             raise(ValueError, "Data matrix must be specified")
@@ -45,14 +47,14 @@ class NormBLR(NormBase):
         # Parse model order
         if kwargs is None:
             model_order = 1
-        elif 'configparam' in kwargs:
+        elif 'configparam' in kwargs: # deprecated syntax
             model_order = kwargs.pop('configparam')
         elif 'model_order' in kwargs: 
             model_order = kwargs.pop('model_order')
         else:
             model_order = 1
             
-        # Force a default value and check datatype
+        # Force a default model order and check datatype
         if model_order is None:
             model_order = 1
         if type(model_order) is not int:
@@ -99,7 +101,7 @@ class NormBLR(NormBase):
         self._n_params = n_alpha + n_beta + n_gamma
         self._model_order = model_order
         
-        print("initialising BLR ( order", model_order, ")")
+        print("configuring BLR ( order", model_order, ")")
         if (theta is None) or (len(theta) != self._n_params):
             print("Using default hyperparameters")
             self.theta0 = np.zeros(self._n_params)
@@ -107,12 +109,13 @@ class NormBLR(NormBase):
             self.theta0 = theta
         self.theta = self.theta0
         
+        # initialise the BLR object if the required parameters are present
         if (theta is not None) and (y is not None):
             self.Phi = create_poly_basis(X, self._model_order)
-            self.blr = BLR(theta, self.Phi, y, warp=self.warp, 
-                           verbose=verb_flag)
+            self.blr = BLR(theta=theta, X=self.Phi, y=y, 
+                           warp=self.warp, **kwargs)
         else:
-            self.blr = BLR(verbose=verb_flag)    
+            self.blr = BLR(**kwargs)    
             
     @property
     def n_params(self):
@@ -124,7 +127,11 @@ class NormBLR(NormBase):
 
     def estimate(self, X, y, **kwargs):
         theta = kwargs.pop('theta', None)
-        verb_flag = kwargs.pop('verbose', False)
+        if isinstance(theta, str):
+            theta = np.array(literal_eval(theta))
+            
+        # remove warp string to prevent it being passed to the blr object
+        kwargs.pop('warp',None) 
         
         if not hasattr(self,'Phi'):
             self.Phi = create_poly_basis(X, self._model_order)
@@ -132,22 +139,23 @@ class NormBLR(NormBase):
             y = y.ravel()
             
         if theta is None:
-            theta = self.theta0
-            self.blr = BLR(theta, self.Phi, y, 
+            theta = self.theta0           
+            
+            # (re-)initialize BLR object because parameters were not specified
+            self.blr = BLR(theta=theta, X=self.Phi, y=y, 
                            var_groups=self.var_groups, 
-                           warp=self.warp, verbose=verb_flag)
+                           warp=self.warp, **kwargs)
 
         self.theta = self.blr.estimate(theta, self.Phi, y, 
                                        optimizer=self.optim_alg)
         
         return self
 
-    def predict(self, Xs, X=None, y=None, **kwargs):
-        theta = kwargs.pop('theta', None)
+    def predict(self, Xs, X=None, y=None, **kwargs):      
         
-        #if theta is None:
-        #    theta = self.theta
         theta = self.theta # always use the estimated coefficients
+        # remove from kwargs
+        kwargs.pop('theta', None)
 
         Phis = create_poly_basis(Xs, self._model_order)
         
