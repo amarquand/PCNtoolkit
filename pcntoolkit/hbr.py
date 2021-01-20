@@ -22,24 +22,28 @@ from bspline import splinelab
 
 def bspline_fit(X, order, nknots):
     
-    X = X.squeeze()
-    if len(X.shape) > 1:
-        raise ValueError('Bspline method only works for a single covariate.')
-    
-    knots = np.linspace(X.min(), X.max(), nknots)
-    k = splinelab.augknt(knots, order)
-    bsp_basis = bspline.Bspline(k, order)
+    feature_num = X.shape[1]
+    bsp_basis = []
+    for i in range(feature_num):
+        knots = np.linspace(X[:,i].min(), X[:,i].max(), nknots)
+        k = splinelab.augknt(knots, order)
+        bsp_basis.append(bspline.Bspline(k, order))
     
     return bsp_basis
 
 
 def bspline_transform(X, bsp_basis):
     
-    X = X.squeeze()
-    if len(X.shape) > 1:
-        raise ValueError('Bspline method only works for a single covariate.')
+    if type(bsp_basis)!=list:
+        temp = []
+        temp.append(bsp_basis)
+        bsp_basis = temp
         
-    X_transformed = np.array([bsp_basis(i) for i in X])
+    feature_num = len(bsp_basis) 
+    X_transformed = []
+    for f in range(feature_num):
+        X_transformed.append(np.array([bsp_basis[f](i) for i in X[:,f]]))
+    X_transformed = np.concatenate(X_transformed, axis=1)
     
     return X_transformed
 
