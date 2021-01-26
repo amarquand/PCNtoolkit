@@ -344,8 +344,15 @@ def estimate(covfile, respfile, **kwargs):
     else:
         run_cv = True
         # we are running under cross-validation
-        splits = KFold(n_splits=cvfolds)
+        splits = KFold(n_splits=cvfolds, shuffle=True)
         testids = range(0, X.shape[0])
+        if alg=='hbr':
+           trbefile = kwargs.get('trbefile', None) 
+           if trbefile is not None:
+                be = fileio.load(trbefile)
+           else:
+                print('Could not find batch-effects file! Initilizing all as zeros!')
+                be = np.zeros([X.shape[0],1])
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
@@ -391,14 +398,20 @@ def estimate(covfile, respfile, **kwargs):
         else:
             Yz = Y
             Xz = X
+        
+        if (run_cv==True and alg=='hbr'):
+            fileio.save(be[tr,:], 'be_kfold_tr_tempfile.pkl')
+            fileio.save(be[te,:], 'be_kfold_ts_tempfile.pkl')
+            kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
+            kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
             
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
-            try: 
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 
+            try:
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
                 if savemodel:
