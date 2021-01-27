@@ -861,7 +861,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     
     outputsuffix = kwargs.pop('outputsuffix', '_extend')
     inputsuffix = kwargs.pop('inputsuffix', '_estimate')
-    informative_prior = kwargs.pop('job_id', 'False') == 'True'
+    informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)

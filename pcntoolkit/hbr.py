@@ -831,7 +831,7 @@ class HBR:
         X = np.repeat(X, samples)
         if len(X.shape)==1:
             X = np.expand_dims(X, axis=1)
-        batch_effects = np.repeat(batch_effects, samples)
+        batch_effects = np.repeat(batch_effects, samples, axis=0)
         if len(batch_effects.shape)==1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         
