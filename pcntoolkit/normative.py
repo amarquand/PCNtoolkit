@@ -572,7 +572,7 @@ def fit(covfile, respfile, **kwargs):
     return nm
 
     
-def predict(covfile, respfile=None, maskfile=None, **kwargs):
+def predict(covfile, respfile, maskfile=None, **kwargs):
     '''
     Make predictions on the basis of a pre-estimated normative model 
     If only the covariates are specified then only predicted mean and variance 
@@ -591,7 +591,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     :param model_path: Directory containing the normative model and metadata.
      When using parallel prediction, do not pass the model path. It will be automatically
      decided.
-    :param output_path: Directory to store the results
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
@@ -607,7 +606,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     model_path = kwargs.pop('model_path', 'Models')
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
-    output_path = kwargs.pop('output_path', '')
     outputsuffix = kwargs.pop('outputsuffix', '_predict')
     inputsuffix = kwargs.pop('inputsuffix', '_estimate')
     alg = kwargs.pop('alg')
@@ -627,15 +625,16 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
             sY = meta_data['std_resp']
             mX = meta_data['mean_cov']
             sX = meta_data['std_cov']
+            meta_data = True
         else:
+            print("No meta-data file is found!")
             standardize = False
+            meta_data = False
 
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
-    
-    if (output_path != '') and (not os.path.isdir(output_path)):
-        os.mkdir(output_path)
+
     
     # load data
     print("Loading data ...")
@@ -695,12 +694,15 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         Z = (Y - Yhat) / np.sqrt(S2)
         
         print("Evaluating the model ...")
-        results = evaluate(Y, Yhat, S2=S2, 
+        if meta_data:
+            results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
+        else:    
+            results = evaluate(Y, Yhat, S2=S2, 
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
         
         print("Evaluations Writing outputs ...")
         save_results(respfile, Yhat, S2, maskvol, Z=Z, outputsuffix=outputsuffix, 
-                     results=results, save_path=output_path)
+                     results=results)
         
         return (Yhat, S2, Z)
 
