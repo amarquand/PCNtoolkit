@@ -46,10 +46,16 @@ class BLR:
     Written by A. Marquand
     """
 
-    def __init__(self, hyp=None, X=None, y=None,
-                 n_iter=100, tol=1e-3, verbose=False, 
-                 var_groups=None, warp=None):
-
+    def __init__(self, **kwargs):
+        # parse arguments
+        n_iter = kwargs.get('n_iter', 100)
+        tol = kwargs.get('tol', 1e-3)
+        verbose = kwargs.get('verbose', False)
+        var_groups = kwargs.get('var_groups', None)
+        warp = kwargs.get('warp', None)
+        warp_reparam = kwargs.get('warp_reparam', False)
+        
+        # basic parameters
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
@@ -61,31 +67,28 @@ class BLR:
             self.var_ids = sorted(list(self.var_ids))
 
         # set up warped likelihood
+        if verbose:
+            print('warp:', warp, 'warp_reparam:', warp_reparam)
         if warp is None:
             self.warp = None
             self.n_warp_param = 0
         else:
             self.warp = warp
             self.n_warp_param = warp.get_n_params()
+            self.warp_reparam = warp_reparam
+            
         self.gamma = None
     
     def _parse_hyps(self, hyp, X):
 
         N = X.shape[0]
         
-        # hyperparameters
+        # noise precision
         if self.var_groups is None:
-            beta = np.asarray([np.exp(hyp[0])])               # noise precision 
-            self.Lambda_n = np.diag(np.ones(N)*beta)
-            self.Sigma_n = np.diag(np.ones(N)/beta)
+            beta = np.asarray([np.exp(hyp[0])]) 
         else:
             beta = np.exp(hyp[0:len(self.var_ids)])
-            beta_all = np.ones(N)
-            for v in range(len(self.var_ids)):
-                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
-            self.Lambda_n = np.diag(beta_all)
-            self.Sigma_n = np.diag(1/beta_all)
-        
+         
         # parameters for warping the likelhood function
         n_lik_param = len(beta)
         if self.warp is not None:
@@ -100,6 +103,22 @@ class BLR:
         else:
             alpha = np.exp(hyp[1:])
 
+        # reparameterise the warp (WarpSinArcsinh only)
+        if self.warp is not None and self.warp_reparam:
+            delta = np.exp(gamma[1])
+            beta = beta/(delta**2)
+    
+        # Create precision matrix from noise precision
+        if self.var_groups is None:
+            self.Lambda_n = np.diag(np.ones(N)*beta)
+            self.Sigma_n = np.diag(np.ones(N)/beta)
+        else:
+            beta_all = np.ones(N)
+            for v in range(len(self.var_ids)):
+                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
+            self.Lambda_n = np.diag(beta_all)
+            self.Sigma_n = np.diag(1/beta_all)
+    
         return beta, alpha, gamma
         
     def post(self, hyp, X, y):
@@ -298,8 +317,9 @@ class BLR:
         return dnlZ
 
     # model estimation (optimization)
-    def estimate(self, hyp0, X, y, optimizer='cg'):
+    def estimate(self, hyp0, X, y, **kwargs):
         """ Function to estimate the model """
+        optimizer = kwargs.get('optimizer','cg')
 
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y),
@@ -308,6 +328,9 @@ class BLR:
 
         elif optimizer.lower() == 'powell':  # Powell's method
             out = optimize.fmin_powell(self.loglik, hyp0, (X, y),
+                                       full_output=1)
+        elif optimizer.lower() == 'nelder-mead':
+            out = optimize.fmin(self.loglik, hyp0, (X, y),
                                        full_output=1)
         else:
             raise ValueError("unknown optimizer")
@@ -322,7 +345,7 @@ class BLR:
         """ Function to make predictions from the model """
 
         if X is None or y is None:
-            # set hyperparameters. we can use an array of zeros because 
+            # set dummy hyperparameters
             beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
         else:
             

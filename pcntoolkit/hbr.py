@@ -22,24 +22,28 @@ from bspline import splinelab
 
 def bspline_fit(X, order, nknots):
     
-    X = X.squeeze()
-    if len(X.shape) > 1:
-        raise ValueError('Bspline method only works for a single covariate.')
-    
-    knots = np.linspace(X.min(), X.max(), nknots)
-    k = splinelab.augknt(knots, order)
-    bsp_basis = bspline.Bspline(k, order)
+    feature_num = X.shape[1]
+    bsp_basis = []
+    for i in range(feature_num):
+        knots = np.linspace(X[:,i].min(), X[:,i].max(), nknots)
+        k = splinelab.augknt(knots, order)
+        bsp_basis.append(bspline.Bspline(k, order))
     
     return bsp_basis
 
 
 def bspline_transform(X, bsp_basis):
     
-    X = X.squeeze()
-    if len(X.shape) > 1:
-        raise ValueError('Bspline method only works for a single covariate.')
+    if type(bsp_basis)!=list:
+        temp = []
+        temp.append(bsp_basis)
+        bsp_basis = temp
         
-    X_transformed = np.array([bsp_basis(i) for i in X])
+    feature_num = len(bsp_basis) 
+    X_transformed = []
+    for f in range(feature_num):
+        X_transformed.append(np.array([bsp_basis[f](i) for i in X[:,f]]))
+    X_transformed = np.concatenate(X_transformed, axis=1)
     
     return X_transformed
 
@@ -270,10 +274,11 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 if trace is not None: # Used for transferring the priors
                     log_sigma_noise = from_posterior('log_sigma_noise', 
                                                trace['log_sigma_noise'], 
-                                               distribution=None, freedom=configs['freedom'])
+                                               distribution='normal', freedom=configs['freedom'])
                                                     
                 else:
-                    log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5, shape=(batch_effects_size))
+                    #log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5, shape=(batch_effects_size))
+                    log_sigma_noise = pm.Normal('log_sigma_noise', mu=0., sigma=2.5, shape=(batch_effects_size))
                 sigma_y = theano.tensor.zeros(y_shape)
                 for be in be_idx:
                     a = []
@@ -287,9 +292,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             if trace is not None: 
                 log_sigma_noise = from_posterior('log_sigma_noise', 
                                                trace['log_sigma_noise'], 
-                                               distribution=None, freedom=configs['freedom'])
+                                               distribution='normal', freedom=configs['freedom'])
             else:
-                log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5)
+                #log_sigma_noise = pm.Uniform('log_sigma_noise', lower=-5, upper=5)
+                log_sigma_noise = pm.Normal('log_sigma_noise', mu=0., sigma=2.5)
                 
             sigma_y = theano.tensor.zeros(y_shape)
             for be in be_idx:
@@ -825,7 +831,7 @@ class HBR:
         X = np.repeat(X, samples)
         if len(X.shape)==1:
             X = np.expand_dims(X, axis=1)
-        batch_effects = np.repeat(batch_effects, samples)
+        batch_effects = np.repeat(batch_effects, samples, axis=0)
         if len(batch_effects.shape)==1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         

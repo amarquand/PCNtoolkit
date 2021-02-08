@@ -344,8 +344,15 @@ def estimate(covfile, respfile, **kwargs):
     else:
         run_cv = True
         # we are running under cross-validation
-        splits = KFold(n_splits=cvfolds)
+        splits = KFold(n_splits=cvfolds, shuffle=True)
         testids = range(0, X.shape[0])
+        if alg=='hbr':
+           trbefile = kwargs.get('trbefile', None) 
+           if trbefile is not None:
+                be = fileio.load(trbefile)
+           else:
+                print('Could not find batch-effects file! Initilizing all as zeros!')
+                be = np.zeros([X.shape[0],1])
 
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
@@ -391,14 +398,20 @@ def estimate(covfile, respfile, **kwargs):
         else:
             Yz = Y
             Xz = X
+        
+        if (run_cv==True and alg=='hbr'):
+            fileio.save(be[tr,:], 'be_kfold_tr_tempfile.pkl')
+            fileio.save(be[te,:], 'be_kfold_ts_tempfile.pkl')
+            kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
+            kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
             
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
-            try: 
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 
+            try:
+                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
                 yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
                 
                 if savemodel:
@@ -559,7 +572,7 @@ def fit(covfile, respfile, **kwargs):
     return nm
 
     
-def predict(covfile, respfile=None, maskfile=None, **kwargs):
+def predict(covfile, respfile, maskfile=None, **kwargs):
     '''
     Make predictions on the basis of a pre-estimated normative model 
     If only the covariates are specified then only predicted mean and variance 
@@ -578,7 +591,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     :param model_path: Directory containing the normative model and metadata.
      When using parallel prediction, do not pass the model path. It will be automatically
      decided.
-    :param output_path: Directory to store the results
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
@@ -594,7 +606,6 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
     model_path = kwargs.pop('model_path', 'Models')
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
-    output_path = kwargs.pop('output_path', '')
     outputsuffix = kwargs.pop('outputsuffix', '_predict')
     inputsuffix = kwargs.pop('inputsuffix', '_estimate')
     alg = kwargs.pop('alg')
@@ -614,15 +625,16 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
             sY = meta_data['std_resp']
             mX = meta_data['mean_cov']
             sX = meta_data['std_cov']
+            meta_data = True
         else:
+            print("No meta-data file is found!")
             standardize = False
+            meta_data = False
 
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
-    
-    if (output_path != '') and (not os.path.isdir(output_path)):
-        os.mkdir(output_path)
+
     
     # load data
     print("Loading data ...")
@@ -682,12 +694,15 @@ def predict(covfile, respfile=None, maskfile=None, **kwargs):
         Z = (Y - Yhat) / np.sqrt(S2)
         
         print("Evaluating the model ...")
-        results = evaluate(Y, Yhat, S2=S2, 
+        if meta_data:
+            results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
+        else:    
+            results = evaluate(Y, Yhat, S2=S2, 
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
         
         print("Evaluations Writing outputs ...")
         save_results(respfile, Yhat, S2, maskvol, Z=Z, outputsuffix=outputsuffix, 
-                     results=results, save_path=output_path)
+                     results=results)
         
         return (Yhat, S2, Z)
 
@@ -848,7 +863,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     
     outputsuffix = kwargs.pop('outputsuffix', '_extend')
     inputsuffix = kwargs.pop('inputsuffix', '_estimate')
-    informative_prior = kwargs.pop('job_id', 'False') == 'True'
+    informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
