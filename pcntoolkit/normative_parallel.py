@@ -415,6 +415,8 @@ def collect_nm(processing_dir,
     
     if func != 'fit':
         file_example = []
+        # TODO: Collect_nm only depends on yhat, thus does not work when no prediction
+        # made (when test cov is not specified). 
         for batch in batches:
             if file_example == []:
                 file_example = glob.glob(batch + 'yhat' + outputsuffix + file_extentions)
@@ -491,6 +493,17 @@ def collect_nm(processing_dir,
                     batch1 = glob.glob(batch + '/' + job_name + '*.sh')
                     print('More than 10% nans in '+ batch1[0])
                     batch_fail.append(batch1)
+    
+    else:
+        batch_dirs = glob.glob(processing_dir + 'batch_*/')
+        batch_dirs = fileio.sort_nicely(batch_dirs)
+        for batch in batch_dirs:
+            filepath = glob.glob(batch + 'Models/' + 'NM_' + '*' + outputsuffix + '*')
+            if len(filepath) < batch_size:
+                count = count+1
+                batch1 = glob.glob(batch + '/' + job_name + '*.sh')
+                print(batch1)
+                batch_fail.append(batch1)
     
     # combines all output files across batches
     if collect is True:
