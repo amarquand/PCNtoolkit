@@ -26,7 +26,8 @@ try:  # run as a package if installed
     from pcntoolkit import fileio
     from pcntoolkit import configs
     from pcntoolkit.normative_model.norm_utils import norm_init
-    from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
+    from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var
+    from pcntoolkit.utils import compute_MSLL, scaler
 except ImportError:
     pass
 
@@ -39,6 +40,7 @@ except ImportError:
     import fileio
     import configs
     from utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
+    from utils import scaler
     from normative_model.norm_utils import norm_init
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
@@ -79,8 +81,8 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
-    parser.add_argument('-s', action='store_false', 
-                        help="Flag to skip standardization.", dest="standardize")
+    #parser.add_argument('-s', action='store_false', 
+    #                 help="Flag to skip standardization.", dest="standardize")
     parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
     
     args = parser.parse_args()
@@ -125,7 +127,7 @@ def get_args(*args):
     
     return respfile, maskfile, covfile, cvfolds, \
             testcov, testresp, args.func, args.alg, \
-            args.configparam, args.standardize, kw_args
+            args.configparam, kw_args
             
 
 def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
@@ -238,7 +240,8 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
 def estimate(covfile, respfile, **kwargs):
     """ Estimate a normative model
 
-    This will estimate a model in one of two settings according to theparticular parameters specified (see below)
+    This will estimate a model in one of two settings according to 
+    theparticular parameters specified (see below)
         
     * under k-fold cross-validation.
       requires respfile, covfile and cvfolds>=2
@@ -270,6 +273,10 @@ def estimate(covfile, respfile, **kwargs):
     :param configparam: Parameters controlling the estimation algorithm
     :param saveoutput: Save the output to disk? Otherwise returned as arrays
     :param outputsuffix: Text string to add to the output filenames
+    :param inscale: Scaling approach for input covariates, could be 'None', 
+                    'standardize' (Default), 'minmax', or 'robminmax'.
+    :param outscale: Scaling approach for output responses, could be 'None', 
+                    'standardize' (Default), 'minmax', or 'robminmax'.
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -293,12 +300,11 @@ def estimate(covfile, respfile, **kwargs):
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
     outputsuffix = kwargs.pop('outputsuffix','_estimate')
-    standardize = kwargs.pop('standardize','True')
+    inscaler = kwargs.pop('inscaler','standardize')
+    outscaler = kwargs.pop('outscaler','standardize')
     warp = kwargs.get('warp', None)
 
     # convert from strings if necessary
-    if type(standardize) is str:
-        standardize = standardize=='True'
     saveoutput = kwargs.pop('saveoutput','True')
     if type(saveoutput) is str:
         saveoutput = saveoutput=='True'
@@ -319,7 +325,7 @@ def estimate(covfile, respfile, **kwargs):
         X = X[:, np.newaxis]
     Nmod = Y.shape[1]
     
-    if (testcov is not None) and (cvfolds is None): # we have a separate test dataset
+    if (testcov is not None) and (cvfolds is None): # a separate test dataset
         
         run_cv = False
         cvfolds = 1
@@ -351,7 +357,7 @@ def estimate(covfile, respfile, **kwargs):
            if trbefile is not None:
                 be = fileio.load(trbefile)
            else:
-                print('Could not find batch-effects file! Initilizing all as zeros!')
+                print('No batch-effects file! Initilizing all as zeros!')
                 be = np.zeros([X.shape[0],1])
 
     # find and remove bad variables from the response variables
@@ -365,10 +371,10 @@ def estimate(covfile, respfile, **kwargs):
     Z = np.zeros_like(Y)
     nlZ = np.zeros((Nmod, cvfolds))
     
-    mean_resp = []
-    std_resp = []
-    mean_cov = []
-    std_cov = []
+    scaler_resp = []
+    scaler_cov = []
+    mean_resp = [] # this is just for computing MSLL
+    std_resp = []   # this is just for computing MSLL
     
     if warp is not None:
         Ywarp = np.zeros_like(Yhat)
@@ -379,69 +385,80 @@ def estimate(covfile, respfile, **kwargs):
 
         fold = idx[0]
         tr = idx[1][0]
-        te = idx[1][1]
+        ts = idx[1][1]
 
         # standardize responses and covariates, ignoring invalid entries
-        iy, jy = np.ix_(tr, nz)
-        mY = np.mean(Y[iy, jy], axis=0)
-        sY = np.std(Y[iy, jy], axis=0)
+        iy_tr, jy_tr = np.ix_(tr, nz)
+        iy_ts, jy_ts = np.ix_(ts, nz)
+        mY = np.mean(Y[iy_tr, jy_tr], axis=0)
+        sY = np.std(Y[iy_tr, jy_tr], axis=0)
         mean_resp.append(mY)
         std_resp.append(sY)
-        if standardize:
-            Yz = np.zeros_like(Y)
-            Yz[:, nz] = (Y[:, nz] - mY) / sY
-            mX = np.mean(X[tr, :], axis=0)
-            sX = np.std(X[tr, :],  axis=0)
-            Xz = (X - mX) / sX
-            mean_cov.append(mX)
-            std_cov.append(sX)
+        
+        if inscaler in ['standardize', 'minmax', 'robminmax']:
+            X_scaler = scaler(inscaler)
+            Xz_tr = X_scaler.fit_transform(X[tr, :])
+            Xz_ts = X_scaler.transform(X[ts, :])
+            scaler_cov.append(X_scaler)
         else:
-            Yz = Y
-            Xz = X
+            Xz_tr = X[tr, :]
+            Xz_ts = X[ts, :]
+            
+        if outscaler in ['standardize', 'minmax', 'robminmax']:
+            Y_scaler = scaler(outscaler)
+            Yz_tr = Y_scaler.fit_transform(Y[iy_tr, jy_tr])
+            scaler_resp.append(Y_scaler)
+        else:
+            Yz_tr = Y[iy_tr, jy_tr]
         
         if (run_cv==True and alg=='hbr'):
             fileio.save(be[tr,:], 'be_kfold_tr_tempfile.pkl')
-            fileio.save(be[te,:], 'be_kfold_ts_tempfile.pkl')
+            fileio.save(be[ts,:], 'be_kfold_ts_tempfile.pkl')
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
             
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
-            nm = norm_init(Xz[tr, :], Yz[tr, nz[i]], alg=alg, **kwargs)
+            nm = norm_init(Xz_tr, Yz_tr[:, i], alg=alg, **kwargs)
                 
             try:
-                nm = nm.estimate(Xz[tr, :], Yz[tr, nz[i]], **kwargs)     
-                yhat, s2 = nm.predict(Xz[te, :], Xz[tr, :], Yz[tr, nz[i]], **kwargs)
+                nm = nm.estimate(Xz_tr, Yz_tr[:, i], **kwargs)     
+                yhat, s2 = nm.predict(Xz_ts, Xz_tr, Yz_tr[:, i], **kwargs)
                 
                 if savemodel:
-                    nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + outputsuffix + '.pkl' )
+                    nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + 
+                            outputsuffix + '.pkl' )
                 
-                if standardize:
-                    Yhat[te, nz[i]] = yhat * sY[i] + mY[i]
-                    S2[te, nz[i]] = s2 * sY[i]**2
+                if outscaler == 'standardize': 
+                    Yhat[ts, nz[i]] = Y_scaler.inverse_transform(yhat, index=i)
+                    S2[ts, nz[i]] = s2 * sY[i]**2
+                elif outscaler in ['minmax', 'robminmax']:
+                    Yhat[ts, nz[i]] = Y_scaler.inverse_transform(yhat, index=i)
+                    S2[ts, nz[i]] = s2 * (Y_scaler.max[i] - Y_scaler.min[i])**2
                 else:
-                    Yhat[te, nz[i]] = yhat
-                    S2[te, nz[i]] = s2
+                    Yhat[ts, nz[i]] = yhat
+                    S2[ts, nz[i]] = s2
                     
                 nlZ[nz[i], fold] = nm.neg_log_lik
                 
                 if (run_cv or testresp is not None):
                     # warp the labels?
+                    # TODO: Warping for scaled data
                     if warp is not None:
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
-                        Ywarp[te, nz[i]] = nm.blr.warp.f(Y[te, nz[i]], warp_param)
-                        Ytest = Ywarp[te, nz[i]]
+                        Ywarp[ts, nz[i]] = nm.blr.warp.f(Y[ts, nz[i]], warp_param)
+                        Ytest = Ywarp[ts, nz[i]]
                         
                         # Save warped mean of the training data (for MSLL)
                         yw = nm.blr.warp.f(Y[tr, nz[i]], warp_param)
                         mean_resp_warp[fold][i] = np.mean(yw)
                         std_resp_warp[fold][i] = np.std(yw)
                     else:
-                        Ytest = Y[te, nz[i]] 
+                        Ytest = Y[ts, nz[i]] 
                     
-                    Z[te, nz[i]] = (Ytest - Yhat[te, nz[i]]) / \
-                                    np.sqrt(S2[te, nz[i]])       
+                    Z[ts, nz[i]] = (Ytest - Yhat[ts, nz[i]]) / \
+                                    np.sqrt(S2[ts, nz[i]])       
                     
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -452,14 +469,14 @@ def estimate(covfile, respfile, **kwargs):
                 print(e)
                 print(exc_type, fname, exc_tb.tb_lineno)
 
-                Yhat[te, nz[i]] = float('nan')
-                S2[te, nz[i]] = float('nan')
+                Yhat[ts, nz[i]] = float('nan')
+                S2[ts, nz[i]] = float('nan')
                 nlZ[nz[i], fold] = float('nan')
                 if testcov is None:
-                    Z[te, nz[i]] = float('nan')
+                    Z[ts, nz[i]] = float('nan')
                 else:
                     if testresp is not None:
-                        Z[te, nz[i]] = float('nan')
+                        Z[ts, nz[i]] = float('nan')
 
 
     if savemodel:
@@ -467,8 +484,9 @@ def estimate(covfile, respfile, **kwargs):
         with open('Models/meta_data.md', 'wb') as file:
             pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
-                         'mean_cov':mean_cov, 'std_cov':std_cov, 
-                         'regressor':alg, 'standardize':standardize}, file, protocol=PICKLE_PROTOCOL)    
+                         'scaler_cov':scaler_cov, 'scaler_resp':scaler_resp, 
+                         'regressor':alg, 'inscaler':inscaler, 
+                         'outscaler':outscaler}, file, protocol=PICKLE_PROTOCOL)    
 
     # compute performance metrics
     if (run_cv or testresp is not None):
@@ -487,7 +505,8 @@ def estimate(covfile, respfile, **kwargs):
     if saveoutput:
         if (run_cv or testresp is not None):
             save_results(respfile, Yhat[testids, :], S2[testids, :], maskvol, 
-                         Z=Z[testids, :], results=results, outputsuffix=outputsuffix)
+                         Z=Z[testids, :], results=results, 
+                         outputsuffix=outputsuffix)
             
         else:
             save_results(respfile, Yhat[testids, :], S2[testids, :], maskvol,
@@ -495,7 +514,8 @@ def estimate(covfile, respfile, **kwargs):
                 
     else:
         if (run_cv or testresp is not None):
-            output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], results)
+            output = (Yhat[testids, :], S2[testids, :], nm, Z[testids, :], 
+                      results)
         else:
             output = (Yhat[testids, :], S2[testids, :], nm)
         
@@ -508,8 +528,9 @@ def fit(covfile, respfile, **kwargs):
     maskfile = kwargs.pop('maskfile',None)
     alg = kwargs.pop('alg','gpr')
     savemodel = kwargs.pop('savemodel','True')=='True'
-    standardize = kwargs.pop('standardize',True)
     outputsuffix = kwargs.pop('outputsuffix','_fit')
+    inscaler = kwargs.pop('inscaler','standardize')
+    outscaler = kwargs.pop('outscaler','standardize')
     
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
@@ -526,31 +547,33 @@ def fit(covfile, respfile, **kwargs):
     # find and remove bad variables from the response variables
     # note: the covariates are assumed to have already been checked
     nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
-                                 np.var(Y, axis=0) != 0))[0]
-
-    mean_resp = []
-    std_resp = []
-    mean_cov = []
-    std_cov = []
-
+                                 np.var(Y, axis=0) != 0))[0]        
+    
+    scaler_resp = []
+    scaler_cov = []
+    mean_resp = [] # this is just for computing MSLL
+    std_resp = []   # this is just for computing MSLL
+    
     # standardize responses and covariates, ignoring invalid entries
     mY = np.mean(Y[:, nz], axis=0)
     sY = np.std(Y[:, nz], axis=0)
     mean_resp.append(mY)
     std_resp.append(sY)
-    if standardize:
+    
+    if inscaler in ['standardize', 'minmax', 'robminmax']:
+        X_scaler = scaler(inscaler)
+        Xz = X_scaler.fit_transform(X)
+        scaler_cov.append(X_scaler)
+    else:
+        Xz = X
+        
+    if outscaler in ['standardize', 'minmax', 'robminmax']:
         Yz = np.zeros_like(Y)
-        Yz[:, nz] = (Y[:, nz] - mY) / sY
-        mX = np.mean(X, axis=0)
-        sX = np.std(X,  axis=0)
-        Xz = (X - mX) / sX
-        mean_resp.append(mY)
-        std_resp.append(sY)
-        mean_cov.append(mX)
-        std_cov.append(sX)
+        Y_scaler = scaler(outscaler)
+        Yz[:, nz] = Y_scaler.fit_transform(Y[:, nz])
+        scaler_resp.append(Y_scaler)
     else:
         Yz = Y
-        Xz = X
 
     # estimate the models for all subjects
     for i in range(0, len(nz)):  
@@ -559,15 +582,17 @@ def fit(covfile, respfile, **kwargs):
         nm = nm.estimate(Xz, Yz[:, nz[i]], **kwargs)     
             
         if savemodel:
-            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + outputsuffix + '.pkl' )
+            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + outputsuffix + 
+                    '.pkl' )
 
     if savemodel:
         print('Saving model meta-data...')
         with open('Models/meta_data.md', 'wb') as file:
             pickle.dump({'valid_voxels':nz,
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
-                         'mean_cov':mean_cov, 'std_cov':std_cov, 
-                         'regressor':alg, 'standardize':standardize}, file, protocol=PICKLE_PROTOCOL)
+                         'scaler_cov':scaler_cov, 'scaler_resp':scaler_resp, 
+                         'regressor':alg, 'inscaler':inscaler,
+                         'outscaler':outscaler}, file, protocol=PICKLE_PROTOCOL)
         
     return nm
 
@@ -589,8 +614,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     :param respfile: test response variables for the normative model
     :param maskfile: mask used to apply to the data (nifti only)
     :param model_path: Directory containing the normative model and metadata.
-     When using parallel prediction, do not pass the model path. It will be automatically
-     decided.
+     When using parallel prediction, do not pass the model path. It will be 
+     automatically decided.
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
@@ -620,15 +645,17 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if os.path.exists(os.path.join(model_path, 'meta_data.md')):
             with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
                 meta_data = pickle.load(file)
-            standardize = meta_data['standardize']
+            inscaler = meta_data['inscaler']
+            outscaler = meta_data['outscaler']
             mY = meta_data['mean_resp']
             sY = meta_data['std_resp']
-            mX = meta_data['mean_cov']
-            sX = meta_data['std_cov']
+            scaler_cov = meta_data['scaler_cov']
+            scaler_resp = meta_data['scaler_resp']
             meta_data = True
         else:
             print("No meta-data file is found!")
-            standardize = False
+            inscaler = 'None'
+            outscaler = 'None'
             meta_data = False
 
     if batch_size is not None:
@@ -643,18 +670,18 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         X = X[:, np.newaxis]
     
     sample_num = X.shape[0]
-    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*' + inputsuffix + '.pkl')))
+    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*' + inputsuffix + 
+                                             '.pkl')))
 
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
     Z = np.zeros([sample_num, feature_num])
     
-        
-    if standardize:
-        Xz = (X - mX[0]) / sX[0]
+    if inscaler in ['standardize', 'minmax', 'robminmax']:
+        Xz = scaler_cov[0].transform(X)
     else:
         Xz = X
-        
+    
     # estimate the models for all subjects
     for i in range(feature_num):
         print("Prediction by model ", i+1, "of", feature_num)      
@@ -668,9 +695,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             batch_effects_test = fileio.load(tsbefile)
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
-        if standardize:
-            Yhat[:, i] = yhat.squeeze() * sY[0][i] + mY[0][i]
+        if outscaler == 'standardize': 
+            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
             S2[:, i] = s2.squeeze() * sY[0][i]**2
+        elif outscaler in ['minmax', 'robminmax']:
+            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
+            S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
@@ -701,8 +731,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
         
         print("Evaluations Writing outputs ...")
-        save_results(respfile, Yhat, S2, maskvol, Z=Z, outputsuffix=outputsuffix, 
-                     results=results)
+        save_results(respfile, Yhat, S2, maskvol, Z=Z, 
+                     outputsuffix=outputsuffix, results=results)
         
         return (Yhat, S2, Z)
 
@@ -762,9 +792,27 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
     
+    if not os.path.isdir(model_path):
+        print('Models directory does not exist!')
+        return
+    else:
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            inscaler = meta_data['inscaler']
+            outscaler = meta_data['outscaler']
+            scaler_cov = meta_data['scaler_cov']
+            scaler_resp = meta_data['scaler_resp']
+            meta_data = True
+        else:
+            print("No meta-data file is found!")
+            inscaler = 'None'
+            outscaler = 'None'
+            meta_data = False
+    
     if not os.path.isdir(output_path):
-        os.mkdir(output_path)
-            
+        os.mkdir(output_path)    
+       
     # load data
     print("Loading data ...")
     X = fileio.load(covfile)
@@ -773,9 +821,16 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         Y = Y[:, np.newaxis]
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
+        
+    if inscaler in ['standardize', 'minmax', 'robminmax']:
+        X = scaler_cov[0].transform(X)
+    
     feature_num = Y.shape[1]
     mY = np.mean(Y, axis=0)
-    sY = np.std(Y, axis=0)    
+    sY = np.std(Y, axis=0)  
+    
+    if outscaler in ['standardize', 'minmax', 'robminmax']:
+        Y = scaler_resp[0].transform(Y)
     
     if testcov is not None:
         # we have a separate test dataset
@@ -783,6 +838,9 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if len(Xte.shape) == 1:
             Xte = Xte[:, np.newaxis]
         ts_sample_num = Xte.shape[0]
+        if inscaler in ['standardize', 'minmax', 'robminmax']:
+            Xte = scaler_cov[0].transform(Xte)
+        
         if testresp is not None:
             Yte, testmask = load_response_vars(testresp, maskfile)
             if len(Yte.shape) == 1:
@@ -806,10 +864,12 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if batch_size is not None: # when using normative_parallel
             print("Transferring model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + inputsuffix + '.pkl'))
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
         else:
             print("Transferring model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + inputsuffix + '.pkl'))
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                      inputsuffix + '.pkl'))
         
         nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
         if batch_size is not None: 
@@ -823,8 +883,15 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
-            Yhat[:, i] = yhat.squeeze()
-            S2[:, i] = s2.squeeze()
+            if outscaler == 'standardize': 
+                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
+                S2[:, i] = s2.squeeze() * sY[0][i]**2
+            elif outscaler in ['minmax', 'robminmax']:
+                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
+                S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
+            else:
+                Yhat[:, i] = yhat.squeeze()
+                S2[:, i] = s2.squeeze()
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
@@ -870,13 +937,25 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
+     
+    if not os.path.isdir(model_path):
+        print('Models directory does not exist!')
+        return
+    else:
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            if (meta_data['inscaler'] != 'None' or 
+                meta_data['outscaler'] != 'None'):
+                print('Models extention on scaled data is not possible!')
+                return
     
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
             
     # load data
     print("Loading data ...")
-    X = fileio.load(covfile)
+    X = fileio.load(covfile)    
     Y, maskvol = load_response_vars(respfile, maskfile)
     batch_effects_train = fileio.load(trbefile)
     X_dummy = fileio.load(dummycovfile)
@@ -897,13 +976,16 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         if batch_size is not None: # when using nirmative_parallel
             print("Extending model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + inputsuffix + '.pkl'))
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
         else:
             print("Extending model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + inputsuffix +'.pkl'))
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
         
-        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, batch_effects_dummy, 
-               samples=generation_factor, informative_prior=informative_prior)
+        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, 
+                       batch_effects_dummy, samples=generation_factor, 
+                       informative_prior=informative_prior)
         
         if batch_size is not None: 
             nm.save(os.path.join(output_path, 'NM_0_' + 
@@ -921,7 +1003,7 @@ def main(*args):
 
     np.seterr(invalid='ignore')
 
-    rfile, mfile, cfile, cv, tcfile, trfile, func, alg, cfg, std, kw = get_args(args)
+    rfile, mfile, cfile, cv, tcfile, trfile, func, alg, cfg, kw = get_args(args)
     
     # collect required arguments
     pos_args = ['cfile', 'rfile']
@@ -932,8 +1014,7 @@ def main(*args):
                'testcov=tcfile',
                'testresp=trfile',
                'alg=alg',
-               'configparam=cfg',
-               'standardize=std']
+               'configparam=cfg']
     
     # add additional keyword arguments
     for k in kw:

@@ -173,8 +173,8 @@ def execute_nm(processing_dir,
                             log_path=log_path)
                 elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
-                    sbatchwrap_nm(processing_dir=batch_processing_dir, func=func,
-                                  **kwargs)
+                    sbatchwrap_nm(processing_dir=batch_processing_dir, 
+                                  func=func, **kwargs)
                     sbatch_nm(processing_dir=batch_processing_dir)
                     # ]
         if testrespfile_path is None:
@@ -375,7 +375,8 @@ def split_nm(processing_dir,
                 resp_batch.to_pickle(processing_dir + batch + '/' +
                                      resp + '.pkl', protocol=PICKLE_PROTOCOL)
                 testresp_batch.to_pickle(processing_dir + batch + '/' +
-                                         testresp + '.pkl', protocol=PICKLE_PROTOCOL)
+                                         testresp + '.pkl', 
+                                         protocol=PICKLE_PROTOCOL)
 
 
 def collect_nm(processing_dir,
@@ -415,11 +416,12 @@ def collect_nm(processing_dir,
     
     if func != 'fit':
         file_example = []
-        # TODO: Collect_nm only depends on yhat, thus does not work when no prediction
-        # made (when test cov is not specified). 
+        # TODO: Collect_nm only depends on yhat, thus does not work when no 
+        # prediction is made (when test cov is not specified). 
         for batch in batches:
             if file_example == []:
-                file_example = glob.glob(batch + 'yhat' + outputsuffix + file_extentions)
+                file_example = glob.glob(batch + 'yhat' + outputsuffix 
+                                         + file_extentions)
             else:
                 break
         if binary is False:
@@ -443,50 +445,59 @@ def collect_nm(processing_dir,
                     pRho = np.ones(batch_size)
                     pRho = pRho.transpose()
                     pRho = pd.Series(pRho)
-                    fileio.save(pRho, batch + 'pRho' + outputsuffix + file_extentions)
+                    fileio.save(pRho, batch + 'pRho' + outputsuffix + 
+                                file_extentions)
                     
                     Rho = np.zeros(batch_size)
                     Rho = Rho.transpose()
                     Rho = pd.Series(Rho)
-                    fileio.save(Rho, batch + 'Rho' + outputsuffix + file_extentions)
+                    fileio.save(Rho, batch + 'Rho' + outputsuffix + 
+                                file_extentions)
                     
                     rmse = np.zeros(batch_size)
                     rmse = rmse.transpose()
                     rmse = pd.Series(rmse)
-                    fileio.save(rmse, batch + 'RMSE' + outputsuffix + file_extentions)
+                    fileio.save(rmse, batch + 'RMSE' + outputsuffix + 
+                                file_extentions)
                     
                     smse = np.zeros(batch_size)
                     smse = smse.transpose()
                     smse = pd.Series(smse)
-                    fileio.save(smse, batch + 'SMSE' + outputsuffix + file_extentions)
+                    fileio.save(smse, batch + 'SMSE' + outputsuffix + 
+                                file_extentions)
                     
                     expv = np.zeros(batch_size)
                     expv = expv.transpose()
                     expv = pd.Series(expv)
-                    fileio.save(expv, batch + 'EXPV' + outputsuffix + file_extentions)
+                    fileio.save(expv, batch + 'EXPV' + outputsuffix + 
+                                file_extentions)
                     
                     msll = np.zeros(batch_size)
                     msll = msll.transpose()
                     msll = pd.Series(msll)
-                    fileio.save(msll, batch + 'MSLL' + outputsuffix + file_extentions)
+                    fileio.save(msll, batch + 'MSLL' + outputsuffix + 
+                                file_extentions)
     
                     yhat = np.zeros([numsubjects, batch_size])
                     yhat = pd.DataFrame(yhat)
-                    fileio.save(yhat, batch + 'yhat' + outputsuffix + file_extentions)
+                    fileio.save(yhat, batch + 'yhat' + outputsuffix + 
+                                file_extentions)
     
                     ys2 = np.zeros([numsubjects, batch_size])
                     ys2 = pd.DataFrame(ys2)
-                    fileio.save(ys2, batch + 'ys2' + outputsuffix + file_extentions)
+                    fileio.save(ys2, batch + 'ys2' + outputsuffix + 
+                                file_extentions)
     
                     Z = np.zeros([numsubjects, batch_size])
                     Z = pd.DataFrame(Z)
-                    fileio.save(Z, batch + 'Z' + outputsuffix + file_extentions)
+                    fileio.save(Z, batch + 'Z' + outputsuffix + 
+                                file_extentions)
     
                     if not os.path.isdir(batch + 'Models'):
                         os.mkdir('Models')
                         
                         
-            else: # if more than 10% of yhat is nan then consider the batch as a failed batch
+            else: # if more than 10% of yhat is nan then it is a failed batch
                 yhat = fileio.load(filepath[0])
                 if np.count_nonzero(~np.isnan(yhat))/(np.prod(yhat.shape))<0.9:
                     count = count+1
@@ -498,7 +509,8 @@ def collect_nm(processing_dir,
         batch_dirs = glob.glob(processing_dir + 'batch_*/')
         batch_dirs = fileio.sort_nicely(batch_dirs)
         for batch in batch_dirs:
-            filepath = glob.glob(batch + 'Models/' + 'NM_' + '*' + outputsuffix + '*')
+            filepath = glob.glob(batch + 'Models/' + 'NM_' + '*' + outputsuffix 
+                                 + '*')
             if len(filepath) < batch_size:
                 count = count+1
                 batch1 = glob.glob(batch + '/' + job_name + '*.sh')
@@ -615,40 +627,48 @@ def collect_nm(processing_dir,
                         file_extentions)
             del msll_dfs
         
-        if func != 'predict' and func != 'transfer':
+        if func != 'predict' and func != 'extend':
             if not os.path.isdir(processing_dir + 'Models') and \
                os.path.exists(os.path.join(batches[0], 'Models')):
                 os.mkdir(processing_dir + 'Models')
                 
-            meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 'meta_data.md')
+            meta_filenames = glob.glob(processing_dir + 'batch_*/Models/' + 
+                                       'meta_data.md')
             mY = []
             sY = []
-            mX = []
-            sX = []
+            X_scalers = []
+            Y_scalers = []
             if meta_filenames:
                 meta_filenames = fileio.sort_nicely(meta_filenames)
                 with open(meta_filenames[0], 'rb') as file:
                     meta_data = pickle.load(file)
-                if meta_data['standardize']:
-                    for meta_filename in meta_filenames:
-                        mY.append(meta_data['mean_resp'])
-                        sY.append(meta_data['std_resp'])
-                        mX.append(meta_data['mean_cov'])
-                        sX.append(meta_data['std_cov'])
-                    meta_data['mean_resp'] = np.stack(mY) 
-                    meta_data['std_resp'] = np.stack(sY) 
-                    meta_data['mean_cov'] = np.stack(mX) 
-                    meta_data['std_cov'] = np.stack(sX) 
-                    
-                with open(os.path.join(processing_dir, 'Models', 'meta_data.md'), 
-                          'wb') as file:
+                
+                for meta_filename in meta_filenames:
+                    with open(meta_filename, 'rb') as file:
+                        meta_data = pickle.load(file)
+                    mY.append(meta_data['mean_resp'])
+                    sY.append(meta_data['std_resp'])
+                    if meta_data['inscaler'] in ['standardize', 'minmax', 
+                                'robminmax']:
+                        X_scalers.append(meta_data['scaler_cov'])
+                    if meta_data['outscaler'] in ['standardize', 'minmax', 
+                                'robminmax']:
+                        Y_scalers.append(meta_data['scaler_resp'])
+                meta_data['mean_resp'] = np.stack(mY) 
+                meta_data['std_resp'] = np.stack(sY) 
+                meta_data['scaler_cov'] = np.stack(X_scalers) 
+                meta_data['scaler_resp'] = np.stack(Y_scalers) 
+                
+                with open(os.path.join(processing_dir, 'Models', 
+                                       'meta_data.md'), 'wb') as file:
                     pickle.dump(meta_data, file, protocol=PICKLE_PROTOCOL)
             
             batch_dirs = glob.glob(processing_dir + 'batch_*/')
             if batch_dirs:
                 batch_dirs = fileio.sort_nicely(batch_dirs)
                 for b, batch_dir in enumerate(batch_dirs):
-                    src_files = glob.glob(batch_dir + 'Models/NM*' + outputsuffix + '.pkl')
+                    src_files = glob.glob(batch_dir + 'Models/NM*' + 
+                                          outputsuffix + '.pkl')
                     if src_files:
                         src_files = fileio.sort_nicely(src_files)
                         for f, full_file_name in enumerate(src_files):
@@ -657,7 +677,8 @@ def collect_nm(processing_dir,
                                 n = file_name.split('_')
                                 n[-2] = str(b * batch_size + f)
                                 n = '_'.join(n)
-                                shutil.copy(full_file_name, processing_dir + 'Models/' + n)
+                                shutil.copy(full_file_name, processing_dir + 
+                                            'Models/' + n)
                     elif func=='fit':
                         count = count+1
                         batch1 = glob.glob(batch_dir + '/' + job_name + '*.sh')
@@ -832,8 +853,8 @@ def qsub_nm(job_path,
                      'procs=1' + ',mem=' + memory + ',walltime=' + duration]
     else:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path +
-                     ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' + duration +
-                     ' -o ' + log_path + ' -e ' + log_path]
+                     ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' + 
+                     duration + ' -o ' + log_path + ' -e ' + log_path]
 
     # submits job to cluster
     call(qsub_call, shell=True)
@@ -1035,8 +1056,8 @@ def sbatch_nm(job_path,
                  binary=False,
                  **kwargs):
         """
-        This function reruns all failed batched in processing_dir after collect_nm
-        has identified he failed batches
+        This function reruns all failed batched in processing_dir after 
+        collect_nm has identified he failed batches
     
         * Input:
             * processing_dir        -> Full path to the processing directory
