@@ -654,10 +654,10 @@ def collect_nm(processing_dir,
                     if meta_data['outscaler'] in ['standardize', 'minmax', 
                                 'robminmax']:
                         Y_scalers.append(meta_data['scaler_resp'])
-                meta_data['mean_resp'] = np.stack(mY) 
-                meta_data['std_resp'] = np.stack(sY) 
-                meta_data['scaler_cov'] = np.stack(X_scalers) 
-                meta_data['scaler_resp'] = np.stack(Y_scalers) 
+                meta_data['mean_resp'] = np.squeeze(np.stack(mY)) 
+                meta_data['std_resp'] = np.squeeze(np.stack(sY))
+                meta_data['scaler_cov'] = X_scalers 
+                meta_data['scaler_resp'] = Y_scalers
                 
                 with open(os.path.join(processing_dir, 'Models', 
                                        'meta_data.md'), 'wb') as file:
