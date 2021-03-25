@@ -17,7 +17,7 @@ setup(name='pcntoolkit',
           'matplotlib',
           'pandas>=0.25.3',
           'torch>=1.1.0', 
-          'pymc3>=3.7', 
+          'pymc3==3.8', 
           'Theano==1.0.5'           
       ],
       zip_safe=False)
