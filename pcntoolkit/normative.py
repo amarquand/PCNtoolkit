@@ -356,6 +356,8 @@ def estimate(covfile, respfile, **kwargs):
            trbefile = kwargs.get('trbefile', None) 
            if trbefile is not None:
                 be = fileio.load(trbefile)
+                if len(be.shape) == 1:
+                    be = be[:, np.newaxis]
            else:
                 print('No batch-effects file! Initilizing all as zeros!')
                 be = np.zeros([X.shape[0],1])
