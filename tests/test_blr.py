@@ -5,9 +5,9 @@ import scipy as sp
 from matplotlib import pyplot as plt
 import bspline
 from bspline import splinelab
-from bayesreg import BLR
-from gp import GPR
-from utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
+from model.bayesreg import BLR
+from model.gp import GPR
+from util.utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
 
 print('First do a simple evaluation of B-splines regression...')
 
@@ -45,7 +45,8 @@ Phis = np.array([B(i) for i in Xs])
 
 hyp0 = np.zeros(2)
 #hyp0 = np.zeros(4) # use ARD
-B = BLR(hyp0, Phi, y)
+#B = BLR(hyp0, Phi, y)
+B = BLR()
 hyp = B.estimate(hyp0, Phi, y, optimizer='powell')
 
 yhat,s2 = B.predict(hyp, Phi, y, Phis)
@@ -72,7 +73,7 @@ Phix = X[:, np.newaxis]
 Phixs = Xs[:, np.newaxis]
 
 hyp0 = 0.1*np.ones(2+W.get_n_params())
-Bw = BLR(hyp0, Phi, y, warp=W)
+Bw = BLR(warp=W)
 hyp = Bw.estimate(hyp0, Phi, y, optimizer='powell')
 yhat, s2 = Bw.predict(hyp, Phi, y, Phis)
 
@@ -137,7 +138,7 @@ for s in range(n_site):
     Phis = np.concatenate((Phis, site_te), axis=1)
 
 hyp0=np.zeros(4)
-Bh = BLR(hyp0, Phi, y, var_groups=sids)
+Bh = BLR(var_groups=sids)
 Bh.loglik(hyp0, Phi, y)
 Bh.dloglik(hyp0, Phi, y)
 hyp = Bh.estimate(hyp0, Phi, y)

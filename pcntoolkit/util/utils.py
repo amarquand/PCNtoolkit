@@ -23,9 +23,10 @@ except ImportError:
     pass
 
     path = os.path.abspath(os.path.dirname(__file__))
-    if path not in sys.path:
-        sys.path.append(path)
-    del path
+    rootpath = os.path.dirname(path) # parent directory 
+    if rootpath not in sys.path:
+        sys.path.append(rootpath)
+    del path, rootpath
     import configs
     
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
