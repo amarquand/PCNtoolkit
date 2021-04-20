@@ -273,10 +273,10 @@ def estimate(covfile, respfile, **kwargs):
     :param configparam: Parameters controlling the estimation algorithm
     :param saveoutput: Save the output to disk? Otherwise returned as arrays
     :param outputsuffix: Text string to add to the output filenames
-    :param inscale: Scaling approach for input covariates, could be 'None', 
-                    'standardize' (Default), 'minmax', or 'robminmax'.
-    :param outscale: Scaling approach for output responses, could be 'None', 
-                    'standardize' (Default), 'minmax', or 'robminmax'.
+    :param inscale: Scaling approach for input covariates, could be 'None' (Default), 
+                    'standardize', 'minmax', or 'robminmax'.
+    :param outscale: Scaling approach for output responses, could be 'None' (Default), 
+                    'standardize', 'minmax', or 'robminmax'.
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -300,8 +300,8 @@ def estimate(covfile, respfile, **kwargs):
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
     outputsuffix = kwargs.pop('outputsuffix','_estimate')
-    inscaler = kwargs.pop('inscaler','standardize')
-    outscaler = kwargs.pop('outscaler','standardize')
+    inscaler = kwargs.pop('inscaler','None')
+    outscaler = kwargs.pop('outscaler','None')
     warp = kwargs.get('warp', None)
 
     # convert from strings if necessary
@@ -531,8 +531,8 @@ def fit(covfile, respfile, **kwargs):
     alg = kwargs.pop('alg','gpr')
     savemodel = kwargs.pop('savemodel','True')=='True'
     outputsuffix = kwargs.pop('outputsuffix','_fit')
-    inscaler = kwargs.pop('inscaler','standardize')
-    outscaler = kwargs.pop('outscaler','standardize')
+    inscaler = kwargs.pop('inscaler','None')
+    outscaler = kwargs.pop('outscaler','None')
     
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
