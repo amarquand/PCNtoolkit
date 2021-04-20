@@ -16,7 +16,7 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    from gp import GPR, CovSum
+    from model.gp import GPR, CovSum
     from norm_base import NormBase
 
 class NormGPR(NormBase):

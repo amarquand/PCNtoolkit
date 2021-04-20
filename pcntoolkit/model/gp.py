@@ -17,11 +17,12 @@ except ImportError:
     pass
 
     path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.dirname(path) # parent directory 
     if path not in sys.path:
         sys.path.append(path)
     del path
     
-    from utils import squared_dist
+    from util.utils import squared_dist
 
 # --------------------
 # Covariance functions
