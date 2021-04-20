@@ -19,9 +19,9 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    from bayesreg import BLR
+    from model.bayesreg import BLR
     from norm_base import NormBase
-    from utils import create_poly_basis, WarpBoxCox, \
+    from util.utils import create_poly_basis, WarpBoxCox, \
                       WarpAffine, WarpCompose, WarpSinArcsinh
 
 class NormBLR(NormBase):

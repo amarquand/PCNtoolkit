@@ -26,7 +26,7 @@ conda --version
 Create a conda environment in a shared location
 
 ```
-conda create -y python==3.7.7 numpy mkl blas --prefix=/shared/conda/<env_name>
+conda create -y python==3.8.3 numpy mkl blas --prefix=/shared/conda/<env_name>
 ```
 
 Activate the conda environment 
