@@ -87,9 +87,11 @@ os.chdir(working_dir)
 
 estimate(covfile, respfile, testcov=testcov, testresp=testresp, trbefile=trbefile, 
          tsbefile=tsbefile, alg='hbr', outputsuffix='_' + model_type, 
-         standardize=False, model_type=model_type, random_intercept='True', 
-         random_slope='True', random_noise='True', hetero_noise= 'True', 
-         skewed_likelihood='False', savemodel='True', saveoutput='True')
+         inscaler='None', outscaler='None', model_type=model_type, 
+         random_intercept='True', random_slope='True', random_noise='True', 
+         hetero_noise= 'True', skewed_likelihood='False', savemodel='True', 
+         saveoutput='True')
 
 
 ###############################################################################
+
