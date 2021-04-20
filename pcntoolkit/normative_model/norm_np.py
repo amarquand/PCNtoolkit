@@ -30,7 +30,7 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    from NPR import NPR, np_loss
+    from model.NPR import NPR, np_loss
     from norm_base import NormBase
 
 class struct(object):
