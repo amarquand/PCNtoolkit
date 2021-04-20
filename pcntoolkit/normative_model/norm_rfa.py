@@ -16,7 +16,7 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    from rfa import GPRRFA
+    from model.rfa import GPRRFA
     from norm_base import NormBase
 
 class NormRFA(NormBase):
