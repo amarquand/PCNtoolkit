@@ -33,16 +33,17 @@ from subprocess import call
 
 try:
     import pcntoolkit as ptk
-    import pcntoolkit.fileio as fileio
+    import pcntoolkit.fileio.fileio as fileio
     from pcntoolkit import configs
+    ptkpath = ptk.__path__[0] 
 except ImportError:
     pass
-    path = os.path.abspath(os.path.dirname(__file__))
-    if path not in sys.path:
-        sys.path.append(path)
-        del path
-    import fileio
+    ptkpath = os.path.abspath(os.path.dirname(__file__))
+    if ptkpath not in sys.path:
+        sys.path.append(ptkpath)
+    import fileio.fileio as fileio
     import configs
+    
     
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
@@ -96,7 +97,7 @@ def execute_nm(processing_dir,
     """
     
     if normative_path is None:
-        normative_path = ptk.__path__[0] + '/normative.py'
+        normative_path = ptkpath + '/normative.py'
         
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)

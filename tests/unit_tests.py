@@ -13,7 +13,7 @@ from pcntoolkit.normative import estimate
 from pcntoolkit.normative_parallel import execute_nm, collect_nm, delete_nm
 
 ## 2. by appending to the path
-##sys.path.clear()
+#sys.path.clear()
 #sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 #from normative import estimate
 #from normative_parallel import execute_nm, collect_nm, delete_nm
@@ -22,7 +22,7 @@ from pcntoolkit.normative_parallel import execute_nm, collect_nm, delete_nm
 
 # General config parameters
 normative_path = '/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit/normative.py'
-python_path='/home/preclineu/andmar/sfw/anaconda3/envs/py36/bin/python'
+python_path='/home/preclineu/andmar/sfw/anaconda3/envs/py38/bin/python'
 data_dir = '/home/preclineu/andmar/data/nispat_unit_test_data/'
 test_dir = '/home/preclineu/andmar/py.sandbox/unittests/unit_test_results'
 alt_alg = 'blr'             # algorithm to test in addition to GPR

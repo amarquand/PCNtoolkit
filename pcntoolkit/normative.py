@@ -23,11 +23,11 @@ import glob
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
-    from pcntoolkit import fileio
     from pcntoolkit import configs
+    from pcntoolkit.fileio import fileio
     from pcntoolkit.normative_model.norm_utils import norm_init
-    from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var
-    from pcntoolkit.utils import compute_MSLL, scaler
+    from pcntoolkit.util.utils import compute_pearsonr, CustomCV, explained_var
+    from pcntoolkit.util.utils import compute_MSLL, scaler
 except ImportError:
     pass
 
@@ -36,11 +36,12 @@ except ImportError:
         sys.path.append(path)
         #sys.path.append(os.path.join(path,'normative_model'))
     del path
-
-    import fileio
+    
     import configs
-    from utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
-    from utils import scaler
+    from fileio import fileio
+
+    from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
+    from util.utils import scaler
     from normative_model.norm_utils import norm_init
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL

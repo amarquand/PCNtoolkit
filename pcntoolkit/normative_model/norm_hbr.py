@@ -14,7 +14,7 @@ import sys
 import numpy as np
 
 try:  # run as a package if installed
-    from pcntoolkit import fileio
+    from pcntoolkit.fileio import fileio
     from pcntoolkit.normative_model.normbase import NormBase
     from pcntoolkit.hbr import HBR 
 except ImportError:
@@ -24,8 +24,8 @@ except ImportError:
     if path not in sys.path:
         sys.path.append(path)
     del path
-    import fileio
-    from hbr import HBR
+    import fileio.fileio as fileio
+    from model.hbr import HBR
     from norm_base import NormBase
 
 class NormHBR(NormBase):
