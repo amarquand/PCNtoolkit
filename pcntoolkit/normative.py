@@ -24,7 +24,7 @@ import glob
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
     from pcntoolkit import configs
-    from pcntoolkit.fileio import fileio
+    from pcntoolkit.dataio import fileio
     from pcntoolkit.normative_model.norm_utils import norm_init
     from pcntoolkit.util.utils import compute_pearsonr, CustomCV, explained_var
     from pcntoolkit.util.utils import compute_MSLL, scaler
@@ -38,7 +38,7 @@ except ImportError:
     del path
     
     import configs
-    from fileio import fileio
+    from dataio import fileio
 
     from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
     from util.utils import scaler

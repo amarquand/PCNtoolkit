@@ -33,7 +33,7 @@ from sklearn.linear_model import LinearRegression, MultiTaskLasso
 from pcntoolkit.model.architecture import Encoder, Decoder
 from pcntoolkit.util.utils import compute_pearsonr, explained_var, compute_MSLL
 from pcntoolkit.util.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
-from pcntoolkit.fileio import fileio
+from pcntoolkit.dataio import fileio
 import os
 
 try:  # run as a package if installed

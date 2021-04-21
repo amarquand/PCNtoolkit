@@ -33,7 +33,7 @@ from subprocess import call
 
 try:
     import pcntoolkit as ptk
-    import pcntoolkit.fileio.fileio as fileio
+    import pcntoolkit.dataio.fileio as fileio
     from pcntoolkit import configs
     ptkpath = ptk.__path__[0] 
 except ImportError:
@@ -41,7 +41,7 @@ except ImportError:
     ptkpath = os.path.abspath(os.path.dirname(__file__))
     if ptkpath not in sys.path:
         sys.path.append(ptkpath)
-    import fileio.fileio as fileio
+    import dataio.fileio as fileio
     import configs
     
     
