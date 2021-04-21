@@ -12,7 +12,7 @@ from __future__ import division
 
 import numpy as np
 
-from pcntoolkit.fileio import fileio
+from pcntoolkit.dataio import fileio
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.model.hbr import HBR 
 
