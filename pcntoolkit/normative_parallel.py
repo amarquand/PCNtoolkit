@@ -493,6 +493,18 @@ def collect_nm(processing_dir,
                     Z = pd.DataFrame(Z)
                     fileio.save(Z, batch + 'Z' + outputsuffix + 
                                 file_extentions)
+                    
+                    nll = np.zeros(batch_size)
+                    nll = nll.transpose()
+                    nll = pd.Series(nll)
+                    fileio.save(nll, batch + 'NLL' + outputsuffix + 
+                                file_extentions)
+                    
+                    bic = np.zeros(batch_size)
+                    bic = bic.transpose()
+                    bic = pd.Series(bic)
+                    fileio.save(bic, batch + 'BIC' + outputsuffix + 
+                                file_extentions)
     
                     if not os.path.isdir(batch + 'Models'):
                         os.mkdir('Models')
@@ -627,6 +639,30 @@ def collect_nm(processing_dir,
             fileio.save(msll_dfs, processing_dir + 'MSLL' + outputsuffix +
                         file_extentions)
             del msll_dfs
+            
+        nll_filenames = glob.glob(processing_dir + 'batch_*/' + 'NLL' +
+                                  outputsuffix + '*')
+        if nll_filenames:
+            nll_filenames = fileio.sort_nicely(nll_filenames)
+            nll_dfs = []
+            for nll_filename in nll_filenames:
+                nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)))
+            nll_dfs = pd.concat(nll_dfs, ignore_index=True, axis=0)
+            fileio.save(nll_dfs, processing_dir + 'NLL' + outputsuffix +
+                        file_extentions)
+            del nll_dfs
+
+        bic_filenames = glob.glob(processing_dir + 'batch_*/' + 'BIC' +
+                                  outputsuffix + '*')
+        if bic_filenames:
+            bic_filenames = fileio.sort_nicely(bic_filenames)
+            bic_dfs = []
+            for bic_filename in bic_filenames:
+                bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)))
+            bic_dfs = pd.concat(bic_dfs, ignore_index=True, axis=0)
+            fileio.save(bic_dfs, processing_dir + 'BIC' + outputsuffix +
+                        file_extentions)
+            del bic_dfs
         
         if func != 'predict' and func != 'extend':
             if not os.path.isdir(processing_dir + 'Models') and \
