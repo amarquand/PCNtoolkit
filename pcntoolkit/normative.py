@@ -82,8 +82,8 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
-    #parser.add_argument('-s', action='store_false', 
-    #                 help="Flag to skip standardization.", dest="standardize")
+    parser.add_argument('-s', action='store_false', 
+                    help="Flag to skip standardization.", dest="standardize")
     parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
     
     args = parser.parse_args()
@@ -420,6 +420,9 @@ def estimate(covfile, respfile, **kwargs):
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
             
+        BIC = np.zeros([len(nz),1])
+        NLL = np.zeros([len(nz),1])
+        
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
@@ -428,6 +431,12 @@ def estimate(covfile, respfile, **kwargs):
             try:
                 nm = nm.estimate(Xz_tr, Yz_tr[:, i], **kwargs)     
                 yhat, s2 = nm.predict(Xz_ts, Xz_tr, Yz_tr[:, i], **kwargs)
+                
+                # Calculate BIC score
+                n = Xz_tr.shape[0]
+                k = len(getattr(nm, alg).hyp)
+                BIC[i] = k * np.log(n) + 2 * nm.neg_log_lik
+                NLL[i] = np.array([nm.neg_log_lik])
                 
                 if savemodel:
                     nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + 
@@ -502,7 +511,9 @@ def estimate(covfile, respfile, **kwargs):
             results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp_warp[0], 
                                sY=std_resp_warp[0])
-        
+          
+        results['NLL'] = np.array(NLL)
+        results['BIC'] = np.array(BIC)        
         
     # Set writing options
     if saveoutput:
