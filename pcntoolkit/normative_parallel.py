@@ -844,8 +844,8 @@ def bashwrap_nm(processing_dir,
             job_call = [job_call[0] + ' -x ' + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + ' -s']
+    # if not standardize:
+    #     job_call = [job_call[0] + ' -s']
     
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
@@ -1045,8 +1045,8 @@ def sbatchwrap_nm(processing_dir,
             job_call = [job_call[0] + ' -x ' + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + ' -s']
+    # if not standardize:
+    #     job_call = [job_call[0] + ' -s']
     
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
