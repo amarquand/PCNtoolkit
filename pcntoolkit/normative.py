@@ -131,7 +131,7 @@ def get_args(*args):
             args.configparam, kw_args
             
 
-def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
+def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, alg=None,
              metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']):
     ''' Compute error metrics
     This function will compute error metrics based on a set of predictions Yhat
@@ -202,6 +202,16 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
                                     mY.reshape(-1,1).T, 
                                     (sY**2).reshape(-1,1).T)
             results['MSLL'] = MSLL
+            
+    if 'NLL' in metrics:
+        results['NLL'] = nlZ
+    
+    if 'BIC' in metrics:
+        if hasattr(getattr(nm, alg), 'hyp'):
+            n = Xz_tr.shape[0]
+            k = len(getattr(nm, alg).hyp)
+            BIC = k * np.log(n) + 2 * nlZ
+            results['BIC'] = BIC    
     
     return results
 
@@ -235,8 +245,12 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
 
     if results is not None:        
         for metric in list(results.keys()):
-            fileio.save(results[metric], os.path.join(save_path, metric + ext), 
+            if metric == 'NLL' or metric == 'BIC' and file_ext == '.nii.gz':
+                fileio.save(results[metric], os.path.join(save_path, metric + str(outputsuffix) + '.pkl'), 
                         example=exfile, mask=maskvol)
+            else:
+                fileio.save(results[metric], os.path.join(save_path, metric + ext), 
+                            example=exfile, mask=maskvol)
 
 def estimate(covfile, respfile, **kwargs):
     """ Estimate a normative model
@@ -419,9 +433,6 @@ def estimate(covfile, respfile, **kwargs):
             fileio.save(be[ts,:], 'be_kfold_ts_tempfile.pkl')
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
-            
-        BIC = np.zeros([len(nz),1])
-        NLL = np.zeros([len(nz),1])
         
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
@@ -431,12 +442,6 @@ def estimate(covfile, respfile, **kwargs):
             try:
                 nm = nm.estimate(Xz_tr, Yz_tr[:, i], **kwargs)     
                 yhat, s2 = nm.predict(Xz_ts, Xz_tr, Yz_tr[:, i], **kwargs)
-                
-                # Calculate BIC score
-                n = Xz_tr.shape[0]
-                k = len(getattr(nm, alg).hyp)
-                BIC[i] = k * np.log(n) + 2 * nm.neg_log_lik
-                NLL[i] = np.array([nm.neg_log_lik])
                 
                 if savemodel:
                     nm.save('Models/NM_' + str(fold) + '_' + str(nz[i]) + 
@@ -506,14 +511,17 @@ def estimate(covfile, respfile, **kwargs):
         if warp is None:
             results = evaluate(Y[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp[0], 
-                               sY=std_resp[0])
+                               sY=std_resp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr, alg=alg,
+                               metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV',
+                                          'MSLL', 'NLL', 'BIC'])
         else:
             results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp_warp[0], 
-                               sY=std_resp_warp[0])
-          
-        results['NLL'] = np.array(NLL)
-        results['BIC'] = np.array(BIC)        
+                               sY=std_resp_warp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr,
+                               alg=alg, metrics = ['Rho', 'RMSE', 'SMSE',
+                                                   'EXPV', 'MSLL',
+                                                   'NLL', 'BIC'])
+            
         
     # Set writing options
     if saveoutput:
