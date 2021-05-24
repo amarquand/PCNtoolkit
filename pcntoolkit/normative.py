@@ -82,8 +82,8 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
-    parser.add_argument('-s', action='store_false', 
-                    help="Flag to skip standardization.", dest="standardize")
+    # parser.add_argument('-s', action='store_false', 
+    #                 help="Flag to skip standardization.", dest="standardize")
     parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
     
     args = parser.parse_args()
@@ -245,7 +245,7 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
 
     if results is not None:        
         for metric in list(results.keys()):
-            if metric == 'NLL' or metric == 'BIC' and file_ext == '.nii.gz':
+            if (metric == 'NLL' or metric == 'BIC') and file_ext == '.nii.gz':
                 fileio.save(results[metric], os.path.join(save_path, metric + str(outputsuffix) + '.pkl'), 
                         example=exfile, mask=maskvol)
             else:
