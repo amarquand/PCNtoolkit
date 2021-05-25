@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>normative_parallel &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
+    <title>normative_parallel &#8212; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
     <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">normative_parallel</a></li> 
       </ul>
@@ -79,16 +79,17 @@
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pcntoolkit</span> <span class="k">as</span> <span class="nn">ptk</span>
-    <span class="kn">import</span> <span class="nn">pcntoolkit.fileio</span> <span class="k">as</span> <span class="nn">fileio</span>
+    <span class="kn">import</span> <span class="nn">pcntoolkit.dataio.fileio</span> <span class="k">as</span> <span class="nn">fileio</span>
     <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">configs</span>
+    <span class="n">ptkpath</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="k">pass</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">del</span> <span class="n">path</span>
-    <span class="kn">import</span> <span class="nn">fileio</span>
+    <span class="n">ptkpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ptkpath</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ptkpath</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">dataio.fileio</span> <span class="k">as</span> <span class="nn">fileio</span>
     <span class="kn">import</span> <span class="nn">configs</span>
+    
     
 <span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
 
@@ -142,7 +143,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">if</span> <span class="n">normative_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">normative_path</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/normative.py&#39;</span>
+        <span class="n">normative_path</span> <span class="o">=</span> <span class="n">ptkpath</span> <span class="o">+</span> <span class="s1">&#39;/normative.py&#39;</span>
         
     <span class="n">cv_folds</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cv_folds&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;testcovfile_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -219,8 +220,8 @@
                             <span class="n">log_path</span><span class="o">=</span><span class="n">log_path</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">cluster_spec</span> <span class="o">==</span> <span class="s1">&#39;new&#39;</span><span class="p">:</span>
                     <span class="c1"># this part requires addition in different envioronment [</span>
-                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
-                                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">sbatchwrap_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">,</span> 
+                                  <span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                     <span class="n">sbatch_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="o">=</span><span class="n">batch_processing_dir</span><span class="p">)</span>
                     <span class="c1"># ]</span>
         <span class="k">if</span> <span class="n">testrespfile_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -421,7 +422,8 @@
                 <span class="n">resp_batch</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
                                      <span class="n">resp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
                 <span class="n">testresp_batch</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span>
-                                         <span class="n">testresp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
+                                         <span class="n">testresp</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> 
+                                         <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.collect_nm">[docs]</a><span class="k">def</span> <span class="nf">collect_nm</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span>
@@ -461,9 +463,12 @@
     
     <span class="k">if</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;fit&#39;</span><span class="p">:</span>
         <span class="n">file_example</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># TODO: Collect_nm only depends on yhat, thus does not work when no </span>
+        <span class="c1"># prediction is made (when test cov is not specified). </span>
         <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">file_example</span> <span class="o">==</span> <span class="p">[]:</span>
-                <span class="n">file_example</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;yhat&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                <span class="n">file_example</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;yhat&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> 
+                                         <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">break</span>
         <span class="k">if</span> <span class="n">binary</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
@@ -487,56 +492,89 @@
                     <span class="n">pRho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">pRho</span> <span class="o">=</span> <span class="n">pRho</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">pRho</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pRho</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">pRho</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;pRho&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">pRho</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;pRho&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
                     
                     <span class="n">Rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">Rho</span> <span class="o">=</span> <span class="n">Rho</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">Rho</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Rho</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Rho</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Rho&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Rho</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Rho&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
                     
                     <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">rmse</span> <span class="o">=</span> <span class="n">rmse</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">rmse</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">rmse</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">rmse</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;RMSE&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">rmse</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;RMSE&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
                     
                     <span class="n">smse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">smse</span> <span class="o">=</span> <span class="n">smse</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">smse</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">smse</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">smse</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;SMSE&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">smse</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;SMSE&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
                     
                     <span class="n">expv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">expv</span> <span class="o">=</span> <span class="n">expv</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">expv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">expv</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">expv</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;EXPV&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">expv</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;EXPV&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
                     
                     <span class="n">msll</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
                     <span class="n">msll</span> <span class="o">=</span> <span class="n">msll</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
                     <span class="n">msll</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">msll</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">msll</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;MSLL&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">msll</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;MSLL&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
     
                     <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">numsubjects</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">])</span>
                     <span class="n">yhat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;yhat&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;yhat&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
     
                     <span class="n">ys2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">numsubjects</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">])</span>
                     <span class="n">ys2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">ys2</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">ys2</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;ys2&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">ys2</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;ys2&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
     
                     <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">numsubjects</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">])</span>
                     <span class="n">Z</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
-                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="n">file_extentions</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
+                    
+                    <span class="n">nll</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+                    <span class="n">nll</span> <span class="o">=</span> <span class="n">nll</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+                    <span class="n">nll</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">nll</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nll</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;NLL&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
+                    
+                    <span class="n">bic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+                    <span class="n">bic</span> <span class="o">=</span> <span class="n">bic</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+                    <span class="n">bic</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">bic</span><span class="p">)</span>
+                    <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bic</span><span class="p">,</span> <span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;BIC&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> 
+                                <span class="n">file_extentions</span><span class="p">)</span>
     
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Models&#39;</span><span class="p">):</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;Models&#39;</span><span class="p">)</span>
                         
                         
-            <span class="k">else</span><span class="p">:</span> <span class="c1"># if more than 10% of yhat is nan then consider the batch as a failed batch</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># if more than 10% of yhat is nan then it is a failed batch</span>
                 <span class="n">yhat</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filepath</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">yhat</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">yhat</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">&lt;</span><span class="mf">0.9</span><span class="p">:</span>
                     <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="o">+</span><span class="mi">1</span>
                     <span class="n">batch1</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">job_name</span> <span class="o">+</span> <span class="s1">&#39;*.sh&#39;</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;More than 10% nans in &#39;</span><span class="o">+</span> <span class="n">batch1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
                     <span class="n">batch_fail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch1</span><span class="p">)</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/&#39;</span><span class="p">)</span>
+        <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">batch_dirs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batch_dirs</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;Models/&#39;</span> <span class="o">+</span> <span class="s1">&#39;NM_&#39;</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> 
+                                 <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="o">+</span><span class="mi">1</span>
+                <span class="n">batch1</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">job_name</span> <span class="o">+</span> <span class="s1">&#39;*.sh&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">batch1</span><span class="p">)</span>
+                <span class="n">batch_fail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch1</span><span class="p">)</span>
     
     <span class="c1"># combines all output files across batches</span>
     <span class="k">if</span> <span class="n">collect</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
@@ -647,41 +685,73 @@
             <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">msll_dfs</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;MSLL&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span>
                         <span class="n">file_extentions</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">msll_dfs</span>
+            
+        <span class="n">nll_filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/&#39;</span> <span class="o">+</span> <span class="s1">&#39;NLL&#39;</span> <span class="o">+</span>
+                                  <span class="n">outputsuffix</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nll_filenames</span><span class="p">:</span>
+            <span class="n">nll_filenames</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">nll_filenames</span><span class="p">)</span>
+            <span class="n">nll_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">nll_filename</span> <span class="ow">in</span> <span class="n">nll_filenames</span><span class="p">:</span>
+                <span class="n">nll_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nll_filename</span><span class="p">)))</span>
+            <span class="n">nll_dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">nll_dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nll_dfs</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;NLL&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span>
+                        <span class="n">file_extentions</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">nll_dfs</span>
+
+        <span class="n">bic_filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/&#39;</span> <span class="o">+</span> <span class="s1">&#39;BIC&#39;</span> <span class="o">+</span>
+                                  <span class="n">outputsuffix</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bic_filenames</span><span class="p">:</span>
+            <span class="n">bic_filenames</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">bic_filenames</span><span class="p">)</span>
+            <span class="n">bic_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">bic_filename</span> <span class="ow">in</span> <span class="n">bic_filenames</span><span class="p">:</span>
+                <span class="n">bic_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bic_filename</span><span class="p">)))</span>
+            <span class="n">bic_dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">bic_dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">fileio</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bic_dfs</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;BIC&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span>
+                        <span class="n">file_extentions</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">bic_dfs</span>
         
-        <span class="k">if</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;predict&#39;</span> <span class="ow">and</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;transfer&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;predict&#39;</span> <span class="ow">and</span> <span class="n">func</span> <span class="o">!=</span> <span class="s1">&#39;extend&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;Models&#39;</span><span class="p">)</span> <span class="ow">and</span> \
                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">batches</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Models&#39;</span><span class="p">)):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;Models&#39;</span><span class="p">)</span>
                 
-            <span class="n">meta_filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/Models/&#39;</span> <span class="o">+</span> <span class="s1">&#39;meta_data.md&#39;</span><span class="p">)</span>
+            <span class="n">meta_filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/Models/&#39;</span> <span class="o">+</span> 
+                                       <span class="s1">&#39;meta_data.md&#39;</span><span class="p">)</span>
             <span class="n">mY</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">sY</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">mX</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">sX</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">X_scalers</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">Y_scalers</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">meta_filenames</span><span class="p">:</span>
                 <span class="n">meta_filenames</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">meta_filenames</span><span class="p">)</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
                     <span class="n">meta_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;standardize&#39;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">meta_filename</span> <span class="ow">in</span> <span class="n">meta_filenames</span><span class="p">:</span>
-                        <span class="n">mY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_resp&#39;</span><span class="p">])</span>
-                        <span class="n">sY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_resp&#39;</span><span class="p">])</span>
-                        <span class="n">mX</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_cov&#39;</span><span class="p">])</span>
-                        <span class="n">sX</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_cov&#39;</span><span class="p">])</span>
-                    <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_resp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">mY</span><span class="p">)</span> 
-                    <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_resp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sY</span><span class="p">)</span> 
-                    <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_cov&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">mX</span><span class="p">)</span> 
-                    <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_cov&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sX</span><span class="p">)</span> 
-                    
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models&#39;</span><span class="p">,</span> <span class="s1">&#39;meta_data.md&#39;</span><span class="p">),</span> 
-                          <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                
+                <span class="k">for</span> <span class="n">meta_filename</span> <span class="ow">in</span> <span class="n">meta_filenames</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                        <span class="n">meta_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                    <span class="n">mY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_resp&#39;</span><span class="p">])</span>
+                    <span class="n">sY</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_resp&#39;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;inscaler&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span> <span class="s1">&#39;minmax&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;robminmax&#39;</span><span class="p">]:</span>
+                        <span class="n">X_scalers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;scaler_cov&#39;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;outscaler&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span> <span class="s1">&#39;minmax&#39;</span><span class="p">,</span> 
+                                <span class="s1">&#39;robminmax&#39;</span><span class="p">]:</span>
+                        <span class="n">Y_scalers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;scaler_resp&#39;</span><span class="p">])</span>
+                <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;mean_resp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">mY</span><span class="p">))</span> 
+                <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;std_resp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sY</span><span class="p">))</span>
+                <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;scaler_cov&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_scalers</span> 
+                <span class="n">meta_data</span><span class="p">[</span><span class="s1">&#39;scaler_resp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y_scalers</span>
+                
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models&#39;</span><span class="p">,</span> 
+                                       <span class="s1">&#39;meta_data.md&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
                     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">meta_data</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span>
             
             <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;batch_*/&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">batch_dirs</span><span class="p">:</span>
                 <span class="n">batch_dirs</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">batch_dirs</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">batch_dir</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batch_dirs</span><span class="p">):</span>
-                    <span class="n">src_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/NM*&#39;</span> <span class="o">+</span> <span class="n">outputsuffix</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
+                    <span class="n">src_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/NM*&#39;</span> <span class="o">+</span> 
+                                          <span class="n">outputsuffix</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">src_files</span><span class="p">:</span>
                         <span class="n">src_files</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">sort_nicely</span><span class="p">(</span><span class="n">src_files</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">full_file_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">src_files</span><span class="p">):</span>
@@ -690,7 +760,8 @@
                                 <span class="n">n</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
                                 <span class="n">n</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span>
                                 <span class="n">n</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-                                <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;Models/&#39;</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+                                <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">,</span> <span class="n">processing_dir</span> <span class="o">+</span> 
+                                            <span class="s1">&#39;Models/&#39;</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">func</span><span class="o">==</span><span class="s1">&#39;fit&#39;</span><span class="p">:</span>
                         <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="o">+</span><span class="mi">1</span>
                         <span class="n">batch1</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">batch_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">job_name</span> <span class="o">+</span> <span class="s1">&#39;*.sh&#39;</span><span class="p">)</span>
@@ -819,8 +890,8 @@
             <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -x &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">configparam</span><span class="p">)]</span>
     
     <span class="c1"># add standardization flag if it is false</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">standardize</span><span class="p">:</span>
-        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -s&#39;</span><span class="p">]</span>
+    <span class="c1"># if not standardize:</span>
+    <span class="c1">#     job_call = [job_call[0] + &#39; -s&#39;]</span>
     
     <span class="c1"># add responses file</span>
     <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">respfile_path</span><span class="p">]</span>
@@ -865,8 +936,8 @@
                      <span class="s1">&#39;procs=1&#39;</span> <span class="o">+</span> <span class="s1">&#39;,mem=&#39;</span> <span class="o">+</span> <span class="n">memory</span> <span class="o">+</span> <span class="s1">&#39;,walltime=&#39;</span> <span class="o">+</span> <span class="n">duration</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">qsub_call</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;echo &#39;</span> <span class="o">+</span> <span class="n">job_path</span> <span class="o">+</span> <span class="s1">&#39; | qsub -N &#39;</span> <span class="o">+</span> <span class="n">job_path</span> <span class="o">+</span>
-                     <span class="s1">&#39; -l &#39;</span> <span class="o">+</span> <span class="s1">&#39;procs=1&#39;</span> <span class="o">+</span> <span class="s1">&#39;,mem=&#39;</span> <span class="o">+</span> <span class="n">memory</span> <span class="o">+</span> <span class="s1">&#39;,walltime=&#39;</span> <span class="o">+</span> <span class="n">duration</span> <span class="o">+</span>
-                     <span class="s1">&#39; -o &#39;</span> <span class="o">+</span> <span class="n">log_path</span> <span class="o">+</span> <span class="s1">&#39; -e &#39;</span> <span class="o">+</span> <span class="n">log_path</span><span class="p">]</span>
+                     <span class="s1">&#39; -l &#39;</span> <span class="o">+</span> <span class="s1">&#39;procs=1&#39;</span> <span class="o">+</span> <span class="s1">&#39;,mem=&#39;</span> <span class="o">+</span> <span class="n">memory</span> <span class="o">+</span> <span class="s1">&#39;,walltime=&#39;</span> <span class="o">+</span> 
+                     <span class="n">duration</span> <span class="o">+</span> <span class="s1">&#39; -o &#39;</span> <span class="o">+</span> <span class="n">log_path</span> <span class="o">+</span> <span class="s1">&#39; -e &#39;</span> <span class="o">+</span> <span class="n">log_path</span><span class="p">]</span>
 
     <span class="c1"># submits job to cluster</span>
     <span class="n">call</span><span class="p">(</span><span class="n">qsub_call</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
@@ -1020,8 +1091,8 @@
             <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -x &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">configparam</span><span class="p">)]</span>
     
     <span class="c1"># add standardization flag if it is false</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">standardize</span><span class="p">:</span>
-        <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; -s&#39;</span><span class="p">]</span>
+    <span class="c1"># if not standardize:</span>
+    <span class="c1">#     job_call = [job_call[0] + &#39; -s&#39;]</span>
     
     <span class="c1"># add responses file</span>
     <span class="n">job_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">job_call</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">respfile_path</span><span class="p">]</span>
@@ -1068,8 +1139,8 @@
                  <span class="n">binary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This function reruns all failed batched in processing_dir after collect_nm</span>
-<span class="sd">        has identified he failed batches</span>
+<span class="sd">        This function reruns all failed batched in processing_dir after </span>
+<span class="sd">        collect_nm has identified he failed batches</span>
 <span class="sd">    </span>
 <span class="sd">        * Input:</span>
 <span class="sd">            * processing_dir        -&gt; Full path to the processing directory</span>
@@ -1156,7 +1227,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">normative_parallel</a></li> 
       </ul>

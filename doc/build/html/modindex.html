@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Module Index &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
+    <title>Module Index &#8212; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
     <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="index.html" title="Predictive Clinical Neuroscience toolkit"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Module Index</a></li> 
       </ul>
     </div>  
@@ -50,7 +50,7 @@
 <span id="module-index"></span><h1>Module Index<a class="headerlink" href="#module-bayesreg" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="bayesreg.BLR">
-<em class="property">class </em><code class="sig-prename descclassname">bayesreg.</code><code class="sig-name descname">BLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hyp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">X</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_iter</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">var_groups</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">warp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">bayesreg.</code><code class="sig-name descname">BLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Bayesian linear regression</p>
 <p>Estimation and prediction of Bayesian linear regression models</p>
@@ -101,7 +101,7 @@ Bishop (2006) Pattern Recognition and Machine Learning, Springer</p>
 
 <dl class="py method">
 <dt id="bayesreg.BLR.estimate">
-<code class="sig-name descname">estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hyp0</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="o">=</span><span class="default_value">'cg'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.estimate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hyp0</span></em>, <em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bayesreg.html#BLR.estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bayesreg.BLR.estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to estimate the model</p>
 </dd></dl>
 
@@ -365,7 +365,8 @@ C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
 <dt id="normative.estimate">
 <code class="sig-prename descclassname">normative.</code><code class="sig-name descname">estimate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covfile</span></em>, <em class="sig-param"><span class="n">respfile</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate a normative model</p>
-<p>This will estimate a model in one of two settings according to theparticular parameters specified (see below)</p>
+<p>This will estimate a model in one of two settings according to 
+theparticular parameters specified (see below)</p>
 <ul class="simple">
 <li><p>under k-fold cross-validation.
 requires respfile, covfile and cvfolds&gt;=2</p></li>
@@ -398,6 +399,10 @@ parameter or (testcov, testresp) should be specified, but not both.</p>
 <li><p><strong>configparam</strong> – Parameters controlling the estimation algorithm</p></li>
 <li><p><strong>saveoutput</strong> – Save the output to disk? Otherwise returned as arrays</p></li>
 <li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
+<li><p><strong>inscale</strong> – Scaling approach for input covariates, could be ‘None’ (Default), 
+‘standardize’, ‘minmax’, or ‘robminmax’.</p></li>
+<li><p><strong>outscale</strong> – Scaling approach for output responses, could be ‘None’ (Default), 
+‘standardize’, ‘minmax’, or ‘robminmax’.</p></li>
 </ul>
 </dd>
 </dl>
@@ -422,7 +427,7 @@ same directory (e.g. for custom cross-validation schemes)</p>
 
 <dl class="py function">
 <dt id="normative.evaluate">
-<code class="sig-prename descclassname">normative.</code><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Y</span></em>, <em class="sig-param"><span class="n">Yhat</span></em>, <em class="sig-param"><span class="n">S2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metrics</span><span class="o">=</span><span class="default_value">['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.evaluate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">normative.</code><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Y</span></em>, <em class="sig-param"><span class="n">Yhat</span></em>, <em class="sig-param"><span class="n">S2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sY</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nlZ</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Xz_tr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alg</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metrics</span><span class="o">=</span><span class="default_value">['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute error metrics
 This function will compute error metrics based on a set of predictions Yhat
 and a set of true response variables Y, namely:</p>
@@ -482,7 +487,7 @@ this, yielding the mean standardized log loss</p>
 
 <dl class="py function">
 <dt id="normative.predict">
-<code class="sig-prename descclassname">normative.</code><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covfile</span></em>, <em class="sig-param"><span class="n">respfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maskfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.predict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">normative.</code><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covfile</span></em>, <em class="sig-param"><span class="n">respfile</span></em>, <em class="sig-param"><span class="n">maskfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#normative.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make predictions on the basis of a pre-estimated normative model 
 If only the covariates are specified then only predicted mean and variance 
 will be returned. If the test responses are also specified then quantities
@@ -499,9 +504,8 @@ That depend on those will also be returned (Z scores and error metrics)</p>
 <li><p><strong>respfile</strong> – test response variables for the normative model</p></li>
 <li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
 <li><p><strong>model_path</strong> – Directory containing the normative model and metadata.
-When using parallel prediction, do not pass the model path. It will be automatically
-decided.</p></li>
-<li><p><strong>output_path</strong> – Directory to store the results</p></li>
+When using parallel prediction, do not pass the model path. It will be 
+automatically decided.</p></li>
 <li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
 <li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
 <li><p><strong>job_id</strong> – batch id</p></li>
@@ -1424,14 +1428,14 @@ distribution, specifed by a mean (mu) and variance (s2)</p>
 <p>y = sinh(b *  arcsinh(x) - a)</p>
 <p>Using the parametrisation of Rios et al, Neural Networks 118 (2017)
 where a controls skew and b controls kurtosis, such that:</p>
-<blockquote>
-<div><p>a = 0 : symmetric
-a &gt; 0 : positive skew
-a &lt; 0 : negative skew
-b = 1 : mesokurtic
-b &gt; 1 : leptokurtic
-b &lt; 1 : platykurtic</p>
-</div></blockquote>
+<ul class="simple">
+<li><p>a = 0 : symmetric</p></li>
+<li><p>a &gt; 0 : positive skew</p></li>
+<li><p>a &lt; 0 : negative skew</p></li>
+<li><p>b = 1 : mesokurtic</p></li>
+<li><p>b &gt; 1 : leptokurtic</p></li>
+<li><p>b &lt; 1 : platykurtic</p></li>
+</ul>
 <p>where b &gt; 0. However, it is more convenentent to use an alternative 
 parameterisation, where</p>
 <p>y = sinh(b * arcsinh(x) + epsilon * b)</p>
@@ -1641,12 +1645,14 @@ and p is the number of features.</p>
 <code class="sig-prename descclassname">utils.</code><code class="sig-name descname">load_freesurfer_measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measure</span></em>, <em class="sig-param"><span class="n">data_path</span></em>, <em class="sig-param"><span class="n">subjects_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#load_freesurfer_measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.load_freesurfer_measure" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a utility function to load different Freesurfer measures in a pandas
 Dataframe.</p>
-<dl>
-<dt>Inputs:</dt><dd><ul class="simple">
-<li><p>measure: a string that defines the type of Freesurfer measure we want</p></li>
-</ul>
-<dl class="simple">
-<dt>to load. The options include:</dt><dd><ul class="simple">
+<p>Inputs</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">param measure</dt>
+<dd class="field-odd"><p>a string that defines the type of Freesurfer measure we want to load.             The options include:</p>
+</dd>
+</dl>
+<ul class="simple">
 <li><p>‘NumVert’: Number of Vertices in each cortical area based on Destrieux atlas.</p></li>
 <li><p>‘SurfArea: Surface area for each cortical area based on Destrieux atlas.</p></li>
 <li><p>‘GrayVol’: Gary matter volume in each cortical area based on Destrieux atlas.</p></li>
@@ -1659,14 +1665,16 @@ Dataframe.</p>
 <li><p>‘brain’: Brain Segmentation Statistics from aseg.stats file.</p></li>
 <li><p>‘subcortical_volumes’: Subcortical areas volume.</p></li>
 </ul>
+<dl class="field-list simple">
+<dt class="field-odd">param data_path</dt>
+<dd class="field-odd"><p>a string that specifies the path to the main Freesurfer folder.</p>
+</dd>
+<dt class="field-even">param subjects_list</dt>
+<dd class="field-even"><p>A Pythin list containing the list of subject names to load the data for.             The subject names should match the folder name for each subject’s Freesurfer data folder.</p>
 </dd>
 </dl>
-<ul class="simple">
-<li><p>data_path: a string that specifies the path to the main Freesurfer folder.</p></li>
-<li><p>subjects_list: A Pythin list containing the list of subject names to load the data for.</p></li>
-</ul>
-<p>The subject names should match the folder name for each subject’s Freesurfer data folder.</p>
-</dd>
+</div></blockquote>
+<dl class="simple">
 <dt>Outputs:</dt><dd><ul class="simple">
 <li><p>df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.</p></li>
 <li><p>missing_subs: A Python list of subject names that miss the target Freesurefr measures.</p></li>
@@ -1707,6 +1715,32 @@ command.</p>
 <dt id="utils.ravel_2D">
 <code class="sig-prename descclassname">utils.</code><code class="sig-name descname">ravel_2D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#ravel_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.ravel_2D" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt id="utils.scaler">
+<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">scaler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scaler_type</span><span class="o">=</span><span class="default_value">'standardize'</span></em>, <em class="sig-param"><span class="n">tail</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#scaler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.scaler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="utils.scaler.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#scaler.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.scaler.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="utils.scaler.fit_transform">
+<code class="sig-name descname">fit_transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">adjust_outliers</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#scaler.fit_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.scaler.fit_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="utils.scaler.inverse_transform">
+<code class="sig-name descname">inverse_transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#scaler.inverse_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.scaler.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="utils.scaler.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em>, <em class="sig-param"><span class="n">adjust_outliers</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#scaler.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.scaler.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py function">
 <dt id="utils.simulate_data">
@@ -1799,7 +1833,7 @@ in each group (default=100).</p></li>
         <li class="right" >
           <a href="index.html" title="Predictive Clinical Neuroscience toolkit"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Module Index</a></li> 
       </ul>
     </div>

@@ -341,12 +341,13 @@ class WarpSinArcsinh(WarpBase):
         
         Using the parametrisation of Rios et al, Neural Networks 118 (2017)
         where a controls skew and b controls kurtosis, such that:
-            a = 0 : symmetric
-            a > 0 : positive skew
-            a < 0 : negative skew
-            b = 1 : mesokurtic
-            b > 1 : leptokurtic
-            b < 1 : platykurtic
+        
+        * a = 0 : symmetric
+        * a > 0 : positive skew
+        * a < 0 : negative skew
+        * b = 1 : mesokurtic
+        * b > 1 : leptokurtic
+        * b < 1 : platykurtic
         
         where b > 0. However, it is more convenentent to use an alternative 
         parameterisation, where
@@ -793,25 +794,26 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
     This is a utility function to load different Freesurfer measures in a pandas
     Dataframe.
     
-    Inputs:
-        - measure: a string that defines the type of Freesurfer measure we want 
-        to load. The options include:
-            - 'NumVert': Number of Vertices in each cortical area based on Destrieux atlas.
-            - 'SurfArea: Surface area for each cortical area based on Destrieux atlas.
-            - 'GrayVol': Gary matter volume in each cortical area based on Destrieux atlas.
-            - 'ThickAvg': Average Cortical thinckness in each cortical area based on Destrieux atlas.
-            - 'ThickStd': STD of Cortical thinckness in each cortical area based on Destrieux atlas.
-            - 'MeanCurv': Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.
-            - 'GausCurv': Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.
-            - 'FoldInd': Folding Index in each cortical area based on Destrieux atlas.
-            - 'CurvInd': Intrinsic Curvature Index in each cortical area based on Destrieux atlas.
-            - 'brain': Brain Segmentation Statistics from aseg.stats file.
-            - 'subcortical_volumes': Subcortical areas volume.
-            
-        - data_path: a string that specifies the path to the main Freesurfer folder.
+    Inputs
+
+        :param measure: a string that defines the type of Freesurfer measure we want to load. \
+            The options include:
+
+        * 'NumVert': Number of Vertices in each cortical area based on Destrieux atlas.
+        * 'SurfArea: Surface area for each cortical area based on Destrieux atlas.
+        * 'GrayVol': Gary matter volume in each cortical area based on Destrieux atlas.
+        * 'ThickAvg': Average Cortical thinckness in each cortical area based on Destrieux atlas.
+        * 'ThickStd': STD of Cortical thinckness in each cortical area based on Destrieux atlas.
+        * 'MeanCurv': Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.
+        * 'GausCurv': Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.
+        * 'FoldInd': Folding Index in each cortical area based on Destrieux atlas.
+        * 'CurvInd': Intrinsic Curvature Index in each cortical area based on Destrieux atlas.
+        * 'brain': Brain Segmentation Statistics from aseg.stats file.
+        * 'subcortical_volumes': Subcortical areas volume.
         
-        - subjects_list: A Pythin list containing the list of subject names to load the data for. 
-        The subject names should match the folder name for each subject's Freesurfer data folder.
+        :param data_path: a string that specifies the path to the main Freesurfer folder.
+        :param subjects_list: A Pythin list containing the list of subject names to load the data for. \
+            The subject names should match the folder name for each subject's Freesurfer data folder.
         
     Outputs:
         - df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.

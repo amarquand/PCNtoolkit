@@ -36,6 +36,6 @@ $(window).resize(function(){
         $("li.nav-item-0 a").text("Top");
     }
     else {
-        $("li.nav-item-0 a").text("Predictive Clinical Neuroscience Toolkit 0.17 documentation");
+        $("li.nav-item-0 a").text("Predictive Clinical Neuroscience Toolkit 0.20 documentation");
     }
 });
