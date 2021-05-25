@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>utils &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
+    <title>utils &#8212; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
     <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">utils</a></li> 
       </ul>
@@ -69,9 +69,10 @@
     <span class="k">pass</span>
 
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">del</span> <span class="n">path</span>
+    <span class="n">rootpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="c1"># parent directory </span>
+    <span class="k">if</span> <span class="n">rootpath</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rootpath</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">path</span><span class="p">,</span> <span class="n">rootpath</span>
     <span class="kn">import</span> <span class="nn">configs</span>
     
 <span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
@@ -386,12 +387,13 @@
 <span class="sd">        </span>
 <span class="sd">        Using the parametrisation of Rios et al, Neural Networks 118 (2017)</span>
 <span class="sd">        where a controls skew and b controls kurtosis, such that:</span>
-<span class="sd">            a = 0 : symmetric</span>
-<span class="sd">            a &gt; 0 : positive skew</span>
-<span class="sd">            a &lt; 0 : negative skew</span>
-<span class="sd">            b = 1 : mesokurtic</span>
-<span class="sd">            b &gt; 1 : leptokurtic</span>
-<span class="sd">            b &lt; 1 : platykurtic</span>
+<span class="sd">        </span>
+<span class="sd">        * a = 0 : symmetric</span>
+<span class="sd">        * a &gt; 0 : positive skew</span>
+<span class="sd">        * a &lt; 0 : negative skew</span>
+<span class="sd">        * b = 1 : mesokurtic</span>
+<span class="sd">        * b &gt; 1 : leptokurtic</span>
+<span class="sd">        * b &lt; 1 : platykurtic</span>
 <span class="sd">        </span>
 <span class="sd">        where b &gt; 0. However, it is more convenentent to use an alternative </span>
 <span class="sd">        parameterisation, where</span>
@@ -838,25 +840,26 @@
 <span class="sd">    This is a utility function to load different Freesurfer measures in a pandas</span>
 <span class="sd">    Dataframe.</span>
 <span class="sd">    </span>
-<span class="sd">    Inputs:</span>
-<span class="sd">        - measure: a string that defines the type of Freesurfer measure we want </span>
-<span class="sd">        to load. The options include:</span>
-<span class="sd">            - &#39;NumVert&#39;: Number of Vertices in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;SurfArea: Surface area for each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;GrayVol&#39;: Gary matter volume in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;ThickAvg&#39;: Average Cortical thinckness in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;ThickStd&#39;: STD of Cortical thinckness in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;MeanCurv&#39;: Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;GausCurv&#39;: Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;FoldInd&#39;: Folding Index in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;CurvInd&#39;: Intrinsic Curvature Index in each cortical area based on Destrieux atlas.</span>
-<span class="sd">            - &#39;brain&#39;: Brain Segmentation Statistics from aseg.stats file.</span>
-<span class="sd">            - &#39;subcortical_volumes&#39;: Subcortical areas volume.</span>
-<span class="sd">            </span>
-<span class="sd">        - data_path: a string that specifies the path to the main Freesurfer folder.</span>
+<span class="sd">    Inputs</span>
+
+<span class="sd">        :param measure: a string that defines the type of Freesurfer measure we want to load. \</span>
+<span class="sd">            The options include:</span>
+
+<span class="sd">        * &#39;NumVert&#39;: Number of Vertices in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;SurfArea: Surface area for each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;GrayVol&#39;: Gary matter volume in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;ThickAvg&#39;: Average Cortical thinckness in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;ThickStd&#39;: STD of Cortical thinckness in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;MeanCurv&#39;: Integrated Rectified Mean Curvature in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;GausCurv&#39;: Integrated Rectified Gaussian Curvature in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;FoldInd&#39;: Folding Index in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;CurvInd&#39;: Intrinsic Curvature Index in each cortical area based on Destrieux atlas.</span>
+<span class="sd">        * &#39;brain&#39;: Brain Segmentation Statistics from aseg.stats file.</span>
+<span class="sd">        * &#39;subcortical_volumes&#39;: Subcortical areas volume.</span>
 <span class="sd">        </span>
-<span class="sd">        - subjects_list: A Pythin list containing the list of subject names to load the data for. </span>
-<span class="sd">        The subject names should match the folder name for each subject&#39;s Freesurfer data folder.</span>
+<span class="sd">        :param data_path: a string that specifies the path to the main Freesurfer folder.</span>
+<span class="sd">        :param subjects_list: A Pythin list containing the list of subject names to load the data for. \</span>
+<span class="sd">            The subject names should match the folder name for each subject&#39;s Freesurfer data folder.</span>
 <span class="sd">        </span>
 <span class="sd">    Outputs:</span>
 <span class="sd">        - df: A pandas datafrmae containing the subject names as Index and target Freesurfer measures.</span>
@@ -949,6 +952,100 @@
                 <span class="k">continue</span>
     
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">missing_subs</span></div>
+
+
+<div class="viewcode-block" id="scaler"><a class="viewcode-back" href="../modindex.html#utils.scaler">[docs]</a><span class="k">class</span> <span class="nc">scaler</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaler_type</span><span class="o">=</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">=</span> <span class="n">scaler_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">tail</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span> <span class="s1">&#39;minmax&#39;</span><span class="p">,</span> <span class="s1">&#39;robminmax&#39;</span><span class="p">]:</span>
+             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Undifined scaler type!&quot;</span><span class="p">)</span>  
+        
+        
+<div class="viewcode-block" id="scaler.fit"><a class="viewcode-back" href="../modindex.html#utils.scaler.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;standardize&#39;</span><span class="p">:</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;minmax&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;robminmax&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span><span class="p">))])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">i</span><span class="p">])[</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span><span class="p">)):])</span>   </div>
+                
+                
+<div class="viewcode-block" id="scaler.transform"><a class="viewcode-back" href="../modindex.html#utils.scaler.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">adjust_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;standardize&#39;</span><span class="p">:</span>
+            
+            <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span> 
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;minmax&#39;</span><span class="p">,</span> <span class="s1">&#39;robminmax&#39;</span><span class="p">]:</span>
+            
+            <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">adjust_outliers</span><span class="p">:</span>
+                
+                <span class="n">X</span><span class="p">[</span><span class="n">X</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">X</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            
+        <span class="k">return</span> <span class="n">X</span></div>
+    
+<div class="viewcode-block" id="scaler.inverse_transform"><a class="viewcode-back" href="../modindex.html#utils.scaler.inverse_transform">[docs]</a>    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;standardize&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;minmax&#39;</span><span class="p">,</span> <span class="s1">&#39;robminmax&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span> 
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X</span></div>
+    
+<div class="viewcode-block" id="scaler.fit_transform"><a class="viewcode-back" href="../modindex.html#utils.scaler.fit_transform">[docs]</a>    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">adjust_outliers</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;standardize&#39;</span><span class="p">:</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span> 
+            
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;minmax&#39;</span><span class="p">:</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler_type</span> <span class="o">==</span> <span class="s1">&#39;robminmax&#39;</span><span class="p">:</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],])</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span><span class="p">))])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">i</span><span class="p">])[</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail</span><span class="p">)):])</span>   
+            
+            <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">adjust_outliers</span><span class="p">:</span>             
+                <span class="n">X</span><span class="p">[</span><span class="n">X</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">X</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="k">return</span> <span class="n">X</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -980,7 +1077,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">utils</a></li> 
       </ul>
