@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>trendsurf &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
+    <title>trendsurf &#8212; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
     <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">trendsurf</a></li> 
       </ul>
@@ -63,8 +63,8 @@
 <span class="kn">import</span> <span class="nn">argparse</span>
 
 <span class="k">try</span><span class="p">:</span>  <span class="c1"># Run as a package if installed</span>
-    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">fileio</span>
-    <span class="kn">from</span> <span class="nn">pcntoolkit.bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit.dataio</span> <span class="kn">import</span> <span class="n">fileio</span>
+    <span class="kn">from</span> <span class="nn">pcntoolkit.model.bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="k">pass</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
@@ -72,8 +72,8 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">del</span> <span class="n">path</span>
 
-    <span class="kn">import</span> <span class="nn">fileio</span>
-    <span class="kn">from</span> <span class="nn">bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
+    <span class="kn">from</span> <span class="nn">dataio</span> <span class="kn">import</span> <span class="n">fileio</span>
+    <span class="kn">from</span> <span class="nn">model.bayesreg</span> <span class="kn">import</span> <span class="n">BLR</span>
 
 
 
@@ -328,7 +328,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">trendsurf</a></li> 
       </ul>
