@@ -7,6 +7,8 @@ Predictive Clinical Neuroscience toolkit
 ========================================
 
 Contents:
+
+
 .. toctree::
    :maxdepth: 1
    :hidden:
@@ -14,6 +16,7 @@ Contents:
 
    pages/installation
    pages/PCNtoolkit_background
+
 
    .. toctree::
    :maxdepth: 1
@@ -24,6 +27,7 @@ Contents:
    pages/descriptor
    pages/updates
 
+
    .. toctree::
    :maxdepth: 1
    :hidden:
@@ -31,6 +35,7 @@ Contents:
 
    pages/tutorial_CPC2020
    pages/tutorial_corticalthicknessROI
+
 
    .. toctree::
    :maxdepth: 1
@@ -43,7 +48,9 @@ Contents:
    pages/references
    pages/acknowledgements
    
+
 .. toctree::
    :maxdepth: 2
    
    modindex.rst
+
