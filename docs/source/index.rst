@@ -6,47 +6,41 @@
 Predictive Clinical Neuroscience toolkit
 ========================================
 
-Contents:
-
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Getting started
 
    pages/installation
    pages/PCNtoolkit_background
 
 
-   .. toctree::
+.. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: What's inside
 
-   pages/scripts
-   pages/descriptor
-   pages/updates
+   pages/scripts.rst
+   pages/descriptor.rst
+   pages/updates.rst
 
 
-   .. toctree::
+.. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Tutorials
 
-   pages/tutorial_CPC2020
-   pages/tutorial_corticalthicknessROI
+   pages/tutorial_CPC2020.rst
+   pages/tutorial_corticalthicknessROI.rst
 
 
-   .. toctree::
+.. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Footnotes
 
-   pages/FAQs
-   pages/glossary
-   pages/citing
-   pages/references
-   pages/acknowledgements
+   pages/FAQs.rst
+   pages/glossary.rst
+   pages/citing.rst
+   pages/references.rst
+   pages/acknowledgements.rst
    
 
 .. toctree::
