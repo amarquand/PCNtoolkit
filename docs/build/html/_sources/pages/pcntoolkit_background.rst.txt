@@ -9,7 +9,7 @@ Predictive Clinical Neuroscience (PCN) toolkit (formerly nispat) is a python pac
 Intro to normative modelling
 ===============================
 
-Normative modelling essentially aims to predict centiles of variance in a response variable (e.g. a region of interest or other neuroimaging-derived measure) on the basis of a set of covariates (e.g. age, clinical scores, diagnosis) A conceptual overview of the approach can be found in this ::_publication: https://www.nature.com/articles/s41380-019-0441-1. For example, the image below shows an example of a normative model that aims to predict vertex-wise cortical thickness data, essentially fitting a separate model for each vertex.
+Normative modelling essentially aims to predict centiles of variance in a response variable (e.g. a region of interest or other neuroimaging-derived measure) on the basis of a set of covariates (e.g. age, clinical scores, diagnosis) A conceptual overview of the approach can be found in this `publication <https://www.nature.com/articles/s41380-019-0441-1>`_. For example, the image below shows an example of a normative model that aims to predict vertex-wise cortical thickness data, essentially fitting a separate model for each vertex.
 
 .. figure:: ./nm_concept.png
    :height: 300px
@@ -21,7 +21,7 @@ In practice, this is done by regressing the biological response variables agains
    :height: 300px
    :align: center
 
-There are many options for this, but techniques that provide a distributional form for the centiles are appealing, since they help to estimate extreme centiles more efficiently. Bayesian methods are also beneficial in this regard because they also allow separation of modelling uncertainty from variation in the data. Many applications of normative modelling use Gaussian Process Regression, which is the default method in this toolkit. Typically (but not [always](https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15)), each response variable is estimated independently.
+There are many options for this, but techniques that provide a distributional form for the centiles are appealing, since they help to estimate extreme centiles more efficiently. Bayesian methods are also beneficial in this regard because they also allow separation of modelling uncertainty from variation in the data. Many applications of normative modelling use Gaussian Process Regression, which is the default method in this toolkit. Typically (but not `always <https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15>`_), each response variable is estimated independently.
 
 Data formats
 ****************************
@@ -50,7 +50,7 @@ For nifti/cifti formats, data should be in timeseries format with subjects along
 Basic usage (command line)
 ****************************
 
-The simplest method to estimate a normative model is using the ```normative.py``` script which can be run from the command line or imported as a python module. For example, the following command will estimate a normative model on the basis of the matrix of covariates and responses specified in cov.txt and resp.txt respectively. These are simply tab or space separated ASCII text files that contain the variables of interest, with one subject per row.
+The simplest method to estimate a normative model is using the ``normative.py`` script which can be run from the command line or imported as a python module. For example, the following command will estimate a normative model on the basis of the matrix of covariates and responses specified in cov.txt and resp.txt respectively. These are simply tab or space separated ASCII text files that contain the variables of interest, with one subject per row.
 
 .. code-block:: bash
 
@@ -65,10 +65,10 @@ The following estimation algorithms are supported
 =================  =================================  =============================================================================================  
 **key value**      **Description**                    **Reference**
 -----------------  ---------------------------------  ---------------------------------------------------------------------------------------------
-hbr                 Hierarchical Bayesian Regression  Kia et al 2020 https://arxiv.org/abs/2005.12055
-blr                 Bayesian Linear Regression        Huertas et al 2017 https://www.sciencedirect.com/science/article/pii/S1053811917306560
-np                  Neural Processes                  Kia et al 2018 https://arxiv.org/abs/1812.04998
-rfa                 Random Feature Approximation      Rahimi and Recht 2007 https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf
+hbr                 Hierarchical Bayesian Regression  `Kia et al 2020 <https://arxiv.org/abs/2005.12055>`_
+blr                 Bayesian Linear Regression        `Huertas et al 2017 <https://www.sciencedirect.com/science/article/pii/S1053811917306560>`_
+np                  Neural Processes                  `Kia et al 2018 <https://arxiv.org/abs/1812.04998>`_
+rfa                 Random Feature Approximation      `Rahimi and Recht 2007 <https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_
 =================  =================================  =============================================================================================  
    
 
@@ -104,7 +104,7 @@ warp                                      Warping function to apply to the respo
 Basic usage (scripted)
 ****************************
 
-The same can be done by importing the estimate function from normative.py. For example, the following code snippet will: (i) mask the nifti data specified in resp_train.nii.gz using the mask specified (which must have the same voxel size as the response variables) (ii) fit a linear normative model to each voxel, (iii) apply this to make predictions using the test covariates and (iv) compute deviation scores and error metrics by comparing against the true test response variables. 
+The same can be done by importing the estimate function from ``normative.py``. For example, the following code snippet will: (i) mask the nifti data specified in resp_train.nii.gz using the mask specified (which must have the same voxel size as the response variables) (ii) fit a linear normative model to each voxel, (iii) apply this to make predictions using the test covariates and (iv) compute deviation scores and error metrics by comparing against the true test response variables. 
 
 .. code-block:: python
 
@@ -131,7 +131,7 @@ The estimate function does all these operations in a single step. In some cases 
     # Saved with file suffix '_predict'
     yhat, s2 = predict(cov_file_dummy)
 
-For further information, see the [developer documentation](https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative). The same can be achieved from the command line, using te ``-f`` argument, for example, by specifying ``-f predict``.
+For further information, see the `developer documentation <https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative>`_. The same can be achieved from the command line, using te ``-f`` argument, for example, by specifying ``-f predict``.
 
 Paralellising estimation to speed things up
 **********************************************

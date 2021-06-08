@@ -93,7 +93,7 @@ Alternative installation (on a shared resource)
 Quickstart usage
 ****************************
 
-For normative modelling, functionality is handled by the normative.py script, which can be run from the command line, e.g.
+For normative modelling, functionality is handled by the ``normative.py`` script, which can be run from the command line, e.g.
 	
 .. code-block:: bash
 

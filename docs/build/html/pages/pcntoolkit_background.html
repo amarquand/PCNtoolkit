@@ -205,7 +205,7 @@
 </div>
 <div class="section" id="intro-to-normative-modelling">
 <h1>Intro to normative modelling<a class="headerlink" href="#intro-to-normative-modelling" title="Permalink to this headline">¶</a></h1>
-<p>Normative modelling essentially aims to predict centiles of variance in a response variable (e.g. a region of interest or other neuroimaging-derived measure) on the basis of a set of covariates (e.g. age, clinical scores, diagnosis) A conceptual overview of the approach can be found in this ::_publication: <a class="reference external" href="https://www.nature.com/articles/s41380-019-0441-1">https://www.nature.com/articles/s41380-019-0441-1</a>. For example, the image below shows an example of a normative model that aims to predict vertex-wise cortical thickness data, essentially fitting a separate model for each vertex.</p>
+<p>Normative modelling essentially aims to predict centiles of variance in a response variable (e.g. a region of interest or other neuroimaging-derived measure) on the basis of a set of covariates (e.g. age, clinical scores, diagnosis) A conceptual overview of the approach can be found in this <a class="reference external" href="https://www.nature.com/articles/s41380-019-0441-1">publication</a>. For example, the image below shows an example of a normative model that aims to predict vertex-wise cortical thickness data, essentially fitting a separate model for each vertex.</p>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/nm_concept.png"><img alt="../_images/nm_concept.png" src="../_images/nm_concept.png" style="height: 300px;" /></a>
 </div>
@@ -213,7 +213,7 @@
 <div class="figure align-center">
 <a class="reference internal image-reference" href="../_images/nm_overview.png"><img alt="../_images/nm_overview.png" src="../_images/nm_overview.png" style="height: 300px;" /></a>
 </div>
-<p>There are many options for this, but techniques that provide a distributional form for the centiles are appealing, since they help to estimate extreme centiles more efficiently. Bayesian methods are also beneficial in this regard because they also allow separation of modelling uncertainty from variation in the data. Many applications of normative modelling use Gaussian Process Regression, which is the default method in this toolkit. Typically (but not [always](<a class="reference external" href="https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15">https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15</a>)), each response variable is estimated independently.</p>
+<p>There are many options for this, but techniques that provide a distributional form for the centiles are appealing, since they help to estimate extreme centiles more efficiently. Bayesian methods are also beneficial in this regard because they also allow separation of modelling uncertainty from variation in the data. Many applications of normative modelling use Gaussian Process Regression, which is the default method in this toolkit. Typically (but not <a class="reference external" href="https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15">always</a>), each response variable is estimated independently.</p>
 <div class="section" id="data-formats">
 <h2>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this headline">¶</a></h2>
 <p>Generally the covariates are specified in text format, roughly following the FSL convention in that the text file should contain one entry
@@ -236,7 +236,7 @@
 </div>
 <div class="section" id="basic-usage-command-line">
 <h2>Basic usage (command line)<a class="headerlink" href="#basic-usage-command-line" title="Permalink to this headline">¶</a></h2>
-<p>The simplest method to estimate a normative model is using the <code class="docutils literal notranslate"><span class="pre">`normative.py`</span></code> script which can be run from the command line or imported as a python module. For example, the following command will estimate a normative model on the basis of the matrix of covariates and responses specified in cov.txt and resp.txt respectively. These are simply tab or space separated ASCII text files that contain the variables of interest, with one subject per row.</p>
+<p>The simplest method to estimate a normative model is using the <code class="docutils literal notranslate"><span class="pre">normative.py</span></code> script which can be run from the command line or imported as a python module. For example, the following command will estimate a normative model on the basis of the matrix of covariates and responses specified in cov.txt and resp.txt respectively. These are simply tab or space separated ASCII text files that contain the variables of interest, with one subject per row.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python normative.py -c cov.txt -k <span class="m">5</span> -a blr resp.txt
 </pre></div>
 </div>
@@ -256,19 +256,19 @@ The following estimation algorithms are supported</p>
 </tr>
 <tr class="row-even"><td><p>hbr</p></td>
 <td><p>Hierarchical Bayesian Regression</p></td>
-<td><p>Kia et al 2020 <a class="reference external" href="https://arxiv.org/abs/2005.12055">https://arxiv.org/abs/2005.12055</a></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2005.12055">Kia et al 2020</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>blr</p></td>
 <td><p>Bayesian Linear Regression</p></td>
-<td><p>Huertas et al 2017 <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1053811917306560">https://www.sciencedirect.com/science/article/pii/S1053811917306560</a></p></td>
+<td><p><a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1053811917306560">Huertas et al 2017</a></p></td>
 </tr>
 <tr class="row-even"><td><p>np</p></td>
 <td><p>Neural Processes</p></td>
-<td><p>Kia et al 2018 <a class="reference external" href="https://arxiv.org/abs/1812.04998">https://arxiv.org/abs/1812.04998</a></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/1812.04998">Kia et al 2018</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>rfa</p></td>
 <td><p>Random Feature Approximation</p></td>
-<td><p>Rahimi and Recht 2007 <a class="reference external" href="https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf</a></p></td>
+<td><p><a class="reference external" href="https://people.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht 2007</a></p></td>
 </tr>
 </tbody>
 </table>
@@ -346,7 +346,7 @@ The following estimation algorithms are supported</p>
 </div>
 <div class="section" id="basic-usage-scripted">
 <h2>Basic usage (scripted)<a class="headerlink" href="#basic-usage-scripted" title="Permalink to this headline">¶</a></h2>
-<p>The same can be done by importing the estimate function from normative.py. For example, the following code snippet will: (i) mask the nifti data specified in resp_train.nii.gz using the mask specified (which must have the same voxel size as the response variables) (ii) fit a linear normative model to each voxel, (iii) apply this to make predictions using the test covariates and (iv) compute deviation scores and error metrics by comparing against the true test response variables.</p>
+<p>The same can be done by importing the estimate function from <code class="docutils literal notranslate"><span class="pre">normative.py</span></code>. For example, the following code snippet will: (i) mask the nifti data specified in resp_train.nii.gz using the mask specified (which must have the same voxel size as the response variables) (ii) fit a linear normative model to each voxel, (iii) apply this to make predictions using the test covariates and (iv) compute deviation scores and error metrics by comparing against the true test response variables.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pcntoolkit.normative</span> <span class="kn">import</span> <span class="n">estimate</span>
 
 <span class="c1"># estimate a normative model</span>
@@ -368,7 +368,7 @@ The following estimation algorithms are supported</p>
 <span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">cov_file_dummy</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For further information, see the [developer documentation](<a class="reference external" href="https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative">https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative</a>). The same can be achieved from the command line, using te <code class="docutils literal notranslate"><span class="pre">-f</span></code> argument, for example, by specifying <code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">predict</span></code>.</p>
+<p>For further information, see the <a class="reference external" href="https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative">developer documentation</a>. The same can be achieved from the command line, using te <code class="docutils literal notranslate"><span class="pre">-f</span></code> argument, for example, by specifying <code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">predict</span></code>.</p>
 </div>
 <div class="section" id="paralellising-estimation-to-speed-things-up">
 <h2>Paralellising estimation to speed things up<a class="headerlink" href="#paralellising-estimation-to-speed-things-up" title="Permalink to this headline">¶</a></h2>
