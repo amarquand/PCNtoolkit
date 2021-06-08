@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.abspath('../../pcntoolkit'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [#'sphinx_tabs.tabs', 
+extensions = ['sphinx_tabs.tabs', 
               'sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               'sphinx.ext.githubpages',
@@ -38,7 +38,7 @@ extensions = [#'sphinx_tabs.tabs',
               'sphinx.ext.autosummary',
               #'sphinx.ext.doctest',
               #'sphinx.ext.intersphinx',
-              #sphinx.ext.mathjax',
+              #'sphinx.ext.mathjax',
               'sphinx.ext.napoleon',
               'sphinx.ext.viewcode',
               #'sphinxarg.ext',
@@ -55,9 +55,6 @@ autoclass_content = "class"
 exclude_patterns = []
 
 highlight_language ='none'
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -107,7 +104,7 @@ html_theme_options = { 'style_nav_header_background': '#1E90FF'}
 pygments_style = 'sphinx'
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['pages/_templates']
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -116,12 +113,12 @@ html_static_path = ['_static']
 
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
-html_css_files = ['css/pcntoolkit.css', 
-                  'css/pcntoolkit_nomaxwidth.css']
+html_css_files = ['pages/css/pcntoolkit.css', 
+                  'pages/css/pcntoolkit_nomaxwidth.css']
 
 # add custom files that are stored in _static
 def setup(app):
-   app.add_css_file('css/pcntoolkit_tabs.css')
+   app.add_css_file('pages/css/pcntoolkit_tabs.css')
 
 # add logo
 html_logo = "pcn-logo.png"

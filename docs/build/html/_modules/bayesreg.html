@@ -1,47 +1,43 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>bayesreg &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
   
 
   
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/pcntoolkit_tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/pcntoolkit.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/pcntoolkit_nomaxwidth.css" type="text/css" />
-
+  
   
   
 
   
-  
-
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/tabs.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -80,7 +76,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -91,23 +86,27 @@
               <p class="caption"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
 </ul>
-<p class="caption"><span class="caption-text">What's inside</span></p>
+<p class="caption"><span class="caption-text">Background</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../pages/scripts.html">Intro to normative modelling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Function Docs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+</ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Tutorial 1: Gaussian Process Regression (from Computational Psychiatry Course 2020)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Tutorial 2: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regressian</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Footnotes</span></p>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
@@ -119,7 +118,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -154,13 +152,11 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -228,16 +224,10 @@ from scipy.linalg import LinAlgError
     Written by A. Marquand
     &quot;&quot;&quot;
 
-    def __init__(self, **kwargs):
-        # parse arguments
-        n_iter = kwargs.get(&#39;n_iter&#39;, 100)
-        tol = kwargs.get(&#39;tol&#39;, 1e-3)
-        verbose = kwargs.get(&#39;verbose&#39;, False)
-        var_groups = kwargs.get(&#39;var_groups&#39;, None)
-        warp = kwargs.get(&#39;warp&#39;, None)
-        warp_reparam = kwargs.get(&#39;warp_reparam&#39;, False)
-        
-        # basic parameters
+    def __init__(self, hyp=None, X=None, y=None,
+                 n_iter=100, tol=1e-3, verbose=False, 
+                 var_groups=None, warp=None):
+
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
@@ -249,28 +239,31 @@ from scipy.linalg import LinAlgError
             self.var_ids = sorted(list(self.var_ids))
 
         # set up warped likelihood
-        if verbose:
-            print(&#39;warp:&#39;, warp, &#39;warp_reparam:&#39;, warp_reparam)
         if warp is None:
             self.warp = None
             self.n_warp_param = 0
         else:
             self.warp = warp
             self.n_warp_param = warp.get_n_params()
-            self.warp_reparam = warp_reparam
-            
         self.gamma = None
     
     def _parse_hyps(self, hyp, X):
 
         N = X.shape[0]
         
-        # noise precision
+        # hyperparameters
         if self.var_groups is None:
-            beta = np.asarray([np.exp(hyp[0])]) 
+            beta = np.asarray([np.exp(hyp[0])])               # noise precision 
+            self.Lambda_n = np.diag(np.ones(N)*beta)
+            self.Sigma_n = np.diag(np.ones(N)/beta)
         else:
             beta = np.exp(hyp[0:len(self.var_ids)])
-         
+            beta_all = np.ones(N)
+            for v in range(len(self.var_ids)):
+                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
+            self.Lambda_n = np.diag(beta_all)
+            self.Sigma_n = np.diag(1/beta_all)
+        
         # parameters for warping the likelhood function
         n_lik_param = len(beta)
         if self.warp is not None:
@@ -285,22 +278,6 @@ from scipy.linalg import LinAlgError
         else:
             alpha = np.exp(hyp[1:])
 
-        # reparameterise the warp (WarpSinArcsinh only)
-        if self.warp is not None and self.warp_reparam:
-            delta = np.exp(gamma[1])
-            beta = beta/(delta**2)
-    
-        # Create precision matrix from noise precision
-        if self.var_groups is None:
-            self.Lambda_n = np.diag(np.ones(N)*beta)
-            self.Sigma_n = np.diag(np.ones(N)/beta)
-        else:
-            beta_all = np.ones(N)
-            for v in range(len(self.var_ids)):
-                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
-            self.Lambda_n = np.diag(beta_all)
-            self.Sigma_n = np.diag(1/beta_all)
-    
         return beta, alpha, gamma
         
 <div class="viewcode-block" id="BLR.post"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.post">[docs]</a>    def post(self, hyp, X, y):
@@ -499,9 +476,8 @@ from scipy.linalg import LinAlgError
         return dnlZ</div>
 
     # model estimation (optimization)
-<div class="viewcode-block" id="BLR.estimate"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.estimate">[docs]</a>    def estimate(self, hyp0, X, y, **kwargs):
+<div class="viewcode-block" id="BLR.estimate"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.estimate">[docs]</a>    def estimate(self, hyp0, X, y, optimizer=&#39;cg&#39;):
         &quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;
-        optimizer = kwargs.get(&#39;optimizer&#39;,&#39;cg&#39;)
 
         if optimizer.lower() == &#39;cg&#39;:  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y),
@@ -510,9 +486,6 @@ from scipy.linalg import LinAlgError
 
         elif optimizer.lower() == &#39;powell&#39;:  # Powell&#39;s method
             out = optimize.fmin_powell(self.loglik, hyp0, (X, y),
-                                       full_output=1)
-        elif optimizer.lower() == &#39;nelder-mead&#39;:
-            out = optimize.fmin(self.loglik, hyp0, (X, y),
                                        full_output=1)
         else:
             raise ValueError(&quot;unknown optimizer&quot;)
@@ -527,7 +500,7 @@ from scipy.linalg import LinAlgError
         &quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;
 
         if X is None or y is None:
-            # set dummy hyperparameters
+            # set hyperparameters. we can use an array of zeros because 
             beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
         else:
             
@@ -567,25 +540,20 @@ from scipy.linalg import LinAlgError
            
           </div>
           <footer>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2020, Andre F. Marquand.
+        &copy; Copyright 2020, Andre F. Marquand
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -593,6 +561,7 @@ from scipy.linalg import LinAlgError
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {
