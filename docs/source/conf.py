@@ -101,13 +101,9 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_theme_options = { 'style_nav_header_background': '#5D4BB7'}
+html_theme_options = { 'style_nav_header_background': '#1E90FF'}
 
-# The name of the Pygments (syntax highlighting) style to use.
-import os
-import sys
-sys.path.insert(0, os.path.abspath('.'))
-#pygments_style = 'micapipelexer.micapipeLexerStyle'
+
 pygments_style = 'sphinx'
 
 # Add any paths that contain templates here, relative to this directory.
@@ -128,7 +124,7 @@ def setup(app):
    app.add_css_file('css/pcntoolkit_tabs.css')
 
 # add logo
-html_logo = "pcntoolkit-logo.png"
+html_logo = "pcn-logo.png"
 html_theme_options = {
     'logo_only': True,
     'display_version': False,
