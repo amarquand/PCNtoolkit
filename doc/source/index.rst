@@ -20,7 +20,7 @@ Predictive Clinical Neuroscience toolkit
    :maxdepth: 1
    :caption: Function Docs
 
-   modindex.rst
+   pages/modindex.rst
 
 .. toctree::
    :maxdepth: 1
