@@ -1,22 +1,50 @@
-.. Spatial methods for neuroimaging documentation master file, created by
-   sphinx-quickstart on Tue Aug 23 15:22:22 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 Predictive Clinical Neuroscience toolkit
 ========================================
 
-Contents:
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting started
+
+   pages/installation.rst
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Background
+
+   pages/pcntoolkit_background.rst
 
 .. toctree::
    :maxdepth: 2
-   
+   :caption: Function Docs
+
    modindex.rst
 
-Indices and tables
-==================
+.. toctree::
+   :maxdepth: 1
+   :caption: Current Events
+   
+   pages/updates.rst
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials
+
+   pages/tutorial_CPC2020.rst
+   pages/tutorial_ROIcorticalthickness.rst
+   pages/tutorial_HBR.rst
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Other Useful Stuff
+
+   pages/FAQs.rst
+   pages/glossary.rst
+   pages/citing.rst
+   pages/references.rst
+   pages/acknowledgements.rst
 

@@ -1,469 +1,578 @@
 
 
-<!doctype html>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bayesreg &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+  
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bayesreg &#8212; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script src="../_static/bizstyle.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">bayesreg</a></li> 
-      </ul>
-    </div>  
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/tabs.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Function Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regressian</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>bayesreg</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for bayesreg</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span></span>from __future__ import print_function
+from __future__ import division
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span> <span class="p">,</span> <span class="n">linalg</span>
-<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">LinAlgError</span>
+import numpy as np
+from scipy import optimize , linalg
+from scipy.linalg import LinAlgError
 
 
-<div class="viewcode-block" id="BLR"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR">[docs]</a><span class="k">class</span> <span class="nc">BLR</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Bayesian linear regression</span>
+<div class="viewcode-block" id="BLR"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR">[docs]</a>class BLR:
+    &quot;&quot;&quot;Bayesian linear regression
 
-<span class="sd">    Estimation and prediction of Bayesian linear regression models</span>
+    Estimation and prediction of Bayesian linear regression models
 
-<span class="sd">    Basic usage::</span>
+    Basic usage::
 
-<span class="sd">        B = BLR()</span>
-<span class="sd">        hyp = B.estimate(hyp0, X, y)</span>
-<span class="sd">        ys,s2 = B.predict(hyp, X, y, Xs)</span>
+        B = BLR()
+        hyp = B.estimate(hyp0, X, y)
+        ys,s2 = B.predict(hyp, X, y, Xs)
 
-<span class="sd">    where the variables are</span>
+    where the variables are
 
-<span class="sd">    :param hyp: vector of hyperparmaters.</span>
-<span class="sd">    :param X: N x D data array</span>
-<span class="sd">    :param y: 1D Array of targets (length N)</span>
-<span class="sd">    :param Xs: Nte x D array of test cases</span>
-<span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
+    :param hyp: vector of hyperparmaters.
+    :param X: N x D data array
+    :param y: 1D Array of targets (length N)
+    :param Xs: Nte x D array of test cases
+    :param hyp0: starting estimates for hyperparameter optimisation
 
-<span class="sd">    :returns: * ys - predictive mean</span>
-<span class="sd">              * s2 - predictive variance</span>
+    :returns: * ys - predictive mean
+              * s2 - predictive variance
 
-<span class="sd">    The hyperparameters are::</span>
+    The hyperparameters are::
 
-<span class="sd">        hyp = ( log(beta), log(alpha) )  # hyp is a list or numpy array</span>
+        hyp = ( log(beta), log(alpha) )  # hyp is a list or numpy array
 
-<span class="sd">    The implementation and notation mostly follows Bishop (2006).</span>
-<span class="sd">    The hyperparameter beta is the noise precision and alpha is the precision</span>
-<span class="sd">    over lengthscale parameters. This can be either a scalar variable (a</span>
-<span class="sd">    common lengthscale for all input variables), or a vector of length D (a</span>
-<span class="sd">    different lengthscale for each input variable, derived using an automatic</span>
-<span class="sd">    relevance determination formulation). These are estimated using conjugate</span>
-<span class="sd">    gradient optimisation of the marginal likelihood.</span>
+    The implementation and notation mostly follows Bishop (2006).
+    The hyperparameter beta is the noise precision and alpha is the precision
+    over lengthscale parameters. This can be either a scalar variable (a
+    common lengthscale for all input variables), or a vector of length D (a
+    different lengthscale for each input variable, derived using an automatic
+    relevance determination formulation). These are estimated using conjugate
+    gradient optimisation of the marginal likelihood.
 
-<span class="sd">    Reference:</span>
-<span class="sd">    Bishop (2006) Pattern Recognition and Machine Learning, Springer</span>
+    Reference:
+    Bishop (2006) Pattern Recognition and Machine Learning, Springer
 
-<span class="sd">    Written by A. Marquand</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    Written by A. Marquand
+    &quot;&quot;&quot;
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1"># parse arguments</span>
-        <span class="n">n_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n_iter&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-        <span class="n">tol</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tol&#39;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
-        <span class="n">verbose</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">var_groups</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;var_groups&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">warp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;warp&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">warp_reparam</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;warp_reparam&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    def __init__(self, hyp=None, X=None, y=None,
+                 n_iter=100, tol=1e-3, verbose=False, 
+                 var_groups=None, warp=None):
+
+        self.hyp = np.nan
+        self.nlZ = np.nan
+        self.tol = tol          # not used at present
+        self.n_iter = n_iter
+        self.verbose = verbose
+        self.var_groups = var_groups 
+        if self.var_groups is not None:
+            self.var_ids = set(self.var_groups)
+            self.var_ids = sorted(list(self.var_ids))
+
+        # set up warped likelihood
+        if warp is None:
+            self.warp = None
+            self.n_warp_param = 0
+        else:
+            self.warp = warp
+            self.n_warp_param = warp.get_n_params()
+        self.gamma = None
+    
+    def _parse_hyps(self, hyp, X):
+
+        N = X.shape[0]
         
-        <span class="c1"># basic parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>          <span class="c1"># not used at present</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">=</span> <span class="n">var_groups</span> 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">))</span>
+        # hyperparameters
+        if self.var_groups is None:
+            beta = np.asarray([np.exp(hyp[0])])               # noise precision 
+            self.Lambda_n = np.diag(np.ones(N)*beta)
+            self.Sigma_n = np.diag(np.ones(N)/beta)
+        else:
+            beta = np.exp(hyp[0:len(self.var_ids)])
+            beta_all = np.ones(N)
+            for v in range(len(self.var_ids)):
+                beta_all[self.var_groups == self.var_ids[v]] = beta[v]
+            self.Lambda_n = np.diag(beta_all)
+            self.Sigma_n = np.diag(1/beta_all)
+        
+        # parameters for warping the likelhood function
+        n_lik_param = len(beta)
+        if self.warp is not None:
+            gamma = hyp[n_lik_param:(n_lik_param + self.n_warp_param)]
+            n_lik_param += self.n_warp_param
+        else:
+            gamma = None
 
-        <span class="c1"># set up warped likelihood</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warp:&#39;</span><span class="p">,</span> <span class="n">warp</span><span class="p">,</span> <span class="s1">&#39;warp_reparam:&#39;</span><span class="p">,</span> <span class="n">warp_reparam</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">warp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="n">warp</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span> <span class="o">=</span> <span class="n">warp</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">warp_reparam</span> <span class="o">=</span> <span class="n">warp_reparam</span>
+        # precision for the coefficients
+        if isinstance(beta, list) or type(beta) is np.ndarray:
+            alpha = np.exp(hyp[n_lik_param:])
+        else:
+            alpha = np.exp(hyp[1:])
+
+        return beta, alpha, gamma
+        
+<div class="viewcode-block" id="BLR.post"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.post">[docs]</a>    def post(self, hyp, X, y):
+        &quot;&quot;&quot; Generic function to compute posterior distribution.
+
+            This function will save the posterior mean and precision matrix as
+            self.m and self.A and will also update internal parameters (e.g.
+            N, D and the prior covariance (Sigma_a) and precision (Lambda_a).
+        &quot;&quot;&quot;
+
+        N = X.shape[0]
+        if len(X.shape) == 1:
+            D = 1
+        else:
+            D = X.shape[1]
+
+        if (hyp == self.hyp).all() and hasattr(self, &#39;N&#39;):
+            print(&quot;hyperparameters have not changed, exiting&quot;)
+            return
+        
+        beta, alpha, gamma = self._parse_hyps(hyp, X)
+
+        if self.verbose:
+            print(&quot;estimating posterior ... | hyp=&quot;, hyp)
+
+        # prior variance
+        if len(alpha) == 1 or len(alpha) == D:
+            self.Sigma_a = np.diag(np.ones(D))/alpha
+            self.Lambda_a = np.diag(np.ones(D))*alpha
+        else:
+            raise ValueError(&quot;hyperparameter vector has invalid length&quot;)
+
+        # compute posterior precision and mean
+        self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
+        self.m = linalg.solve(self.A, X.T, 
+                              check_finite=False).dot(self.Lambda_n).dot(y)
+        #self.m = linalg.lstsq(self.A, X.T, 
+        #                      check_finite=False)[0].dot(self.Lambda_n).dot(y)
+
+        # save stuff
+        self.N = N
+        self.D = D
+        self.hyp = hyp</div>
+
+<div class="viewcode-block" id="BLR.loglik"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.loglik">[docs]</a>    def loglik(self, hyp, X, y):
+        &quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;
+
+        # hyperparameters (alpha not needed)
+        beta, alpha, gamma = self._parse_hyps(hyp, X) 
+
+        # warp the likelihood?
+        if self.warp is not None:
+            if self.verbose:
+                print(&#39;warping input...&#39;)
+            y_unwarped = y
+            y = self.warp.f(y, gamma)
             
-        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>
-    
-    <span class="k">def</span> <span class="nf">_parse_hyps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-
-        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        
-        <span class="c1"># noise precision</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span> 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)])</span>
-         
-        <span class="c1"># parameters for warping the likelhood function</span>
-        <span class="n">n_lik_param</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">gamma</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span><span class="p">:(</span><span class="n">n_lik_param</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span><span class="p">)]</span>
-            <span class="n">n_lik_param</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_warp_param</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="c1"># precision for the coefficients</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span><span class="p">:])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-
-        <span class="c1"># reparameterise the warp (WarpSinArcsinh only)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp_reparam</span><span class="p">:</span>
-            <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gamma</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span><span class="o">/</span><span class="p">(</span><span class="n">delta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    
-        <span class="c1"># Create precision matrix from noise precision</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">beta</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">/</span><span class="n">beta</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">beta_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)):</span>
-                <span class="n">beta_all</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span> <span class="o">=</span> <span class="n">beta</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">beta_all</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">beta_all</span><span class="p">)</span>
-    
-        <span class="k">return</span> <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span>
-        
-<div class="viewcode-block" id="BLR.post"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generic function to compute posterior distribution.</span>
-
-<span class="sd">            This function will save the posterior mean and precision matrix as</span>
-<span class="sd">            self.m and self.A and will also update internal parameters (e.g.</span>
-<span class="sd">            N, D and the prior covariance (Sigma_a) and precision (Lambda_a).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hyperparameters have not changed, exiting&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
-        
-        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;estimating posterior ... | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
-
-        <span class="c1"># prior variance</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="n">D</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">/</span><span class="n">alpha</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">D</span><span class="p">))</span><span class="o">*</span><span class="n">alpha</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;hyperparameter vector has invalid length&quot;</span><span class="p">)</span>
-
-        <span class="c1"># compute posterior precision and mean</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> 
-                              <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-        <span class="c1">#self.m = linalg.lstsq(self.A, X.T, </span>
-        <span class="c1">#                      check_finite=False)[0].dot(self.Lambda_n).dot(y)</span>
-
-        <span class="c1"># save stuff</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">D</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span></div>
-
-<div class="viewcode-block" id="BLR.loglik"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.loglik">[docs]</a>    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;</span>
-
-        <span class="c1"># hyperparameters (alpha not needed)</span>
-        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> 
-
-        <span class="c1"># warp the likelihood?</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warping input...&#39;</span><span class="p">)</span>
-            <span class="n">y_unwarped</span> <span class="o">=</span> <span class="n">y</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
-            
-        <span class="c1"># load posterior and prior covariance</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
-                <span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
-                <span class="k">return</span> <span class="n">nlZ</span>
+        # load posterior and prior covariance
+        if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
+            try:
+                self.post(hyp, X, y)
+            except ValueError:
+                print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+                nlZ = 1/np.finfo(float).eps
+                return nlZ
                     
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># compute the log determinants in a numerically stable way</span>
-            <span class="n">logdetA</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))))</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
-            <span class="k">return</span> <span class="n">nlZ</span>
+        try:
+            # compute the log determinants in a numerically stable way
+            logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
+        except (ValueError, LinAlgError):
+            print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+            nlZ = 1/np.finfo(float).eps
+            return nlZ
 
-        <span class="n">logdetSigma_a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)))</span> <span class="c1"># diagonal</span>
-        <span class="n">logdetSigma_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span><span class="p">)))</span>
+        logdetSigma_a = sum(np.log(np.diag(self.Sigma_a))) # diagonal
+        logdetSigma_n = sum(np.log(np.diag(self.Sigma_n)))
 
-        <span class="c1"># compute negative marginal log likelihood</span>
-        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span>
-                      <span class="n">logdetSigma_n</span> <span class="o">-</span>
-                      <span class="n">logdetSigma_a</span> <span class="o">-</span>
-                      <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span> <span class="o">-</span>
-                      <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                      <span class="n">logdetA</span>
-                      <span class="p">)</span>
+        # compute negative marginal log likelihood
+        nlZ = -0.5 * (-self.N*np.log(2*np.pi) -
+                      logdetSigma_n -
+                      logdetSigma_a -
+                      (y-X.dot(self.m)).T.dot(self.Lambda_n).dot(y-X.dot(self.m)) -
+                      self.m.T.dot(self.Lambda_a).dot(self.m) -
+                      logdetA
+                      )
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># add in the Jacobian </span>
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">y_unwarped</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)))</span>
+        if self.warp is not None:
+            # add in the Jacobian 
+            nlZ = nlZ - sum(np.log(self.warp.df(y_unwarped, gamma)))
 
-        <span class="c1"># make sure the output is finite to stop the minimizer getting upset</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nlZ</span><span class="p">):</span>
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+        # make sure the output is finite to stop the minimizer getting upset
+        if not np.isfinite(nlZ):
+            nlZ = 1/np.finfo(float).eps
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nlZ= &quot;</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        if self.verbose:
+            print(&quot;nlZ= &quot;, nlZ, &quot; | hyp=&quot;, hyp)
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span>
-        <span class="k">return</span> <span class="n">nlZ</span></div>
+        self.nlZ = nlZ
+        return nlZ</div>
 
-<div class="viewcode-block" id="BLR.dloglik"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.dloglik">[docs]</a>    <span class="k">def</span> <span class="nf">dloglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BLR.dloglik"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.dloglik">[docs]</a>    def dloglik(self, hyp, X, y):
+        &quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;
 
-        <span class="c1"># hyperparameters</span>
-        <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        # hyperparameters
+        beta, alpha, gamma = self._parse_hyps(hyp, X)
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;optimization with derivatives is not yet &#39;</span> <span class="o">+</span> \
-                             <span class="s1">&#39;supported for warped liklihood&#39;</span><span class="p">)</span>
+        if self.warp is not None:
+            raise ValueError(&#39;optimization with derivatives is not yet &#39; + \
+                             &#39;supported for warped liklihood&#39;)
 
-        <span class="c1"># load posterior and prior covariance</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
-                <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
-                <span class="k">return</span> <span class="n">dnlZ</span>
+        # load posterior and prior covariance
+        if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
+            try:
+                self.post(hyp, X, y)
+            except ValueError:
+                print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+                dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
+                return dnlZ
 
-        <span class="c1"># precompute re-used quantities to maximise speed </span>
-        <span class="c1"># todo: revise implementation to use Cholesky throughout </span>
-        <span class="c1">#       that would remove the need to explicitly compute the inverse</span>
-        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>                       <span class="c1"># posterior covariance</span>
-        <span class="n">SX</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="n">XLn</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span>
-        <span class="n">XLny</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-        <span class="n">SXLny</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLny</span><span class="p">)</span>       
-        <span class="n">XLnXm</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        # precompute re-used quantities to maximise speed 
+        # todo: revise implementation to use Cholesky throughout 
+        #       that would remove the need to explicitly compute the inverse
+        S = np.linalg.inv(self.A)                       # posterior covariance
+        SX = S.dot(X.T)
+        XLn = X.T.dot(self.Lambda_n)
+        XLny = XLn.dot(y)
+        SXLny = S.dot(XLny)       
+        XLnXm = XLn.dot(X).dot(self.m)
       
-        <span class="c1"># initialise derivatives</span>
-        <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        # initialise derivatives
+        dnlZ = np.zeros(hyp.shape)
  
-        <span class="c1"># noise precision parameter(s)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)):</span>
-            <span class="c1"># first compute derivative of Lambda_n with respect to beta</span>
-            <span class="n">dL_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">dL_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>    
-                <span class="n">dL_n_vec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">dLambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dL_n_vec</span><span class="p">)</span>
+        # noise precision parameter(s)
+        for i in range(0, len(beta)):
+            # first compute derivative of Lambda_n with respect to beta
+            dL_n_vec = np.zeros(self.N)
+            if self.var_groups is None:
+                dL_n_vec = np.ones(self.N)
+            else:    
+                dL_n_vec[np.where(self.var_groups == self.var_ids[i])[0]] = 1
+            dLambda_n = np.diag(dL_n_vec)
             
-            <span class="c1"># compute quantities used multiple times</span>
-            <span class="n">XdLnX</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-            <span class="n">dA</span> <span class="o">=</span> <span class="n">XdLnX</span>
+            # compute quantities used multiple times
+            XdLnX = X.T.dot(dLambda_n).dot(X)
+            dA = XdLnX
             
-            <span class="c1"># derivative of posterior parameters with respect to beta</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span> <span class="o">+</span> <span class="n">SX</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            # derivative of posterior parameters with respect to beta
+            b = -S.dot(dA).dot(SXLny) + SX.dot(dLambda_n).dot(y)
             
-            <span class="c1"># compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently</span>
-            <span class="n">trSigma_ndLambda_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_n</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">))</span>
+            # compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently
+            trSigma_ndLambda_n = sum(np.diag(self.Sigma_n)*np.diag(dLambda_n))
             
-            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">trSigma_ndLambda_n</span> <span class="o">-</span> 
-                         <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span>
-                         <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XdLnX</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>    
-                         <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span> <span class="o">-</span>
-                         <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                         <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
-                         <span class="p">)</span> <span class="o">*</span> <span class="n">beta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            dnlZ[i] = - (0.5 * trSigma_ndLambda_n - 
+                         0.5 * y.dot(dLambda_n).dot(y) +
+                         y.dot(dLambda_n).dot(X).dot(self.m) +
+                         y.T.dot(self.Lambda_n).dot(X).dot(b) -
+                         0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
+                         b.T.dot(XLnXm) -
+                         b.T.dot(self.Lambda_a).dot(self.m) -
+                         0.5 * np.trace(S.dot(dA))
+                         ) * beta[i]
 
-        <span class="c1"># scaling parameter(s)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)):</span>
-            <span class="c1"># first compute derivatives with respect to alpha</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>  <span class="c1"># are we using ARD?</span>
-                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
-                <span class="n">dLambda_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+        # scaling parameter(s)
+        for i in range(0, len(alpha)):
+            # first compute derivatives with respect to alpha
+            if len(alpha) == self.D:  # are we using ARD?
+                dLambda_a = np.zeros((self.D, self.D))
+                dLambda_a[i, i] = 1
+            else:
+                dLambda_a = np.eye(self.D)
 
-            <span class="n">F</span> <span class="o">=</span> <span class="n">dLambda_a</span>
-            <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span>
+            F = dLambda_a
+            c = -S.dot(F).dot(SXLny)
             
-            <span class="c1"># compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently</span>
-            <span class="n">trSigma_adLambda_a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_a</span><span class="p">))</span>
+            # compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently
+            trSigma_adLambda_a = sum(np.diag(self.Sigma_a)*np.diag(dLambda_a))
             
-            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span> <span class="n">trSigma_adLambda_a</span> <span class="o">+</span>
-                                  <span class="n">XLny</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span>
-                                  <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span> <span class="o">-</span>
-                                  <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                                  <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span>
-                                  <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
-                                  <span class="p">)</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            dnlZ[i+len(beta)] = -(0.5* trSigma_adLambda_a +
+                                  XLny.T.dot(c) -
+                                  c.T.dot(XLnXm) -
+                                  c.T.dot(self.Lambda_a).dot(self.m) -
+                                  0.5 * self.m.T.dot(F).dot(self.m) -
+                                  0.5*np.trace(linalg.solve(self.A, F))
+                                  ) * alpha[i]
 
-        <span class="c1"># make sure the gradient is finite to stop the minimizer getting upset</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dnlZ</span><span class="p">)):</span>
-            <span class="n">bad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dnlZ</span><span class="p">)))</span>
-            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bad</span><span class="p">:</span>
-                <span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+        # make sure the gradient is finite to stop the minimizer getting upset
+        if not all(np.isfinite(dnlZ)):
+            bad = np.where(np.logical_not(np.isfinite(dnlZ)))
+            for b in bad:
+                dnlZ[b] = np.sign(self.dnlZ[b]) / np.finfo(float).eps
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dnlZ= &quot;</span><span class="p">,</span> <span class="n">dnlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        if self.verbose:
+            print(&quot;dnlZ= &quot;, dnlZ, &quot; | hyp=&quot;, hyp)
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span> <span class="o">=</span> <span class="n">dnlZ</span>
-        <span class="k">return</span> <span class="n">dnlZ</span></div>
+        self.dnlZ = dnlZ
+        return dnlZ</div>
 
-    <span class="c1"># model estimation (optimization)</span>
-<div class="viewcode-block" id="BLR.estimate"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;optimizer&#39;</span><span class="p">,</span><span class="s1">&#39;cg&#39;</span><span class="p">)</span>
+    # model estimation (optimization)
+<div class="viewcode-block" id="BLR.estimate"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.estimate">[docs]</a>    def estimate(self, hyp0, X, y, optimizer=&#39;cg&#39;):
+        &quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;
 
-        <span class="k">if</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>  <span class="c1"># conjugate gradients</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_cg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dloglik</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-                                   <span class="n">disp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
-                                   <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        if optimizer.lower() == &#39;cg&#39;:  # conjugate gradients
+            out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y),
+                                   disp=True, gtol=self.tol,
+                                   maxiter=self.n_iter, full_output=1)
 
-        <span class="k">elif</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;powell&#39;</span><span class="p">:</span>  <span class="c1"># Powell&#39;s method</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_powell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-                                       <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;nelder-mead&#39;</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-                                       <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unknown optimizer&quot;</span><span class="p">)</span>
+        elif optimizer.lower() == &#39;powell&#39;:  # Powell&#39;s method
+            out = optimize.fmin_powell(self.loglik, hyp0, (X, y),
+                                       full_output=1)
+        else:
+            raise ValueError(&quot;unknown optimizer&quot;)
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        self.hyp = out[0]
+        self.nlZ = out[1]
+        self.optimizer = optimizer
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span></div>
+        return self.hyp</div>
 
-<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">,</span> <span class="n">var_groups_test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../modindex.html#bayesreg.BLR.predict">[docs]</a>    def predict(self, hyp, X, y, Xs, var_groups_test=None):
+        &quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;
 
-        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># set dummy hyperparameters</span>
-            <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
-        <span class="k">else</span><span class="p">:</span>
+        if X is None or y is None:
+            # set hyperparameters. we can use an array of zeros because 
+            beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
+        else:
             
-            <span class="c1"># set hyperparameters</span>
-            <span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+            # set hyperparameters
+            beta, alpha, gamma = self._parse_hyps(hyp, X)
             
-            <span class="c1"># do we need to re-estimate the posterior?</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
-                <span class="c1"># warp the likelihood?</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warping input...&#39;</span><span class="p">)</span>
-                    <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            # do we need to re-estimate the posterior?
+            if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
+                # warp the likelihood?
+                if self.warp is not None:
+                    if self.verbose:
+                        print(&#39;warping input...&#39;)
+                    y = self.warp.f(y, gamma) 
+                self.post(hyp, X, y)
 
-        <span class="n">N_test</span> <span class="o">=</span> <span class="n">Xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        N_test = Xs.shape[0]
 
-        <span class="n">ys</span> <span class="o">=</span> <span class="n">Xs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        ys = Xs.dot(self.m)
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s2n</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_groups_test</span><span class="p">)</span> <span class="o">!=</span> <span class="n">N_test</span><span class="p">:</span>
-                <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Invalid variance groups for test&#39;</span><span class="p">)</span>
-            <span class="c1"># separate variance groups</span>
-            <span class="n">s2n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N_test</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">)):</span>
-                <span class="n">s2n</span><span class="p">[</span><span class="n">var_groups_test</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_ids</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        if self.var_groups is None:
+            s2n = 1/beta
+        else:
+            if len(var_groups_test) != N_test:
+                raise(ValueError, &#39;Invalid variance groups for test&#39;)
+            # separate variance groups
+            s2n = np.ones(N_test)
+            for v in range(len(self.var_ids)):
+                s2n[var_groups_test == self.var_ids[v]] = 1/beta[v]
         
-        <span class="c1"># compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries</span>
-        <span class="n">s2</span> <span class="o">=</span> <span class="n">s2n</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Xs</span><span class="o">*</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">Xs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
+        s2 = s2n + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
         
-        <span class="k">return</span> <span class="n">ys</span><span class="p">,</span> <span class="n">s2</span></div></div>
+        return ys, s2</div></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
+           
           </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Andre F. Marquand
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.20 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">bayesreg</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Andre F. Marquand.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
-    </div>
-  </body>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>
