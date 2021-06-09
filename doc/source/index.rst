@@ -17,7 +17,7 @@ Predictive Clinical Neuroscience toolkit
    pages/pcntoolkit_background.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Function Docs
 
    modindex.rst
