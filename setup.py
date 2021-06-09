@@ -20,5 +20,6 @@ setup(name='pcntoolkit',
           'pandas>=0.25.3',
           'torch>=1.1.0', 
           'pymc3>=3.11.2',
+          'sphinx_tabs',
       ],
       zip_safe=False)
