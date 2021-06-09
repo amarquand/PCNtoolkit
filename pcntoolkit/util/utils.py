@@ -97,17 +97,23 @@ def compute_pearsonr(A, B):
 
             compute_pearsonr(A, B)
 
+        where
+
         :param A: an N * M data array
+
         :param cov: an N * M array
 
         :returns Rho: N dimensional vector of correlation coefficients
+
         :returns ys2: N dimensional vector of p-values
 
         Notes::
 
             This function is useful when M is large and only the diagonal entries
             of the resulting correlation matrix are of interest. This function
-            does not compute the full correlation matrix as an intermediate step"""
+            does not compute the full correlation matrix as an intermediate step
+
+    """
 
     # N = A.shape[1]
     N = A.shape[0]
@@ -140,10 +146,9 @@ def explained_var(ytrue, ypred):
 
         where
 
-        :ytrue: n*p matrix of true values where n is the number of samples 
-                and p is the number of features. 
-        :ypred: n*p matrix of predicted values where n is the number of samples 
-                and p is the number of features. 
+        :ytrue: n*p matrix of true values where n is the number of samples and p is the number of features. 
+
+        :ypred: n*p matrix of predicted values where n is the number of samples and p is the number of features. 
 
         :returns exp_var: p dimentional vector of explained variances for each feature.
         
@@ -162,18 +167,17 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         
         where
         
-        :param ytrue     : n*p matrix of true values where n is the number of samples 
-                           and p is the number of features. 
-        :param ypred     : n*p matrix of predicted values where n is the number of samples 
-                           and p is the number of features. 
-        :param ypred_var : n*p matrix of summed noise variances and prediction variances where n is the number of samples 
-                           and p is the number of features.
+        :param ytrue: n*p matrix of true values where n is the number of samples and p is the number of features. 
+
+        :param ypred: n*p matrix of predicted values where n is the number of samples and p is the number of features. 
+
+        :param ypred_var: n*p matrix of summed noise variances and prediction variances where n is the number of samples and p is the number of features.
             
         :param train_mean: p dimensional vector of mean values of the training data for each feature.
         
-        :param train_var : p dimensional vector of covariances of the training data for each feature.
+        :param train_var: p dimensional vector of covariances of the training data for each feature.
 
-        :returns loss    : p dimensional vector of MSLL or MLL for each feature.
+        :returns loss: p dimensional vector of MSLL or MLL for each feature.
 
     """
     
@@ -205,6 +209,7 @@ class WarpBase(with_metaclass(ABCMeta)):
             Warp.invf() - inverse warp
             Warp.df() - derivatives
             Warp.warp_predictions() - compute predictive distribution
+
     """
 
     def __init__(self):
@@ -229,6 +234,7 @@ class WarpBase(with_metaclass(ABCMeta)):
 
             :returns: * median - median of the predictive distribution
                       * pred_interval - predictive interval(s)
+
         """
 
         # Compute percentiles of a standard Gaussian
@@ -248,12 +254,16 @@ class WarpBase(with_metaclass(ABCMeta)):
     @abstractmethod
     def f(self, x, param):
         """ Evaluate the warping function (mapping non-Gaussian respone 
-            variables to Gaussian variables)"""
+            variables to Gaussian variables)
+            
+        """
 
     @abstractmethod
     def invf(self, y, param):
         """ Evaluate the warping function (mapping Gaussian latent variables 
-            to non-Gaussian response variables) """
+            to non-Gaussian response variables) 
+        
+        """
 
     @abstractmethod
     def df(self, x, param):
@@ -262,6 +272,7 @@ class WarpBase(with_metaclass(ABCMeta)):
 class WarpAffine(WarpBase):
     """ Affine warp
         y = a + b*x
+
     """
 
     def __init__(self):
@@ -299,6 +310,7 @@ class WarpBoxCox(WarpBase):
         
         This follows the generalization in Bicken and Doksum (1981) JASA 76
         and allows x to assume negative values. 
+
     """
 
     def __init__(self):
@@ -357,6 +369,7 @@ class WarpSinArcsinh(WarpBase):
         and a = -epsilon*b
     
         see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
+
     """
 
     def __init__(self):
@@ -400,6 +413,7 @@ class WarpCompose(WarpBase):
             W = WarpCompose(('WarpBoxCox', 'WarpAffine'))
 
         where ell_i are lengthscale parameters and sf2 is the signal variance
+
     """
 
     def __init__(self, warpnames=None):
@@ -472,7 +486,9 @@ class CustomCV:
         :param test: a list of indices of test splits (each itself a list)
 
         :returns tr: Indices for training set
-        :returns te: Indices for test set """
+        :returns te: Indices for test set 
+    
+    """
 
     def __init__(self, train, test, X=None, y=None):
         self.train = train
@@ -496,8 +512,7 @@ class CustomCV:
 # Functions for inference
 # -----------------------
 
-def bashwrap(processing_dir, python_path, script_command, job_name,
-             bash_environment=None):
+def bashwrap(processing_dir, python_path, script_command, job_name, bash_environment=None):
 
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
@@ -515,7 +530,8 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
                                 
     :returns: A .sh file containing the commands for normative modelling
 
-    witten by Thomas Wolfers
+    written by Thomas Wolfers
+
     """
 
     # change to processing dir
@@ -546,7 +562,7 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
 
 def qsub(job_path, memory, duration, logdir=None):
     """
-    This function submits a job.sh scipt to the torque custer using the qsub
+    This function submits a job.sh script to the torque custer using the qsub
     command.
 
     ** Input:
@@ -559,7 +575,8 @@ def qsub(job_path, memory, duration, logdir=None):
     ** Output:
         * Submission of the job to the (torque) cluster
 
-    witten by Thomas Wolfers
+    written by Thomas Wolfers
+    
     """
     if logdir is None:
         logdir = os.path.expanduser('~')
