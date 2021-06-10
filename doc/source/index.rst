@@ -42,6 +42,6 @@ Predictive Clinical Neuroscience toolkit
    pages/references.rst
    pages/acknowledgements.rst
    
-:ref:`modindex`
-:ref:`search`
+* :ref:`modindex`
+* :ref:`search`
 
