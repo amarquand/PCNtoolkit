@@ -17,12 +17,6 @@ Predictive Clinical Neuroscience toolkit
    pages/pcntoolkit_background.rst
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Function Docs
-
-   modindex.rst
-
-.. toctree::
    :maxdepth: 1
    :caption: Current Events
    
@@ -47,4 +41,7 @@ Predictive Clinical Neuroscience toolkit
    pages/citing.rst
    pages/references.rst
    pages/acknowledgements.rst
+   
+:ref:`modindex`
+:ref:`search`
 
