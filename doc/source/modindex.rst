@@ -43,7 +43,7 @@ Module Index
     :inherited-members:
     :show-inheritance:
 
-.. automodule:: utils
+.. automodule:: util
     :members:
     :undoc-members:
     :inherited-members:
