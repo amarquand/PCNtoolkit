@@ -19,7 +19,9 @@ setup(name='pcntoolkit',
           'scipy>=1.3.2',
           'pandas>=0.25.3',
           'torch>=1.1.0', 
-          'pymc3>=3.11.2',
           'sphinx-tabs',
+          'pymc3>=3.8,<=3.9.3',
+          'theano==1.0.5',
+          'arviz==0.11.0'
       ],
       zip_safe=False)
