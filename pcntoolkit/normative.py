@@ -713,7 +713,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if (alg!='hbr' or nm.configs['transferred']==False):
             yhat, s2 = nm.predict(Xz, **kwargs)
         else:
-            tsbefile = kwargs.pop('tsbefile') 
+            tsbefile = kwargs.get('tsbefile') 
             batch_effects_test = fileio.load(tsbefile)
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
