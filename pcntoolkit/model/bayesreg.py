@@ -5,7 +5,6 @@ import numpy as np
 from scipy import optimize , linalg
 from scipy.linalg import LinAlgError
 
-
 class BLR:
     """Bayesian linear regression
 
@@ -218,6 +217,16 @@ class BLR:
 
         self.nlZ = nlZ
         return nlZ
+    
+    def penalized_loglik(self, hyp, X, y, l=0.1, norm = 'L1'):
+        """ Function to compute the penalized log (marginal) likelihood """
+        if norm.lower() == 'l1':
+            L = self.loglik(hyp, X, y) + l * sum(abs(hyp))
+        elif norm.lower() == 'l2':
+            L = self.loglik(hyp, X, y) + l * sum(np.sqrt(hyp**2))
+        else:
+            print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
+        return L
 
     def dloglik(self, hyp, X, y):
         """ Function to compute derivatives """
@@ -320,6 +329,9 @@ class BLR:
     def estimate(self, hyp0, X, y, **kwargs):
         """ Function to estimate the model """
         optimizer = kwargs.get('optimizer','cg')
+        l = kwargs.get('l', 0.1)
+        epsilon = kwargs.get('epsilon', 0.1)
+        norm = kwargs.get('norm', 'l1')
 
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y),
@@ -332,6 +344,11 @@ class BLR:
         elif optimizer.lower() == 'nelder-mead':
             out = optimize.fmin(self.loglik, hyp0, (X, y),
                                        full_output=1)
+        elif optimizer.lower() == 'l-bfgs-b':
+            out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=hyp0,
+                                          args=(X, y, l, norm), approx_grad=True,
+                                          epsilon=epsilon)
+
         else:
             raise ValueError("unknown optimizer")
 
