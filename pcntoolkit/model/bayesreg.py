@@ -223,7 +223,7 @@ class BLR:
         if norm.lower() == 'l1':
             L = self.loglik(hyp, X, y) + l * sum(abs(hyp))
         elif norm.lower() == 'l2':
-            L = self.loglik(hyp, X, y) + l * np.sqrt(sum(hyp**2))
+            L = self.loglik(hyp, X, y) + l * sum(np.sqrt(hyp**2))
         else:
             print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
         return L
