@@ -16,6 +16,8 @@ from bspline import splinelab
 from sklearn.datasets import make_regression
 import pymc3 as pm
 from io import StringIO
+import subprocess
+import re
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -1000,3 +1002,113 @@ class scaler:
                 X[X > 1] = 1
         
         return X
+    
+    
+    
+def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
+    
+    '''
+    This function receives the freesurfer directory (including processed data 
+    for several subjects) and retrieves the Euler number from the log files. If
+    the log file does not exist, this function uses 'mris_euler_number' to recompute
+    the Euler numbers (ENs). The function returns the ENs in a dataframe and 
+    the list of missing subjects (that for which computing EN is failed). If 
+    'save_path' is specified then the results will be saved in a pickle file.
+
+    Basic usage::
+
+        ENs, missing_subjects = retrieve_freesurfer_eulernum(freesurfer_dir)
+
+    where the arguments are defined below.
+
+    :param freesurfer_dir: absolute path to the Freesurfer directory.
+    :param subjects: List of subject that we want to retrieve the ENs for. 
+     If it is 'None' (the default), the list of the subjects will be automatically
+     retreived from existing directories in the 'freesurfer_dir' (i.e. the ENs
+     for all subjects will be retrieved).
+    :param save_path: The path to save the results. If 'None' (default) the 
+     results are not saves on the disk.
+
+
+    :outputs: * ENs - A dataframe of retrieved ENs.
+              * missing_subjects - The list of missing subjects.
+              
+    Developed by S.M. Kia
+    
+    '''
+    
+    if subjects is None:
+        subjects = [temp for temp in os.listdir(freesurfer_dir) 
+                    if os.path.isdir(os.path.join(freesurfer_dir ,temp))]
+        
+    df = pd.DataFrame(index=subjects, columns=['lh_en','rh_en','avg_en'])
+    missing_subjects = []
+    
+    for s, sub in enumerate(subjects):
+        sub_dir = os.path.join(freesurfer_dir, sub)
+        log_file = os.path.join(sub_dir, 'scripts', 'recon-all.log')
+        
+        if os.path.exists(sub_dir):
+            if os.path.exists(log_file):    
+                with open(log_file) as f:
+                    for line in f:
+                        # find the part that refers to the EC
+                        if re.search('orig.nofix lheno', line):
+                            eno_line = line
+                f.close()
+                eno_l = eno_line.split()[3][0:-1] # remove the trailing comma
+                eno_r = eno_line.split()[6]
+                euler = (float(eno_l) + float(eno_r)) / 2
+                
+                df.at[sub, 'lh_en'] = eno_l
+                df.at[sub, 'rh_en'] = eno_r
+                df.at[sub, 'avg_en'] = euler
+                
+                print('%d: Subject %s is successfully processed. EN = %f' 
+                      %(s, sub, df.at[sub, 'avg_en']))
+            else:
+                print('%d: Subject %s is missing log file, running QC ...' %(s, sub))
+                try:
+                    bashCommand = 'mris_euler_number '+ freesurfer_dir + sub +'/surf/lh.orig.nofix>' + 'temp_l.txt 2>&1'
+                    res = subprocess.run(bashCommand, stdout=subprocess.PIPE, shell=True)
+                    file = open('temp_l.txt', mode = 'r', encoding = 'utf-8-sig')
+                    lines = file.readlines()
+                    file.close()
+                    words = []
+                    for line in lines:
+                        line = line.strip()
+                        words.append([item.strip() for item in line.split(' ')])
+                    eno_l = np.float32(words[0][12])
+                    
+                    bashCommand = 'mris_euler_number '+ freesurfer_dir + sub +'/surf/rh.orig.nofix>' + 'temp_r.txt 2>&1'
+                    res = subprocess.run(bashCommand, stdout=subprocess.PIPE, shell=True)
+                    file = open('temp_r.txt', mode = 'r', encoding = 'utf-8-sig')
+                    lines = file.readlines()
+                    file.close()
+                    words = []
+                    for line in lines:
+                        line = line.strip()
+                        words.append([item.strip() for item in line.split(' ')])
+                    eno_r = np.float32(words[0][12])
+                    
+                    df.at[sub, 'lh_en'] = eno_l
+                    df.at[sub, 'rh_en'] = eno_r
+                    df.at[sub, 'avg_en'] = (eno_r + eno_l) / 2
+                
+                    print('%d: Subject %s is successfully processed. EN = %f' 
+                          %(s, sub, df.at[sub, 'avg_en']))
+                    
+                except:
+                    missing_subjects.append(sub)
+                    print('%d: QC is failed for subject %s.' %(s, sub))
+                
+        else:
+            missing_subjects.append(sub)
+            print('%d: Subject %s is missing.' %(s, sub))
+        df = df.dropna()
+        
+        if save_path is not None:
+            with open(save_path, 'wb') as file:
+                pickle.dump({'ENs':df}, file)
+             
+    return df, missing_subjects
