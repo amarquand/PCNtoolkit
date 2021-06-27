@@ -60,9 +60,20 @@ class NormBLR(NormBase):
         if type(model_order) is not int:
             model_order = int(model_order)
         
-        # configure variance groups (e.g. site specific variance)
-        if 'var_groups' in kwargs:
-            var_groups_file = kwargs.pop('var_groups')
+        # configure heteroskedastic noise
+        if 'varcovfile' in kwargs:
+            var_cov_file = kwargs.get('varcovfile')
+            if var_cov_file.endswith('.pkl'):
+                self.var_covariates = pd.read_pickle(var_cov_file)
+            else:
+                self.var_covariates = np.loadtxt(var_cov_file)
+            if len(self.var_covariates.shape) == 1:
+                self.var_covariates = self.var_covariates[:, np.newaxis]
+            n_beta = self.var_covariates.shape[1]
+            self.var_groups = None
+        elif 'vargroupfile' in kwargs:
+            # configure variance groups (e.g. site specific variance)
+            var_groups_file = kwargs.pop('vargroupfile')
             if var_groups_file.endswith('.pkl'):
                 self.var_groups = pd.read_pickle(var_groups_file)
             else:
@@ -72,6 +83,7 @@ class NormBLR(NormBase):
             n_beta = len(var_ids)
         else:
             self.var_groups = None
+            self.var_covariates = None
             n_beta = 1
         
         # are we using ARD?
@@ -133,6 +145,9 @@ class NormBLR(NormBase):
         # remove warp string to prevent it being passed to the blr object
         kwargs.pop('warp',None) 
         
+        # same for the optimizer
+        #kwargs.pop('optimizer', None)
+        
         if not hasattr(self,'Phi'):
             self.Phi = create_poly_basis(X, self._model_order)
         if len(y.shape) > 1:
@@ -147,29 +162,39 @@ class NormBLR(NormBase):
                            warp=self.warp, **kwargs)
 
         self.theta = self.blr.estimate(theta, self.Phi, y, 
-                                       optimizer=self.optim_alg)
+                                       var_covariates=self.var_covariates, **kwargs)
         
         return self
 
     def predict(self, Xs, X=None, y=None, **kwargs):      
         
         theta = self.theta # always use the estimated coefficients
-        # remove from kwargs
+        # remove from kwargs to avoid downstream problems
         kwargs.pop('theta', None)
 
         Phis = create_poly_basis(Xs, self._model_order)
-        
-        if 'var_groups_test' in kwargs:
-            var_groups_test_file = kwargs.pop('var_groups_test')
+            
+        if 'testvargroupfile' in kwargs:
+            var_groups_test_file = kwargs.pop('testvargroupfile')
             if var_groups_test_file.endswith('.pkl'):
                 var_groups_te = pd.read_pickle(var_groups_test_file)
             else:
                 var_groups_te = np.loadtxt(var_groups_test_file)
         else:
             var_groups_te = None
-            
+        
+        if 'testvarcovfile' in kwargs:
+            var_cov_test_file = kwargs.get('testvarcovfile')
+            if var_cov_test_file.endswith('.pkl'):
+                var_cov_te = pd.read_pickle(var_cov_test_file)
+            else:
+                var_cov_te = np.loadtxt(var_cov_test_file)
+        else:
+            var_cov_te = None
+        
         yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis, 
-                                    var_groups_test=var_groups_te)
+                                    var_groups_test=var_groups_te,
+                                    var_covariates_test=var_cov_te, **kwargs)
         
         return yhat, s2
     
