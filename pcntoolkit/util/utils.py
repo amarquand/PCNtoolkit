@@ -62,6 +62,46 @@ def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
     B = bspline.Bspline(k, p) 
     return B
 
+def create_design_matrix(X, intercept = True, basis = 'bspline',
+                         basis_column = 0, site_cols=None,
+                         **kwargs):
+    """ Prepare a design matrix from a set of covariates sutiable for
+        running Bayesian linar regression
+        
+        :param p: order of spline (3 = cubic)
+        :param nknots: number of knots (endpoints only counted once)
+    """
+    xmin = kwargs.pop('xmin', 0)
+    xmax = kwargs.pop('xmax', 100)
+    
+    N = X.shape[0]
+    
+    if type(X) is pd.DataFrame:
+        X = X.to_numpy()
+    
+    # add intercept column 
+    if intercept: 
+        Phi = np.concatenate((np.ones((N, 1)), X), axis=1)
+    else:
+        Phi = X
+    
+    # add dummy coded site columns
+    if site_cols is not None:
+        if type(site_cols) is pd.DataFrame:
+            site_cols = site_cols.to_numpy()
+        if site_cols.shape[0] != N: 
+            raise ValueError('site cols must have the same number of rows as X')
+        Phi = np.concatenate((Phi, site_cols), axis=1)
+    
+    # create Bspline basis set 
+    if basis == 'bspline':
+        B = create_bspline_basis(xmin, xmax, **kwargs)  
+        Phi = np.concatenate((Phi, np.array([B(i) for i in X[:,basis_column]])), axis=1)
+    elif basis == 'poly': 
+        Phi = np.concatenate(Phi, create_poly_basis(X[:,basis_column], **kwargs))
+    
+    return Phi
+
 def squared_dist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
 
