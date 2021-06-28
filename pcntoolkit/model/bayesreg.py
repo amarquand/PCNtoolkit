@@ -128,17 +128,14 @@ class BLR:
     
         # Create precision matrix from noise precision
         if Xv is not None:
-            self.Lambda_n = np.diag(beta)
-            self.Sigma_n = np.diag(1/beta)
+            self.lambda_n_vec = beta
         elif self.var_groups is not None:
             beta_all = np.ones(N)
             for v in range(len(self.var_ids)):
                 beta_all[self.var_groups == self.var_ids[v]] = beta[v]
-            self.Lambda_n = np.diag(beta_all)
-            self.Sigma_n = np.diag(1/beta_all)
-        else:
-            self.Lambda_n = np.diag(np.ones(N)*beta)
-            self.Sigma_n = np.diag(np.ones(N)/beta)            
+            self.lambda_n_vec = beta_all
+        else:     
+            self.lambda_n_vec = np.ones(N)*beta
     
         return beta, alpha, gamma
         
@@ -173,11 +170,17 @@ class BLR:
             raise ValueError("hyperparameter vector has invalid length")
 
         # compute posterior precision and mean
-        self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
-        self.m = linalg.solve(self.A, X.T, 
-                              check_finite=False).dot(self.Lambda_n).dot(y)
-        #self.m = linalg.lstsq(self.A, X.T, 
-        #                      check_finite=False)[0].dot(self.Lambda_n).dot(y)
+        # this is equivalent to the following operation but makes much more 
+        # efficient use of memory by avoiding the need to store Lambda_n
+        #
+        # self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
+        # self.m = linalg.solve(self.A, X.T, 
+        #                      check_finite=False).dot(self.Lambda_n).dot(y)
+        
+        XtLambda_n = X.T*self.lambda_n_vec
+        self.A = XtLambda_n.dot(X) + self.Lambda_a
+        invAXt = linalg.solve(self.A, X.T, check_finite=False)
+        self.m = (invAXt*self.lambda_n_vec).dot(y)
 
         # save stuff
         self.N = N
@@ -215,16 +218,18 @@ class BLR:
             return nlZ
 
         logdetSigma_a = sum(np.log(np.diag(self.Sigma_a))) # diagonal
-        logdetSigma_n = sum(np.log(np.diag(self.Sigma_n)))
-
+        logdetSigma_n = sum(np.log(1/self.lambda_n_vec))
+        
         # compute negative marginal log likelihood
+        X_y_t_sLambda_n = (y-X.dot(self.m))*np.sqrt(self.lambda_n_vec)
         nlZ = -0.5 * (-self.N*np.log(2*np.pi) -
                       logdetSigma_n -
                       logdetSigma_a -
-                      (y-X.dot(self.m)).T.dot(self.Lambda_n).dot(y-X.dot(self.m)) -
+                      X_y_t_sLambda_n.T.dot(X_y_t_sLambda_n) -
                       self.m.T.dot(self.Lambda_a).dot(self.m) -
                       logdetA
                       )
+        
         
         if self.warp is not None:
             # add in the Jacobian 
@@ -275,14 +280,15 @@ class BLR:
         #       that would remove the need to explicitly compute the inverse
         S = np.linalg.inv(self.A)                       # posterior covariance
         SX = S.dot(X.T)
-        XLn = X.T.dot(self.Lambda_n)
+        XLn = X.T*self.lambda_n_vec # = X.T.dot(self.Lambda_n)
         XLny = XLn.dot(y)
         SXLny = S.dot(XLny)       
         XLnXm = XLn.dot(X).dot(self.m)
       
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
- 
+        dnl2 = np.zeros(hyp.shape)
+        
         # noise precision parameter(s)
         for i in range(0, len(beta)):
             # first compute derivative of Lambda_n with respect to beta
@@ -301,12 +307,16 @@ class BLR:
             b = -S.dot(dA).dot(SXLny) + SX.dot(dLambda_n).dot(y)
             
             # compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently
-            trSigma_ndLambda_n = sum(np.diag(self.Sigma_n)*np.diag(dLambda_n))
+            trSigma_ndLambda_n = sum((1/self.lambda_n_vec)*np.diag(dLambda_n))
+
+            # compute  y.T.dot(Lambda_n) efficiently
+            ytLn = (y*self.lambda_n_vec).T
             
+            # compute derivatives
             dnlZ[i] = - (0.5 * trSigma_ndLambda_n - 
                          0.5 * y.dot(dLambda_n).dot(y) +
                          y.dot(dLambda_n).dot(X).dot(self.m) +
-                         y.T.dot(self.Lambda_n).dot(X).dot(b) -
+                         ytLn.dot(X).dot(b) -
                          0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
                          b.T.dot(XLnXm) -
                          b.T.dot(self.Lambda_a).dot(self.m) -
