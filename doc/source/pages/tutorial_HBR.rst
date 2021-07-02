@@ -72,11 +72,40 @@ In the BLR tutorial, models are estimated one by one for each ROI, here we show 
                                          outputsuffix=outputsuffix)
    
 
+Similarly to BLR, once estimated, you can check the models performance (eg Pearsons' correlations, errors) and obviously the predictive mean and variance, and  associted Z scores, of the models for the various features (ROIs) of the test data:
+
+Step 6: Interpreting model performance
+*****************************************
+
+Output evaluation metrics definitions
+
+=================   ======================================================================================================
+**key value**       **Description** 
+-----------------   ------------------------------------------------------------------------------------------------------ 
+yhat                predictive mean 
+ys2                 predictive variance 
+nm                  normative model 
+Z                   deviance scores 
+Rho                 Pearson correlation between true and predicted responses 
+pRho                parametric p-value for this correlation 
+RMSE                root mean squared error between true/predicted responses 
+SMSE                standardised mean squared error 
+EV                  explained variance 
+MSLL                mean standardized log loss `See page 23 <http://www.gaussianprocess.org/gpml/chapters/RW2.pdf>`_
+=================   ======================================================================================================
+
+
+
+
 PREDICTING
 *******************************************
+
+Additionally, you may then want to apply these normative models onto new data coming from the same scanner sites used in the estimation of the models.
+The process is very similar, but as you do not need to retrain the model, there is obviously no need for training data files. The predict() function thus requires only the covariates file. If the test responses are also specified then quantities that depend on those will also be returned (Z scores and error metrics).
+
 .. code:: ipython3
 
-    model_path = processing_dir + 'Models/'
+    model_path = processing_dir + 'Models/'  # point to wherever you have stored the normative models estimated previously.
     output_path = os.path.join(processing_dir, 'output/')
     log_dir = output_path + 'log/'
     if not os.path.isdir(output_path):
@@ -94,16 +123,10 @@ PREDICTING
     yhat, s2, z = ptk.normative.predict(covfile=covfile, respfile=respfile, model_path=model_path,
                                         tsbefile=tsbefile, alg='hbr', log_path=log_dir, binary=True,
                                         standardize=standardize, output_path=output_path,
-                                        outputsuffix='_psy_pred')
-
-        
-    shutil.move(processing_dir + f'yhat_{sample}.pkl', output_path + f'yhat_{sample}.pkl')
-    shutil.move(processing_dir + f'ys2_{sample}.pkl', output_path + f'ys2_{sample}.pkl')
-    
-    for f in glob.glob(processing_dir + f'*_{sample}.pkl'):
-        os.remove(f)
+                                        outputsuffix='_predict')
 
 
+Similarly to the estimate() function, you will get the predictive mean and variance and,  along with the Z scores for each of the provided sample and ROI.
 
 TRANSFERING
 *******************************************
