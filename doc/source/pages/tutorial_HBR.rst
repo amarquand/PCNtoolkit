@@ -6,13 +6,11 @@ Hierarchical Bayesian regression (HBR) is especially suited to deal with multi-s
 DRAFT
 *******************************************
 
-0. Estimate from scratch
+0. Prepare inputs
 
-OR
+1. Estimate from data OR Transfer from already trained models, onto new sites/scanners
 
-1. Transfer from already trained models, onto new sites/scanners
-
-2. Predict
+2. Predict unseen data from known scanners
 
 
 
@@ -74,7 +72,7 @@ In the BLR tutorial, models are estimated one by one for each ROI, here we show 
 
 Similarly to BLR, once estimated, you can check the models performance (eg Pearsons' correlations, errors) and obviously the predictive mean and variance, and  associted Z scores, of the models for the various features (ROIs) of the test data:
 
-Step 6: Interpreting model performance
+Interpreting model performance
 *****************************************
 
 Output evaluation metrics definitions
@@ -96,11 +94,16 @@ MSLL                mean standardized log loss `See page 23 <http://www.gaussian
 
 
 
+TRANSFERING
+*******************************************
+One major benefit of this HBR approahc is the possibility to transfer the models to unseen data while taking advantage of the previously learned distributions.
+
+
 
 PREDICTING
 *******************************************
 
-Additionally, you may then want to apply these normative models onto new data coming from the same scanner sites used in the estimation of the models.
+Naturally, you may then want to apply these normative models onto new data coming from the same scanner sites used in the estimation of the models.
 The process is very similar, but as you do not need to retrain the model, there is obviously no need for training data files. The predict() function thus requires only the covariates file. If the test responses are also specified then quantities that depend on those will also be returned (Z scores and error metrics).
 
 .. code:: ipython3
@@ -128,6 +131,4 @@ The process is very similar, but as you do not need to retrain the model, there 
 
 Similarly to the estimate() function, you will get the predictive mean and variance and,  along with the Z scores for each of the provided sample and ROI.
 
-TRANSFERING
-*******************************************
-One major benefit of this HBR approahc is the possibility to transfer the models to unseen data while taking advantage of the previously learned distributions.
+
