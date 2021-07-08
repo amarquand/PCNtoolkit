@@ -314,7 +314,10 @@ def estimate(covfile, respfile, **kwargs):
     testcov = kwargs.pop('testcov', None)
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
-    outputsuffix = kwargs.pop('outputsuffix','_estimate')
+    outputsuffix = kwargs.pop('outputsuffix','estimate')
+    outputsuffix = "_" + outputsuffix.replace("_", "")  # Making sure there is only one 
+                                                        # '_' is in the outputsuffix to 
+                                                        # avoid file name parsing problem.
     inscaler = kwargs.pop('inscaler','None')
     outscaler = kwargs.pop('outscaler','None')
     warp = kwargs.get('warp', None)
@@ -550,7 +553,8 @@ def fit(covfile, respfile, **kwargs):
     maskfile = kwargs.pop('maskfile',None)
     alg = kwargs.pop('alg','gpr')
     savemodel = kwargs.pop('savemodel','True')=='True'
-    outputsuffix = kwargs.pop('outputsuffix','_fit')
+    outputsuffix = kwargs.pop('outputsuffix','fit')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
     inscaler = kwargs.pop('inscaler','None')
     outscaler = kwargs.pop('outscaler','None')
     
@@ -653,8 +657,10 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     model_path = kwargs.pop('model_path', 'Models')
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
-    outputsuffix = kwargs.pop('outputsuffix', '_predict')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'predict')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
         
     if respfile is not None and not os.path.exists(respfile):
@@ -804,8 +810,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         trbefile = kwargs.pop('trbefile')
         batch_effects_train = fileio.load(trbefile)
     
-    outputsuffix = kwargs.pop('outputsuffix', '_transfer')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'transfer')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -950,8 +958,10 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         dummycovfile = kwargs.pop('dummycovfile')
         dummybefile = kwargs.pop('dummybefile')
     
-    outputsuffix = kwargs.pop('outputsuffix', '_extend')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'extend')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
