@@ -1139,8 +1139,9 @@ def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
                           %(s, sub, df.at[sub, 'avg_en']))
                     
                 except:
+                    e = sys.exc_info()[0]
                     missing_subjects.append(sub)
-                    print('%d: QC is failed for subject %s.' %(s, sub))
+                    print('%d: QC is failed for subject %s: %s.' %(s, sub, e))
                 
         else:
             missing_subjects.append(sub)
