@@ -63,14 +63,29 @@ def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
     return B
 
 def create_design_matrix(X, intercept = True, basis = 'bspline',
-                         basis_column = 0, site_cols=None,
+                         basis_column = 0, site_ids=None, all_sites=None,
                          **kwargs):
     """ Prepare a design matrix from a set of covariates sutiable for
-        running Bayesian linar regression
+        running Bayesian linar regression. This design matrix consists of 
+        a set of user defined covariates, optoinal site intercepts 
+        (fixed effects) and also optionally a nonlinear basis expansion over 
+        one of the columns
         
+        :param X: matrix of covariates
+        :param basis: type of basis expansion to use
+        :param basis_column: which colume to perform the expansion over?
+        :param site_ids: list of site ids (one per data point)
+        :param all_sites: list of unique site ids
         :param p: order of spline (3 = cubic)
         :param nknots: number of knots (endpoints only counted once)
+        
+        if site_ids is specified, this must have the same number of entries as
+        there are rows in X. If all_sites is specfied, these will be used to 
+        create the site identifiers in place of site_ids. This accommocdates
+        the scenario where not all the sites used to create the model are 
+        present in the test set (i.e. there will be some empty site columns)
     """
+    
     xmin = kwargs.pop('xmin', 0)
     xmax = kwargs.pop('xmax', 100)
     
@@ -84,15 +99,40 @@ def create_design_matrix(X, intercept = True, basis = 'bspline',
         Phi = np.concatenate((np.ones((N, 1)), X), axis=1)
     else:
         Phi = X
-    
-    # add dummy coded site columns
-    if site_cols is not None:
-        if type(site_cols) is pd.DataFrame:
-            site_cols = site_cols.to_numpy()
+
+    # add dummy coded site columns    
+    if all_sites is None: 
+        if site_ids is not None:
+            all_sites = sorted(pd.unique(site_ids)) 
+        
+    if site_ids is None:
+        if all_sites is None:
+            site_cols = None
+        else:
+            # site ids are not specified, but all_sites are
+            site_cols = np.zeros((N, len(all_sites)))
+    else: 
+        # site ids are defined
+        # make sure the data are in pandas format
+        if type(site_ids) is not pd.Series:
+            site_ids = pd.Series(data=site_ids)
+        #site_ids = pd.Series(data=site_ids)
+        
+        # make sure all_sites is defined
+        if all_sites is None: 
+            all_sites = sorted(pd.unique(site_ids)) 
+        
+        # dummy code the sites        
+        site_cols = np.zeros((N, len(all_sites)))
+        for i, s in enumerate(all_sites):
+            site_cols[:, i] = site_ids == s
+        
         if site_cols.shape[0] != N: 
             raise ValueError('site cols must have the same number of rows as X')
-        Phi = np.concatenate((Phi, site_cols), axis=1)
     
+    if site_cols is not None:
+        Phi = np.concatenate((Phi, site_cols), axis=1)
+       
     # create Bspline basis set 
     if basis == 'bspline':
         B = create_bspline_basis(xmin, xmax, **kwargs)  
