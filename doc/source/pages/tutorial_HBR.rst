@@ -18,6 +18,9 @@ INPUTS
 *******************************************
 
 You can (should?) have a look at how the input data needs to be formatted/curated in the associated tutorial made by Saige on normative models using Bayesian Linear Regression (BLR).
+
+SOON to be modified to include FCON dataset preparation.
+
 Here we will assume you have the data ready in such files, (step 4 done on the BLR tutorial):
 
 .. code:: ipython3
@@ -37,7 +40,10 @@ Here we will assume you have the data ready in such files, (step 4 done on the B
 
 
 
+Configuring batch effect files
+-----------------------
 
+There are two batch effect files, one for training and one for testing samples.
 
 
 
