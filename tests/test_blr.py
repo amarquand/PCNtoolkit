@@ -5,9 +5,9 @@ import scipy as sp
 from matplotlib import pyplot as plt
 import bspline
 from bspline import splinelab
-from model.bayesreg import BLR
-from model.gp import GPR
-from util.utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
+from pcntoolkit.model.bayesreg import BLR
+from pcntoolkit.model.gp import GPR
+from pcntoolkit.util.utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
 
 print('First do a simple evaluation of B-splines regression...')
 
@@ -72,10 +72,13 @@ W = WarpBoxCox()
 Phix = X[:, np.newaxis]
 Phixs = Xs[:, np.newaxis]
 
-hyp0 = 0.1*np.ones(2+W.get_n_params())
 Bw = BLR(warp=W)
-hyp = Bw.estimate(hyp0, Phi, y, optimizer='powell')
-yhat, s2 = Bw.predict(hyp, Phi, y, Phis)
+#hyp0 = 0.1*np.ones(2+W.get_n_params())
+#hyp = Bw.estimate(hyp0, Phi, y, optimizer='powell')
+#yhat, s2 = Bw.predict(hyp, Phi, y, Phis)
+hyp0 = 0.1*np.ones(2+W.get_n_params())
+hyp = Bw.estimate(hyp0, Phi, y, optimizer='powell', var_covariates=Phix)
+yhat, s2 = Bw.predict(hyp, Phi, y, Phis, var_covariates_test=Phixs)
 
 warp_param = hyp[1:W.get_n_params()+1] 
 med, pr_int = W.warp_predictions(yhat, s2, warp_param)
@@ -96,7 +99,31 @@ plt.plot(xx,W.invf(xx,warp_param))
 plt.title('estimated warping function')
 plt.show()
 
-print("Estimate a model with heteroskedastic noise ...")
+# estimate a model with heteroskedastic noise
+print('demonstrate heteroskedastic noise...' )
+# generative model
+b = [0.4, -0.01, 0.]  # true regression coefficients
+s2 = 0.1              # noise variance
+y = Phip.dot(b) + Phip[:,0]*np.random.normal(size=N)
+plt.scatter(X,y)
+
+# new version
+Bh = BLR()
+hyp0 = np.zeros(8)
+hyp = Bh.estimate(hyp0, Phi, y, optimizer='l-bfgs-b', var_covariates=Phi, verbose=True)
+yhat,s2 = Bh.predict(hyp, Phi, y, Phis, var_covariates_test=Phis)
+
+# old version
+#Bh = BLR(hetero_noise=7)
+#hyp0 = np.zeros(8)
+#hyp = Bh.estimate(hyp0, Phi, y, optimizer='l-bfgs-b', hetero_noise=7, verbose=True)
+#yhat,s2 = Bh.predict(hyp, Phi, y, Phis)
+
+print(hyp)
+plt.fill_between(Xs, yhat-1.96*np.sqrt(s2), yhat+1.96*np.sqrt(s2), alpha = 0.2)
+plt.show()
+
+print("Estimate a model with site-specific noise ...")
 # set up some indicator variables for the variance groups
 n_site = 3
 idx = []
@@ -149,7 +176,7 @@ for s in range(n_site):
     plt.scatter(X[idx[s]], y[idx[s]])
     plt.plot(Xs[idx_te[s]],yhat[idx_te[s]], color=cols[s])
     plt.fill_between(Xs[idx_te[s]], 
-                     yhat[idx_te[s]] - 1.96 * np.sqrt(s2[idx_te[s]]), 
-                     yhat[idx_te[s]] + 1.96 * np.sqrt(s2[idx_te[s]]),
-                     alpha=0.2, color=cols[s])
+                      yhat[idx_te[s]] - 1.96 * np.sqrt(s2[idx_te[s]]), 
+                      yhat[idx_te[s]] + 1.96 * np.sqrt(s2[idx_te[s]]),
+                      alpha=0.2, color=cols[s])
 plt.show()
