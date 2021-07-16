@@ -52,16 +52,24 @@ class BLR:
         tol = kwargs.get('tol', 1e-3)
         verbose = kwargs.get('verbose', False)
         var_groups = kwargs.get('var_groups', None)
+        var_covariates = kwargs.get('var_covariates', None)
         warp = kwargs.get('warp', None)
         warp_reparam = kwargs.get('warp_reparam', False)
-        
+                
+        if var_groups is not None and var_covariates is not None:
+            raise(ValueError, "var_covariates and var_groups cannot both be used")
+            
         # basic parameters
         self.hyp = np.nan
         self.nlZ = np.nan
         self.tol = tol          # not used at present
         self.n_iter = n_iter
         self.verbose = verbose
-        self.var_groups = var_groups 
+        self.var_groups = var_groups
+        if var_covariates is not None:
+            self.hetero_var = True
+        else:
+            self.hetero_var = False
         if self.var_groups is not None:
             self.var_ids = set(self.var_groups)
             self.var_ids = sorted(list(self.var_ids))
@@ -79,18 +87,28 @@ class BLR:
             
         self.gamma = None
     
-    def _parse_hyps(self, hyp, X):
+    def _parse_hyps(self, hyp, X, Xv=None):
 
         N = X.shape[0]
         
         # noise precision
-        if self.var_groups is None:
-            beta = np.asarray([np.exp(hyp[0])]) 
-        else:
+        if Xv is not None:
+            if len(Xv.shape) == 1:
+                Dv = 1
+                Xv = Xv[:, np.newaxis]
+            else:
+                Dv = Xv.shape[1]           
+            w_d = np.asarray(hyp[0:Dv]) 
+            beta = np.exp(Xv.dot(w_d))
+            n_lik_param = len(w_d)
+        elif self.var_groups is not None:
             beta = np.exp(hyp[0:len(self.var_ids)])
+            n_lik_param = len(beta)
+        else:
+            beta = np.asarray([np.exp(hyp[0])]) 
+            n_lik_param = len(beta)
          
         # parameters for warping the likelhood function
-        n_lik_param = len(beta)
         if self.warp is not None:
             gamma = hyp[n_lik_param:(n_lik_param + self.n_warp_param)]
             n_lik_param += self.n_warp_param
@@ -109,19 +127,19 @@ class BLR:
             beta = beta/(delta**2)
     
         # Create precision matrix from noise precision
-        if self.var_groups is None:
-            self.Lambda_n = np.diag(np.ones(N)*beta)
-            self.Sigma_n = np.diag(np.ones(N)/beta)
-        else:
+        if Xv is not None:
+            self.lambda_n_vec = beta
+        elif self.var_groups is not None:
             beta_all = np.ones(N)
             for v in range(len(self.var_ids)):
                 beta_all[self.var_groups == self.var_ids[v]] = beta[v]
-            self.Lambda_n = np.diag(beta_all)
-            self.Sigma_n = np.diag(1/beta_all)
+            self.lambda_n_vec = beta_all
+        else:     
+            self.lambda_n_vec = np.ones(N)*beta
     
         return beta, alpha, gamma
         
-    def post(self, hyp, X, y):
+    def post(self, hyp, X, y, Xv=None):
         """ Generic function to compute posterior distribution.
 
             This function will save the posterior mean and precision matrix as
@@ -139,7 +157,7 @@ class BLR:
             print("hyperparameters have not changed, exiting")
             return
         
-        beta, alpha, gamma = self._parse_hyps(hyp, X)
+        beta, alpha, gamma = self._parse_hyps(hyp, X, Xv)
 
         if self.verbose:
             print("estimating posterior ... | hyp=", hyp)
@@ -152,22 +170,28 @@ class BLR:
             raise ValueError("hyperparameter vector has invalid length")
 
         # compute posterior precision and mean
-        self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
-        self.m = linalg.solve(self.A, X.T, 
-                              check_finite=False).dot(self.Lambda_n).dot(y)
-        #self.m = linalg.lstsq(self.A, X.T, 
-        #                      check_finite=False)[0].dot(self.Lambda_n).dot(y)
+        # this is equivalent to the following operation but makes much more 
+        # efficient use of memory by avoiding the need to store Lambda_n
+        #
+        # self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
+        # self.m = linalg.solve(self.A, X.T, 
+        #                      check_finite=False).dot(self.Lambda_n).dot(y)
+        
+        XtLambda_n = X.T*self.lambda_n_vec
+        self.A = XtLambda_n.dot(X) + self.Lambda_a
+        invAXt = linalg.solve(self.A, X.T, check_finite=False)
+        self.m = (invAXt*self.lambda_n_vec).dot(y)
 
         # save stuff
         self.N = N
         self.D = D
         self.hyp = hyp
 
-    def loglik(self, hyp, X, y):
+    def loglik(self, hyp, X, y, Xv=None):
         """ Function to compute compute log (marginal) likelihood """
 
         # hyperparameters (alpha not needed)
-        beta, alpha, gamma = self._parse_hyps(hyp, X) 
+        beta, alpha, gamma = self._parse_hyps(hyp, X, Xv) 
 
         # warp the likelihood?
         if self.warp is not None:
@@ -179,7 +203,7 @@ class BLR:
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             try:
-                self.post(hyp, X, y)
+                self.post(hyp, X, y, Xv)
             except ValueError:
                 print("Warning: Estimation of posterior distribution failed")
                 nlZ = 1/np.finfo(float).eps
@@ -194,16 +218,18 @@ class BLR:
             return nlZ
 
         logdetSigma_a = sum(np.log(np.diag(self.Sigma_a))) # diagonal
-        logdetSigma_n = sum(np.log(np.diag(self.Sigma_n)))
-
+        logdetSigma_n = sum(np.log(1/self.lambda_n_vec))
+        
         # compute negative marginal log likelihood
+        X_y_t_sLambda_n = (y-X.dot(self.m))*np.sqrt(self.lambda_n_vec)
         nlZ = -0.5 * (-self.N*np.log(2*np.pi) -
                       logdetSigma_n -
                       logdetSigma_a -
-                      (y-X.dot(self.m)).T.dot(self.Lambda_n).dot(y-X.dot(self.m)) -
+                      X_y_t_sLambda_n.T.dot(X_y_t_sLambda_n) -
                       self.m.T.dot(self.Lambda_a).dot(self.m) -
                       logdetA
                       )
+        
         
         if self.warp is not None:
             # add in the Jacobian 
@@ -218,12 +244,23 @@ class BLR:
 
         self.nlZ = nlZ
         return nlZ
+    
+    def penalized_loglik(self, hyp, X, y, Xv=None, l=0.1, norm='L1'):
+        """ Function to compute the penalized log (marginal) likelihood """
 
-    def dloglik(self, hyp, X, y):
+        if norm.lower() == 'l1':
+            L = self.loglik(hyp, X, y, Xv) + l * sum(abs(hyp))
+        elif norm.lower() == 'l2':
+            L = self.loglik(hyp, X, y, Xv) + l * sum(np.sqrt(hyp**2))
+        else:
+            print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
+        return L
+
+    def dloglik(self, hyp, X, y, Xv=None):
         """ Function to compute derivatives """
 
         # hyperparameters
-        beta, alpha, gamma = self._parse_hyps(hyp, X)
+        beta, alpha, gamma = self._parse_hyps(hyp, X, Xv)
         
         if self.warp is not None:
             raise ValueError('optimization with derivatives is not yet ' + \
@@ -232,7 +269,7 @@ class BLR:
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
             try:
-                self.post(hyp, X, y)
+                self.post(hyp, X, y, Xv)
             except ValueError:
                 print("Warning: Estimation of posterior distribution failed")
                 dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
@@ -243,14 +280,15 @@ class BLR:
         #       that would remove the need to explicitly compute the inverse
         S = np.linalg.inv(self.A)                       # posterior covariance
         SX = S.dot(X.T)
-        XLn = X.T.dot(self.Lambda_n)
+        XLn = X.T*self.lambda_n_vec # = X.T.dot(self.Lambda_n)
         XLny = XLn.dot(y)
         SXLny = S.dot(XLny)       
         XLnXm = XLn.dot(X).dot(self.m)
       
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
- 
+        dnl2 = np.zeros(hyp.shape)
+        
         # noise precision parameter(s)
         for i in range(0, len(beta)):
             # first compute derivative of Lambda_n with respect to beta
@@ -269,12 +307,16 @@ class BLR:
             b = -S.dot(dA).dot(SXLny) + SX.dot(dLambda_n).dot(y)
             
             # compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently
-            trSigma_ndLambda_n = sum(np.diag(self.Sigma_n)*np.diag(dLambda_n))
+            trSigma_ndLambda_n = sum((1/self.lambda_n_vec)*np.diag(dLambda_n))
+
+            # compute  y.T.dot(Lambda_n) efficiently
+            ytLn = (y*self.lambda_n_vec).T
             
+            # compute derivatives
             dnlZ[i] = - (0.5 * trSigma_ndLambda_n - 
                          0.5 * y.dot(dLambda_n).dot(y) +
                          y.dot(dLambda_n).dot(X).dot(self.m) +
-                         y.T.dot(self.Lambda_n).dot(X).dot(b) -
+                         ytLn.dot(X).dot(b) -
                          0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
                          b.T.dot(XLnXm) -
                          b.T.dot(self.Lambda_a).dot(self.m) -
@@ -320,18 +362,29 @@ class BLR:
     def estimate(self, hyp0, X, y, **kwargs):
         """ Function to estimate the model """
         optimizer = kwargs.get('optimizer','cg')
+        
+        # covariates for heteroskedastic noise
+        Xv = kwargs.get('var_covariates', None)
+        
+        # options for l-bfgs-b
+        l = kwargs.get('l', 0.1)
+        epsilon = kwargs.get('epsilon', 0.1)
+        norm = kwargs.get('norm', 'l2')
 
         if optimizer.lower() == 'cg':  # conjugate gradients
-            out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y),
+            out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik, (X, y, Xv),
                                    disp=True, gtol=self.tol,
                                    maxiter=self.n_iter, full_output=1)
-
         elif optimizer.lower() == 'powell':  # Powell's method
-            out = optimize.fmin_powell(self.loglik, hyp0, (X, y),
+            out = optimize.fmin_powell(self.loglik, hyp0, (X, y, Xv),
                                        full_output=1)
         elif optimizer.lower() == 'nelder-mead':
-            out = optimize.fmin(self.loglik, hyp0, (X, y),
+            out = optimize.fmin(self.loglik, hyp0, (X, y, Xv),
                                        full_output=1)
+        elif optimizer.lower() == 'l-bfgs-b':
+            out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=hyp0,
+                                          args=(X, y, Xv, l, norm), approx_grad=True,
+                                          epsilon=epsilon)
         else:
             raise ValueError("unknown optimizer")
 
@@ -341,41 +394,79 @@ class BLR:
 
         return self.hyp
 
-    def predict(self, hyp, X, y, Xs, var_groups_test=None):
+    def predict(self, hyp, X, y, Xs, 
+                var_groups_test=None, 
+                var_covariates_test=None, **kwargs):
         """ Function to make predictions from the model """
-
+        
+        Xvs = var_covariates_test
+        if Xvs is not None and len(Xvs.shape) == 1:
+            Xvs = Xvs[:, np.newaxis]
+        
         if X is None or y is None:
             # set dummy hyperparameters
-            beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, 1)))
+            beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, self.D)), Xvs)
         else:
             
             # set hyperparameters
-            beta, alpha, gamma = self._parse_hyps(hyp, X)
+            beta, alpha, gamma = self._parse_hyps(hyp, X, Xvs)
             
             # do we need to re-estimate the posterior?
             if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
                 # warp the likelihood?
-                if self.warp is not None:
-                    if self.verbose:
-                        print('warping input...')
-                    y = self.warp.f(y, gamma) 
-                self.post(hyp, X, y)
+                #if self.warp is not None:
+                #    if self.verbose:
+                #        print('warping input...')
+                #    y = self.warp.f(y, gamma) 
+                #
+                #self.post(hyp, X, y)
+                raise(ValueError, 'posterior not properly estimated')
 
         N_test = Xs.shape[0]
 
         ys = Xs.dot(self.m)
         
-        if self.var_groups is None:
-            s2n = 1/beta
-        else:
+        if self.var_groups is not None:
             if len(var_groups_test) != N_test:
                 raise(ValueError, 'Invalid variance groups for test')
             # separate variance groups
             s2n = np.ones(N_test)
             for v in range(len(self.var_ids)):
                 s2n[var_groups_test == self.var_ids[v]] = 1/beta[v]
-        
+        else:
+            s2n = 1/beta
+                    
         # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
         s2 = s2n + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
         
         return ys, s2
+
+    def transfer(self, hyp, X, y, Xs, var_groups_test=None):
+        """ Function to transfer the model to a new site"""
+        # Get predictions from old model on new data X
+        ys,s2 = self.predict(hyp, None, None, X)
+
+        # Subtract the predictions from true data to get the residuals
+        if self.warp is None:
+            residuals = ys-y
+
+        else:
+            # Calculate the residuals in warped space
+            y_ws = self.warp.f(y, hyp[1:self.warp.get_n_params()+1])
+            residuals = ys - y_ws 
+    
+        residuals_mu = np.mean(residuals)
+        residuals_sd = np.std(residuals)
+        
+        # Adjust the mean with the mean of the residuals
+        self.m = self.m-np.ones((len(self.m)))*residuals_mu 
+        ys,s2 = self.predict(hyp, None, None, Xs)
+        
+        # Set the deviation to the devations of the residuals
+        s2 = np.ones(len(s2))*residuals_sd**2
+        
+        return ys, s2
+        
+        
+        
+        

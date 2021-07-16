@@ -16,6 +16,8 @@ from bspline import splinelab
 from sklearn.datasets import make_regression
 import pymc3 as pm
 from io import StringIO
+import subprocess
+import re
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -59,6 +61,86 @@ def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
     k = splinelab.augknt(knots, p)       # pad the knot vector
     B = bspline.Bspline(k, p) 
     return B
+
+def create_design_matrix(X, intercept = True, basis = 'bspline',
+                         basis_column = 0, site_ids=None, all_sites=None,
+                         **kwargs):
+    """ Prepare a design matrix from a set of covariates sutiable for
+        running Bayesian linar regression. This design matrix consists of 
+        a set of user defined covariates, optoinal site intercepts 
+        (fixed effects) and also optionally a nonlinear basis expansion over 
+        one of the columns
+        
+        :param X: matrix of covariates
+        :param basis: type of basis expansion to use
+        :param basis_column: which colume to perform the expansion over?
+        :param site_ids: list of site ids (one per data point)
+        :param all_sites: list of unique site ids
+        :param p: order of spline (3 = cubic)
+        :param nknots: number of knots (endpoints only counted once)
+        
+        if site_ids is specified, this must have the same number of entries as
+        there are rows in X. If all_sites is specfied, these will be used to 
+        create the site identifiers in place of site_ids. This accommocdates
+        the scenario where not all the sites used to create the model are 
+        present in the test set (i.e. there will be some empty site columns)
+    """
+    
+    xmin = kwargs.pop('xmin', 0)
+    xmax = kwargs.pop('xmax', 100)
+    
+    N = X.shape[0]
+    
+    if type(X) is pd.DataFrame:
+        X = X.to_numpy()
+    
+    # add intercept column 
+    if intercept: 
+        Phi = np.concatenate((np.ones((N, 1)), X), axis=1)
+    else:
+        Phi = X
+
+    # add dummy coded site columns    
+    if all_sites is None: 
+        if site_ids is not None:
+            all_sites = sorted(pd.unique(site_ids)) 
+        
+    if site_ids is None:
+        if all_sites is None:
+            site_cols = None
+        else:
+            # site ids are not specified, but all_sites are
+            site_cols = np.zeros((N, len(all_sites)))
+    else: 
+        # site ids are defined
+        # make sure the data are in pandas format
+        if type(site_ids) is not pd.Series:
+            site_ids = pd.Series(data=site_ids)
+        #site_ids = pd.Series(data=site_ids)
+        
+        # make sure all_sites is defined
+        if all_sites is None: 
+            all_sites = sorted(pd.unique(site_ids)) 
+        
+        # dummy code the sites        
+        site_cols = np.zeros((N, len(all_sites)))
+        for i, s in enumerate(all_sites):
+            site_cols[:, i] = site_ids == s
+        
+        if site_cols.shape[0] != N: 
+            raise ValueError('site cols must have the same number of rows as X')
+    
+    if site_cols is not None:
+        Phi = np.concatenate((Phi, site_cols), axis=1)
+       
+    # create Bspline basis set 
+    if basis == 'bspline':
+        B = create_bspline_basis(xmin, xmax, **kwargs)  
+        Phi = np.concatenate((Phi, np.array([B(i) for i in X[:,basis_column]])), axis=1)
+    elif basis == 'poly': 
+        Phi = np.concatenate(Phi, create_poly_basis(X[:,basis_column], **kwargs))
+    
+    return Phi
 
 def squared_dist(x, z=None):
     """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
@@ -1000,3 +1082,114 @@ class scaler:
                 X[X > 1] = 1
         
         return X
+    
+    
+    
+def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
+    
+    '''
+    This function receives the freesurfer directory (including processed data 
+    for several subjects) and retrieves the Euler number from the log files. If
+    the log file does not exist, this function uses 'mris_euler_number' to recompute
+    the Euler numbers (ENs). The function returns the ENs in a dataframe and 
+    the list of missing subjects (that for which computing EN is failed). If 
+    'save_path' is specified then the results will be saved in a pickle file.
+
+    Basic usage::
+
+        ENs, missing_subjects = retrieve_freesurfer_eulernum(freesurfer_dir)
+
+    where the arguments are defined below.
+
+    :param freesurfer_dir: absolute path to the Freesurfer directory.
+    :param subjects: List of subject that we want to retrieve the ENs for. 
+     If it is 'None' (the default), the list of the subjects will be automatically
+     retreived from existing directories in the 'freesurfer_dir' (i.e. the ENs
+     for all subjects will be retrieved).
+    :param save_path: The path to save the results. If 'None' (default) the 
+     results are not saves on the disk.
+
+
+    :outputs: * ENs - A dataframe of retrieved ENs.
+              * missing_subjects - The list of missing subjects.
+              
+    Developed by S.M. Kia
+    
+    '''
+    
+    if subjects is None:
+        subjects = [temp for temp in os.listdir(freesurfer_dir) 
+                    if os.path.isdir(os.path.join(freesurfer_dir ,temp))]
+        
+    df = pd.DataFrame(index=subjects, columns=['lh_en','rh_en','avg_en'])
+    missing_subjects = []
+    
+    for s, sub in enumerate(subjects):
+        sub_dir = os.path.join(freesurfer_dir, sub)
+        log_file = os.path.join(sub_dir, 'scripts', 'recon-all.log')
+        
+        if os.path.exists(sub_dir):
+            if os.path.exists(log_file):    
+                with open(log_file) as f:
+                    for line in f:
+                        # find the part that refers to the EC
+                        if re.search('orig.nofix lheno', line):
+                            eno_line = line
+                f.close()
+                eno_l = eno_line.split()[3][0:-1] # remove the trailing comma
+                eno_r = eno_line.split()[6]
+                euler = (float(eno_l) + float(eno_r)) / 2
+                
+                df.at[sub, 'lh_en'] = eno_l
+                df.at[sub, 'rh_en'] = eno_r
+                df.at[sub, 'avg_en'] = euler
+                
+                print('%d: Subject %s is successfully processed. EN = %f' 
+                      %(s, sub, df.at[sub, 'avg_en']))
+            else:
+                print('%d: Subject %s is missing log file, running QC ...' %(s, sub))
+                try:
+                    bashCommand = 'mris_euler_number '+ freesurfer_dir + sub +'/surf/lh.orig.nofix>' + 'temp_l.txt 2>&1'
+                    res = subprocess.run(bashCommand, stdout=subprocess.PIPE, shell=True)
+                    file = open('temp_l.txt', mode = 'r', encoding = 'utf-8-sig')
+                    lines = file.readlines()
+                    file.close()
+                    words = []
+                    for line in lines:
+                        line = line.strip()
+                        words.append([item.strip() for item in line.split(' ')])
+                    eno_l = np.float32(words[0][12])
+                    
+                    bashCommand = 'mris_euler_number '+ freesurfer_dir + sub +'/surf/rh.orig.nofix>' + 'temp_r.txt 2>&1'
+                    res = subprocess.run(bashCommand, stdout=subprocess.PIPE, shell=True)
+                    file = open('temp_r.txt', mode = 'r', encoding = 'utf-8-sig')
+                    lines = file.readlines()
+                    file.close()
+                    words = []
+                    for line in lines:
+                        line = line.strip()
+                        words.append([item.strip() for item in line.split(' ')])
+                    eno_r = np.float32(words[0][12])
+                    
+                    df.at[sub, 'lh_en'] = eno_l
+                    df.at[sub, 'rh_en'] = eno_r
+                    df.at[sub, 'avg_en'] = (eno_r + eno_l) / 2
+                
+                    print('%d: Subject %s is successfully processed. EN = %f' 
+                          %(s, sub, df.at[sub, 'avg_en']))
+                    
+                except:
+                    e = sys.exc_info()[0]
+                    missing_subjects.append(sub)
+                    print('%d: QC is failed for subject %s: %s.' %(s, sub, e))
+                
+        else:
+            missing_subjects.append(sub)
+            print('%d: Subject %s is missing.' %(s, sub))
+        df = df.dropna()
+        
+        if save_path is not None:
+            with open(save_path, 'wb') as file:
+                pickle.dump({'ENs':df}, file)
+             
+    return df, missing_subjects
