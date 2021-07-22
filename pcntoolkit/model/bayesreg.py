@@ -413,13 +413,6 @@ class BLR:
             
             # do we need to re-estimate the posterior?
             if (hyp != self.hyp).any() or not(hasattr(self, 'A')):
-                # warp the likelihood?
-                #if self.warp is not None:
-                #    if self.verbose:
-                #        print('warping input...')
-                #    y = self.warp.f(y, gamma) 
-                #
-                #self.post(hyp, X, y)
                 raise(ValueError, 'posterior not properly estimated')
 
         N_test = Xs.shape[0]
@@ -439,34 +432,75 @@ class BLR:
         # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
         s2 = s2n + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
         
-        return ys, s2
-
-    def transfer(self, hyp, X, y, Xs, var_groups_test=None):
-        """ Function to transfer the model to a new site"""
-        # Get predictions from old model on new data X
-        ys,s2 = self.predict(hyp, None, None, X)
-
-        # Subtract the predictions from true data to get the residuals
-        if self.warp is None:
-            residuals = ys-y
-
+        return ys, s2       
+        
+    def predict_and_adjust(self, hyp, X, y, Xs=None, 
+                             ys=None, 
+                             var_groups_test=None,
+                             var_groups_adapt=None, **kwargs):
+        """ Function to transfer the model to a new site. This is done by
+            first making predictions on the adaptation data given by X,
+            adjusting by the residuals with respect to y.
+            
+            If ys is specified, this is applied directly to the data, which is
+            assumed to be in the input space (i.e. not warped). In this case 
+            the adjusted true data points are returned in the same space
+            
+            Alternatively, Xs is specified, then the predictions are made and 
+            adjusted. In this case the predictive variance are returned in the 
+            warped (i.e. Gaussian) space.
+            This requires that 
+        """
+        
+        if ys is None:
+            if Xs is None:
+                raise(ValueError, 'Either ys or Xs must be specified')
+            else:
+                N = Xs.shape[0]
         else:
-            # Calculate the residuals in warped space
-            y_ws = self.warp.f(y, hyp[1:self.warp.get_n_params()+1])
-            residuals = ys - y_ws 
-    
-        residuals_mu = np.mean(residuals)
-        residuals_sd = np.std(residuals)
+            N = y.shape[0]
         
-        # Adjust the mean with the mean of the residuals
-        self.m = self.m-np.ones((len(self.m)))*residuals_mu 
-        ys,s2 = self.predict(hyp, None, None, Xs)
+        if var_groups_test is None: 
+            var_groups_test = np.ones(N)
+            var_groups_adjust = np.ones(X.shape[0])
         
-        # Set the deviation to the devations of the residuals
-        s2 = np.ones(len(s2))*residuals_sd**2
+        ys_out = np.zeros(N)
+        s2_out = np.zeros(N)
+        for g in np.unique(var_groups_test):
+            idx_s = var_groups_test == g
+            idx_a = var_groups_adapt == g
+            
+            # Get predictions from old model on new data X
+            ys_ref, s2_ref = self.predict(hyp, None, None, X[idx_a,:])
         
-        return ys, s2
-        
-        
-        
+            # Subtract the predictions from true data to get the residuals
+            if self.warp is None:
+                residuals = ys_ref-y[idx_a]
+            else:
+                 # Calculate the residuals in warped space
+                 y_ref_ws = self.warp.f(y[idx_a], hyp[1:self.warp.get_n_params()+1])
+                 residuals = ys_ref - y_ref_ws 
+  
+            residuals_mu = np.mean(residuals)
+            residuals_sd = np.std(residuals)
+
+            # Adjust the mean with the mean of the residuals
+            if ys is None:
+                # make and adjust predictions
+                ys_out[idx_s], s2_out[idx_s] = self.predict(hyp, None, None, Xs[idx_s,:])
+                ys_out[idx_s] = ys_out[idx_s] - residuals_mu 
+                
+                # Set the deviation to the devations of the residuals
+                s2_out[idx_s] = np.ones(len(s2_out[idx_s]))*residuals_sd**2
+            else:
+                # adjust the data 
+                if self.warp is not None:
+                    y_ws = self.warp.f(ys[idx_s], hyp[1:self.warp.get_n_params()+1])
+                    ys_out[idx_s] = y_ws + residuals_mu 
+                    ys_out[idx_s] = self.warp.invf(ys_out[idx_s], hyp[1:self.warp.get_n_params()+1])
+                else:
+                    ys = ys - residuals_mu    
+                s2_out = None
+
+        return ys_out, s2_out
         
