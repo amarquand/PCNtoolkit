@@ -457,12 +457,12 @@ class BLR:
                 raise(ValueError, 'Either ys or Xs must be specified')
             else:
                 N = Xs.shape[0]
-        else:
-            N = y.shape[0]
+        else:            
+            N = ys.shape[0]
         
         if var_groups_test is None: 
             var_groups_test = np.ones(N)
-            var_groups_adjust = np.ones(X.shape[0])
+            var_groups_adapt = np.ones(X.shape[0])
         
         ys_out = np.zeros(N)
         s2_out = np.zeros(N)
