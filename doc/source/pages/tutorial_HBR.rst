@@ -1,8 +1,7 @@
-`Predictive Clinical Neuroscience Toolkit <https://github.com/amarquand/PCNtoolkit>`__
+Predictive Clinical Neuroscience Toolkit
 ======================================================================================
 
 Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.
-===================================================================================
 
 This notebook will go through basic data preparation (training and
 testing set, `see Saige’s
@@ -10,6 +9,11 @@ tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/bl
 on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
 onto unseen sites.
+
+View on `GitHub <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo>`_
+
+Run in `Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb>`_
+
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,7 +24,8 @@ adapted/edited by Andre Marquand and Pierre Berthet
 .. container::
 
 Step 0: Install necessary libraries & grab data files
------------------------------------------------------
+*******************************************************
+
 
 .. code:: ipython3
 
@@ -88,7 +93,7 @@ color coded by the various sites:
 
 
 Step 1: Prepare training and testing sets
------------------------------------------
+******************************************
 
 Then we randomly split half of the samples (participants) to be either
 in the training or in the testing samples. We do this for the remaing
@@ -135,7 +140,7 @@ Otherwise you can just load these pre defined subsets:
     icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
 
 Step 2: Configure HBR inputs: covariates, measures and batch effects
---------------------------------------------------------------------
+*********************************************************************
 
 We will here only use the mean cortical thickness for the Right and Left
 hemisphere: two idps.
@@ -314,11 +319,19 @@ about different scanner sites to learn on unseen sites.
 Step 6: Interpreting model performance
 --------------------------------------
 
-Output evaluation metrics definitions: \* yhat - predictive mean \* ys2
-- predictive variance \* nm - normative model \* Z - deviance scores \*
-Rho - Pearson correlation between true and predicted responses \* pRho -
-parametric p-value for this correlation \* RMSE - root mean squared
-error between true/predicted responses \* SMSE - standardised mean
-squared error \* EV - explained variance \* MSLL - mean standardized log
-loss \* See page 23 in
-http://www.gaussianprocess.org/gpml/chapters/RW2.pdf
+Output evaluation metrics definitions
+
+=================   ======================================================================================================
+**key value**       **Description** 
+-----------------   ------------------------------------------------------------------------------------------------------ 
+yhat                predictive mean 
+ys2                 predictive variance 
+nm                  normative model 
+Z                   deviance scores 
+Rho                 Pearson correlation between true and predicted responses 
+pRho                parametric p-value for this correlation 
+RMSE                root mean squared error between true/predicted responses 
+SMSE                standardised mean squared error 
+EV                  explained variance 
+MSLL                mean standardized log loss `See page 23 <http://www.gaussianprocess.org/gpml/chapters/RW2.pdf>`_
+=================   ======================================================================================================
