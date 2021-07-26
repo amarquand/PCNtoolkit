@@ -57,7 +57,7 @@ class BLR:
         warp_reparam = kwargs.get('warp_reparam', False)
                 
         if var_groups is not None and var_covariates is not None:
-            raise(ValueError, "var_covariates and var_groups cannot both be used")
+            raise ValueError("var_covariates and var_groups cannot both be used")
             
         # basic parameters
         self.hyp = np.nan
@@ -145,6 +145,11 @@ class BLR:
             This function will save the posterior mean and precision matrix as
             self.m and self.A and will also update internal parameters (e.g.
             N, D and the prior covariance (Sigma_a) and precision (Lambda_a).
+            
+            :param hyp: hyperparameter vector
+            :param X: covariates
+            :param y: responses
+            :param Xv: covariates for heteroskedastic noise 
         """
 
         N = X.shape[0]
@@ -246,7 +251,15 @@ class BLR:
         return nlZ
     
     def penalized_loglik(self, hyp, X, y, Xv=None, l=0.1, norm='L1'):
-        """ Function to compute the penalized log (marginal) likelihood """
+        """ Function to compute the penalized log (marginal) likelihood 
+             
+            :param hyp: hyperparameter vector
+            :param X: covariates
+            :param y: responses
+            :param Xv: covariates for heteroskedastic noise 
+            :param l: regularisation penalty
+            :param norm: type of regulariser (L1 or L2)
+        """
 
         if norm.lower() == 'l1':
             L = self.loglik(hyp, X, y, Xv) + l * sum(abs(hyp))
@@ -360,7 +373,14 @@ class BLR:
 
     # model estimation (optimization)
     def estimate(self, hyp0, X, y, **kwargs):
-        """ Function to estimate the model """
+        """ Function to estimate the model 
+                 
+            :param hyp: hyperparameter vector
+            :param X: covariates
+            :param y: responses
+            :param optimizer: optimisation algorithm ('cg','powell','nelder-mead','l0bfgs-b') 
+        """
+        
         optimizer = kwargs.get('optimizer','cg')
         
         # covariates for heteroskedastic noise
@@ -397,7 +417,19 @@ class BLR:
     def predict(self, hyp, X, y, Xs, 
                 var_groups_test=None, 
                 var_covariates_test=None, **kwargs):
-        """ Function to make predictions from the model """
+        """ Function to make predictions from the model
+             
+            :param hyp: hyperparameter vector
+            :param X: covariates for training data
+            :param y: responses for training data
+            :param Xs: covariates for test data
+            :param var_covariates_test: test covariates for heteroskedastic noise 
+            
+            This always returns Gaussian predictions, i.e. 
+            
+            :returns: * ys - predictive mean
+                      * s2 - predictive variance
+        """
         
         Xvs = var_covariates_test
         if Xvs is not None and len(Xvs.shape) == 1:
@@ -442,6 +474,17 @@ class BLR:
             first making predictions on the adaptation data given by X,
             adjusting by the residuals with respect to y.
             
+            :param hyp: hyperparameter vector
+            :param X: covariates for adaptation (i.e. calibration) data
+            :param y: responses for adaptation data
+            :param Xs: covariate data (for which predictions should be adjusted)
+            :param ys: true response variables (to be adjusted)
+            :param var_groups_test: variance groups (e.g. sites) for test data
+            :param var_groups_adapt: variance groups for adaptation data
+            
+            There are two possible ways of using this function, depending on
+            whether ys or Xs is specified
+                
             If ys is specified, this is applied directly to the data, which is
             assumed to be in the input space (i.e. not warped). In this case 
             the adjusted true data points are returned in the same space
@@ -449,15 +492,20 @@ class BLR:
             Alternatively, Xs is specified, then the predictions are made and 
             adjusted. In this case the predictive variance are returned in the 
             warped (i.e. Gaussian) space.
-            This requires that 
+            
+            This function needs to know which sites are associated with which 
+            data points, which provided by var_groups_xxx, which is a list or 
+            array of scalar ids .
         """
         
         if ys is None:
             if Xs is None:
-                raise(ValueError, 'Either ys or Xs must be specified')
+                raise ValueError('Either ys or Xs must be specified')
             else:
                 N = Xs.shape[0]
-        else:            
+        else:
+            if len(ys.shape) < 1:
+                raise ValueError('ys is specified but has insufficent length')
             N = ys.shape[0]
         
         if var_groups_test is None: 
@@ -470,6 +518,9 @@ class BLR:
             idx_s = var_groups_test == g
             idx_a = var_groups_adapt == g
             
+            if sum(idx_a) < 2:
+                raise ValueError('Insufficient adaptation data to estimate variance')
+            
             # Get predictions from old model on new data X
             ys_ref, s2_ref = self.predict(hyp, None, None, X[idx_a,:])
         
@@ -480,7 +531,7 @@ class BLR:
                  # Calculate the residuals in warped space
                  y_ref_ws = self.warp.f(y[idx_a], hyp[1:self.warp.get_n_params()+1])
                  residuals = ys_ref - y_ref_ws 
-  
+            
             residuals_mu = np.mean(residuals)
             residuals_sd = np.std(residuals)
 
