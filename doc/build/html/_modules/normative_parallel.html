@@ -1,43 +1,48 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>normative_parallel &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
   
 
   
-  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script type="text/javascript" src="../_static/tabs.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/tabs.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -76,6 +81,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -92,7 +98,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Function Docs</span></p>
+<p class="caption"><span class="caption-text">Function &amp; Class Docs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
 </ul>
@@ -104,7 +110,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regressian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Predictive Clinical Neuroscience Toolkit</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
 <ul>
@@ -118,6 +124,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -152,11 +159,13 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -226,7 +235,7 @@ except ImportError:
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
-<div class="viewcode-block" id="execute_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.execute_nm">[docs]</a>def execute_nm(processing_dir,
+<div class="viewcode-block" id="execute_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.execute_nm">[docs]</a>def execute_nm(processing_dir,
                python_path,
                job_name,
                covfile_path,
@@ -442,7 +451,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 &quot;&quot;&quot;routines that are environment independent&quot;&quot;&quot;
 
 
-<div class="viewcode-block" id="split_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.split_nm">[docs]</a>def split_nm(processing_dir,
+<div class="viewcode-block" id="split_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.split_nm">[docs]</a>def split_nm(processing_dir,
              respfile_path,
              batch_size,
              binary,
@@ -558,7 +567,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                          protocol=PICKLE_PROTOCOL)</div>
 
 
-<div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.collect_nm">[docs]</a>def collect_nm(processing_dir,
+<div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.collect_nm">[docs]</a>def collect_nm(processing_dir,
                job_name,
                func=&#39;estimate&#39;,
                collect=False,
@@ -670,6 +679,18 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                     Z = np.zeros([numsubjects, batch_size])
                     Z = pd.DataFrame(Z)
                     fileio.save(Z, batch + &#39;Z&#39; + outputsuffix + 
+                                file_extentions)
+                    
+                    nll = np.zeros(batch_size)
+                    nll = nll.transpose()
+                    nll = pd.Series(nll)
+                    fileio.save(nll, batch + &#39;NLL&#39; + outputsuffix + 
+                                file_extentions)
+                    
+                    bic = np.zeros(batch_size)
+                    bic = bic.transpose()
+                    bic = pd.Series(bic)
+                    fileio.save(bic, batch + &#39;BIC&#39; + outputsuffix + 
                                 file_extentions)
     
                     if not os.path.isdir(batch + &#39;Models&#39;):
@@ -805,6 +826,30 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             fileio.save(msll_dfs, processing_dir + &#39;MSLL&#39; + outputsuffix +
                         file_extentions)
             del msll_dfs
+            
+        nll_filenames = glob.glob(processing_dir + &#39;batch_*/&#39; + &#39;NLL&#39; +
+                                  outputsuffix + &#39;*&#39;)
+        if nll_filenames:
+            nll_filenames = fileio.sort_nicely(nll_filenames)
+            nll_dfs = []
+            for nll_filename in nll_filenames:
+                nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)))
+            nll_dfs = pd.concat(nll_dfs, ignore_index=True, axis=0)
+            fileio.save(nll_dfs, processing_dir + &#39;NLL&#39; + outputsuffix +
+                        file_extentions)
+            del nll_dfs
+
+        bic_filenames = glob.glob(processing_dir + &#39;batch_*/&#39; + &#39;BIC&#39; +
+                                  outputsuffix + &#39;*&#39;)
+        if bic_filenames:
+            bic_filenames = fileio.sort_nicely(bic_filenames)
+            bic_dfs = []
+            for bic_filename in bic_filenames:
+                bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)))
+            bic_dfs = pd.concat(bic_dfs, ignore_index=True, axis=0)
+            fileio.save(bic_dfs, processing_dir + &#39;BIC&#39; + outputsuffix +
+                        file_extentions)
+            del bic_dfs
         
         if func != &#39;predict&#39; and func != &#39;extend&#39;:
             if not os.path.isdir(processing_dir + &#39;Models&#39;) and \
@@ -880,7 +925,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     else:
         return 0</div>
 
-<div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
+<div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
               binary=False):
     &quot;&quot;&quot;This function deletes all processing for normative modelling and just
     keeps the combined output.
@@ -906,7 +951,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # environments -&gt; copy those routines and adapt them in accrodance with your
 # environment
 
-<div class="viewcode-block" id="bashwrap_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.bashwrap_nm">[docs]</a>def bashwrap_nm(processing_dir,
+<div class="viewcode-block" id="bashwrap_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.bashwrap_nm">[docs]</a>def bashwrap_nm(processing_dir,
                 python_path,
                 normative_path,
                 job_name,
@@ -986,8 +1031,8 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             job_call = [job_call[0] + &#39; -x &#39; + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + &#39; -s&#39;]
+    # if not standardize:
+    #     job_call = [job_call[0] + &#39; -s&#39;]
     
     # add responses file
     job_call = [job_call[0] + &#39; &#39; + respfile_path]
@@ -1005,7 +1050,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     os.chmod(processing_dir + job_name, 0o700)</div>
 
 
-<div class="viewcode-block" id="qsub_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.qsub_nm">[docs]</a>def qsub_nm(job_path,
+<div class="viewcode-block" id="qsub_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.qsub_nm">[docs]</a>def qsub_nm(job_path,
             log_path,
             memory,
             duration):
@@ -1039,7 +1084,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     call(qsub_call, shell=True)</div>
 
 
-<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
+<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
              log_path,
              memory,
              duration,
@@ -1086,7 +1131,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
 
-<div class="viewcode-block" id="sbatchwrap_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatchwrap_nm">[docs]</a>def sbatchwrap_nm(processing_dir,
+<div class="viewcode-block" id="sbatchwrap_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.sbatchwrap_nm">[docs]</a>def sbatchwrap_nm(processing_dir,
                   python_path,
                   normative_path,
                   job_name,
@@ -1187,8 +1232,8 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             job_call = [job_call[0] + &#39; -x &#39; + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + &#39; -s&#39;]
+    # if not standardize:
+    #     job_call = [job_call[0] + &#39; -s&#39;]
     
     # add responses file
     job_call = [job_call[0] + &#39; &#39; + respfile_path]
@@ -1205,7 +1250,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     # changes permissoins for bash.sh file
     os.chmod(processing_dir + job_name, 0o700)</div>
 
-<div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
+<div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
               log_path):
     &quot;&quot;&quot;
     This function submits a job.sh scipt to the torque custer using the qsub
@@ -1298,20 +1343,25 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Andre F. Marquand
+        &#169; Copyright 2020, Andre F. Marquand.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -1319,7 +1369,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
