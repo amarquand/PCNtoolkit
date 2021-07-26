@@ -15,11 +15,8 @@ View on `GitHub <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-
 Run in `Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb>`_
 
 
-Created by `Saige Rutherford <https://twitter.com/being_saige>`__
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Created by `Saige Rutherford <https://twitter.com/being_saige>`__, adapted/edited by Andre Marquand and Pierre Berthet
 
-adapted/edited by Andre Marquand and Pierre Berthet
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. container::
 
@@ -194,7 +191,7 @@ testing set (``_test``).
             return pickle.load(f)
 
 Step 3: Files and Folders grooming
-----------------------------------
+***************************************
 
 .. code:: ipython3
 
@@ -217,7 +214,7 @@ Step 3: Files and Folders grooming
     outputsuffix = '_estimate'      # a string to name the output files, of use only to you, so adapt it for your needs.
 
 Step 4: Estimating the models
------------------------------
+******************************
 
 Now we have everything ready to estimate the normative models. The
 ``estimate`` function only needs the training and testing sets, each
@@ -246,7 +243,7 @@ tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/bl
 on Normative Modelling.
 
 Step 5: Transfering the models to unseen sites
-----------------------------------------------
+*************************************************
 
 Similarly to what was done before for the FCON data, we also need to
 prepare the ICBM specific data, in order to run the transfer function:
@@ -317,7 +314,7 @@ And that is it, you now have models that benefited from prior knowledge
 about different scanner sites to learn on unseen sites.
 
 Step 6: Interpreting model performance
---------------------------------------
+*****************************************
 
 Output evaluation metrics definitions
 
