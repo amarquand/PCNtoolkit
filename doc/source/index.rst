@@ -36,6 +36,8 @@ Predictive Clinical Neuroscience toolkit
    pages/tutorial_CPC2020.rst
    pages/tutorial_ROIcorticalthickness.rst
    pages/tutorial_HBR.rst
+   pages/tutorial_braincharts_fit_nm.rst
+   pages/tutorial_braincharts_apply_nm.rst
 
 
 .. toctree::
