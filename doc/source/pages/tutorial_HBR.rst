@@ -10,8 +10,8 @@ on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
 onto unseen sites. The approach is described in detail in these papers: 
 
-- <https://arxiv.org/abs/2005.12055>
-- <https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full>
+- `Kia et al 2019 <https://arxiv.org/abs/2005.12055>`_.
+- `Kia et al 2020 <https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full>`_.
 
 View on `GitHub <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo>`_
 
