@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/PCNtoolkit/pcntoolkit')
-from gp import GPR, CovSqExp, CovSqExpARD, CovLin
+from model.gp import GPR, CovSqExp, CovSqExpARD, CovLin
 
 # load from the installed package
 #from pcntoolkit.gp import GPR, covSqExp

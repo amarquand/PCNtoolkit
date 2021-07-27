@@ -1,331 +1,476 @@
 
 
-<!doctype html>
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rfa &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+  
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rfa &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
-    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script src="../_static/bizstyle.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">rfa</a></li> 
-      </ul>
-    </div>  
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/tabs.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regression</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>rfa</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for rfa</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span></span>from __future__ import print_function
+from __future__ import division
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
+import numpy as np
+import torch
 
-<div class="viewcode-block" id="GPRRFA"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA">[docs]</a><span class="k">class</span> <span class="nc">GPRRFA</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Random Feature Approximation for Gaussian Process Regression</span>
+<div class="viewcode-block" id="GPRRFA"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA">[docs]</a>class GPRRFA:
+    &quot;&quot;&quot;Random Feature Approximation for Gaussian Process Regression
 
-<span class="sd">    Estimation and prediction of Bayesian linear regression models</span>
+    Estimation and prediction of Bayesian linear regression models
 
-<span class="sd">    Basic usage::</span>
+    Basic usage::
 
-<span class="sd">        R = GPRRFA()</span>
-<span class="sd">        hyp = R.estimate(hyp0, X, y)</span>
-<span class="sd">        ys,s2 = R.predict(hyp, X, y, Xs)</span>
+        R = GPRRFA()
+        hyp = R.estimate(hyp0, X, y)
+        ys,s2 = R.predict(hyp, X, y, Xs)
 
-<span class="sd">    where the variables are</span>
+    where the variables are
 
-<span class="sd">    :param hyp: vector of hyperparmaters.</span>
-<span class="sd">    :param X: N x D data array</span>
-<span class="sd">    :param y: 1D Array of targets (length N)</span>
-<span class="sd">    :param Xs: Nte x D array of test cases</span>
-<span class="sd">    :param hyp0: starting estimates for hyperparameter optimisation</span>
+    :param hyp: vector of hyperparmaters.
+    :param X: N x D data array
+    :param y: 1D Array of targets (length N)
+    :param Xs: Nte x D array of test cases
+    :param hyp0: starting estimates for hyperparameter optimisation
 
-<span class="sd">    :returns: * ys - predictive mean</span>
-<span class="sd">              * s2 - predictive variance</span>
+    :returns: * ys - predictive mean
+              * s2 - predictive variance
 
-<span class="sd">    The hyperparameters are::</span>
+    The hyperparameters are::
 
-<span class="sd">        hyp = [ log(sn), log(ell), log(sf) ]  # hyp is a numpy array</span>
+        hyp = [ log(sn), log(ell), log(sf) ]  # hyp is a numpy array
 
-<span class="sd">    where sn^2 is the noise variance, ell are lengthscale parameters and </span>
-<span class="sd">    sf^2 is the signal variance. This provides an approximation to the</span>
-<span class="sd">    covariance function::</span>
-<span class="sd">        </span>
-<span class="sd">        k(x,z) = x&#39;*z + sn2*exp(0.5*(x-z)&#39;*Lambda*(x-z))</span>
-<span class="sd">    </span>
-<span class="sd">    where Lambda = diag((ell_1^2, ... ell_D^2))</span>
-
-<span class="sd">    Written by A. Marquand</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_feat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>          <span class="c1"># not used at present</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="o">=</span> <span class="n">n_feat</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span> <span class="o">=</span> <span class="mi">5</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_numpy2torch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-           <span class="k">pass</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-           <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-           <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Unknown data type (X)&#39;</span><span class="p">)</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+    where sn^2 is the noise variance, ell are lengthscale parameters and 
+    sf^2 is the signal variance. This provides an approximation to the
+    covariance function::
         
-        <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-                <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Unknown data type (y)&#39;</span><span class="p">)</span>
-            
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">y</span><span class="o">.</span><span class="n">resize_</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
-        
-        <span class="k">if</span> <span class="n">hyp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">hyp</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span>
+        k(x,z) = x&#39;*z + sn2*exp(0.5*(x-z)&#39;*Lambda*(x-z))
     
-<div class="viewcode-block" id="GPRRFA.get_n_params"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.get_n_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        
-        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span></div>
-        
-<div class="viewcode-block" id="GPRRFA.post"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generic function to compute posterior distribution.</span>
+    where Lambda = diag((ell_1^2, ... ell_D^2))
 
-<span class="sd">            This function will save the posterior mean and precision matrix as</span>
-<span class="sd">            self.m and self.A and will also update internal parameters (e.g.</span>
-<span class="sd">            N, D and the prior covariance (Sigma) and precision (iSigma).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    Written by A. Marquand
+    &quot;&quot;&quot;
+
+    def __init__(self, hyp=None, X=None, y=None, n_feat=None,
+                 n_iter=100, tol=1e-3, verbose=False):
+
+        self.hyp = np.nan
+        self.nlZ = np.nan
+        self.tol = tol          # not used at present
+        self.Nf = n_feat
+        self.n_iter = n_iter
+        self.verbose = verbose
+        self._n_restarts = 5
+
+        if (hyp is not None) and (X is not None) and (y is not None):
+            self.post(hyp, X, y)
+
+    def _numpy2torch(self, X, y=None, hyp=None):
+
+        if type(X) is torch.Tensor:
+           pass
+        elif type(X) is np.ndarray:
+           X = torch.from_numpy(X)
+        else:
+           raise(ValueError, &#39;Unknown data type (X)&#39;)
+        X = X.double()
+        
+        if y is not None:
+            if type(y) is torch.Tensor:
+                pass
+            elif type(y) is np.ndarray:
+                y = torch.from_numpy(y)
+            else:
+                raise(ValueError, &#39;Unknown data type (y)&#39;)
+            
+            if len(y.shape) == 1:
+                y.resize_(y.shape[0],1)
+            y = y.double()
+        
+        if hyp is not None:
+            if type(hyp) is torch.Tensor:
+                pass
+            else:
+                hyp = torch.tensor(hyp, requires_grad=True)
+        
+        return X, y, hyp
+    
+<div class="viewcode-block" id="GPRRFA.get_n_params"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.get_n_params">[docs]</a>    def get_n_params(self, X):
+        
+        return X.shape[1] + 2</div>
+        
+<div class="viewcode-block" id="GPRRFA.post"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.post">[docs]</a>    def post(self, hyp, X, y):
+        &quot;&quot;&quot; Generic function to compute posterior distribution.
+
+            This function will save the posterior mean and precision matrix as
+            self.m and self.A and will also update internal parameters (e.g.
+            N, D and the prior covariance (Sigma) and precision (iSigma).
+        &quot;&quot;&quot;
      
-        <span class="c1"># make sure all variables are the right type</span>
-        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        # make sure all variables are the right type
+        X, y, hyp = self._numpy2torch(X, y, hyp)
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dx</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        self.N, self.Dx = X.shape
         
-        <span class="c1"># ensure the number of features is specified (use 75% as a default)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+        # ensure the number of features is specified (use 75% as a default)
+        if self.Nf is None:
+            self.Nf = int(0.75 * self.N)
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Dx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">[:,</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> \
-            <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Dx</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        self.Omega = torch.zeros((self.Dx, self.Nf), dtype=torch.double)
+        for f in range(self.Nf):
+            self.Omega[:,f] = torch.exp(hyp[1:-1]) * \
+            torch.randn((self.Dx, 1), dtype=torch.double).squeeze()
 
-        <span class="n">XO</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">)</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">)</span> <span class="o">*</span>  \
-                   <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">XO</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">XO</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
+        XO = torch.mm(X, self.Omega) 
+        self.Phi = torch.exp(hyp[-1])/np.sqrt(self.Nf) *  \
+                   torch.cat((torch.cos(XO), torch.sin(XO)), 1)
         
-        <span class="c1"># concatenate linear weights </span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span> <span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        # concatenate linear weights 
+        self.Phi = torch.cat((self.Phi, X), 1)
+        self.D = self.Phi.shape[1]
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;estimating posterior ... | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        if self.verbose:
+            print(&quot;estimating posterior ... | hyp=&quot;, hyp)
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
-                 <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> \
-                 <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        self.A = torch.mm(torch.t(self.Phi), self.Phi) / torch.exp(2*hyp[0]) + \
+                 torch.eye(self.D, dtype=torch.double)
+        self.m = torch.mm(torch.solve(torch.t(self.Phi), self.A)[0], y) / \
+                 torch.exp(2*hyp[0])
 
-        <span class="c1"># save hyperparameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span>
+        # save hyperparameters
+        self.hyp = hyp
         
-        <span class="c1"># update optimizer iteration count</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;_iterations&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">+=</span> <span class="mi">1</span></div>
+        # update optimizer iteration count
+        if hasattr(self,&#39;_iterations&#39;):
+            self._iterations += 1</div>
 
-<div class="viewcode-block" id="GPRRFA.loglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.loglik">[docs]</a>    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;</span>
-        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+<div class="viewcode-block" id="GPRRFA.loglik"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.loglik">[docs]</a>    def loglik(self, hyp, X, y):
+        &quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;
+        X, y, hyp = self._numpy2torch(X, y, hyp)
 
-        <span class="c1"># always recompute the posterior</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        # always recompute the posterior
+        self.post(hyp, X, y)
 
-        <span class="c1">#logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># compute the log determinants in a numerically stable way</span>
-            <span class="n">logdetA</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))))</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Estimation of posterior distribution failed&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="c1">#nlZ = torch.tensor(1/np.finfo(float).eps)</span>
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">return</span> <span class="n">nlZ</span>
+        #logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))
+        try:
+            # compute the log determinants in a numerically stable way
+            logdetA = 2*torch.sum(torch.log(torch.diag(torch.cholesky(self.A))))
+        except Exception as e:
+            print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+            print(e)
+            #nlZ = torch.tensor(1/np.finfo(float).eps)
+            nlZ = torch.tensor(np.nan)
+            self._optim_failed = True
+            return nlZ
         
-        <span class="c1"># compute negative marginal log likelihood</span>
-        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> 
-                      <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span>
-                      <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)),</span>
-                               <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)))</span> <span class="o">/</span> 
-                      <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span>
-                      <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span> <span class="n">logdetA</span><span class="p">)</span>
+        # compute negative marginal log likelihood
+        nlZ = -0.5 * (self.N*torch.log(1/torch.exp(2*hyp[0])) - 
+                      self.N*np.log(2*np.pi) -
+                      torch.mm(torch.t(y - torch.mm(self.Phi,self.m)),
+                               (y - torch.mm(self.Phi,self.m))) / 
+                      torch.exp(2*hyp[0]) -
+                      torch.mm(torch.t(self.m), self.m) - logdetA)
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nlZ= &quot;</span><span class="p">,</span> <span class="n">nlZ</span><span class="p">,</span> <span class="s2">&quot; | hyp=&quot;</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
+        if self.verbose:
+            print(&quot;nlZ= &quot;, nlZ, &quot; | hyp=&quot;, hyp)
 
-        <span class="c1"># save marginal likelihood</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span>
-        <span class="k">return</span> <span class="n">nlZ</span></div>
+        # save marginal likelihood
+        self.nlZ = nlZ
+        return nlZ</div>
 
-<div class="viewcode-block" id="GPRRFA.dloglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.dloglik">[docs]</a>    <span class="k">def</span> <span class="nf">dloglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GPRRFA.dloglik"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.dloglik">[docs]</a>    def dloglik(self, hyp, X, y):
+        &quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;derivatives not available&quot;</span><span class="p">)</span>
+        print(&quot;derivatives not available&quot;)
 
-        <span class="k">return</span></div>
+        return</div>
 
-<div class="viewcode-block" id="GPRRFA.estimate"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp0</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GPRRFA.estimate"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.estimate">[docs]</a>    def estimate(self, hyp0, X, y, optimizer=&#39;lbfgs&#39;):
+        &quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;
         
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">hyp0</span><span class="p">)</span> <span class="ow">is</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-            <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp0</span>
-            <span class="n">hyp0</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
-        <span class="c1"># save the starting values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp</span>
+        if type(hyp0) is torch.Tensor:
+            hyp = hyp0
+            hyp0.requires_grad_()
+        else:
+            hyp = torch.tensor(hyp0, requires_grad=True) 
+        # save the starting values
+        self.hyp0 = hyp
         
-        <span class="k">if</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;lbfgs&#39;</span><span class="p">:</span>
-            <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">hyp</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s2">&quot;Optimizer &quot;</span> <span class="o">+</span> <span class="s2">&quot; not implemented&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span> <span class="o">=</span> <span class="mi">0</span>
+        if optimizer.lower() == &#39;lbfgs&#39;:
+            opt = torch.optim.LBFGS([hyp])
+        else:
+            raise(ValueError, &quot;Optimizer &quot; + &quot; not implemented&quot;)
+        self._iterations = 0
         
-        <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
-            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">nlZ</span><span class="p">):</span>
-                <span class="n">nlZ</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">nlZ</span>
+        def closure():
+            opt.zero_grad()
+            nlZ = self.loglik(hyp, X, y)
+            if not torch.isnan(nlZ):
+                nlZ.backward()
+            return nlZ
         
-        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span> <span class="o">=</span> <span class="kc">False</span>
+        for r in range(self._n_restarts):
+            self._optim_failed = False
             
-            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+            nlZ = opt.step(closure)
             
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optim_failed</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;optimization failed. retrying (&quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;of&quot;</span><span class="p">,</span> 
-                      <span class="bp">self</span><span class="o">.</span><span class="n">_n_restarts</span><span class="p">,</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
-                <span class="n">hyp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimzation complete after&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterations</span><span class="p">,</span> 
-                      <span class="s2">&quot;evaluations. Function value =&quot;</span><span class="p">,</span> 
-                      <span class="n">nlZ</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
-                <span class="k">break</span>
+            if self._optim_failed:
+                print(&quot;optimization failed. retrying (&quot;, r+1, &quot;of&quot;, 
+                      self._n_restarts,&quot;)&quot;)
+                hyp = torch.randn_like(hyp, requires_grad=True)
+                self.hyp0 = hyp
+            else:
+                print(&quot;Optimzation complete after&quot;, self._iterations, 
+                      &quot;evaluations. Function value =&quot;, 
+                      nlZ.detach().numpy().squeeze())
+                break
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span></div>
+        return self.hyp.detach().numpy()</div>
 
-<div class="viewcode-block" id="GPRRFA.predict"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GPRRFA.predict"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.predict">[docs]</a>    def predict(self, hyp, X, y, Xs):
+        &quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;
 
-        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hyp</span><span class="p">)</span>
-        <span class="n">Xs</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numpy2torch</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+        X, y, hyp = self._numpy2torch(X, y, hyp)
+        Xs, *_ = self._numpy2torch(Xs)
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        if (hyp != self.hyp).all() or not(hasattr(self, &#39;A&#39;)):
+            self.post(hyp, X, y)
         
-        <span class="c1"># generate prediction tensors</span>
-        <span class="n">XsO</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">Xs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Omega</span><span class="p">)</span> 
-        <span class="n">Phis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nf</span><span class="p">)</span> <span class="o">*</span> \
-               <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">XsO</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">XsO</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="c1"># add linear component</span>
-        <span class="n">Phis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">Phis</span><span class="p">,</span> <span class="n">Xs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        # generate prediction tensors
+        XsO = torch.mm(Xs, self.Omega) 
+        Phis = torch.exp(hyp[-1])/np.sqrt(self.Nf) * \
+               torch.cat((torch.cos(XsO), torch.sin(XsO)), 1)
+        # add linear component
+        Phis = torch.cat((Phis, Xs), 1)
         
-        <span class="n">ys</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">Phis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        ys = torch.mm(Phis, self.m)
 
-        <span class="c1"># compute diag(Phis*(Phis&#39;\A)) avoiding computing off-diagonal entries</span>
-        <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
-                <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Phis</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">Phis</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+        # compute diag(Phis*(Phis&#39;\A)) avoiding computing off-diagonal entries
+        s2 = torch.exp(2*hyp[0]) + \
+                torch.sum(Phis * torch.t(torch.solve(torch.t(Phis), self.A)[0]), 1)
 
-        <span class="c1"># return output as numpy arrays</span>
-        <span class="k">return</span> <span class="n">ys</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div></div>
+        # return output as numpy arrays
+        return ys.detach().numpy().squeeze(), s2.detach().numpy().squeeze()</div></div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
+           
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">rfa</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &#169; Copyright 2020, Andre F. Marquand.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
-    </div>
-  </body>
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>

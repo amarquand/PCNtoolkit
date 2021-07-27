@@ -8,9 +8,11 @@ import pandas as pd
 from ast import literal_eval
 
 try:  # run as a package if installed
-    from pcntoolkit.bayesreg import BLR
-    from pcntoolkit.normative_model.normbase import NormBase
-    from pcntoolkit.utils import create_poly_basis
+    from pcntoolkit.model.bayesreg import BLR
+    from pcntoolkit.normative_model.norm_base import NormBase
+    from pcntoolkit.dataio import fileio
+    from pcntoolkit.util.utils import create_poly_basis, WarpBoxCox, \
+                                  WarpAffine, WarpCompose, WarpSinArcsinh
 except ImportError:
     pass
 
@@ -19,9 +21,10 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    from bayesreg import BLR
+    from model.bayesreg import BLR
     from norm_base import NormBase
-    from utils import create_poly_basis, WarpBoxCox, \
+    from dataio import fileio
+    from util.utils import create_poly_basis, WarpBoxCox, \
                       WarpAffine, WarpCompose, WarpSinArcsinh
 
 class NormBLR(NormBase):
@@ -60,9 +63,20 @@ class NormBLR(NormBase):
         if type(model_order) is not int:
             model_order = int(model_order)
         
-        # configure variance groups (e.g. site specific variance)
-        if 'var_groups' in kwargs:
-            var_groups_file = kwargs.pop('var_groups')
+        # configure heteroskedastic noise
+        if 'varcovfile' in kwargs:
+            var_cov_file = kwargs.get('varcovfile')
+            if var_cov_file.endswith('.pkl'):
+                self.var_covariates = pd.read_pickle(var_cov_file)
+            else:
+                self.var_covariates = np.loadtxt(var_cov_file)
+            if len(self.var_covariates.shape) == 1:
+                self.var_covariates = self.var_covariates[:, np.newaxis]
+            n_beta = self.var_covariates.shape[1]
+            self.var_groups = None
+        elif 'vargroupfile' in kwargs:
+            # configure variance groups (e.g. site specific variance)
+            var_groups_file = kwargs.pop('vargroupfile')
             if var_groups_file.endswith('.pkl'):
                 self.var_groups = pd.read_pickle(var_groups_file)
             else:
@@ -72,6 +86,7 @@ class NormBLR(NormBase):
             n_beta = len(var_ids)
         else:
             self.var_groups = None
+            self.var_covariates = None
             n_beta = 1
         
         # are we using ARD?
@@ -111,8 +126,8 @@ class NormBLR(NormBase):
         
         # initialise the BLR object if the required parameters are present
         if (theta is not None) and (y is not None):
-            self.Phi = create_poly_basis(X, self._model_order)
-            self.blr = BLR(theta=theta, X=self.Phi, y=y, 
+            Phi = create_poly_basis(X, self._model_order)
+            self.blr = BLR(theta=theta, X=Phi, y=y, 
                            warp=self.warp, **kwargs)
         else:
             self.blr = BLR(**kwargs)    
@@ -133,8 +148,7 @@ class NormBLR(NormBase):
         # remove warp string to prevent it being passed to the blr object
         kwargs.pop('warp',None) 
         
-        if not hasattr(self,'Phi'):
-            self.Phi = create_poly_basis(X, self._model_order)
+        Phi = create_poly_basis(X, self._model_order)
         if len(y.shape) > 1:
             y = y.ravel()
             
@@ -142,34 +156,84 @@ class NormBLR(NormBase):
             theta = self.theta0           
             
             # (re-)initialize BLR object because parameters were not specified
-            self.blr = BLR(theta=theta, X=self.Phi, y=y, 
+            self.blr = BLR(theta=theta, X=Phi, y=y, 
                            var_groups=self.var_groups, 
                            warp=self.warp, **kwargs)
 
-        self.theta = self.blr.estimate(theta, self.Phi, y, 
-                                       optimizer=self.optim_alg)
+        self.theta = self.blr.estimate(theta, Phi, y, 
+                                       var_covariates=self.var_covariates, **kwargs)
         
         return self
 
     def predict(self, Xs, X=None, y=None, **kwargs):      
         
         theta = self.theta # always use the estimated coefficients
-        # remove from kwargs
+        # remove from kwargs to avoid downstream problems
         kwargs.pop('theta', None)
+        
+        
 
         Phis = create_poly_basis(Xs, self._model_order)
         
-        if 'var_groups_test' in kwargs:
-            var_groups_test_file = kwargs.pop('var_groups_test')
+        if X is None:
+            Phi =None
+        else:
+            Phi = create_poly_basis(X, self._model_order)
+        
+        # process variance groups for the test data
+        if 'testvargroupfile' in kwargs:
+            var_groups_test_file = kwargs.pop('testvargroupfile')
             if var_groups_test_file.endswith('.pkl'):
                 var_groups_te = pd.read_pickle(var_groups_test_file)
             else:
                 var_groups_te = np.loadtxt(var_groups_test_file)
         else:
             var_groups_te = None
+        
+        # process test variance covariates
+        if 'testvarcovfile' in kwargs:
+            var_cov_test_file = kwargs.get('testvarcovfile')
+            if var_cov_test_file.endswith('.pkl'):
+                var_cov_te = pd.read_pickle(var_cov_test_file)
+            else:
+                var_cov_te = np.loadtxt(var_cov_test_file)
+        else:
+            var_cov_te = None
+        
+        # do we want to adjust the responses?
+        if 'adaptrespfile' in kwargs:
+            y_adapt = fileio.load(kwargs.pop('adaptrespfile'))
+            if len(y_adapt.shape) == 1:
+                y_adapt = y_adapt[:, np.newaxis]
+        else:
+            y_adapt = None
+        
+        if 'adaptcovfile' in kwargs:
+            X_adapt = fileio.load(kwargs.pop('adaptcovfile'))
+            Phi_adapt = create_poly_basis(X_adapt, self._model_order)
+        else:
+            Phi_adapt = None
+        
+        if 'adaptvargroupfile' in kwargs: 
+            var_groups_adapt_file = kwargs.pop('adaptvargroupfile')
+            if var_groups_adapt_file.endswith('.pkl'):
+                var_groups_ad = pd.read_pickle(var_groups_adapt_file)
+            else:
+                var_groups_ad = np.loadtxt(var_groups_adapt_file)
+        else:
+            var_groups_ad = None
             
-        yhat, s2 = self.blr.predict(theta, self.Phi, y, Phis, 
-                                    var_groups_test=var_groups_te)
+        
+        if y_adapt is None:
+            yhat, s2 = self.blr.predict(theta, Phi, y, Phis, 
+                                        var_groups_test=var_groups_te,
+                                        var_covariates_test=var_cov_te, 
+                                        **kwargs)
+        else:
+            yhat, s2 = self.blr.predict_and_adjust(theta, Phi_adapt, y_adapt, Phis, 
+                                                   var_groups_test=var_groups_te,
+                                                   var_groups_adapt=var_groups_ad, 
+                                                   **kwargs)
         
         return yhat, s2
     

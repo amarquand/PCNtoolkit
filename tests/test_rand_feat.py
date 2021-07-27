@@ -1,15 +1,15 @@
 import sys
 import numpy as np
 import torch
-from utils import create_poly_basis
+from util.utils import create_poly_basis
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 # load as a module
 sys.path.append('/home/mrstats/andmar/sfw/PCNtoolkit/pcntoolkit')
-from gp import GPR, CovSqExp, CovSqExpARD, CovLin, CovSum
-from bayesreg import BLR
-from rfa import GPRRFA
+from model.gp import GPR, CovSqExp, CovSqExpARD, CovLin, CovSum
+from model.bayesreg import BLR
+from model.rfa import GPRRFA
 
 def plot_dist(x, mean, lb, ub, color_mean=None, color_shading=None):
     # plot the shaded range of the confidence intervals
@@ -93,7 +93,7 @@ Phi = np.c_[Phi, X]
 Phis = np.c_[Phis, Xs]
 
 hyp_blr = np.asarray([np.log(1/sn2_est), np.log(1)])
-B = BLR(hyp_blr, Phi, y)
+B = BLR()#hyp_blr, Phi, y)
 B.loglik(hyp_blr, Phi, y)
 yhat_blr, s2_blr = B.predict(hyp_blr, Phi, y, Phis)
 

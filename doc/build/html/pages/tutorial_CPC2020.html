@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Gaussian Process Regression &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bayesian Linear Regression" href="tutorial_ROIcorticalthickness.html" />
+    <link rel="prev" title="Updates" href="updates.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updates.html">Updates</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Gaussian Process Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background-story">Background Story</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-0-load-data-and-install-the-pcntoolkit">Task 0: Load data and install the pcntoolkit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-1-format-input-data">TASK 1: Format input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file">TASK 2: Prepare the covariate_normsample and testresponse_normsample file.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-3-estimate-normative-model">TASK 3: Estimate normative model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-4-estimate-the-forward-model-of-the-normative-model">TASK 4: Estimate the forward model of the normative model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-5-visualize-forward-model">TASK 5: Visualize forward model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients">TASK 6: Apply the normative model to Nordan’s data and the dementia patients.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely">TASK 7: In which hyppocampal subfield(s) does Nordan deviate extremely?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-8-optional-implement-a-function-that-calculates-percentage-change">TASK 8 (OPTIONAL): Implement a function that calculates percentage change.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#task-9-optional-visualize-percent-change">TASK 9 (OPTIONAL): Visualize percent change</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_HBR.html">Predictive Clinical Neuroscience Toolkit</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Gaussian Process Regression</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/pages/tutorial_CPC2020.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="gaussian-process-regression">
+<h1>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Permalink to this headline">¶</a></h1>
+<p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a>, <a class="reference external" href="https://twitter.com/ThomasWolfers">Thomas Wolfers</a>, <a class="reference external" href="https://twitter.com/m_zabihi">Mariam Zabihi</a></p>
+<p>View on <a class="reference external" href="https://github.com/saigerutherford/CPC_2020">GitHub</a></p>
+<p>Run in <a class="reference external" href="https://colab.research.google.com/github/saigerutherford/CPC_2020/blob/master/tasks_key/key_cpc_machinelearning.ipynb">Google Colab</a></p>
+<p>_______________________________________________________________________________</p>
+<div class="section" id="background-story">
+<h2>Background Story<a class="headerlink" href="#background-story" title="Permalink to this headline">¶</a></h2>
+<p>Morten and Ingrid are concerned about the health of their father,
+Nordan. He recently turned 65 years. A few months ago he could not find
+his way home. Together, they visit a neurologist/psychiatrist to conduct
+a number of cognitive tests. However, those tests were inconclusive.
+While Nordan has a relatively low IQ it could not explain his trouble
+returning home.</p>
+<p>Recently, the family heard about a new screening technique called
+normative modeling with which one can place individuals in reference to
+a population norm on for instance measures such as brain volume. Nordan
+would like to undertake this procedure to better know what is going on
+and to potentially find targets for treatment. Therefore, the family
+booked an appointment with you, the normative modeling specialist. To
+find out what is going on you compare Nordan’s hyppocampus to the norm
+and to a group of persons with Dementia disorders, who have a similar
+IQ, age as well as the same sex as Nordan.</p>
+<p>Do your best to get as far as you can. However, you do not need to feel
+bad if you cannot complete everything during the tutorial.</p>
+</div>
+<div class="section" id="task-0-load-data-and-install-the-pcntoolkit">
+<h2>Task 0: Load data and install the pcntoolkit<a class="headerlink" href="#task-0-load-data-and-install-the-pcntoolkit" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#install normative modeling</span>
+<span class="o">!</span>pip install pcntoolkit
+</pre></div>
+</div>
+<p><strong>Option 1:</strong> Connect your Google Drive account, and load data from
+Google Drive. Having Google Drive connected will allow you to save any
+files created back to your Drive folder. This step will require you to
+download the csv files from
+<a class="reference external" href="https://github.com/saigerutherford/CPC_2020/tree/master/data">Github</a>
+to your computer, and then make a folder in your Google Drive account
+and upload the csv files to this folder.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+
+<span class="c1">#change dir to data on your google drive</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;drive/My Drive/name-of-folder-where-you-uploaded-csv-files-from-Github/&#39;</span><span class="p">)</span> <span class="c1">#Change this path to match the path to your data in Google Drive</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+<p><strong>Option 2:</strong> Import the files directly from Github, and skip adding
+them to Google Drive.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>wget -nc https://raw.githubusercontent.com/saigerutherford/CPC_2020/master/data/cpc_camcan_demographics.csv
+<span class="o">!</span>wget -nc https://raw.githubusercontent.com/saigerutherford/CPC_2020/master/data/cpc_camcan_demographics_nordan.csv
+<span class="o">!</span>wget -nc https://raw.githubusercontent.com/saigerutherford/CPC_2020/master/data/cpc_camcan_features.csv
+<span class="o">!</span>wget -nc https://raw.githubusercontent.com/saigerutherford/CPC_2020/master/data/cpc_camcan_features_nordan.csv
+
+<span class="c1"># code by S. Rutherford</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-1-format-input-data">
+<h2>TASK 1: Format input data<a class="headerlink" href="#task-1-format-input-data" title="Permalink to this headline">¶</a></h2>
+<p>You have four files. The features and demographics file for the
+normsample and two files of the same name for Nordan your test sample.
+As one of your coworkers has done the preporcessing and quality control
+there are more subjects in the demographics file than in the features
+file of the norm sample. Please select the overlap of participants
+between those two files.</p>
+<p><em>Question for your understanding:</em></p>
+<ol class="arabic simple">
+<li><p>Why do we have to select the overlap between participants in terms of
+featrues and demographics?</p></li>
+</ol>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># read in the files.</span>
+<span class="n">norm_demographics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;cpc_camcan_demographics.csv&#39;</span><span class="p">,</span>
+                                <span class="n">sep</span><span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                                <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">norm_features</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;cpc_camcan_features.csv&#39;</span><span class="p">,</span>
+                            <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                            <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># check columns through print [there are other better options]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">norm_demographics</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">norm_features</span><span class="p">)</span>
+
+<span class="c1"># find overlap in terms of participants between norm_sample_features and</span>
+<span class="c1"># norm_sample_demographics</span>
+
+<span class="n">norm_demographics_features</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">norm_demographics</span><span class="p">,</span> <span class="n">norm_features</span><span class="p">],</span>
+                                       <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                                       <span class="n">join</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">)</span> <span class="c1"># inner checks overlap</span>
+                                                       <span class="c1"># outer combines</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">norm_demographics_features</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file">
+<h2>TASK 2: Prepare the covariate_normsample and testresponse_normsample file.<a class="headerlink" href="#task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned in the introductory presentation those files need a
+specific format and the entries need to be seperated by spaces. Use
+whatever method you know to prepare those files based on the data
+provided in TASK 1. Save those files in .txt format in your drive. Also
+get rid of the column names and participant IDs.</p>
+<p>Given that we only have limited time in this practical we have to make a
+selection for the features based on your prior knowledge. With the
+information in mind that Nordan does not remember his way home, which
+subfield of the hyppocampus is probably a good target for the
+investigations? Select a maximum of four hyppocampal regions as
+features.</p>
+<p>NOTE: Normative modeling is a screening tool we just make this selection
+due to time constraints, in reality we build these models on millions of
+putative biomarkers that are not restricted to brain imaging.</p>
+<p><em>Qestions for your understanding:</em></p>
+<ol class="arabic simple" start="2">
+<li><p>What is the requirement for the features in terms of variable
+properties (e.g. dicotomous or continous)? 3) What is the requirement
+for the covariates in terms of these properties? 4) What are the
+requirements for both together? 5) How does this depent on the
+algorithm used?</p></li>
+</ol>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># perpare covariate_normsample for sex and age</span>
+<span class="n">covariate_normsample</span> <span class="o">=</span> <span class="n">norm_demographics_features</span><span class="p">[[</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;age&#39;</span><span class="p">]]</span>
+
+<span class="n">covariate_normsample</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;covariate_normsample.txt&#39;</span><span class="p">,</span>
+                            <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                            <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                            <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># perpare features_normsample for relevant hyppocampal subfields</span>
+<span class="n">features_normsample</span> <span class="o">=</span> <span class="n">norm_demographics_features</span><span class="p">[[</span><span class="s1">&#39;left_CA1&#39;</span><span class="p">,</span>
+                                                 <span class="s1">&#39;left_CA3&#39;</span><span class="p">,</span>
+                                                 <span class="s1">&#39;right_CA1&#39;</span><span class="p">,</span>
+                                                 <span class="s1">&#39;right_CA3&#39;</span><span class="p">]]</span>
+
+<span class="n">features_normsample</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;features_normsample.txt&#39;</span><span class="p">,</span>
+                           <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                           <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                           <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-3-estimate-normative-model">
+<h2>TASK 3: Estimate normative model<a class="headerlink" href="#task-3-estimate-normative-model" title="Permalink to this headline">¶</a></h2>
+<p>Once you have prepared and saved all the necessary files. Look at the
+pcntoolkit for running normative modeling. Select an appropritate method
+set up the toolkit and run your analyses using 2-fold cross validation
+in the normsample. Change the output suffix from estimate to ’_2fold’.</p>
+<p>HINT: You primarily need the estimate function.</p>
+<p>SUGGESTION: While this process is running you can go to the next TASK 4,
+you will have no doubt when it is correctly running.</p>
+<p><em>Question for your understaning:</em></p>
+<ol class="arabic simple" start="6">
+<li><p>What does cvfolds mean and why do we use it? 7) What is the output of
+the estimate function and what does it mean?</p></li>
+</ol>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pcntoolkit</span> <span class="k">as</span> <span class="nn">pcn</span>
+
+<span class="c1"># run normative modeling using 2-fold cross-validation</span>
+
+<span class="n">pcn</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span> <span class="o">=</span> <span class="s1">&#39;covariate_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">respfile</span> <span class="o">=</span> <span class="s1">&#39;features_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">cvfolds</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                       <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;gpr&#39;</span><span class="p">,</span>
+                       <span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_2fold&#39;</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-4-estimate-the-forward-model-of-the-normative-model">
+<h2>TASK 4: Estimate the forward model of the normative model<a class="headerlink" href="#task-4-estimate-the-forward-model-of-the-normative-model" title="Permalink to this headline">¶</a></h2>
+<p>In order to visulize the normative trajectories you first need to run
+the forward model. To this end you need to set up an appropriate
+covariate_forwardmodel file that covers the age range appropriately for
+both sexes. Save this file as .txt . Then you can input the files you
+made in TASK 1 as well as the file you made now and run the forward
+model using the appropriate specifications.</p>
+<p><em>Question for your understaning:</em></p>
+<ol class="arabic simple" start="8">
+<li><p>What is yhat and ys2? 9) Why does the output of the forward model
+does not inlcude the Z-scores?</p></li>
+</ol>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create covariate_forwardmodel.txt file</span>
+<span class="n">covariate_forwardmodel</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sex&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                                  <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                          <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span>
+                                  <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">]}</span>
+<span class="n">covariate_forwardmodel</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">covariate_forwardmodel</span><span class="p">)</span>
+
+<span class="n">covariate_forwardmodel</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;covariate_forwardmodel.txt&#39;</span><span class="p">,</span>
+                           <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                           <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                           <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># estimate forward model</span>
+<span class="n">pcn</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span> <span class="o">=</span> <span class="s1">&#39;covariate_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">respfile</span> <span class="o">=</span> <span class="s1">&#39;features_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">testcov</span> <span class="o">=</span> <span class="s1">&#39;covariate_forwardmodel.txt&#39;</span><span class="p">,</span>
+                       <span class="n">cvfolds</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;gpr&#39;</span><span class="p">,</span>
+                       <span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_forward&#39;</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-5-visualize-forward-model">
+<h2>TASK 5: Visualize forward model<a class="headerlink" href="#task-5-visualize-forward-model" title="Permalink to this headline">¶</a></h2>
+<p>Visualize the forward model of the normative model similar to the figure
+below.</p>
+<div class="figure align-default">
+<img alt="../_images/nm_plot.jpeg" src="../_images/nm_plot.jpeg" />
+</div>
+<p>HINT: First create a function that calculates the confidence intervals
+and then plot yhat, y2 of the forward model. Finally, plot the data of
+individual participants.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># confidence interval calculation at x_forward</span>
+<span class="k">def</span> <span class="nf">confidence_interval</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">z</span><span class="p">):</span>
+  <span class="n">CI</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">x_forward</span><span class="p">),</span><span class="mi">4</span><span class="p">))</span>
+  <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">xdot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_forward</span><span class="p">):</span>
+    <span class="n">ci_inx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">xdot</span><span class="p">)</span>
+    <span class="n">S2</span><span class="o">=</span><span class="n">s2</span><span class="p">[</span><span class="n">ci_inx</span><span class="p">]</span>
+    <span class="n">S_hat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">S2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">CI</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span><span class="o">=</span><span class="n">z</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">S_hat</span><span class="o">/</span><span class="n">n</span><span class="p">,</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">CI</span>
+
+
+<span class="n">feature_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left_CA1&#39;</span><span class="p">,</span><span class="s1">&#39;left_CA3&#39;</span><span class="p">,</span><span class="s1">&#39;right_CA1&#39;</span><span class="p">,</span><span class="s1">&#39;right_CA3&#39;</span><span class="p">]</span>
+<span class="n">sex_covariates</span><span class="o">=</span><span class="p">[</span> <span class="s1">&#39;Female&#39;</span><span class="p">,</span><span class="s1">&#39;Male&#39;</span><span class="p">]</span>
+<span class="c1"># Creating plots for Female and male</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">sex</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sex_covariates</span><span class="p">):</span>
+<span class="c1">#forward model data</span>
+    <span class="n">forward_yhat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;yhat_forward.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">yhat_forward</span><span class="o">=</span><span class="n">forward_yhat</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">yhat_forward</span><span class="o">=</span><span class="n">yhat_forward</span><span class="p">[</span><span class="mi">7</span><span class="o">*</span><span class="n">i</span><span class="p">:</span><span class="mi">7</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">x_forward</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+
+<span class="c1"># Find the index of the data exclusively for one sex. Female:0, Male: 1</span>
+    <span class="n">inx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">covariate_normsample</span><span class="o">.</span><span class="n">sex</span><span class="o">==</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">covariate_normsample</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">inx</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="c1"># actual data</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;features_normsample.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">inx</span><span class="p">]</span>
+<span class="c1"># confidence Interval yhat+ z *(std/n^.5)--&gt;.95 % CI:z=1.96, 99% CI:z=2.58</span>
+    <span class="n">s2</span><span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;ys2_2fold.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">s2</span><span class="o">=</span><span class="n">s2</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">inx</span><span class="p">]</span>
+
+    <span class="n">CI_95</span><span class="o">=</span><span class="n">confidence_interval</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">1.96</span><span class="p">)</span>
+    <span class="n">CI_99</span><span class="o">=</span><span class="n">confidence_interval</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">2.58</span><span class="p">)</span>
+
+<span class="c1"># Creat a trejactroy for each point</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feature_names</span><span class="p">):</span>
+         <span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+         <span class="n">ax</span><span class="o">=</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_forward</span><span class="p">,</span><span class="n">yhat_forward</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Normative trejactory&#39;</span><span class="p">)</span>
+
+
+         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_forward</span><span class="p">,</span><span class="n">CI_95</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="n">yhat_forward</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;95</span><span class="si">% c</span><span class="s1">onfidence interval&#39;</span><span class="p">)</span>
+         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_forward</span><span class="p">,</span><span class="o">-</span><span class="n">CI_95</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="n">yhat_forward</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+
+         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_forward</span><span class="p">,</span><span class="n">CI_99</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="n">yhat_forward</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;99</span><span class="si">% c</span><span class="s1">onfidence interval&#39;</span><span class="p">)</span>
+         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_forward</span><span class="p">,</span><span class="o">-</span><span class="n">CI_99</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="n">yhat_forward</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+         <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Normative trejectory of&#39;</span> <span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; in &#39;</span><span class="o">+</span><span class="n">sex</span><span class="o">+</span><span class="s1">&#39; cohort&#39;</span><span class="p">)</span>
+         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c1"># code by M. Zabihi</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients">
+<h2>TASK 6: Apply the normative model to Nordan’s data and the dementia patients.<a class="headerlink" href="#task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in Nordan&#39;s as well as the patient&#39;s demographics and features</span>
+<span class="n">demographics_nordan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;cpc_camcan_demographics_nordan.csv&#39;</span><span class="p">,</span>
+                                       <span class="n">sep</span><span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                                       <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">features_nordan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;cpc_camcan_features_nordan.csv&#39;</span><span class="p">,</span>
+                            <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                            <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># create a covariate file for Nordan&#39;s as well as the patient&#39;s demograhpics</span>
+<span class="n">covariate_nordan</span> <span class="o">=</span> <span class="n">demographics_nordan</span><span class="p">[[</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;age&#39;</span><span class="p">]]</span>
+<span class="n">covariate_nordan</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;covariate_nordan.txt&#39;</span><span class="p">,</span>
+                        <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                        <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># create the corresponding feature file</span>
+<span class="n">features_nordan</span> <span class="o">=</span> <span class="n">features_nordan</span><span class="p">[[</span><span class="s1">&#39;left_CA1&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;left_CA3&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;right_CA1&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;right_CA3&#39;</span><span class="p">]]</span>
+
+<span class="n">features_nordan</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;features_nordan.txt&#39;</span><span class="p">,</span>
+                        <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                        <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># apply normative modeling</span>
+<span class="n">pcn</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span> <span class="o">=</span> <span class="s1">&#39;covariate_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">respfile</span> <span class="o">=</span> <span class="s1">&#39;features_normsample.txt&#39;</span><span class="p">,</span>
+                       <span class="n">testcov</span> <span class="o">=</span> <span class="s1">&#39;covariate_nordan.txt&#39;</span><span class="p">,</span>
+                       <span class="n">testresp</span> <span class="o">=</span> <span class="s1">&#39;features_nordan.txt&#39;</span><span class="p">,</span>
+                       <span class="n">cvfolds</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;gpr&#39;</span><span class="p">,</span>
+                       <span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_nordan&#39;</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely">
+<h2>TASK 7: In which hyppocampal subfield(s) does Nordan deviate extremely?<a class="headerlink" href="#task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely" title="Permalink to this headline">¶</a></h2>
+<p>No coding necessary just create a presentation which includes
+recommendations to Nordan and his family. Use i) |Z| &gt; 3.6 ii) |Z| &gt;
+1.96 as definitions for extreme normative deviations.</p>
+</div>
+<div class="section" id="task-8-optional-implement-a-function-that-calculates-percentage-change">
+<h2>TASK 8 (OPTIONAL): Implement a function that calculates percentage change.<a class="headerlink" href="#task-8-optional-implement-a-function-that-calculates-percentage-change" title="Permalink to this headline">¶</a></h2>
+<p>Percentage change = <img class="math" src="../_images/math/136499ff23ae31f75bf05de819b869f7cb8675a7.png" alt="\frac{x1 - x2}{|x2|}*100"/></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># function that calculates percentage change</span>
+<span class="k">def</span> <span class="nf">calculate_percentage_change</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+  <span class="n">percentage_change</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x2</span><span class="p">))</span> <span class="o">*</span> <span class="mi">100</span>
+  <span class="k">return</span> <span class="n">percentage_change</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="task-9-optional-visualize-percent-change">
+<h2>TASK 9 (OPTIONAL): Visualize percent change<a class="headerlink" href="#task-9-optional-visualize-percent-change" title="Permalink to this headline">¶</a></h2>
+<p>Plot the prercentage change in Yhat of the forward model in reference to
+age 20. Do that for both sexes seperately.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">forward_yhat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;yhat_forward.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># You can indicate here which hypocampal subfield you like to visualize</span>
+<span class="n">hyppocampal_subfield</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">percentage_change_female</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">percentage_change_male</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">lengths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">forward_yhat</span><span class="p">[</span><span class="n">hyppocampal_subfield</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">forward_yhat</span><span class="p">[</span><span class="n">hyppocampal_subfield</span><span class="p">]:</span>
+  <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
+    <span class="n">loop_percentage_change_female</span> <span class="o">=</span> <span class="n">calculate_percentage_change</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span>
+                                                                <span class="n">forward_yhat</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span>
+                                                                                  <span class="n">hyppocampal_subfield</span><span class="p">])</span>
+    <span class="n">percentage_change_female</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loop_percentage_change_female</span><span class="p">)</span>
+  <span class="k">elif</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+    <span class="n">loop_percentage_change_male</span> <span class="o">=</span> <span class="n">calculate_percentage_change</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span>
+                                                              <span class="n">forward_yhat</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">9</span><span class="p">,</span>
+                                                                                <span class="n">hyppocampal_subfield</span><span class="p">])</span>
+    <span class="n">percentage_change_male</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loop_percentage_change_male</span><span class="p">)</span>
+  <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;30 compared to 20 years&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;40 compared to 20 years&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;50 compared to 20 years&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;60 compared to 20 years&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;70 compared to 20 years&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;80 compared to 20 years&#39;</span><span class="p">]</span>
+
+<span class="c1"># females</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">percentage_change_female</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># males</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">percentage_change_male</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># code by T. Wolfers</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="tutorial_ROIcorticalthickness.html" class="btn btn-neutral float-right" title="Bayesian Linear Regression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="updates.html" class="btn btn-neutral float-left" title="Updates" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Andre F. Marquand.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
