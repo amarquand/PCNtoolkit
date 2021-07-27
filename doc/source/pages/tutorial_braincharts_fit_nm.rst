@@ -1,4 +1,4 @@
-Estimating lifespan normative models
+Braincharts: fit model
 ------------------------------------
 
 This notebook provides a complete walkthrough for an analysis of
