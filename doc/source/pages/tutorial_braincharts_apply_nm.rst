@@ -1,4 +1,4 @@
-Using lifespan models to make predictions on new data
+Braincharts: apply (transfer to new data)
 -----------------------------------------------------
 
 This notebook shows how to apply the coefficients from pre-estimated
