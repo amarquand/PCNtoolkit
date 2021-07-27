@@ -15,7 +15,7 @@ onto unseen sites. The approach is described in detail in these papers:
 
 View on `GitHub <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo>`_
 
-While we run everything on a single compute node here, for larger datasets, it is probably desirbel to paralelize this (see the tutorial on Gaussian process regresion)
+While we run everything on a single compute node here, for larger datasets, it is probably desirbel to paralelize this using the normative_parallel functionality.
 
 Run in `Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb>`_
 
