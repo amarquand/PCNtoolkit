@@ -1,4 +1,4 @@
-Predictive Clinical Neuroscience Toolkit
+Hierarchical Bayesian Regression
 ======================================================================================
 
 Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.
@@ -8,9 +8,14 @@ testing set, `see Saige’s
 tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb>`__
 on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
-onto unseen sites.
+onto unseen sites. The approach is described in detail in these papers: 
+
+- `Kia et al 2020 <https://arxiv.org/abs/2005.12055>`_.
+- `Kia et al 2021 <https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full>`_.
 
 View on `GitHub <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo>`_
+
+While we run everything on a single compute node here, for larger datasets, it is probably desirbel to paralelize this using the normative_parallel functionality.
 
 Run in `Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb>`_
 
