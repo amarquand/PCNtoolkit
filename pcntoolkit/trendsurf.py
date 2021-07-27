@@ -17,8 +17,8 @@ import nibabel as nib
 import argparse
 
 try:  # Run as a package if installed
-    from pcntoolkit import fileio
-    from pcntoolkit.bayesreg import BLR
+    from pcntoolkit.dataio import fileio
+    from pcntoolkit.model.bayesreg import BLR
 except ImportError:
     pass
     path = os.path.abspath(os.path.dirname(__file__))
@@ -26,8 +26,8 @@ except ImportError:
         sys.path.append(path)
     del path
 
-    import fileio
-    from bayesreg import BLR
+    from dataio import fileio
+    from model.bayesreg import BLR
 
 
 
