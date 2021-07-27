@@ -23,11 +23,11 @@ import glob
 
 from sklearn.model_selection import KFold
 try:  # run as a package if installed
-    from pcntoolkit import fileio
     from pcntoolkit import configs
+    from pcntoolkit.dataio import fileio
     from pcntoolkit.normative_model.norm_utils import norm_init
-    from pcntoolkit.utils import compute_pearsonr, CustomCV, explained_var
-    from pcntoolkit.utils import compute_MSLL, scaler
+    from pcntoolkit.util.utils import compute_pearsonr, CustomCV, explained_var
+    from pcntoolkit.util.utils import compute_MSLL, scaler
 except ImportError:
     pass
 
@@ -36,11 +36,12 @@ except ImportError:
         sys.path.append(path)
         #sys.path.append(os.path.join(path,'normative_model'))
     del path
-
-    import fileio
+    
     import configs
-    from utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
-    from utils import scaler
+    from dataio import fileio
+
+    from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
+    from util.utils import scaler
     from normative_model.norm_utils import norm_init
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
@@ -81,7 +82,7 @@ def get_args(*args):
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
     parser.add_argument("-x", help="algorithm specific config options", 
                         dest="configparam", default=None)
-    #parser.add_argument('-s', action='store_false', 
+    # parser.add_argument('-s', action='store_false', 
     #                 help="Flag to skip standardization.", dest="standardize")
     parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
     
@@ -130,7 +131,7 @@ def get_args(*args):
             args.configparam, kw_args
             
 
-def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
+def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, alg=None,
              metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']):
     ''' Compute error metrics
     This function will compute error metrics based on a set of predictions Yhat
@@ -201,6 +202,16 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None,
                                     mY.reshape(-1,1).T, 
                                     (sY**2).reshape(-1,1).T)
             results['MSLL'] = MSLL
+            
+    if 'NLL' in metrics:
+        results['NLL'] = nlZ
+    
+    if 'BIC' in metrics:
+        if hasattr(getattr(nm, alg), 'hyp'):
+            n = Xz_tr.shape[0]
+            k = len(getattr(nm, alg).hyp)
+            BIC = k * np.log(n) + 2 * nlZ
+            results['BIC'] = BIC    
     
     return results
 
@@ -234,8 +245,12 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
 
     if results is not None:        
         for metric in list(results.keys()):
-            fileio.save(results[metric], os.path.join(save_path, metric + ext), 
+            if (metric == 'NLL' or metric == 'BIC') and file_ext == '.nii.gz':
+                fileio.save(results[metric], os.path.join(save_path, metric + str(outputsuffix) + '.pkl'), 
                         example=exfile, mask=maskvol)
+            else:
+                fileio.save(results[metric], os.path.join(save_path, metric + ext), 
+                            example=exfile, mask=maskvol)
 
 def estimate(covfile, respfile, **kwargs):
     """ Estimate a normative model
@@ -299,7 +314,10 @@ def estimate(covfile, respfile, **kwargs):
     testcov = kwargs.pop('testcov', None)
     testresp = kwargs.pop('testresp',None)
     alg = kwargs.pop('alg','gpr')
-    outputsuffix = kwargs.pop('outputsuffix','_estimate')
+    outputsuffix = kwargs.pop('outputsuffix','estimate')
+    outputsuffix = "_" + outputsuffix.replace("_", "")  # Making sure there is only one 
+                                                        # '_' is in the outputsuffix to 
+                                                        # avoid file name parsing problem.
     inscaler = kwargs.pop('inscaler','None')
     outscaler = kwargs.pop('outscaler','None')
     warp = kwargs.get('warp', None)
@@ -418,7 +436,7 @@ def estimate(covfile, respfile, **kwargs):
             fileio.save(be[ts,:], 'be_kfold_ts_tempfile.pkl')
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
-            
+        
         # estimate the models for all subjects
         for i in range(0, len(nz)):  
             print("Estimating model ", i+1, "of", len(nz))
@@ -496,12 +514,17 @@ def estimate(covfile, respfile, **kwargs):
         if warp is None:
             results = evaluate(Y[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp[0], 
-                               sY=std_resp[0])
+                               sY=std_resp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr, alg=alg,
+                               metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV',
+                                          'MSLL', 'NLL', 'BIC'])
         else:
             results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp_warp[0], 
-                               sY=std_resp_warp[0])
-        
+                               sY=std_resp_warp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr,
+                               alg=alg, metrics = ['Rho', 'RMSE', 'SMSE',
+                                                   'EXPV', 'MSLL',
+                                                   'NLL', 'BIC'])
+            
         
     # Set writing options
     if saveoutput:
@@ -530,7 +553,8 @@ def fit(covfile, respfile, **kwargs):
     maskfile = kwargs.pop('maskfile',None)
     alg = kwargs.pop('alg','gpr')
     savemodel = kwargs.pop('savemodel','True')=='True'
-    outputsuffix = kwargs.pop('outputsuffix','_fit')
+    outputsuffix = kwargs.pop('outputsuffix','fit')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
     inscaler = kwargs.pop('inscaler','None')
     outscaler = kwargs.pop('outscaler','None')
     
@@ -633,8 +657,10 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     model_path = kwargs.pop('model_path', 'Models')
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
-    outputsuffix = kwargs.pop('outputsuffix', '_predict')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'predict')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
         
     if respfile is not None and not os.path.exists(respfile):
@@ -693,7 +719,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if (alg!='hbr' or nm.configs['transferred']==False):
             yhat, s2 = nm.predict(Xz, **kwargs)
         else:
-            tsbefile = kwargs.pop('tsbefile') 
+            tsbefile = kwargs.get('tsbefile') 
             batch_effects_test = fileio.load(tsbefile)
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
@@ -784,8 +810,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         trbefile = kwargs.pop('trbefile')
         batch_effects_train = fileio.load(trbefile)
     
-    outputsuffix = kwargs.pop('outputsuffix', '_transfer')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'transfer')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     tsbefile = kwargs.pop('tsbefile', None)
     
     job_id = kwargs.pop('job_id', None)
@@ -930,8 +958,10 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         dummycovfile = kwargs.pop('dummycovfile')
         dummybefile = kwargs.pop('dummybefile')
     
-    outputsuffix = kwargs.pop('outputsuffix', '_extend')
-    inputsuffix = kwargs.pop('inputsuffix', '_estimate')
+    outputsuffix = kwargs.pop('outputsuffix', 'extend')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
     informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)

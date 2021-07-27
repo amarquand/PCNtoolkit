@@ -33,16 +33,17 @@ from subprocess import call
 
 try:
     import pcntoolkit as ptk
-    import pcntoolkit.fileio as fileio
+    import pcntoolkit.dataio.fileio as fileio
     from pcntoolkit import configs
+    ptkpath = ptk.__path__[0] 
 except ImportError:
     pass
-    path = os.path.abspath(os.path.dirname(__file__))
-    if path not in sys.path:
-        sys.path.append(path)
-        del path
-    import fileio
+    ptkpath = os.path.abspath(os.path.dirname(__file__))
+    if ptkpath not in sys.path:
+        sys.path.append(ptkpath)
+    import dataio.fileio as fileio
     import configs
+    
     
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
@@ -96,7 +97,7 @@ def execute_nm(processing_dir,
     """
     
     if normative_path is None:
-        normative_path = ptk.__path__[0] + '/normative.py'
+        normative_path = ptkpath + '/normative.py'
         
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
@@ -492,6 +493,18 @@ def collect_nm(processing_dir,
                     Z = pd.DataFrame(Z)
                     fileio.save(Z, batch + 'Z' + outputsuffix + 
                                 file_extentions)
+                    
+                    nll = np.zeros(batch_size)
+                    nll = nll.transpose()
+                    nll = pd.Series(nll)
+                    fileio.save(nll, batch + 'NLL' + outputsuffix + 
+                                file_extentions)
+                    
+                    bic = np.zeros(batch_size)
+                    bic = bic.transpose()
+                    bic = pd.Series(bic)
+                    fileio.save(bic, batch + 'BIC' + outputsuffix + 
+                                file_extentions)
     
                     if not os.path.isdir(batch + 'Models'):
                         os.mkdir('Models')
@@ -626,6 +639,30 @@ def collect_nm(processing_dir,
             fileio.save(msll_dfs, processing_dir + 'MSLL' + outputsuffix +
                         file_extentions)
             del msll_dfs
+            
+        nll_filenames = glob.glob(processing_dir + 'batch_*/' + 'NLL' +
+                                  outputsuffix + '*')
+        if nll_filenames:
+            nll_filenames = fileio.sort_nicely(nll_filenames)
+            nll_dfs = []
+            for nll_filename in nll_filenames:
+                nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)))
+            nll_dfs = pd.concat(nll_dfs, ignore_index=True, axis=0)
+            fileio.save(nll_dfs, processing_dir + 'NLL' + outputsuffix +
+                        file_extentions)
+            del nll_dfs
+
+        bic_filenames = glob.glob(processing_dir + 'batch_*/' + 'BIC' +
+                                  outputsuffix + '*')
+        if bic_filenames:
+            bic_filenames = fileio.sort_nicely(bic_filenames)
+            bic_dfs = []
+            for bic_filename in bic_filenames:
+                bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)))
+            bic_dfs = pd.concat(bic_dfs, ignore_index=True, axis=0)
+            fileio.save(bic_dfs, processing_dir + 'BIC' + outputsuffix +
+                        file_extentions)
+            del bic_dfs
         
         if func != 'predict' and func != 'extend':
             if not os.path.isdir(processing_dir + 'Models') and \
@@ -807,8 +844,8 @@ def bashwrap_nm(processing_dir,
             job_call = [job_call[0] + ' -x ' + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + ' -s']
+    # if not standardize:
+    #     job_call = [job_call[0] + ' -s']
     
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
@@ -1008,8 +1045,8 @@ def sbatchwrap_nm(processing_dir,
             job_call = [job_call[0] + ' -x ' + str(configparam)]
     
     # add standardization flag if it is false
-    if not standardize:
-        job_call = [job_call[0] + ' -s']
+    # if not standardize:
+    #     job_call = [job_call[0] + ' -s']
     
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]

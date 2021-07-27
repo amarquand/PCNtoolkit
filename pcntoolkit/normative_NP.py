@@ -27,13 +27,13 @@ import torch
 from torch import optim
 import numpy as np
 import pickle
-from NP import NP, apply_dropout_test, np_loss
+from pcntoolkit.model.NP import NP, apply_dropout_test, np_loss
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.linear_model import LinearRegression, MultiTaskLasso
-from architecture import Encoder, Decoder
-from pcntoolkit.utils import compute_pearsonr, explained_var, compute_MSLL
-from pcntoolkit.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
-from pcntoolkit import fileio
+from pcntoolkit.model.architecture import Encoder, Decoder
+from pcntoolkit.util.utils import compute_pearsonr, explained_var, compute_MSLL
+from pcntoolkit.util.utils import extreme_value_prob, extreme_value_prob_fit, ravel_2D, unravel_2D
+from pcntoolkit.dataio import fileio
 import os
 
 try:  # run as a package if installed

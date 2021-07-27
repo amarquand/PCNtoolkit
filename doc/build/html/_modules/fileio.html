@@ -1,493 +1,639 @@
 
 
-<!doctype html>
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>fileio &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+  
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fileio &#8212; Predictive Clinical Neuroscience Toolkit 0.17 documentation</title>
-    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script src="../_static/bizstyle.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">fileio</a></li> 
-      </ul>
-    </div>  
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/tabs.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regression</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>fileio</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <h1>Source code for fileio</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span></span>from __future__ import print_function
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">re</span>
+import os
+import sys
+import numpy as np
+import nibabel as nib
+import tempfile
+import pandas as pd
+import re
 
-<span class="k">try</span><span class="p">:</span>  <span class="c1"># run as a package if installed</span>
-    <span class="kn">from</span> <span class="nn">pcntoolkit</span> <span class="kn">import</span> <span class="n">configs</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
 
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">del</span> <span class="n">path</span>
-    <span class="kn">import</span> <span class="nn">configs</span>
+    path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.dirname(path) # parent directory 
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
 
-<span class="n">CIFTI_MAPPINGS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;dconn&#39;</span><span class="p">,</span> <span class="s1">&#39;dtseries&#39;</span><span class="p">,</span> <span class="s1">&#39;pconn&#39;</span><span class="p">,</span> <span class="s1">&#39;ptseries&#39;</span><span class="p">,</span> <span class="s1">&#39;dscalar&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;dlabel&#39;</span><span class="p">,</span> <span class="s1">&#39;pscalar&#39;</span><span class="p">,</span> <span class="s1">&#39;pdconn&#39;</span><span class="p">,</span> <span class="s1">&#39;dpconn&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;pconnseries&#39;</span><span class="p">,</span> <span class="s1">&#39;pconnscalar&#39;</span><span class="p">)</span>
+CIFTI_MAPPINGS = (&#39;dconn&#39;, &#39;dtseries&#39;, &#39;pconn&#39;, &#39;ptseries&#39;, &#39;dscalar&#39;,
+                  &#39;dlabel&#39;, &#39;pscalar&#39;, &#39;pdconn&#39;, &#39;dpconn&#39;,
+                  &#39;pconnseries&#39;, &#39;pconnscalar&#39;)
 
-<span class="n">CIFTI_VOL_ATLAS</span> <span class="o">=</span> <span class="s1">&#39;Atlas_ROIs.2.nii.gz&#39;</span>
+CIFTI_VOL_ATLAS = &#39;Atlas_ROIs.2.nii.gz&#39;
 
-<span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">PICKLE_PROTOCOL</span>
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
-<span class="c1"># ------------------------</span>
-<span class="c1"># general utility routines</span>
-<span class="c1"># ------------------------</span>
+# ------------------------
+# general utility routines
+# ------------------------
 
-<div class="viewcode-block" id="predictive_interval"><a class="viewcode-back" href="../modindex.html#fileio.predictive_interval">[docs]</a><span class="k">def</span> <span class="nf">predictive_interval</span><span class="p">(</span><span class="n">s2_forward</span><span class="p">,</span>
-                        <span class="n">cov_forward</span><span class="p">,</span>
-                        <span class="n">multiplicator</span><span class="p">):</span>
-  <span class="c1"># calculates a predictive interval</span>
+<div class="viewcode-block" id="predictive_interval"><a class="viewcode-back" href="../pages/modindex.html#fileio.predictive_interval">[docs]</a>def predictive_interval(s2_forward,
+                        cov_forward,
+                        multiplicator):
+  # calculates a predictive interval
   
-    <span class="n">PI</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cov_forward</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">xdot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cov_forward</span><span class="p">):</span>
-        <span class="n">s</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s2_forward</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">PI</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">multiplicator</span><span class="o">*</span><span class="n">s</span>
-    <span class="k">return</span> <span class="n">PI</span></div>
+    PI=np.zeros(len(cov_forward))
+    for i,xdot in enumerate(cov_forward):
+        s=np.sqrt(s2_forward[i])
+        PI[i]=multiplicator*s
+    return PI</div>
 
-<div class="viewcode-block" id="create_mask"><a class="viewcode-back" href="../modindex.html#fileio.create_mask">[docs]</a><span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># create a (volumetric) mask either from an input nifti or the nifti itself</span>
+<div class="viewcode-block" id="create_mask"><a class="viewcode-back" href="../pages/modindex.html#fileio.create_mask">[docs]</a>def create_mask(data_array, mask, verbose=False):
+    # create a (volumetric) mask either from an input nifti or the nifti itself
 
-    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading ROI mask ...&#39;</span><span class="p">)</span>
-        <span class="n">maskvol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">maskvol</span> <span class="o">=</span> <span class="n">maskvol</span> <span class="o">!=</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">dim</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">dim</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],)</span>
+    if mask is not None:
+        if verbose:
+            print(&#39;Loading ROI mask ...&#39;)
+        maskvol = load_nifti(mask, vol=True)
+        maskvol = maskvol != 0
+    else:
+        if len(data_array.shape) &lt; 4:
+            dim = data_array.shape[0:3] + (1,)
+        else:
+            dim = data_array.shape[0:3] + (data_array.shape[3],)
 
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Generating mask automatically ...&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">maskvol</span> <span class="o">=</span> <span class="n">data_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">!=</span> <span class="mi">0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">maskvol</span> <span class="o">=</span> <span class="n">data_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
+        if verbose:
+            print(&#39;Generating mask automatically ...&#39;)
+        if dim[3] == 1:
+            maskvol = data_array[:, :, :] != 0
+        else:
+            maskvol = data_array[:, :, :, 0] != 0
 
-    <span class="k">return</span> <span class="n">maskvol</span></div>
+    return maskvol</div>
 
 
-<div class="viewcode-block" id="vol2vec"><a class="viewcode-back" href="../modindex.html#fileio.vol2vec">[docs]</a><span class="k">def</span> <span class="nf">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># vectorise a 3d image</span>
+<div class="viewcode-block" id="vol2vec"><a class="viewcode-back" href="../pages/modindex.html#fileio.vol2vec">[docs]</a>def vol2vec(dat, mask, verbose=False):
+    # vectorise a 3d image
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
-        <span class="n">dim</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">dim</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],)</span>
+    if len(dat.shape) &lt; 4:
+        dim = dat.shape[0:3] + (1,)
+    else:
+        dim = dat.shape[0:3] + (dat.shape[3],)
         
-    <span class="c1">#mask = create_mask(dat, mask=mask, verbose=verbose)</span>
-    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    #mask = create_mask(dat, mask=mask, verbose=verbose)
+    if mask is None:
+        mask = create_mask(dat, mask=mask, verbose=verbose)
 
-    <span class="c1"># mask the image</span>
-    <span class="n">maskid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
-    <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="n">maskid</span><span class="p">,</span> <span class="p">:]</span>
+    # mask the image
+    maskid = np.where(mask.ravel())[0]
+    dat = np.reshape(dat, (np.prod(dim[0:3]), dim[3]))
+    dat = dat[maskid, :]
 
-    <span class="c1"># convert to 1-d array if the file only contains one volume</span>
-    <span class="k">if</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    # convert to 1-d array if the file only contains one volume
+    if dim[3] == 1:
+        dat = dat.ravel()
 
-    <span class="k">return</span> <span class="n">dat</span></div>
+    return dat</div>
 
 
-<div class="viewcode-block" id="file_type"><a class="viewcode-back" href="../modindex.html#fileio.file_type">[docs]</a><span class="k">def</span> <span class="nf">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># routine to determine filetype</span>
+<div class="viewcode-block" id="file_type"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_type">[docs]</a>def file_type(filename):
+    # routine to determine filetype
 
-    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.dtseries.nii&#39;</span><span class="p">,</span> <span class="s1">&#39;.dscalar.nii&#39;</span><span class="p">,</span> <span class="s1">&#39;.dlabel.nii&#39;</span><span class="p">)):</span>
-        <span class="n">ftype</span> <span class="o">=</span> <span class="s1">&#39;cifti&#39;</span>
-    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.nii.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;.nii&#39;</span><span class="p">,</span> <span class="s1">&#39;.img&#39;</span><span class="p">,</span> <span class="s1">&#39;.hdr&#39;</span><span class="p">)):</span>
-        <span class="n">ftype</span> <span class="o">=</span> <span class="s1">&#39;nifti&#39;</span>
-    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.tsv&#39;</span><span class="p">,</span> <span class="s1">&#39;.asc&#39;</span><span class="p">)):</span>
-        <span class="n">ftype</span> <span class="o">=</span> <span class="s1">&#39;text&#39;</span>
-    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.pkl&#39;</span><span class="p">)):</span>
-        <span class="n">ftype</span> <span class="o">=</span> <span class="s1">&#39;binary&#39;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;I don&#39;t know what to do with &quot;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+    if filename.endswith((&#39;.dtseries.nii&#39;, &#39;.dscalar.nii&#39;, &#39;.dlabel.nii&#39;)):
+        ftype = &#39;cifti&#39;
+    elif filename.endswith((&#39;.nii.gz&#39;, &#39;.nii&#39;, &#39;.img&#39;, &#39;.hdr&#39;)):
+        ftype = &#39;nifti&#39;
+    elif filename.endswith((&#39;.txt&#39;, &#39;.csv&#39;, &#39;.tsv&#39;, &#39;.asc&#39;)):
+        ftype = &#39;text&#39;
+    elif filename.endswith((&#39;.pkl&#39;)):
+        ftype = &#39;binary&#39;
+    else:
+        raise ValueError(&quot;I don&#39;t know what to do with &quot; + filename)
 
-    <span class="k">return</span> <span class="n">ftype</span></div>
+    return ftype</div>
 
 
-<div class="viewcode-block" id="file_extension"><a class="viewcode-back" href="../modindex.html#fileio.file_extension">[docs]</a><span class="k">def</span> <span class="nf">file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># routine to get the full file extension (e.g. .nii.gz, not just .gz)</span>
+<div class="viewcode-block" id="file_extension"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_extension">[docs]</a>def file_extension(filename):
+    # routine to get the full file extension (e.g. .nii.gz, not just .gz)
 
-    <span class="n">parts</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">extsep</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;gz&#39;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;nii&#39;</span> <span class="ow">or</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;img&#39;</span> <span class="ow">or</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hdr&#39;</span><span class="p">:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;nii&#39;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">CIFTI_MAPPINGS</span><span class="p">:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ext</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">ext</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ext</span>
-    <span class="k">return</span> <span class="n">ext</span></div>
-
-
-<div class="viewcode-block" id="file_stem"><a class="viewcode-back" href="../modindex.html#fileio.file_stem">[docs]</a><span class="k">def</span> <span class="nf">file_stem</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
-    <span class="n">stm</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">idx</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">stm</span></div>
-
-<span class="c1"># --------------</span>
-<span class="c1"># nifti routines</span>
-<span class="c1"># --------------</span>
-
-
-<div class="viewcode-block" id="load_nifti"><a class="viewcode-back" href="../modindex.html#fileio.load_nifti">[docs]</a><span class="k">def</span> <span class="nf">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loading nifti: &#39;</span> <span class="o">+</span> <span class="n">datafile</span> <span class="o">+</span> <span class="s1">&#39; ...&#39;</span><span class="p">)</span>
-    <span class="n">img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
-    <span class="n">dat</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mask</span><span class="o">=</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">vol</span><span class="p">:</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">dat</span></div>
-
-
-<div class="viewcode-block" id="save_nifti"><a class="viewcode-back" href="../modindex.html#fileio.save_nifti">[docs]</a><span class="k">def</span> <span class="nf">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">examplenii</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;</span>
-
-    <span class="c1"># load mask</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">!=</span> <span class="mi">0</span>
-
-    <span class="c1"># load example image</span>
-    <span class="n">ex_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">examplenii</span><span class="p">)</span>
-    <span class="n">ex_img</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">dim</span> <span class="o">=</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">nvol</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">nvol</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-    <span class="c1"># write data</span>
-    <span class="n">array_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span> <span class="n">nvol</span><span class="p">))</span>
-    <span class="n">array_data</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">data</span>
-    <span class="n">array_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">dim</span><span class="o">+</span><span class="p">(</span><span class="n">nvol</span><span class="p">,))</span>
-    <span class="n">array_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
-    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">array_img</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></div>
-
-<span class="c1"># --------------</span>
-<span class="c1"># cifti routines</span>
-<span class="c1"># --------------</span>
-
-
-<div class="viewcode-block" id="load_cifti"><a class="viewcode-back" href="../modindex.html#fileio.load_cifti">[docs]</a><span class="k">def</span> <span class="nf">load_cifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rmtmp</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-
-    <span class="c1"># parse the name</span>
-    <span class="n">dnam</span><span class="p">,</span> <span class="n">fnam</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="n">fpref</span> <span class="o">=</span> <span class="n">file_stem</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
-    <span class="n">outstem</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span>
-                           <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">fpref</span><span class="p">)</span>
-
-    <span class="c1"># extract surface data from the cifti file</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extracting cifti surface data to &quot;</span><span class="p">,</span> <span class="n">outstem</span><span class="p">,</span> <span class="s1">&#39;-*.func.gii&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">giinamel</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s1">&#39;-left.func.gii&#39;</span>
-    <span class="n">giinamer</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s1">&#39;-right.func.gii&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span>
-              <span class="s1">&#39; COLUMN -metric CORTEX_LEFT &#39;</span> <span class="o">+</span> <span class="n">giinamel</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span>
-              <span class="s1">&#39; COLUMN -metric CORTEX_RIGHT &#39;</span> <span class="o">+</span> <span class="n">giinamer</span><span class="p">)</span>
-
-    <span class="c1"># load the surface data</span>
-    <span class="n">giil</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giinamel</span><span class="p">)</span>
-    <span class="n">giir</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giinamer</span><span class="p">)</span>
-    <span class="n">Nimg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">)</span>
-    <span class="n">Nvert</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">Nimg</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">giir</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">Gl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nvert</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">))</span>
-        <span class="n">Gr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nvert</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
-            <span class="n">Gl</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
-            <span class="n">Gr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">giir</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Gl</span><span class="p">,</span> <span class="n">Gr</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rmtmp</span><span class="p">:</span>
-        <span class="c1"># clean up temporary files</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">giinamel</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">giinamer</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">vol</span><span class="p">:</span>
-        <span class="n">niiname</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s1">&#39;-vol.nii&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extracting cifti volume data to &quot;</span><span class="p">,</span> <span class="n">niiname</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span>
-                  <span class="s1">&#39; COLUMN -volume-all &#39;</span> <span class="o">+</span> <span class="n">niiname</span><span class="p">)</span>
-        <span class="n">vol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">niiname</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">volmask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">vol</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">out</span><span class="p">,</span> <span class="n">vol2vec</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">volmask</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rmtmp</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">niiname</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">out</span></div>
-
-
-<div class="viewcode-block" id="save_cifti"><a class="viewcode-back" href="../modindex.html#fileio.save_cifti">[docs]</a><span class="k">def</span> <span class="nf">save_cifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">volatlas</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;</span>
-
-    <span class="c1"># do some sanity checks</span>
-    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float32&#39;</span> <span class="ow">or</span> \
-       <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float&#39;</span> <span class="ow">or</span> \
-       <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float64&#39;</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>  <span class="c1"># force 32 bit output</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;NIFTI_TYPE_FLOAT32&#39;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="s1">&#39;Only float data types currently handled&#39;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">Nimg</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">Nimg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="c1"># get the base filename</span>
-    <span class="n">dnam</span><span class="p">,</span> <span class="n">fnam</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="n">fstem</span> <span class="o">=</span> <span class="n">file_stem</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
-
-    <span class="c1"># Split the template</span>
-    <span class="n">estem</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">fstem</span><span class="p">)</span>
-    <span class="n">giiexnamel</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s1">&#39;-left.func.gii&#39;</span>
-    <span class="n">giiexnamer</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s1">&#39;-right.func.gii&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span>
-              <span class="s1">&#39; COLUMN -metric CORTEX_LEFT &#39;</span> <span class="o">+</span> <span class="n">giiexnamel</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span>
-              <span class="s1">&#39; COLUMN -metric CORTEX_RIGHT &#39;</span> <span class="o">+</span> <span class="n">giiexnamer</span><span class="p">)</span>
-
-    <span class="c1"># write left hemisphere</span>
-    <span class="n">giiexl</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giiexnamel</span><span class="p">)</span>
-    <span class="n">Nvertl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giiexl</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">garraysl</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
-        <span class="n">garraysl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiDataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Nvertl</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
-            <span class="n">datatype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
-    <span class="n">giil</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiImage</span><span class="p">(</span><span class="n">darrays</span><span class="o">=</span><span class="n">garraysl</span><span class="p">)</span>
-    <span class="n">fnamel</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s1">&#39;-left.func.gii&#39;</span>
-    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">giil</span><span class="p">,</span> <span class="n">fnamel</span><span class="p">)</span>
-
-    <span class="c1"># write right hemisphere</span>
-    <span class="n">giiexr</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giiexnamer</span><span class="p">)</span>
-    <span class="n">Nvertr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giiexr</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">garraysr</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
-        <span class="n">garraysr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiDataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">Nvertl</span><span class="p">:</span><span class="n">Nvertl</span><span class="o">+</span><span class="n">Nvertr</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
-            <span class="n">datatype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
-    <span class="n">giir</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiImage</span><span class="p">(</span><span class="n">darrays</span><span class="o">=</span><span class="n">garraysr</span><span class="p">)</span>
-    <span class="n">fnamer</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s1">&#39;-right.func.gii&#39;</span>
-    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">giir</span><span class="p">,</span> <span class="n">fnamer</span><span class="p">)</span>
-
-    <span class="n">tmpfiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">fnamer</span><span class="p">,</span> <span class="n">fnamel</span><span class="p">,</span> <span class="n">giiexnamel</span><span class="p">,</span> <span class="n">giiexnamer</span><span class="p">]</span>
-
-    <span class="c1"># process volumetric data</span>
-    <span class="k">if</span> <span class="n">vol</span><span class="p">:</span>
-        <span class="n">niiexname</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s1">&#39;-vol.nii&#39;</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-separate &#39;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span>
-                  <span class="s1">&#39; COLUMN -volume-all &#39;</span> <span class="o">+</span> <span class="n">niiexname</span><span class="p">)</span>
-        <span class="n">niivol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">niiexname</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">niivol</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">volatlas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">volatlas</span> <span class="o">=</span> <span class="n">CIFTI_VOL_ATLAS</span>
-        <span class="n">fnamev</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s1">&#39;-vol.nii&#39;</span>
-
-        <span class="n">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">Nvertr</span><span class="o">+</span><span class="n">Nvertl</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">fnamev</span><span class="p">,</span> <span class="n">niiexname</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-        <span class="n">tmpfiles</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">fnamev</span><span class="p">,</span> <span class="n">niiexname</span><span class="p">])</span>
-
-    <span class="c1"># write cifti</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s1">&#39;.dtseries.nii&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;wb_command -cifti-create-dense-timeseries &#39;</span> <span class="o">+</span> <span class="n">fname</span> <span class="o">+</span>
-              <span class="s1">&#39; -volume &#39;</span> <span class="o">+</span> <span class="n">fnamev</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">volatlas</span> <span class="o">+</span>
-              <span class="s1">&#39; -left-metric &#39;</span> <span class="o">+</span> <span class="n">fnamel</span> <span class="o">+</span> <span class="s1">&#39; -right-metric &#39;</span> <span class="o">+</span> <span class="n">fnamer</span><span class="p">)</span>
-
-    <span class="c1"># clean up</span>
-    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tmpfiles</span><span class="p">:</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
-
-<span class="c1"># --------------</span>
-<span class="c1"># ascii routines</span>
-<span class="c1"># --------------</span>
-
-
-<div class="viewcode-block" id="load_pd"><a class="viewcode-back" href="../modindex.html#fileio.load_pd">[docs]</a><span class="k">def</span> <span class="nf">load_pd</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># based on pandas</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
-                    <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span></div>
-
-
-<div class="viewcode-block" id="save_pd"><a class="viewcode-back" href="../modindex.html#fileio.save_pd">[docs]</a><span class="k">def</span> <span class="nf">save_pd</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># based on pandas</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
-                <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span>
-                <span class="n">na_rep</span><span class="o">=</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="load_ascii"><a class="viewcode-back" href="../modindex.html#fileio.load_ascii">[docs]</a><span class="k">def</span> <span class="nf">load_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># based on pandas</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span></div>
-
-
-<div class="viewcode-block" id="save_ascii"><a class="viewcode-back" href="../modindex.html#fileio.save_ascii">[docs]</a><span class="k">def</span> <span class="nf">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-    <span class="c1"># based on pandas</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
-
-<span class="c1"># ----------------</span>
-<span class="c1"># generic routines</span>
-<span class="c1"># ----------------</span>
-
-
-<div class="viewcode-block" id="save"><a class="viewcode-back" href="../modindex.html#fileio.save">[docs]</a><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;cifti&#39;</span><span class="p">:</span>
-        <span class="n">save_cifti</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;nifti&#39;</span><span class="p">:</span>
-        <span class="n">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">text</span> <span class="ow">or</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span>
-        <span class="n">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;binary&#39;</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="load"><a class="viewcode-back" href="../modindex.html#fileio.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;cifti&#39;</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">load_cifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="n">vol</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;nifti&#39;</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">text</span> <span class="ow">or</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">load_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;binary&#39;</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">x</span></div>
-
-<span class="c1"># -------------------</span>
-<span class="c1"># sorting routines for batched in normative parallel</span>
-<span class="c1"># -------------------</span>
-
-
-<div class="viewcode-block" id="tryint"><a class="viewcode-back" href="../modindex.html#fileio.tryint">[docs]</a><span class="k">def</span> <span class="nf">tryint</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">s</span></div>
-
-
-<div class="viewcode-block" id="alphanum_key"><a class="viewcode-back" href="../modindex.html#fileio.alphanum_key">[docs]</a><span class="k">def</span> <span class="nf">alphanum_key</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">tryint</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;([0-9]+)&#39;</span><span class="p">,</span> <span class="n">s</span><span class="p">)]</span></div>
-
-
-<div class="viewcode-block" id="sort_nicely"><a class="viewcode-back" href="../modindex.html#fileio.sort_nicely">[docs]</a><span class="k">def</span> <span class="nf">sort_nicely</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">alphanum_key</span><span class="p">)</span></div>
+    parts = filename.split(os.extsep)
+
+    if parts[-1] == &#39;gz&#39;:
+        if parts[-2] == &#39;nii&#39; or parts[-2] == &#39;img&#39; or parts[-2] == &#39;hdr&#39;:
+            ext = parts[-2] + &#39;.&#39; + parts[-1]
+        else:
+            ext = parts[-1]
+    elif parts[-1] == &#39;nii&#39;:
+        if parts[-2] in CIFTI_MAPPINGS:
+            ext = parts[-2] + &#39;.&#39; + parts[-1]
+        else:
+            ext = parts[-1]
+    else:
+        ext = parts[-1]
+
+    ext = &#39;.&#39; + ext
+    return ext</div>
+
+
+<div class="viewcode-block" id="file_stem"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_stem">[docs]</a>def file_stem(filename):
+
+    idx = filename.find(file_extension(filename))
+    stm = filename[0:idx]
+
+    return stm</div>
+
+# --------------
+# nifti routines
+# --------------
+
+
+<div class="viewcode-block" id="load_nifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_nifti">[docs]</a>def load_nifti(datafile, mask=None, vol=False, verbose=False):
+
+    if verbose:
+        print(&#39;Loading nifti: &#39; + datafile + &#39; ...&#39;)
+    img = nib.load(datafile)
+    dat = img.get_data()
+
+    if mask is not None:
+        mask=load_nifti(mask, vol=True)
+
+    if not vol:
+        dat = vol2vec(dat, mask)
+
+    return dat</div>
+
+
+<div class="viewcode-block" id="save_nifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_nifti">[docs]</a>def save_nifti(data, filename, examplenii, mask):
+    &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
+
+    # load mask
+    if isinstance(mask, str):
+        mask = load_nifti(mask, vol=True)
+        mask = mask != 0
+
+    # load example image
+    ex_img = nib.load(examplenii)
+    ex_img.shape
+    dim = ex_img.shape[0:3]
+    if len(data.shape) &lt; 2:
+        nvol = 1
+        data = data[:, np.newaxis]
+    else:
+        nvol = int(data.shape[1])
+
+    # write data
+    array_data = np.zeros((np.prod(dim), nvol))
+    array_data[mask.flatten(), :] = data
+    array_data = np.reshape(array_data, dim+(nvol,))
+    array_img = nib.Nifti1Image(array_data, ex_img.affine, ex_img.header)
+    nib.save(array_img, filename)</div>
+
+# --------------
+# cifti routines
+# --------------
+
+
+<div class="viewcode-block" id="load_cifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_cifti">[docs]</a>def load_cifti(filename, vol=False, mask=None, rmtmp=True):
+
+    # parse the name
+    dnam, fnam = os.path.split(filename)
+    fpref = file_stem(fnam)
+    outstem = os.path.join(tempfile.gettempdir(),
+                           str(os.getpid()) + &quot;-&quot; + fpref)
+
+    # extract surface data from the cifti file
+    print(&quot;Extracting cifti surface data to &quot;, outstem, &#39;-*.func.gii&#39;, sep=&quot;&quot;)
+    giinamel = outstem + &#39;-left.func.gii&#39;
+    giinamer = outstem + &#39;-right.func.gii&#39;
+    os.system(&#39;wb_command -cifti-separate &#39; + filename +
+              &#39; COLUMN -metric CORTEX_LEFT &#39; + giinamel)
+    os.system(&#39;wb_command -cifti-separate &#39; + filename +
+              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giinamer)
+
+    # load the surface data
+    giil = nib.load(giinamel)
+    giir = nib.load(giinamer)
+    Nimg = len(giil.darrays)
+    Nvert = len(giil.darrays[0].data)
+    if Nimg == 1:
+        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data),
+                             axis=0)
+    else:
+        Gl = np.zeros((Nvert, Nimg))
+        Gr = np.zeros((Nvert, Nimg))
+        for i in range(0, Nimg):
+            Gl[:, i] = giil.darrays[i].data
+            Gr[:, i] = giir.darrays[i].data
+        out = np.concatenate((Gl, Gr), axis=0)
+    if rmtmp:
+        # clean up temporary files
+        os.remove(giinamel)
+        os.remove(giinamer)
+
+    if vol:
+        niiname = outstem + &#39;-vol.nii&#39;
+        print(&quot;Extracting cifti volume data to &quot;, niiname, sep=&quot;&quot;)
+        os.system(&#39;wb_command -cifti-separate &#39; + filename +
+                  &#39; COLUMN -volume-all &#39; + niiname)
+        vol = load_nifti(niiname, vol=True)
+        volmask = create_mask(vol)
+        out = np.concatenate((out, vol2vec(vol, volmask)), axis=0)
+        if rmtmp:
+            os.remove(niiname)
+
+    return out</div>
+
+
+<div class="viewcode-block" id="save_cifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_cifti">[docs]</a>def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
+    &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
+
+    # do some sanity checks
+    if data.dtype == &#39;float32&#39; or \
+       data.dtype == &#39;float&#39; or \
+       data.dtype == &#39;float64&#39;:
+        data = data.astype(&#39;float32&#39;)  # force 32 bit output
+        dtype = &#39;NIFTI_TYPE_FLOAT32&#39;
+    else:
+        raise(ValueError, &#39;Only float data types currently handled&#39;)
+
+    if len(data.shape) == 1:
+        Nimg = 1
+        data = data[:, np.newaxis]
+    else:
+        Nimg = data.shape[1]
+
+    # get the base filename
+    dnam, fnam = os.path.split(filename)
+    fstem = file_stem(fnam)
+
+    # Split the template
+    estem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + &quot;-&quot; + fstem)
+    giiexnamel = estem + &#39;-left.func.gii&#39;
+    giiexnamer = estem + &#39;-right.func.gii&#39;
+    os.system(&#39;wb_command -cifti-separate &#39; + example +
+              &#39; COLUMN -metric CORTEX_LEFT &#39; + giiexnamel)
+    os.system(&#39;wb_command -cifti-separate &#39; + example +
+              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giiexnamer)
+
+    # write left hemisphere
+    giiexl = nib.load(giiexnamel)
+    Nvertl = len(giiexl.darrays[0].data)
+    garraysl = []
+    for i in range(0, Nimg):
+        garraysl.append(
+            nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
+            datatype=dtype))
+    giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
+    fnamel = fstem + &#39;-left.func.gii&#39;
+    nib.save(giil, fnamel)
+
+    # write right hemisphere
+    giiexr = nib.load(giiexnamer)
+    Nvertr = len(giiexr.darrays[0].data)
+    garraysr = []
+    for i in range(0, Nimg):
+        garraysr.append(
+            nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
+            datatype=dtype))
+    giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
+    fnamer = fstem + &#39;-right.func.gii&#39;
+    nib.save(giir, fnamer)
+
+    tmpfiles = [fnamer, fnamel, giiexnamel, giiexnamer]
+
+    # process volumetric data
+    if vol:
+        niiexname = estem + &#39;-vol.nii&#39;
+        os.system(&#39;wb_command -cifti-separate &#39; + example +
+                  &#39; COLUMN -volume-all &#39; + niiexname)
+        niivol = load_nifti(niiexname, vol=True)
+        if mask is None:
+            mask = create_mask(niivol)
+
+        if volatlas is None:
+            volatlas = CIFTI_VOL_ATLAS
+        fnamev = fstem + &#39;-vol.nii&#39;
+
+        save_nifti(data[Nvertr+Nvertl:, :], fnamev, niiexname, mask)
+        tmpfiles.extend([fnamev, niiexname])
+
+    # write cifti
+    fname = fstem + &#39;.dtseries.nii&#39;
+    os.system(&#39;wb_command -cifti-create-dense-timeseries &#39; + fname +
+              &#39; -volume &#39; + fnamev + &#39; &#39; + volatlas +
+              &#39; -left-metric &#39; + fnamel + &#39; -right-metric &#39; + fnamer)
+
+    # clean up
+    for f in tmpfiles:
+        os.remove(f)</div>
+
+# --------------
+# ascii routines
+# --------------
+
+
+<div class="viewcode-block" id="load_pd"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_pd">[docs]</a>def load_pd(filename):
+    # based on pandas
+    x = pd.read_csv(filename,
+                    sep=&#39; &#39;,
+                    header=None)
+    return x</div>
+
+
+<div class="viewcode-block" id="save_pd"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_pd">[docs]</a>def save_pd(data, filename):
+    # based on pandas
+    data.to_csv(filename,
+                index=None,
+                header=None,
+                sep=&#39; &#39;,
+                na_rep=&#39;NaN&#39;)</div>
+
+
+<div class="viewcode-block" id="load_ascii"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_ascii">[docs]</a>def load_ascii(filename):
+    # based on pandas
+    x = np.loadtxt(filename)
+    return x</div>
+
+
+<div class="viewcode-block" id="save_ascii"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_ascii">[docs]</a>def save_ascii(data, filename):
+    # based on pandas
+    np.savetxt(filename, data)</div>
+
+# ----------------
+# generic routines
+# ----------------
+
+
+<div class="viewcode-block" id="save"><a class="viewcode-back" href="../pages/modindex.html#fileio.save">[docs]</a>def save(data, filename, example=None, mask=None, text=False):
+
+    if file_type(filename) == &#39;cifti&#39;:
+        save_cifti(data.T, filename, example, vol=True)
+    elif file_type(filename) == &#39;nifti&#39;:
+        save_nifti(data.T, filename, example, mask)
+    elif text or file_type(filename) == &#39;text&#39;:
+        save_ascii(data, filename)
+    elif file_type(filename) == &#39;binary&#39;:
+        data = pd.DataFrame(data)
+        data.to_pickle(filename, protocol=PICKLE_PROTOCOL)</div>
+
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../pages/modindex.html#fileio.load">[docs]</a>def load(filename, mask=None, text=False, vol=True):
+
+    if file_type(filename) == &#39;cifti&#39;:
+        x = load_cifti(filename, vol=vol)
+    elif file_type(filename) == &#39;nifti&#39;:
+        x = load_nifti(filename, mask)
+    elif text or file_type(filename) == &#39;text&#39;:
+        x = load_ascii(filename)
+    elif file_type(filename) == &#39;binary&#39;:
+        x = pd.read_pickle(filename)
+        x = x.to_numpy()
+
+    return x</div>
+
+# -------------------
+# sorting routines for batched in normative parallel
+# -------------------
+
+
+<div class="viewcode-block" id="tryint"><a class="viewcode-back" href="../pages/modindex.html#fileio.tryint">[docs]</a>def tryint(s):
+    try:
+        return int(s)
+    except ValueError:
+        return s</div>
+
+
+<div class="viewcode-block" id="alphanum_key"><a class="viewcode-back" href="../pages/modindex.html#fileio.alphanum_key">[docs]</a>def alphanum_key(s):
+    return [tryint(c) for c in re.split(&#39;([0-9]+)&#39;, s)]</div>
+
+
+<div class="viewcode-block" id="sort_nicely"><a class="viewcode-back" href="../pages/modindex.html#fileio.sort_nicely">[docs]</a>def sort_nicely(l):
+    return sorted(l, key=alphanum_key)</div>
 </pre></div>
 
-            <div class="clearer"></div>
+           </div>
+           
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">Predictive Clinical Neuroscience Toolkit 0.17 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">fileio</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
         &#169; Copyright 2020, Andre F. Marquand.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
-    </div>
-  </body>
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>

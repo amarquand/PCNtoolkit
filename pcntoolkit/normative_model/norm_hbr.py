@@ -13,10 +13,10 @@ import os
 import sys
 import numpy as np
 
-try:  # run as a package if installed
-    from pcntoolkit import fileio
-    from pcntoolkit.normative_model.normbase import NormBase
-    from pcntoolkit.hbr import HBR 
+try:
+    from pcntoolkit.dataio import fileio
+    from pcntoolkit.normative_model.norm_base import NormBase
+    from pcntoolkit.model.hbr import HBR 
 except ImportError:
     pass
 
@@ -24,9 +24,10 @@ except ImportError:
     if path not in sys.path:
         sys.path.append(path)
     del path
-    import fileio
-    from hbr import HBR
+    import dataio.fileio as fileio
+    from model.hbr import HBR
     from norm_base import NormBase
+
 
 class NormHBR(NormBase):
     """ Classical GPR-based normative modelling approach
