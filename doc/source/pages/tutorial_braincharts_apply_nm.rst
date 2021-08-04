@@ -11,6 +11,8 @@ dataset derived from the `1000 functional connectomes
 project <https://www.nitrc.org/forum/forum.php?thread_id=2907&forum_id=1383>`__
 and adapt the learned model to make predictions on these data.
 
+ `Open/Run in Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models.ipynb>`__
+
 First, if necessary, we install PCNtoolkit (note: this tutorial requires
 at least version 0.20)
 
