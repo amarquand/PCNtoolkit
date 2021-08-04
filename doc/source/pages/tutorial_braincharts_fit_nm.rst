@@ -7,6 +7,8 @@ paper. Note that this script is provided principally for completeness
 (e.g. to assist in fitting normative models to new datasets). All
 pre-estimated normative models are already provided.
 
+ `Open/Run in Google Colab <https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/fit_normative_models.ipynb>`__
+ 
 First, if necessary, we install PCNtoolkit (note: this tutorial requires
 at least version 0.20)
 
