@@ -27,7 +27,7 @@ try:  # run as a package if installed
     from pcntoolkit.dataio import fileio
     from pcntoolkit.normative_model.norm_utils import norm_init
     from pcntoolkit.util.utils import compute_pearsonr, CustomCV, explained_var
-    from pcntoolkit.util.utils import compute_MSLL, scaler
+    from pcntoolkit.util.utils import compute_MSLL, scaler, get_package_versions
 except ImportError:
     pass
 
@@ -501,12 +501,14 @@ def estimate(covfile, respfile, **kwargs):
 
     if savemodel:
         print('Saving model meta-data...')
+        v  = get_package_versions()
         with open('Models/meta_data.md', 'wb') as file:
             pickle.dump({'valid_voxels':nz, 'fold_num':cvfolds, 
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
                          'scaler_cov':scaler_cov, 'scaler_resp':scaler_resp, 
                          'regressor':alg, 'inscaler':inscaler, 
-                         'outscaler':outscaler}, file, protocol=PICKLE_PROTOCOL)    
+                         'outscaler':outscaler, 'versions':v}, 
+                        file, protocol=PICKLE_PROTOCOL)    
 
     # compute performance metrics
     if (run_cv or testresp is not None):
@@ -613,12 +615,14 @@ def fit(covfile, respfile, **kwargs):
 
     if savemodel:
         print('Saving model meta-data...')
+        v  = get_package_versions()
         with open('Models/meta_data.md', 'wb') as file:
             pickle.dump({'valid_voxels':nz,
                          'mean_resp':mean_resp, 'std_resp':std_resp, 
                          'scaler_cov':scaler_cov, 'scaler_resp':scaler_resp, 
                          'regressor':alg, 'inscaler':inscaler,
-                         'outscaler':outscaler}, file, protocol=PICKLE_PROTOCOL)
+                         'outscaler':outscaler, 'versions':v}, 
+                        file, protocol=PICKLE_PROTOCOL)
         
     return nm
 
