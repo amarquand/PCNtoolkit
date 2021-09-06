@@ -1193,3 +1193,31 @@ def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
                 pickle.dump({'ENs':df}, file)
              
     return df, missing_subjects
+
+def get_package_versions():
+    
+    import platform
+    versions = dict()
+    versions['Python'] = platform.python_version()
+    
+    try: 
+        import theano
+        versions['Theano'] = theano.__version__
+    except:
+        versions['Theano'] = ''
+        
+    try: 
+        import pymc3
+        versions['PyMC3'] = pymc3.__version__
+    except:
+        versions['PyMC3'] = ''
+        
+    try: 
+        import pcntoolkit
+        versions['PCNtoolkit'] = pcntoolkit.__version__
+    except:
+        versions['PCNtoolkit'] = ''
+        
+    return versions
+    
+    
