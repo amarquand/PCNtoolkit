@@ -18,6 +18,8 @@ import pymc3 as pm
 from io import StringIO
 import subprocess
 import re
+from sklearn.metrics import roc_auc_score
+
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -1223,6 +1225,7 @@ def get_package_versions():
     
 def z_to_abnormal_p(Z):
     """
+    
     This function receives a matrix of z-scores (deviations) and transfer them
     to corresponding abnormal probabilities. For more information see Sec. 2.5
     in https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full.pdf.
@@ -1240,3 +1243,46 @@ def z_to_abnormal_p(Z):
     abn_p = 1- norm.sf(np.abs(Z))*2
     
     return abn_p
+
+
+def anomaly_detection_auc(abn_p, labels, n_permutation=None):
+    """
+    This is a utility function for computing region-wise AUC scores for anomaly
+    detection using normative model. If n_permutations is not None (e.g. 1000), 
+    it also computes permuation p_values for each region. 
+    
+    :param abn_p: n by p matrix of with probability of each sample being 
+    an abnormal sample. This matrix can be computed using 'z_to_abnormal_p' 
+    function.
+    :type abn_p: numpy.array
+    :param labels: a vactor of binary labels for n subjects, 0 for healthy and 
+    1 for patients. 
+    :type labels: numpy.array
+    :param n_permutation: If not none the permutation significance test with 
+    n_permutation repetitions is performed for each feature.  defaults to None.
+    :type n_permutation: numpy.int
+    :return: p by 1 matrix of AUCs and p_values for permutation test for each 
+    feature (i.e. brain region).
+    :rtype: numpy.array
+
+    """
+    
+    n, p = abn_p.shape
+    aucs = np.zeros([p])
+    p_values = np.zeros([p])
+    
+    for i in range(p):
+        aucs[i] = roc_auc_score(labels, abn_p[:,i])
+        
+        if n_permutation is not None:
+            
+            auc_perm = np.zeros([n_permutation])
+            for j in range(n_permutation):
+                rand_idx = np.random.permutation(len(labels))
+                rand_labels = labels[rand_idx]
+                auc_perm[j] = roc_auc_score(rand_labels, abn_p[:,i])
+            
+            p_values[i] = (np.sum(auc_perm > aucs[i]) + 1) / (n_permutation + 1)
+            print('Feature %d of %d is done: p_value=%f' %(i,n_permutation,p_values[i]))
+            
+    return aucs, p_values
