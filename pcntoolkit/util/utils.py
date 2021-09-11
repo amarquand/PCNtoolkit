@@ -1221,3 +1221,22 @@ def get_package_versions():
     return versions
     
     
+def z_to_abnormal_p(Z):
+    """
+    This function receives a matrix of z-scores (deviations) and transfer them
+    to corresponding abnormal probabilities. For more information see Sec. 2.5
+    in https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full.pdf.
+    
+    :param Z: n by p matrix of z-scores (deviations in normative modeling) where 
+    n is the number of subjects and p is the number of features. 
+    :type Z: numpy.array
+    
+    :return: a matrix of same size as Z, with probability of each sample being 
+    an abnormal sample. 
+    :rtype: numpy.array
+
+    """
+    
+    abn_p = 1- norm.sf(np.abs(Z))*2
+    
+    return abn_p
