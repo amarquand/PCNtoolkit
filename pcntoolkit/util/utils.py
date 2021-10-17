@@ -355,7 +355,7 @@ class WarpAffine(WarpBase):
         if len(param) != self.n_params:
             raise(ValueError, 
                   'number of parameters must be ' + str(self.n_params))
-        return param[0], param[1]
+        return param[0], np.exp(param[1])
 
     def f(self, x, params):
         a, b = self._get_params(params)
@@ -513,18 +513,23 @@ class WarpCompose(WarpBase):
         return fw
 
     def invf(self, x, theta):
-        theta_offset = 0
+        n_params = 0
+        n_warps = 0
         for ci, warp in enumerate(self.warps):
+            n_params += warp.get_n_params()
+            n_warps += 1
+        theta_offset = n_params
+        for ci, warp in reversed(list(enumerate(self.warps))):
             n_params_c = warp.get_n_params()
+            theta_offset -= n_params_c
             theta_c = [theta[c] for c in
                        range(theta_offset, theta_offset + n_params_c)]
-            theta_offset += n_params_c
             
-            if ci == 0:
+            if ci == n_warps-1:
                 finvw = warp.invf(x, theta_c)
             else:
                 finvw = warp.invf(finvw, theta_c)
-            
+
         return finvw
     
     def df(self, x, theta):
