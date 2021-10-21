@@ -402,7 +402,18 @@ class BLR:
             out = optimize.fmin(self.loglik, hyp0, (X, y, Xv),
                                        full_output=1)
         elif optimizer.lower() == 'l-bfgs-b':
-            out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=hyp0,
+            all_hyp_i = [hyp0]
+            def store(X):
+                hyp = X
+                all_hyp_i.append(hyp)
+            try:
+                out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=hyp0,
+                                          args=(X, y, Xv, l, norm), approx_grad=True,
+                                          epsilon=epsilon, callback=store)
+            # If the matrix becomes singular restart at last found hyp
+            except np.linalg.LinAlgError:
+                print(f'Restarting estimation at hyp = {all_hyp_i[-1]}, due to *** numpy.linalg.LinAlgError: Matrix is singular.')
+                out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=all_hyp_i[-1],
                                           args=(X, y, Xv, l, norm), approx_grad=True,
                                           epsilon=epsilon)
         else:
