@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Estimating lifespan normative models &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using lifespan models to make predictions on new data" href="tutorial_braincharts_apply_nm.html" />
+    <link rel="prev" title="Hierarchical Bayesian Regression" href="tutorial_HBR.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updates.html">Updates</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_HBR.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Estimating lifespan normative models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configure-which-models-to-fit">Configure which models to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-model-parameters">Configure model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fit-the-models">Fit the models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compute-error-metrics">Compute error metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_braincharts_apply_nm.html">Using lifespan models to make predictions on new data</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Estimating lifespan normative models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/pages/tutorial_braincharts_fit_nm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="estimating-lifespan-normative-models">
+<h1>Estimating lifespan normative models<a class="headerlink" href="#estimating-lifespan-normative-models" title="Permalink to this headline">¶</a></h1>
+<p>This notebook provides a complete walkthrough for an analysis of
+normative modelling in a large sample as described in the accompanying
+paper. Note that this script is provided principally for completeness
+(e.g. to assist in fitting normative models to new datasets). All
+pre-estimated normative models are already provided.</p>
+<p>First, if necessary, we install PCNtoolkit (note: this tutorial requires
+at least version 0.20)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.20
+</pre></div>
+</div>
+<p>Then we import the required libraries</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="kn">from</span> <span class="nn">pcntoolkit.normative</span> <span class="kn">import</span> <span class="n">estimate</span><span class="p">,</span> <span class="n">predict</span><span class="p">,</span> <span class="n">evaluate</span>
+<span class="kn">from</span> <span class="nn">pcntoolkit.util.utils</span> <span class="kn">import</span> <span class="n">compute_MSLL</span><span class="p">,</span> <span class="n">create_design_matrix</span>
+<span class="kn">from</span> <span class="nn">nm_utils</span> <span class="kn">import</span> <span class="n">calibration_descriptives</span><span class="p">,</span> <span class="n">remove_bad_subjects</span><span class="p">,</span> <span class="n">load_2d</span>
+</pre></div>
+</div>
+<p>Now, we configure the locations in which the data are stored. You will
+need to configure this for your specific installation</p>
+<p><strong>Notes:</strong> - The data are assumed to be in CSV format and will be loaded
+as pandas dataframes - Generally the raw data will be in a different
+location to the analysis - The data can have arbitrary columns but some
+are required by the script, i.e. ‘age’, ‘sex’ and ‘site’, plus the
+phenotypes you wish to estimate (see below)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># where the raw data are stored</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;&lt;path-to-your&gt;/data&#39;</span>
+
+<span class="c1"># where the analysis takes place</span>
+<span class="n">root_dir</span> <span class="o">=</span> <span class="s1">&#39;&lt;path-to-your&gt;/braincharts&#39;</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;models&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+
+<span class="c1"># create the output directory if it does not already exist</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we load the data.</p>
+<p>We will load one pandas dataframe for the training set and one dataframe
+for the test set. We will also filter out low quality scans on the basis
+of the Freesurfer <a class="reference external" href="https://surfer.nmr.mgh.harvard.edu/fswiki/EulerNumber">Euler
+Characteristic</a>
+(EC). This is a proxy for scan quality and is described in the
+publications below. Note that this requires the column ‘avg_en’ in the
+pandas dataframe, which is simply the average EC of left and right
+hemisphere.</p>
+<p>We also configrure a list of site ids</p>
+<p><strong>References</strong> - <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.abstract">Kia et al
+2021</a>
+- <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S1053811917310832?via%3Dihub">Rosen et al
+2018</a></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span><span class="s1">&#39;lifespan_big_controls_tr_mqc.csv&#39;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span><span class="s1">&#39;lifespan_big_controls_te_mqc.csv&#39;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># remove some bad subjects</span>
+<span class="n">df_tr</span><span class="p">,</span> <span class="n">bad_sub</span> <span class="o">=</span> <span class="n">remove_bad_subjects</span><span class="p">(</span><span class="n">df_tr</span><span class="p">,</span> <span class="n">df_tr</span><span class="p">)</span>
+<span class="n">df_te</span><span class="p">,</span> <span class="n">bad_sub</span> <span class="o">=</span> <span class="n">remove_bad_subjects</span><span class="p">(</span><span class="n">df_te</span><span class="p">,</span> <span class="n">df_te</span><span class="p">)</span>
+
+<span class="c1"># extract a list of unique site ids from the training set</span>
+<span class="n">site_ids</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df_tr</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>362 subjects are removed!
+356 subjects are removed!
+</pre></div>
+</div>
+<div class="section" id="configure-which-models-to-fit">
+<h2>Configure which models to fit<a class="headerlink" href="#configure-which-models-to-fit" title="Permalink to this headline">¶</a></h2>
+<p>Next, we load the image derived phenotypes (IDPs) which we will process
+in this analysis. This is effectively just a list of columns in your
+dataframe. Here we estimate normative models for the left hemisphere,
+right hemisphere and cortical structures.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the idps to process</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_lh.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_lh</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_rh.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_rh</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_sc.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_sc</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+<span class="c1"># we choose here to process all idps</span>
+<span class="n">idp_ids</span> <span class="o">=</span> <span class="n">idp_ids_lh</span> <span class="o">+</span> <span class="n">idp_ids_rh</span> <span class="o">+</span> <span class="n">idp_ids_sc</span>
+
+<span class="c1"># we could also just specify a list of IDPs</span>
+<span class="c1">#idp_ids = [&#39;lh_MeanThickness_thickness&#39;, &#39;rh_MeanThickness_thickness&#39;]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-model-parameters">
+<h2>Configure model parameters<a class="headerlink" href="#configure-model-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Now, we configure some parameters for the regression model we use to fit
+the normative model. Here we will use a ‘warped’ Bayesian linear
+regression model. To model non-Gaussianity, we select a sin arcsinh warp
+and to model non-linearity, we stick with the default value for the
+basis expansion (a cubic b-spline basis set with 5 knot points). Since
+we are sticking with the default value, we do not need to specify any
+parameters for this, but we do need to specify the limits. We choose to
+pad the input by a few years either side of the input range. We will
+also set a couple of options that control the estimation of the model</p>
+<p>For further details about the likelihood warping approach, see <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.04.05.438429v1">Fraza et
+al
+2021</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># which data columns do we wish to use as covariates?</span>
+<span class="n">cols_cov</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]</span>
+
+<span class="c1"># which warping function to use? We can set this to None in order to fit a vanilla Gaussian noise model</span>
+<span class="n">warp</span> <span class="o">=</span>  <span class="s1">&#39;WarpSinArcsinh&#39;</span>
+
+<span class="c1"># limits for cubic B-spline basis</span>
+<span class="n">xmin</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span>
+<span class="n">xmax</span> <span class="o">=</span> <span class="mi">110</span>
+
+<span class="c1"># Do we want to force the model to be refit every time?</span>
+<span class="n">force_refit</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Absolute Z treshold above which a sample is considered to be an outlier (without fitting any model)</span>
+<span class="n">outlier_thresh</span> <span class="o">=</span> <span class="mi">7</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fit-the-models">
+<h2>Fit the models<a class="headerlink" href="#fit-the-models" title="Permalink to this headline">¶</a></h2>
+<p>Now we fit the models. This involves looping over the IDPs we have
+selected. We will use a module from PCNtoolkit to set up the design
+matrices, containing the covariates, fixed effects for site and
+nonlinear basis expansion.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running IDP&#39;</span><span class="p">,</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+
+    <span class="c1"># set output dir</span>
+    <span class="n">idp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">idp</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">)</span>
+
+    <span class="c1"># extract the response variables for training and test set</span>
+    <span class="n">y_tr</span> <span class="o">=</span> <span class="n">df_tr</span><span class="p">[</span><span class="n">idp</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="n">idp</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="c1"># remove gross outliers and implausible values</span>
+    <span class="n">yz_tr</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_tr</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_tr</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_tr</span><span class="p">)</span>
+    <span class="n">yz_te</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_te</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_te</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_te</span><span class="p">)</span>
+    <span class="n">nz_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">yz_tr</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">outlier_thresh</span><span class="p">,</span> <span class="n">y_tr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">nz_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">yz_te</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">outlier_thresh</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">y_tr</span> <span class="o">=</span> <span class="n">y_tr</span><span class="p">[</span><span class="n">nz_tr</span><span class="p">]</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">y_te</span><span class="p">[</span><span class="n">nz_te</span><span class="p">]</span>
+
+    <span class="c1"># write out the response variables for training and test</span>
+    <span class="n">resp_file_tr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_tr.txt&#39;</span><span class="p">)</span>
+    <span class="n">resp_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_te.txt&#39;</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">resp_file_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">resp_file_te</span><span class="p">,</span> <span class="n">y_te</span><span class="p">)</span>
+
+    <span class="c1"># configure the design matrix</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span><span class="n">df_tr</span><span class="p">[</span><span class="n">cols_cov</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nz_tr</span><span class="p">],</span>
+                                <span class="n">site_ids</span> <span class="o">=</span> <span class="n">df_tr</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nz_tr</span><span class="p">],</span>
+                                <span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;bspline&#39;</span><span class="p">,</span>
+                                <span class="n">xmin</span> <span class="o">=</span> <span class="n">xmin</span><span class="p">,</span>
+                                <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmax</span><span class="p">)</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span><span class="n">df_te</span><span class="p">[</span><span class="n">cols_cov</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nz_te</span><span class="p">],</span>
+                                <span class="n">site_ids</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">nz_te</span><span class="p">],</span>
+                                <span class="n">all_sites</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span>
+                                <span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;bspline&#39;</span><span class="p">,</span>
+                                <span class="n">xmin</span> <span class="o">=</span> <span class="n">xmin</span><span class="p">,</span>
+                                <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmax</span><span class="p">)</span>
+
+    <span class="c1"># configure and save the covariates</span>
+    <span class="n">cov_file_tr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_tr.txt&#39;</span><span class="p">)</span>
+    <span class="n">cov_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_te.txt&#39;</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">cov_file_tr</span><span class="p">,</span> <span class="n">X_tr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">,</span> <span class="n">X_te</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">force_refit</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;Models&#39;</span><span class="p">,</span> <span class="s1">&#39;NM_0_0_estimate.pkl&#39;</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Making predictions using a pre-existing model...&#39;</span><span class="p">)</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;predict&#39;</span>
+
+        <span class="c1"># Make prdictsion with test data</span>
+        <span class="n">predict</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">,</span>
+                <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;blr&#39;</span><span class="p">,</span>
+                <span class="n">respfile</span><span class="o">=</span><span class="n">resp_file_te</span><span class="p">,</span>
+                <span class="n">model_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">),</span>
+                <span class="n">outputsuffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimating the normative model...&#39;</span><span class="p">)</span>
+        <span class="n">estimate</span><span class="p">(</span><span class="n">cov_file_tr</span><span class="p">,</span> <span class="n">resp_file_tr</span><span class="p">,</span> <span class="n">testresp</span><span class="o">=</span><span class="n">resp_file_te</span><span class="p">,</span>
+                 <span class="n">testcov</span><span class="o">=</span><span class="n">cov_file_te</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;blr&#39;</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="s1">&#39;l-bfgs-b&#39;</span><span class="p">,</span>
+                 <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warp</span><span class="o">=</span><span class="n">warp</span><span class="p">,</span> <span class="n">warp_reparam</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;estimate&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compute-error-metrics">
+<h2>Compute error metrics<a class="headerlink" href="#compute-error-metrics" title="Permalink to this headline">¶</a></h2>
+<p>In this section we compute the following error metrics for all IDPs (all
+evaluated on the test set):</p>
+<ul class="simple">
+<li><p>Negative log likelihood (NLL)</p></li>
+<li><p>Explained variance (EV)</p></li>
+<li><p>Mean standardized log loss (MSLL)</p></li>
+<li><p>Bayesian information Criteria (BIC)</p></li>
+<li><p>Skew and Kurtosis of the Z-distribution</p></li>
+</ul>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># initialise dataframe we will use to store quantitative metrics</span>
+<span class="n">blr_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;eid&#39;</span><span class="p">,</span> <span class="s1">&#39;NLL&#39;</span><span class="p">,</span> <span class="s1">&#39;EV&#39;</span><span class="p">,</span> <span class="s1">&#39;MSLL&#39;</span><span class="p">,</span> <span class="s1">&#39;BIC&#39;</span><span class="p">,</span><span class="s1">&#39;Skew&#39;</span><span class="p">,</span><span class="s1">&#39;Kurtosis&#39;</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
+    <span class="n">idp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">idp</span><span class="p">)</span>
+
+    <span class="c1"># load the predictions and true data. We use a custom function that ensures 2d arrays</span>
+    <span class="c1"># equivalent to: y = np.loadtxt(filename); y = y[:, np.newaxis]</span>
+    <span class="n">yhat_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;yhat_&#39;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">))</span>
+    <span class="n">s2_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;ys2_&#39;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">))</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_te.txt&#39;</span><span class="p">))</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">,</span> <span class="s1">&#39;NM_0_0_estimate.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+
+    <span class="c1"># compute error metrics</span>
+    <span class="k">if</span> <span class="n">warp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">yhat_te</span><span class="p">)</span>
+
+        <span class="c1"># compute MSLL manually as a sanity check</span>
+        <span class="n">y_tr_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_tr</span><span class="p">)]]</span> <span class="p">)</span>
+        <span class="n">y_tr_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y_tr</span><span class="p">)]]</span> <span class="p">)</span>
+        <span class="n">MSLL</span> <span class="o">=</span> <span class="n">compute_MSLL</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">yhat_te</span><span class="p">,</span> <span class="n">s2_te</span><span class="p">,</span> <span class="n">y_tr_mean</span><span class="p">,</span> <span class="n">y_tr_var</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warp_param</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">warp</span>
+
+        <span class="c1"># warp predictions</span>
+        <span class="n">med_te</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat_te</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2_te</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">med_te</span> <span class="o">=</span> <span class="n">med_te</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="c1"># evaluation metrics</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">med_te</span><span class="p">)</span>
+
+        <span class="c1"># compute MSLL manually</span>
+        <span class="n">y_te_w</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">warp_param</span><span class="p">)</span>
+        <span class="n">y_tr_w</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y_tr</span><span class="p">,</span> <span class="n">warp_param</span><span class="p">)</span>
+        <span class="n">y_tr_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_tr_w</span><span class="p">)]]</span> <span class="p">)</span>
+        <span class="n">y_tr_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y_tr_w</span><span class="p">)]]</span> <span class="p">)</span>
+        <span class="n">MSLL</span> <span class="o">=</span> <span class="n">compute_MSLL</span><span class="p">(</span><span class="n">y_te_w</span><span class="p">,</span> <span class="n">yhat_te</span><span class="p">,</span> <span class="n">s2_te</span><span class="p">,</span> <span class="n">y_tr_mean</span><span class="p">,</span> <span class="n">y_tr_var</span><span class="p">)</span>
+
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;Z_&#39;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">))</span>
+    <span class="p">[</span><span class="n">skew</span><span class="p">,</span> <span class="n">sdskew</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">sdkurtosis</span><span class="p">,</span> <span class="n">semean</span><span class="p">,</span> <span class="n">sesd</span><span class="p">]</span> <span class="o">=</span> <span class="n">calibration_descriptives</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+
+    <span class="n">BIC</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y_tr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nm</span><span class="o">.</span><span class="n">neg_log_lik</span>
+
+    <span class="n">blr_metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">idp</span><span class="p">,</span> <span class="n">nm</span><span class="o">.</span><span class="n">neg_log_lik</span><span class="p">,</span> <span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;EXPV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                         <span class="n">MSLL</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">BIC</span><span class="p">,</span> <span class="n">skew</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">]</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">)</span>
+
+<span class="n">blr_metrics</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;blr_metrics.pkl&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>eid</th>
+      <th>NLL</th>
+      <th>EV</th>
+      <th>MSLL</th>
+      <th>BIC</th>
+      <th>Skew</th>
+      <th>Kurtosis</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lh_G&amp;S_frontomargin_thickness</td>
+      <td>-3808.584381</td>
+      <td>0.314419</td>
+      <td>-35.106351</td>
+      <td>-7579.659922</td>
+      <td>0.252934</td>
+      <td>1.087225</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lh_G&amp;S_occipital_inf_thickness</td>
+      <td>-3468.296931</td>
+      <td>0.230447</td>
+      <td>-35.096839</td>
+      <td>-6899.085023</td>
+      <td>0.030063</td>
+      <td>0.430915</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lh_G&amp;S_paracentral_thickness</td>
+      <td>-2977.898155</td>
+      <td>0.337686</td>
+      <td>-35.035891</td>
+      <td>-5918.287470</td>
+      <td>-0.001040</td>
+      <td>0.755307</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lh_G&amp;S_subcentral_thickness</td>
+      <td>-3471.667467</td>
+      <td>0.332549</td>
+      <td>-34.990710</td>
+      <td>-6905.826095</td>
+      <td>0.072970</td>
+      <td>0.560048</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lh_G&amp;S_transv_frontopol_thickness</td>
+      <td>-1565.916398</td>
+      <td>0.358683</td>
+      <td>-34.900294</td>
+      <td>-3094.323956</td>
+      <td>0.270502</td>
+      <td>1.269709</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>183</th>
+      <td>TotalGrayVol</td>
+      <td>146369.741818</td>
+      <td>0.615736</td>
+      <td>-3.067824</td>
+      <td>292776.992475</td>
+      <td>-0.490089</td>
+      <td>3.996252</td>
+    </tr>
+    <tr>
+      <th>184</th>
+      <td>SupraTentorialVol</td>
+      <td>152270.636605</td>
+      <td>0.345575</td>
+      <td>-1.442556</td>
+      <td>304578.782049</td>
+      <td>-0.302217</td>
+      <td>2.920578</td>
+    </tr>
+    <tr>
+      <th>185</th>
+      <td>SupraTentorialVolNotVent</td>
+      <td>162984.467798</td>
+      <td>0.347517</td>
+      <td>-1.014633</td>
+      <td>326006.444436</td>
+      <td>-5.035215</td>
+      <td>63.806125</td>
+    </tr>
+    <tr>
+      <th>186</th>
+      <td>avg_thickness</td>
+      <td>-10627.007679</td>
+      <td>0.581347</td>
+      <td>-36.109891</td>
+      <td>-21216.506518</td>
+      <td>-0.343804</td>
+      <td>1.197945</td>
+    </tr>
+    <tr>
+      <th>187</th>
+      <td>EstimatedTotalIntraCranialVol</td>
+      <td>168794.712119</td>
+      <td>0.253537</td>
+      <td>-0.262857</td>
+      <td>337626.933077</td>
+      <td>-5.151926</td>
+      <td>66.531844</td>
+    </tr>
+  </tbody>
+</table>
+<p>188 rows × 7 columns</p>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">blr_metrics</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;blr_metrics.csv&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="tutorial_braincharts_apply_nm.html" class="btn btn-neutral float-right" title="Using lifespan models to make predictions on new data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorial_HBR.html" class="btn btn-neutral float-left" title="Hierarchical Bayesian Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Andre F. Marquand.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
