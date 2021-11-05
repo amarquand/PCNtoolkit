@@ -18,6 +18,8 @@ import pymc3 as pm
 from io import StringIO
 import subprocess
 import re
+from sklearn.metrics import roc_auc_score
+
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -275,6 +277,38 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         
     return loss
 
+def calibration_descriptives(x):
+    """
+    compute statistics useful to assess the calibration of normative models,
+    including skew and kurtosis of the distribution, plus their standard
+    deviation and standar errors
+
+    Basic usage::
+        stats = calibration_descriptives(Z)
+
+    where
+    
+    :param x        : n*p matrix of statistics you wish to assess
+    :returns  stats :[skew, sdskew, kurtosis, sdkurtosis, semean, sesd]
+    
+    """
+    
+    n = np.shape(x)[0]
+    m1 = np.mean(x)
+    m2 = sum((x-m1)**2)
+    m3 = sum((x-m1)**3)
+    m4 = sum((x-m1)**4)
+    s1 = np.std(x)
+    skew = n*m3/(n-1)/(n-2)/s1**3
+    sdskew = np.sqrt( 6*n*(n-1) / ((n-2)*(n+1)*(n+3)) )
+    kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
+    sdkurtosis = np.sqrt( 4*(n**2-1) * sdskew**2 / ((n-3)*(n+5)) )
+    semean = np.sqrt(np.var(x)/n)
+    sesd = s1/np.sqrt(2*(n-1))
+    cd = [skew, sdskew, kurtosis, sdkurtosis, semean, sesd]
+    
+    return cd
+
 class WarpBase(with_metaclass(ABCMeta)):
     """ Base class for likelihood warping following:
         Rios and Torab (2019) Compositionally-warped Gaussian processes
@@ -341,6 +375,32 @@ class WarpBase(with_metaclass(ABCMeta)):
     def df(self, x, param):
         """ Return the derivative of the warp, dw(x)/dx """
 
+class WarpLog(WarpBase):
+    """ Affine warp
+        y = a + b*x
+    """
+
+    def __init__(self):
+        self.n_params = 0
+    
+    def f(self, x, params=None):
+        
+        y = np.log(x)
+        
+        return y
+    
+    def invf(self, y, params=None):
+        
+        x = np.exp(y)
+       
+        return x
+
+    def df(self, x, params):
+        
+        df = 1/x
+        
+        return df
+
 class WarpAffine(WarpBase):
     """ Affine warp
         y = a + b*x
@@ -353,7 +413,7 @@ class WarpAffine(WarpBase):
         if len(param) != self.n_params:
             raise(ValueError, 
                   'number of parameters must be ' + str(self.n_params))
-        return param[0], param[1]
+        return param[0], np.exp(param[1])
 
     def f(self, x, params):
         a, b = self._get_params(params)
@@ -432,13 +492,18 @@ class WarpSinArcsinh(WarpBase):
         * b < 1 : platykurtic
         
         where b > 0. However, it is more convenentent to use an alternative 
-        parameterisation, where
+        parameterisation, given in Jones and Pewsey 2019 JRSS Significance 16 
+        https://doi.org/10.1111/j.1740-9713.2019.01245.x
+        
+        where:
 
         y = sinh(b * arcsinh(x) + epsilon * b)
         
         and a = -epsilon*b
     
-        see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
+        see also Jones and Pewsey 2009 Biometrika, 96 (4) for more details 
+        about the SHASH distribution
+        https://www.jstor.org/stable/27798865
     """
 
     def __init__(self):
@@ -484,10 +549,11 @@ class WarpCompose(WarpBase):
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
-    def __init__(self, warpnames=None):
+    def __init__(self, warpnames=None, debugwarp=False):
 
         if warpnames is None:
             raise ValueError("A list of warp functions is required")
+        self.debugwarp = debugwarp
         self.warps = []
         self.n_params = 0
         for wname in warpnames:
@@ -498,12 +564,17 @@ class WarpCompose(WarpBase):
     def f(self, x, theta):
         theta_offset = 0
 
+        if self.debugwarp:
+            print('begin composition')
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
             theta_c = [theta[c] for c in
                           range(theta_offset, theta_offset + n_params_c)]
             theta_offset += n_params_c                
 
+            if self.debugwarp:
+                print('f:', ci, theta_c, warp)
+            
             if ci == 0:
                 fw = warp.f(x, theta_c)
             else:
@@ -511,28 +582,44 @@ class WarpCompose(WarpBase):
         return fw
 
     def invf(self, x, theta):
-        theta_offset = 0
+        n_params = 0
+        n_warps = 0
+        if self.debugwarp:
+            print('begin composition')
+        
         for ci, warp in enumerate(self.warps):
+            n_params += warp.get_n_params()
+            n_warps += 1
+        theta_offset = n_params
+        for ci, warp in reversed(list(enumerate(self.warps))):
             n_params_c = warp.get_n_params()
+            theta_offset -= n_params_c
             theta_c = [theta[c] for c in
                        range(theta_offset, theta_offset + n_params_c)]
-            theta_offset += n_params_c
             
-            if ci == 0:
+            if self.debugwarp:
+                print('invf:', theta_c, warp)
+            
+            if ci == n_warps-1:
                 finvw = warp.invf(x, theta_c)
             else:
                 finvw = warp.invf(finvw, theta_c)
-            
+
         return finvw
     
     def df(self, x, theta):
         theta_offset = 0
+        if self.debugwarp:
+            print('begin composition')
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
 
             theta_c = [theta[c] for c in
                        range(theta_offset, theta_offset + n_params_c)]
             theta_offset += n_params_c
+            
+            if self.debugwarp:
+                print('df:', ci, theta_c, warp)
             
             if ci == 0:
                 dfw = warp.df(x, theta_c)
@@ -573,10 +660,6 @@ class CustomCV:
             tr = self.train[i]
             te = self.test[i]
             yield tr, te
-
-# -----------------------
-# Functions for inference
-# -----------------------
 
 def bashwrap(processing_dir, python_path, script_command, job_name,
              bash_environment=None):
@@ -1193,3 +1276,94 @@ def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
                 pickle.dump({'ENs':df}, file)
              
     return df, missing_subjects
+
+def get_package_versions():
+    
+    import platform
+    versions = dict()
+    versions['Python'] = platform.python_version()
+    
+    try: 
+        import theano
+        versions['Theano'] = theano.__version__
+    except:
+        versions['Theano'] = ''
+        
+    try: 
+        import pymc3
+        versions['PyMC3'] = pymc3.__version__
+    except:
+        versions['PyMC3'] = ''
+        
+    try: 
+        import pcntoolkit
+        versions['PCNtoolkit'] = pcntoolkit.__version__
+    except:
+        versions['PCNtoolkit'] = ''
+        
+    return versions
+    
+    
+def z_to_abnormal_p(Z):
+    """
+    
+    This function receives a matrix of z-scores (deviations) and transfer them
+    to corresponding abnormal probabilities. For more information see Sec. 2.5
+    in https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.full.pdf.
+    
+    :param Z: n by p matrix of z-scores (deviations in normative modeling) where 
+    n is the number of subjects and p is the number of features. 
+    :type Z: numpy.array
+    
+    :return: a matrix of same size as Z, with probability of each sample being 
+    an abnormal sample. 
+    :rtype: numpy.array
+
+    """
+    
+    abn_p = 1- norm.sf(np.abs(Z))*2
+    
+    return abn_p
+
+
+def anomaly_detection_auc(abn_p, labels, n_permutation=None):
+    """
+    This is a utility function for computing region-wise AUC scores for anomaly
+    detection using normative model. If n_permutations is not None (e.g. 1000), 
+    it also computes permuation p_values for each region. 
+    
+    :param abn_p: n by p matrix of with probability of each sample being 
+    an abnormal sample. This matrix can be computed using 'z_to_abnormal_p' 
+    function.
+    :type abn_p: numpy.array
+    :param labels: a vactor of binary labels for n subjects, 0 for healthy and 
+    1 for patients. 
+    :type labels: numpy.array
+    :param n_permutation: If not none the permutation significance test with 
+    n_permutation repetitions is performed for each feature.  defaults to None.
+    :type n_permutation: numpy.int
+    :return: p by 1 matrix of AUCs and p_values for permutation test for each 
+    feature (i.e. brain region).
+    :rtype: numpy.array
+
+    """
+    
+    n, p = abn_p.shape
+    aucs = np.zeros([p])
+    p_values = np.zeros([p])
+    
+    for i in range(p):
+        aucs[i] = roc_auc_score(labels, abn_p[:,i])
+        
+        if n_permutation is not None:
+            
+            auc_perm = np.zeros([n_permutation])
+            for j in range(n_permutation):
+                rand_idx = np.random.permutation(len(labels))
+                rand_labels = labels[rand_idx]
+                auc_perm[j] = roc_auc_score(rand_labels, abn_p[:,i])
+            
+            p_values[i] = (np.sum(auc_perm > aucs[i]) + 1) / (n_permutation + 1)
+            print('Feature %d of %d is done: p_value=%f' %(i,n_permutation,p_values[i]))
+            
+    return aucs, p_values
