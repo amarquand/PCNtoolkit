@@ -277,6 +277,38 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
         
     return loss
 
+def calibration_descriptives(x):
+    """
+    compute statistics useful to assess the calibration of normative models,
+    including skew and kurtosis of the distribution, plus their standard
+    deviation and standar errors
+
+    Basic usage::
+        stats = calibration_descriptives(Z)
+
+    where
+    
+    :param x        : n*p matrix of statistics you wish to assess
+    :returns  stats :[skew, sdskew, kurtosis, sdkurtosis, semean, sesd]
+    
+    """
+    
+    n = np.shape(x)[0]
+    m1 = np.mean(x)
+    m2 = sum((x-m1)**2)
+    m3 = sum((x-m1)**3)
+    m4 = sum((x-m1)**4)
+    s1 = np.std(x)
+    skew = n*m3/(n-1)/(n-2)/s1**3
+    sdskew = np.sqrt( 6*n*(n-1) / ((n-2)*(n+1)*(n+3)) )
+    kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
+    sdkurtosis = np.sqrt( 4*(n**2-1) * sdskew**2 / ((n-3)*(n+5)) )
+    semean = np.sqrt(np.var(x)/n)
+    sesd = s1/np.sqrt(2*(n-1))
+    cd = [skew, sdskew, kurtosis, sdkurtosis, semean, sesd]
+    
+    return cd
+
 class WarpBase(with_metaclass(ABCMeta)):
     """ Base class for likelihood warping following:
         Rios and Torab (2019) Compositionally-warped Gaussian processes
@@ -342,6 +374,32 @@ class WarpBase(with_metaclass(ABCMeta)):
     @abstractmethod
     def df(self, x, param):
         """ Return the derivative of the warp, dw(x)/dx """
+
+class WarpLog(WarpBase):
+    """ Affine warp
+        y = a + b*x
+    """
+
+    def __init__(self):
+        self.n_params = 0
+    
+    def f(self, x, params=None):
+        
+        y = np.log(x)
+        
+        return y
+    
+    def invf(self, y, params=None):
+        
+        x = np.exp(y)
+       
+        return x
+
+    def df(self, x, params):
+        
+        df = 1/x
+        
+        return df
 
 class WarpAffine(WarpBase):
     """ Affine warp
@@ -434,13 +492,18 @@ class WarpSinArcsinh(WarpBase):
         * b < 1 : platykurtic
         
         where b > 0. However, it is more convenentent to use an alternative 
-        parameterisation, where
+        parameterisation, given in Jones and Pewsey 2019 JRSS Significance 16 
+        https://doi.org/10.1111/j.1740-9713.2019.01245.x
+        
+        where:
 
         y = sinh(b * arcsinh(x) + epsilon * b)
         
         and a = -epsilon*b
     
-        see Jones and Pewsey A (2009) Biometrika, 96 (4) (2009)
+        see also Jones and Pewsey 2009 Biometrika, 96 (4) for more details 
+        about the SHASH distribution
+        https://www.jstor.org/stable/27798865
     """
 
     def __init__(self):
@@ -486,10 +549,11 @@ class WarpCompose(WarpBase):
         where ell_i are lengthscale parameters and sf2 is the signal variance
     """
 
-    def __init__(self, warpnames=None):
+    def __init__(self, warpnames=None, debugwarp=False):
 
         if warpnames is None:
             raise ValueError("A list of warp functions is required")
+        self.debugwarp = debugwarp
         self.warps = []
         self.n_params = 0
         for wname in warpnames:
@@ -500,12 +564,17 @@ class WarpCompose(WarpBase):
     def f(self, x, theta):
         theta_offset = 0
 
+        if self.debugwarp:
+            print('begin composition')
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
             theta_c = [theta[c] for c in
                           range(theta_offset, theta_offset + n_params_c)]
             theta_offset += n_params_c                
 
+            if self.debugwarp:
+                print('f:', ci, theta_c, warp)
+            
             if ci == 0:
                 fw = warp.f(x, theta_c)
             else:
@@ -515,6 +584,9 @@ class WarpCompose(WarpBase):
     def invf(self, x, theta):
         n_params = 0
         n_warps = 0
+        if self.debugwarp:
+            print('begin composition')
+        
         for ci, warp in enumerate(self.warps):
             n_params += warp.get_n_params()
             n_warps += 1
@@ -525,6 +597,9 @@ class WarpCompose(WarpBase):
             theta_c = [theta[c] for c in
                        range(theta_offset, theta_offset + n_params_c)]
             
+            if self.debugwarp:
+                print('invf:', theta_c, warp)
+            
             if ci == n_warps-1:
                 finvw = warp.invf(x, theta_c)
             else:
@@ -534,12 +609,17 @@ class WarpCompose(WarpBase):
     
     def df(self, x, theta):
         theta_offset = 0
+        if self.debugwarp:
+            print('begin composition')
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
 
             theta_c = [theta[c] for c in
                        range(theta_offset, theta_offset + n_params_c)]
             theta_offset += n_params_c
+            
+            if self.debugwarp:
+                print('df:', ci, theta_c, warp)
             
             if ci == 0:
                 dfw = warp.df(x, theta_c)
@@ -580,10 +660,6 @@ class CustomCV:
             tr = self.train[i]
             te = self.test[i]
             yield tr, te
-
-# -----------------------
-# Functions for inference
-# -----------------------
 
 def bashwrap(processing_dir, python_path, script_command, job_name,
              bash_environment=None):
