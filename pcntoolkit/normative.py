@@ -41,7 +41,7 @@ except ImportError:
     from dataio import fileio
 
     from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
-    from util.utils import scaler
+    from util.utils import scaler, get_package_versions
     from normative_model.norm_utils import norm_init
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
