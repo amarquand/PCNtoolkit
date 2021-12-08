@@ -333,6 +333,9 @@ def estimate(covfile, respfile, **kwargs):
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
 
+    # which output metrics to compute
+    metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL','NLL', 'BIC']
+    
     # load data
     print("Processing data in " + respfile)
     X = fileio.load(covfile)
@@ -394,12 +397,15 @@ def estimate(covfile, respfile, **kwargs):
     scaler_resp = []
     scaler_cov = []
     mean_resp = [] # this is just for computing MSLL
-    std_resp = []   # this is just for computing MSLL
+    std_resp = [] # this is just for computing MSLL
     
     if warp is not None:
         Ywarp = np.zeros_like(Yhat)
-        mean_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
-        std_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
+        
+        # for warping we need to compute metrics separately for each fold
+        results_folds = dict()
+        for m in metrics:
+            results_folds[m]= np.zeros((Nmod, cvfolds))
 
     for idx in enumerate(splits.split(X)):
 
@@ -436,9 +442,9 @@ def estimate(covfile, respfile, **kwargs):
             fileio.save(be[ts,:], 'be_kfold_ts_tempfile.pkl')
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
-        
+
         # estimate the models for all subjects
-        for i in range(0, len(nz)):  
+        for i in range(0, len(nz)):              
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz_tr, Yz_tr[:, i], alg=alg, **kwargs)
                 
@@ -463,17 +469,28 @@ def estimate(covfile, respfile, **kwargs):
                 nlZ[nz[i], fold] = nm.neg_log_lik
                 
                 if (run_cv or testresp is not None):
-                    # warp the labels?
-                    # TODO: Warping for scaled data
                     if warp is not None:
+                        # TODO: Warping for scaled data
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(Y[ts, nz[i]], warp_param)
                         Ytest = Ywarp[ts, nz[i]]
                         
                         # Save warped mean of the training data (for MSLL)
                         yw = nm.blr.warp.f(Y[tr, nz[i]], warp_param)
-                        mean_resp_warp[fold][i] = np.mean(yw)
-                        std_resp_warp[fold][i] = np.std(yw)
+                        
+                        # create arrays for evaluation
+                        Yhati = Yhat[ts, nz[i]]
+                        Yhati = Yhati[:, np.newaxis]
+                        S2i = S2[ts, nz[i]]
+                        S2i = S2i[:, np.newaxis]
+
+                        # evaluate and save results
+                        mf = evaluate(Ytest[:, np.newaxis], Yhati, S2=S2i, 
+                                      mY=np.std(yw), sY=np.mean(yw), 
+                                      nlZ=nm.neg_log_lik, nm=nm, Xz_tr=Xz_tr, 
+                                      alg=alg, metrics = metrics)
+                        for k in metrics:
+                            results_folds[k][nz[i]][fold] = mf[k]
                     else:
                         Ytest = Y[ts, nz[i]] 
                     
@@ -517,16 +534,14 @@ def estimate(covfile, respfile, **kwargs):
             results = evaluate(Y[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp[0], 
                                sY=std_resp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr, alg=alg,
-                               metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV',
-                                          'MSLL', 'NLL', 'BIC'])
+                               metrics = metrics)
         else:
-            results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
-                               S2=S2[testids, :], mY=mean_resp_warp[0], 
-                               sY=std_resp_warp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr,
-                               alg=alg, metrics = ['Rho', 'RMSE', 'SMSE',
-                                                   'EXPV', 'MSLL',
-                                                   'NLL', 'BIC'])
-            
+            # for warped data we just aggregate across folds
+            results = dict()
+            for m in ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']:
+                results[m] = np.mean(results_folds[m], axis=1)
+            results['NLL'] = results_folds['NLL']
+            results['BIC'] = results_folds['BIC']            
         
     # Set writing options
     if saveoutput:
@@ -649,6 +664,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
+    :param fold: which cross-validation fold to use (default = 0)
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -666,6 +682,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
+    fold = kwargs.pop('fold',0)
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -702,8 +719,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         X = X[:, np.newaxis]
     
     sample_num = X.shape[0]
-    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*' + inputsuffix + 
-                                             '.pkl')))
+    feature_num = len(glob.glob(os.path.join(model_path, 'NM_'+ str(fold) +
+                                             '_*' + inputsuffix + '.pkl')))
 
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
@@ -718,7 +735,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     for i in range(feature_num):
         print("Prediction by model ", i+1, "of", feature_num)      
         nm = norm_init(Xz)
-        nm = nm.load(os.path.join(model_path, 'NM_' + str(0) + '_' + 
+        nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
                                   str(i) + inputsuffix + '.pkl'))
         if (alg!='hbr' or nm.configs['transferred']==False):
             yhat, s2 = nm.predict(Xz, **kwargs)
