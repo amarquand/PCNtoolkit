@@ -387,8 +387,8 @@ class BLR:
         Xv = kwargs.get('var_covariates', None)
         
         # options for l-bfgs-b
-        l = kwargs.get('l', 0.1)
-        epsilon = kwargs.get('epsilon', 0.1)
+        l = float(kwargs.get('l', 0.1))
+        epsilon = float(kwargs.get('epsilon', 0.1))
         norm = kwargs.get('norm', 'l2')
 
         if optimizer.lower() == 'cg':  # conjugate gradients
