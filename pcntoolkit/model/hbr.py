@@ -17,7 +17,7 @@ from functools import reduce
 from scipy import stats
 import bspline
 from bspline import splinelab
-
+from pcntoolkit.util.utils import cartesian_product
 
 
 def bspline_fit(X, order, nknots):
@@ -874,4 +874,23 @@ class HBR:
                 ppc = pm.sample_prior_predictive(samples=samples) 
         
         return ppc
+    
+    
+    def create_dummy_inputs(self, covariate_ranges = [[0.1,0.9,0.01]]):
+    
+        arrays = []
+        for i in range(len(covariate_ranges)):
+            arrays.append(np.arange(covariate_ranges[i][0],covariate_ranges[i][1],
+                                    covariate_ranges[i][2]))
+        X = cartesian_product(arrays)
+        X_dummy = np.concatenate([X for i in range(np.prod(self.batch_effects_size))])
+        
+        arrays = []
+        for i in range(self.batch_effects_num):
+            arrays.append(np.arange(0, self.batch_effects_size[i]))
+        batch_effects = cartesian_product(arrays)
+        
+        batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
+       
+        return X_dummy, batch_effects_dummy     
     
