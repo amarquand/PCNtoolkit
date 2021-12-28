@@ -691,8 +691,6 @@ def collect_nm(processing_dir,
                     if meta_data['outscaler'] in ['standardize', 'minmax', 
                                 'robminmax']:
                         Y_scalers.append(meta_data['scaler_resp'])
-                #meta_data['mean_resp'] = np.squeeze(np.stack(mY)) 
-                #meta_data['std_resp'] = np.squeeze(np.stack(sY))
                 meta_data['mean_resp'] = np.squeeze(np.column_stack(mY)) 
                 meta_data['std_resp'] = np.squeeze(np.column_stack(sY))
                 meta_data['scaler_cov'] = X_scalers 
