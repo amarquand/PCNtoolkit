@@ -151,6 +151,28 @@ class NormHBR(NormBase):
         return self
     
     
+    def merge(self, nm, X_dummy_ranges= [[0.1,0.9,0.01]], merge_batch_dim=0, 
+              samples=10):
+        
+        X_dummy1, batch_effects_dummy1 = self.hbr.create_dummy_inputs(X_dummy_ranges)
+        X_dummy2, batch_effects_dummy2 = nm.hbr.create_dummy_inputs(X_dummy_ranges)
+        
+        X_dummy1, batch_effects_dummy1, Y_dummy1 = self.hbr.generate(X_dummy1, 
+                                                batch_effects_dummy1, samples)
+        X_dummy2, batch_effects_dummy2, Y_dummy2 = nm.hbr.generate(X_dummy2, 
+                                                batch_effects_dummy2, samples)
+        
+        batch_effects_dummy2[:, merge_batch_dim] = batch_effects_dummy2[:, merge_batch_dim] + \
+            np.max(batch_effects_dummy1[:, merge_batch_dim]) + 1
+        
+        self.hbr.estimate(np.concatenate((X_dummy1, X_dummy2)), 
+                          np.concatenate((Y_dummy1, Y_dummy2)), 
+                          np.concatenate((batch_effects_dummy1, 
+                                          batch_effects_dummy2)))
+        
+        return self
+    
+    
     def generate(self, X, batch_effects, samples=10):
         
         X, batch_effects, generated_samples = self.hbr.generate(X, batch_effects, 
