@@ -961,6 +961,35 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
 def extend(covfile, respfile, maskfile=None, **kwargs):
     
+    '''
+    This function extends an existing HBR model with data from new sites/scanners.
+    
+    Basic usage::
+
+        extend(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: covariates for new data
+    :param respfile: response variables for new data
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: file address to batch effects file for new data
+    :param dummycovfile: file address to dummy covariate file
+    :param dummybefile: file address to dummy batch effect file
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param informative_prior: a flag to decide whether to use the initial model 
+    prior or learn it from scrach (default is False).
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
     alg = kwargs.pop('alg')
     if alg != 'hbr':
         print('Model extention is only possible for HBR models.')
@@ -1047,6 +1076,109 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
                              str(i) + outputsuffix + '.pkl'))
         else:
             nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+
+
+def merge(covfile=None, respfile=None, **kwargs):
+    
+    '''
+    This function extends an existing HBR model with data from new sites/scanners.
+    
+    Basic usage::
+
+        merge(model_path1, model_path2 [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: Not required. Always set to None.
+    :param respfile: Not required. Always set to None.
+    :param model_path1: Directory containing the normative model and metadata 
+    of the first model.
+    :param model_path2: Directory containing the normative model and metadata 
+    of the second model.
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Merging models is only possible for HBR models.')
+        return
+    elif (not 'model_path1' in list(kwargs.keys())) or \
+        (not 'model_path2' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path1 = kwargs.pop('model_path1')
+        model_path2 = kwargs.pop('model_path2')
+        output_path = kwargs.pop('output_path')
+    
+    outputsuffix = kwargs.pop('outputsuffix', 'merge')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+     
+    if (not os.path.isdir(model_path1)) or (not os.path.isdir(model_path2)):
+        print('Models directory does not exist!')
+        return
+    else:
+        with open(os.path.join(model_path1, 'meta_data.md'), 'rb') as file:
+            meta_data1 = pickle.load(file)
+        with open(os.path.join(model_path2, 'meta_data.md'), 'rb') as file:
+            meta_data2 = pickle.load(file)
+        if meta_data1['valid_voxels'].shape[0] != meta_data2['valid_voxels'].shape[0]:
+            print('Two models are trained on different features!')
+            return
+        else:
+            feature_num = meta_data1['valid_voxels'].shape[0]
+            
+            
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+    
+    # mergeing the models
+    for i in range(feature_num):
+              
+        nm1 = norm_init(np.random.rand(100,10))
+        nm2 = norm_init(np.random.rand(100,10))
+        if batch_size is not None: # when using nirmative_parallel
+            print("Merging model ", job_id*batch_size+i)
+            nm1 = nm1.load(os.path.join(model_path1, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+            nm2 = nm2.load(os.path.join(model_path2, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+        else:
+            print("Merging model ", i+1, "of", feature_num)
+            nm1 = nm1.load(os.path.join(model_path1, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+            nm2 = nm1.load(os.path.join(model_path2, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+        
+        nm_merged = nm1.merge(nm2, samples=generation_factor)
+        
+        if batch_size is not None: 
+            nm_merged.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm_merged.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+        else:
+            nm_merged.save(os.path.join(output_path, 'NM_0_' + 
                              str(i) + outputsuffix + '.pkl'))
 
 

@@ -1367,3 +1367,26 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
             print('Feature %d of %d is done: p_value=%f' %(i,n_permutation,p_values[i]))
             
     return aucs, p_values
+
+
+def cartesian_product(arrays):
+    
+    """
+    This is a utility function for creating dummy data (covariates). It computes 
+    the cartesian product of N 1D arrays.
+    
+    Example:
+        a = cartesian_product(np.arange(0,5), np.arange(6,10))
+    
+    :param *arrays: a list of N input 1D numpy arrays with size d1,d2,dN
+    :return: A d1*d2*...*dN by N matrix of cartesian product of N arrays.
+
+    """
+    
+    la = len(arrays)
+    dtype = np.result_type(arrays[0])
+    arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
+    for i, a in enumerate(np.ix_(*arrays)):
+        arr[...,i] = a
+        
+    return arr.reshape(-1, la)
