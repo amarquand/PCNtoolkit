@@ -665,6 +665,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param fold: which cross-validation fold to use (default = 0)
+    :param fold: list of model IDs to predict (if not specified all are computed)
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -683,6 +684,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
     fold = kwargs.pop('fold',0)
+    models = kwargs.pop('models', None)
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -719,8 +721,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         X = X[:, np.newaxis]
     
     sample_num = X.shape[0]
-    feature_num = len(glob.glob(os.path.join(model_path, 'NM_'+ str(fold) +
-                                             '_*' + inputsuffix + '.pkl')))
+    if models is not None:
+        feature_num = len(models)
+    else:
+        feature_num = len(glob.glob(os.path.join(model_path, 'NM_'+ str(fold) +
+                                                 '_*' + inputsuffix + '.pkl')))
+        models = range(feature_num)
 
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
@@ -732,11 +738,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = X
     
     # estimate the models for all subjects
-    for i in range(feature_num):
+    for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)      
         nm = norm_init(Xz)
         nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
-                                  str(i) + inputsuffix + '.pkl'))
+                                  str(m) + inputsuffix + '.pkl'))
         if (alg!='hbr' or nm.configs['transferred']==False):
             yhat, s2 = nm.predict(Xz, **kwargs)
         else:
@@ -761,6 +767,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
+        if models is not None:
+            Y = Y[:, models]
+            if meta_data:
+                mY = mY[models]
+                sY = sY[models]
+        
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
         
