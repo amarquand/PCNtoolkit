@@ -281,7 +281,7 @@ def calibration_descriptives(x):
     """
     compute statistics useful to assess the calibration of normative models,
     including skew and kurtosis of the distribution, plus their standard
-    deviation and standar errors
+    deviation and standar errors (separately for each column in x)
 
     Basic usage::
         stats = calibration_descriptives(Z)
@@ -294,11 +294,11 @@ def calibration_descriptives(x):
     """
     
     n = np.shape(x)[0]
-    m1 = np.mean(x)
+    m1 = np.mean(x,axis=0)
     m2 = sum((x-m1)**2)
     m3 = sum((x-m1)**3)
     m4 = sum((x-m1)**4)
-    s1 = np.std(x)
+    s1 = np.std(x,axis=0)
     skew = n*m3/(n-1)/(n-2)/s1**3
     sdskew = np.sqrt( 6*n*(n-1) / ((n-2)*(n+1)*(n+3)) )
     kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
