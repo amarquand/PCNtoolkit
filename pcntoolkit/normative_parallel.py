@@ -292,6 +292,8 @@ def execute_nm(processing_dir,
                     rerun_nm(processing_dir, log_dir=log_path, memory=memory, 
                              duration=duration, binary=binary, 
                              interactive=True)
+                else:
+                    success = True
                     
         response = yes_or_no('Collect the results?')
         if response:
