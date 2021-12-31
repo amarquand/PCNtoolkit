@@ -27,14 +27,17 @@ import glob
 import shutil
 import pickle
 import fileinput
+import time
 import numpy as np
 import pandas as pd
-from subprocess import call
+from subprocess import call, check_output
+
 
 try:
     import pcntoolkit as ptk
     import pcntoolkit.dataio.fileio as fileio
     from pcntoolkit import configs
+    from pcntoolkit.util.utils import yes_or_no 
     ptkpath = ptk.__path__[0] 
 except ImportError:
     pass
@@ -43,6 +46,7 @@ except ImportError:
         sys.path.append(ptkpath)
     import dataio.fileio as fileio
     import configs
+    from util.utils import yes_or_no 
     
     
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
@@ -58,6 +62,7 @@ def execute_nm(processing_dir,
                duration,
                normative_path=None,
                func='estimate',
+               interactive=False,
                **kwargs):
 
     """
@@ -92,6 +97,8 @@ def execute_nm(processing_dir,
         * log_path           -> Pathfor saving log files
         * binary             -> If True uses binary format for response file
                                 otherwise it is text
+        * interactive        -> If True the job status are checked until all jobs 
+                                are completed.
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
@@ -102,6 +109,7 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
+    outputsuffix = kwargs.get('outputsuffix', '_estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.pop('log_path', None)
     binary = kwargs.pop('binary', False)
@@ -123,8 +131,8 @@ def execute_nm(processing_dir,
         file_extentions = '.txt'
     
     kwargs.update({'batch_size':str(batch_size)})
+    job_ids = []
     for n in range(1, number_of_batches+1):
-        print(n)
         kwargs.update({'job_id':str(n)})
         if testrespfile_path is not None:
             if cv_folds is not None:
@@ -152,10 +160,11 @@ def execute_nm(processing_dir,
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
+                    job_id = qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                    job_ids.append(job_id)
                 elif cluster_spec == 'sbatch':
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
@@ -195,10 +204,11 @@ def execute_nm(processing_dir,
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
+                    job_id = qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                    job_ids.append(job_id)
                 elif cluster_spec == 'sbatch':
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
@@ -236,10 +246,11 @@ def execute_nm(processing_dir,
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    qsub_nm(job_path=batch_job_path,
+                    job_id = qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
+                    job_ids.append(job_id)
                 elif cluster_spec == 'sbatch':
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
@@ -260,9 +271,41 @@ def execute_nm(processing_dir,
                     qsub_nm(processing_dir=batch_processing_dir)
                     # ]
 
+    if interactive:
+        
+        check_jobs(job_ids, delay=60)
+        
+        success = False
+        while (not success):
+            success = collect_nm(processing_dir,
+                           job_name,
+                           func=func,
+                           collect=False,
+                           binary=binary,
+                           batch_size=batch_size,
+                           outputsuffix=outputsuffix)
+            if success:
+                break
+            else:
+                response = yes_or_no('Rerun the failed jobs?')
+                if response:
+                    rerun_nm(processing_dir, log_dir=log_path, memory=memory, 
+                             duration=duration, binary=binary, 
+                             interactive=True)
+                    
+        response = yes_or_no('Collect the results?')
+        if response:
+            success = collect_nm(processing_dir,
+                           job_name,
+                           func=func,
+                           collect=True,
+                           binary=binary,
+                           batch_size=batch_size,
+                           outputsuffix=outputsuffix)
+
+
 
 """routines that are environment independent"""
-
 
 def split_nm(processing_dir,
              respfile_path,
@@ -734,9 +777,9 @@ def collect_nm(processing_dir,
             file_extentions)
 
     if not batch_fail:
-        return 1
+        return True
     else:
-        return 0
+        return False
 
 def delete_nm(processing_dir,
               binary=False):
@@ -809,7 +852,6 @@ def bashwrap_nm(processing_dir,
     testrespfile_path = kwargs.pop('testrespfile_path', None)
     alg = kwargs.pop('alg', None)
     configparam = kwargs.pop('configparam', None)
-    standardize = kwargs.pop('standardize', True)
     
     # change to processing dir
     os.chdir(processing_dir)
@@ -868,7 +910,7 @@ def qsub_nm(job_path,
             memory,
             duration):
     """
-    This function submits a job.sh scipt to the torque custer using the qsub
+    This function submits a job.sh script to the torque custer using the qsub
     command.
 
     ** Input:
@@ -894,14 +936,18 @@ def qsub_nm(job_path,
                      duration + ' -o ' + log_path + ' -e ' + log_path]
 
     # submits job to cluster
-    call(qsub_call, shell=True)
+    #call(qsub_call, shell=True)
+    job_id = check_output(qsub_call, shell=True).decode(sys.stdout.encoding).replace("\n", "")
+    
+    return job_id
 
 
 def rerun_nm(processing_dir,
              log_path,
              memory,
              duration,
-             binary=False):
+             binary=False, 
+             interactive=False):
     """
     This function reruns all failed batched in processing_dir after collect_nm
     has identified he failed batches
@@ -915,7 +961,9 @@ def rerun_nm(processing_dir,
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
-
+    
+    job_ids = []
+    
     if binary:
         file_extentions = '.pkl'
         failed_batches = fileio.load(processing_dir +
@@ -924,10 +972,11 @@ def rerun_nm(processing_dir,
         for n in range(0, shape[0]):
             jobpath = failed_batches[n, 0]
             print(jobpath)
-            qsub_nm(job_path=jobpath,
+            job_id = qsub_nm(job_path=jobpath,
                     log_path=log_path,
                     memory=memory,
                     duration=duration)
+            job_ids.append(job_id)
     else:
         file_extentions = '.txt'
         failed_batches = fileio.load_pd(processing_dir +
@@ -936,10 +985,15 @@ def rerun_nm(processing_dir,
         for n in range(0, shape[0]):
             jobpath = failed_batches.iloc[n, 0]
             print(jobpath)
-            qsub_nm(job_path=jobpath,
+            job_id = qsub_nm(job_path=jobpath,
                     log_path=log_path,
                     memory=memory,
                     duration=duration)
+            job_ids.append(job_id)
+            
+    if interactive: 
+        check_jobs(job_ids, delay=60)
+        
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
@@ -991,7 +1045,6 @@ def sbatchwrap_nm(processing_dir,
     testrespfile_path = kwargs.pop('testrespfile_path', None)
     alg = kwargs.pop('alg', None)
     configparam = kwargs.pop('configparam', None)
-    standardize = kwargs.pop('standardize', True)
     
     # change to processing dir
     os.chdir(processing_dir)
@@ -1150,3 +1203,74 @@ def sbatch_nm(job_path,
                             print(line.replace(memory, new_memory), end='')
                 sbatch_nm(jobpath,
                           log_path)
+
+
+def retrieve_jobs():
+    """
+    A utility function to retrieve task status from the outputs of qstat.
+    
+    :return: a dictionary of jobs.
+
+    """
+    
+    output = check_output('qstat', shell=True).decode(sys.stdout.encoding)
+    output = output.split('\n')
+    jobs = dict()
+    for line in output[2:-1]:
+        (Job_ID, Job_Name, User, Wall_Time, Status, Queue) = line.split()
+        jobs[Job_ID] = dict()
+        jobs[Job_ID]['name'] = Job_Name
+        jobs[Job_ID]['walltime'] = Wall_Time
+        jobs[Job_ID]['status'] = Status
+        
+    return jobs
+        
+
+def check_job_status(jobs):
+    """
+    A utility function to count the tasks with different status.
+    
+    :param jobs: List of job ids.
+    :return: returns the number of taks athat are queued, running, completed,
+    and other status.
+    
+    """
+    running_jobs = retrieve_jobs()
+    
+    r = 0
+    c = 0
+    q = 0
+    u = 0
+    for job in jobs:
+        if running_jobs[job]['status'] == 'C':
+            c += 1
+        elif running_jobs[job]['status'] == 'Q':
+            q += 1
+        elif running_jobs[job]['status'] == 'R':
+            r += 1
+        else:
+            u += 1
+                 
+    print('Total Jobs:%d, Queued:%d, Running:%d, Completed:%d, Unknown:%d' 
+          %(len(jobs), q, r, c, u))
+    return q,r,c,u
+    
+
+def check_jobs(jobs, delay=60):
+    """
+    A utility function for chacking the status of submitted jobs.
+    
+    :param jobs: list of job ids.
+    :param delay: the delay (in seconds) between two consequative checks, 
+    defaults to 60
+
+    """
+    
+    n = len(jobs)
+    
+    while(True):
+        q,r,c,u = check_job_status(jobs)
+        if c == n:
+            print('All jobs are completed!')
+            break
+        time.sleep(delay)
