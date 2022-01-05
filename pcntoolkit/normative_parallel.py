@@ -289,7 +289,7 @@ def execute_nm(processing_dir,
             else:
                 response = yes_or_no('Rerun the failed jobs?')
                 if response:
-                    rerun_nm(processing_dir, log_dir=log_path, memory=memory, 
+                    rerun_nm(processing_dir, log_path=log_path, memory=memory, 
                              duration=duration, binary=binary, 
                              interactive=True)
                 else:
@@ -1264,7 +1264,7 @@ def check_jobs(jobs, delay=60):
     
     :param jobs: list of job ids.
     :param delay: the delay (in seconds) between two consequative checks, 
-    defaults to 60
+    defaults to 60.
 
     """
     
@@ -1276,3 +1276,4 @@ def check_jobs(jobs, delay=60):
             print('All jobs are completed!')
             break
         time.sleep(delay)
+        
