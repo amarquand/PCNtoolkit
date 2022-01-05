@@ -460,7 +460,7 @@ def collect_nm(processing_dir,
     count = 0
     batch_fail = []
     
-    if func != 'fit':
+    if (func != 'fit' and func != 'extend'):
         file_example = []
         # TODO: Collect_nm only depends on yhat, thus does not work when no 
         # prediction is made (when test cov is not specified). 
