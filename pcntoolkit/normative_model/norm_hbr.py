@@ -134,11 +134,17 @@ class NormHBR(NormBase):
         return yhat, s2
     
     
-    def extend(self, X, y, batch_effects, X_dummy, batch_effects_dummy, 
-               samples=10, informative_prior=False):
+    def extend(self, X, y, batch_effects, X_dummy_ranges= [[0.1,0.9,0.01]], 
+               merge_batch_dim=0, samples=10, informative_prior=False):
+        
+        X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(X_dummy_ranges)
         
         X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(X_dummy, 
                                                 batch_effects_dummy, samples)
+        
+        batch_effects[:, merge_batch_dim] = batch_effects[:, merge_batch_dim] + \
+            np.max(batch_effects_dummy[:, merge_batch_dim]) + 1
+        
         if informative_prior:
             self.hbr.estimate_on_new_sites(np.concatenate((X_dummy, X)), 
                          np.concatenate((Y_dummy, y)), 
