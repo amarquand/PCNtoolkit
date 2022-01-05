@@ -97,8 +97,14 @@ def execute_nm(processing_dir,
         * log_path           -> Pathfor saving log files
         * binary             -> If True uses binary format for response file
                                 otherwise it is text
-        * interactive        -> If True the job status are checked until all jobs 
-                                are completed.
+        * interactive        -> If False (default) the user should manually 
+                                rerun the failed jobs or collect the results.
+                                If 'auto' the job status are checked until all 
+                                jobs are completed then the failed jobs are rerun
+                                and the results are automaticallu collectted.
+                                Using 'query' is similar to 'auto' unless it
+                                asks for user verification thius is immune to 
+                                endless loop in the case of bugs in the code.
 
     written by (primarily) T Wolfers, (adapted) SM Kia
     """
@@ -287,24 +293,39 @@ def execute_nm(processing_dir,
             if success:
                 break
             else:
-                response = yes_or_no('Rerun the failed jobs?')
-                if response:
-                    rerun_nm(processing_dir, log_path=log_path, memory=memory, 
-                             duration=duration, binary=binary, 
-                             interactive=True)
+                if interactive == 'query':
+                    response = yes_or_no('Rerun the failed jobs?')
+                    if response:
+                        rerun_nm(processing_dir, log_path=log_path, memory=memory, 
+                                 duration=duration, binary=binary, 
+                                 interactive=interactive)
+                    else:
+                        success = True
                 else:
-                    success = True
+                    print('Reruning the failed jobs ...')
+                    rerun_nm(processing_dir, log_path=log_path, memory=memory, 
+                                 duration=duration, binary=binary, 
+                                 interactive=interactive)
                     
-        response = yes_or_no('Collect the results?')
-        if response:
+        if interactive == 'query':
+            response = yes_or_no('Collect the results?')
+            if response:
+                success = collect_nm(processing_dir,
+                               job_name,
+                               func=func,
+                               collect=True,
+                               binary=binary,
+                               batch_size=batch_size,
+                               outputsuffix=outputsuffix)
+        else:
+            print('Collecting the results ...')
             success = collect_nm(processing_dir,
-                           job_name,
-                           func=func,
-                           collect=True,
-                           binary=binary,
-                           batch_size=batch_size,
-                           outputsuffix=outputsuffix)
-
+                               job_name,
+                               func=func,
+                               collect=True,
+                               binary=binary,
+                               batch_size=batch_size,
+                               outputsuffix=outputsuffix)
 
 
 """routines that are environment independent"""
