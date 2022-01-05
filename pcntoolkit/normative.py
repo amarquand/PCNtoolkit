@@ -987,8 +987,6 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     :param maskfile: mask used to apply to the data (nifti only)
     :param model_path: Directory containing the normative model and metadata
     :param trbefile: file address to batch effects file for new data
-    :param dummycovfile: file address to dummy covariate file
-    :param dummybefile: file address to dummy batch effect file
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param output_path: the path for saving the  the extended model
@@ -1008,17 +1006,13 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         return
     elif (not 'model_path' in list(kwargs.keys())) or \
         (not 'output_path' in list(kwargs.keys())) or \
-        (not 'trbefile' in list(kwargs.keys())) or \
-        (not 'dummycovfile' in list(kwargs.keys()))or \
-        (not 'dummybefile' in list(kwargs.keys())):
+        (not 'trbefile' in list(kwargs.keys())):
             print('InputError: Some mandatory arguments are missing.')
             return
     else:
         model_path = kwargs.pop('model_path')
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
-        dummycovfile = kwargs.pop('dummycovfile')
-        dummybefile = kwargs.pop('dummybefile')
     
     outputsuffix = kwargs.pop('outputsuffix', 'extend')
     outputsuffix = "_" + outputsuffix.replace("_", "")
@@ -1052,15 +1046,11 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     X = fileio.load(covfile)    
     Y, maskvol = load_response_vars(respfile, maskfile)
     batch_effects_train = fileio.load(trbefile)
-    X_dummy = fileio.load(dummycovfile)
-    batch_effects_dummy = fileio.load(dummybefile)
     
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
-    if len(X_dummy.shape) == 1:
-        X_dummy = X_dummy[:, np.newaxis]
     feature_num = Y.shape[1]
     
     # estimate the models for all subjects
@@ -1077,8 +1067,8 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
             nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
                                       inputsuffix +'.pkl'))
         
-        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, 
-                       batch_effects_dummy, samples=generation_factor, 
+        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, 
+                       samples=generation_factor, 
                        informative_prior=informative_prior)
         
         if batch_size is not None: 
