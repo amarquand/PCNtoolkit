@@ -1265,14 +1265,18 @@ def check_job_status(jobs):
     q = 0
     u = 0
     for job in jobs:
-        if running_jobs[job]['status'] == 'C':
-            c += 1
-        elif running_jobs[job]['status'] == 'Q':
-            q += 1
-        elif running_jobs[job]['status'] == 'R':
-            r += 1
-        else:
-            u += 1
+        try:
+            if running_jobs[job]['status'] == 'C':
+                c += 1
+            elif running_jobs[job]['status'] == 'Q':
+                q += 1
+            elif running_jobs[job]['status'] == 'R':
+                r += 1
+            else:
+                u += 1
+        except: # probably meanwhile the job is finished.
+            c += 1 
+            continue
                  
     print('Total Jobs:%d, Queued:%d, Running:%d, Completed:%d, Unknown:%d' 
           %(len(jobs), q, r, c, u))
