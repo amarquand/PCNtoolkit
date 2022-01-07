@@ -339,8 +339,6 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         all_idx.append(np.int16(np.unique(batch_effects[:,i])))
     be_idx = list(product(*all_idx))
         
-    X = theano.shared(X)
-    y = theano.shared(y)
     
     # Initialize random weights between each layer for the mu:
     init_1 = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
@@ -364,6 +362,10 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
     
     with pm.Model() as model:
+        
+        X = pm.Data('X', X)
+        y = pm.Data('y', y)
+        
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
                                             distribution='normal', freedom=configs['freedom'])
@@ -653,7 +655,7 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
-                # Filling the theano shared variables with dummy zero variables to ensure the parivacy.
+                # Filling the theano shared variables with dummy zero variables to ensure the privacy.
                 pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])}) 
                 
         elif self.model_type == 'polynomial': 

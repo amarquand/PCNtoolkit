@@ -115,7 +115,7 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
-    outputsuffix = kwargs.get('outputsuffix', '_estimate')
+    outputsuffix = kwargs.get('outputsuffix', 'estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.pop('log_path', None)
     binary = kwargs.pop('binary', False)
@@ -481,7 +481,7 @@ def collect_nm(processing_dir,
     count = 0
     batch_fail = []
     
-    if (func != 'fit' and func != 'extend'):
+    if (func!='fit' and func!='extend' and func!='merge'):
         file_example = []
         # TODO: Collect_nm only depends on yhat, thus does not work when no 
         # prediction is made (when test cov is not specified). 
@@ -730,7 +730,7 @@ def collect_nm(processing_dir,
                         file_extentions)
             del bic_dfs
         
-        if func != 'predict' and func != 'extend':
+        if (func!='predict' and func!='extend' and func!='merge'):
             if not os.path.isdir(processing_dir + 'Models') and \
                os.path.exists(os.path.join(batches[0], 'Models')):
                 os.mkdir(processing_dir + 'Models')
