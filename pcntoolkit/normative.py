@@ -767,11 +767,10 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
-        if models is not None:
-            Y = Y[:, models]
-            if meta_data:
-                mY = mY[models]
-                sY = sY[models]
+        Y = Y[:, m]
+        if meta_data:
+            mY = mY[m]
+            sY = sY[m]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
@@ -1079,6 +1078,117 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         else:
             nm.save(os.path.join(output_path, 'NM_0_' + 
                              str(i) + outputsuffix + '.pkl'))
+            
+            
+
+def tune(covfile, respfile, maskfile=None, **kwargs):
+    
+    '''
+    This function tunes an existing HBR model with real data.
+    
+    Basic usage::
+
+        tune(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: covariates for new data
+    :param respfile: response variables for new data
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: file address to batch effects file for new data
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param informative_prior: a flag to decide whether to use the initial model 
+    prior or learn it from scrach (default is False).
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model extention is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())) or \
+        (not 'trbefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path = kwargs.pop('model_path')
+        output_path = kwargs.pop('output_path')
+        trbefile = kwargs.pop('trbefile')
+    
+    outputsuffix = kwargs.pop('outputsuffix', 'tuned')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
+    informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+     
+    if not os.path.isdir(model_path):
+        print('Models directory does not exist!')
+        return
+    else:
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            if (meta_data['inscaler'] != 'None' or 
+                meta_data['outscaler'] != 'None'):
+                print('Models extention on scaled data is not possible!')
+                return
+    
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+            
+    # load data
+    print("Loading data ...")
+    X = fileio.load(covfile)    
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    batch_effects_train = fileio.load(trbefile)
+    
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    feature_num = Y.shape[1]
+    
+    # estimate the models for all subjects
+    for i in range(feature_num):
+              
+        nm = norm_init(X)
+        if batch_size is not None: # when using nirmative_parallel
+            print("Tuning model ", job_id*batch_size+i)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+        else:
+            print("Tuning model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+        
+        nm = nm.tune(X, Y[:,i:i+1], batch_effects_train, 
+                       samples=generation_factor, 
+                       informative_prior=informative_prior)
+        
+        if batch_size is not None: 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+        else:
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
 
 
 def merge(covfile=None, respfile=None, **kwargs):
@@ -1138,15 +1248,18 @@ def merge(covfile=None, respfile=None, **kwargs):
         print('Models directory does not exist!')
         return
     else:
-        with open(os.path.join(model_path1, 'meta_data.md'), 'rb') as file:
-            meta_data1 = pickle.load(file)
-        with open(os.path.join(model_path2, 'meta_data.md'), 'rb') as file:
-            meta_data2 = pickle.load(file)
-        if meta_data1['valid_voxels'].shape[0] != meta_data2['valid_voxels'].shape[0]:
-            print('Two models are trained on different features!')
-            return
+        if batch_size is None:
+            with open(os.path.join(model_path1, 'meta_data.md'), 'rb') as file:
+                meta_data1 = pickle.load(file)
+            with open(os.path.join(model_path2, 'meta_data.md'), 'rb') as file:
+                meta_data2 = pickle.load(file)
+            if meta_data1['valid_voxels'].shape[0] != meta_data2['valid_voxels'].shape[0]:
+                print('Two models are trained on different features!')
+                return
+            else:
+                feature_num = meta_data1['valid_voxels'].shape[0]
         else:
-            feature_num = meta_data1['valid_voxels'].shape[0]
+            feature_num = batch_size
             
             
     if not os.path.isdir(output_path):
