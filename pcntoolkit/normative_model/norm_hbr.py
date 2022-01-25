@@ -123,7 +123,7 @@ class NormHBR(NormBase):
     
     def estimate_on_new_sites(self, X, y, batch_effects):
     
-        self.hbr.estimate_on_new_site(X, y, batch_effects)
+        self.hbr.adapt(X, y, batch_effects)
         self.configs['transferred'] = True
         return self
     
@@ -146,13 +146,39 @@ class NormHBR(NormBase):
             np.max(batch_effects_dummy[:, merge_batch_dim]) + 1
         
         if informative_prior:
-            self.hbr.estimate_on_new_sites(np.concatenate((X_dummy, X)), 
+            self.hbr.adapt(np.concatenate((X_dummy, X)), 
                          np.concatenate((Y_dummy, y)), 
                          np.concatenate((batch_effects_dummy, batch_effects)))
         else:
             self.hbr.estimate(np.concatenate((X_dummy, X)), 
                          np.concatenate((Y_dummy, y)), 
                          np.concatenate((batch_effects_dummy, batch_effects)))
+        
+        return self
+    
+    
+    def tune(self, X, y, batch_effects, X_dummy_ranges= [[0.1,0.9,0.01]], 
+               merge_batch_dim=0, samples=10, informative_prior=False):
+        
+        tune_ids = list(np.unique(batch_effects[:, merge_batch_dim]))
+        
+        X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(X_dummy_ranges)
+        
+        for idx in tune_ids:
+            X_dummy = X_dummy[batch_effects_dummy[:, merge_batch_dim] != idx, :]
+            batch_effects_dummy = batch_effects_dummy[batch_effects_dummy[:, merge_batch_dim] != idx, :]
+    
+        X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(X_dummy, 
+                                                batch_effects_dummy, samples)
+        
+        if informative_prior:
+            self.hbr.adapt(np.concatenate((X_dummy, X)), 
+                         np.concatenate((Y_dummy, y)), 
+                         np.concatenate((batch_effects_dummy, batch_effects)))
+        else:
+            self.hbr.estimate(np.concatenate((X_dummy, X)), 
+                     np.concatenate((Y_dummy, y)), 
+                     np.concatenate((batch_effects_dummy, batch_effects)))
         
         return self
     
