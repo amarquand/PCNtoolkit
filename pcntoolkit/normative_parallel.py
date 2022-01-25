@@ -481,7 +481,7 @@ def collect_nm(processing_dir,
     count = 0
     batch_fail = []
     
-    if (func!='fit' and func!='extend' and func!='merge'):
+    if (func!='fit' and func!='extend' and func!='merge' and func!='tune'):
         file_example = []
         # TODO: Collect_nm only depends on yhat, thus does not work when no 
         # prediction is made (when test cov is not specified). 
@@ -730,7 +730,7 @@ def collect_nm(processing_dir,
                         file_extentions)
             del bic_dfs
         
-        if (func!='predict' and func!='extend' and func!='merge'):
+        if (func!='predict' and func!='extend' and func!='merge' and func!='tune'):
             if not os.path.isdir(processing_dir + 'Models') and \
                os.path.exists(os.path.join(batches[0], 'Models')):
                 os.mkdir(processing_dir + 'Models')
