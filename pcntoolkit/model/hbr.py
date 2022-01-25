@@ -732,7 +732,7 @@ class HBR:
         return pred_mean, pred_var
     
 
-    def estimate_on_new_site(self, X, y, batch_effects):
+    def adapt(self, X, y, batch_effects):
         """ Function to adapt the model """
         
         if len(X.shape)==1:
