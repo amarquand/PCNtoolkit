@@ -4,17 +4,15 @@ Hierarchical Bayesian Regression
 ===================================================================================
 
 This notebook will go through basic data preparation (training and
-testing set, `see Saige’s
+testing set, `see Saige's
 tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb>`__
 on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
 onto unseen sites.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-adapted/edited by Andre Marquand and Pierre Berthet
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adapted/edited by Andre Marquand and Pierre Berthet.
 
 
 Step 0: Install necessary libraries & grab data files

@@ -3,10 +3,12 @@
 Post-hoc analysis on normative modeling outputs
 ===================================================
 
-This tutorial was created for Rutherford et al. (2022) The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://doi.org/10.1101/2021.08.08.455583.
+The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://doi.org/10.1101/2021.08.08.455583.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
+SVM classification 
+----------------------------------------------
 
 Classify schizophrenia group from controls using cortical thickness
 deviation scores (z-scores) and then the true cortical thickness data to
@@ -92,8 +94,8 @@ see which type of data better separates the groups.
 
     y = y.to_numpy()
 
-Deviation scores as features
-----------------------------
+SVM using deviation scores as features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 
@@ -165,8 +167,8 @@ Deviation scores as features
 .. image:: post_hoc_analysis_files/post_hoc_analysis_17_1.png
 
 
-Raw cortical thickness data as features
----------------------------------------
+SVM using true cortical thickness data as features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 
@@ -240,7 +242,7 @@ Raw cortical thickness data as features
 
 Which brain feature leads to a better classification between SZ & HC?
 
-Classical case-control testing
+Classical case-control testing 
 -----------------------------------------------------
 
 .. code:: ipython3
@@ -265,7 +267,8 @@ Classical case-control testing
     HC = Z_df.query('group == 1')
 
 Mass univariate two sample t-tests on deviation score maps
---------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 .. code:: ipython3
 
@@ -509,9 +512,8 @@ Mass univariate two sample t-tests on deviation score maps
     (96, 4)
 
 
-
-Mass univariate two sample t-tests on deviation score maps and true cortical thickness data
-----------------------------------------------------------------------------------------------------------
+Mass univariate two sample t-tests on true cortical thickness data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 

@@ -62,11 +62,16 @@
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Post-hoc analysis on normative modeling outputs</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#deviation-scores-as-features">Deviation scores as features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#raw-cortical-thickness-data-as-features">Raw cortical thickness data as features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#classical-case-control-testing">Classical case-control testing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps">Mass univariate two sample t-tests on deviation score maps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps-and-true-cortical-thickness-data">Mass univariate two sample t-tests on deviation score maps and true cortical thickness data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#svm-classification">SVM classification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#svm-using-deviation-scores-as-features">SVM using deviation scores as features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#svm-using-true-cortical-thickness-data-as-features">SVM using true cortical thickness data as features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#classical-case-control-testing">Classical case-control testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps">Mass univariate two sample t-tests on deviation score maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data">Mass univariate two sample t-tests on true cortical thickness data</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
@@ -105,8 +110,10 @@
              
   <div class="section" id="post-hoc-analysis-on-normative-modeling-outputs">
 <h1>Post-hoc analysis on normative modeling outputs<a class="headerlink" href="#post-hoc-analysis-on-normative-modeling-outputs" title="Permalink to this headline"></a></h1>
-<p>This tutorial was created for Rutherford et al. (2022) The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://doi.org/10.1101/2021.08.08.455583">https://doi.org/10.1101/2021.08.08.455583</a>.</p>
+<p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://doi.org/10.1101/2021.08.08.455583">https://doi.org/10.1101/2021.08.08.455583</a>.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
+<div class="section" id="svm-classification">
+<h2>SVM classification<a class="headerlink" href="#svm-classification" title="Permalink to this headline"></a></h2>
 <p>Classify schizophrenia group from controls using cortical thickness
 deviation scores (z-scores) and then the true cortical thickness data to
 see which type of data better separates the groups.</p>
@@ -173,8 +180,8 @@ Resolving deltas: 100% (278/278), done.
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="section" id="deviation-scores-as-features">
-<h2>Deviation scores as features<a class="headerlink" href="#deviation-scores-as-features" title="Permalink to this headline"></a></h2>
+<div class="section" id="svm-using-deviation-scores-as-features">
+<h3>SVM using deviation scores as features<a class="headerlink" href="#svm-using-deviation-scores-as-features" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
 <span class="c1"># Classification and ROC analysis</span>
 
@@ -237,8 +244,8 @@ Resolving deltas: 100% (278/278), done.
   warnings.warn(msg, category=FutureWarning)</pre>
 <img alt="../_images/post_hoc_analysis_17_1.png" src="../_images/post_hoc_analysis_17_1.png" />
 </div>
-<div class="section" id="raw-cortical-thickness-data-as-features">
-<h2>Raw cortical thickness data as features<a class="headerlink" href="#raw-cortical-thickness-data-as-features" title="Permalink to this headline"></a></h2>
+<div class="section" id="svm-using-true-cortical-thickness-data-as-features">
+<h3>SVM using true cortical thickness data as features<a class="headerlink" href="#svm-using-true-cortical-thickness-data-as-features" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
 <span class="c1"># Classification and ROC analysis</span>
 
@@ -302,6 +309,7 @@ Resolving deltas: 100% (278/278), done.
 <img alt="../_images/post_hoc_analysis_19_1.png" src="../_images/post_hoc_analysis_19_1.png" />
 <p>Which brain feature leads to a better classification between SZ &amp; HC?</p>
 </div>
+</div>
 <div class="section" id="classical-case-control-testing">
 <h2>Classical case-control testing<a class="headerlink" href="#classical-case-control-testing" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install statsmodels
@@ -319,9 +327,8 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">HC</span> <span class="o">=</span> <span class="n">Z_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;group == 1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
 <div class="section" id="mass-univariate-two-sample-t-tests-on-deviation-score-maps">
-<h2>Mass univariate two sample t-tests on deviation score maps<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps" title="Permalink to this headline"></a></h2>
+<h3>Mass univariate two sample t-tests on deviation score maps<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ_deviations</span> <span class="o">=</span> <span class="n">SZ</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">SZ</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;Z_predict&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -540,8 +547,8 @@ Resolving deltas: 100% (278/278), done.
 </pre></div>
 </div>
 </div>
-<div class="section" id="mass-univariate-two-sample-t-tests-on-deviation-score-maps-and-true-cortical-thickness-data">
-<h2>Mass univariate two sample t-tests on deviation score maps and true cortical thickness data<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps-and-true-cortical-thickness-data" title="Permalink to this headline"></a></h2>
+<div class="section" id="mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data">
+<h3>Mass univariate two sample t-tests on true cortical thickness data<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ_cortical_thickness</span> <span class="o">=</span> <span class="n">SZ</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">SZ</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_thickness&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -758,6 +765,7 @@ Resolving deltas: 100% (278/278), done.
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>(67, 4)
 </pre></div>
+</div>
 </div>
 </div>
 </div>
