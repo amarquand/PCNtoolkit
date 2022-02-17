@@ -1,8 +1,10 @@
+.. title:: install
+
 Installation
 ==================
 
 Basic installation (on a local machine)
-*******************************************
+-----------------------------------------------------
 
 1. Install anaconda3 
 
@@ -31,7 +33,7 @@ Basic installation (on a local machine)
 	pip install pcntoolkit
 	
 Alternative installation (on a shared resource)
-**************************************************
+-----------------------------------------------------
 
 1. Make sure conda is available on the system. Otherwise install it first from https://www.anaconda.com/ 
 	
@@ -91,7 +93,7 @@ Alternative installation (on a shared resource)
 
 	
 Quickstart usage
-****************************
+-----------------------------------------------------
 
 For normative modelling, functionality is handled by the ``normative.py`` script, which can be run from the command line, e.g.
 	
