@@ -7,6 +7,11 @@ The Normative Modeling Framework for Computational Psychiatry. Nature Protocols.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/post_hoc_analysis.ipynb
+
+
 SVM classification 
 ----------------------------------------------
 

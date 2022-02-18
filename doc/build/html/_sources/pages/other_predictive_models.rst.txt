@@ -7,20 +7,14 @@ The Normative Modeling Framework for Computational Psychiatry. Nature Protocols.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/other_predictive_models.ipynb
+
+
 .. code:: ipython3
 
     ! git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
-
-
-.. parsed-literal::
-
-    Cloning into 'PCNtoolkit-demo'...
-    remote: Enumerating objects: 842, done.[K
-    remote: Counting objects: 100% (842/842), done.[K
-    remote: Compressing objects: 100% (723/723), done.[K
-    remote: Total 842 (delta 271), reused 601 (delta 102), pack-reused 0[K
-    Receiving objects: 100% (842/842), 17.70 MiB | 9.69 MiB/s, done.
-    Resolving deltas: 100% (271/271), done.
 
 
 .. code:: ipython3
@@ -278,8 +272,8 @@ Fit Linear Regression Model
     Passed
 
 
-Accuracy of Predictions
---------------------------------------
+Mean Squared/Absolute Error of Predictions
+-----------------------------------------------
 
 .. code:: ipython3
 
@@ -374,7 +368,7 @@ BBS Cross Validation
             fold_accs_test.append(pred_summary_function(test_y, test_pred))
             
             if verbose:
-                print(f'CV Fold: {fold_i+1:<10} Train Accuracy: {round(fold_accs_train[-1], 3):<10} Test Accuracy: {round(fold_accs_test[-1], 3):<10}')
+                print(f'CV Fold: {fold_i+1:<10} Train MAE: {round(fold_accs_train[-1], 3):<10} Test MAE: {round(fold_accs_test[-1], 3):<10}')
     
         
         plt.figure(figsize=(13, 7))
@@ -395,54 +389,21 @@ BBS Cross Validation
 
 .. parsed-literal::
 
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-
-
-.. parsed-literal::
-
     CV Fold: 1          Fitting PCA model...
     CV Fold: 1          Fitting Linear Regression model...
-    CV Fold: 1          Train Accuracy: 0.599      Test Accuracy: 0.619     
+    CV Fold: 1          Train MAE: 0.599      Test MAE: 0.619     
     CV Fold: 2          Fitting PCA model...
     CV Fold: 2          Fitting Linear Regression model...
-    CV Fold: 2          Train Accuracy: 0.572      Test Accuracy: 0.713     
+    CV Fold: 2          Train MAE: 0.572      Test MAE: 0.713     
     CV Fold: 3          Fitting PCA model...
     CV Fold: 3          Fitting Linear Regression model...
-    CV Fold: 3          Train Accuracy: 0.577      Test Accuracy: 0.687     
+    CV Fold: 3          Train MAE: 0.577      Test MAE: 0.687     
     CV Fold: 4          Fitting PCA model...
     CV Fold: 4          Fitting Linear Regression model...
-    CV Fold: 4          Train Accuracy: 0.604      Test Accuracy: 0.608     
+    CV Fold: 4          Train MAE: 0.604      Test MAE: 0.608     
     CV Fold: 5          Fitting PCA model...
     CV Fold: 5          Fitting Linear Regression model...
-    CV Fold: 5          Train Accuracy: 0.581      Test Accuracy: 0.687     
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
+    CV Fold: 5          Train MAE: 0.581      Test MAE: 0.687     
 
 
 
@@ -456,54 +417,21 @@ BBS Cross Validation
 
 .. parsed-literal::
 
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
-
-.. parsed-literal::
-
     CV Fold: 1          Fitting PCA model...
     CV Fold: 1          Fitting Linear Regression model...
-    CV Fold: 1          Train Accuracy: 0.622      Test Accuracy: 0.643     
+    CV Fold: 1          Train MAE: 0.622      Test MAE: 0.643     
     CV Fold: 2          Fitting PCA model...
     CV Fold: 2          Fitting Linear Regression model...
-    CV Fold: 2          Train Accuracy: 0.605      Test Accuracy: 0.723     
+    CV Fold: 2          Train MAE: 0.605      Test MAE: 0.723     
     CV Fold: 3          Fitting PCA model...
     CV Fold: 3          Fitting Linear Regression model...
-    CV Fold: 3          Train Accuracy: 0.604      Test Accuracy: 0.701     
+    CV Fold: 3          Train MAE: 0.604      Test MAE: 0.701     
     CV Fold: 4          Fitting PCA model...
     CV Fold: 4          Fitting Linear Regression model...
-    CV Fold: 4          Train Accuracy: 0.624      Test Accuracy: 0.646     
+    CV Fold: 4          Train MAE: 0.624      Test MAE: 0.646     
     CV Fold: 5          Fitting PCA model...
     CV Fold: 5          Fitting Linear Regression model...
-    CV Fold: 5          Train Accuracy: 0.614      Test Accuracy: 0.722     
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
+    CV Fold: 5          Train MAE: 0.614      Test MAE: 0.722     
 
 
 
@@ -575,26 +503,10 @@ Connectome Predictive Modelling
     fit_neg_z = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_neg_edges_sum_z.reshape(-1, 1), train_phen)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
-
 .. code:: ipython3
 
     fit_pos_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_pos_edges_sum_ct.reshape(-1, 1), train_phen)
     fit_neg_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_neg_edges_sum_ct.reshape(-1, 1), train_phen)
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
 
 
 .. code:: ipython3
@@ -604,18 +516,18 @@ Connectome Predictive Modelling
     pos_error_ct = metrics.mean_absolute_error(train_phen, fit_pos_ct.predict(train_pos_edges_sum_ct.reshape(-1, 1)))
     neg_error_ct = metrics.mean_absolute_error(train_phen, fit_neg_ct.predict(train_neg_edges_sum_ct.reshape(-1, 1)))
     
-    print(f'Training Error (Positive Z Features Model) = {pos_error_z:.3f}')
-    print(f'Training Error (Negative Z Features Model) = {neg_error_z:.3f}')
-    print(f'Training Error (Positive CT Features Model) = {pos_error_ct:.3f}')
-    print(f'Training Error (Negative CT Features Model) = {neg_error_ct:.3f}')
+    print(f'Training Error (MAE) (Positive Z Features Model) = {pos_error_z:.3f}')
+    print(f'Training Error (MAE) (Negative Z Features Model) = {neg_error_z:.3f}')
+    print(f'Training Error (MAE) (Positive CT Features Model) = {pos_error_ct:.3f}')
+    print(f'Training Error (MAE) (Negative CT Features Model) = {neg_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Training Error (Positive Z Features Model) = 0.631
-    Training Error (Negative Z Features Model) = 0.666
-    Training Error (Positive CT Features Model) = 0.662
-    Training Error (Negative CT Features Model) = 0.665
+    Training Error (MAE) (Positive Z Features Model) = 0.631
+    Training Error (MAE) (Negative Z Features Model) = 0.666
+    Training Error (MAE) (Positive CT Features Model) = 0.662
+    Training Error (MAE) (Negative CT Features Model) = 0.665
 
 
 .. code:: ipython3
@@ -624,11 +536,6 @@ Connectome Predictive Modelling
     fit_pos_neg_z = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(np.stack((train_pos_edges_sum_z, train_neg_edges_sum_z)).T, train_phen)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
@@ -636,25 +543,20 @@ Connectome Predictive Modelling
     fit_pos_neg_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(np.stack((train_pos_edges_sum_ct, train_neg_edges_sum_ct)).T, train_phen)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
     pos_neg_error_z = metrics.mean_absolute_error(train_phen, fit_pos_neg_z.predict(np.stack((train_pos_edges_sum_z, train_neg_edges_sum_z)).T))
     pos_neg_error_ct = metrics.mean_absolute_error(train_phen, fit_pos_neg_ct.predict(np.stack((train_pos_edges_sum_ct, train_neg_edges_sum_ct)).T))
     
-    print(f'Training Error (Positive/Negative Z Features Model) = {pos_neg_error_z:.3f}')
-    print(f'Training Error (Positive/Negative CT Features Model) = {pos_neg_error_ct:.3f}')
+    print(f'Training Error (MAE) (Positive/Negative Z Features Model) = {pos_neg_error_z:.3f}')
+    print(f'Training Error (MAE) (Positive/Negative CT Features Model) = {pos_neg_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Training Error (Positive/Negative Z Features Model) = 0.620
-    Training Error (Positive/Negative CT Features Model) = 0.642
+    Training Error (MAE) (Positive/Negative Z Features Model) = 0.620
+    Training Error (MAE) (Positive/Negative CT Features Model) = 0.642
 
 
 .. code:: ipython3
@@ -674,22 +576,22 @@ Connectome Predictive Modelling
     neg_test_error_ct = metrics.mean_absolute_error(test_phen, fit_neg_ct.predict(test_neg_edges_sum_ct.reshape(-1, 1)))
     pos_neg_test_error_ct = metrics.mean_absolute_error(test_phen, fit_pos_neg_ct.predict(np.stack((test_pos_edges_sum_ct, test_neg_edges_sum_ct)).T))
     
-    print(f'Testing Error (Positive Z Features Model) = {pos_test_error_z:.3f}')
-    print(f'Testing Error (Negative Z Features Model) = {neg_test_error_z:.3f}')
-    print(f'Testing Error (Positive/Negative Z Features Model) = {pos_neg_test_error_z:.3f}')
-    print(f'Testing Error (Positive CT Features Model) = {pos_test_error_ct:.3f}')
-    print(f'Testing Error (Negative CT Features Model) = {neg_test_error_ct:.3f}')
-    print(f'Testing Error (Positive/Negative CT Features Model) = {pos_neg_test_error_ct:.3f}')
+    print(f'Testing Error (MAE) (Positive Z Features Model) = {pos_test_error_z:.3f}')
+    print(f'Testing Error (MAE) (Negative Z Features Model) = {neg_test_error_z:.3f}')
+    print(f'Testing Error (MAE) (Positive/Negative Z Features Model) = {pos_neg_test_error_z:.3f}')
+    print(f'Testing Error (MAE) (Positive CT Features Model) = {pos_test_error_ct:.3f}')
+    print(f'Testing Error (MAE) (Negative CT Features Model) = {neg_test_error_ct:.3f}')
+    print(f'Testing Error (MAE) (Positive/Negative CT Features Model) = {pos_neg_test_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Testing Error (Positive Z Features Model) = 0.705
-    Testing Error (Negative Z Features Model) = 0.696
-    Testing Error (Positive/Negative Z Features Model) = 0.697
-    Testing Error (Positive CT Features Model) = 0.710
-    Testing Error (Negative CT Features Model) = 0.695
-    Testing Error (Positive/Negative CT Features Model) = 0.701
+    Testing Error (MAE) (Positive Z Features Model) = 0.705
+    Testing Error (MAE) (Negative Z Features Model) = 0.696
+    Testing Error (MAE) (Positive/Negative Z Features Model) = 0.697
+    Testing Error (MAE) (Positive CT Features Model) = 0.710
+    Testing Error (MAE) (Negative CT Features Model) = 0.695
+    Testing Error (MAE) (Positive/Negative CT Features Model) = 0.701
 
 
 CPM Cross Validation
@@ -750,8 +652,8 @@ CPM Cross Validation
             fold_accs_test.append((test_pos_error, test_neg_error, test_posneg_error))
             
             if verbose:
-                print(f'CV Fold: {fold_i+1:<10} Train Pos-Edges Model Accuracy: {round(train_pos_error, 3):<10} Train Neg-Edges Model Accuracy: {round(train_neg_error, 3):<10} Train Pos/Neg-Edges Model Accuracy: {round(train_posneg_error, 3):<10}')
-                print(f'CV Fold: {fold_i+1:<10} Test  Pos-Edges Model Accuracy: {round(test_pos_error, 3):<10} Test  Neg-Edges Model Accuracy: {round(test_neg_error, 3):<10} Test  Pos/Neg-Edges Model Accuracy: {round(test_posneg_error, 3):<10}')
+                print(f'CV Fold: {fold_i+1:<10} Train Pos-Edges Model MAE: {round(train_pos_error, 3):<10} Train Neg-Edges Model Accuracy: {round(train_neg_error, 3):<10} Train Pos/Neg-Edges Model Accuracy: {round(train_posneg_error, 3):<10}')
+                print(f'CV Fold: {fold_i+1:<10} Test  Pos-Edges Model MAE: {round(test_pos_error, 3):<10} Test  Neg-Edges Model Accuracy: {round(test_neg_error, 3):<10} Test  Pos/Neg-Edges Model Accuracy: {round(test_posneg_error, 3):<10}')
     
         
         plt.figure(figsize=(13, 7))
@@ -776,80 +678,28 @@ CPM Cross Validation
     fold_accs_train_z, fold_accs_test_z = cpm(hcp_z, gscores, p_threshold=0.01, n_cv_splits=5, pred_summary_function=metrics.mean_absolute_error, verbose=True)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-
 
 .. parsed-literal::
 
     CV Fold: 1          Computing correlations between train_X and train_y...
-    CV Fold: 1          Train Pos-Edges Model Accuracy: 0.652      Train Neg-Edges Model Accuracy: 0.673      Train Pos/Neg-Edges Model Accuracy: 0.644     
-    CV Fold: 1          Test  Pos-Edges Model Accuracy: 0.636      Test  Neg-Edges Model Accuracy: 0.671      Test  Pos/Neg-Edges Model Accuracy: 0.632     
+    CV Fold: 1          Train Pos-Edges Model MAE: 0.652      Train Neg-Edges Model MAE: 0.673      Train Pos/Neg-Edges Model MAE: 0.644     
+    CV Fold: 1          Test  Pos-Edges Model MAE: 0.636      Test  Neg-Edges Model MAE: 0.671      Test  Pos/Neg-Edges Model MAE: 0.632     
     CV Fold: 2          Computing correlations between train_X and train_y...
-    CV Fold: 2          Train Pos-Edges Model Accuracy: 0.648      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.636     
-    CV Fold: 2          Test  Pos-Edges Model Accuracy: 0.651      Test  Neg-Edges Model Accuracy: 0.659      Test  Pos/Neg-Edges Model Accuracy: 0.662     
+    CV Fold: 2          Train Pos-Edges Model MAE: 0.648      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.636     
+    CV Fold: 2          Test  Pos-Edges Model MAE: 0.651      Test  Neg-Edges Model MAE: 0.659      Test  Pos/Neg-Edges Model MAE: 0.662     
     CV Fold: 3          Computing correlations between train_X and train_y...
-    CV Fold: 3          Train Pos-Edges Model Accuracy: 0.644      Train Neg-Edges Model Accuracy: 0.662      Train Pos/Neg-Edges Model Accuracy: 0.636     
-    CV Fold: 3          Test  Pos-Edges Model Accuracy: 0.65       Test  Neg-Edges Model Accuracy: 0.708      Test  Pos/Neg-Edges Model Accuracy: 0.646     
+    CV Fold: 3          Train Pos-Edges Model MAE: 0.644      Train Neg-Edges Model MAE: 0.662      Train Pos/Neg-Edges Model MAE: 0.636     
+    CV Fold: 3          Test  Pos-Edges Model MAE: 0.65       Test  Neg-Edges Model MAE: 0.708      Test  Pos/Neg-Edges Model MAE: 0.646     
     CV Fold: 4          Computing correlations between train_X and train_y...
-    CV Fold: 4          Train Pos-Edges Model Accuracy: 0.653      Train Neg-Edges Model Accuracy: 0.676      Train Pos/Neg-Edges Model Accuracy: 0.648     
-    CV Fold: 4          Test  Pos-Edges Model Accuracy: 0.626      Test  Neg-Edges Model Accuracy: 0.659      Test  Pos/Neg-Edges Model Accuracy: 0.625     
+    CV Fold: 4          Train Pos-Edges Model MAE: 0.653      Train Neg-Edges Model MAE: 0.676      Train Pos/Neg-Edges Model MAE: 0.648     
+    CV Fold: 4          Test  Pos-Edges Model MAE: 0.626      Test  Neg-Edges Model MAE: 0.659      Test  Pos/Neg-Edges Model MAE: 0.625     
     CV Fold: 5          Computing correlations between train_X and train_y...
 
 
 .. parsed-literal::
 
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
-
-.. parsed-literal::
-
-    CV Fold: 5          Train Pos-Edges Model Accuracy: 0.631      Train Neg-Edges Model Accuracy: 0.666      Train Pos/Neg-Edges Model Accuracy: 0.62      
-    CV Fold: 5          Test  Pos-Edges Model Accuracy: 0.704      Test  Neg-Edges Model Accuracy: 0.696      Test  Pos/Neg-Edges Model Accuracy: 0.697     
+    CV Fold: 5          Train Pos-Edges Model MAE: 0.631      Train Neg-Edges Model MAE: 0.666      Train Pos/Neg-Edges Model MAE: 0.62      
+    CV Fold: 5          Test  Pos-Edges Model MAE: 0.704      Test  Neg-Edges Model MAE: 0.696      Test  Pos/Neg-Edges Model MAE: 0.697     
 
 
 
@@ -863,70 +713,21 @@ CPM Cross Validation
 
 .. parsed-literal::
 
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:9: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      if __name__ == '__main__':
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
-
-.. parsed-literal::
-
     CV Fold: 1          Computing correlations between train_X and train_y...
-    CV Fold: 1          Train Pos-Edges Model Accuracy: 0.675      Train Neg-Edges Model Accuracy: 0.673      Train Pos/Neg-Edges Model Accuracy: 0.659     
-    CV Fold: 1          Test  Pos-Edges Model Accuracy: 0.659      Test  Neg-Edges Model Accuracy: 0.67       Test  Pos/Neg-Edges Model Accuracy: 0.653     
+    CV Fold: 1          Train Pos-Edges Model MAE: 0.675      Train Neg-Edges Model MAE: 0.673      Train Pos/Neg-Edges Model MAE: 0.659     
+    CV Fold: 1          Test  Pos-Edges Model MAE: 0.659      Test  Neg-Edges Model MAE: 0.67       Test  Pos/Neg-Edges Model MAE: 0.653     
     CV Fold: 2          Computing correlations between train_X and train_y...
-    CV Fold: 2          Train Pos-Edges Model Accuracy: 0.674      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.636     
-    CV Fold: 2          Test  Pos-Edges Model Accuracy: 0.661      Test  Neg-Edges Model Accuracy: 0.657      Test  Pos/Neg-Edges Model Accuracy: 0.668     
+    CV Fold: 2          Train Pos-Edges Model MAE: 0.674      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.636     
+    CV Fold: 2          Test  Pos-Edges Model MAE: 0.661      Test  Neg-Edges Model MAE: 0.657      Test  Pos/Neg-Edges Model MAE: 0.668     
     CV Fold: 3          Computing correlations between train_X and train_y...
-    CV Fold: 3          Train Pos-Edges Model Accuracy: 0.659      Train Neg-Edges Model Accuracy: 0.665      Train Pos/Neg-Edges Model Accuracy: 0.644     
-    CV Fold: 3          Test  Pos-Edges Model Accuracy: 0.699      Test  Neg-Edges Model Accuracy: 0.704      Test  Pos/Neg-Edges Model Accuracy: 0.684     
+    CV Fold: 3          Train Pos-Edges Model MAE: 0.659      Train Neg-Edges Model MAE: 0.665      Train Pos/Neg-Edges Model MAE: 0.644     
+    CV Fold: 3          Test  Pos-Edges Model MAE: 0.699      Test  Neg-Edges Model MAE: 0.704      Test  Pos/Neg-Edges Model MAE: 0.684     
     CV Fold: 4          Computing correlations between train_X and train_y...
-    CV Fold: 4          Train Pos-Edges Model Accuracy: 0.674      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.658     
-    CV Fold: 4          Test  Pos-Edges Model Accuracy: 0.653      Test  Neg-Edges Model Accuracy: 0.656      Test  Pos/Neg-Edges Model Accuracy: 0.638     
+    CV Fold: 4          Train Pos-Edges Model MAE: 0.674      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.658     
+    CV Fold: 4          Test  Pos-Edges Model MAE: 0.653      Test  Neg-Edges Model MAE: 0.656      Test  Pos/Neg-Edges Model MAE: 0.638     
     CV Fold: 5          Computing correlations between train_X and train_y...
-    CV Fold: 5          Train Pos-Edges Model Accuracy: 0.662      Train Neg-Edges Model Accuracy: 0.666      Train Pos/Neg-Edges Model Accuracy: 0.642     
-    CV Fold: 5          Test  Pos-Edges Model Accuracy: 0.709      Test  Neg-Edges Model Accuracy: 0.698      Test  Pos/Neg-Edges Model Accuracy: 0.708     
+    CV Fold: 5          Train Pos-Edges Model MAE: 0.662      Train Neg-Edges Model MAE: 0.666      Train Pos/Neg-Edges Model MAE: 0.642     
+    CV Fold: 5          Test  Pos-Edges Model MAE: 0.709      Test  Neg-Edges Model MAE: 0.698      Test  Pos/Neg-Edges Model MAE: 0.708     
 
 
 
@@ -942,20 +743,6 @@ Lasso (Linear Regression + L1 Regularization)
     alpha_grid = np.array([10**a for a in np.arange(-3, 3, 0.25)])
     lassoCV_model_z = linear_model.LassoCV(cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, fit_intercept=True, normalize=False, random_state=42, verbose=True, n_jobs=5).fit(train_data_z, train_phen)
 
-
-.. parsed-literal::
-
-    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
-    ..................................................................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15375414869001247, tolerance: 0.03970345334827422
-      positive,
-    .[Parallel(n_jobs=5)]: Done   2 out of   5 | elapsed:    0.7s remaining:    1.0s
-    ./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07308221069749266, tolerance: 0.04611195889050071
-      positive,
-    ./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.1061109650850085, tolerance: 0.04382929483334259
-      positive,
-    .[Parallel(n_jobs=5)]: Done   5 out of   5 | elapsed:    0.8s finished
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
 
 
 .. code:: ipython3
@@ -1012,22 +799,12 @@ Lasso (Linear Regression + L1 Regularization)
     lasso_model_z = linear_model.Lasso(alpha=lassoCV_model_z.alpha_, fit_intercept=True, normalize=False).fit(train_data_z, train_phen)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
     # based on cv results above, set alpha=100
     lasso_model_ct = linear_model.Lasso(alpha=lassoCV_model_ct.alpha_, fit_intercept=True, normalize=False).fit(train_data_ct, train_phen)
 
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
 
 
 .. code:: ipython3
@@ -1104,21 +881,10 @@ Ridge (Linear Regression + L2 Regularization)
     ridge_model_z = linear_model.Ridge(alpha=ridge_alpha_z, fit_intercept=True, normalize=False).fit(train_data_z, train_phen)
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
     ridge_model_ct = linear_model.Ridge(alpha=ridge_alpha_ct, fit_intercept=True, normalize=False).fit(train_data_ct, train_phen)
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
 
 
 .. code:: ipython3
@@ -1158,72 +924,12 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
     elasticnetCV_model_z = linear_model.ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, random_state=42, verbose=True, n_jobs=5).fit(train_data_z, train_phen)
 
 
-.. parsed-literal::
-
-    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
-    ............................................................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.21318694587279197, tolerance: 0.0423918944559644
-      positive,
-    ./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.1793652783657933, tolerance: 0.03970345334827422
-      positive,
-    ./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.4036642557736059, tolerance: 0.04401109832998077
-      positive,
-    ../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.8618322912508916, tolerance: 0.04611195889050071
-      positive,
-    ./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 11.578679906244616, tolerance: 0.0423918944559644
-      positive,
-    ........./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 10.227348978795987, tolerance: 0.03970345334827422
-      positive,
-    ......../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 14.883650581478747, tolerance: 0.04401109832998077
-      positive,
-    ../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 8.07306307363504, tolerance: 0.04382929483334259
-      positive,
-    ..../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 18.22735885775745, tolerance: 0.04611195889050071
-      positive,
-    ....................................................................................................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.0544661418971657, tolerance: 0.0423918944559644
-      positive,
-    ............../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.1880563633529846, tolerance: 0.04611195889050071
-      positive,
-    ......................................................................./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.17881302501962182, tolerance: 0.03970345334827422
-      positive,
-    .........................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.13839227040384117, tolerance: 0.04611195889050071
-      positive,
-    .................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15009167261592893, tolerance: 0.04382929483334259
-      positive,
-    ........................./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.09891903799737634, tolerance: 0.04611195889050071
-      positive,
-    ............................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.20204581107995523, tolerance: 0.03970345334827422
-      positive,
-    ..................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.13078279403151782, tolerance: 0.04382929483334259
-      positive,
-    ......................./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.0877297694873107, tolerance: 0.04611195889050071
-      positive,
-    ......................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.18265009270703558, tolerance: 0.03970345334827422
-      positive,
-    .........................................................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.11087317504248517, tolerance: 0.04382929483334259
-      positive,
-    ........./usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07594686106097015, tolerance: 0.04611195889050071
-      positive,
-    ................................../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.16051209545534562, tolerance: 0.03970345334827422
-      positive,
-    ............................................................................/usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07308221069749266, tolerance: 0.04611195889050071
-      positive,
-    ../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.1061109650850085, tolerance: 0.04382929483334259
-      positive,
-    ../usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_coordinate_descent.py:644: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15375414869001247, tolerance: 0.03970345334827422
-      positive,
-    .....[Parallel(n_jobs=5)]: Done  35 out of  35 | elapsed:    3.7s finished
-
 
 .. code:: ipython3
 
     # RidgeCV uses generalized cross validation to select hyperparameter alpha 
     elasticnetCV_model_ct = linear_model.ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, random_state=42, verbose=True, n_jobs=5).fit(train_data_ct, train_phen)
 
-
-.. parsed-literal::
-
-    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
-    ........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................[Parallel(n_jobs=5)]: Done  35 out of  35 | elapsed:    2.1s finished
 
 
 .. code:: ipython3
@@ -1306,12 +1012,3 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
     Test MAE Z model: 0.680
     Train MAE CT model: 0.633
     Test MAE CT model: 0.692
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-

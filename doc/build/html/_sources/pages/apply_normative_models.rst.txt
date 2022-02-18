@@ -3,6 +3,16 @@
 Braincharts: transfer
 ===================================
 
+Code for transfering the models from `Charting Brain Growth and Aging at High Spatial Precision. <https://elifesciences.org/articles/72904>`__ 
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models.ipynb 
+
+
+.. figure:: ./brainchart_fig1.png
+   :height: 400px
+   :align: center
+
 This notebook shows how to apply the coefficients from pre-estimated
 normative models to new data. This can be done in two different ways:
 (i) using a new set of data derived from the same sites used to estimate
@@ -85,14 +95,15 @@ We need to unzip the models.
 Next, we configure some basic variables, like where we want the analysis
 to be done and which model we want to use.
 
-**Note:** We maintain a list of site ids for each dataset, which
-describe the site names in the training and test data (``site_ids_tr``
-and ``site_ids_te``), plus also the adaptation data . The training site
-ids are provided as a text file in the distribution and the test ids are
-extracted automatically from the pandas dataframe (see below). If you
-use additional data from the sites (e.g. later waves from ABCD), it may
-be necessary to adjust the site names to match the names in the training
-set. See the accompanying paper for more details
+.. note::
+    We maintain a list of site ids for each dataset, which
+    describe the site names in the training and test data (``site_ids_tr``
+    and ``site_ids_te``), plus also the adaptation data . The training site
+    ids are provided as a text file in the distribution and the test ids are
+    extracted automatically from the pandas dataframe (see below). If you
+    use additional data from the sites (e.g. later waves from ABCD), it may
+    be necessary to adjust the site names to match the names in the training
+    set. See the accompanying paper for more details
 
 .. code:: ipython3
 
@@ -158,12 +169,13 @@ Now we load the test data and remove some subjects that may have poor
 scan quality. This asssesment is based on the Freesurfer Euler
 characteristic as described in the papers below.
 
-**Note:** For the purposes of this tutorial, we make predictions for all
-sites in the FCON 1000 dataset, but two of them were also included in
-the training data (named ‘Baltimore’ and ‘NewYork_a’). In this case,
-this will only slightly bias the accuracy, but in order to replicate the
-results in the paper, it would be necessary to additionally remove these
-sites from the test dataframe.
+.. note::
+    For the purposes of this tutorial, we make predictions for all
+    sites in the FCON 1000 dataset, but two of them were also included in
+    the training data (named ‘Baltimore’ and ‘NewYork_a’). In this case,
+    this will only slightly bias the accuracy, but in order to replicate the
+    results in the paper, it would be necessary to additionally remove these
+    sites from the test dataframe.
 
 **References** - `Kia et al
 2021 <https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.abstract>`__
@@ -297,7 +309,7 @@ These are written in the same format to the location specified by
 Z-statistics for the test dataset that we can take forward to further
 analysis.
 
-Note that when we need to make predictions on new data, the procedure is
+When we need to make predictions on new data, the procedure is
 more involved, since we need to prepare, process and store covariates,
 response variables and site ids for the adaptation data.
 
@@ -397,6 +409,14 @@ response variables and site ids for the adaptation data.
     Writing outputs ...
 
 
+Evaluate the performance
+-----------------------------------------------------
+
+.. figure:: ./brainchart_fig3.png
+   :height: 400px
+   :align: center
+
+
 Preparing dummy data for plotting
 -----------------------------------------------------
 
@@ -454,16 +474,17 @@ space, then we need to warp them with the inverse of the estimated
 warping function. This can be done using the function
 ``nm.blr.warp.warp_predictions()``.
 
-**Note:** it is necessary to update the intercept for each of the sites.
-For purposes of visualisation, here we do this by adjusting the median
-of the data to match the dummy predictions, but note that all the
-quantitative metrics are estimated using the predictions that are
-adjusted properly using a learned offset (or adjusted using a hold-out
-adaptation set, as above). Note also that for the calibration data we
-require at least two data points of the same sex in each site to be able
-to estimate the variance. Of course, in a real example, you would want
-many more than just two since we need to get a reliable estimate of the
-variance for each site.
+.. note::
+    It is necessary to update the intercept for each of the sites.
+    For purposes of visualisation, here we do this by adjusting the median
+    of the data to match the dummy predictions, but note that all the
+    quantitative metrics are estimated using the predictions that are
+    adjusted properly using a learned offset (or adjusted using a hold-out
+    adaptation set, as above). Note also that for the calibration data we
+    require at least two data points of the same sex in each site to be able
+    to estimate the variance. Of course, in a real example, you would want
+    many more than just two since we need to get a reliable estimate of the
+    variance for each site.
 
 .. code:: ipython3
 
