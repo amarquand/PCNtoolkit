@@ -8,6 +8,10 @@ What is the PCNtoolkit?
 
 Predictive Clinical Neuroscience (PCN) toolkit (formerly nispat) is a python package designed for multi-purpose tasks in clinical neuroimaging, including normative modelling, trend surface modelling in addition to providing implementations of a number of fundamental machine learning algorithms.
 
+.. figure:: ./blr_fig1.png
+   :height: 400px
+   :align: center
+
 Intro to normative modelling
 -----------------------------------------------------
 

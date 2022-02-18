@@ -305,7 +305,7 @@ the i-th hyperparameter</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gp.CovLin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gp.</span></span><span class="sig-name descname"><span class="pre">CovLin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovLin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gp.CovLin" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pages/modindex.html#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Linear covariance function (no hyperparameters)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gp.CovLin.cov">
@@ -331,7 +331,7 @@ the i-th hyperparameter</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gp.CovSqExp">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gp.</span></span><span class="sig-name descname"><span class="pre">CovSqExp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gp.CovSqExp" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pages/modindex.html#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Ordinary squared exponential covariance function.
 The hyperparameters are:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>theta = ( log(ell), log(sf) )
@@ -362,7 +362,7 @@ the i-th hyperparameter</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gp.CovSqExpARD">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gp.</span></span><span class="sig-name descname"><span class="pre">CovSqExpARD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSqExpARD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gp.CovSqExpARD" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pages/modindex.html#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Squared exponential covariance function with ARD
 The hyperparameters are:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>theta = (log(ell_1, ..., log_ell_D), log(sf))
@@ -393,7 +393,7 @@ the i-th hyperparameter</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gp.CovSum">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gp.</span></span><span class="sig-name descname"><span class="pre">CovSum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfuncnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gp.html#CovSum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gp.CovSum" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="pages/modindex.html#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#gp.CovBase" title="gp.CovBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">gp.CovBase</span></code></a></p>
 <p>Sum of covariance functions. These are passed in as a cell array and
 intialised automatically. For example:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>C = CovSum(x,(CovLin, CovSqExpARD))

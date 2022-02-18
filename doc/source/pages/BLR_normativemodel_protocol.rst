@@ -3,13 +3,19 @@
 Bayesian Linear Regression
 ======================================================================
 
-The Normative Modeling Framework for Computational Psychiatry Protocol
-
-Using Bayesian Linear Regression and Multi-Site Cortical Thickness Data
-
 The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://doi.org/10.1101/2021.08.08.455583.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
+
+Using Multi-Site Cortical Thickness Data
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb 
+
+
+.. figure:: ./blr_fig2.png
+   :height: 400px
+   :align: center
 
 Data Preparation
 ---------------------------------------------
@@ -377,13 +383,14 @@ inclusion is not too strict or too lenient.
 
     brain_good = brain.query('avg_euler_centered_neg_sqrt < 10')
 
-**CRITICAL STEP:** If possible, data should be visually inspected to
-verify that the data inclusion is not too strict or too lenient.
-Subjects above the Euler number threshold should be manually checked to
-verify and justify their exclusion due to poor data quality. This is
-just one approach for automated QC used by the developers of the
-PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
-Biobanks QC pipeline are also viable options for automated QC.
+.. warning::
+    **CRITICAL STEP:** If possible, data should be visually inspected to
+    verify that the data inclusion is not too strict or too lenient.
+    Subjects above the Euler number threshold should be manually checked to
+    verify and justify their exclusion due to poor data quality. This is
+    just one approach for automated QC used by the developers of the
+    PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
+    Biobanks QC pipeline are also viable options for automated QC.
 
 Combine covariate & cortical thickness dataframes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -426,9 +433,10 @@ their own dataframes, using the commands below.
 
     all_data_covariates = all_data[['age','sex','site']]
 
-**CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
-areas will be modeled and can be used to select subsets of the data
-frame if you do not wish to run models for the whole brain.
+.. warning::
+    **CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
+    areas will be modeled and can be used to select subsets of the data
+    frame if you do not wish to run models for the whole brain.
 
 Add variable to model site/scanner effects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -493,9 +501,10 @@ Verify that your train & test arrays are the same size
     Test response size is:  (339, 6)
 
 
-**CRITICAL STEP:** The model would not learn the site effects if all the
-data from one site was only in the test set. Therefore, we stratify the
-train/test split using the site variable.
+.. warning::
+    **CRITICAL STEP:** The model would not learn the site effects if all the
+    data from one site was only in the test set. Therefore, we stratify the
+    train/test split using the site variable.
 
 
 When the data were split into train and test sets, the row index was not
@@ -689,16 +698,17 @@ arguments that are worthy of commenting on:
    - saveoutput = False: return the outputs directly rather than writing them to disk
    - standardize = False: Do not standardize the covariates or response variables
 
-**CRITICAL STEP:** This code fragment will loop through each region of
-interest in the ``roi_ids`` list (created in step 4) using Bayesian
-Linear Regression and evaluate the model on the independent test set. In
-principle, we could estimate the normative models on the whole data
-matrix at once (e.g., with the response variables stored in a
-``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
-instead of saved out into separate directories). However, running the
-models iteratively gives some extra flexibility in that it does not
-require that the included subjects are the same for each of the brain
-measures.
+.. warning::
+    **CRITICAL STEP:** This code fragment will loop through each region of
+    interest in the ``roi_ids`` list (created in step 4) using Bayesian
+    Linear Regression and evaluate the model on the independent test set. In
+    principle, we could estimate the normative models on the whole data
+    matrix at once (e.g., with the response variables stored in a
+    ``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
+    instead of saved out into separate directories). However, running the
+    models iteratively gives some extra flexibility in that it does not
+    require that the included subjects are the same for each of the brain
+    measures.
 
 .. code:: ipython3
 
