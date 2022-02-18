@@ -15,7 +15,7 @@
 # Third, the output is collected and combined.
 #
 # witten by (primarily) T Wolfers, (adaptated) SM Kia, H Huijsdens, L Parks, 
-# AF Marquand
+# S Rutherford, AF Marquand
 # -----------------------------------------------------------------------------
 
 from __future__ import print_function
@@ -60,41 +60,32 @@ def execute_nm(processing_dir,
                func='estimate',
                **kwargs):
 
-    """
+    ''' Execute parallel normative models
     This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
 
-    :Parameters:
-        * processing_dir     -> Full path to the processing dir
-        * python_path        -> Full path to the python distribution
-        * normative_path     -> Full path to the normative.py. If None (default)
-                                then it will automatically retrieves the path from 
-                                the installed packeage.
-        * job_name           -> Name for the bash script that is the output of
-                                this function
-        * covfile_path       -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -> Full path to a .txt that contains all features
-                                (subjects x features)
-        * batch_size         -> Number of features in each batch
-        * memory             -> Memory requirements written as string
-                                for example 4gb or 500mb
-        * duation            -> The approximate duration of the job, a string
-                                with HH:MM:SS for example 01:01:01
-        * cv_folds           -> Number of cross validations
-        * testcovfile_path   -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -> Full path to a .txt file that contains all
-                                test features
-        * log_path           -> Pathfor saving log files
-        * binary             -> If True uses binary format for response file
-                                otherwise it is text
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    """
+        execute_nm(processing_dir, python_path, job_name, covfile_path, respfile_path, batch_size, memory, duration)
+
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py. If None (default) then it will automatically retrieves the path from the installed packeage.
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariats (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param batch_size: Number of features in each batch
+    :param memory: Memory requirements written as string for example 4gb or 500mb
+    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param log_path: Path for saving log files
+    :param binary: If True uses binary format for response file otherwise it is text
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
     
     if normative_path is None:
         normative_path = ptkpath + '/normative.py'
@@ -270,22 +261,22 @@ def split_nm(processing_dir,
              binary,
              **kwargs):
 
-    """ This function prepares the input files for normative_parallel.
+    ''' This function prepares the input files for normative_parallel.
+    
+    Basic usage::
 
-    :Parameters:
-        * processing_dir    -> Full path to the folder of processing
-        * respfile_path     -> Full path to the responsefile.txt
-                               (subjects x features)
-        * batch_size        -> Number of features in each batch
-        * testrespfile_path -> Full path to the test responsefile.txt
-                               (subjects x features)
-        * binary            -> If True binary file
+        split_nm(processing_dir, respfile_path, batch_size, binary, testrespfile_path)
 
-    :outputs:
-        * The creation of a folder struture for batch-wise processing
+    :param processing_dir: Full path to the processing dir
+    :param respfile_path: Full path to the responsefile.txt (subjects x features)
+    :param batch_size: Number of features in each batch
+    :param testrespfile_path: Full path to the test responsefile.txt (subjects x features)
+    :param binary: If True binary file
 
-    witten by (primarily) T Wolfers (adapted) SM Kia
-    """
+    :outputs: The creation of a folder struture for batch-wise processing.
+
+    witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
+    ''' 
     
     testrespfile_path = kwargs.pop('testrespfile_path', None)
 
@@ -388,21 +379,24 @@ def collect_nm(processing_dir,
                batch_size=None,
                outputsuffix='_estimate'):
     
-    """This function checks and collects all batches.
+    '''Function to checks and collects all batches.
 
-    :Parameters:
-        * processing_dir        -> Full path to the processing directory
-        * collect               -> If True data is checked for failed batches
-                                and collected; if False data is just checked
-        * binary                -> Results in pkl format? 
+    Basic usage::
 
-    :ouptuts:
-        * Text files containing all results accross all batches the combined
-          output (written to disk)
-        * returns 0 if batches fail, 1 otherwise
+        collect_nm(processing_dir, job_name)
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    """
+
+    :param processing_dir: Full path to the processing directory
+    :param collect: If True data is checked for failed batches and collected; if False data is just checked
+    :param binary: Results in pkl format
+
+    :outputs: Text files containing all results accross all batches the combined output (written to disk).
+
+    :returns 0: if batches fail
+    :returns 1: if bathches complete successfully
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
 
     if binary:
         file_extentions = '.pkl'
@@ -740,15 +734,17 @@ def collect_nm(processing_dir,
 
 def delete_nm(processing_dir,
               binary=False):
-    """This function deletes all processing for normative modelling and just
-    keeps the combined output.
+    '''This function deletes all processing for normative modelling and just keeps the combined output.
 
-    :Parameters:
-        * processing_dir        -> Full path to the processing directory
-        * binary                -> Results in pkl format? 
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    """
+        collect_nm(processing_dir)
+
+    :param processing_dir: Full path to the processing directory.
+    :param binary: Results in pkl format.
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
     
     if binary:
         file_extentions = '.pkl'
@@ -773,35 +769,29 @@ def bashwrap_nm(processing_dir,
                 func='estimate',
                 **kwargs):
 
-    """ This function wraps normative modelling into a bash script to run it
+    ''' This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    :Parameters:
-        * processing_dir     -> Full path to the processing dir
-        * python_path        -> Full path to the python distribution
-        * normative_path     -> Full path to the normative.py
-        * job_name           -> Name for the bash script that is the output of
-                                this function
-        * covfile_path       -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -> Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -> Number of cross validations
-        * testcovfile_path   -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -> Full path to a .txt file that contains all
-                                test features
-        * alg                -> which algorithm to use
-        * configparam        -> configuration parameters for this algorithm
+    Basic usage::
 
-    :outputs:
-        * A bash.sh file containing the commands for normative modelling saved
-          to the processing directory (written to disk)
+        bashwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path)
 
-    written by (primarily) T Wolfers
-    """
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param alg: which algorithm to use
+    :param configparam: configuration parameters for this algorithm
+
+    :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford.
+    '''
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop('cv_folds',None)
@@ -867,23 +857,21 @@ def qsub_nm(job_path,
             log_path,
             memory,
             duration):
-    """
-    This function submits a job.sh scipt to the torque custer using the qsub
-    command.
+    '''This function submits a job.sh scipt to the torque custer using the qsub command.
+    
+    Basic usage::
 
-    ** Input:
-        * job_path      -> Full path to the job.sh file
-        * memory        -> Memory requirements written as string for example
-                           4gb or 500mb
-        * duation       -> The approximate duration of the job, a string with
-                           HH:MM:SS for example 01:01:01
+        qsub_nm(job_path, log_path, memory, duration)
 
-    ** Output:
-        * Submission of the job to the (torque) cluster
+    :param job_path: Full path to the job.sh file.
+    :param memory: Memory requirements written as string for example 4gb or 500mb.
+    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
-    witten by (primarily) T Wolfers, (adapted) SM Kia
-    """
+    :outputs: Submission of the job to the (torque) cluster.
 
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
+  
     # created qsub command
     if log_path is None:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
@@ -902,19 +890,18 @@ def rerun_nm(processing_dir,
              memory,
              duration,
              binary=False):
-    """
-    This function reruns all failed batched in processing_dir after collect_nm
-    has identified he failed batches
+    '''This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
 
-    * Input:
-        * processing_dir        -> Full path to the processing directory
-        * memory                -> Memory requirements written as string
-                                   for example 4gb or 500mb
-        * duration               -> The approximate duration of the job, a
-                                   string with HH:MM:SS for example 01:01:01
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    """
+        rerun_nm(processing_dir, log_path, memory, duration)
+
+    :param processing_dir: Full path to the processing directory
+    :param memory: Memory requirements written as string for example 4gb or 500mb.
+    :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
 
     if binary:
         file_extentions = '.pkl'
@@ -955,35 +942,29 @@ def sbatchwrap_nm(processing_dir,
                   func='estimate',
                   **kwargs):
 
-    """ This function wraps normative modelling into a bash script to run it
+    '''This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    :Parameters:
-        * processing_dir     -> Full path to the processing dir
-        * python_path        -> Full path to the python distribution
-        * normative_path     -> Full path to the normative.py
-        * job_name           -> Name for the bash script that is the output of
-                                this function
-        * covfile_path       -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -> Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -> Number of cross validations
-        * testcovfile_path   -> Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -> Full path to a .txt file that contains all
-                                test features
-        * alg                -> which algorithm to use
-        * configparam        -> configuration parameters for this algorithm
+    Basic usage::
 
-    :outputs:
-        * A bash.sh file containing the commands for normative modelling saved
-          to the processing directory (written to disk)
+        sbatchwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path, memory, duration)
 
-    written by (primarily) T Wolfers
-    """
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param alg: which algorithm to use
+    :param configparam: configuration parameters for this algorithm
+
+    :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford
+    '''
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop('cv_folds',None)
@@ -1065,19 +1046,21 @@ def sbatchwrap_nm(processing_dir,
 
 def sbatch_nm(job_path,
               log_path):
-    """
-    This function submits a job.sh scipt to the torque custer using the qsub
+    
+    '''This function submits a job.sh scipt to the torque custer using the qsub
     command.
 
-    ** Input:
-        * job_path      -> Full path to the job.sh file
-        * log_path      -> The logs are currently stored in the working dir
+    Basic usage::
 
-    ** Output:
-        * Submission of the job to the (torque) cluster
+        sbatch_nm(job_path, log_path)
 
-    witten by (primarily) T Wolfers
-    """
+    :param job_path: Full path to the job.sh file
+    :param log_path: The logs are currently stored in the working dir
+
+    :outputs: Submission of the job to the (torque) cluster.
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford.
+    '''
 
     # created qsub command
     sbatch_call = ['sbatch ' + job_path]
@@ -1085,68 +1068,62 @@ def sbatch_nm(job_path,
     # submits job to cluster
     call(sbatch_call, shell=True)
     
-    def rerun_nm(processing_dir,
+def rerun_nm(processing_dir,
                  memory,
                  duration,
                  new_memory=False,
                  new_duration=False,
                  binary=False,
                  **kwargs):
-        """
-        This function reruns all failed batched in processing_dir after 
-        collect_nm has identified he failed batches
+        
+    '''This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
     
-        * Input:
-            * processing_dir        -> Full path to the processing directory
-            * memory                -> Memory requirements written as string
-                                       for example 4gb or 500mb
-            * duration              -> The approximate duration of the job, a
-                                       string with HH:MM:SS for example 01:01:01
-            * new_memory            -> If you want to change the memory 
-                                        you have to indicate it here.
-            * new_duration          -> If you want to change the duration 
-                                        you have to indicate it here.
-        * Outputs:
-            * Reruns failed batches. 
+    Basic usage::
+
+        rerun_nm(processing_dir, memory, duration)
+
+    :param processing_dir: Full path to the processing directory.
+    :param memory: Memory requirements written as string, for example 4gb or 500mb.
+    :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
+    :param new_memory: If you want to change the memory you have to indicate it here.
+    :param new_duration: If you want to change the duration you have to indicate it here.
+
+    :outputs: Re-runs failed batches. 
     
-        written by (primarily) T Wolfers
-        """
-        log_path = kwargs.pop('log_path', None)
+     written by (primarily) T Wolfers, (adapted) S Rutherford.
+    '''
+    log_path = kwargs.pop('log_path', None)
     
-        if binary:
-            file_extentions = '.pkl'
-            failed_batches = fileio.load(processing_dir +
-                                         'failed_batches' + 
-                                         file_extentions)
-            shape = failed_batches.shape
-            for n in range(0, shape[0]):
-                jobpath = failed_batches[n, 0]
-                print(jobpath)
-                if new_duration != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(duration, new_duration), end='')
+    if binary:
+        file_extentions = '.pkl'
+        failed_batches = fileio.load(processing_dir + 'failed_batches' +  file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end='')
                 if new_memory != False:
                     with fileinput.FileInput(jobpath, inplace=True) as file:
                         for line in file:
                             print(line.replace(memory, new_memory), end='')
-                sbatch_nm(jobpath,
-                          log_path)
-        else:
-            file_extentions = '.txt'
-            failed_batches = fileio.load_pd(processing_dir +
-                                           'failed_batches' + file_extentions)
-            shape = failed_batches.shape
-            for n in range(0, shape[0]):
-                jobpath = failed_batches.iloc[n, 0]
-                print(jobpath)
-                if new_duration != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(duration, new_duration), end='')
+                sbatch_nm(jobpath, log_path)
+
+    else:
+        file_extentions = '.txt'
+        failed_batches = fileio.load_pd(processing_dir + 'failed_batches' + file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches.iloc[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end='')
                 if new_memory != False:
                     with fileinput.FileInput(jobpath, inplace=True) as file:
                         for line in file:
                             print(line.replace(memory, new_memory), end='')
-                sbatch_nm(jobpath,
-                          log_path)
+                sbatch_nm(jobpath, log_path)

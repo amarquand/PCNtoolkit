@@ -713,218 +713,161 @@ new data. currently only supported for HBR.</p>
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">bashwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#bashwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.bashwrap_nm" title="Permalink to this definition"></a></dt>
 <dd><p>This function wraps normative modelling into a bash script to run it
 on a torque cluster system.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>bashwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir     -&gt; Full path to the processing dir</p></li>
-<li><p>python_path        -&gt; Full path to the python distribution</p></li>
-<li><p>normative_path     -&gt; Full path to the normative.py</p></li>
-<li><dl class="simple">
-<dt>job_name           -&gt; Name for the bash script that is the output of</dt><dd><p>this function</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>covfile_path       -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-responsefile</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>respfile_path      -&gt; Full path to a .txt that contains all features</dt><dd><p>(subjects x features)</p>
-</dd>
-</dl>
-</li>
-<li><p>cv_folds           -&gt; Number of cross validations</p></li>
-<li><dl class="simple">
-<dt>testcovfile_path   -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-testresponse file</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>testrespfile_path  -&gt; Full path to a .txt file that contains all</dt><dd><p>test features</p>
-</dd>
-</dl>
-</li>
-<li><p>alg                -&gt; which algorithm to use</p></li>
-<li><p>configparam        -&gt; configuration parameters for this algorithm</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing dir</p></li>
+<li><p><strong>python_path</strong> – Full path to the python distribution</p></li>
+<li><p><strong>normative_path</strong> – Full path to the normative.py</p></li>
+<li><p><strong>job_name</strong> – Name for the bash script that is the output of this function</p></li>
+<li><p><strong>covfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile</p></li>
+<li><p><strong>respfile_path</strong> – Full path to a .txt that contains all features (subjects x features)</p></li>
+<li><p><strong>cv_folds</strong> – Number of cross validations</p></li>
+<li><p><strong>testcovfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file</p></li>
+<li><p><strong>testrespfile_path</strong> – Full path to a .txt file that contains all test features</p></li>
+<li><p><strong>alg</strong> – which algorithm to use</p></li>
+<li><p><strong>configparam</strong> – configuration parameters for this algorithm</p></li>
 </ul>
 </dd>
 <dt class="field-even">Outputs</dt>
-<dd class="field-even"><ul class="simple">
-<li><p>A bash.sh file containing the commands for normative modelling saved
-to the processing directory (written to disk)</p></li>
-</ul>
+<dd class="field-even"><p>A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).</p>
 </dd>
 </dl>
-<p>written by (primarily) T Wolfers</p>
+<p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.collect_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">collect_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_estimate'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#collect_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.collect_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function checks and collects all batches.</p>
+<dd><p>Function to checks and collects all batches.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>collect_nm(processing_dir, job_name)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir        -&gt; Full path to the processing directory</p></li>
-<li><dl class="simple">
-<dt>collect               -&gt; If True data is checked for failed batches</dt><dd><p>and collected; if False data is just checked</p>
-</dd>
-</dl>
-</li>
-<li><p>binary                -&gt; Results in pkl format?</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing directory</p></li>
+<li><p><strong>collect</strong> – If True data is checked for failed batches and collected; if False data is just checked</p></li>
+<li><p><strong>binary</strong> – Results in pkl format</p></li>
 </ul>
 </dd>
-<dt class="field-even">Ouptuts</dt>
-<dd class="field-even"><ul class="simple">
-<li><p>Text files containing all results accross all batches the combined
-output (written to disk)</p></li>
-<li><p>returns 0 if batches fail, 1 otherwise</p></li>
-</ul>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><p>Text files containing all results accross all batches the combined output (written to disk).</p>
+</dd>
+<dt class="field-odd">Returns 0</dt>
+<dd class="field-odd"><p>if batches fail</p>
+</dd>
+<dt class="field-even">Returns 1</dt>
+<dd class="field-even"><p>if bathches complete successfully</p>
 </dd>
 </dl>
-<p>written by (primarily) T Wolfers, (adapted) SM Kia</p>
+<p>written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.delete_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">delete_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#delete_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.delete_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function deletes all processing for normative modelling and just
-keeps the combined output.</p>
+<dd><p>This function deletes all processing for normative modelling and just keeps the combined output.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>collect_nm(processing_dir)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir        -&gt; Full path to the processing directory</p></li>
-<li><p>binary                -&gt; Results in pkl format?</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing directory.</p></li>
+<li><p><strong>binary</strong> – Results in pkl format.</p></li>
 </ul>
 </dd>
 </dl>
-<p>written by (primarily) T Wolfers, (adapted) SM Kia</p>
+<p>written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.execute_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">execute_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#execute_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function is a mother function that executes all parallel normative
+<dd><p>Execute parallel normative models
+This function is a mother function that executes all parallel normative
 modelling routines. Different specifications are possible using the sub-
 functions.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>execute_nm(processing_dir, python_path, job_name, covfile_path, respfile_path, batch_size, memory, duration)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir     -&gt; Full path to the processing dir</p></li>
-<li><p>python_path        -&gt; Full path to the python distribution</p></li>
-<li><dl class="simple">
-<dt>normative_path     -&gt; Full path to the normative.py. If None (default)</dt><dd><p>then it will automatically retrieves the path from
-the installed packeage.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>job_name           -&gt; Name for the bash script that is the output of</dt><dd><p>this function</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>covfile_path       -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-responsefile</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>respfile_path      -&gt; Full path to a .txt that contains all features</dt><dd><p>(subjects x features)</p>
-</dd>
-</dl>
-</li>
-<li><p>batch_size         -&gt; Number of features in each batch</p></li>
-<li><dl class="simple">
-<dt>memory             -&gt; Memory requirements written as string</dt><dd><p>for example 4gb or 500mb</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>duation            -&gt; The approximate duration of the job, a string</dt><dd><p>with HH:MM:SS for example 01:01:01</p>
-</dd>
-</dl>
-</li>
-<li><p>cv_folds           -&gt; Number of cross validations</p></li>
-<li><dl class="simple">
-<dt>testcovfile_path   -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-testresponse file</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>testrespfile_path  -&gt; Full path to a .txt file that contains all</dt><dd><p>test features</p>
-</dd>
-</dl>
-</li>
-<li><p>log_path           -&gt; Pathfor saving log files</p></li>
-<li><dl class="simple">
-<dt>binary             -&gt; If True uses binary format for response file</dt><dd><p>otherwise it is text</p>
-</dd>
-</dl>
-</li>
+<li><p><strong>processing_dir</strong> – Full path to the processing dir</p></li>
+<li><p><strong>python_path</strong> – Full path to the python distribution</p></li>
+<li><p><strong>normative_path</strong> – Full path to the normative.py. If None (default) then it will automatically retrieves the path from the installed packeage.</p></li>
+<li><p><strong>job_name</strong> – Name for the bash script that is the output of this function</p></li>
+<li><p><strong>covfile_path</strong> – Full path to a .txt file that contains all covariats (subjects x covariates) for the responsefile</p></li>
+<li><p><strong>respfile_path</strong> – Full path to a .txt that contains all features (subjects x features)</p></li>
+<li><p><strong>batch_size</strong> – Number of features in each batch</p></li>
+<li><p><strong>memory</strong> – Memory requirements written as string for example 4gb or 500mb</p></li>
+<li><p><strong>duation</strong> – The approximate duration of the job, a string with HH:MM:SS for example 01:01:01</p></li>
+<li><p><strong>cv_folds</strong> – Number of cross validations</p></li>
+<li><p><strong>testcovfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file</p></li>
+<li><p><strong>testrespfile_path</strong> – Full path to a .txt file that contains all test features</p></li>
+<li><p><strong>log_path</strong> – Path for saving log files</p></li>
+<li><p><strong>binary</strong> – If True uses binary format for response file otherwise it is text</p></li>
 </ul>
 </dd>
 </dl>
-<p>written by (primarily) T Wolfers, (adapted) SM Kia</p>
+<p>written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.qsub_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">qsub_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#qsub_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.qsub_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function submits a job.sh scipt to the torque custer using the qsub
-command.</p>
-<dl class="simple">
-<dt>** Input:</dt><dd><ul class="simple">
-<li><p>job_path      -&gt; Full path to the job.sh file</p></li>
-<li><dl class="simple">
-<dt>memory        -&gt; Memory requirements written as string for example</dt><dd><p>4gb or 500mb</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>duation       -&gt; The approximate duration of the job, a string with</dt><dd><p>HH:MM:SS for example 01:01:01</p>
-</dd>
-</dl>
-</li>
+<dd><p>This function submits a job.sh scipt to the torque custer using the qsub command.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>qsub_nm(job_path, log_path, memory, duration)
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>job_path</strong> – Full path to the job.sh file.</p></li>
+<li><p><strong>memory</strong> – Memory requirements written as string for example 4gb or 500mb.</p></li>
+<li><p><strong>duation</strong> – The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.</p></li>
 </ul>
 </dd>
-<dt>** Output:</dt><dd><ul class="simple">
-<li><p>Submission of the job to the (torque) cluster</p></li>
-</ul>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><p>Submission of the job to the (torque) cluster.</p>
 </dd>
 </dl>
-<p>witten by (primarily) T Wolfers, (adapted) SM Kia</p>
+<p>written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.rerun_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">rerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#rerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.rerun_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function reruns all failed batched in processing_dir after collect_nm
-has identified he failed batches</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>Input:</dt><dd><ul>
-<li><p>processing_dir        -&gt; Full path to the processing directory</p></li>
-<li><dl class="simple">
-<dt>memory                -&gt; Memory requirements written as string</dt><dd><p>for example 4gb or 500mb</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>duration               -&gt; The approximate duration of the job, a</dt><dd><p>string with HH:MM:SS for example 01:01:01</p>
-</dd>
-</dl>
-</li>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">rerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#rerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.rerun_nm" title="Permalink to this definition"></a></dt>
+<dd><p>This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rerun_nm(processing_dir, memory, duration)
+</pre></div>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>processing_dir</strong> – Full path to the processing directory.</p></li>
+<li><p><strong>memory</strong> – Memory requirements written as string, for example 4gb or 500mb.</p></li>
+<li><p><strong>duration</strong> – The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.</p></li>
+<li><p><strong>new_memory</strong> – If you want to change the memory you have to indicate it here.</p></li>
+<li><p><strong>new_duration</strong> – If you want to change the duration you have to indicate it here.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><p>Re-runs failed batches.</p>
+<p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
+</dd>
 </dl>
-</li>
-</ul>
-<p>written by (primarily) T Wolfers, (adapted) SM Kia</p>
 </dd></dl>
 
 <dl class="py function">
@@ -932,18 +875,22 @@ has identified he failed batches</p>
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatch_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatch_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatch_nm" title="Permalink to this definition"></a></dt>
 <dd><p>This function submits a job.sh scipt to the torque custer using the qsub
 command.</p>
-<dl class="simple">
-<dt>** Input:</dt><dd><ul class="simple">
-<li><p>job_path      -&gt; Full path to the job.sh file</p></li>
-<li><p>log_path      -&gt; The logs are currently stored in the working dir</p></li>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sbatch_nm(job_path, log_path)
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>job_path</strong> – Full path to the job.sh file</p></li>
+<li><p><strong>log_path</strong> – The logs are currently stored in the working dir</p></li>
 </ul>
 </dd>
-<dt>** Output:</dt><dd><ul class="simple">
-<li><p>Submission of the job to the (torque) cluster</p></li>
-</ul>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><p>Submission of the job to the (torque) cluster.</p>
 </dd>
 </dl>
-<p>witten by (primarily) T Wolfers</p>
+<p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -951,83 +898,56 @@ command.</p>
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatchwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchwrap_nm" title="Permalink to this definition"></a></dt>
 <dd><p>This function wraps normative modelling into a bash script to run it
 on a torque cluster system.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sbatchwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path, memory, duration)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir     -&gt; Full path to the processing dir</p></li>
-<li><p>python_path        -&gt; Full path to the python distribution</p></li>
-<li><p>normative_path     -&gt; Full path to the normative.py</p></li>
-<li><dl class="simple">
-<dt>job_name           -&gt; Name for the bash script that is the output of</dt><dd><p>this function</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>covfile_path       -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-responsefile</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>respfile_path      -&gt; Full path to a .txt that contains all features</dt><dd><p>(subjects x features)</p>
-</dd>
-</dl>
-</li>
-<li><p>cv_folds           -&gt; Number of cross validations</p></li>
-<li><dl class="simple">
-<dt>testcovfile_path   -&gt; Full path to a .txt file that contains all</dt><dd><p>covariats (subjects x covariates) for the
-testresponse file</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>testrespfile_path  -&gt; Full path to a .txt file that contains all</dt><dd><p>test features</p>
-</dd>
-</dl>
-</li>
-<li><p>alg                -&gt; which algorithm to use</p></li>
-<li><p>configparam        -&gt; configuration parameters for this algorithm</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing dir</p></li>
+<li><p><strong>python_path</strong> – Full path to the python distribution</p></li>
+<li><p><strong>normative_path</strong> – Full path to the normative.py</p></li>
+<li><p><strong>job_name</strong> – Name for the bash script that is the output of this function</p></li>
+<li><p><strong>covfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile</p></li>
+<li><p><strong>respfile_path</strong> – Full path to a .txt that contains all features (subjects x features)</p></li>
+<li><p><strong>cv_folds</strong> – Number of cross validations</p></li>
+<li><p><strong>testcovfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file</p></li>
+<li><p><strong>testrespfile_path</strong> – Full path to a .txt file that contains all test features</p></li>
+<li><p><strong>alg</strong> – which algorithm to use</p></li>
+<li><p><strong>configparam</strong> – configuration parameters for this algorithm</p></li>
 </ul>
 </dd>
 <dt class="field-even">Outputs</dt>
-<dd class="field-even"><ul class="simple">
-<li><p>A bash.sh file containing the commands for normative modelling saved
-to the processing directory (written to disk)</p></li>
-</ul>
+<dd class="field-even"><p>A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).</p>
 </dd>
 </dl>
-<p>written by (primarily) T Wolfers</p>
+<p>written by (primarily) T Wolfers, (adapted) S Rutherford</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.split_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">split_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#split_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.split_nm" title="Permalink to this definition"></a></dt>
 <dd><p>This function prepares the input files for normative_parallel.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>split_nm(processing_dir, respfile_path, batch_size, binary, testrespfile_path)
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p>processing_dir    -&gt; Full path to the folder of processing</p></li>
-<li><dl class="simple">
-<dt>respfile_path     -&gt; Full path to the responsefile.txt</dt><dd><p>(subjects x features)</p>
-</dd>
-</dl>
-</li>
-<li><p>batch_size        -&gt; Number of features in each batch</p></li>
-<li><dl class="simple">
-<dt>testrespfile_path -&gt; Full path to the test responsefile.txt</dt><dd><p>(subjects x features)</p>
-</dd>
-</dl>
-</li>
-<li><p>binary            -&gt; If True binary file</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing dir</p></li>
+<li><p><strong>respfile_path</strong> – Full path to the responsefile.txt (subjects x features)</p></li>
+<li><p><strong>batch_size</strong> – Number of features in each batch</p></li>
+<li><p><strong>testrespfile_path</strong> – Full path to the test responsefile.txt (subjects x features)</p></li>
+<li><p><strong>binary</strong> – If True binary file</p></li>
 </ul>
 </dd>
 <dt class="field-even">Outputs</dt>
-<dd class="field-even"><ul class="simple">
-<li><p>The creation of a folder struture for batch-wise processing</p></li>
-</ul>
+<dd class="field-even"><p>The creation of a folder struture for batch-wise processing.</p>
 </dd>
 </dl>
-<p>witten by (primarily) T Wolfers (adapted) SM Kia</p>
+<p>witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <span class="target" id="module-trendsurf"></span><dl class="py function">
