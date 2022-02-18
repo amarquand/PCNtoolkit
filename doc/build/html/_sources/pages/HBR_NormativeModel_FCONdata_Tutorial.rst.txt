@@ -14,6 +14,9 @@ Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
 Adapted/edited by Andre Marquand and Pierre Berthet.
 
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb
+
 
 Step 0: Install necessary libraries & grab data files
 -----------------------------------------------------

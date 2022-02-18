@@ -12,6 +12,11 @@ Saige Rutherford `@being_saige <https://twitter.com/being_saige>`__
 Thomas Wolfers `@ThomasWolfers <https://twitter.com/ThomasWolfers>`__
 \______________________________________________________________________________\_
 
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/CPC_2020/normative_modelling_walkthrough.ipynb
+
+
 Background Story
 --------------------
 
