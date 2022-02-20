@@ -31,9 +31,8 @@ Step 0: Install necessary libraries & grab data files
 
 .. code:: ipython3
 
-    ! pip install numpy scipy arviz pymc3 matplotlib pandas
     ! pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
-    ! pip install pcntoolkit==0.19
+    ! pip install pcntoolkit==0.21
 
 For this tutorial we will use data from the `Functional Connectom
 Project FCON1000 <http://fcon_1000.projects.nitrc.org/>`__ to create a
@@ -125,21 +124,20 @@ then displayed.
         idxte = fcon_te['site'] == s
         print(i,s, sum(idx), sum(idxte))
     
-    # Uncomment the following lines if you want to keep a defined version of the sets
-    # fcon_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_tr.csv')
-    # fcon_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_te.csv')
-    # icbm_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_tr.csv')
-    # icbm_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_te.csv')
+    fcon_tr.to_csv(processing_dir + '/fcon1000_tr.csv')
+    fcon_te.to_csv(processing_dir + '/fcon1000_te.csv')
+    icbm_tr.to_csv(processing_dir + '/fcon1000_icbm_tr.csv')
+    icbm_te.to_csv(processing_dir + '/fcon1000_icbm_te.csv')
 
-Otherwise you can just load these pre defined subsets:
+Otherwise you can uncomment the following lines and just load these pre defined subsets:
 
 .. code:: ipython3
 
     # Optional
-    fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv')
-    fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv')
-    icbm_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
-    icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
+    #fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv')
+    #fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv')
+    #icbm_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
+    #icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
 
 Step 2: Configure HBR inputs: covariates, measures and batch effects
 *********************************************************************
