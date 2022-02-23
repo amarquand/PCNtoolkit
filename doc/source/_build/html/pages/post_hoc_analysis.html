@@ -49,41 +49,32 @@
 <p class="caption" role="heading"><span class="caption-text">Background</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Current Events</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="updates.html">Updates</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#algorithm-modeling">Algorithm &amp; Modeling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#evaluation-interpretation">Evaluation &amp; Interpretation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Post-hoc analysis on normative modeling outputs</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#deviation-scores-as-features">Deviation scores as features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#raw-cortical-thickness-data-as-features">Raw cortical thickness data as features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#svm-classification">SVM classification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#svm-using-deviation-scores-as-features">SVM using deviation scores as features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#svm-using-true-cortical-thickness-data-as-features">SVM using true cortical thickness data as features</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#classical-case-control-testing">Classical case-control testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classical-case-control-testing">Classical case-control testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps">Mass univariate two sample t-tests on deviation score maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data">Mass univariate two sample t-tests on true cortical thickness data</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#load-data">Load Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#create-train-test-splits">Create Train/Test Splits</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#principal-component-regression-bbs">Principal Component Regression (BBS)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#connectome-predictive-modelling">Connectome Predictive Modelling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#lasso-linear-regression-l1-regularization">Lasso (Linear Regression + L1 Regularization)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#ridge-linear-regression-l2-regularization">Ridge (Linear Regression + L2 Regularization)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#elastic-net-linear-regression-l1-l2-regularization">Elastic Net (Linear Regression + L1/L2 Regularization)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
 <ul>
@@ -119,8 +110,11 @@
              
   <div class="section" id="post-hoc-analysis-on-normative-modeling-outputs">
 <h1>Post-hoc analysis on normative modeling outputs<a class="headerlink" href="#post-hoc-analysis-on-normative-modeling-outputs" title="Permalink to this headline"></a></h1>
-<p>This tutorial was created for Rutherford et al. (2022) The Normative Modeling Framework for Computational Psychiatry. Nature Protocols.</p>
+<p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://doi.org/10.1101/2021.08.08.455583">https://doi.org/10.1101/2021.08.08.455583</a>.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/post_hoc_analysis.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
+<div class="section" id="svm-classification">
+<h2>SVM classification<a class="headerlink" href="#svm-classification" title="Permalink to this headline"></a></h2>
 <p>Classify schizophrenia group from controls using cortical thickness
 deviation scores (z-scores) and then the true cortical thickness data to
 see which type of data better separates the groups.</p>
@@ -187,12 +181,9 @@ Resolving deltas: 100% (278/278), done.
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="section" id="deviation-scores-as-features">
-<h2>Deviation scores as features<a class="headerlink" href="#deviation-scores-as-features" title="Permalink to this headline"></a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
-<span class="c1"># Classification and ROC analysis</span>
-
-<span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
+<div class="section" id="svm-using-deviation-scores-as-features">
+<h3>SVM using deviation scores as features<a class="headerlink" href="#svm-using-deviation-scores-as-features" title="Permalink to this headline"></a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">classifier</span> <span class="o">=</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                      <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
@@ -239,24 +230,11 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="literal-block">/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)</pre>
 <img alt="../_images/post_hoc_analysis_17_1.png" src="../_images/post_hoc_analysis_17_1.png" />
 </div>
-<div class="section" id="raw-cortical-thickness-data-as-features">
-<h2>Raw cortical thickness data as features<a class="headerlink" href="#raw-cortical-thickness-data-as-features" title="Permalink to this headline"></a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
-<span class="c1"># Classification and ROC analysis</span>
-
-<span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
+<div class="section" id="svm-using-true-cortical-thickness-data-as-features">
+<h3>SVM using true cortical thickness data as features<a class="headerlink" href="#svm-using-true-cortical-thickness-data-as-features" title="Permalink to this headline"></a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">classifier</span> <span class="o">=</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                      <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
@@ -303,22 +281,11 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="literal-block">/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)</pre>
 <img alt="../_images/post_hoc_analysis_19_1.png" src="../_images/post_hoc_analysis_19_1.png" />
-<p>Which brain feature leads to a better classification between SZ &amp; HC?</p>
 </div>
 </div>
 <div class="section" id="classical-case-control-testing">
-<h1>Classical case-control testing<a class="headerlink" href="#classical-case-control-testing" title="Permalink to this headline"></a></h1>
+<h2>Classical case-control testing<a class="headerlink" href="#classical-case-control-testing" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install statsmodels
 </pre></div>
 </div>
@@ -326,14 +293,12 @@ Resolving deltas: 100% (278/278), done.
 <span class="kn">from</span> <span class="nn">statsmodels.stats</span> <span class="kn">import</span> <span class="n">multitest</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/statsmodels/tools/_testing.py:19: FutureWarning: pandas.util.testing is deprecated. Use the functions in the public API at pandas.testing instead.
-  import pandas.util.testing as tm
-</pre></div>
-</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ</span> <span class="o">=</span> <span class="n">Z_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;group == 0&#39;</span><span class="p">)</span>
 <span class="n">HC</span> <span class="o">=</span> <span class="n">Z_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;group == 1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="section" id="mass-univariate-two-sample-t-tests-on-deviation-score-maps">
+<h3>Mass univariate two sample t-tests on deviation score maps<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-deviation-score-maps" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ_deviations</span> <span class="o">=</span> <span class="n">SZ</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">SZ</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s1">&#39;Z_predict&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -551,6 +516,9 @@ Resolving deltas: 100% (278/278), done.
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>(96, 4)
 </pre></div>
 </div>
+</div>
+<div class="section" id="mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data">
+<h3>Mass univariate two sample t-tests on true cortical thickness data<a class="headerlink" href="#mass-univariate-two-sample-t-tests-on-true-cortical-thickness-data" title="Permalink to this headline"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ_cortical_thickness</span> <span class="o">=</span> <span class="n">SZ</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">SZ</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_thickness&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -767,6 +735,8 @@ Resolving deltas: 100% (278/278), done.
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>(67, 4)
 </pre></div>
+</div>
+</div>
 </div>
 </div>
 

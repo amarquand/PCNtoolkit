@@ -206,7 +206,7 @@
 <span class="c1"># from pca documentation, &quot;the input data is centered but not scaled for each feature before applying the SVD&quot;</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;First PC explains </span><span class="si">{</span><span class="n">pca_model_z</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">% of the total variance.</span><span class="se">\n</span><span class="s1">This is an artifact of zero inflated data&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;First PC explains </span><span class="si">{</span><span class="n">pca_model_z</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">% of the total variance.&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span> <span class="n">pca_model_z</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">51</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Deviations model Variance Explained Ratio</span><span class="se">\n</span><span class="s1">PCs 1-50&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
@@ -214,11 +214,10 @@
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>First PC explains 23.41% of the total variance.
-This is an artifact of zero inflated data
 </pre></div>
 </div>
 <img alt="../_images/other_predictive_models_16_1.png" src="../_images/other_predictive_models_16_1.png" />
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;First PC explains </span><span class="si">{</span><span class="n">pca_model_ct</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">% of the total variance.</span><span class="se">\n</span><span class="s1">This is an artifact of zero inflated data&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;First PC explains </span><span class="si">{</span><span class="n">pca_model_ct</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">% of the total variance.&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span> <span class="n">pca_model_ct</span><span class="o">.</span><span class="n">explained_variance_ratio_</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">51</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Cortical Thickness model Variance Explained Ratio</span><span class="se">\n</span><span class="s1">PCs 1-50&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
@@ -226,7 +225,6 @@ This is an artifact of zero inflated data
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>First PC explains 24.28% of the total variance.
-This is an artifact of zero inflated data
 </pre></div>
 </div>
 <img alt="../_images/other_predictive_models_17_1.png" src="../_images/other_predictive_models_17_1.png" />
@@ -463,12 +461,10 @@ CV Fold: 5          Train MAE: 0.614      Test MAE: 0.722
 <h2>Connectome Predictive Modelling<a class="headerlink" href="#connectome-predictive-modelling" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># correlation train_brain with train_phenotype</span>
 <span class="n">train_z_pheno_corr_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">train_phen</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">train_data_z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>  <span class="c1"># train_pheno_corr_p: (259200, )</span>
-<span class="c1"># there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># correlation train_brain with train_phenotype</span>
 <span class="n">train_ct_pheno_corr_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">train_data_ct</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">train_phen</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">train_data_ct</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>  <span class="c1"># train_pheno_corr_p: (259200, )</span>
-<span class="c1"># there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># split into positive and negative correlations</span>

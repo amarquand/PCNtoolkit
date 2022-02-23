@@ -131,7 +131,7 @@ Principal Component Regression (BBS)
 
 .. code:: ipython3
 
-    print(f'First PC explains {pca_model_z.explained_variance_ratio_[0]*100:.2f}% of the total variance.\nThis is an artifact of zero inflated data')
+    print(f'First PC explains {pca_model_z.explained_variance_ratio_[0]*100:.2f}% of the total variance.')
     plt.figure(figsize=(10, 7))
     plt.bar(range(1, 51), pca_model_z.explained_variance_ratio_[1:51])
     plt.title('Deviations model Variance Explained Ratio\nPCs 1-50', fontsize=25)
@@ -141,7 +141,6 @@ Principal Component Regression (BBS)
 .. parsed-literal::
 
     First PC explains 23.41% of the total variance.
-    This is an artifact of zero inflated data
 
 
 
@@ -150,7 +149,7 @@ Principal Component Regression (BBS)
 
 .. code:: ipython3
 
-    print(f'First PC explains {pca_model_ct.explained_variance_ratio_[0]*100:.2f}% of the total variance.\nThis is an artifact of zero inflated data')
+    print(f'First PC explains {pca_model_ct.explained_variance_ratio_[0]*100:.2f}% of the total variance.')
     plt.figure(figsize=(10, 7))
     plt.bar(range(1, 51), pca_model_ct.explained_variance_ratio_[1:51])
     plt.title('Cortical Thickness model Variance Explained Ratio\nPCs 1-50', fontsize=25)
@@ -160,7 +159,6 @@ Principal Component Regression (BBS)
 .. parsed-literal::
 
     First PC explains 24.28% of the total variance.
-    This is an artifact of zero inflated data
 
 
 
@@ -445,13 +443,11 @@ Connectome Predictive Modelling
 
     # correlation train_brain with train_phenotype
     train_z_pheno_corr_p = [stats.pearsonr(train_data_z[:, i], train_phen) for i in range(train_data_z.shape[1])]  # train_pheno_corr_p: (259200, )
-    # there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)
 
 .. code:: ipython3
 
     # correlation train_brain with train_phenotype
     train_ct_pheno_corr_p = [stats.pearsonr(train_data_ct[:, i], train_phen) for i in range(train_data_ct.shape[1])]  # train_pheno_corr_p: (259200, )
-    # there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)
 
 .. code:: ipython3
 
