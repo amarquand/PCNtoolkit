@@ -281,7 +281,7 @@ def calibration_descriptives(x):
     """
     compute statistics useful to assess the calibration of normative models,
     including skew and kurtosis of the distribution, plus their standard
-    deviation and standar errors
+    deviation and standar errors (separately for each column in x)
 
     Basic usage::
         stats = calibration_descriptives(Z)
@@ -294,11 +294,11 @@ def calibration_descriptives(x):
     """
     
     n = np.shape(x)[0]
-    m1 = np.mean(x)
+    m1 = np.mean(x,axis=0)
     m2 = sum((x-m1)**2)
     m3 = sum((x-m1)**3)
     m4 = sum((x-m1)**4)
-    s1 = np.std(x)
+    s1 = np.std(x,axis=0)
     skew = n*m3/(n-1)/(n-2)/s1**3
     sdskew = np.sqrt( 6*n*(n-1) / ((n-2)*(n+1)*(n+3)) )
     kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
@@ -1365,3 +1365,47 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
             print('Feature %d of %d is done: p_value=%f' %(i,n_permutation,p_values[i]))
             
     return aucs, p_values
+
+
+def cartesian_product(arrays):
+    
+    """
+    This is a utility function for creating dummy data (covariates). It computes 
+    the cartesian product of N 1D arrays.
+    
+    Example:
+        a = cartesian_product(np.arange(0,5), np.arange(6,10))
+    
+    :param *arrays: a list of N input 1D numpy arrays with size d1,d2,dN
+    :return: A d1*d2*...*dN by N matrix of cartesian product of N arrays.
+
+    """
+    
+    la = len(arrays)
+    dtype = np.result_type(arrays[0])
+    arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
+    for i, a in enumerate(np.ix_(*arrays)):
+        arr[...,i] = a
+        
+    return arr.reshape(-1, la)
+
+
+def yes_or_no(question):
+    
+    """
+    Utility function for getting yes/no action from the user.
+    
+    :param question: String for user query.
+    
+    :return: Boolean of True for 'yes' and False for 'no'.
+    
+
+    """
+    
+    while "the answer is invalid":
+        reply = str(input(question+' (y/n): ')).lower().strip()
+        if reply[:1] == 'y':
+            return True
+        if reply[:1] == 'n':
+            return False
+        
