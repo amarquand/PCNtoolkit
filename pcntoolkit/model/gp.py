@@ -12,7 +12,7 @@ from abc import ABCMeta, abstractmethod
 
 
 try:  # Run as a package if installed    
-    from pcntoolkit.utils import squared_dist
+    from pcntoolkit.util.utils import squared_dist
 except ImportError:
     pass
 

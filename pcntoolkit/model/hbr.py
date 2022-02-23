@@ -17,7 +17,7 @@ from functools import reduce
 from scipy import stats
 import bspline
 from bspline import splinelab
-
+from pcntoolkit.util.utils import cartesian_product
 
 
 def bspline_fit(X, order, nknots):
@@ -133,10 +133,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         all_idx.append(np.int16(np.unique(batch_effects[:,i])))
     be_idx = list(product(*all_idx))
     
-    X = theano.shared(X)
-    y = theano.shared(y)
     
     with pm.Model() as model:
+        
+        X = pm.Data('X', X)
+        y = pm.Data('y', y)
+        
         # Priors
         if trace is not None: # Used for transferring the priors
             mu_prior_intercept = from_posterior('mu_prior_intercept', 
@@ -320,7 +322,8 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         else:
             alpha = 0
         
-        y_like = pm.SkewNormal('y_like', mu=y_hat, sigma=sigma_y, alpha=alpha, observed=y)
+        y_like = pm.SkewNormal('y_like', mu=y_hat, sigma=sigma_y, alpha=alpha, 
+                               observed=y)
 
     return model
 
@@ -336,8 +339,6 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         all_idx.append(np.int16(np.unique(batch_effects[:,i])))
     be_idx = list(product(*all_idx))
         
-    X = theano.shared(X)
-    y = theano.shared(y)
     
     # Initialize random weights between each layer for the mu:
     init_1 = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1/feature_num))
@@ -361,6 +362,10 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
     
     with pm.Model() as model:
+        
+        X = pm.Data('X', X)
+        y = pm.Data('y', y)
+        
         if trace is not None: # Used when estimating/predicting on a new site
             weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'], 
                                             distribution='normal', freedom=configs['freedom'])
@@ -650,6 +655,9 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                # Filling the theano shared variables with dummy zero variables to ensure the privacy.
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])}) 
+                
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -660,6 +668,8 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
@@ -671,6 +681,8 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs):    
@@ -680,6 +692,7 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
                 
         return self.trace
 
@@ -697,17 +710,21 @@ class HBR:
             if self.model_type == 'linear': 
                 with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                    pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
             elif self.model_type == 'polynomial':
                 X = create_poly_basis(X, self.configs['order'])
                 with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                    pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
             elif self.model_type == 'bspline': 
                 X = bspline_transform(X, self.bsp)
                 with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                    pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
             elif self.model_type == 'nn': 
                 with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
                     ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                    pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
             
             pred_mean = ppc['y_like'].mean(axis=0)
             pred_var = ppc['y_like'].var(axis=0)
@@ -715,7 +732,7 @@ class HBR:
         return pred_mean, pred_var
     
 
-    def estimate_on_new_site(self, X, y, batch_effects):
+    def adapt(self, X, y, batch_effects):
         """ Function to adapt the model """
         
         if len(X.shape)==1:
@@ -739,6 +756,8 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -749,6 +768,8 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         if self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, 
@@ -759,6 +780,8 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, 
                                self.configs, trace = self.trace):    
@@ -768,6 +791,7 @@ class HBR:
                                        target_accept=self.configs['target_accept'], 
                                        init=self.configs['init'], n_init=50000, 
                                        cores=self.configs['cores'])
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
                 
         return self.trace
         
@@ -783,19 +807,34 @@ class HBR:
         samples = self.configs['n_samples']
         y = np.zeros([X.shape[0],1])
         if self.model_type == 'linear': 
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, 
+                     trace = self.trace):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True)
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'polynomial': 
             X = create_poly_basis(X, self.configs['order'])
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, 
+                     trace = self.trace):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs, 
+                     trace = self.trace):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'nn': 
-            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs, trace = self.trace):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+            with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs, 
+                        trace = self.trace):
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True)
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
             
         pred_mean = ppc['y_like'].mean(axis=0)
         pred_var = ppc['y_like'].var(axis=0)
@@ -814,18 +853,29 @@ class HBR:
         y = np.zeros([X.shape[0],1])
         if self.model_type == 'linear': 
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'polynomial':
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True)
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'bspline': 
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True)
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True) 
+                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, 
+                                                     progressbar=True)
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
         
         generated_samples = np.reshape(ppc['y_like'].squeeze().T, [X.shape[0]*samples, 1])
         X = np.repeat(X, samples)
@@ -857,21 +907,47 @@ class HBR:
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
                      trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'polynomial':
             X = create_poly_basis(X, self.configs['order'])
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
                      trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'bspline': 
             self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             X = bspline_transform(X, self.bsp)
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
                      trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
+                
         elif self.model_type == 'nn': 
             with nn_hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
                         trace):
                 ppc = pm.sample_prior_predictive(samples=samples) 
+                pm.set_data({'X':np.zeros([10,2]), 'y':np.zeros([10,1])})
         
         return ppc
+    
+    
+    def create_dummy_inputs(self, covariate_ranges = [[0.1,0.9,0.01]]):
+    
+        arrays = []
+        for i in range(len(covariate_ranges)):
+            arrays.append(np.arange(covariate_ranges[i][0],covariate_ranges[i][1],
+                                    covariate_ranges[i][2]))
+        X = cartesian_product(arrays)
+        X_dummy = np.concatenate([X for i in range(np.prod(self.batch_effects_size))])
+        
+        arrays = []
+        for i in range(self.batch_effects_num):
+            arrays.append(np.arange(0, self.batch_effects_size[i]))
+        batch_effects = cartesian_product(arrays)
+        
+        batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
+       
+        return X_dummy, batch_effects_dummy     
     

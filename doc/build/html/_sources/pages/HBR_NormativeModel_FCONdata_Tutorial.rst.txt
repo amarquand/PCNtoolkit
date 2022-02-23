@@ -23,7 +23,8 @@ Step 0: Install necessary libraries & grab data files
 
 .. code:: ipython3
 
-    ! pip install pcntoolkit==0.20
+    ! pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
+    ! pip install pcntoolkit==0.22
 
 For this tutorial we will use data from the `Functional Connectom
 Project FCON1000 <http://fcon_1000.projects.nitrc.org/>`__ to create a
@@ -169,49 +170,21 @@ then displayed.
         idxte = fcon_te['site'] == s
         print(i,s, sum(idx), sum(idxte))
     
-    # Uncomment the following lines if you want to keep a defined version of the sets
-    # fcon_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_tr.csv')
-    # fcon_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_te.csv')
-    # icbm_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_tr.csv')
-    # icbm_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_te.csv')
+    fcon_tr.to_csv(processing_dir + '/fcon1000_tr.csv')
+    fcon_te.to_csv(processing_dir + '/fcon1000_te.csv')
+    icbm_tr.to_csv(processing_dir + '/fcon1000_icbm_tr.csv')
+    icbm_te.to_csv(processing_dir + '/fcon1000_icbm_te.csv')
 
+Otherwise you can uncomment the following lines and just load these pre defined subsets:
 
-.. parsed-literal::
-
-    sample size check
-    0 AnnArbor_a 10 14
-    1 AnnArbor_b 11 21
-    2 Atlanta 11 17
-    3 Baltimore 10 13
-    4 Bangor 9 11
-    5 Beijing_Zang 108 90
-    6 Berlin_Margulies 13 13
-    7 Cambridge_Buckner 94 104
-    8 Cleveland 15 16
-    9 Leiden_2180 6 6
-    10 Leiden_2200 11 8
-    11 Milwaukee_b 29 17
-    12 Munchen 6 9
-    13 NewYork_a 48 35
-    14 NewYork_a_ADHD 17 8
-    15 Newark 13 6
-    16 Oulu 55 47
-    17 Oxford 9 13
-    18 PaloAlto 7 10
-    19 Pittsburgh 1 2
-    20 Queensland 6 13
-    21 SaintLouis 12 19
-
-
-Otherwise you can just load these pre defined subsets:
 
 .. code:: ipython3
 
     # Optional
-    fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv')
-    fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv')
-    icbm_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
-    icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
+    #fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv')
+    #fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv')
+    #icbm_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
+    #icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
 
 Step 2: Configure HBR inputs: covariates, measures and batch effects
 --------------------------------------------------------------------
