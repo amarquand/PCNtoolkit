@@ -377,7 +377,7 @@ def load(filename, mask=None, text=False, vol=True):
     if file_type(filename) == 'cifti':
         x = load_cifti(filename, vol=vol)
     elif file_type(filename) == 'nifti':
-        x = load_nifti(filename, mask)
+        x = load_nifti(filename, mask, vol=vol)
     elif text or file_type(filename) == 'text':
         x = load_ascii(filename)
     elif file_type(filename) == 'binary':

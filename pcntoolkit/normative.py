@@ -41,7 +41,7 @@ except ImportError:
     from dataio import fileio
 
     from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
-    from util.utils import scaler
+    from util.utils import scaler, get_package_versions
     from normative_model.norm_utils import norm_init
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
@@ -333,6 +333,9 @@ def estimate(covfile, respfile, **kwargs):
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
 
+    # which output metrics to compute
+    metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL','NLL', 'BIC']
+    
     # load data
     print("Processing data in " + respfile)
     X = fileio.load(covfile)
@@ -394,12 +397,15 @@ def estimate(covfile, respfile, **kwargs):
     scaler_resp = []
     scaler_cov = []
     mean_resp = [] # this is just for computing MSLL
-    std_resp = []   # this is just for computing MSLL
+    std_resp = [] # this is just for computing MSLL
     
     if warp is not None:
         Ywarp = np.zeros_like(Yhat)
-        mean_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
-        std_resp_warp = [np.zeros(Y.shape[1]) for s in range(splits.n_splits)]
+        
+        # for warping we need to compute metrics separately for each fold
+        results_folds = dict()
+        for m in metrics:
+            results_folds[m]= np.zeros((Nmod, cvfolds))
 
     for idx in enumerate(splits.split(X)):
 
@@ -436,9 +442,9 @@ def estimate(covfile, respfile, **kwargs):
             fileio.save(be[ts,:], 'be_kfold_ts_tempfile.pkl')
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
-        
+
         # estimate the models for all subjects
-        for i in range(0, len(nz)):  
+        for i in range(0, len(nz)):              
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz_tr, Yz_tr[:, i], alg=alg, **kwargs)
                 
@@ -463,17 +469,28 @@ def estimate(covfile, respfile, **kwargs):
                 nlZ[nz[i], fold] = nm.neg_log_lik
                 
                 if (run_cv or testresp is not None):
-                    # warp the labels?
-                    # TODO: Warping for scaled data
                     if warp is not None:
+                        # TODO: Warping for scaled data
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(Y[ts, nz[i]], warp_param)
                         Ytest = Ywarp[ts, nz[i]]
                         
                         # Save warped mean of the training data (for MSLL)
                         yw = nm.blr.warp.f(Y[tr, nz[i]], warp_param)
-                        mean_resp_warp[fold][i] = np.mean(yw)
-                        std_resp_warp[fold][i] = np.std(yw)
+                        
+                        # create arrays for evaluation
+                        Yhati = Yhat[ts, nz[i]]
+                        Yhati = Yhati[:, np.newaxis]
+                        S2i = S2[ts, nz[i]]
+                        S2i = S2i[:, np.newaxis]
+
+                        # evaluate and save results
+                        mf = evaluate(Ytest[:, np.newaxis], Yhati, S2=S2i, 
+                                      mY=np.std(yw), sY=np.mean(yw), 
+                                      nlZ=nm.neg_log_lik, nm=nm, Xz_tr=Xz_tr, 
+                                      alg=alg, metrics = metrics)
+                        for k in metrics:
+                            results_folds[k][nz[i]][fold] = mf[k]
                     else:
                         Ytest = Y[ts, nz[i]] 
                     
@@ -517,16 +534,14 @@ def estimate(covfile, respfile, **kwargs):
             results = evaluate(Y[testids, :], Yhat[testids, :], 
                                S2=S2[testids, :], mY=mean_resp[0], 
                                sY=std_resp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr, alg=alg,
-                               metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV',
-                                          'MSLL', 'NLL', 'BIC'])
+                               metrics = metrics)
         else:
-            results = evaluate(Ywarp[testids, :], Yhat[testids, :], 
-                               S2=S2[testids, :], mY=mean_resp_warp[0], 
-                               sY=std_resp_warp[0], nlZ=nlZ, nm=nm, Xz_tr=Xz_tr,
-                               alg=alg, metrics = ['Rho', 'RMSE', 'SMSE',
-                                                   'EXPV', 'MSLL',
-                                                   'NLL', 'BIC'])
-            
+            # for warped data we just aggregate across folds
+            results = dict()
+            for m in ['Rho', 'RMSE', 'SMSE', 'EXPV', 'MSLL']:
+                results[m] = np.mean(results_folds[m], axis=1)
+            results['NLL'] = results_folds['NLL']
+            results['BIC'] = results_folds['BIC']            
         
     # Set writing options
     if saveoutput:
@@ -649,6 +664,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
+    :param fold: which cross-validation fold to use (default = 0)
+    :param fold: list of model IDs to predict (if not specified all are computed)
 
     All outputs are written to disk in the same format as the input. These are:
 
@@ -666,6 +683,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
+    fold = kwargs.pop('fold',0)
+    models = kwargs.pop('models', None)
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -702,8 +721,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         X = X[:, np.newaxis]
     
     sample_num = X.shape[0]
-    feature_num = len(glob.glob(os.path.join(model_path, 'NM_*' + inputsuffix + 
-                                             '.pkl')))
+    if models is not None:
+        feature_num = len(models)
+    else:
+        feature_num = len(glob.glob(os.path.join(model_path, 'NM_'+ str(fold) +
+                                                 '_*' + inputsuffix + '.pkl')))
+        models = range(feature_num)
 
     Yhat = np.zeros([sample_num, feature_num])
     S2 = np.zeros([sample_num, feature_num])
@@ -715,11 +738,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = X
     
     # estimate the models for all subjects
-    for i in range(feature_num):
+    for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)      
         nm = norm_init(Xz)
-        nm = nm.load(os.path.join(model_path, 'NM_' + str(0) + '_' + 
-                                  str(i) + inputsuffix + '.pkl'))
+        nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                  str(m) + inputsuffix + '.pkl'))
         if (alg!='hbr' or nm.configs['transferred']==False):
             yhat, s2 = nm.predict(Xz, **kwargs)
         else:
@@ -744,6 +767,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
+        Y = Y[:, m]
+        if meta_data:
+            mY = mY[m]
+            sY = sY[m]
+        
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
         
@@ -944,23 +972,46 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
 def extend(covfile, respfile, maskfile=None, **kwargs):
     
+    '''
+    This function extends an existing HBR model with data from new sites/scanners.
+    
+    Basic usage::
+
+        extend(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: covariates for new data
+    :param respfile: response variables for new data
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: file address to batch effects file for new data
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param informative_prior: a flag to decide whether to use the initial model 
+    prior or learn it from scrach (default is False).
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
     alg = kwargs.pop('alg')
     if alg != 'hbr':
         print('Model extention is only possible for HBR models.')
         return
     elif (not 'model_path' in list(kwargs.keys())) or \
         (not 'output_path' in list(kwargs.keys())) or \
-        (not 'trbefile' in list(kwargs.keys())) or \
-        (not 'dummycovfile' in list(kwargs.keys()))or \
-        (not 'dummybefile' in list(kwargs.keys())):
+        (not 'trbefile' in list(kwargs.keys())):
             print('InputError: Some mandatory arguments are missing.')
             return
     else:
         model_path = kwargs.pop('model_path')
         output_path = kwargs.pop('output_path')
         trbefile = kwargs.pop('trbefile')
-        dummycovfile = kwargs.pop('dummycovfile')
-        dummybefile = kwargs.pop('dummybefile')
     
     outputsuffix = kwargs.pop('outputsuffix', 'extend')
     outputsuffix = "_" + outputsuffix.replace("_", "")
@@ -994,15 +1045,11 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     X = fileio.load(covfile)    
     Y, maskvol = load_response_vars(respfile, maskfile)
     batch_effects_train = fileio.load(trbefile)
-    X_dummy = fileio.load(dummycovfile)
-    batch_effects_dummy = fileio.load(dummybefile)
     
     if len(Y.shape) == 1:
         Y = Y[:, np.newaxis]
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
-    if len(X_dummy.shape) == 1:
-        X_dummy = X_dummy[:, np.newaxis]
     feature_num = Y.shape[1]
     
     # estimate the models for all subjects
@@ -1019,8 +1066,8 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
             nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
                                       inputsuffix +'.pkl'))
         
-        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, X_dummy, 
-                       batch_effects_dummy, samples=generation_factor, 
+        nm = nm.extend(X, Y[:,i:i+1], batch_effects_train, 
+                       samples=generation_factor, 
                        informative_prior=informative_prior)
         
         if batch_size is not None: 
@@ -1030,6 +1077,223 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
                              str(i) + outputsuffix + '.pkl'))
         else:
             nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+            
+            
+
+def tune(covfile, respfile, maskfile=None, **kwargs):
+    
+    '''
+    This function tunes an existing HBR model with real data.
+    
+    Basic usage::
+
+        tune(covfile, respfile [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: covariates for new data
+    :param respfile: response variables for new data
+    :param maskfile: mask used to apply to the data (nifti only)
+    :param model_path: Directory containing the normative model and metadata
+    :param trbefile: file address to batch effects file for new data
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param informative_prior: a flag to decide whether to use the initial model 
+    prior or learn it from scrach (default is False).
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Model extention is only possible for HBR models.')
+        return
+    elif (not 'model_path' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())) or \
+        (not 'trbefile' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path = kwargs.pop('model_path')
+        output_path = kwargs.pop('output_path')
+        trbefile = kwargs.pop('trbefile')
+    
+    outputsuffix = kwargs.pop('outputsuffix', 'tuned')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
+    informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+     
+    if not os.path.isdir(model_path):
+        print('Models directory does not exist!')
+        return
+    else:
+        if os.path.exists(os.path.join(model_path, 'meta_data.md')):
+            with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
+                meta_data = pickle.load(file)
+            if (meta_data['inscaler'] != 'None' or 
+                meta_data['outscaler'] != 'None'):
+                print('Models extention on scaled data is not possible!')
+                return
+    
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+            
+    # load data
+    print("Loading data ...")
+    X = fileio.load(covfile)    
+    Y, maskvol = load_response_vars(respfile, maskfile)
+    batch_effects_train = fileio.load(trbefile)
+    
+    if len(Y.shape) == 1:
+        Y = Y[:, np.newaxis]
+    if len(X.shape) == 1:
+        X = X[:, np.newaxis]
+    feature_num = Y.shape[1]
+    
+    # estimate the models for all subjects
+    for i in range(feature_num):
+              
+        nm = norm_init(X)
+        if batch_size is not None: # when using nirmative_parallel
+            print("Tuning model ", job_id*batch_size+i)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+        else:
+            print("Tuning model ", i+1, "of", feature_num)
+            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+        
+        nm = nm.tune(X, Y[:,i:i+1], batch_effects_train, 
+                       samples=generation_factor, 
+                       informative_prior=informative_prior)
+        
+        if batch_size is not None: 
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+        else:
+            nm.save(os.path.join(output_path, 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+
+
+def merge(covfile=None, respfile=None, **kwargs):
+    
+    '''
+    This function extends an existing HBR model with data from new sites/scanners.
+    
+    Basic usage::
+
+        merge(model_path1, model_path2 [extra_arguments])
+
+    where the variables are defined below.
+
+    :param covfile: Not required. Always set to None.
+    :param respfile: Not required. Always set to None.
+    :param model_path1: Directory containing the normative model and metadata 
+    of the first model.
+    :param model_path2: Directory containing the normative model and metadata 
+    of the second model.
+    :param batch_size: batch size (for use with normative_parallel)
+    :param job_id: batch id
+    :param output_path: the path for saving the  the extended model
+    :param generation_factor: the number of samples generated for each combination
+    of covariates and batch effects. Default is 10.
+    
+
+    All outputs are written to disk in the same format as the input.
+    
+    '''
+    
+    alg = kwargs.pop('alg')
+    if alg != 'hbr':
+        print('Merging models is only possible for HBR models.')
+        return
+    elif (not 'model_path1' in list(kwargs.keys())) or \
+        (not 'model_path2' in list(kwargs.keys())) or \
+        (not 'output_path' in list(kwargs.keys())):
+            print('InputError: Some mandatory arguments are missing.')
+            return
+    else:
+        model_path1 = kwargs.pop('model_path1')
+        model_path2 = kwargs.pop('model_path2')
+        output_path = kwargs.pop('output_path')
+    
+    outputsuffix = kwargs.pop('outputsuffix', 'merge')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = "_" + inputsuffix.replace("_", "")
+    generation_factor = int(kwargs.pop('generation_factor', '10'))
+    job_id = kwargs.pop('job_id', None)
+    batch_size = kwargs.pop('batch_size', None)
+    if batch_size is not None:
+        batch_size = int(batch_size)
+        job_id = int(job_id) - 1
+     
+    if (not os.path.isdir(model_path1)) or (not os.path.isdir(model_path2)):
+        print('Models directory does not exist!')
+        return
+    else:
+        if batch_size is None:
+            with open(os.path.join(model_path1, 'meta_data.md'), 'rb') as file:
+                meta_data1 = pickle.load(file)
+            with open(os.path.join(model_path2, 'meta_data.md'), 'rb') as file:
+                meta_data2 = pickle.load(file)
+            if meta_data1['valid_voxels'].shape[0] != meta_data2['valid_voxels'].shape[0]:
+                print('Two models are trained on different features!')
+                return
+            else:
+                feature_num = meta_data1['valid_voxels'].shape[0]
+        else:
+            feature_num = batch_size
+            
+            
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+    
+    # mergeing the models
+    for i in range(feature_num):
+              
+        nm1 = norm_init(np.random.rand(100,10))
+        nm2 = norm_init(np.random.rand(100,10))
+        if batch_size is not None: # when using nirmative_parallel
+            print("Merging model ", job_id*batch_size+i)
+            nm1 = nm1.load(os.path.join(model_path1, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+            nm2 = nm2.load(os.path.join(model_path2, 'NM_0_' + 
+                                      str(job_id*batch_size+i) + inputsuffix + 
+                                      '.pkl'))
+        else:
+            print("Merging model ", i+1, "of", feature_num)
+            nm1 = nm1.load(os.path.join(model_path1, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+            nm2 = nm1.load(os.path.join(model_path2, 'NM_0_' + str(i) + 
+                                      inputsuffix +'.pkl'))
+        
+        nm_merged = nm1.merge(nm2, samples=generation_factor)
+        
+        if batch_size is not None: 
+            nm_merged.save(os.path.join(output_path, 'NM_0_' + 
+                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            nm_merged.save(os.path.join('Models', 'NM_0_' + 
+                             str(i) + outputsuffix + '.pkl'))
+        else:
+            nm_merged.save(os.path.join(output_path, 'NM_0_' + 
                              str(i) + outputsuffix + '.pkl'))
 
 
