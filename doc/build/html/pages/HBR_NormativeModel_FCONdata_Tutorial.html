@@ -111,7 +111,7 @@
   <div class="section" id="hierarchical-bayesian-regression">
 <h1>Hierarchical Bayesian Regression<a class="headerlink" href="#hierarchical-bayesian-regression" title="Permalink to this headline"></a></h1>
 <p>This notebook will go through basic data preparation (training and
-testing set, <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb">see Saige’s
+testing set, <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb">see Saige’s
 tutorial</a>
 on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
@@ -121,7 +121,8 @@ onto unseen sites.</p>
 <a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 <div class="section" id="step-0-install-necessary-libraries-grab-data-files">
 <h2>Step 0: Install necessary libraries &amp; grab data files<a class="headerlink" href="#step-0-install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.20
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
+<span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.22
 </pre></div>
 </div>
 <p>For this tutorial we will use data from the <a class="reference external" href="http://fcon_1000.projects.nitrc.org/">Functional Connectom
@@ -174,47 +175,6 @@ color coded by the various sites:</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:4: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame.
-Try using .loc[row_indexer,col_indexer] = value instead
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  after removing the cwd from sys.path.
-/usr/local/lib/python3.7/dist-packages/pandas/core/indexing.py:1732: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  self._setitem_single_block(indexer, value, name)
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>site AnnArbor_a 24
-site AnnArbor_b 32
-site Atlanta 28
-site Baltimore 23
-site Bangor 20
-site Beijing_Zang 198
-site Berlin_Margulies 26
-site Cambridge_Buckner 198
-site Cleveland 31
-site Leiden_2180 12
-site Leiden_2200 19
-site Milwaukee_b 46
-site Munchen 15
-site NewYork_a 83
-site NewYork_a_ADHD 25
-site Newark 19
-site Oulu 102
-site Oxford 22
-site PaloAlto 17
-site Pittsburgh 3
-site Queensland 19
-site SaintLouis 31
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 0, &#39;age&#39;)
-</pre></div>
-</div>
-<img alt="../_images/HBR_NormativeModel_FCONdata_Tutorial_9_3.png" src="../_images/HBR_NormativeModel_FCONdata_Tutorial_9_3.png" />
 </div>
 </div>
 <div class="section" id="step-1-prepare-training-and-testing-sets">
@@ -243,36 +203,10 @@ then displayed.</p>
     <span class="n">idxte</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idxte</span><span class="p">))</span>
 
-<span class="c1"># Uncomment the following lines if you want to keep a defined version of the sets</span>
-<span class="c1"># fcon_tr.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_tr.csv&#39;)</span>
-<span class="c1"># fcon_te.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_te.csv&#39;)</span>
-<span class="c1"># icbm_tr.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_icbm_tr.csv&#39;)</span>
-<span class="c1"># icbm_te.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_icbm_te.csv&#39;)</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sample size check
-0 AnnArbor_a 10 14
-1 AnnArbor_b 11 21
-2 Atlanta 11 17
-3 Baltimore 10 13
-4 Bangor 9 11
-5 Beijing_Zang 108 90
-6 Berlin_Margulies 13 13
-7 Cambridge_Buckner 94 104
-8 Cleveland 15 16
-9 Leiden_2180 6 6
-10 Leiden_2200 11 8
-11 Milwaukee_b 29 17
-12 Munchen 6 9
-13 NewYork_a 48 35
-14 NewYork_a_ADHD 17 8
-15 Newark 13 6
-16 Oulu 55 47
-17 Oxford 9 13
-18 PaloAlto 7 10
-19 Pittsburgh 1 2
-20 Queensland 6 13
-21 SaintLouis 12 19
+<span class="n">fcon_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_tr.csv&#39;</span><span class="p">)</span>
+<span class="n">fcon_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_te.csv&#39;</span><span class="p">)</span>
+<span class="n">icbm_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_icbm_tr.csv&#39;</span><span class="p">)</span>
+<span class="n">icbm_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_icbm_te.csv&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Otherwise you can just load these pre defined subsets:</p>
@@ -373,24 +307,8 @@ and output files will be written and how they will be named.</p>
                        <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span> <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Processing data in /content/HBR_demo/HBR_demo/Y_train.pkl
-Estimating model  1 of 2
-Model  1 of 2 FAILED!..skipping and writing NaN to outputs
-Exception:
-index out of bounds
-&lt;class &#39;IndexError&#39;&gt; normative.py 428
-Estimating model  2 of 2
-Model  2 of 2 FAILED!..skipping and writing NaN to outputs
-Exception:
-index out of bounds
-&lt;class &#39;IndexError&#39;&gt; normative.py 428
-Saving model meta-data...
-Evaluating the model ...
-Writing outputs ...
-</pre></div>
-</div>
 <p>Here some analyses can be done, there are also some error metrics that
-could be of interest. This is covered in step 6 and in <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb">Saige’s
+could be of interest. This is covered in step 6 and in <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb">Saige’s
 tutorial</a>
 on Normative Modelling.</p>
 </div>
