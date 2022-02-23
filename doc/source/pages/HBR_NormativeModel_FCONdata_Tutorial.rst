@@ -5,7 +5,7 @@ Hierarchical Bayesian Regression
 
 This notebook will go through basic data preparation (training and
 testing set, `see Saige's
-tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb>`__
+tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb>`__
 on Normative Modelling for more detail), the actual training of the
 models, and will finally describe how to transfer the trained models
 onto unseen sites.
@@ -18,12 +18,15 @@ Adapted/edited by Andre Marquand and Pierre Berthet.
     :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb
 
 
+
 Step 0: Install necessary libraries & grab data files
 -----------------------------------------------------
 
 .. code:: ipython3
 
-    ! pip install pcntoolkit==0.20
+    ! pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
+    ! pip install pcntoolkit==0.22
+
 
 For this tutorial we will use data from the `Functional Connectom
 Project FCON1000 <http://fcon_1000.projects.nitrc.org/>`__ to create a
@@ -75,67 +78,13 @@ color coded by the various sites:
     for i,s in enumerate(sites):
         idx = fcon['site'] == s
         fcon['sitenum'].loc[idx] = i
-        
+    
         print('site',s, sum(idx))
         ax.scatter(fcon['age'].loc[idx], fcon['lh_MeanThickness_thickness'].loc[idx])
-        
+    
     ax.legend(sites)
     ax.set_ylabel('LH mean cortical thickness [mm]')
     ax.set_xlabel('age')
-
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:4: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      after removing the cwd from sys.path.
-    /usr/local/lib/python3.7/dist-packages/pandas/core/indexing.py:1732: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      self._setitem_single_block(indexer, value, name)
-
-
-.. parsed-literal::
-
-    site AnnArbor_a 24
-    site AnnArbor_b 32
-    site Atlanta 28
-    site Baltimore 23
-    site Bangor 20
-    site Beijing_Zang 198
-    site Berlin_Margulies 26
-    site Cambridge_Buckner 198
-    site Cleveland 31
-    site Leiden_2180 12
-    site Leiden_2200 19
-    site Milwaukee_b 46
-    site Munchen 15
-    site NewYork_a 83
-    site NewYork_a_ADHD 25
-    site Newark 19
-    site Oulu 102
-    site Oxford 22
-    site PaloAlto 17
-    site Pittsburgh 3
-    site Queensland 19
-    site SaintLouis 31
-
-
-
-
-.. parsed-literal::
-
-    Text(0.5, 0, 'age')
-
-
-
-
-.. image:: HBR_NormativeModel_FCONdata_Tutorial_files/HBR_NormativeModel_FCONdata_Tutorial_9_3.png
 
 
 Step 1: Prepare training and testing sets
@@ -169,39 +118,10 @@ then displayed.
         idxte = fcon_te['site'] == s
         print(i,s, sum(idx), sum(idxte))
     
-    # Uncomment the following lines if you want to keep a defined version of the sets
-    # fcon_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_tr.csv')
-    # fcon_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_te.csv')
-    # icbm_tr.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_tr.csv')
-    # icbm_te.to_csv('/Users/andmar/data/sairut/data/fcon1000_icbm_te.csv')
-
-
-.. parsed-literal::
-
-    sample size check
-    0 AnnArbor_a 10 14
-    1 AnnArbor_b 11 21
-    2 Atlanta 11 17
-    3 Baltimore 10 13
-    4 Bangor 9 11
-    5 Beijing_Zang 108 90
-    6 Berlin_Margulies 13 13
-    7 Cambridge_Buckner 94 104
-    8 Cleveland 15 16
-    9 Leiden_2180 6 6
-    10 Leiden_2200 11 8
-    11 Milwaukee_b 29 17
-    12 Munchen 6 9
-    13 NewYork_a 48 35
-    14 NewYork_a_ADHD 17 8
-    15 Newark 13 6
-    16 Oulu 55 47
-    17 Oxford 9 13
-    18 PaloAlto 7 10
-    19 Pittsburgh 1 2
-    20 Queensland 6 13
-    21 SaintLouis 12 19
-
+    fcon_tr.to_csv(processing_dir + '/fcon1000_tr.csv')
+    fcon_te.to_csv(processing_dir + '/fcon1000_te.csv')
+    icbm_tr.to_csv(processing_dir + '/fcon1000_icbm_tr.csv')
+    icbm_te.to_csv(processing_dir + '/fcon1000_icbm_te.csv')
 
 Otherwise you can just load these pre defined subsets:
 
@@ -242,28 +162,28 @@ testing set (``_test``).
     X_train = (fcon_tr['age']/100).to_numpy(dtype=float)
     Y_train = fcon_tr[idps].to_numpy(dtype=float)
     batch_effects_train = fcon_tr[['sitenum','sex']].to_numpy(dtype=int)
-        
+    
     with open('X_train.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_train), file)
     with open('Y_train.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(Y_train), file) 
+        pickle.dump(pd.DataFrame(Y_train), file)
     with open('trbefile.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(batch_effects_train), file) 
+        pickle.dump(pd.DataFrame(batch_effects_train), file)
     
     
     X_test = (fcon_te['age']/100).to_numpy(dtype=float)
     Y_test = fcon_te[idps].to_numpy(dtype=float)
     batch_effects_test = fcon_te[['sitenum','sex']].to_numpy(dtype=int)
-        
+    
     with open('X_test.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_test), file)
     with open('Y_test.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(Y_test), file) 
+        pickle.dump(pd.DataFrame(Y_test), file)
     with open('tsbefile.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(batch_effects_test), file) 
+        pickle.dump(pd.DataFrame(batch_effects_test), file)
     
-    # a simple function to quickly load pickle files    
-    def ldpkl(filename: str): 
+    # a simple function to quickly load pickle files
+    def ldpkl(filename: str):
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
@@ -303,39 +223,20 @@ and output files will be written and how they will be named.
 
 .. code:: ipython3
 
-    ptk.normative.estimate(covfile=covfile, 
+    ptk.normative.estimate(covfile=covfile,
                            respfile=respfile,
-                           tsbefile=tsbefile, 
-                           trbefile=trbefile, 
-                           alg='hbr', 
-                           log_path=log_dir, 
+                           tsbefile=tsbefile,
+                           trbefile=trbefile,
+                           alg='hbr',
+                           log_path=log_dir,
                            binary=True,
                            output_path=output_path, testcov= testcovfile_path,
                            testresp = testrespfile_path,
                            outputsuffix=outputsuffix, savemodel=True)
 
-
-.. parsed-literal::
-
-    Processing data in /content/HBR_demo/HBR_demo/Y_train.pkl
-    Estimating model  1 of 2
-    Model  1 of 2 FAILED!..skipping and writing NaN to outputs
-    Exception:
-    index out of bounds
-    <class 'IndexError'> normative.py 428
-    Estimating model  2 of 2
-    Model  2 of 2 FAILED!..skipping and writing NaN to outputs
-    Exception:
-    index out of bounds
-    <class 'IndexError'> normative.py 428
-    Saving model meta-data...
-    Evaluating the model ...
-    Writing outputs ...
-
-
 Here some analyses can be done, there are also some error metrics that
 could be of interest. This is covered in step 6 and in `Saige’s
-tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb>`__
+tutorial <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb>`__
 on Normative Modelling.
 
 Step 5: Transfering the models to unseen sites
@@ -350,26 +251,25 @@ training and testing set of covariates, measures and batch effects:
     X_adapt = (icbm_tr['age']/100).to_numpy(dtype=float)
     Y_adapt = icbm_tr[idps].to_numpy(dtype=float)
     batch_effects_adapt = icbm_tr[['sitenum','sex']].to_numpy(dtype=int)
-        
+    
     with open('X_adaptation.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_adapt), file)
     with open('Y_adaptation.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(Y_adapt), file) 
+        pickle.dump(pd.DataFrame(Y_adapt), file)
     with open('adbefile.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(batch_effects_adapt), file) 
+        pickle.dump(pd.DataFrame(batch_effects_adapt), file)
     
     # Test data (new dataset)
     X_test_txfr = (icbm_te['age']/100).to_numpy(dtype=float)
     Y_test_txfr = icbm_te[idps].to_numpy(dtype=float)
     batch_effects_test_txfr = icbm_te[['sitenum','sex']].to_numpy(dtype=int)
-        
+    
     with open('X_test_txfr.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_test_txfr), file)
     with open('Y_test_txfr.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(Y_test_txfr), file) 
+        pickle.dump(pd.DataFrame(Y_test_txfr), file)
     with open('txbefile.pkl', 'wb') as file:
-        pickle.dump(pd.DataFrame(batch_effects_test_txfr), file) 
-
+        pickle.dump(pd.DataFrame(batch_effects_test_txfr), file)
 
 .. code:: ipython3
 
@@ -391,18 +291,18 @@ and testing). That is basically the only difference.
 
 .. code:: ipython3
 
-    yhat, s2, z_scores = ptk.normative.transfer(covfile=covfile, 
+    yhat, s2, z_scores = ptk.normative.transfer(covfile=covfile,
                                                 respfile=respfile,
-                                                tsbefile=tsbefile, 
-                                                trbefile=trbefile, 
+                                                tsbefile=tsbefile,
+                                                trbefile=trbefile,
                                                 model_path = model_path,
-                                                alg='hbr', 
-                                                log_path=log_dir, 
+                                                alg='hbr',
+                                                log_path=log_dir,
                                                 binary=True,
-                                                output_path=output_path, 
+                                                output_path=output_path,
                                                 testcov= testcovfile_path,
                                                 testresp = testrespfile_path,
-                                                outputsuffix=outputsuffix, 
+                                                outputsuffix=outputsuffix,
                                                 savemodel=True)
 
 

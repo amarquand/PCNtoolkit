@@ -502,212 +502,6 @@ C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning</p>
 
 </dd></dl>
 
-<span class="target" id="module-normative"></span><dl class="py function">
-<dt class="sig sig-object py" id="normative.estimate">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.estimate" title="Permalink to this definition"></a></dt>
-<dd><p>Estimate a normative model</p>
-<p>This will estimate a model in one of two settings according to
-theparticular parameters specified (see below)</p>
-<ul class="simple">
-<li><p>under k-fold cross-validation.
-requires respfile, covfile and cvfolds&gt;=2</p></li>
-<li><p>estimating a training dataset then applying to a second test dataset.
-requires respfile, covfile, testcov and testresp.</p></li>
-<li><p>estimating on a training dataset ouput of forward maps mean and se.
-requires respfile, covfile and testcov</p></li>
-</ul>
-<p>The models are estimated on the basis of data stored on disk in ascii or
-neuroimaging data formats (nifti or cifti). Ascii data should be in
-tab or space delimited format with the number of subjects in rows and the
-number of variables in columns. Neuroimaging data will be reshaped
-into the appropriate format</p>
-<p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>estimate(covfile, respfile, [extra_arguments])
-</pre></div>
-</div>
-<p>where the variables are defined below. Note that either the cfolds
-parameter or (testcov, testresp) should be specified, but not both.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>respfile</strong> – response variables for the normative model</p></li>
-<li><p><strong>covfile</strong> – covariates used to predict the response variable</p></li>
-<li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
-<li><p><strong>cvfolds</strong> – Number of cross-validation folds</p></li>
-<li><p><strong>testcov</strong> – Test covariates</p></li>
-<li><p><strong>testresp</strong> – Test responses</p></li>
-<li><p><strong>alg</strong> – Algorithm for normative model</p></li>
-<li><p><strong>configparam</strong> – Parameters controlling the estimation algorithm</p></li>
-<li><p><strong>saveoutput</strong> – Save the output to disk? Otherwise returned as arrays</p></li>
-<li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
-<li><p><strong>inscale</strong> – Scaling approach for input covariates, could be ‘None’ (Default),
-‘standardize’, ‘minmax’, or ‘robminmax’.</p></li>
-<li><p><strong>outscale</strong> – Scaling approach for output responses, could be ‘None’ (Default),
-‘standardize’, ‘minmax’, or ‘robminmax’.</p></li>
-</ul>
-</dd>
-</dl>
-<p>All outputs are written to disk in the same format as the input. These are:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Outputs</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p>yhat - predictive mean</p></li>
-<li><p>ys2 - predictive variance</p></li>
-<li><p>nm - normative model</p></li>
-<li><p>Z - deviance scores</p></li>
-<li><p>Rho - Pearson correlation between true and predicted responses</p></li>
-<li><p>pRho - parametric p-value for this correlation</p></li>
-<li><p>rmse - root mean squared error between true/predicted responses</p></li>
-<li><p>smse - standardised mean squared error</p></li>
-</ul>
-</dd>
-</dl>
-<p>The outputsuffix may be useful to estimate multiple normative models in the
-same directory (e.g. for custom cross-validation schemes)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.evaluate">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Yhat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xz_tr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['Rho',</span> <span class="pre">'RMSE',</span> <span class="pre">'SMSE',</span> <span class="pre">'EXPV',</span> <span class="pre">'MSLL']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.evaluate" title="Permalink to this definition"></a></dt>
-<dd><p>Compute error metrics
-This function will compute error metrics based on a set of predictions Yhat
-and a set of true response variables Y, namely:</p>
-<ul class="simple">
-<li><p>Rho: Pearson correlation</p></li>
-<li><p>RMSE: root mean squared error</p></li>
-<li><p>SMSE: standardized mean squared error</p></li>
-<li><p>EXPV: explained variance</p></li>
-</ul>
-<p>If the predictive variance is also specified the log loss will be computed
-(which also takes into account the predictive variance). If the mean and
-standard deviation are also specified these will be used to standardize
-this, yielding the mean standardized log loss</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>Y</strong> – N x P array of true response variables</p></li>
-<li><p><strong>Yhat</strong> – N x P array of predicted response variables</p></li>
-<li><p><strong>S2</strong> – predictive variance</p></li>
-<li><p><strong>mY</strong> – mean of the training set</p></li>
-<li><p><strong>sY</strong> – standard deviation of the training set</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns metrics</dt>
-<dd class="field-even"><p>evaluation metrics</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.extend">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.extend" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.fit">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.fit" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.get_args">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">get_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#get_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.get_args" title="Permalink to this definition"></a></dt>
-<dd><p>Parse command line arguments</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.load_response_vars">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">load_response_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datafile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#load_response_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.load_response_vars" title="Permalink to this definition"></a></dt>
-<dd><p>load response variables (of any data type)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.main">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.main" title="Permalink to this definition"></a></dt>
-<dd><p>Parse arguments and estimate model</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.predict">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.predict" title="Permalink to this definition"></a></dt>
-<dd><p>Make predictions on the basis of a pre-estimated normative model
-If only the covariates are specified then only predicted mean and variance
-will be returned. If the test responses are also specified then quantities
-That depend on those will also be returned (Z scores and error metrics)</p>
-<p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>predict(covfile, [extra_arguments])
-</pre></div>
-</div>
-<p>where the variables are defined below.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>covfile</strong> – test covariates used to predict the response variable</p></li>
-<li><p><strong>respfile</strong> – test response variables for the normative model</p></li>
-<li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
-<li><p><strong>model_path</strong> – Directory containing the normative model and metadata.
-When using parallel prediction, do not pass the model path. It will be
-automatically decided.</p></li>
-<li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
-<li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
-<li><p><strong>job_id</strong> – batch id</p></li>
-</ul>
-</dd>
-</dl>
-<p>All outputs are written to disk in the same format as the input. These are:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Outputs</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p>Yhat - predictive mean</p></li>
-<li><p>S2 - predictive variance</p></li>
-<li><p>Z - Z scores</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.save_results">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Yhat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskvol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.save_results" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="normative.transfer">
-<span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testcov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testresp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative.html#transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.transfer" title="Permalink to this definition"></a></dt>
-<dd><p>Transfer learning on the basis of a pre-estimated normative model by using
-the posterior distribution over the parameters as an informed prior for
-new data. currently only supported for HBR.</p>
-<p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>transfer(covfile, respfile [extra_arguments])
-</pre></div>
-</div>
-<p>where the variables are defined below.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>covfile</strong> – test covariates used to predict the response variable</p></li>
-<li><p><strong>respfile</strong> – test response variables for the normative model</p></li>
-<li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
-<li><p><strong>testcov</strong> – Test covariates</p></li>
-<li><p><strong>testresp</strong> – Test responses</p></li>
-<li><p><strong>model_path</strong> – Directory containing the normative model and metadata</p></li>
-<li><p><strong>trbefile</strong> – Training batch effects file</p></li>
-<li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
-<li><p><strong>job_id</strong> – batch id</p></li>
-</ul>
-</dd>
-</dl>
-<p>All outputs are written to disk in the same format as the input. These are:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Outputs</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p>Yhat - predictive mean</p></li>
-<li><p>S2 - predictive variance</p></li>
-<li><p>Z - Z scores</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 <span class="target" id="module-normative_parallel"></span><dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.bashwrap_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">bashwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#bashwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.bashwrap_nm" title="Permalink to this definition"></a></dt>
@@ -738,6 +532,36 @@ on a torque cluster system.</p>
 </dd>
 </dl>
 <p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.check_job_status">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">check_job_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#check_job_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.check_job_status" title="Permalink to this definition"></a></dt>
+<dd><p>A utility function to count the tasks with different status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>jobs</strong> – List of job ids.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns the number of taks athat are queued, running, completed,</p>
+</dd>
+</dl>
+<p>and other status.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.check_jobs">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">check_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#check_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.check_jobs" title="Permalink to this definition"></a></dt>
+<dd><p>A utility function for chacking the status of submitted jobs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jobs</strong> – list of job ids.</p></li>
+<li><p><strong>delay</strong> – the delay (in seconds) between two consequative checks,</p></li>
+</ul>
+</dd>
+</dl>
+<p>defaults to 60.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -790,7 +614,7 @@ on a torque cluster system.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.execute_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">execute_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#execute_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">execute_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#execute_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Permalink to this definition"></a></dt>
 <dd><p>Execute parallel normative models
 This function is a mother function that executes all parallel normative
 modelling routines. Different specifications are possible using the sub-
@@ -866,6 +690,17 @@ functions.</p>
 <dt class="field-even">Outputs</dt>
 <dd class="field-even"><p>Re-runs failed batches.</p>
 <p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.retrieve_jobs">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">retrieve_jobs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#retrieve_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.retrieve_jobs" title="Permalink to this definition"></a></dt>
+<dd><p>A utility function to retrieve task status from the outputs of qstat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dictionary of jobs.</p>
 </dd>
 </dl>
 </dd></dl>
