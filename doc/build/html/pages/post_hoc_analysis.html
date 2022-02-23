@@ -183,10 +183,7 @@ Resolving deltas: 100% (278/278), done.
 </div>
 <div class="section" id="svm-using-deviation-scores-as-features">
 <h3>SVM using deviation scores as features<a class="headerlink" href="#svm-using-deviation-scores-as-features" title="Permalink to this headline"></a></h3>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
-<span class="c1"># Classification and ROC analysis</span>
-
-<span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">classifier</span> <span class="o">=</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                      <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
@@ -233,24 +230,11 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="literal-block">/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)</pre>
 <img alt="../_images/post_hoc_analysis_17_1.png" src="../_images/post_hoc_analysis_17_1.png" />
 </div>
 <div class="section" id="svm-using-true-cortical-thickness-data-as-features">
 <h3>SVM using true cortical thickness data as features<a class="headerlink" href="#svm-using-true-cortical-thickness-data-as-features" title="Permalink to this headline"></a></h3>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># #############################################################################</span>
-<span class="c1"># Classification and ROC analysis</span>
-
-<span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run classifier with cross-validation and plot ROC curves</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">classifier</span> <span class="o">=</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                      <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
@@ -297,18 +281,7 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<pre class="literal-block">/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)
-/usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_roc_curve()</span></code> is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_predictions()</span></code> or <code class="xref py py-meth docutils literal notranslate"><span class="pre">sklearn.metric.RocCurveDisplay.from_estimator()</span></code>.
-  warnings.warn(msg, category=FutureWarning)</pre>
 <img alt="../_images/post_hoc_analysis_19_1.png" src="../_images/post_hoc_analysis_19_1.png" />
-<p>Which brain feature leads to a better classification between SZ &amp; HC?</p>
 </div>
 </div>
 <div class="section" id="classical-case-control-testing">
@@ -318,10 +291,6 @@ Resolving deltas: 100% (278/278), done.
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">ttest_ind</span>
 <span class="kn">from</span> <span class="nn">statsmodels.stats</span> <span class="kn">import</span> <span class="n">multitest</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/statsmodels/tools/_testing.py:19: FutureWarning: pandas.util.testing is deprecated. Use the functions in the public API at pandas.testing instead.
-  import pandas.util.testing as tm
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SZ</span> <span class="o">=</span> <span class="n">Z_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;group == 0&#39;</span><span class="p">)</span>
