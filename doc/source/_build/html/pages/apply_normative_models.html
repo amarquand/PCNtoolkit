@@ -22,7 +22,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Visualization of normative modeling outputs" href="visualizations.html" />
+    <link rel="next" title="Bayesian Linear Regression" href="BLR_normativemodel_protocol.html" />
     <link rel="prev" title="Hierarchical Bayesian Regression" href="HBR_NormativeModel_FCONdata_Tutorial.html" /> 
 </head>
 
@@ -49,24 +49,14 @@
 <p class="caption" role="heading"><span class="caption-text">Background</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Current Events</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="updates.html">Updates</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#algorithm-modeling">Algorithm &amp; Modeling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#evaluation-interpretation">Evaluation &amp; Interpretation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Braincharts: transfer</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#download-test-dataset">Download test dataset</a></li>
@@ -75,21 +65,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#configure-which-models-to-fit">Configure which models to fit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configure-covariates">Configure covariates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#make-predictions">Make predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluate-the-performance">Evaluate the performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#preparing-dummy-data-for-plotting">Preparing dummy data for plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-the-normative-models">Plotting the normative models</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="post_hoc_analysis.html#classical-case-control-testing">Classical case-control testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#load-data">Load Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#create-train-test-splits">Create Train/Test Splits</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#principal-component-regression-bbs">Principal Component Regression (BBS)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#connectome-predictive-modelling">Connectome Predictive Modelling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#lasso-linear-regression-l1-regularization">Lasso (Linear Regression + L1 Regularization)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#ridge-linear-regression-l2-regularization">Ridge (Linear Regression + L2 Regularization)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html#elastic-net-linear-regression-l1-l2-regularization">Elastic Net (Linear Regression + L1/L2 Regularization)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
 <ul>
@@ -125,6 +109,11 @@
              
   <div class="section" id="braincharts-transfer">
 <h1>Braincharts: transfer<a class="headerlink" href="#braincharts-transfer" title="Permalink to this headline"></a></h1>
+<p>Code for transfering the models from <a class="reference external" href="https://elifesciences.org/articles/72904">Charting Brain Growth and Aging at High Spatial Precision.</a></p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/brainchart_fig1.png"><img alt="../_images/brainchart_fig1.png" src="../_images/brainchart_fig1.png" style="height: 400px;" /></a>
+</div>
 <p>This notebook shows how to apply the coefficients from pre-estimated
 normative models to new data. This can be done in two different ways:
 (i) using a new set of data derived from the same sites used to estimate
@@ -189,7 +178,9 @@ lifespan_23K_57sites_mqc2.zip        README.md
 </div>
 <p>Next, we configure some basic variables, like where we want the analysis
 to be done and which model we want to use.</p>
-<p><strong>Note:</strong> We maintain a list of site ids for each dataset, which
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We maintain a list of site ids for each dataset, which
 describe the site names in the training and test data (<code class="docutils literal notranslate"><span class="pre">site_ids_tr</span></code>
 and <code class="docutils literal notranslate"><span class="pre">site_ids_te</span></code>), plus also the adaptation data . The training site
 ids are provided as a text file in the distribution and the test ids are
@@ -197,6 +188,7 @@ extracted automatically from the pandas dataframe (see below). If you
 use additional data from the sites (e.g. later waves from ABCD), it may
 be necessary to adjust the site names to match the names in the training
 set. See the accompanying paper for more details</p>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># which model do we wish to use?</span>
 <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;lifespan_57K_82sites&#39;</span>
 <span class="n">site_names</span> <span class="o">=</span> <span class="s1">&#39;site_ids_82sites.txt&#39;</span>
@@ -252,12 +244,15 @@ OpenNeuroTransfer_t 100%[===================&gt;] 159.92K  --.-KB/s    in 0.03s
 <p>Now we load the test data and remove some subjects that may have poor
 scan quality. This asssesment is based on the Freesurfer Euler
 characteristic as described in the papers below.</p>
-<p><strong>Note:</strong> For the purposes of this tutorial, we make predictions for all
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the purposes of this tutorial, we make predictions for all
 sites in the FCON 1000 dataset, but two of them were also included in
 the training data (named ‘Baltimore’ and ‘NewYork_a’). In this case,
 this will only slightly bias the accuracy, but in order to replicate the
 results in the paper, it would be necessary to additionally remove these
 sites from the test dataframe.</p>
+</div>
 <p><strong>References</strong> - <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.abstract">Kia et al
 2021</a>
 - <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S1053811917310832?via%3Dihub">Rosen et al
@@ -376,7 +371,7 @@ These are written in the same format to the location specified by
 <code class="docutils literal notranslate"><span class="pre">idp_dir</span></code>. At the end of this step, we have a set of predictions and
 Z-statistics for the test dataset that we can take forward to further
 analysis.</p>
-<p>Note that when we need to make predictions on new data, the procedure is
+<p>When we need to make predictions on new data, the procedure is
 more involved, since we need to prepare, process and store covariates,
 response variables and site ids for the adaptation data.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
@@ -472,6 +467,12 @@ Writing outputs ...
 </pre></div>
 </div>
 </div>
+<div class="section" id="evaluate-the-performance">
+<h2>Evaluate the performance<a class="headerlink" href="#evaluate-the-performance" title="Permalink to this headline"></a></h2>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/brainchart_fig3.png"><img alt="../_images/brainchart_fig3.png" src="../_images/brainchart_fig3.png" style="height: 400px;" /></a>
+</div>
+</div>
 <div class="section" id="preparing-dummy-data-for-plotting">
 <h2>Preparing dummy data for plotting<a class="headerlink" href="#preparing-dummy-data-for-plotting" title="Permalink to this headline"></a></h2>
 <p>Now, we plot the centiles of variation estimated by the normative model.</p>
@@ -520,7 +521,9 @@ predictions in the form of <code class="docutils literal notranslate"><span clas
 space, then we need to warp them with the inverse of the estimated
 warping function. This can be done using the function
 <code class="docutils literal notranslate"><span class="pre">nm.blr.warp.warp_predictions()</span></code>.</p>
-<p><strong>Note:</strong> it is necessary to update the intercept for each of the sites.
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is necessary to update the intercept for each of the sites.
 For purposes of visualisation, here we do this by adjusting the median
 of the data to match the dummy predictions, but note that all the
 quantitative metrics are estimated using the predictions that are
@@ -530,6 +533,7 @@ require at least two data points of the same sex in each site to be able
 to estimate the variance. Of course, in a real example, you would want
 many more than just two since we need to get a reliable estimate of the
 variance for each site.</p>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;whitegrid&#39;</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
@@ -740,7 +744,7 @@ into the original data file.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="HBR_NormativeModel_FCONdata_Tutorial.html" class="btn btn-neutral float-left" title="Hierarchical Bayesian Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="visualizations.html" class="btn btn-neutral float-right" title="Visualization of normative modeling outputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="BLR_normativemodel_protocol.html" class="btn btn-neutral float-right" title="Bayesian Linear Regression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

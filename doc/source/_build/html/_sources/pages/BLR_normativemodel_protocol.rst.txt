@@ -3,15 +3,19 @@
 Bayesian Linear Regression
 ======================================================================
 
-The Normative Modeling Framework for Computational Psychiatry Protocol
-
-Using Bayesian Linear Regression and Multi-Site Cortical Thickness Data
-
-This tutorial was created for Rutherford et al. (2022) The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. 
+The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://doi.org/10.1101/2021.08.08.455583.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
-.. container::
+Using Multi-Site Cortical Thickness Data
+
+.. image:: https://colab.research.google.com/assets/colab-badge.svg 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb 
+
+
+.. figure:: ./blr_fig2.png
+   :height: 400px
+   :align: center
 
 Data Preparation
 ---------------------------------------------
@@ -123,195 +127,6 @@ depending on the research question.
 
     cov.groupby(['site']).describe()
 
-
-
-
-.. raw:: html
-
-    
-      <div id="df-5fc2d5c7-43d0-470a-b1ed-f13259d5d322">
-        <div class="colab-df-container">
-          <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
-    
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-    
-        .dataframe thead tr th {
-            text-align: left;
-        }
-    
-        .dataframe thead tr:last-of-type th {
-            text-align: right;
-        }
-    </style>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr>
-          <th></th>
-          <th colspan="8" halign="left">age</th>
-          <th colspan="8" halign="left">sex</th>
-        </tr>
-        <tr>
-          <th></th>
-          <th>count</th>
-          <th>mean</th>
-          <th>std</th>
-          <th>min</th>
-          <th>25%</th>
-          <th>50%</th>
-          <th>75%</th>
-          <th>max</th>
-          <th>count</th>
-          <th>mean</th>
-          <th>std</th>
-          <th>min</th>
-          <th>25%</th>
-          <th>50%</th>
-          <th>75%</th>
-          <th>max</th>
-        </tr>
-        <tr>
-          <th>site</th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>hcp</th>
-          <td>1206.0</td>
-          <td>28.837479</td>
-          <td>3.690534</td>
-          <td>22.000000</td>
-          <td>26.000000</td>
-          <td>29.00000</td>
-          <td>32.000000</td>
-          <td>37.00000</td>
-          <td>1206.0</td>
-          <td>1.543947</td>
-          <td>0.498272</td>
-          <td>1.0</td>
-          <td>1.0</td>
-          <td>2.0</td>
-          <td>2.0</td>
-          <td>2.0</td>
-        </tr>
-        <tr>
-          <th>ixi</th>
-          <td>590.0</td>
-          <td>49.476531</td>
-          <td>16.720864</td>
-          <td>19.980835</td>
-          <td>34.027721</td>
-          <td>50.61191</td>
-          <td>63.413415</td>
-          <td>86.31896</td>
-          <td>590.0</td>
-          <td>1.555932</td>
-          <td>0.497283</td>
-          <td>1.0</td>
-          <td>1.0</td>
-          <td>2.0</td>
-          <td>2.0</td>
-          <td>2.0</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-          <button class="colab-df-convert" onclick="convertToInteractive('df-5fc2d5c7-43d0-470a-b1ed-f13259d5d322')"
-                  title="Convert this dataframe to an interactive table."
-                  style="display:none;">
-    
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
-           width="24px">
-        <path d="M0 0h24v24H0V0z" fill="none"/>
-        <path d="M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z"/><path d="M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z"/>
-      </svg>
-          </button>
-    
-      <style>
-        .colab-df-container {
-          display:flex;
-          flex-wrap:wrap;
-          gap: 12px;
-        }
-    
-        .colab-df-convert {
-          background-color: #E8F0FE;
-          border: none;
-          border-radius: 50%;
-          cursor: pointer;
-          display: none;
-          fill: #1967D2;
-          height: 32px;
-          padding: 0 0 0 0;
-          width: 32px;
-        }
-    
-        .colab-df-convert:hover {
-          background-color: #E2EBFA;
-          box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
-          fill: #174EA6;
-        }
-    
-        [theme=dark] .colab-df-convert {
-          background-color: #3B4455;
-          fill: #D2E3FC;
-        }
-    
-        [theme=dark] .colab-df-convert:hover {
-          background-color: #434B5C;
-          box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-          filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
-          fill: #FFFFFF;
-        }
-      </style>
-    
-          <script>
-            const buttonEl =
-              document.querySelector('#df-5fc2d5c7-43d0-470a-b1ed-f13259d5d322 button.colab-df-convert');
-            buttonEl.style.display =
-              google.colab.kernel.accessAllowed ? 'block' : 'none';
-    
-            async function convertToInteractive(key) {
-              const element = document.querySelector('#df-5fc2d5c7-43d0-470a-b1ed-f13259d5d322');
-              const dataTable =
-                await google.colab.kernel.invokeFunction('convertToInteractive',
-                                                         [key], {});
-              if (!dataTable) return;
-    
-              const docLinkHtml = 'Like what you see? Visit the ' +
-                '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
-                + ' to learn more about interactive tables.';
-              element.innerHTML = '';
-              dataTable['output_type'] = 'display_data';
-              await google.colab.output.renderOutput(dataTable, element);
-              const docLink = document.createElement('div');
-              docLink.innerHTML = docLinkHtml;
-              element.appendChild(docLink);
-            }
-          </script>
-        </div>
-      </div>
 
 
 Prepare brain data
@@ -568,13 +383,14 @@ inclusion is not too strict or too lenient.
 
     brain_good = brain.query('avg_euler_centered_neg_sqrt < 10')
 
-**CRITICAL STEP:** If possible, data should be visually inspected to
-verify that the data inclusion is not too strict or too lenient.
-Subjects above the Euler number threshold should be manually checked to
-verify and justify their exclusion due to poor data quality. This is
-just one approach for automated QC used by the developers of the
-PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
-Biobanks QC pipeline are also viable options for automated QC.
+.. warning::
+    **CRITICAL STEP:** If possible, data should be visually inspected to
+    verify that the data inclusion is not too strict or too lenient.
+    Subjects above the Euler number threshold should be manually checked to
+    verify and justify their exclusion due to poor data quality. This is
+    just one approach for automated QC used by the developers of the
+    PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
+    Biobanks QC pipeline are also viable options for automated QC.
 
 Combine covariate & cortical thickness dataframes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -617,9 +433,10 @@ their own dataframes, using the commands below.
 
     all_data_covariates = all_data[['age','sex','site']]
 
-**CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
-areas will be modeled and can be used to select subsets of the data
-frame if you do not wish to run models for the whole brain.
+.. warning::
+    **CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
+    areas will be modeled and can be used to select subsets of the data
+    frame if you do not wish to run models for the whole brain.
 
 Add variable to model site/scanner effects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -684,9 +501,10 @@ Verify that your train & test arrays are the same size
     Test response size is:  (339, 6)
 
 
-**CRITICAL STEP:** The model would not learn the site effects if all the
-data from one site was only in the test set. Therefore, we stratify the
-train/test split using the site variable.
+.. warning::
+    **CRITICAL STEP:** The model would not learn the site effects if all the
+    data from one site was only in the test set. Therefore, we stratify the
+    train/test split using the site variable.
 
 
 When the data were split into train and test sets, the row index was not
@@ -880,16 +698,17 @@ arguments that are worthy of commenting on:
    - saveoutput = False: return the outputs directly rather than writing them to disk
    - standardize = False: Do not standardize the covariates or response variables
 
-**CRITICAL STEP:** This code fragment will loop through each region of
-interest in the ``roi_ids`` list (created in step 4) using Bayesian
-Linear Regression and evaluate the model on the independent test set. In
-principle, we could estimate the normative models on the whole data
-matrix at once (e.g., with the response variables stored in a
-``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
-instead of saved out into separate directories). However, running the
-models iteratively gives some extra flexibility in that it does not
-require that the included subjects are the same for each of the brain
-measures.
+.. warning::
+    **CRITICAL STEP:** This code fragment will loop through each region of
+    interest in the ``roi_ids`` list (created in step 4) using Bayesian
+    Linear Regression and evaluate the model on the independent test set. In
+    principle, we could estimate the normative models on the whole data
+    matrix at once (e.g., with the response variables stored in a
+    ``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
+    instead of saved out into separate directories). However, running the
+    models iteratively gives some extra flexibility in that it does not
+    require that the included subjects are the same for each of the brain
+    measures.
 
 .. code:: ipython3
 
@@ -1099,8 +918,6 @@ into the original data file.
 
 Visualize normative model outputs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. container::
 
 Figure 4A viz
 ~~~~~~~~~~~~~

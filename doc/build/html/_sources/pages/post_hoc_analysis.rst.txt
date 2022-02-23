@@ -103,9 +103,6 @@ SVM using deviation scores as features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
-
-    # #############################################################################
-    # Classification and ROC analysis
     
     # Run classifier with cross-validation and plot ROC curves
     cv = StratifiedKFold(n_splits=5)
@@ -153,22 +150,6 @@ SVM using deviation scores as features
     ax.legend(loc="lower right")
     plt.show()
 
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-
-
-
 .. image:: post_hoc_analysis_files/post_hoc_analysis_17_1.png
 
 
@@ -177,9 +158,6 @@ SVM using true cortical thickness data as features
 
 .. code:: ipython3
 
-    # #############################################################################
-    # Classification and ROC analysis
-    
     # Run classifier with cross-validation and plot ROC curves
     cv = StratifiedKFold(n_splits=5)
     classifier = svm.SVC(kernel='linear', probability=True,
@@ -227,25 +205,8 @@ SVM using true cortical thickness data as features
     plt.show()
 
 
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-    /usr/local/lib/python3.7/dist-packages/sklearn/utils/deprecation.py:87: FutureWarning: Function plot_roc_curve is deprecated; Function :func:`plot_roc_curve` is deprecated in 1.0 and will be removed in 1.2. Use one of the class methods: :meth:`sklearn.metric.RocCurveDisplay.from_predictions` or :meth:`sklearn.metric.RocCurveDisplay.from_estimator`.
-      warnings.warn(msg, category=FutureWarning)
-
-
-
 .. image:: post_hoc_analysis_files/post_hoc_analysis_19_1.png
 
-
-Which brain feature leads to a better classification between SZ & HC?
 
 Classical case-control testing 
 -----------------------------------------------------
@@ -258,12 +219,6 @@ Classical case-control testing
 
     from scipy.stats import ttest_ind
     from statsmodels.stats import multitest
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/statsmodels/tools/_testing.py:19: FutureWarning: pandas.util.testing is deprecated. Use the functions in the public API at pandas.testing instead.
-      import pandas.util.testing as tm
 
 
 .. code:: ipython3
@@ -311,8 +266,6 @@ Mass univariate two sample t-tests on deviation score maps
 .. code:: ipython3
 
     sz_hc_z_sig_diff
-
-
 
 
 .. raw:: html

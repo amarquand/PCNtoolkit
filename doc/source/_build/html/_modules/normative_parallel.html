@@ -48,30 +48,26 @@
 <p class="caption" role="heading"><span class="caption-text">Background</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Current Events</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
-</ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regression</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_braincharts_fit_nm.html">Braincharts: fit model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_braincharts_apply_nm.html">Braincharts: apply (transfer to new data)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/visualizations.html">Visualization of normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/other_predictive_models.html">Predictive modeling using deviation scores</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
 </ul>
 
@@ -117,7 +113,7 @@
 # Third, the output is collected and combined.
 #
 # witten by (primarily) T Wolfers, (adaptated) SM Kia, H Huijsdens, L Parks, 
-# AF Marquand
+# S Rutherford, AF Marquand
 # -----------------------------------------------------------------------------
 
 from __future__ import print_function
@@ -129,17 +125,14 @@ import glob
 import shutil
 import pickle
 import fileinput
-import time
 import numpy as np
 import pandas as pd
-from subprocess import call, check_output
-
+from subprocess import call
 
 try:
     import pcntoolkit as ptk
     import pcntoolkit.dataio.fileio as fileio
     from pcntoolkit import configs
-    from pcntoolkit.util.utils import yes_or_no 
     ptkpath = ptk.__path__[0] 
 except ImportError:
     pass
@@ -148,13 +141,12 @@ except ImportError:
         sys.path.append(ptkpath)
     import dataio.fileio as fileio
     import configs
-    from util.utils import yes_or_no 
     
     
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
-<div class="viewcode-block" id="execute_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.execute_nm">[docs]</a>def execute_nm(processing_dir,
+<div class="viewcode-block" id="execute_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.execute_nm">[docs]</a>def execute_nm(processing_dir,
                python_path,
                job_name,
                covfile_path,
@@ -164,52 +156,34 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                duration,
                normative_path=None,
                func=&#39;estimate&#39;,
-               interactive=False,
                **kwargs):
 
-    &quot;&quot;&quot;
+    &#39;&#39;&#39; Execute parallel normative models
     This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
 
-    :Parameters:
-        * processing_dir     -&gt; Full path to the processing dir
-        * python_path        -&gt; Full path to the python distribution
-        * normative_path     -&gt; Full path to the normative.py. If None (default)
-                                then it will automatically retrieves the path from 
-                                the installed packeage.
-        * job_name           -&gt; Name for the bash script that is the output of
-                                this function
-        * covfile_path       -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -&gt; Full path to a .txt that contains all features
-                                (subjects x features)
-        * batch_size         -&gt; Number of features in each batch
-        * memory             -&gt; Memory requirements written as string
-                                for example 4gb or 500mb
-        * duation            -&gt; The approximate duration of the job, a string
-                                with HH:MM:SS for example 01:01:01
-        * cv_folds           -&gt; Number of cross validations
-        * testcovfile_path   -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -&gt; Full path to a .txt file that contains all
-                                test features
-        * log_path           -&gt; Pathfor saving log files
-        * binary             -&gt; If True uses binary format for response file
-                                otherwise it is text
-        * interactive        -&gt; If False (default) the user should manually 
-                                rerun the failed jobs or collect the results.
-                                If &#39;auto&#39; the job status are checked until all 
-                                jobs are completed then the failed jobs are rerun
-                                and the results are automaticallu collectted.
-                                Using &#39;query&#39; is similar to &#39;auto&#39; unless it
-                                asks for user verification thius is immune to 
-                                endless loop in the case of bugs in the code.
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    &quot;&quot;&quot;
+        execute_nm(processing_dir, python_path, job_name, covfile_path, respfile_path, batch_size, memory, duration)
+
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py. If None (default) then it will automatically retrieves the path from the installed packeage.
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariats (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param batch_size: Number of features in each batch
+    :param memory: Memory requirements written as string for example 4gb or 500mb
+    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param log_path: Path for saving log files
+    :param binary: If True uses binary format for response file otherwise it is text
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39;
     
     if normative_path is None:
         normative_path = ptkpath + &#39;/normative.py&#39;
@@ -217,7 +191,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
     testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
     testrespfile_path= kwargs.get(&#39;testrespfile_path&#39;, None)
-    outputsuffix = kwargs.get(&#39;outputsuffix&#39;, &#39;estimate&#39;)
     cluster_spec = kwargs.pop(&#39;cluster_spec&#39;, &#39;torque&#39;)
     log_path = kwargs.pop(&#39;log_path&#39;, None)
     binary = kwargs.pop(&#39;binary&#39;, False)
@@ -239,8 +212,8 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
         file_extentions = &#39;.txt&#39;
     
     kwargs.update({&#39;batch_size&#39;:str(batch_size)})
-    job_ids = []
     for n in range(1, number_of_batches+1):
+        print(n)
         kwargs.update({&#39;job_id&#39;:str(n)})
         if testrespfile_path is not None:
             if cv_folds is not None:
@@ -268,11 +241,10 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    job_id = qsub_nm(job_path=batch_job_path,
+                    qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                    job_ids.append(job_id)
                 elif cluster_spec == &#39;sbatch&#39;:
                     # update the response file 
                     kwargs.update({&#39;testrespfile_path&#39;: \
@@ -312,11 +284,10 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    job_id = qsub_nm(job_path=batch_job_path,
+                    qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                    job_ids.append(job_id)
                 elif cluster_spec == &#39;sbatch&#39;:
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
@@ -354,11 +325,10 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                 batch_respfile_path,
                                 func=func,
                                 **kwargs)
-                    job_id = qsub_nm(job_path=batch_job_path,
+                    qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
                             memory=memory,
                             duration=duration)
-                    job_ids.append(job_id)
                 elif cluster_spec == &#39;sbatch&#39;:
                     sbatchwrap_nm(batch_processing_dir,
                                 python_path,
@@ -376,84 +346,35 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
                                 **kwargs)
-                    qsub_nm(processing_dir=batch_processing_dir)
+                    qsub_nm(processing_dir=batch_processing_dir)</div>
                     # ]
-
-    if interactive:
-        
-        check_jobs(job_ids, delay=60)
-        
-        success = False
-        while (not success):
-            success = collect_nm(processing_dir,
-                           job_name,
-                           func=func,
-                           collect=False,
-                           binary=binary,
-                           batch_size=batch_size,
-                           outputsuffix=outputsuffix)
-            if success:
-                break
-            else:
-                if interactive == &#39;query&#39;:
-                    response = yes_or_no(&#39;Rerun the failed jobs?&#39;)
-                    if response:
-                        rerun_nm(processing_dir, log_path=log_path, memory=memory, 
-                                 duration=duration, binary=binary, 
-                                 interactive=interactive)
-                    else:
-                        success = True
-                else:
-                    print(&#39;Reruning the failed jobs ...&#39;)
-                    rerun_nm(processing_dir, log_path=log_path, memory=memory, 
-                                 duration=duration, binary=binary, 
-                                 interactive=interactive)
-                    
-        if interactive == &#39;query&#39;:
-            response = yes_or_no(&#39;Collect the results?&#39;)
-            if response:
-                success = collect_nm(processing_dir,
-                               job_name,
-                               func=func,
-                               collect=True,
-                               binary=binary,
-                               batch_size=batch_size,
-                               outputsuffix=outputsuffix)
-        else:
-            print(&#39;Collecting the results ...&#39;)
-            success = collect_nm(processing_dir,
-                               job_name,
-                               func=func,
-                               collect=True,
-                               binary=binary,
-                               batch_size=batch_size,
-                               outputsuffix=outputsuffix)</div>
 
 
 &quot;&quot;&quot;routines that are environment independent&quot;&quot;&quot;
 
-<div class="viewcode-block" id="split_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.split_nm">[docs]</a>def split_nm(processing_dir,
+
+<div class="viewcode-block" id="split_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.split_nm">[docs]</a>def split_nm(processing_dir,
              respfile_path,
              batch_size,
              binary,
              **kwargs):
 
-    &quot;&quot;&quot; This function prepares the input files for normative_parallel.
+    &#39;&#39;&#39; This function prepares the input files for normative_parallel.
+    
+    Basic usage::
 
-    :Parameters:
-        * processing_dir    -&gt; Full path to the folder of processing
-        * respfile_path     -&gt; Full path to the responsefile.txt
-                               (subjects x features)
-        * batch_size        -&gt; Number of features in each batch
-        * testrespfile_path -&gt; Full path to the test responsefile.txt
-                               (subjects x features)
-        * binary            -&gt; If True binary file
+        split_nm(processing_dir, respfile_path, batch_size, binary, testrespfile_path)
 
-    :outputs:
-        * The creation of a folder struture for batch-wise processing
+    :param processing_dir: Full path to the processing dir
+    :param respfile_path: Full path to the responsefile.txt (subjects x features)
+    :param batch_size: Number of features in each batch
+    :param testrespfile_path: Full path to the test responsefile.txt (subjects x features)
+    :param binary: If True binary file
 
-    witten by (primarily) T Wolfers (adapted) SM Kia
-    &quot;&quot;&quot;
+    :outputs: The creation of a folder struture for batch-wise processing.
+
+    witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39; 
     
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
 
@@ -548,7 +469,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                          protocol=PICKLE_PROTOCOL)</div>
 
 
-<div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.collect_nm">[docs]</a>def collect_nm(processing_dir,
+<div class="viewcode-block" id="collect_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.collect_nm">[docs]</a>def collect_nm(processing_dir,
                job_name,
                func=&#39;estimate&#39;,
                collect=False,
@@ -556,21 +477,24 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                batch_size=None,
                outputsuffix=&#39;_estimate&#39;):
     
-    &quot;&quot;&quot;This function checks and collects all batches.
+    &#39;&#39;&#39;Function to checks and collects all batches.
 
-    :Parameters:
-        * processing_dir        -&gt; Full path to the processing directory
-        * collect               -&gt; If True data is checked for failed batches
-                                and collected; if False data is just checked
-        * binary                -&gt; Results in pkl format? 
+    Basic usage::
 
-    :ouptuts:
-        * Text files containing all results accross all batches the combined
-          output (written to disk)
-        * returns 0 if batches fail, 1 otherwise
+        collect_nm(processing_dir, job_name)
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    &quot;&quot;&quot;
+
+    :param processing_dir: Full path to the processing directory
+    :param collect: If True data is checked for failed batches and collected; if False data is just checked
+    :param binary: Results in pkl format
+
+    :outputs: Text files containing all results accross all batches the combined output (written to disk).
+
+    :returns 0: if batches fail
+    :returns 1: if bathches complete successfully
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39;
 
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -583,7 +507,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     count = 0
     batch_fail = []
     
-    if (func!=&#39;fit&#39; and func!=&#39;extend&#39; and func!=&#39;merge&#39; and func!=&#39;tune&#39;):
+    if func != &#39;fit&#39;:
         file_example = []
         # TODO: Collect_nm only depends on yhat, thus does not work when no 
         # prediction is made (when test cov is not specified). 
@@ -832,7 +756,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                         file_extentions)
             del bic_dfs
         
-        if (func!=&#39;predict&#39; and func!=&#39;extend&#39; and func!=&#39;merge&#39; and func!=&#39;tune&#39;):
+        if func != &#39;predict&#39; and func != &#39;extend&#39;:
             if not os.path.isdir(processing_dir + &#39;Models&#39;) and \
                os.path.exists(os.path.join(batches[0], &#39;Models&#39;)):
                 os.mkdir(processing_dir + &#39;Models&#39;)
@@ -859,8 +783,8 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                     if meta_data[&#39;outscaler&#39;] in [&#39;standardize&#39;, &#39;minmax&#39;, 
                                 &#39;robminmax&#39;]:
                         Y_scalers.append(meta_data[&#39;scaler_resp&#39;])
-                meta_data[&#39;mean_resp&#39;] = np.squeeze(np.column_stack(mY)) 
-                meta_data[&#39;std_resp&#39;] = np.squeeze(np.column_stack(sY))
+                meta_data[&#39;mean_resp&#39;] = np.squeeze(np.stack(mY)) 
+                meta_data[&#39;std_resp&#39;] = np.squeeze(np.stack(sY))
                 meta_data[&#39;scaler_cov&#39;] = X_scalers 
                 meta_data[&#39;scaler_resp&#39;] = Y_scalers
                 
@@ -902,21 +826,23 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             file_extentions)
 
     if not batch_fail:
-        return True
+        return 1
     else:
-        return False</div>
+        return 0</div>
 
-<div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
+<div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
               binary=False):
-    &quot;&quot;&quot;This function deletes all processing for normative modelling and just
-    keeps the combined output.
+    &#39;&#39;&#39;This function deletes all processing for normative modelling and just keeps the combined output.
 
-    :Parameters:
-        * processing_dir        -&gt; Full path to the processing directory
-        * binary                -&gt; Results in pkl format? 
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    &quot;&quot;&quot;
+        collect_nm(processing_dir)
+
+    :param processing_dir: Full path to the processing directory.
+    :param binary: Results in pkl format.
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39;
     
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -932,7 +858,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # environments -&gt; copy those routines and adapt them in accrodance with your
 # environment
 
-<div class="viewcode-block" id="bashwrap_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.bashwrap_nm">[docs]</a>def bashwrap_nm(processing_dir,
+<div class="viewcode-block" id="bashwrap_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.bashwrap_nm">[docs]</a>def bashwrap_nm(processing_dir,
                 python_path,
                 normative_path,
                 job_name,
@@ -941,35 +867,29 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                 func=&#39;estimate&#39;,
                 **kwargs):
 
-    &quot;&quot;&quot; This function wraps normative modelling into a bash script to run it
+    &#39;&#39;&#39; This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    :Parameters:
-        * processing_dir     -&gt; Full path to the processing dir
-        * python_path        -&gt; Full path to the python distribution
-        * normative_path     -&gt; Full path to the normative.py
-        * job_name           -&gt; Name for the bash script that is the output of
-                                this function
-        * covfile_path       -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -&gt; Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -&gt; Number of cross validations
-        * testcovfile_path   -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -&gt; Full path to a .txt file that contains all
-                                test features
-        * alg                -&gt; which algorithm to use
-        * configparam        -&gt; configuration parameters for this algorithm
+    Basic usage::
 
-    :outputs:
-        * A bash.sh file containing the commands for normative modelling saved
-          to the processing directory (written to disk)
+        bashwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path)
 
-    written by (primarily) T Wolfers
-    &quot;&quot;&quot;
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param alg: which algorithm to use
+    :param configparam: configuration parameters for this algorithm
+
+    :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford.
+    &#39;&#39;&#39;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -977,6 +897,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
     alg = kwargs.pop(&#39;alg&#39;, None)
     configparam = kwargs.pop(&#39;configparam&#39;, None)
+    standardize = kwargs.pop(&#39;standardize&#39;, True)
     
     # change to processing dir
     os.chdir(processing_dir)
@@ -1030,27 +951,25 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     os.chmod(processing_dir + job_name, 0o700)</div>
 
 
-<div class="viewcode-block" id="qsub_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.qsub_nm">[docs]</a>def qsub_nm(job_path,
+<div class="viewcode-block" id="qsub_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.qsub_nm">[docs]</a>def qsub_nm(job_path,
             log_path,
             memory,
             duration):
-    &quot;&quot;&quot;
-    This function submits a job.sh script to the torque custer using the qsub
-    command.
+    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub command.
+    
+    Basic usage::
 
-    ** Input:
-        * job_path      -&gt; Full path to the job.sh file
-        * memory        -&gt; Memory requirements written as string for example
-                           4gb or 500mb
-        * duation       -&gt; The approximate duration of the job, a string with
-                           HH:MM:SS for example 01:01:01
+        qsub_nm(job_path, log_path, memory, duration)
 
-    ** Output:
-        * Submission of the job to the (torque) cluster
+    :param job_path: Full path to the job.sh file.
+    :param memory: Memory requirements written as string for example 4gb or 500mb.
+    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
-    witten by (primarily) T Wolfers, (adapted) SM Kia
-    &quot;&quot;&quot;
+    :outputs: Submission of the job to the (torque) cluster.
 
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39;
+  
     # created qsub command
     if log_path is None:
         qsub_call = [&#39;echo &#39; + job_path + &#39; | qsub -N &#39; + job_path + &#39; -l &#39; +
@@ -1061,34 +980,27 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                      duration + &#39; -o &#39; + log_path + &#39; -e &#39; + log_path]
 
     # submits job to cluster
-    #call(qsub_call, shell=True)
-    job_id = check_output(qsub_call, shell=True).decode(sys.stdout.encoding).replace(&quot;\n&quot;, &quot;&quot;)
-    
-    return job_id</div>
+    call(qsub_call, shell=True)</div>
 
 
-<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
+def rerun_nm(processing_dir,
              log_path,
              memory,
              duration,
-             binary=False, 
-             interactive=False):
-    &quot;&quot;&quot;
-    This function reruns all failed batched in processing_dir after collect_nm
-    has identified he failed batches
+             binary=False):
+    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
 
-    * Input:
-        * processing_dir        -&gt; Full path to the processing directory
-        * memory                -&gt; Memory requirements written as string
-                                   for example 4gb or 500mb
-        * duration               -&gt; The approximate duration of the job, a
-                                   string with HH:MM:SS for example 01:01:01
+    Basic usage::
 
-    written by (primarily) T Wolfers, (adapted) SM Kia
-    &quot;&quot;&quot;
-    
-    job_ids = []
-    
+        rerun_nm(processing_dir, log_path, memory, duration)
+
+    :param processing_dir: Full path to the processing directory
+    :param memory: Memory requirements written as string for example 4gb or 500mb.
+    :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    &#39;&#39;&#39;
+
     if binary:
         file_extentions = &#39;.pkl&#39;
         failed_batches = fileio.load(processing_dir +
@@ -1097,11 +1009,10 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
         for n in range(0, shape[0]):
             jobpath = failed_batches[n, 0]
             print(jobpath)
-            job_id = qsub_nm(job_path=jobpath,
+            qsub_nm(job_path=jobpath,
                     log_path=log_path,
                     memory=memory,
                     duration=duration)
-            job_ids.append(job_id)
     else:
         file_extentions = &#39;.txt&#39;
         failed_batches = fileio.load_pd(processing_dir +
@@ -1110,20 +1021,15 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
         for n in range(0, shape[0]):
             jobpath = failed_batches.iloc[n, 0]
             print(jobpath)
-            job_id = qsub_nm(job_path=jobpath,
+            qsub_nm(job_path=jobpath,
                     log_path=log_path,
                     memory=memory,
                     duration=duration)
-            job_ids.append(job_id)
-            
-    if interactive: 
-        check_jobs(job_ids, delay=60)</div>
-        
 
 # COPY the rotines above here and aadapt those to your cluster
 # bashwarp_nm; qsub_nm; rerun_nm
 
-<div class="viewcode-block" id="sbatchwrap_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.sbatchwrap_nm">[docs]</a>def sbatchwrap_nm(processing_dir,
+<div class="viewcode-block" id="sbatchwrap_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatchwrap_nm">[docs]</a>def sbatchwrap_nm(processing_dir,
                   python_path,
                   normative_path,
                   job_name,
@@ -1134,35 +1040,29 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                   func=&#39;estimate&#39;,
                   **kwargs):
 
-    &quot;&quot;&quot; This function wraps normative modelling into a bash script to run it
+    &#39;&#39;&#39;This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    :Parameters:
-        * processing_dir     -&gt; Full path to the processing dir
-        * python_path        -&gt; Full path to the python distribution
-        * normative_path     -&gt; Full path to the normative.py
-        * job_name           -&gt; Name for the bash script that is the output of
-                                this function
-        * covfile_path       -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                responsefile
-        * respfile_path      -&gt; Full path to a .txt that contains all features
-                                (subjects x features)
-        * cv_folds           -&gt; Number of cross validations
-        * testcovfile_path   -&gt; Full path to a .txt file that contains all
-                                covariats (subjects x covariates) for the
-                                testresponse file
-        * testrespfile_path  -&gt; Full path to a .txt file that contains all
-                                test features
-        * alg                -&gt; which algorithm to use
-        * configparam        -&gt; configuration parameters for this algorithm
+    Basic usage::
 
-    :outputs:
-        * A bash.sh file containing the commands for normative modelling saved
-          to the processing directory (written to disk)
+        sbatchwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path, memory, duration)
 
-    written by (primarily) T Wolfers
-    &quot;&quot;&quot;
+    :param processing_dir: Full path to the processing dir
+    :param python_path: Full path to the python distribution
+    :param normative_path: Full path to the normative.py
+    :param job_name: Name for the bash script that is the output of this function
+    :param covfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the responsefile
+    :param respfile_path: Full path to a .txt that contains all features (subjects x features)
+    :param cv_folds: Number of cross validations
+    :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the testresponse file
+    :param testrespfile_path: Full path to a .txt file that contains all test features
+    :param alg: which algorithm to use
+    :param configparam: configuration parameters for this algorithm
+
+    :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford
+    &#39;&#39;&#39;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -1170,6 +1070,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
     alg = kwargs.pop(&#39;alg&#39;, None)
     configparam = kwargs.pop(&#39;configparam&#39;, None)
+    standardize = kwargs.pop(&#39;standardize&#39;, True)
     
     # change to processing dir
     os.chdir(processing_dir)
@@ -1241,169 +1142,89 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     # changes permissoins for bash.sh file
     os.chmod(processing_dir + job_name, 0o700)</div>
 
-<div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
+<div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
               log_path):
-    &quot;&quot;&quot;
-    This function submits a job.sh scipt to the torque custer using the qsub
+    
+    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub
     command.
 
-    ** Input:
-        * job_path      -&gt; Full path to the job.sh file
-        * log_path      -&gt; The logs are currently stored in the working dir
+    Basic usage::
 
-    ** Output:
-        * Submission of the job to the (torque) cluster
+        sbatch_nm(job_path, log_path)
 
-    witten by (primarily) T Wolfers
-    &quot;&quot;&quot;
+    :param job_path: Full path to the job.sh file
+    :param log_path: The logs are currently stored in the working dir
+
+    :outputs: Submission of the job to the (torque) cluster.
+
+    written by (primarily) T Wolfers, (adapted) S Rutherford.
+    &#39;&#39;&#39;
 
     # created qsub command
     sbatch_call = [&#39;sbatch &#39; + job_path]
 
     # submits job to cluster
-    call(sbatch_call, shell=True)
+    call(sbatch_call, shell=True)</div>
     
-    def rerun_nm(processing_dir,
+<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
                  memory,
                  duration,
                  new_memory=False,
                  new_duration=False,
                  binary=False,
                  **kwargs):
-        &quot;&quot;&quot;
-        This function reruns all failed batched in processing_dir after 
-        collect_nm has identified he failed batches
+        
+    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
     
-        * Input:
-            * processing_dir        -&gt; Full path to the processing directory
-            * memory                -&gt; Memory requirements written as string
-                                       for example 4gb or 500mb
-            * duration              -&gt; The approximate duration of the job, a
-                                       string with HH:MM:SS for example 01:01:01
-            * new_memory            -&gt; If you want to change the memory 
-                                        you have to indicate it here.
-            * new_duration          -&gt; If you want to change the duration 
-                                        you have to indicate it here.
-        * Outputs:
-            * Reruns failed batches. 
+    Basic usage::
+
+        rerun_nm(processing_dir, memory, duration)
+
+    :param processing_dir: Full path to the processing directory.
+    :param memory: Memory requirements written as string, for example 4gb or 500mb.
+    :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
+    :param new_memory: If you want to change the memory you have to indicate it here.
+    :param new_duration: If you want to change the duration you have to indicate it here.
+
+    :outputs: Re-runs failed batches. 
     
-        written by (primarily) T Wolfers
-        &quot;&quot;&quot;
-        log_path = kwargs.pop(&#39;log_path&#39;, None)
+     written by (primarily) T Wolfers, (adapted) S Rutherford.
+    &#39;&#39;&#39;
+    log_path = kwargs.pop(&#39;log_path&#39;, None)
     
-        if binary:
-            file_extentions = &#39;.pkl&#39;
-            failed_batches = fileio.load(processing_dir +
-                                         &#39;failed_batches&#39; + 
-                                         file_extentions)
-            shape = failed_batches.shape
-            for n in range(0, shape[0]):
-                jobpath = failed_batches[n, 0]
-                print(jobpath)
-                if new_duration != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(duration, new_duration), end=&#39;&#39;)
+    if binary:
+        file_extentions = &#39;.pkl&#39;
+        failed_batches = fileio.load(processing_dir + &#39;failed_batches&#39; +  file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end=&#39;&#39;)
                 if new_memory != False:
                     with fileinput.FileInput(jobpath, inplace=True) as file:
                         for line in file:
                             print(line.replace(memory, new_memory), end=&#39;&#39;)
-                sbatch_nm(jobpath,
-                          log_path)
-        else:
-            file_extentions = &#39;.txt&#39;
-            failed_batches = fileio.load_pd(processing_dir +
-                                           &#39;failed_batches&#39; + file_extentions)
-            shape = failed_batches.shape
-            for n in range(0, shape[0]):
-                jobpath = failed_batches.iloc[n, 0]
-                print(jobpath)
-                if new_duration != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(duration, new_duration), end=&#39;&#39;)
+                sbatch_nm(jobpath, log_path)
+
+    else:
+        file_extentions = &#39;.txt&#39;
+        failed_batches = fileio.load_pd(processing_dir + &#39;failed_batches&#39; + file_extentions)
+        shape = failed_batches.shape
+        for n in range(0, shape[0]):
+            jobpath = failed_batches.iloc[n, 0]
+            print(jobpath)
+            if new_duration != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(duration, new_duration), end=&#39;&#39;)
                 if new_memory != False:
                     with fileinput.FileInput(jobpath, inplace=True) as file:
                         for line in file:
                             print(line.replace(memory, new_memory), end=&#39;&#39;)
-                sbatch_nm(jobpath,
-                          log_path)</div>
-
-
-<div class="viewcode-block" id="retrieve_jobs"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.retrieve_jobs">[docs]</a>def retrieve_jobs():
-    &quot;&quot;&quot;
-    A utility function to retrieve task status from the outputs of qstat.
-    
-    :return: a dictionary of jobs.
-
-    &quot;&quot;&quot;
-    
-    output = check_output(&#39;qstat&#39;, shell=True).decode(sys.stdout.encoding)
-    output = output.split(&#39;\n&#39;)
-    jobs = dict()
-    for line in output[2:-1]:
-        (Job_ID, Job_Name, User, Wall_Time, Status, Queue) = line.split()
-        jobs[Job_ID] = dict()
-        jobs[Job_ID][&#39;name&#39;] = Job_Name
-        jobs[Job_ID][&#39;walltime&#39;] = Wall_Time
-        jobs[Job_ID][&#39;status&#39;] = Status
-        
-    return jobs</div>
-        
-
-<div class="viewcode-block" id="check_job_status"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.check_job_status">[docs]</a>def check_job_status(jobs):
-    &quot;&quot;&quot;
-    A utility function to count the tasks with different status.
-    
-    :param jobs: List of job ids.
-    :return: returns the number of taks athat are queued, running, completed,
-    and other status.
-    
-    &quot;&quot;&quot;
-    running_jobs = retrieve_jobs()
-    
-    r = 0
-    c = 0
-    q = 0
-    u = 0
-    for job in jobs:
-        try:
-            if running_jobs[job][&#39;status&#39;] == &#39;C&#39;:
-                c += 1
-            elif running_jobs[job][&#39;status&#39;] == &#39;Q&#39;:
-                q += 1
-            elif running_jobs[job][&#39;status&#39;] == &#39;R&#39;:
-                r += 1
-            else:
-                u += 1
-        except: # probably meanwhile the job is finished.
-            c += 1 
-            continue
-                 
-    print(&#39;Total Jobs:%d, Queued:%d, Running:%d, Completed:%d, Unknown:%d&#39; 
-          %(len(jobs), q, r, c, u))
-    return q,r,c,u</div>
-    
-
-<div class="viewcode-block" id="check_jobs"><a class="viewcode-back" href="../pages/modindex.html#normative_parallel.check_jobs">[docs]</a>def check_jobs(jobs, delay=60):
-    &quot;&quot;&quot;
-    A utility function for chacking the status of submitted jobs.
-    
-    :param jobs: list of job ids.
-    :param delay: the delay (in seconds) between two consequative checks, 
-    defaults to 60.
-
-    &quot;&quot;&quot;
-    
-    n = len(jobs)
-    
-    while(True):
-        q,r,c,u = check_job_status(jobs)
-        if c == n:
-            print(&#39;All jobs are completed!&#39;)
-            break
-        time.sleep(delay)</div>
-        
+                sbatch_nm(jobpath, log_path)</div>
 </pre></div>
 
            </div>
