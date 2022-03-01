@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Braincharts tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bayesian Linear Regression" href="BLR_normativemodel_protocol.html" />
+    <link rel="prev" title="Hierarchical Bayesian Regression" href="HBR_NormativeModel_FCONdata_Tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Braincharts: transfer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#download-test-dataset">Download test dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-test-data">Load test data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-load-adaptation-data">(Optional) Load adaptation data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-which-models-to-fit">Configure which models to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-covariates">Configure covariates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#make-predictions">Make predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluate-the-performance">Evaluate the performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-dummy-data-for-plotting">Preparing dummy data for plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-the-normative-models">Plotting the normative models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Braincharts tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/pages/apply_normative_models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="braincharts-transfer">
+<h1>Braincharts: transfer<a class="headerlink" href="#braincharts-transfer" title="Permalink to this headline"></a></h1>
+<p>Code for transfering the models from <a class="reference external" href="https://elifesciences.org/articles/72904">Charting Brain Growth and Aging at High Spatial Precision.</a></p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/brainchart_fig1.png"><img alt="../_images/brainchart_fig1.png" src="../_images/brainchart_fig1.png" style="height: 400px;" /></a>
+</div>
+<p>This notebook shows how to apply the coefficients from pre-estimated
+normative models to new data. This can be done in two different ways:
+(i) using a new set of data derived from the same sites used to estimate
+the model and (ii) on a completely different set of sites. In the latter
+case, we also need to estimate the site effect, which requires some
+calibration/adaptation data. As an illustrative example, we use a
+dataset derived from several <a class="reference external" href="https://openneuro.org/">OpenNeuro
+datasets</a> and adapt the learned model to make
+predictions on these data.</p>
+<p>First, if necessary, we install PCNtoolkit (note: this tutorial requires
+at least version 0.20)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.20
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> git clone https://github.com/predictive-clinical-neuroscience/braincharts.git
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Cloning into &#39;braincharts&#39;...
+remote: Enumerating objects: 1444, done.[K
+remote: Counting objects: 100% (1444/1444), done.[K
+remote: Compressing objects: 100% (1365/1365), done.[K
+remote: Total 1444 (delta 153), reused 1342 (delta 75), pack-reused 0[K
+Receiving objects: 100% (1444/1444), 57.99 MiB | 34.87 MiB/s, done.
+Resolving deltas: 100% (153/153), done.
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># we need to be in the scripts folder when we import the libraries in the code block below,</span>
+<span class="c1"># because there is a function called nm_utils that is in the scripts folder that we need to import</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;/content/braincharts/scripts/&#39;</span><span class="p">)</span> <span class="c1">#this path is setup for running on Google Colab. Change it to match your local path if running locally</span>
+</pre></div>
+</div>
+<p>Now we import the required libraries</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+
+<span class="kn">from</span> <span class="nn">pcntoolkit.normative</span> <span class="kn">import</span> <span class="n">estimate</span><span class="p">,</span> <span class="n">predict</span><span class="p">,</span> <span class="n">evaluate</span>
+<span class="kn">from</span> <span class="nn">pcntoolkit.util.utils</span> <span class="kn">import</span> <span class="n">compute_MSLL</span><span class="p">,</span> <span class="n">create_design_matrix</span>
+<span class="kn">from</span> <span class="nn">nm_utils</span> <span class="kn">import</span> <span class="n">remove_bad_subjects</span><span class="p">,</span> <span class="n">load_2d</span>
+</pre></div>
+</div>
+<p>We need to unzip the models.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;/content/braincharts/models/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>lifespan_12K_57sites_mqc2_train.zip  lifespan_29K_82sites_train.zip
+lifespan_12K_59sites_mqc_train.zip   lifespan_57K_82sites.zip
+lifespan_23K_57sites_mqc2.zip        README.md
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># we will use the biggest sample as our training set (approx. N=57000 subjects from 82 sites)</span>
+<span class="c1"># for more info on the other pretrained models available in this repository,</span>
+<span class="c1"># please refer to the accompanying paper https://elifesciences.org/articles/72904</span>
+<span class="o">!</span> unzip lifespan_57K_82sites.zip
+</pre></div>
+</div>
+<p>Next, we configure some basic variables, like where we want the analysis
+to be done and which model we want to use.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We maintain a list of site ids for each dataset, which
+describe the site names in the training and test data (<code class="docutils literal notranslate"><span class="pre">site_ids_tr</span></code>
+and <code class="docutils literal notranslate"><span class="pre">site_ids_te</span></code>), plus also the adaptation data . The training site
+ids are provided as a text file in the distribution and the test ids are
+extracted automatically from the pandas dataframe (see below). If you
+use additional data from the sites (e.g. later waves from ABCD), it may
+be necessary to adjust the site names to match the names in the training
+set. See the accompanying paper for more details</p>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># which model do we wish to use?</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;lifespan_57K_82sites&#39;</span>
+<span class="n">site_names</span> <span class="o">=</span> <span class="s1">&#39;site_ids_82sites.txt&#39;</span>
+
+<span class="c1"># where the analysis takes place</span>
+<span class="n">root_dir</span> <span class="o">=</span> <span class="s1">&#39;/content/braincharts&#39;</span>
+<span class="n">out_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+
+<span class="c1"># load a set of site ids from this model. This must match the training data</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span> <span class="n">site_names</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">site_ids_tr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="download-test-dataset">
+<h2>Download test dataset<a class="headerlink" href="#download-test-dataset" title="Permalink to this headline"></a></h2>
+<p>As mentioned above, to demonstrate this tool we will use a test dataset
+derived from the FCON 1000 dataset. We provide a prepackaged
+training/test split of these data in the required format (also after
+removing sites with only a few data points),
+<a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/tree/main/data">here</a>.
+you can get these data by running the following commmands:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">root_dir</span><span class="p">)</span>
+<span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_te.csv
+<span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_tr.csv
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>--2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_te.csv
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 628752 (614K) [text/plain]
+Saving to: ‘OpenNeuroTransfer_te.csv’
+
+OpenNeuroTransfer_t 100%[===================&gt;] 614.02K  --.-KB/s    in 0.03s
+
+2022-02-17 15:01:31 (22.0 MB/s) - ‘OpenNeuroTransfer_te.csv’ saved [628752/628752]
+
+--2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_tr.csv
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 163753 (160K) [text/plain]
+Saving to: ‘OpenNeuroTransfer_tr.csv’
+
+OpenNeuroTransfer_t 100%[===================&gt;] 159.92K  --.-KB/s    in 0.03s
+
+2022-02-17 15:01:32 (6.08 MB/s) - ‘OpenNeuroTransfer_tr.csv’ saved [163753/163753]
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-test-data">
+<h2>Load test data<a class="headerlink" href="#load-test-data" title="Permalink to this headline"></a></h2>
+<p>Now we load the test data and remove some subjects that may have poor
+scan quality. This asssesment is based on the Freesurfer Euler
+characteristic as described in the papers below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the purposes of this tutorial, we make predictions for all
+sites in the FCON 1000 dataset, but two of them were also included in
+the training data (named ‘Baltimore’ and ‘NewYork_a’). In this case,
+this will only slightly bias the accuracy, but in order to replicate the
+results in the paper, it would be necessary to additionally remove these
+sites from the test dataframe.</p>
+</div>
+<p><strong>References</strong> - <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.05.28.446120v1.abstract">Kia et al
+2021</a>
+- <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S1053811917310832?via%3Dihub">Rosen et al
+2018</a></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">&#39;OpenNeuroTransfer_te.csv&#39;</span><span class="p">)</span>
+
+<span class="n">df_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">test_data</span><span class="p">)</span>
+
+<span class="c1"># remove some bad subjects, this requires having a column called &quot;avg_en&quot; that corresponds to the average Euler number extracted from Freesurfer</span>
+<span class="c1"># df_te, bad_sub = remove_bad_subjects(df_te, df_te)</span>
+
+<span class="c1"># extract a list of unique site ids from the test set</span>
+<span class="n">site_ids_te</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-load-adaptation-data">
+<h2>(Optional) Load adaptation data<a class="headerlink" href="#optional-load-adaptation-data" title="Permalink to this headline"></a></h2>
+<p>If the data you wish to make predictions for is not derived from the
+same scanning sites as those in the trainig set, it is necessary to
+learn the site effect so that we can account for it in the predictions.
+In order to do this in an unbiased way, we use a separate dataset, which
+we refer to as ‘adaptation’ data. This must contain data for all the
+same sites as in the test dataset and we assume these are coded in the
+same way, based on a the ‘sitenum’ column in the dataframe.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adaptation_data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">&#39;OpenNeuroTransfer_tr.csv&#39;</span><span class="p">)</span>
+
+<span class="n">df_ad</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">adaptation_data</span><span class="p">)</span>
+
+<span class="c1"># remove some bad subjects, this requires having a column called &quot;avg_en&quot; that corresponds to the average Euler number extracted from Freesurfer</span>
+<span class="c1"># df_ad, bad_sub = remove_bad_subjects(df_ad, df_ad)</span>
+
+<span class="c1"># extract a list of unique site ids from the test set</span>
+<span class="n">site_ids_ad</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df_ad</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_ad</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_te</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: some of the testing sites are not in the adaptation data&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-which-models-to-fit">
+<h2>Configure which models to fit<a class="headerlink" href="#configure-which-models-to-fit" title="Permalink to this headline"></a></h2>
+<p>Now, we configure which imaging derived phenotypes (IDPs) we would like
+to process. This is just a list of column names in the dataframe we have
+loaded above.</p>
+<p>We could load the whole set (i.e. all phenotypes for which we have
+models for …</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the list of idps for left and right hemispheres, plus subcortical regions</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_lh.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_lh</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_rh.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_rh</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span><span class="s1">&#39;docs&#39;</span><span class="p">,</span><span class="s1">&#39;phenotypes_sc.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">idp_ids_sc</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+<span class="c1"># we choose here to process all idps</span>
+<span class="n">idp_ids</span> <span class="o">=</span> <span class="n">idp_ids_lh</span> <span class="o">+</span> <span class="n">idp_ids_rh</span> <span class="o">+</span> <span class="n">idp_ids_sc</span>
+</pre></div>
+</div>
+<p>… or alternatively, we could just specify a list</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idp_ids</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;Left-Thalamus-Proper&#39;</span><span class="p">,</span> <span class="s1">&#39;Left-Lateral-Ventricle&#39;</span><span class="p">,</span> <span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-covariates">
+<h2>Configure covariates<a class="headerlink" href="#configure-covariates" title="Permalink to this headline"></a></h2>
+<p>Now, we configure some parameters to fit the model. First, we choose
+which columns of the pandas dataframe contain the covariates (age and
+sex). The site parameters are configured automatically later on by the
+<code class="docutils literal notranslate"><span class="pre">configure_design_matrix()</span></code> function, when we loop through the IDPs in
+the list</p>
+<p>The supplied coefficients are derived from a ‘warped’ Bayesian linear
+regression model, which uses a nonlinear warping function to model
+non-Gaussianity (<code class="docutils literal notranslate"><span class="pre">sinarcsinh</span></code>) plus a non-linear basis expansion (a
+cubic b-spline basis set with 5 knot points, which is the default value
+in the PCNtoolkit package). Since we are sticking with the default
+value, we do not need to specify any parameters for this, but we do need
+to specify the limits. We choose to pad the input by a few years either
+side of the input range. We will also set a couple of options that
+control the estimation of the model</p>
+<p>For further details about the likelihood warping approach, see the
+accompanying paper and <a class="reference external" href="https://www.biorxiv.org/content/10.1101/2021.04.05.438429v1">Fraza et al
+2021</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># which data columns do we wish to use as covariates?</span>
+<span class="n">cols_cov</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]</span>
+
+<span class="c1"># limits for cubic B-spline basis</span>
+<span class="n">xmin</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span>
+<span class="n">xmax</span> <span class="o">=</span> <span class="mi">110</span>
+
+<span class="c1"># Absolute Z treshold above which a sample is considered to be an outlier (without fitting any model)</span>
+<span class="n">outlier_thresh</span> <span class="o">=</span> <span class="mi">7</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="make-predictions">
+<h2>Make predictions<a class="headerlink" href="#make-predictions" title="Permalink to this headline"></a></h2>
+<p>This will make predictions for each IDP separately. This is done by
+extracting a column from the dataframe (i.e. specifying the IDP as the
+response variable) and saving it as a numpy array. Then, we configure
+the covariates, which is a numpy data array having the number of rows
+equal to the number of datapoints in the test set. The columns are
+specified as follows:</p>
+<ul class="simple">
+<li><p>A global intercept (column of ones)</p></li>
+<li><p>The covariate columns (here age and sex, coded as 0=female/1=male)</p></li>
+<li><p>Dummy coded columns for the sites in the training set (one column per
+site)</p></li>
+<li><p>Columns for the basis expansion (seven columns for the default
+parameterisation)</p></li>
+</ul>
+<p>Once these are saved as numpy arrays in ascii format (as here) or
+(alternatively) in pickle format, these are passed as inputs to the
+<code class="docutils literal notranslate"><span class="pre">predict()</span></code> method in the PCNtoolkit normative modelling framework.
+These are written in the same format to the location specified by
+<code class="docutils literal notranslate"><span class="pre">idp_dir</span></code>. At the end of this step, we have a set of predictions and
+Z-statistics for the test dataset that we can take forward to further
+analysis.</p>
+<p>When we need to make predictions on new data, the procedure is
+more involved, since we need to prepare, process and store covariates,
+response variables and site ids for the adaptation data.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running IDP&#39;</span><span class="p">,</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">idp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">idp</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">)</span>
+
+    <span class="c1"># extract and save the response variables for the test set</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="n">idp</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="c1"># save the variables</span>
+    <span class="n">resp_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_te.txt&#39;</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">resp_file_te</span><span class="p">,</span> <span class="n">y_te</span><span class="p">)</span>
+
+    <span class="c1"># configure and save the design matrix</span>
+    <span class="n">cov_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_te.txt&#39;</span><span class="p">)</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span><span class="n">df_te</span><span class="p">[</span><span class="n">cols_cov</span><span class="p">],</span>
+                                <span class="n">site_ids</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span>
+                                <span class="n">all_sites</span> <span class="o">=</span> <span class="n">site_ids_tr</span><span class="p">,</span>
+                                <span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;bspline&#39;</span><span class="p">,</span>
+                                <span class="n">xmin</span> <span class="o">=</span> <span class="n">xmin</span><span class="p">,</span>
+                                <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmax</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">,</span> <span class="n">X_te</span><span class="p">)</span>
+
+    <span class="c1"># check whether all sites in the test set are represented in the training set</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_tr</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_te</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;All sites are present in the training data&#39;</span><span class="p">)</span>
+
+        <span class="c1"># just make predictions</span>
+        <span class="n">yhat_te</span><span class="p">,</span> <span class="n">s2_te</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">,</span>
+                                    <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;blr&#39;</span><span class="p">,</span>
+                                    <span class="n">respfile</span><span class="o">=</span><span class="n">resp_file_te</span><span class="p">,</span>
+                                    <span class="n">model_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Some sites missing from the training data. Adapting model&#39;</span><span class="p">)</span>
+
+        <span class="c1"># save the covariates for the adaptation data</span>
+        <span class="n">X_ad</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span><span class="n">df_ad</span><span class="p">[</span><span class="n">cols_cov</span><span class="p">],</span>
+                                    <span class="n">site_ids</span> <span class="o">=</span> <span class="n">df_ad</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span>
+                                    <span class="n">all_sites</span> <span class="o">=</span> <span class="n">site_ids_tr</span><span class="p">,</span>
+                                    <span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;bspline&#39;</span><span class="p">,</span>
+                                    <span class="n">xmin</span> <span class="o">=</span> <span class="n">xmin</span><span class="p">,</span>
+                                    <span class="n">xmax</span> <span class="o">=</span> <span class="n">xmax</span><span class="p">)</span>
+        <span class="n">cov_file_ad</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_ad.txt&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">cov_file_ad</span><span class="p">,</span> <span class="n">X_ad</span><span class="p">)</span>
+
+        <span class="c1"># save the responses for the adaptation data</span>
+        <span class="n">resp_file_ad</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_ad.txt&#39;</span><span class="p">)</span>
+        <span class="n">y_ad</span> <span class="o">=</span> <span class="n">df_ad</span><span class="p">[</span><span class="n">idp</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">resp_file_ad</span><span class="p">,</span> <span class="n">y_ad</span><span class="p">)</span>
+
+        <span class="c1"># save the site ids for the adaptation data</span>
+        <span class="n">sitenum_file_ad</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;sitenum_ad.txt&#39;</span><span class="p">)</span>
+        <span class="n">site_num_ad</span> <span class="o">=</span> <span class="n">df_ad</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">sitenum_file_ad</span><span class="p">,</span> <span class="n">site_num_ad</span><span class="p">)</span>
+
+        <span class="c1"># save the site ids for the test data</span>
+        <span class="n">sitenum_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;sitenum_te.txt&#39;</span><span class="p">)</span>
+        <span class="n">site_num_te</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">sitenum_file_te</span><span class="p">,</span> <span class="n">site_num_te</span><span class="p">)</span>
+
+        <span class="n">yhat_te</span><span class="p">,</span> <span class="n">s2_te</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">,</span>
+                                    <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;blr&#39;</span><span class="p">,</span>
+                                    <span class="n">respfile</span> <span class="o">=</span> <span class="n">resp_file_te</span><span class="p">,</span>
+                                    <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">),</span>
+                                    <span class="n">adaptrespfile</span> <span class="o">=</span> <span class="n">resp_file_ad</span><span class="p">,</span>
+                                    <span class="n">adaptcovfile</span> <span class="o">=</span> <span class="n">cov_file_ad</span><span class="p">,</span>
+                                    <span class="n">adaptvargroupfile</span> <span class="o">=</span> <span class="n">sitenum_file_ad</span><span class="p">,</span>
+                                    <span class="n">testvargroupfile</span> <span class="o">=</span> <span class="n">sitenum_file_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running IDP 0 Left-Thalamus-Proper :
+Some sites missing from the training data. Adapting model
+Loading data ...
+Prediction by model  1 of 1
+Evaluating the model ...
+Evaluations Writing outputs ...
+Writing outputs ...
+Running IDP 1 Left-Lateral-Ventricle :
+Some sites missing from the training data. Adapting model
+Loading data ...
+Prediction by model  1 of 1
+Evaluating the model ...
+Evaluations Writing outputs ...
+Writing outputs ...
+Running IDP 2 rh_MeanThickness_thickness :
+Some sites missing from the training data. Adapting model
+Loading data ...
+Prediction by model  1 of 1
+Evaluating the model ...
+Evaluations Writing outputs ...
+Writing outputs ...
+</pre></div>
+</div>
+</div>
+<div class="section" id="evaluate-the-performance">
+<h2>Evaluate the performance<a class="headerlink" href="#evaluate-the-performance" title="Permalink to this headline"></a></h2>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/brainchart_fig3.png"><img alt="../_images/brainchart_fig3.png" src="../_images/brainchart_fig3.png" style="height: 400px;" /></a>
+</div>
+</div>
+<div class="section" id="preparing-dummy-data-for-plotting">
+<h2>Preparing dummy data for plotting<a class="headerlink" href="#preparing-dummy-data-for-plotting" title="Permalink to this headline"></a></h2>
+<p>Now, we plot the centiles of variation estimated by the normative model.</p>
+<p>We do this by making use of a set of dummy covariates that span the
+whole range of the input space (for age) for a fixed value of the other
+covariates (e.g. sex) so that we can make predictions for these dummy
+data points, then plot them. We configure these dummy predictions using
+the same procedure as we used for the real data. We can use the same
+dummy data for all the IDPs we wish to plot</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># which sex do we want to plot?</span>
+<span class="n">sex</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># 1 = male 0 = female</span>
+<span class="k">if</span> <span class="n">sex</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">clr</span> <span class="o">=</span> <span class="s1">&#39;blue&#39;</span><span class="p">;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">clr</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+
+<span class="c1"># create dummy data for visualisation</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;configuring dummy data ...&#39;</span><span class="p">)</span>
+<span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">X0_dummy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">xx</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">X0_dummy</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">xx</span>
+<span class="n">X0_dummy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sex</span>
+
+<span class="c1"># create the design matrix</span>
+<span class="n">X_dummy</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span><span class="n">X0_dummy</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="p">,</span> <span class="n">site_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">all_sites</span><span class="o">=</span><span class="n">site_ids_tr</span><span class="p">)</span>
+
+<span class="c1"># save the dummy covariates</span>
+<span class="n">cov_file_dummy</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span><span class="s1">&#39;cov_bspline_dummy_mean.txt&#39;</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">cov_file_dummy</span><span class="p">,</span> <span class="n">X_dummy</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>configuring dummy data ...
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotting-the-normative-models">
+<h2>Plotting the normative models<a class="headerlink" href="#plotting-the-normative-models" title="Permalink to this headline"></a></h2>
+<p>Now we loop through the IDPs, plotting each one separately. The outputs
+of this step are a set of quantitative regression metrics for each IDP
+and a set of centile curves which we plot the test data against.</p>
+<p>This part of the code is relatively complex because we need to keep
+track of many quantities for the plotting. We also need to remember
+whether the data need to be warped or not. By default in PCNtoolkit,
+predictions in the form of <code class="docutils literal notranslate"><span class="pre">yhat,</span> <span class="pre">s2</span></code> are always in the warped
+(Gaussian) space. If we want predictions in the input (non-Gaussian)
+space, then we need to warp them with the inverse of the estimated
+warping function. This can be done using the function
+<code class="docutils literal notranslate"><span class="pre">nm.blr.warp.warp_predictions()</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is necessary to update the intercept for each of the sites.
+For purposes of visualisation, here we do this by adjusting the median
+of the data to match the dummy predictions, but note that all the
+quantitative metrics are estimated using the predictions that are
+adjusted properly using a learned offset (or adjusted using a hold-out
+adaptation set, as above). Note also that for the calibration data we
+require at least two data points of the same sex in each site to be able
+to estimate the variance. Of course, in a real example, you would want
+many more than just two since we need to get a reliable estimate of the
+variance for each site.</p>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;whitegrid&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idp_ids</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running IDP&#39;</span><span class="p">,</span> <span class="n">idp_num</span><span class="p">,</span> <span class="n">idp</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">idp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">idp</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">)</span>
+
+    <span class="c1"># load the true data points</span>
+    <span class="n">yhat_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;yhat_predict.txt&#39;</span><span class="p">))</span>
+    <span class="n">s2_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;ys2_predict.txt&#39;</span><span class="p">))</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_te.txt&#39;</span><span class="p">))</span>
+
+    <span class="c1"># set up the covariates for the dummy data</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Making predictions with dummy covariates (for visualisation)&#39;</span><span class="p">)</span>
+    <span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">cov_file_dummy</span><span class="p">,</span>
+                       <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;blr&#39;</span><span class="p">,</span>
+                       <span class="n">respfile</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">),</span>
+                       <span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_dummy&#39;</span><span class="p">)</span>
+
+    <span class="c1"># load the normative model</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span><span class="s1">&#39;Models&#39;</span><span class="p">,</span> <span class="s1">&#39;NM_0_0_estimate.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="n">nm</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+
+    <span class="c1"># get the warp and warp parameters</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">warp</span>
+    <span class="n">warp_param</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># first, we warp predictions for the true data and compute evaluation metrics</span>
+    <span class="n">med_te</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat_te</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2_te</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">med_te</span> <span class="o">=</span> <span class="n">med_te</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;metrics:&#39;</span><span class="p">,</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">med_te</span><span class="p">))</span>
+
+    <span class="c1"># then, we warp dummy predictions to create the plots</span>
+    <span class="n">med</span><span class="p">,</span> <span class="n">pr_int</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">)</span>
+
+    <span class="c1"># extract the different variance components to visualise</span>
+    <span class="n">beta</span><span class="p">,</span> <span class="n">junk1</span><span class="p">,</span> <span class="n">junk2</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">_parse_hyps</span><span class="p">(</span><span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X_dummy</span><span class="p">)</span>
+    <span class="n">s2n</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">beta</span> <span class="c1"># variation (aleatoric uncertainty)</span>
+    <span class="n">s2s</span> <span class="o">=</span> <span class="n">s2</span><span class="o">-</span><span class="n">s2n</span> <span class="c1"># modelling uncertainty (epistemic uncertainty)</span>
+
+    <span class="c1"># plot the data points</span>
+    <span class="n">y_te_rescaled_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">y_te</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sid</span><span class="p">,</span> <span class="n">site</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">site_ids_te</span><span class="p">):</span>
+        <span class="c1"># plot the true test data points</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_tr</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">site_ids_te</span><span class="p">):</span>
+            <span class="c1"># all data in the test set are present in the training set</span>
+
+            <span class="c1"># first, we select the data points belonging to this particular site</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">X_te</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">sex</span><span class="p">,</span> <span class="n">X_te</span><span class="p">[:,</span><span class="n">sid</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">cols_cov</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="mi">0</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No data for site&#39;</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="s1">&#39;skipping...&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># then directly adjust the data</span>
+            <span class="n">idx_dummy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">X_dummy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">X_te</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">X_dummy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">X_te</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+            <span class="n">y_te_rescaled</span> <span class="o">=</span> <span class="n">y_te</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">med</span><span class="p">[</span><span class="n">idx_dummy</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we need to adjust the data based on the adaptation dataset</span>
+
+            <span class="c1"># first, select the data point belonging to this particular site</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">X_te</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">sex</span><span class="p">,</span> <span class="p">(</span><span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">site</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># load the adaptation data</span>
+            <span class="n">y_ad</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;resp_ad.txt&#39;</span><span class="p">))</span>
+            <span class="n">X_ad</span> <span class="o">=</span> <span class="n">load_2d</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_ad.txt&#39;</span><span class="p">))</span>
+            <span class="n">idx_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">X_ad</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">sex</span><span class="p">,</span> <span class="p">(</span><span class="n">df_ad</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">site</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx_a</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Insufficent data for site&#39;</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="s1">&#39;skipping...&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># adjust and rescale the data</span>
+            <span class="n">y_te_rescaled</span><span class="p">,</span> <span class="n">s2_rescaled</span> <span class="o">=</span> <span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">predict_and_adjust</span><span class="p">(</span><span class="n">nm</span><span class="o">.</span><span class="n">blr</span><span class="o">.</span><span class="n">hyp</span><span class="p">,</span>
+                                                                   <span class="n">X_ad</span><span class="p">[</span><span class="n">idx_a</span><span class="p">,:],</span>
+                                                                   <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_ad</span><span class="p">[</span><span class="n">idx_a</span><span class="p">]),</span>
+                                                                   <span class="n">Xs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                                   <span class="n">ys</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+        <span class="c1"># plot the (adjusted) data points</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_te</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_te_rescaled</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="c1"># plot the median of the dummy data</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">clr</span><span class="p">)</span>
+
+    <span class="c1"># fill the gaps in between the centiles</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int25</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.75</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int95</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.95</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int99</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.99</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int25</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int25</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int95</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int95</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int99</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int99</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+
+    <span class="c1"># make the width of each centile proportional to the epistemic uncertainty</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int25l</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.75</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int95l</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.95</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int99l</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.99</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int25u</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.75</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int95u</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.95</span><span class="p">])</span>
+    <span class="n">junk</span><span class="p">,</span> <span class="n">pr_int99u</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">warp_predictions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">yhat</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">s2</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">s2s</span><span class="p">),</span> <span class="n">warp_param</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.99</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int25l</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int25u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int95l</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int95u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int99l</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pr_int99u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int25l</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">pr_int25u</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int95l</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">pr_int95u</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int99l</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">pr_int99u</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">)</span>
+
+    <span class="c1"># plot actual centile lines</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int25</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int25</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int95</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int95</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int99</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">pr_int99</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="n">clr</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">idp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">idp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">idp_dir</span><span class="p">,</span> <span class="s1">&#39;centiles_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sex</span><span class="p">)),</span>  <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running IDP 0 Left-Thalamus-Proper :
+Making predictions with dummy covariates (for visualisation)
+Loading data ...
+Prediction by model  1 of 1
+Writing outputs ...
+metrics: {&#39;RMSE&#39;: array([0.55690777]), &#39;Rho&#39;: array([0.]), &#39;pRho&#39;: array([1.]), &#39;SMSE&#39;: array([0.]), &#39;EXPV&#39;: array([0.])}
+</pre></div>
+</div>
+<img alt="../_images/apply_normative_models_29_1.png" src="../_images/apply_normative_models_29_1.png" />
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running IDP 1 Left-Lateral-Ventricle :
+Making predictions with dummy covariates (for visualisation)
+Loading data ...
+Prediction by model  1 of 1
+Writing outputs ...
+metrics: {&#39;RMSE&#39;: array([4205.49266088]), &#39;Rho&#39;: array([0.45898577]), &#39;pRho&#39;: array([5.62632393e-25]), &#39;SMSE&#39;: array([0.81397727]), &#39;EXPV&#39;: array([0.19814613])}
+</pre></div>
+</div>
+<img alt="../_images/apply_normative_models_29_3.png" src="../_images/apply_normative_models_29_3.png" />
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running IDP 2 rh_MeanThickness_thickness :
+Making predictions with dummy covariates (for visualisation)
+Loading data ...
+Prediction by model  1 of 1
+Writing outputs ...
+metrics: {&#39;RMSE&#39;: array([0.08652435]), &#39;Rho&#39;: array([0.77666469]), &#39;pRho&#39;: array([2.97430261e-103]), &#39;SMSE&#39;: array([0.40227749]), &#39;EXPV&#39;: array([0.59789079])}
+</pre></div>
+</div>
+<img alt="../_images/apply_normative_models_29_5.png" src="../_images/apply_normative_models_29_5.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># explore an example output folder of a single model (one ROI)</span>
+<span class="c1"># think about what each of these output files represents.</span>
+<span class="c1"># Hint: look at the variable names and comments in the code block above</span>
+<span class="o">!</span> ls rh_MeanThickness_thickness/
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>centiles_1.png          MSLL_predict.txt  RMSE_predict.txt  yhat_predict.txt
+cov_bspline_ad.txt  pRho_predict.txt  sitenum_ad.txt        ys2_dummy.pkl
+cov_bspline_te.txt  resp_ad.txt       sitenum_te.txt        ys2_predict.txt
+EXPV_predict.txt    resp_te.txt       SMSE_predict.txt      Z_predict.txt
+Models                  Rho_predict.txt   yhat_dummy.pkl
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># check that the number of deviation scores matches the number of subjects in the test set</span>
+<span class="c1"># there should be one deviation score per subject (one line per subject), so we can</span>
+<span class="c1"># verify by counting the line numbers in the Z_predict.txt file</span>
+<span class="o">!</span> cat rh_MeanThickness_thickness/Z_predict.txt <span class="p">|</span> wc
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>436     436   11115
+</pre></div>
+</div>
+<p>The deviation scores are output as a text file in separate folders. We
+want to summarize the deviation scores across all models estimates so we
+can organize them into a single file, and merge the deviation scores
+into the original data file.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> mkdir deviation_scores
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="k">for</span> i <span class="k">in</span> *<span class="p">;</span> <span class="k">do</span> <span class="k">if</span> <span class="o">[[</span> -e <span class="si">${</span><span class="nv">i</span><span class="si">}</span>/Z_predict.txt <span class="o">]]</span><span class="p">;</span> <span class="k">then</span> cp <span class="si">${</span><span class="nv">i</span><span class="si">}</span>/Z_predict.txt deviation_scores/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>_Z_predict.txt<span class="p">;</span> <span class="k">fi</span><span class="p">;</span> <span class="k">done</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">z_dir</span> <span class="o">=</span> <span class="s1">&#39;/content/braincharts/models/lifespan_57K_82sites/deviation_scores/&#39;</span>
+<span class="n">filelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">z_dir</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">z_dir</span><span class="p">)</span>
+<span class="n">Z_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="n">item</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_te</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Z_df</span><span class="p">[</span><span class="s1">&#39;sub_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;sub_id&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_te_Z</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_te</span><span class="p">,</span> <span class="n">Z_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;sub_id&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_te_Z</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;OpenNeuroTransfer_deviation_scores.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="HBR_NormativeModel_FCONdata_Tutorial.html" class="btn btn-neutral float-left" title="Hierarchical Bayesian Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="BLR_normativemodel_protocol.html" class="btn btn-neutral float-right" title="Bayesian Linear Regression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

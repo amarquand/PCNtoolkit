@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fileio &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/tabs.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/visualizations.html">Visualization of normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/other_predictive_models.html">Predictive modeling using deviation scores</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>fileio</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fileio</h1><div class="highlight"><pre>
+<span></span>from __future__ import print_function
+
+import os
+import sys
+import numpy as np
+import nibabel as nib
+import tempfile
+import pandas as pd
+import re
+
+try:  # run as a package if installed
+    from pcntoolkit import configs
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.dirname(path) # parent directory 
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    import configs
+
+CIFTI_MAPPINGS = (&#39;dconn&#39;, &#39;dtseries&#39;, &#39;pconn&#39;, &#39;ptseries&#39;, &#39;dscalar&#39;,
+                  &#39;dlabel&#39;, &#39;pscalar&#39;, &#39;pdconn&#39;, &#39;dpconn&#39;,
+                  &#39;pconnseries&#39;, &#39;pconnscalar&#39;)
+
+CIFTI_VOL_ATLAS = &#39;Atlas_ROIs.2.nii.gz&#39;
+
+PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
+
+# ------------------------
+# general utility routines
+# ------------------------
+
+<div class="viewcode-block" id="predictive_interval"><a class="viewcode-back" href="../modindex.html#fileio.predictive_interval">[docs]</a>def predictive_interval(s2_forward,
+                        cov_forward,
+                        multiplicator):
+  # calculates a predictive interval
+  
+    PI=np.zeros(len(cov_forward))
+    for i,xdot in enumerate(cov_forward):
+        s=np.sqrt(s2_forward[i])
+        PI[i]=multiplicator*s
+    return PI</div>
+
+<div class="viewcode-block" id="create_mask"><a class="viewcode-back" href="../modindex.html#fileio.create_mask">[docs]</a>def create_mask(data_array, mask, verbose=False):
+    # create a (volumetric) mask either from an input nifti or the nifti itself
+
+    if mask is not None:
+        if verbose:
+            print(&#39;Loading ROI mask ...&#39;)
+        maskvol = load_nifti(mask, vol=True)
+        maskvol = maskvol != 0
+    else:
+        if len(data_array.shape) &lt; 4:
+            dim = data_array.shape[0:3] + (1,)
+        else:
+            dim = data_array.shape[0:3] + (data_array.shape[3],)
+
+        if verbose:
+            print(&#39;Generating mask automatically ...&#39;)
+        if dim[3] == 1:
+            maskvol = data_array[:, :, :] != 0
+        else:
+            maskvol = data_array[:, :, :, 0] != 0
+
+    return maskvol</div>
+
+
+<div class="viewcode-block" id="vol2vec"><a class="viewcode-back" href="../modindex.html#fileio.vol2vec">[docs]</a>def vol2vec(dat, mask, verbose=False):
+    # vectorise a 3d image
+
+    if len(dat.shape) &lt; 4:
+        dim = dat.shape[0:3] + (1,)
+    else:
+        dim = dat.shape[0:3] + (dat.shape[3],)
+        
+    #mask = create_mask(dat, mask=mask, verbose=verbose)
+    if mask is None:
+        mask = create_mask(dat, mask=mask, verbose=verbose)
+
+    # mask the image
+    maskid = np.where(mask.ravel())[0]
+    dat = np.reshape(dat, (np.prod(dim[0:3]), dim[3]))
+    dat = dat[maskid, :]
+
+    # convert to 1-d array if the file only contains one volume
+    if dim[3] == 1:
+        dat = dat.ravel()
+
+    return dat</div>
+
+
+<div class="viewcode-block" id="file_type"><a class="viewcode-back" href="../modindex.html#fileio.file_type">[docs]</a>def file_type(filename):
+    # routine to determine filetype
+
+    if filename.endswith((&#39;.dtseries.nii&#39;, &#39;.dscalar.nii&#39;, &#39;.dlabel.nii&#39;)):
+        ftype = &#39;cifti&#39;
+    elif filename.endswith((&#39;.nii.gz&#39;, &#39;.nii&#39;, &#39;.img&#39;, &#39;.hdr&#39;)):
+        ftype = &#39;nifti&#39;
+    elif filename.endswith((&#39;.txt&#39;, &#39;.csv&#39;, &#39;.tsv&#39;, &#39;.asc&#39;)):
+        ftype = &#39;text&#39;
+    elif filename.endswith((&#39;.pkl&#39;)):
+        ftype = &#39;binary&#39;
+    else:
+        raise ValueError(&quot;I don&#39;t know what to do with &quot; + filename)
+
+    return ftype</div>
+
+
+<div class="viewcode-block" id="file_extension"><a class="viewcode-back" href="../modindex.html#fileio.file_extension">[docs]</a>def file_extension(filename):
+    # routine to get the full file extension (e.g. .nii.gz, not just .gz)
+
+    parts = filename.split(os.extsep)
+
+    if parts[-1] == &#39;gz&#39;:
+        if parts[-2] == &#39;nii&#39; or parts[-2] == &#39;img&#39; or parts[-2] == &#39;hdr&#39;:
+            ext = parts[-2] + &#39;.&#39; + parts[-1]
+        else:
+            ext = parts[-1]
+    elif parts[-1] == &#39;nii&#39;:
+        if parts[-2] in CIFTI_MAPPINGS:
+            ext = parts[-2] + &#39;.&#39; + parts[-1]
+        else:
+            ext = parts[-1]
+    else:
+        ext = parts[-1]
+
+    ext = &#39;.&#39; + ext
+    return ext</div>
+
+
+<div class="viewcode-block" id="file_stem"><a class="viewcode-back" href="../modindex.html#fileio.file_stem">[docs]</a>def file_stem(filename):
+
+    idx = filename.find(file_extension(filename))
+    stm = filename[0:idx]
+
+    return stm</div>
+
+# --------------
+# nifti routines
+# --------------
+
+
+<div class="viewcode-block" id="load_nifti"><a class="viewcode-back" href="../modindex.html#fileio.load_nifti">[docs]</a>def load_nifti(datafile, mask=None, vol=False, verbose=False):
+
+    if verbose:
+        print(&#39;Loading nifti: &#39; + datafile + &#39; ...&#39;)
+    img = nib.load(datafile)
+    dat = img.get_data()
+
+    if mask is not None:
+        mask=load_nifti(mask, vol=True)
+
+    if not vol:
+        dat = vol2vec(dat, mask)
+
+    return dat</div>
+
+
+<div class="viewcode-block" id="save_nifti"><a class="viewcode-back" href="../modindex.html#fileio.save_nifti">[docs]</a>def save_nifti(data, filename, examplenii, mask):
+    &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
+
+    # load mask
+    if isinstance(mask, str):
+        mask = load_nifti(mask, vol=True)
+        mask = mask != 0
+
+    # load example image
+    ex_img = nib.load(examplenii)
+    ex_img.shape
+    dim = ex_img.shape[0:3]
+    if len(data.shape) &lt; 2:
+        nvol = 1
+        data = data[:, np.newaxis]
+    else:
+        nvol = int(data.shape[1])
+
+    # write data
+    array_data = np.zeros((np.prod(dim), nvol))
+    array_data[mask.flatten(), :] = data
+    array_data = np.reshape(array_data, dim+(nvol,))
+    array_img = nib.Nifti1Image(array_data, ex_img.affine, ex_img.header)
+    nib.save(array_img, filename)</div>
+
+# --------------
+# cifti routines
+# --------------
+
+
+<div class="viewcode-block" id="load_cifti"><a class="viewcode-back" href="../modindex.html#fileio.load_cifti">[docs]</a>def load_cifti(filename, vol=False, mask=None, rmtmp=True):
+
+    # parse the name
+    dnam, fnam = os.path.split(filename)
+    fpref = file_stem(fnam)
+    outstem = os.path.join(tempfile.gettempdir(),
+                           str(os.getpid()) + &quot;-&quot; + fpref)
+
+    # extract surface data from the cifti file
+    print(&quot;Extracting cifti surface data to &quot;, outstem, &#39;-*.func.gii&#39;, sep=&quot;&quot;)
+    giinamel = outstem + &#39;-left.func.gii&#39;
+    giinamer = outstem + &#39;-right.func.gii&#39;
+    os.system(&#39;wb_command -cifti-separate &#39; + filename +
+              &#39; COLUMN -metric CORTEX_LEFT &#39; + giinamel)
+    os.system(&#39;wb_command -cifti-separate &#39; + filename +
+              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giinamer)
+
+    # load the surface data
+    giil = nib.load(giinamel)
+    giir = nib.load(giinamer)
+    Nimg = len(giil.darrays)
+    Nvert = len(giil.darrays[0].data)
+    if Nimg == 1:
+        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data),
+                             axis=0)
+    else:
+        Gl = np.zeros((Nvert, Nimg))
+        Gr = np.zeros((Nvert, Nimg))
+        for i in range(0, Nimg):
+            Gl[:, i] = giil.darrays[i].data
+            Gr[:, i] = giir.darrays[i].data
+        out = np.concatenate((Gl, Gr), axis=0)
+    if rmtmp:
+        # clean up temporary files
+        os.remove(giinamel)
+        os.remove(giinamer)
+
+    if vol:
+        niiname = outstem + &#39;-vol.nii&#39;
+        print(&quot;Extracting cifti volume data to &quot;, niiname, sep=&quot;&quot;)
+        os.system(&#39;wb_command -cifti-separate &#39; + filename +
+                  &#39; COLUMN -volume-all &#39; + niiname)
+        vol = load_nifti(niiname, vol=True)
+        volmask = create_mask(vol)
+        out = np.concatenate((out, vol2vec(vol, volmask)), axis=0)
+        if rmtmp:
+            os.remove(niiname)
+
+    return out</div>
+
+
+<div class="viewcode-block" id="save_cifti"><a class="viewcode-back" href="../modindex.html#fileio.save_cifti">[docs]</a>def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
+    &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
+
+    # do some sanity checks
+    if data.dtype == &#39;float32&#39; or \
+       data.dtype == &#39;float&#39; or \
+       data.dtype == &#39;float64&#39;:
+        data = data.astype(&#39;float32&#39;)  # force 32 bit output
+        dtype = &#39;NIFTI_TYPE_FLOAT32&#39;
+    else:
+        raise(ValueError, &#39;Only float data types currently handled&#39;)
+
+    if len(data.shape) == 1:
+        Nimg = 1
+        data = data[:, np.newaxis]
+    else:
+        Nimg = data.shape[1]
+
+    # get the base filename
+    dnam, fnam = os.path.split(filename)
+    fstem = file_stem(fnam)
+
+    # Split the template
+    estem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + &quot;-&quot; + fstem)
+    giiexnamel = estem + &#39;-left.func.gii&#39;
+    giiexnamer = estem + &#39;-right.func.gii&#39;
+    os.system(&#39;wb_command -cifti-separate &#39; + example +
+              &#39; COLUMN -metric CORTEX_LEFT &#39; + giiexnamel)
+    os.system(&#39;wb_command -cifti-separate &#39; + example +
+              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giiexnamer)
+
+    # write left hemisphere
+    giiexl = nib.load(giiexnamel)
+    Nvertl = len(giiexl.darrays[0].data)
+    garraysl = []
+    for i in range(0, Nimg):
+        garraysl.append(
+            nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
+            datatype=dtype))
+    giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
+    fnamel = fstem + &#39;-left.func.gii&#39;
+    nib.save(giil, fnamel)
+
+    # write right hemisphere
+    giiexr = nib.load(giiexnamer)
+    Nvertr = len(giiexr.darrays[0].data)
+    garraysr = []
+    for i in range(0, Nimg):
+        garraysr.append(
+            nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
+            datatype=dtype))
+    giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
+    fnamer = fstem + &#39;-right.func.gii&#39;
+    nib.save(giir, fnamer)
+
+    tmpfiles = [fnamer, fnamel, giiexnamel, giiexnamer]
+
+    # process volumetric data
+    if vol:
+        niiexname = estem + &#39;-vol.nii&#39;
+        os.system(&#39;wb_command -cifti-separate &#39; + example +
+                  &#39; COLUMN -volume-all &#39; + niiexname)
+        niivol = load_nifti(niiexname, vol=True)
+        if mask is None:
+            mask = create_mask(niivol)
+
+        if volatlas is None:
+            volatlas = CIFTI_VOL_ATLAS
+        fnamev = fstem + &#39;-vol.nii&#39;
+
+        save_nifti(data[Nvertr+Nvertl:, :], fnamev, niiexname, mask)
+        tmpfiles.extend([fnamev, niiexname])
+
+    # write cifti
+    fname = fstem + &#39;.dtseries.nii&#39;
+    os.system(&#39;wb_command -cifti-create-dense-timeseries &#39; + fname +
+              &#39; -volume &#39; + fnamev + &#39; &#39; + volatlas +
+              &#39; -left-metric &#39; + fnamel + &#39; -right-metric &#39; + fnamer)
+
+    # clean up
+    for f in tmpfiles:
+        os.remove(f)</div>
+
+# --------------
+# ascii routines
+# --------------
+
+
+<div class="viewcode-block" id="load_pd"><a class="viewcode-back" href="../modindex.html#fileio.load_pd">[docs]</a>def load_pd(filename):
+    # based on pandas
+    x = pd.read_csv(filename,
+                    sep=&#39; &#39;,
+                    header=None)
+    return x</div>
+
+
+<div class="viewcode-block" id="save_pd"><a class="viewcode-back" href="../modindex.html#fileio.save_pd">[docs]</a>def save_pd(data, filename):
+    # based on pandas
+    data.to_csv(filename,
+                index=None,
+                header=None,
+                sep=&#39; &#39;,
+                na_rep=&#39;NaN&#39;)</div>
+
+
+<div class="viewcode-block" id="load_ascii"><a class="viewcode-back" href="../modindex.html#fileio.load_ascii">[docs]</a>def load_ascii(filename):
+    # based on pandas
+    x = np.loadtxt(filename)
+    return x</div>
+
+
+<div class="viewcode-block" id="save_ascii"><a class="viewcode-back" href="../modindex.html#fileio.save_ascii">[docs]</a>def save_ascii(data, filename):
+    # based on pandas
+    np.savetxt(filename, data)</div>
+
+# ----------------
+# generic routines
+# ----------------
+
+
+<div class="viewcode-block" id="save"><a class="viewcode-back" href="../modindex.html#fileio.save">[docs]</a>def save(data, filename, example=None, mask=None, text=False):
+
+    if file_type(filename) == &#39;cifti&#39;:
+        save_cifti(data.T, filename, example, vol=True)
+    elif file_type(filename) == &#39;nifti&#39;:
+        save_nifti(data.T, filename, example, mask)
+    elif text or file_type(filename) == &#39;text&#39;:
+        save_ascii(data, filename)
+    elif file_type(filename) == &#39;binary&#39;:
+        data = pd.DataFrame(data)
+        data.to_pickle(filename, protocol=PICKLE_PROTOCOL)</div>
+
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../modindex.html#fileio.load">[docs]</a>def load(filename, mask=None, text=False, vol=True):
+
+    if file_type(filename) == &#39;cifti&#39;:
+        x = load_cifti(filename, vol=vol)
+    elif file_type(filename) == &#39;nifti&#39;:
+        x = load_nifti(filename, mask)
+    elif text or file_type(filename) == &#39;text&#39;:
+        x = load_ascii(filename)
+    elif file_type(filename) == &#39;binary&#39;:
+        x = pd.read_pickle(filename)
+        x = x.to_numpy()
+
+    return x</div>
+
+# -------------------
+# sorting routines for batched in normative parallel
+# -------------------
+
+
+<div class="viewcode-block" id="tryint"><a class="viewcode-back" href="../modindex.html#fileio.tryint">[docs]</a>def tryint(s):
+    try:
+        return int(s)
+    except ValueError:
+        return s</div>
+
+
+<div class="viewcode-block" id="alphanum_key"><a class="viewcode-back" href="../modindex.html#fileio.alphanum_key">[docs]</a>def alphanum_key(s):
+    return [tryint(c) for c in re.split(&#39;([0-9]+)&#39;, s)]</div>
+
+
+<div class="viewcode-block" id="sort_nicely"><a class="viewcode-back" href="../modindex.html#fileio.sort_nicely">[docs]</a>def sort_nicely(l):
+    return sorted(l, key=alphanum_key)</div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
