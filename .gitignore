@@ -10,6 +10,7 @@ __pycache__
 *.bbl
 *.blg
 *.dvi
+.ipynb_checkpoints
 
 # Windows image file caches
 Thumbs.db
@@ -58,3 +59,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# IDE 
+.vscode
+

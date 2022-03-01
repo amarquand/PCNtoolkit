@@ -680,7 +680,7 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
                                 
     :returns: A .sh file containing the commands for normative modelling
 
-    witten by Thomas Wolfers
+    written by Thomas Wolfers
     """
 
     # change to processing dir
@@ -710,22 +710,20 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
     return bash_file_name
 
 def qsub(job_path, memory, duration, logdir=None):
-    """
-    This function submits a job.sh scipt to the torque custer using the qsub
-    command.
+    '''This function submits a job.sh scipt to the torque custer using the qsub command.
+    
+    Basic usage::
 
-    ** Input:
-        * job_path      -> Full path to the job.sh file
-        * memory        -> Memory requirements written as string for example
-                           4gb or 500mb
-        * duration       -> The approximate duration of the job, a string with
-                           HH:MM:SS for example 01:01:01
+        qsub_nm(job_path, log_path, memory, duration)
 
-    ** Output:
-        * Submission of the job to the (torque) cluster
+    :param job_path: Full path to the job.sh file.
+    :param memory: Memory requirements written as string for example 4gb or 500mb.
+    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
-    witten by Thomas Wolfers
-    """
+    :outputs: Submission of the job to the (torque) cluster.
+
+    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    '''
     if logdir is None:
         logdir = os.path.expanduser('~')
 

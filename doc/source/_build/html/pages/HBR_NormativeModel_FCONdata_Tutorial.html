@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HBR tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Braincharts: transfer" href="apply_normative_models.html" />
+    <link rel="prev" title="Gaussian Process Regression" href="normative_modelling_walkthrough.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hierarchical Bayesian Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-0-install-necessary-libraries-grab-data-files">Step 0: Install necessary libraries &amp; grab data files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-prepare-training-and-testing-sets">Step 1: Prepare training and testing sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-configure-hbr-inputs-covariates-measures-and-batch-effects">Step 2: Configure HBR inputs: covariates, measures and batch effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-files-and-folders-grooming">Step 3: Files and Folders grooming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-estimating-the-models">Step 4: Estimating the models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-transfering-the-models-to-unseen-sites">Step 5: Transfering the models to unseen sites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-interpreting-model-performance">Step 6: Interpreting model performance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>HBR tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/pages/HBR_NormativeModel_FCONdata_Tutorial.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="hierarchical-bayesian-regression">
+<h1>Hierarchical Bayesian Regression<a class="headerlink" href="#hierarchical-bayesian-regression" title="Permalink to this headline"></a></h1>
+<p>This notebook will go through basic data preparation (training and
+testing set, <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb">see Saige’s
+tutorial</a>
+on Normative Modelling for more detail), the actual training of the
+models, and will finally describe how to transfer the trained models
+onto unseen sites.</p>
+<p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
+<p>Adapted/edited by Andre Marquand and Pierre Berthet.</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
+<div class="section" id="step-0-install-necessary-libraries-grab-data-files">
+<h2>Step 0: Install necessary libraries &amp; grab data files<a class="headerlink" href="#step-0-install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.20
+</pre></div>
+</div>
+<p>For this tutorial we will use data from the <a class="reference external" href="http://fcon_1000.projects.nitrc.org/">Functional Connectom
+Project FCON1000</a> to create a
+multi-site dataset.</p>
+<p>The dataset contains some cortical measures (eg thickness), processed by
+Freesurfer 6.0, and some covariates (eg age, site, gender).</p>
+<p>First we import the required package, and create a working directory.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pcntoolkit</span> <span class="k">as</span> <span class="nn">ptk</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">processing_dir</span> <span class="o">=</span> <span class="s2">&quot;HBR_demo/&quot;</span>    <span class="c1"># replace with a path to your working directory</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">)</span>
+<span class="n">processing_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h3>
+<p>Here we get the FCON dataset, remove the ICBM site for later transfer,
+assign some site id to the different scanner sites and print an overview
+of the left hemisphere mean raw cortical thickness as a function of age,
+color coded by the various sites:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fcon</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000.csv&#39;</span><span class="p">)</span>
+
+<span class="n">icbm</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ICBM&#39;</span><span class="p">]</span>
+<span class="n">icbm</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">fcon</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;ICBM&#39;</span><span class="p">]</span>
+
+<span class="n">sites</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span><span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;LH mean cortical thickness [mm]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:4: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  after removing the cwd from sys.path.
+/usr/local/lib/python3.7/dist-packages/pandas/core/indexing.py:1732: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  self._setitem_single_block(indexer, value, name)
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>site AnnArbor_a 24
+site AnnArbor_b 32
+site Atlanta 28
+site Baltimore 23
+site Bangor 20
+site Beijing_Zang 198
+site Berlin_Margulies 26
+site Cambridge_Buckner 198
+site Cleveland 31
+site Leiden_2180 12
+site Leiden_2200 19
+site Milwaukee_b 46
+site Munchen 15
+site NewYork_a 83
+site NewYork_a_ADHD 25
+site Newark 19
+site Oulu 102
+site Oxford 22
+site PaloAlto 17
+site Pittsburgh 3
+site Queensland 19
+site SaintLouis 31
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 0, &#39;age&#39;)
+</pre></div>
+</div>
+<img alt="../_images/HBR_NormativeModel_FCONdata_Tutorial_9_3.png" src="../_images/HBR_NormativeModel_FCONdata_Tutorial_9_3.png" />
+</div>
+</div>
+<div class="section" id="step-1-prepare-training-and-testing-sets">
+<h2>Step 1: Prepare training and testing sets<a class="headerlink" href="#step-1-prepare-training-and-testing-sets" title="Permalink to this headline"></a></h2>
+<p>Then we randomly split half of the samples (participants) to be either
+in the training or in the testing samples. We do this for the remaing
+FCON dataset and for the ICBM data. The transfer function will also
+require a training and a test sample.</p>
+<p>The numbers of samples per sites used for training and for testing are
+then displayed.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">fcon</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+<span class="n">te</span> <span class="o">=</span> <span class="o">~</span><span class="n">tr</span>
+
+<span class="n">fcon_tr</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tr</span><span class="p">]</span>
+<span class="n">fcon_te</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">te</span><span class="p">]</span>
+
+<span class="n">tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">icbm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+<span class="n">te</span> <span class="o">=</span> <span class="o">~</span><span class="n">tr</span>
+
+<span class="n">icbm_tr</span> <span class="o">=</span> <span class="n">icbm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tr</span><span class="p">]</span>
+<span class="n">icbm_te</span> <span class="o">=</span> <span class="n">icbm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">te</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sample size check&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="n">idxte</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idxte</span><span class="p">))</span>
+
+<span class="c1"># Uncomment the following lines if you want to keep a defined version of the sets</span>
+<span class="c1"># fcon_tr.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_tr.csv&#39;)</span>
+<span class="c1"># fcon_te.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_te.csv&#39;)</span>
+<span class="c1"># icbm_tr.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_icbm_tr.csv&#39;)</span>
+<span class="c1"># icbm_te.to_csv(&#39;/Users/andmar/data/sairut/data/fcon1000_icbm_te.csv&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sample size check
+0 AnnArbor_a 10 14
+1 AnnArbor_b 11 21
+2 Atlanta 11 17
+3 Baltimore 10 13
+4 Bangor 9 11
+5 Beijing_Zang 108 90
+6 Berlin_Margulies 13 13
+7 Cambridge_Buckner 94 104
+8 Cleveland 15 16
+9 Leiden_2180 6 6
+10 Leiden_2200 11 8
+11 Milwaukee_b 29 17
+12 Munchen 6 9
+13 NewYork_a 48 35
+14 NewYork_a_ADHD 17 8
+15 Newark 13 6
+16 Oulu 55 47
+17 Oxford 9 13
+18 PaloAlto 7 10
+19 Pittsburgh 1 2
+20 Queensland 6 13
+21 SaintLouis 12 19
+</pre></div>
+</div>
+<p>Otherwise you can just load these pre defined subsets:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional</span>
+<span class="n">fcon_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv&#39;</span><span class="p">)</span>
+<span class="n">fcon_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv&#39;</span><span class="p">)</span>
+<span class="n">icbm_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv&#39;</span><span class="p">)</span>
+<span class="n">icbm_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-2-configure-hbr-inputs-covariates-measures-and-batch-effects">
+<h2>Step 2: Configure HBR inputs: covariates, measures and batch effects<a class="headerlink" href="#step-2-configure-hbr-inputs-covariates-measures-and-batch-effects" title="Permalink to this headline"></a></h2>
+<p>We will here only use the mean cortical thickness for the Right and Left
+hemisphere: two idps.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">,</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As input to the model, we need covariates (used to describe predictable
+source of variability (fixed effects), here ‘age’), measures (here
+cortical thickness on two idps), and batch effects (random source of
+variability, here ‘scanner site’ and ‘sex’).</p>
+<p><code class="docutils literal notranslate"><span class="pre">X</span></code> corresponds to the covariate(s)</p>
+<p><code class="docutils literal notranslate"><span class="pre">Y</span></code> to the measure(s)</p>
+<p><code class="docutils literal notranslate"><span class="pre">batch_effects</span></code> to the random effects</p>
+<p>We need these values both for the training (<code class="docutils literal notranslate"><span class="pre">_train</span></code>) and for the
+testing set (<code class="docutils literal notranslate"><span class="pre">_test</span></code>).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_tr</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">Y_train</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">batch_effects_train</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_train.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;trbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+
+
+<span class="n">X_test</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_te</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">Y_test</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">batch_effects_test</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_test.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_test.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tsbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+
+<span class="c1"># a simple function to quickly load pickle files</span>
+<span class="k">def</span> <span class="nf">ldpkl</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-3-files-and-folders-grooming">
+<h2>Step 3: Files and Folders grooming<a class="headerlink" href="#step-3-files-and-folders-grooming" title="Permalink to this headline"></a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">)</span>       <span class="c1"># measurements  (eg cortical thickness) of the training samples (columns: the various features/ROIs, rows: observations or subjects)</span>
+<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_train.pkl&#39;</span><span class="p">)</span>        <span class="c1"># covariates (eg age) the training samples (columns: covariates, rows: observations or subjects)</span>
+
+<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_test.pkl&#39;</span><span class="p">)</span>       <span class="c1"># measurements  for the testing samples</span>
+<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_test.pkl&#39;</span><span class="p">)</span>        <span class="c1"># covariate file for the testing samples</span>
+
+<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;trbefile.pkl&#39;</span><span class="p">)</span>      <span class="c1"># training batch effects file (eg scanner_id, gender)  (columns: the various batch effects, rows: observations or subjects)</span>
+<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;tsbefile.pkl&#39;</span><span class="p">)</span>      <span class="c1"># testing batch effects file</span>
+
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models/&#39;</span><span class="p">)</span>    <span class="c1">#  output path, where the models will be written</span>
+<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;log/&#39;</span><span class="p">)</span>           <span class="c1">#</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+
+<span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_estimate&#39;</span>      <span class="c1"># a string to name the output files, of use only to you, so adapt it for your needs.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-4-estimating-the-models">
+<h2>Step 4: Estimating the models<a class="headerlink" href="#step-4-estimating-the-models" title="Permalink to this headline"></a></h2>
+<p>Now we have everything ready to estimate the normative models. The
+<code class="docutils literal notranslate"><span class="pre">estimate</span></code> function only needs the training and testing sets, each
+divided in three datasets: covariates, measures and batch effects. We
+obviously specify <code class="docutils literal notranslate"><span class="pre">alg=hbr</span></code> to use the hierarchical bayesian
+regression method, well suited for the multi sites datasets. The
+remaining arguments are basic data management: where the models, logs,
+and output files will be written and how they will be named.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
+                       <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
+                       <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
+                       <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
+                       <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;hbr&#39;</span><span class="p">,</span>
+                       <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
+                       <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="n">testcov</span><span class="o">=</span> <span class="n">testcovfile_path</span><span class="p">,</span>
+                       <span class="n">testresp</span> <span class="o">=</span> <span class="n">testrespfile_path</span><span class="p">,</span>
+                       <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span> <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Processing data in /content/HBR_demo/HBR_demo/Y_train.pkl
+Estimating model  1 of 2
+Model  1 of 2 FAILED!..skipping and writing NaN to outputs
+Exception:
+index out of bounds
+&lt;class &#39;IndexError&#39;&gt; normative.py 428
+Estimating model  2 of 2
+Model  2 of 2 FAILED!..skipping and writing NaN to outputs
+Exception:
+index out of bounds
+&lt;class &#39;IndexError&#39;&gt; normative.py 428
+Saving model meta-data...
+Evaluating the model ...
+Writing outputs ...
+</pre></div>
+</div>
+<p>Here some analyses can be done, there are also some error metrics that
+could be of interest. This is covered in step 6 and in <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/ROI_blr_cortthick/NormativeModelTutorial.ipynb">Saige’s
+tutorial</a>
+on Normative Modelling.</p>
+</div>
+<div class="section" id="step-5-transfering-the-models-to-unseen-sites">
+<h2>Step 5: Transfering the models to unseen sites<a class="headerlink" href="#step-5-transfering-the-models-to-unseen-sites" title="Permalink to this headline"></a></h2>
+<p>Similarly to what was done before for the FCON data, we also need to
+prepare the ICBM specific data, in order to run the transfer function:
+training and testing set of covariates, measures and batch effects:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_adapt</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_tr</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">Y_adapt</span> <span class="o">=</span> <span class="n">icbm_tr</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">batch_effects_adapt</span> <span class="o">=</span> <span class="n">icbm_tr</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_adaptation.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_adaptation.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;adbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+
+<span class="c1"># Test data (new dataset)</span>
+<span class="n">X_test_txfr</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_te</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">Y_test_txfr</span> <span class="o">=</span> <span class="n">icbm_te</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">batch_effects_test_txfr</span> <span class="o">=</span> <span class="n">icbm_te</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_test_txfr.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_test_txfr.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;txbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_adaptation.pkl&#39;</span><span class="p">)</span>
+<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_adaptation.pkl&#39;</span><span class="p">)</span>
+<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_test_txfr.pkl&#39;</span><span class="p">)</span>
+<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_test_txfr.pkl&#39;</span><span class="p">)</span>
+<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;adbefile.pkl&#39;</span><span class="p">)</span>
+<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;txbefile.pkl&#39;</span><span class="p">)</span>
+
+<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;log_transfer/&#39;</span><span class="p">)</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Transfer/&#39;</span><span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models/&#39;</span><span class="p">)</span>  <span class="c1"># path to the previously trained models</span>
+<span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_transfer&#39;</span>  <span class="c1"># suffix added to the output files from the transfer function</span>
+</pre></div>
+</div>
+<p>Here, the difference is that the transfer function needs a model path,
+which points to the models we just trained, and new site data (training
+and testing). That is basically the only difference.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">z_scores</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
+                                            <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
+                                            <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
+                                            <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
+                                            <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_path</span><span class="p">,</span>
+                                            <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;hbr&#39;</span><span class="p">,</span>
+                                            <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
+                                            <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                            <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+                                            <span class="n">testcov</span><span class="o">=</span> <span class="n">testcovfile_path</span><span class="p">,</span>
+                                            <span class="n">testresp</span> <span class="o">=</span> <span class="n">testrespfile_path</span><span class="p">,</span>
+                                            <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span>
+                                            <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And that is it, you now have models that benefited from prior knowledge
+about different scanner sites to learn on unseen sites.</p>
+</div>
+<div class="section" id="step-6-interpreting-model-performance">
+<h2>Step 6: Interpreting model performance<a class="headerlink" href="#step-6-interpreting-model-performance" title="Permalink to this headline"></a></h2>
+<p>Output evaluation metrics definitions</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 83%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Abbreviation</p></th>
+<th class="head"><p>Full name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>NM</p></td>
+<td><p>Normative Model</p></td>
+</tr>
+<tr class="row-odd"><td><p>EV / EXPV</p></td>
+<td><p>Explained Variance</p></td>
+</tr>
+<tr class="row-even"><td><p>MSLL</p></td>
+<td><p>Mean Standardized Log Loss</p></td>
+</tr>
+<tr class="row-odd"><td><p>SMSE</p></td>
+<td><p>Standardized Mean Squared Error</p></td>
+</tr>
+<tr class="row-even"><td><p>RMSE</p></td>
+<td><p>Root Mean Squared Error between true/predicted responses</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rho</p></td>
+<td><p>Pearson orrelation between true/predicted responses</p></td>
+</tr>
+<tr class="row-even"><td><p>pRho</p></td>
+<td><p>Parametric p-value for this correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>Z</p></td>
+<td><p>Z-score or deviation score</p></td>
+</tr>
+<tr class="row-even"><td><p>yhat</p></td>
+<td><p>predictive mean</p></td>
+</tr>
+<tr class="row-odd"><td><p>ys2</p></td>
+<td><p>predictive variance</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="normative_modelling_walkthrough.html" class="btn btn-neutral float-left" title="Gaussian Process Regression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apply_normative_models.html" class="btn btn-neutral float-right" title="Braincharts: transfer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

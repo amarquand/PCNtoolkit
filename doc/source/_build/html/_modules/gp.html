@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gp &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/tabs.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html">PCNtoolkit Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/pcntoolkit_background.html#intro-to-normative-modelling">Intro to normative modelling</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Current Events</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/updates.html">Updates</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_CPC2020.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_ROIcorticalthickness.html">Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_HBR.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_braincharts_fit_nm.html">Braincharts: fit model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/tutorial_braincharts_apply_nm.html">Braincharts: apply (transfer to new data)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pages/FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>gp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gp</h1><div class="highlight"><pre>
+<span></span>from __future__ import print_function
+from __future__ import division
+
+import os
+import sys
+import numpy as np
+from scipy import optimize
+from numpy.linalg import solve, LinAlgError
+from numpy.linalg import cholesky as chol
+from six import with_metaclass
+from abc import ABCMeta, abstractmethod
+
+
+try:  # Run as a package if installed    
+    from pcntoolkit.utils import squared_dist
+except ImportError:
+    pass
+
+    path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.dirname(path) # parent directory 
+    if path not in sys.path:
+        sys.path.append(path)
+    del path
+    
+    from util.utils import squared_dist
+
+# --------------------
+# Covariance functions
+# --------------------
+
+
+<div class="viewcode-block" id="CovBase"><a class="viewcode-back" href="../pages/modindex.html#gp.CovBase">[docs]</a>class CovBase(with_metaclass(ABCMeta)):
+    &quot;&quot;&quot; Base class for covariance functions.
+
+        All covariance functions must define the following methods::
+
+            CovFunction.get_n_params()
+            CovFunction.cov()
+            CovFunction.xcov()
+            CovFunction.dcov()
+    &quot;&quot;&quot;
+
+    def __init__(self, x=None):
+        self.n_params = np.nan
+
+<div class="viewcode-block" id="CovBase.get_n_params"><a class="viewcode-back" href="../pages/modindex.html#gp.CovBase.get_n_params">[docs]</a>    def get_n_params(self):
+        &quot;&quot;&quot; Report the number of parameters required &quot;&quot;&quot;
+
+        assert not np.isnan(self.n_params), \
+            &quot;Covariance function not initialised&quot;
+
+        return self.n_params</div>
+
+<div class="viewcode-block" id="CovBase.cov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovBase.cov">[docs]</a>    @abstractmethod
+    def cov(self, theta, x, z=None):
+        &quot;&quot;&quot; Return the full covariance (or cross-covariance if z is given) &quot;&quot;&quot;</div>
+
+<div class="viewcode-block" id="CovBase.dcov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovBase.dcov">[docs]</a>    @abstractmethod
+    def dcov(self, theta, x, i):
+        &quot;&quot;&quot; Return the derivative of the covariance function with respect to
+            the i-th hyperparameter &quot;&quot;&quot;</div></div>
+
+
+<div class="viewcode-block" id="CovLin"><a class="viewcode-back" href="../pages/modindex.html#gp.CovLin">[docs]</a>class CovLin(CovBase):
+    &quot;&quot;&quot; Linear covariance function (no hyperparameters)
+    &quot;&quot;&quot;
+
+    def __init__(self, x=None):
+        self.n_params = 0
+        self.first_call = False
+
+<div class="viewcode-block" id="CovLin.cov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovLin.cov">[docs]</a>    def cov(self, theta, x, z=None):
+        if not self.first_call and not theta and theta is not None:
+            self.first_call = True
+            if len(theta) &gt; 0 and theta[0] is not None:
+                print(&quot;CovLin: ignoring unnecessary hyperparameter ...&quot;)
+
+        if z is None:
+            z = x
+
+        K = x.dot(z.T)
+        return K</div>
+
+<div class="viewcode-block" id="CovLin.dcov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovLin.dcov">[docs]</a>    def dcov(self, theta, x, i):
+        raise ValueError(&quot;Invalid covariance function parameter&quot;)</div></div>
+
+
+<div class="viewcode-block" id="CovSqExp"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExp">[docs]</a>class CovSqExp(CovBase):
+    &quot;&quot;&quot; Ordinary squared exponential covariance function.
+        The hyperparameters are::
+
+            theta = ( log(ell), log(sf) )
+
+        where ell is a lengthscale parameter and sf2 is the signal variance
+    &quot;&quot;&quot;
+
+    def __init__(self, x=None):
+        self.n_params = 2
+
+<div class="viewcode-block" id="CovSqExp.cov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExp.cov">[docs]</a>    def cov(self, theta, x, z=None):
+        self.ell = np.exp(theta[0])
+        self.sf2 = np.exp(2*theta[1])
+
+        if z is None:
+            z = x
+
+        R = squared_dist(x/self.ell, z/self.ell)
+        K = self.sf2 * np.exp(-R/2)
+        return K</div>
+
+<div class="viewcode-block" id="CovSqExp.dcov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExp.dcov">[docs]</a>    def dcov(self, theta, x, i):
+        self.ell = np.exp(theta[0])
+        self.sf2 = np.exp(2*theta[1])
+
+        R = squared_dist(x/self.ell, x/self.ell)
+
+        if i == 0:   # return derivative of lengthscale parameter
+            dK = self.sf2 * np.exp(-R/2) * R
+            return dK
+        elif i == 1:   # return derivative of signal variance parameter
+            dK = 2*self.sf2 * np.exp(-R/2)
+            return dK
+        else:
+            raise ValueError(&quot;Invalid covariance function parameter&quot;)</div></div>
+
+
+<div class="viewcode-block" id="CovSqExpARD"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExpARD">[docs]</a>class CovSqExpARD(CovBase):
+    &quot;&quot;&quot; Squared exponential covariance function with ARD
+        The hyperparameters are::
+
+            theta = (log(ell_1, ..., log_ell_D), log(sf))
+
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    &quot;&quot;&quot;
+
+    def __init__(self, x=None):
+        if x is None:
+            raise ValueError(&quot;N x D data matrix must be supplied as input&quot;)
+        if len(x.shape) == 1:
+            self.D = 1
+        else:
+            self.D = x.shape[1]
+        self.n_params = self.D + 1
+
+<div class="viewcode-block" id="CovSqExpARD.cov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExpARD.cov">[docs]</a>    def cov(self, theta, x, z=None):
+        self.ell = np.exp(theta[0:self.D])
+        self.sf2 = np.exp(2*theta[self.D])
+
+        if z is None:
+            z = x
+
+        R = squared_dist(x.dot(np.diag(1./self.ell)),
+                         z.dot(np.diag(1./self.ell)))
+        K = self.sf2*np.exp(-R/2)
+        return K</div>
+
+<div class="viewcode-block" id="CovSqExpARD.dcov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSqExpARD.dcov">[docs]</a>    def dcov(self, theta, x, i):
+        K = self.cov(theta, x)
+        if i &lt; self.D:    # return derivative of lengthscale parameter
+            dK = K * squared_dist(x[:, i]/self.ell[i], x[:, i]/self.ell[i])
+            return dK
+        elif i == self.D:   # return derivative of signal variance parameter
+            dK = 2*K
+            return dK
+        else:
+            raise ValueError(&quot;Invalid covariance function parameter&quot;)</div></div>
+
+
+<div class="viewcode-block" id="CovSum"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSum">[docs]</a>class CovSum(CovBase):
+    &quot;&quot;&quot; Sum of covariance functions. These are passed in as a cell array and
+        intialised automatically. For example::
+
+            C = CovSum(x,(CovLin, CovSqExpARD))
+            C = CovSum.cov(x, )
+
+        The hyperparameters are::
+
+            theta = ( log(ell_1, ..., log_ell_D), log(sf2) )
+
+        where ell_i are lengthscale parameters and sf2 is the signal variance
+    &quot;&quot;&quot;
+
+    def __init__(self, x=None, covfuncnames=None):
+        if x is None:
+            raise ValueError(&quot;N x D data matrix must be supplied as input&quot;)
+        if covfuncnames is None:
+            raise ValueError(&quot;A list of covariance functions is required&quot;)
+        self.covfuncs = []
+        self.n_params = 0
+        for cname in covfuncnames:
+            covfunc = eval(cname + &#39;(x)&#39;)
+            self.n_params += covfunc.get_n_params()
+            self.covfuncs.append(covfunc)
+
+        if len(x.shape) == 1:
+            self.N = len(x)
+            self.D = 1
+        else:
+            self.N, self.D = x.shape
+
+<div class="viewcode-block" id="CovSum.cov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSum.cov">[docs]</a>    def cov(self, theta, x, z=None):
+        theta_offset = 0
+        for ci, covfunc in enumerate(self.covfuncs):
+            try: 
+                n_params_c = covfunc.get_n_params()
+                theta_c = [theta[c] for c in
+                           range(theta_offset, theta_offset + n_params_c)]
+                theta_offset += n_params_c                
+            except Exception as e:
+                print(e)
+
+            if ci == 0:
+                K = covfunc.cov(theta_c, x, z)
+            else:
+                K += covfunc.cov(theta_c, x, z)
+        return K</div>
+
+<div class="viewcode-block" id="CovSum.dcov"><a class="viewcode-back" href="../pages/modindex.html#gp.CovSum.dcov">[docs]</a>    def dcov(self, theta, x, i):
+        theta_offset = 0
+        for covfunc in self.covfuncs:
+            n_params_c = covfunc.get_n_params()
+            theta_c = [theta[c] for c in
+                       range(theta_offset, theta_offset + n_params_c)]
+            theta_offset += n_params_c
+
+            if theta_c:  # does the variable have any hyperparameters?
+                if &#39;dK&#39; not in locals():
+                    dK = covfunc.dcov(theta_c, x, i)
+                else:
+                    dK += covfunc.dcov(theta_c, x, i)
+        return dK</div></div>
+
+# -----------------------
+# Gaussian process models
+# -----------------------
+
+
+<div class="viewcode-block" id="GPR"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR">[docs]</a>class GPR:
+    &quot;&quot;&quot;Gaussian process regression
+
+    Estimation and prediction of Gaussian process regression models
+
+    Basic usage::
+
+        G = GPR()
+        hyp = B.estimate(hyp0, cov, X, y)
+        ys, ys2 = B.predict(hyp, cov, X, y, Xs)
+
+    where the variables are
+
+    :param hyp: vector of hyperparmaters
+    :param cov: covariance function
+    :param X: N x D data array
+    :param y: 1D Array of targets (length N)
+    :param Xs: Nte x D array of test cases
+    :param hyp0: starting estimates for hyperparameter optimisation
+
+    :returns: * ys - predictive mean
+              * ys2 - predictive variance
+
+    The hyperparameters are::
+
+        hyp = ( log(sn), (cov function params) )  # hyp is a list or array
+
+    The implementation and notation  follows Rasmussen and Williams (2006).
+    As in the gpml toolbox, these parameters are estimated using conjugate
+    gradient optimisation of the marginal likelihood. Note that there is no
+    explicit mean function, thus the gpr routines are limited to modelling
+    zero-mean processes.
+
+    Reference:
+    C. Rasmussen and C. Williams (2006) Gaussian Processes for Machine Learning
+
+    Written by A. Marquand
+    &quot;&quot;&quot;
+
+    def __init__(self, hyp=None, covfunc=None, X=None, y=None, n_iter=100,
+                 tol=1e-3, verbose=False, warp=None):
+
+        self.hyp = np.nan
+        self.nlZ = np.nan
+        self.tol = tol          # not used at present
+        self.n_iter = n_iter
+        self.verbose = verbose
+
+         # set up warped likelihood
+        if warp is None:
+            self.warp = None
+            self.n_warp_param = 0
+        else:
+            self.warp = warp
+            self.n_warp_param = warp.get_n_params()
+        
+        self.gamma = None
+
+    def _updatepost(self, hyp, covfunc):
+
+        hypeq = np.asarray(hyp == self.hyp)
+        if hypeq.all() and hasattr(self, &#39;alpha&#39;) and \
+           (hasattr(self, &#39;covfunc&#39;) and covfunc == self.covfunc):
+            return False
+        else:
+            return True
+
+<div class="viewcode-block" id="GPR.post"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR.post">[docs]</a>    def post(self, hyp, covfunc, X, y):
+        &quot;&quot;&quot; Generic function to compute posterior distribution.
+        &quot;&quot;&quot;
+        
+        if len(hyp.shape) &gt; 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
+        self.N, self.D = X.shape
+
+        # hyperparameters
+        sn2 = np.exp(2*hyp[0])         # noise variance
+        if self.warp is not None:      # parameters for warping the likelhood 
+            n_lik_param = self.n_warp_param+1
+        else:
+            n_lik_param = 1
+        theta = hyp[n_lik_param:]      # (generic) covariance hyperparameters
+
+        if self.verbose:
+            print(&quot;estimating posterior ... | hyp=&quot;, hyp)
+
+        self.K = covfunc.cov(theta, X)
+        self.L = chol(self.K + sn2*np.eye(self.N))
+        self.alpha = solve(self.L.T, solve(self.L, y))
+        self.hyp = hyp
+        self.covfunc = covfunc</div>
+
+<div class="viewcode-block" id="GPR.loglik"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR.loglik">[docs]</a>    def loglik(self, hyp, covfunc, X, y):
+        &quot;&quot;&quot; Function to compute compute log (marginal) likelihood
+        &quot;&quot;&quot;
+
+        # load or recompute posterior
+        if self.verbose:
+            print(&quot;computing likelihood ... | hyp=&quot;, hyp)
+       
+        # parameters for warping the likelhood function
+        if self.warp is not None:
+            gamma = hyp[1:(self.n_warp_param+1)]
+            y = self.warp.f(y, gamma)
+            y_unwarped = y
+            
+        if len(hyp.shape) &gt; 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+        if self._updatepost(hyp, covfunc):
+            try:
+                self.post(hyp, covfunc, X, y)
+            except (ValueError, LinAlgError):
+                print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+                self.nlZ = 1/np.finfo(float).eps
+                return self.nlZ
+            
+        self.nlZ = 0.5*y.T.dot(self.alpha) + sum(np.log(np.diag(self.L))) + \
+                   0.5*self.N*np.log(2*np.pi)
+        
+        if self.warp is not None:
+            # add in the Jacobian 
+            self.nlZ = self.nlZ - sum(np.log(self.warp.df(y_unwarped, gamma)))
+        
+        # make sure the output is finite to stop the minimizer getting upset
+        if not np.isfinite(self.nlZ):
+            self.nlZ = 1/np.finfo(float).eps
+
+        if self.verbose:
+            print(&quot;nlZ= &quot;, self.nlZ, &quot; | hyp=&quot;, hyp)
+
+        return self.nlZ</div>
+
+<div class="viewcode-block" id="GPR.dloglik"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR.dloglik">[docs]</a>    def dloglik(self, hyp, covfunc, X, y):
+        &quot;&quot;&quot; Function to compute derivatives
+        &quot;&quot;&quot;
+
+        if len(hyp.shape) &gt; 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+        
+        if self.warp is not None:
+            raise ValueError(&#39;optimization with derivatives is not yet &#39; + \
+                             &#39;supported for warped liklihood&#39;)
+            
+        # hyperparameters
+        sn2 = np.exp(2*hyp[0])     # noise variance
+        theta = hyp[1:]            # (generic) covariance hyperparameters
+
+        # load posterior and prior covariance
+        if self._updatepost(hyp, covfunc):
+            try:
+                self.post(hyp, covfunc, X, y)
+            except (ValueError, LinAlgError):
+                print(&quot;Warning: Estimation of posterior distribution failed&quot;)
+                dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
+                return dnlZ
+
+        # compute Q = alpha*alpha&#39; - inv(K)
+        Q = np.outer(self.alpha, self.alpha) - \
+            solve(self.L.T, solve(self.L, np.eye(self.N)))
+
+        # initialise derivatives
+        self.dnlZ = np.zeros(len(hyp))
+
+        # noise variance
+        self.dnlZ[0] = -sn2*np.trace(Q)
+
+        # covariance parameter(s)
+        for par in range(0, len(theta)):
+            # compute -0.5*trace(Q.dot(dK/d[theta_i])) efficiently
+            dK = covfunc.dcov(theta, X, i=par)
+            self.dnlZ[par+1] = -0.5*np.sum(np.sum(Q*dK.T))
+
+        # make sure the gradient is finite to stop the minimizer getting upset
+        if not all(np.isfinite(self.dnlZ)):
+            bad = np.where(np.logical_not(np.isfinite(self.dnlZ)))
+            for b in bad:
+                self.dnlZ[b] = np.sign(self.dnlZ[b]) / np.finfo(float).eps
+
+        if self.verbose:
+            print(&quot;dnlZ= &quot;, self.dnlZ, &quot; | hyp=&quot;, hyp)
+
+        return self.dnlZ</div>
+
+    # model estimation (optimization)
+<div class="viewcode-block" id="GPR.estimate"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR.estimate">[docs]</a>    def estimate(self, hyp0, covfunc, X, y, optimizer=&#39;cg&#39;):
+        &quot;&quot;&quot; Function to estimate the model
+        &quot;&quot;&quot;
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
+
+        self.hyp0 = hyp0
+        
+        if optimizer.lower() == &#39;cg&#39;:  # conjugate gradients
+            out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
+                                   (covfunc, X, y), disp=True, gtol=self.tol,
+                                   maxiter=self.n_iter, full_output=1)
+
+        elif optimizer.lower() == &#39;powell&#39;:  # Powell&#39;s method
+            out = optimize.fmin_powell(self.loglik, hyp0, (covfunc, X, y),
+                                       full_output=1)
+        else:
+            raise ValueError(&quot;unknown optimizer&quot;)
+
+        # Always return a 1d array. The optimizer sometimes changes dimesnions
+        if len(out[0].shape) &gt; 1:
+            self.hyp = out[0].flatten()
+        else:
+            self.hyp = out[0]
+        self.nlZ = out[1]
+        self.optimizer = optimizer
+
+        return self.hyp</div>
+
+<div class="viewcode-block" id="GPR.predict"><a class="viewcode-back" href="../pages/modindex.html#gp.GPR.predict">[docs]</a>    def predict(self, hyp, X, y, Xs):
+        &quot;&quot;&quot; Function to make predictions from the model
+        &quot;&quot;&quot;
+        if len(hyp.shape) &gt; 1: # force 1d hyperparameter array
+            hyp = hyp.flatten()
+        
+        # ensure X and Xs are multi-dimensional arrays
+        if len(Xs.shape) == 1:
+            Xs = Xs[:, np.newaxis]
+        if len(X.shape) == 1:
+            X = X[:, np.newaxis]
+         
+        # parameters for warping the likelhood function
+        if self.warp is not None:
+            gamma = hyp[1:(self.n_warp_param+1)]
+            y = self.warp.f(y, gamma)
+            
+        # reestimate posterior (avoids numerical problems with optimizer)
+        self.post(hyp, self.covfunc, X, y)
+        
+        # hyperparameters
+        sn2 = np.exp(2*hyp[0])     # noise variance
+        theta = hyp[(self.n_warp_param + 1):]            # (generic) covariance hyperparameters
+
+        Ks = self.covfunc.cov(theta, Xs, X)
+        kss = self.covfunc.cov(theta, Xs)
+
+        # predictive mean
+        ymu = Ks.dot(self.alpha)
+
+        # predictive variance (for a noisy test input)
+        v = solve(self.L, Ks.T)
+        ys2 = kss - v.T.dot(v) + sn2
+
+        return ymu, ys2</div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

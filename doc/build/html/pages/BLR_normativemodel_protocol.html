@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLR tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Visualization of normative modeling outputs" href="visualizations.html" />
+    <link rel="prev" title="Braincharts: transfer" href="apply_normative_models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pcntoolkit_background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modindex.html">Module Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html">Gaussian Process Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Hierarchical Bayesian Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bayesian Linear Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-preparation">Data Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-necessary-libraries-grab-data-files">Install necessary libraries &amp; grab data files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-covariate-data">Prepare covariate data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-brain-data">Prepare brain data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combine-covariate-cortical-thickness-dataframes">Combine covariate &amp; cortical thickness dataframes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-variable-to-model-site-scanner-effects">Add variable to model site/scanner effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-test-split">Train/test split</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-output-directories">Setup output directories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm-modeling">Algorithm &amp; Modeling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basis-expansion-using-b-splines">Basis expansion using B-Splines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#estimate-normative-model">Estimate normative model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation-interpretation">Evaluation &amp; Interpretation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#describe-the-normative-model-performance">Describe the normative model performance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualize-normative-model-outputs">Visualize normative model outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#figure-4a-viz">Figure 4A viz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#post-hoc-analysis-ideas">Post-Hoc analysis ideas</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualizations.html">Visualization of normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post_hoc_analysis.html">Post-hoc analysis on normative modeling outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other_predictive_models.html">Predictive modeling using deviation scores</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQs.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">How to cite PCNtoolkit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>BLR tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/pages/BLR_normativemodel_protocol.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="bayesian-linear-regression">
+<h1>Bayesian Linear Regression<a class="headerlink" href="#bayesian-linear-regression" title="Permalink to this headline"></a></h1>
+<p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://doi.org/10.1101/2021.08.08.455583">https://doi.org/10.1101/2021.08.08.455583</a>.</p>
+<p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
+<p>Using Multi-Site Cortical Thickness Data</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="../_images/blr_fig2.png"><img alt="../_images/blr_fig2.png" src="../_images/blr_fig2.png" style="height: 400px;" /></a>
+</div>
+<div class="section" id="data-preparation">
+<h2>Data Preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline"></a></h2>
+<div class="section" id="install-necessary-libraries-grab-data-files">
+<h3>Install necessary libraries &amp; grab data files<a class="headerlink" href="#install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h3>
+<p>Begin by cloning the GitHub repository using the following commands.
+This repository contains the necessary code and example data. Then
+install the python packages using pip and import them into the python
+environment (either Google Colab or using a local python installation on
+your computer).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Cloning into &#39;PCNtoolkit-demo&#39;...
+remote: Enumerating objects: 855, done.[K
+remote: Counting objects: 100% (855/855), done.[K
+remote: Compressing objects: 100% (737/737), done.[K
+remote: Total 855 (delta 278), reused 601 (delta 101), pack-reused 0[K
+Receiving objects: 100% (855/855), 18.07 MiB | 13.53 MiB/s, done.
+Resolving deltas: 100% (278/278), done.
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># set this path to the git cloned PCNtoolkit-demo repository --&gt; Uncomment whichever line you need for either running on your own computer or on Google Colab.</span>
+<span class="c1">#os.chdir(&#39;/Users/PCNtoolkit-demo/tutorials/BLR_protocol&#39;) # if running on your own computer, use this line (change the path to match where you cloned the repository)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/tutorials/BLR_protocol&#39;</span><span class="p">)</span> <span class="c1"># if running on Google Colab, use this line</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="prepare-covariate-data">
+<h3>Prepare covariate data<a class="headerlink" href="#prepare-covariate-data" title="Permalink to this headline"></a></h3>
+<p>The data set (downloaded in Step 1) includes a multi-site dataset from
+the <a class="reference external" href="https://www.humanconnectome.org/study/hcp-young-adult">Human Connectome Project Young Adult
+study</a> and
+<a class="reference external" href="https://brain-development.org/ixi-dataset/">IXI</a>. It is also
+possible to use different datasets (i.e., your own data or additional
+public datasets) in this step. If using your own data here, it is
+recommended to load the example data to view the column names in order
+to match your data to this format. Read in the data files using pandas,
+then merge the covariate (age &amp; sex) data from each site into a single
+data frame (named cov). The columns of this covariate data frame
+represent the predictor variables. Additional columns may be added here,
+depending on the research question.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">joypy</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">pcntoolkit.normative</span> <span class="kn">import</span> <span class="n">estimate</span><span class="p">,</span> <span class="n">evaluate</span>
+<span class="kn">from</span> <span class="nn">pcntoolkit.util.utils</span> <span class="kn">import</span> <span class="n">create_bspline_basis</span><span class="p">,</span> <span class="n">compute_MSLL</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># if running in Google colab, remove the &quot;data/&quot; folder from the path</span>
+<span class="n">hcp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/HCP1200_age_gender.csv&#39;</span><span class="p">)</span>
+<span class="n">ixi</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/IXI_age_gender.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cov</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hcp</span><span class="p">,</span> <span class="n">ixi</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;participant_id&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;sex&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/pandas/core/reshape/merge.py:1218: UserWarning: You are merging on int and float columns where the float values are not equal to their int representation
+  UserWarning,
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">font_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;darkgrid&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">displot</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="s2">&quot;stack&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.FacetGrid at 0x7ff321c7af90&gt;
+</pre></div>
+</div>
+<img alt="../_images/BLR_normativemodel_protocol_15_1.png" src="../_images/BLR_normativemodel_protocol_15_1.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cov</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="prepare-brain-data">
+<h3>Prepare brain data<a class="headerlink" href="#prepare-brain-data" title="Permalink to this headline"></a></h3>
+<p>Next, format and combine the MRI data using the following commands. The
+example data contains cortical thickness maps estimated by running
+recon-all from Freesurfer (version 6.0). The dimensionality of the data
+was reduced by using ROIs from the Desikan-Killiany atlas. Including the
+Euler number as a covariate is also recommended, as this is a proxy
+metric for data quality. The <a class="reference external" href="https://mathworld.wolfram.com/EulerCharacteristic.html">Euler
+number</a> from
+each subjects recon-all output folder was extracted into a text file
+and is merged into the cortical thickness data frame. The Euler number
+is site-specific, thus, to use the same exclusion threshold across sites
+it is important to center the site by subtracting the site median from
+all subjects at a site. Then take the square root and multiply by
+negative one and exclude any subjects with a square root above 10.</p>
+<p>Here is some psuedo-code (run from a terminal in the folder that has all
+subjects recon-all output folders) that was used to extract these ROIs:</p>
+<p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SUBJECTS_DIR=/path/to/study/freesurfer_data/</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">aparcstats2table</span> <span class="pre">--subject</span> <span class="pre">sub-*</span> <span class="pre">--hemi</span> <span class="pre">lh</span> <span class="pre">--meas</span> <span class="pre">thickness</span> <span class="pre">--tablefile</span> <span class="pre">HCP1200_aparc_lh_thickness.txt</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">aparcstats2table</span> <span class="pre">--subject</span> <span class="pre">sub-*</span> <span class="pre">--hemi</span> <span class="pre">rh</span> <span class="pre">--meas</span> <span class="pre">thickness</span> <span class="pre">--tablefile</span> <span class="pre">HCP1200_aparc_rh_thickness.txt</span></code></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcpya</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/HCP1200_aparc_thickness.csv&#39;</span><span class="p">)</span>
+<span class="n">ixi</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/IXI_aparc_thickness.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">brain_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">ixi</span><span class="p">,</span> <span class="n">hcpya</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We extracted the euler number from each subjects recon-all output
+folder into a text file and we now need to format and combine these into
+our brain dataframe.</p>
+<p>Below is psuedo code for how we extracted the euler number from the
+recon-all.log for each subject. Run this from the terminal in the folder
+where your subjects recon-all output folders are located. This assumes
+that all of your subject IDs start with “sub-” prefix.</p>
+<p><code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">sub-*;</span> <span class="pre">do</span> <span class="pre">if</span> <span class="pre">[[</span> <span class="pre">-e</span> <span class="pre">${i}/scripts/recon-all.log</span> <span class="pre">]];</span> <span class="pre">then</span> <span class="pre">cat</span> <span class="pre">${i}/scripts/recon-all.log</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">-A</span> <span class="pre">1</span> <span class="pre">&quot;Computing</span> <span class="pre">euler&quot;</span> <span class="pre">&gt;</span> <span class="pre">temp_log;</span> <span class="pre">lh_en=$(cat</span> <span class="pre">temp_log</span> <span class="pre">|</span> <span class="pre">head</span> <span class="pre">-2</span> <span class="pre">|</span> <span class="pre">tail</span> <span class="pre">-1</span> <span class="pre">|</span> <span class="pre">awk</span> <span class="pre">-F</span> <span class="pre">'='</span> <span class="pre">'{print</span> <span class="pre">$2}'</span> <span class="pre">|</span> <span class="pre">awk</span> <span class="pre">-F</span> <span class="pre">','</span> <span class="pre">'{print</span> <span class="pre">$1}');</span> <span class="pre">rh_en=$(cat</span> <span class="pre">temp_log</span> <span class="pre">|</span> <span class="pre">head</span> <span class="pre">-2</span> <span class="pre">|</span> <span class="pre">tail</span> <span class="pre">-1</span> <span class="pre">|</span> <span class="pre">awk</span> <span class="pre">-F</span> <span class="pre">'='</span> <span class="pre">'{print</span> <span class="pre">$3}');</span> <span class="pre">echo</span> <span class="pre">&quot;${i},</span> <span class="pre">${lh_en},</span> <span class="pre">${rh_en}&quot;</span> <span class="pre">&gt;&gt;</span> <span class="pre">euler.csv;</span> <span class="pre">echo</span> <span class="pre">${i};</span> <span class="pre">fi;</span> <span class="pre">done</span></code></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_euler</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/hcp-ya_euler.csv&#39;</span><span class="p">)</span>
+<span class="n">ixi_euler</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/data/ixi_euler.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_euler</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;hcp&#39;</span>
+<span class="n">ixi_euler</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ixi&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_euler</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\s*$&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ixi_euler</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\s*$&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_euler</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ixi_euler</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_euler</span><span class="p">[</span><span class="s1">&#39;rh_euler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hcp_euler</span><span class="p">[</span><span class="s1">&#39;rh_euler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">hcp_euler</span><span class="p">[</span><span class="s1">&#39;lh_euler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hcp_euler</span><span class="p">[</span><span class="s1">&#39;lh_euler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">ixi_euler</span><span class="p">[</span><span class="s1">&#39;rh_euler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ixi_euler</span><span class="p">[</span><span class="s1">&#39;rh_euler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">ixi_euler</span><span class="p">[</span><span class="s1">&#39;lh_euler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ixi_euler</span><span class="p">[</span><span class="s1">&#39;lh_euler&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hcp_euler</span><span class="p">,</span> <span class="n">ixi_euler</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;participant_id&#39;</span><span class="p">,</span> <span class="s1">&#39;lh_euler&#39;</span><span class="p">,</span> <span class="s1">&#39;rh_euler&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we need to center the euler number for each site. The euler
+number is very site-specific so in order to use the same exclusion
+threshold across sites we need to center the site by subtracting the
+site median from all subjects at a site. Then we will take the square
+root and multiply by negative one and exclude any subjects with a square
+root above 10. This choice of threshold is fairly random. If possible
+all of your data should be visually inspected to verify that the data
+inclusion is not too strict or too lenient.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_euler</span><span class="p">[[</span><span class="s1">&#39;lh_euler&#39;</span><span class="p">,</span><span class="s1">&#39;rh_euler&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
+</pre></div>
+</div>
+  <div id="df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497">
+    <div class="colab-df-container">
+      <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lh_euler</th>
+      <th>rh_euler</th>
+      <th>avg_euler</th>
+    </tr>
+    <tr>
+      <th>site</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>hcp</th>
+      <td>-44.0</td>
+      <td>-44.0</td>
+      <td>-43.0</td>
+    </tr>
+    <tr>
+      <th>ixi</th>
+      <td>-58.0</td>
+      <td>-54.0</td>
+      <td>-56.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      <button class="colab-df-convert" onclick="convertToInteractive('df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497')"
+              title="Convert this dataframe to an interactive table."
+              style="display:none;">
+
+  <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+       width="24px">
+    <path d="M0 0h24v24H0V0z" fill="none"/>
+    <path d="M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z"/><path d="M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z"/>
+  </svg>
+      </button>
+
+  <style>
+    .colab-df-container {
+      display:flex;
+      flex-wrap:wrap;
+      gap: 12px;
+    }
+
+    .colab-df-convert {
+      background-color: #E8F0FE;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      fill: #1967D2;
+      height: 32px;
+      padding: 0 0 0 0;
+      width: 32px;
+    }
+
+    .colab-df-convert:hover {
+      background-color: #E2EBFA;
+      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
+      fill: #174EA6;
+    }
+
+    [theme=dark] .colab-df-convert {
+      background-color: #3B4455;
+      fill: #D2E3FC;
+    }
+
+    [theme=dark] .colab-df-convert:hover {
+      background-color: #434B5C;
+      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+      fill: #FFFFFF;
+    }
+  </style>
+
+      <script>
+        const buttonEl =
+          document.querySelector('#df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497 button.colab-df-convert');
+        buttonEl.style.display =
+          google.colab.kernel.accessAllowed ? 'block' : 'none';
+
+        async function convertToInteractive(key) {
+          const element = document.querySelector('#df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497');
+          const dataTable =
+            await google.colab.kernel.invokeFunction('convertToInteractive',
+                                                     [key], {});
+          if (!dataTable) return;
+
+          const docLinkHtml = 'Like what you see? Visit the ' +
+            '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
+            + ' to learn more about interactive tables.';
+          element.innerHTML = '';
+          dataTable['output_type'] = 'display_data';
+          await google.colab.output.renderOutput(dataTable, element);
+          const docLink = document.createElement('div');
+          docLink.innerHTML = docLinkHtml;
+          element.appendChild(docLink);
+        }
+      </script>
+    </div>
+  </div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;site_median&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;site_median&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;site_median&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">&#39;hcp&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">43</span><span class="p">,</span><span class="s1">&#39;ixi&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">56</span><span class="p">})</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler_centered&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;site_median&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler_centered_neg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler_centered&#39;</span><span class="p">]</span><span class="o">*-</span><span class="mi">1</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler_centered_neg_sqrt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">df_euler</span><span class="p">[</span><span class="s1">&#39;avg_euler_centered_neg&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">brain</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_euler</span><span class="p">,</span> <span class="n">brain_all</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;participant_id&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">brain_good</span> <span class="o">=</span> <span class="n">brain</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;avg_euler_centered_neg_sqrt &lt; 10&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>CRITICAL STEP:</strong> If possible, data should be visually inspected to
+verify that the data inclusion is not too strict or too lenient.
+Subjects above the Euler number threshold should be manually checked to
+verify and justify their exclusion due to poor data quality. This is
+just one approach for automated QC used by the developers of the
+PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
+Biobanks QC pipeline are also viable options for automated QC.</p>
+</div>
+</div>
+<div class="section" id="combine-covariate-cortical-thickness-dataframes">
+<h3>Combine covariate &amp; cortical thickness dataframes<a class="headerlink" href="#combine-covariate-cortical-thickness-dataframes" title="Permalink to this headline"></a></h3>
+<p>The normative modeling function requires the covariate predictors and
+brain features to be in separate text files. However, it is important to
+first (inner) merge them together, using the following commands, to
+confirm that the same subjects are in each file and that the rows
+(representing subjects) align. This requires that both data frames have
+‘subject_id’ as a column name. Once this is confirmed, exclude rows with
+NaN values and separate the brain features and covariate predictors into
+their own dataframes, using the commands below.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure to use how=&quot;inner&quot; so that we only include subjects that have data in both the covariate and the cortical thickness files</span>
+<span class="n">all_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">brain_good</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a list of all the ROIs you want to run a normative model for (add additional names to this list if you would like to include other brain regions from the Desikan-Killian atlas)</span>
+<span class="n">roi_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;lh_bankssts_thickness&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;lh_caudalanteriorcingulate_thickness&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;lh_superiorfrontal_thickness&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;rh_superiorfrontal_thickness&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Remove any subjects that have NaN variables in any of the columns</span>
+<span class="n">all_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">roi_ids</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_data_features</span> <span class="o">=</span> <span class="n">all_data</span><span class="p">[</span><span class="n">roi_ids</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_data_covariates</span> <span class="o">=</span> <span class="n">all_data</span><span class="p">[[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span><span class="s1">&#39;site&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>CRITICAL STEP:</strong> <code class="docutils literal notranslate"><span class="pre">roi_ids</span></code> is a variable that represents which brain
+areas will be modeled and can be used to select subsets of the data
+frame if you do not wish to run models for the whole brain.</p>
+</div>
+</div>
+<div class="section" id="add-variable-to-model-site-scanner-effects">
+<h3>Add variable to model site/scanner effects<a class="headerlink" href="#add-variable-to-model-site-scanner-effects" title="Permalink to this headline"></a></h3>
+<p>Currently, the different sites are coded in a single column (named
+‘site’) and are represented as a string data type. However, the
+PCNtoolkit requires binary variables. Use the pandas package as follows
+to address this, which has a built-in function, <code class="docutils literal notranslate"><span class="pre">pd.get_dummies</span></code>, that
+takes in the string ‘site’ column and dummy encodes the site variable so
+that there is now a column for each site and the columns contain binary
+variables (0=not in this site, 1=present in this site).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_data_covariates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">all_data_covariates</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_data</span><span class="p">[</span><span class="s1">&#39;Average_Thickness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_data</span><span class="p">[[</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">,</span><span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="train-test-split">
+<h3>Train/test split<a class="headerlink" href="#train-test-split" title="Permalink to this headline"></a></h3>
+<p>In this example, we use 80% of the data for training and 20% for
+testing. Please carefully read the experimental design section on
+train/test split considerations when using your own data in this step.
+Using a function from scikit-learn (<code class="docutils literal notranslate"><span class="pre">train_test_split</span></code>), stratify the
+train/test split using the site variable to make sure that the
+train/test sets both contain data from all sites, using the following
+commands. Next, confirm that your train and test arrays are the same
+size (rows), using the following commands. You do not need the same size
+columns (subjects) in the train and test arrays, but the rows represent
+the covariate and responses which should be the same across train and
+test arrays.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">all_data_covariates</span><span class="p">,</span> <span class="n">all_data_features</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">all_data</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Verify that your train &amp; test arrays are the same size</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tr_cov_size</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">tr_resp_size</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">te_cov_size</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">te_resp_size</span> <span class="o">=</span> <span class="n">y_test</span><span class="o">.</span><span class="n">shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Train covariate size is: &quot;</span><span class="p">,</span> <span class="n">tr_cov_size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test covariate size is: &quot;</span><span class="p">,</span> <span class="n">te_cov_size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Train response size is: &quot;</span><span class="p">,</span> <span class="n">tr_resp_size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test response size is: &quot;</span><span class="p">,</span> <span class="n">te_resp_size</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Train covariate size is:  (1353, 4)
+Test covariate size is:  (339, 4)
+Train response size is:  (1353, 6)
+Test response size is:  (339, 6)
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>CRITICAL STEP:</strong> The model would not learn the site effects if all the
+data from one site was only in the test set. Therefore, we stratify the
+train/test split using the site variable.</p>
+</div>
+<p>When the data were split into train and test sets, the row index was not
+reset. This means that the row index in the train and test data frames
+still correspond to the full data frame (before splitting the data
+occurred). The test set row index informs which subjects belong to which
+site, and this information is needed to evaluate per site performance
+metrics. Resetting the row index of the train/test data frames fixes
+this issue. Then extract the site row indices to a list (one list per
+site) and create a list called <code class="docutils literal notranslate"><span class="pre">site_names</span></code> that is used to decide
+which sites to evaluate model performance for, as follows:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">X_test</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_train</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_test</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get indices of all the subejcts in each site so that we can evaluate the test set metrics per site</span>
+<span class="n">hcp_idx</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">X_test</span><span class="p">[</span><span class="s1">&#39;site_hcp&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">ixi_idx</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">X_test</span><span class="p">[</span><span class="s1">&#39;site_ixi&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the site indices into a single list</span>
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span><span class="n">hcp_idx</span><span class="p">,</span> <span class="n">ixi_idx</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a list with sites names to use in evaluating per-site metrics</span>
+<span class="n">site_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hcp&#39;</span><span class="p">,</span> <span class="s1">&#39;ixi&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup-output-directories">
+<h3>Setup output directories<a class="headerlink" href="#setup-output-directories" title="Permalink to this headline"></a></h3>
+<p>Save each brain region to its own text file (organized in separate
+directories) using the following commands, because for each response
+variable, Y (e.g., brain region) we fit a separate normative model.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">y_train</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="n">y_train</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;resp_tr_&#39;</span> <span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;cov_tr.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_train</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;resp_tr.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">y_test</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="n">y_test</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;resp_te_&#39;</span> <span class="o">+</span> <span class="n">c</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_test</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;cov_te.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_test</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;resp_te.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="k">if</span> <span class="o">[[</span> ! -e ROI_models/ <span class="o">]]</span><span class="p">;</span> <span class="k">then</span> mkdir ROI_models<span class="p">;</span> <span class="k">fi</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>cat /content/PCNtoolkit-demo/data/roi_dir_names<span class="sb">`</span><span class="p">;</span> <span class="k">do</span> <span class="k">if</span> <span class="o">[[</span> -e resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt <span class="o">]]</span><span class="p">;</span> <span class="k">then</span> <span class="nb">cd</span> ROI_models<span class="p">;</span> mkdir <span class="si">${</span><span class="nv">i</span><span class="si">}</span><span class="p">;</span> <span class="nb">cd</span> ../<span class="p">;</span> cp resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_tr.txt<span class="p">;</span> cp resp_te_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_te.txt<span class="p">;</span> cp cov_tr.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_tr.txt<span class="p">;</span> cp cov_te.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_te.txt<span class="p">;</span> <span class="k">fi</span><span class="p">;</span> <span class="k">done</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up files</span>
+<span class="o">!</span> rm resp_*.txt
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up files</span>
+<span class="o">!</span> rm cov_t*.txt
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="algorithm-modeling">
+<h2>Algorithm &amp; Modeling<a class="headerlink" href="#algorithm-modeling" title="Permalink to this headline"></a></h2>
+<div class="section" id="basis-expansion-using-b-splines">
+<h3>Basis expansion using B-Splines<a class="headerlink" href="#basis-expansion-using-b-splines" title="Permalink to this headline"></a></h3>
+<p>Now, set up a B-spline basis set that allows us to perform nonlinear
+regression using a linear model, using the following commands. This
+basis is deliberately chosen to not to be too flexible so that it can
+only model relatively slowly varying trends. To increase the flexibility
+of the model you can change the parameterization (e.g., by adding knot
+points to the B-spline basis or increasing the order of the
+interpolating polynomial). Note that in the neuroimaging literature, it
+is more common to use a polynomial basis expansion for this. Piecewise
+polynomials like B-splines are superior to polynomial basis expansions
+because they do not introduce a global curvature. For further details on
+the use of B-splines see <a class="reference external" href="https://pubmed.ncbi.nlm.nih.gov/34798518/">Fraza et
+al</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set this path to wherever your ROI_models folder is located (where you copied all of the covariate &amp; response text files to in Step 4)</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;/content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/&#39;</span>
+
+<span class="c1"># Create a cubic B-spline basis (used for regression)</span>
+<span class="n">xmin</span> <span class="o">=</span> <span class="mi">10</span><span class="c1">#16 # xmin &amp; xmax are the boundaries for ages of participants in the dataset</span>
+<span class="n">xmax</span> <span class="o">=</span> <span class="mi">95</span><span class="c1">#90</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">create_bspline_basis</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
+<span class="c1"># create the basis expansion for the covariates for each of the</span>
+<span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">roi_ids</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating basis expansion for ROI:&#39;</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
+    <span class="n">roi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">)</span>
+    <span class="c1"># create output dir</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span><span class="s1">&#39;blr&#39;</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># load train &amp; test covariate data matrices</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_tr.txt&#39;</span><span class="p">))</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_te.txt&#39;</span><span class="p">))</span>
+    <span class="c1"># add intercept column</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">X_tr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_te</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">X_te</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_int_tr.txt&#39;</span><span class="p">),</span> <span class="n">X_tr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_int_te.txt&#39;</span><span class="p">),</span> <span class="n">X_te</span><span class="p">)</span>
+
+    <span class="c1"># create Bspline basis set</span>
+    <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">B</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">X_tr</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">Phis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">B</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">X_te</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">Phi</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X_te</span><span class="p">,</span> <span class="n">Phis</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_tr.txt&#39;</span><span class="p">),</span> <span class="n">X_tr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_te.txt&#39;</span><span class="p">),</span> <span class="n">X_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Creating basis expansion for ROI: lh_MeanThickness_thickness
+Creating basis expansion for ROI: rh_MeanThickness_thickness
+Creating basis expansion for ROI: lh_bankssts_thickness
+Creating basis expansion for ROI: lh_caudalanteriorcingulate_thickness
+Creating basis expansion for ROI: lh_superiorfrontal_thickness
+Creating basis expansion for ROI: rh_superiorfrontal_thickness
+</pre></div>
+</div>
+</div>
+<div class="section" id="estimate-normative-model">
+<h3>Estimate normative model<a class="headerlink" href="#estimate-normative-model" title="Permalink to this headline"></a></h3>
+<p>Set up a variable (<code class="docutils literal notranslate"><span class="pre">data_dir</span></code>) that specifies the path to the ROI
+directories that were created in Step 7. Initiate two empty pandas data
+frames where the evaluation metrics are the column names, as follows;
+one will be used for overall test set evaluation (<code class="docutils literal notranslate"><span class="pre">blr_metrics</span></code>) and
+one will be used for site-specific test set evaluation
+(<code class="docutils literal notranslate"><span class="pre">blr_site_metrics</span></code>). After the normative model has been estimated,
+these data frames will be saved as individual csv files.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create pandas dataframes with header names to save out the overall and per-site model evaluation metrics</span>
+<span class="n">blr_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">,</span> <span class="s1">&#39;MSLL&#39;</span><span class="p">,</span> <span class="s1">&#39;EV&#39;</span><span class="p">,</span> <span class="s1">&#39;SMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;Rho&#39;</span><span class="p">])</span>
+<span class="n">blr_site_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ROI&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;MSLL&#39;</span><span class="p">,</span> <span class="s1">&#39;EV&#39;</span><span class="p">,</span> <span class="s1">&#39;SMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSE&#39;</span><span class="p">,</span> <span class="s1">&#39;Rho&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Estimate the normative models using a for loop to iterate over brain
+regions. An important consideration is whether to re-scale or
+standardize the covariates or responses. Whilst this generally only has
+a minor effect on the final model accuracy, it has implications for the
+interpretation of models and how they are configured. If the covariates
+and responses are both standardized (<code class="docutils literal notranslate"><span class="pre">standardize</span> <span class="pre">=</span> <span class="pre">True</span></code>), the model
+will return standardized coefficients. If (as in this case) the response
+variables are not standardized (<code class="docutils literal notranslate"><span class="pre">standardized</span> <span class="pre">=</span> <span class="pre">False</span></code>), then the
+scaling both covariates and responses will be reflected in the estimated
+coefficients. Also, under the linear modeling approach employed here, if
+the coefficients are unstandardized and do not have a zero mean, it is
+necessary to add an intercept column to the design matrix (this is done
+above in step 9 (B-spline)). The estimate function uses a few specific
+arguments that are worthy of commenting on:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>- alg = &#39;blr&#39;: specifies we should use Bayesian Linear Regression.
+- optimizer = &#39;powell&#39;: use Powell&#39;s derivative-free optimization method (faster in this case than L-BFGS)
+- savemodel = False: do not write out the final estimated model to disk
+- saveoutput = False: return the outputs directly rather than writing them to disk
+- standardize = False: Do not standardize the covariates or response variables
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>CRITICAL STEP:</strong> This code fragment will loop through each region of
+interest in the <code class="docutils literal notranslate"><span class="pre">roi_ids</span></code> list (created in step 4) using Bayesian
+Linear Regression and evaluate the model on the independent test set. In
+principle, we could estimate the normative models on the whole data
+matrix at once (e.g., with the response variables stored in a
+<code class="docutils literal notranslate"><span class="pre">n_subjects</span></code> by <code class="docutils literal notranslate"><span class="pre">n_brain_measures</span></code> NumPy array or a text file
+instead of saved out into separate directories). However, running the
+models iteratively gives some extra flexibility in that it does not
+require that the included subjects are the same for each of the brain
+measures.</p>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Loop through ROIs</span>
+<span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">roi_ids</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running ROI:&#39;</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
+    <span class="n">roi_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">roi</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">)</span>
+
+    <span class="c1"># configure the covariates to use. Change *_bspline_* to *_int_* to</span>
+    <span class="n">cov_file_tr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_tr.txt&#39;</span><span class="p">)</span>
+    <span class="n">cov_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;cov_bspline_te.txt&#39;</span><span class="p">)</span>
+
+    <span class="c1"># load train &amp; test response files</span>
+    <span class="n">resp_file_tr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;resp_tr.txt&#39;</span><span class="p">)</span>
+    <span class="n">resp_file_te</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">roi_dir</span><span class="p">,</span> <span class="s1">&#39;resp_te.txt&#39;</span><span class="p">)</span>
+
+    <span class="c1"># run a basic model</span>
+    <span class="n">yhat_te</span><span class="p">,</span> <span class="n">s2_te</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">metrics_te</span> <span class="o">=</span> <span class="n">estimate</span><span class="p">(</span><span class="n">cov_file_tr</span><span class="p">,</span>
+                                                 <span class="n">resp_file_tr</span><span class="p">,</span>
+                                                 <span class="n">testresp</span><span class="o">=</span><span class="n">resp_file_te</span><span class="p">,</span>
+                                                 <span class="n">testcov</span><span class="o">=</span><span class="n">cov_file_te</span><span class="p">,</span>
+                                                 <span class="n">alg</span> <span class="o">=</span> <span class="s1">&#39;blr&#39;</span><span class="p">,</span>
+                                                 <span class="n">optimizer</span> <span class="o">=</span> <span class="s1">&#39;powell&#39;</span><span class="p">,</span>
+                                                 <span class="n">savemodel</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                                 <span class="n">saveoutput</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">standardize</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># save metrics</span>
+    <span class="n">blr_metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">roi</span><span class="p">,</span> <span class="n">metrics_te</span><span class="p">[</span><span class="s1">&#39;MSLL&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te</span><span class="p">[</span><span class="s1">&#39;EXPV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te</span><span class="p">[</span><span class="s1">&#39;SMSE&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te</span><span class="p">[</span><span class="s1">&#39;Rho&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="c1"># Compute metrics per site in test set, save to pandas df</span>
+    <span class="c1"># load true test data</span>
+    <span class="n">X_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">cov_file_te</span><span class="p">)</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">resp_file_te</span><span class="p">)</span>
+    <span class="n">y_te</span> <span class="o">=</span> <span class="n">y_te</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="c1"># make sure it is a 2-d array</span>
+
+    <span class="c1"># load training data (required to compute the MSLL)</span>
+    <span class="n">y_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">resp_file_tr</span><span class="p">)</span>
+    <span class="n">y_tr</span> <span class="o">=</span> <span class="n">y_tr</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">site</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+        <span class="n">y_mean_te_site</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="n">site</span><span class="p">])]])</span>
+        <span class="n">y_var_te_site</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="n">site</span><span class="p">])]])</span>
+        <span class="n">yhat_mean_te_site</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yhat_te</span><span class="p">[</span><span class="n">site</span><span class="p">])]])</span>
+        <span class="n">yhat_var_te_site</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">yhat_te</span><span class="p">[</span><span class="n">site</span><span class="p">])]])</span>
+
+        <span class="n">metrics_te_site</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="n">site</span><span class="p">],</span> <span class="n">yhat_te</span><span class="p">[</span><span class="n">site</span><span class="p">],</span> <span class="n">s2_te</span><span class="p">[</span><span class="n">site</span><span class="p">],</span> <span class="n">y_mean_te_site</span><span class="p">,</span> <span class="n">y_var_te_site</span><span class="p">)</span>
+
+        <span class="n">site_name</span> <span class="o">=</span> <span class="n">site_names</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+        <span class="n">blr_site_metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">blr_site_metrics</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">roi</span><span class="p">,</span> <span class="n">site_names</span><span class="p">[</span><span class="n">num</span><span class="p">],</span> <span class="n">metrics_te_site</span><span class="p">[</span><span class="s1">&#39;MSLL&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te_site</span><span class="p">[</span><span class="s1">&#39;EXPV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te_site</span><span class="p">[</span><span class="s1">&#39;SMSE&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te_site</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">metrics_te_site</span><span class="p">[</span><span class="s1">&#39;Rho&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running ROI: lh_MeanThickness_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_MeanThickness_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -1162.792820
+         Iterations: 2
+         Function evaluations: 47
+Saving model meta-data...
+Evaluating the model ...
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.7/dist-packages/pcntoolkit/model/bayesreg.py:187: LinAlgWarning: Ill-conditioned matrix (rcond=1.15485e-18): result may not be accurate.
+  invAXt = linalg.solve(self.A, X.T, check_finite=False)
+/usr/local/lib/python3.7/dist-packages/pcntoolkit/model/bayesreg.py:187: LinAlgWarning: Ill-conditioned matrix (rcond=4.51813e-19): result may not be accurate.
+  invAXt = linalg.solve(self.A, X.T, check_finite=False)
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Running ROI: rh_MeanThickness_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/rh_MeanThickness_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -1187.621858
+         Iterations: 2
+         Function evaluations: 47
+Saving model meta-data...
+Evaluating the model ...
+Running ROI: lh_bankssts_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_bankssts_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -578.945257
+         Iterations: 2
+         Function evaluations: 46
+Saving model meta-data...
+Evaluating the model ...
+Running ROI: lh_caudalanteriorcingulate_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_caudalanteriorcingulate_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -235.509099
+         Iterations: 3
+         Function evaluations: 75
+Saving model meta-data...
+Evaluating the model ...
+Running ROI: lh_superiorfrontal_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_superiorfrontal_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -716.547377
+         Iterations: 3
+         Function evaluations: 91
+Saving model meta-data...
+Evaluating the model ...
+Running ROI: rh_superiorfrontal_thickness
+Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/rh_superiorfrontal_thickness/resp_tr.txt
+Estimating model  1 of 1
+configuring BLR ( order 1 )
+Using default hyperparameters
+Optimization terminated successfully.
+         Current function value: -730.639309
+         Iterations: 2
+         Function evaluations: 45
+Saving model meta-data...
+Evaluating the model ...
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="evaluation-interpretation">
+<h2>Evaluation &amp; Interpretation<a class="headerlink" href="#evaluation-interpretation" title="Permalink to this headline"></a></h2>
+<div class="section" id="describe-the-normative-model-performance">
+<h3>Describe the normative model performance<a class="headerlink" href="#describe-the-normative-model-performance" title="Permalink to this headline"></a></h3>
+<p>In step 11, when we looped over each region of interest in the
+<code class="docutils literal notranslate"><span class="pre">roi_ids</span></code> list (created in step 4) and evaluated the normative model
+on the independent test set, it also computed the evaluation metrics
+such as the explained variance, mean standardized log-loss and Pearson
+correlation between true and predicted test responses. The evaluation
+metrics were calculated for the full test set and calculated separately
+for each scanning site. The metrics were saved out to a csv file. In
+this step we load the evaluation metrics into a panads data frame and
+use the describe function to show the range, mean, and standard
+deviation of each of the evaluation metrics. Table 2 shows how to
+interpret the ranges/directions of good model fit.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Overall test set evaluation metrics</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">[</span><span class="s1">&#39;EV&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">[</span><span class="s1">&#39;MSLL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">[</span><span class="s1">&#39;SMSE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">blr_metrics</span><span class="p">[</span><span class="s1">&#39;Rho&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>count    6.000000
+mean     0.216747
+std      0.114371
+min      0.063284
+25%      0.161901
+50%      0.204015
+75%      0.264058
+max      0.397232
+Name: EV, dtype: float64
+count    6.000000
+mean    -0.131996
+std      0.080019
+min     -0.267055
+25%     -0.157321
+50%     -0.120775
+75%     -0.089765
+max     -0.034441
+Name: MSLL, dtype: float64
+count    6.000000
+mean     0.784798
+std      0.114679
+min      0.603410
+25%      0.736912
+50%      0.798426
+75%      0.841000
+max      0.936928
+Name: SMSE, dtype: float64
+count    6.000000
+mean     0.452088
+std      0.126840
+min      0.257838
+25%      0.403631
+50%      0.450319
+75%      0.513867
+max      0.630935
+Name: Rho, dtype: float64
+</pre></div>
+</div>
+<p>The deviation scores are output as a text file in separate folders. We
+want to summarize the deviation scores across all models estimates so we
+can organize them into a single file, and merge the deviation scores
+into the original data file.</p>
+</div>
+<div class="section" id="visualize-normative-model-outputs">
+<h3>Visualize normative model outputs<a class="headerlink" href="#visualize-normative-model-outputs" title="Permalink to this headline"></a></h3>
+</div>
+<div class="section" id="figure-4a-viz">
+<h3>Figure 4A viz<a class="headerlink" href="#figure-4a-viz" title="Permalink to this headline"></a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">color_gradient</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stop</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stop</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">stop</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">380</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">joypy</span><span class="o">.</span><span class="n">joyplot</span><span class="p">(</span><span class="n">blr_site_metrics</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;EV&#39;</span><span class="p">],</span> <span class="n">overlap</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="s1">&#39;own&#39;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+                          <span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xlabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">color_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mf">.08</span><span class="p">,</span> <span class="mf">.45</span><span class="p">,</span> <span class="mf">.8</span><span class="p">),</span><span class="n">stop</span><span class="o">=</span><span class="p">(</span><span class="mf">.8</span><span class="p">,</span> <span class="mf">.34</span><span class="p">,</span> <span class="mf">.44</span><span class="p">))</span>
+                          <span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">fade</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Test Set Explained Variance&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Explained Variance&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Site&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;function matplotlib.pyplot.show&gt;
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Figure size 2280x1520 with 0 Axes&gt;
+</pre></div>
+</div>
+<img alt="../_images/BLR_normativemodel_protocol_93_2.png" src="../_images/BLR_normativemodel_protocol_93_2.png" />
+<p>The code used to create the visualizations shown in Figure 4 panels B-F,
+can be found in this
+<a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/visualizations.ipynb">notebook</a>.</p>
+</div>
+<div class="section" id="post-hoc-analysis-ideas">
+<h3>Post-Hoc analysis ideas<a class="headerlink" href="#post-hoc-analysis-ideas" title="Permalink to this headline"></a></h3>
+<p>The code for running SVM classification and classical case vs. control
+t-testing on the outputs of normative modeling can be found in this
+<a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/post_hoc_analysis.ipynb">notebook</a>.</p>
+<p>The code for running other predictive models (regression, using the
+outputs of normative modeling as predictive features) can be found in
+this
+<a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/other_predictive_models.ipynb">notebook</a>.</p>
+<p>The code for transfering a pre-trained normative model to a new dataset
+can be found in this
+<a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/transfer_pretrained_normative_models.ipynb">notebook</a>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="apply_normative_models.html" class="btn btn-neutral float-left" title="Braincharts: transfer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="visualizations.html" class="btn btn-neutral float-right" title="Visualization of normative modeling outputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

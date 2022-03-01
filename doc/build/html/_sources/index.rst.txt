@@ -22,22 +22,18 @@ Predictive Clinical Neuroscience toolkit
 
    modindex.rst
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Current Events
-   
-   pages/updates.rst
-
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
 
-   pages/tutorial_CPC2020.rst
-   pages/tutorial_ROIcorticalthickness.rst
-   pages/tutorial_HBR.rst
-   pages/tutorial_braincharts_fit_nm.rst
-   pages/tutorial_braincharts_apply_nm.rst
+   pages/normative_modelling_walkthrough.rst
+   pages/HBR_NormativeModel_FCONdata_Tutorial.rst
+   pages/apply_normative_models.rst
+   pages/BLR_normativemodel_protocol.rst
+   pages/visualizations.rst
+   pages/post_hoc_analysis.rst
+   pages/other_predictive_models.rst
 
 
 .. toctree::
@@ -47,6 +43,5 @@ Predictive Clinical Neuroscience toolkit
    pages/FAQs.rst
    pages/glossary.rst
    pages/citing.rst
-   pages/references.rst
    pages/acknowledgements.rst
    
