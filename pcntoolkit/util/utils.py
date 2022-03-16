@@ -19,6 +19,7 @@ from io import StringIO
 import subprocess
 import re
 from sklearn.metrics import roc_auc_score
+import scipy.special as spp
 
 
 try:  # run as a package if installed
