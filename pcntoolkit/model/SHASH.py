@@ -11,6 +11,8 @@ from theano.gof.graph import Apply
 from theano.gradient import grad_not_implemented
 
 """
+@author: Stijn de Boer (AuguB)
+
 See: Jones et al. (2009), Sinh-Arcsinh distributions.
 """
 
@@ -25,7 +27,7 @@ class K(Op):
         return Apply(self, [p,x], [p.type()])
 
     def perform(self, node, inputs, output_storage, params=None):
-        # Doing this on the unique values avoids doing double work, apparently scipy doesn't do this by itself
+        # Doing this on the unique values avoids doing A LOT OF double work, apparently scipy doesn't do this by itself
         unique_inputs, inverse_indices = np.unique(inputs[0], return_inverse=True)
         unique_outputs = spp.kv(unique_inputs, inputs[1])
         outputs = unique_outputs[inverse_indices].reshape(inputs[0].shape)
@@ -33,7 +35,7 @@ class K(Op):
 
     def grad(self, inputs, output_grads):
         # Approximation of the derivative. This should suffice for using NUTS
-        dp = 0.00001
+        dp = 1e-10
         p = inputs[0]
         x = inputs[1]
         grad = (self(p+dp,x) - self(p, x))/dp
@@ -42,6 +44,7 @@ class K(Op):
 class SHASH(Continuous):
     """
     SHASH described by Jones et al., based on a standard normal
+    All SHASH subclasses inherit from this
     """
     def __init__(self, epsilon, delta, **kwargs):
         super().__init__(**kwargs)
@@ -188,7 +191,7 @@ class SHASHo2(SHASH):
 
         def _random(mu, sigma, epsilon, delta, size=None):
             samples_transformed = np.sinh(
-                (np.arcsinh(np.random.randn(*size)) + epsilon) / delta) * sigma + mu
+                (np.arcsinh(np.random.randn(*size)) + epsilon) / delta) * sigma_d + mu
             return samples_transformed
 
         return generate_samples(_random, mu=mu, sigma=sigma_d, epsilon=epsilon, delta=delta,
@@ -264,5 +267,5 @@ class SHASHb(SHASH):
         exp = -this_S_sqr / 2
         change_of_variable = tt.log(var)/2 - tt.log(sigma)
 
-        # the change of variables is accounted for in the density by division and multiplication (adding and subtracting for logp)
+        # the change of variables is accounted for in the density by division and multiplication (addition and subtraction in the log domain)
         return bound(frac1 + frac2 + exp + change_of_variable, delta > 0, sigma > 0, var > 0)

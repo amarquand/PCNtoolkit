@@ -4,14 +4,18 @@
 Created on Thu Jul 25 17:01:24 2019
 
 @author: seykia
+@author: Stijn de Boer (AuguB)
 """
 
 from __future__ import print_function
 from __future__ import division
 
+
 import os
+import warnings
 import sys
 import numpy as np
+from ast import literal_eval as make_tuple
 
 try:
     from pcntoolkit.dataio import fileio
@@ -71,31 +75,36 @@ class NormHBR(NormBase):
             raise ValueError("Unknown model type, please specify from 'linear', \
                              'polynomial', 'bspline', or 'nn'.")
 
-        # New keywords
         if self.configs['type'] in ['bspline', 'polynomial', 'linear']:
-            self.configs['mu_linear'] = kwargs.pop('mu_linear', 'True') == 'True'
-            self.configs['random_mu_intercept'] = kwargs.pop('random_mu_intercept', 'True') == 'True'
-            self.configs['centered_mu_intercept'] = kwargs.pop('centered_mu_intercept', 'True') == 'True'
-            self.configs['random_mu_slope'] = kwargs.pop('random_mu_slope', 'False') == 'True'
-            self.configs['centered_mu_slope'] = kwargs.pop('centered_mu_slope', 'True') == 'True'
 
-            self.configs['sigma_linear'] = kwargs.pop('sigma_linear', 'False') == 'True'
-            self.configs['random_sigma_intercept'] = kwargs.pop('random_sigma_intercept', 'False') == 'True'
-            self.configs['centered_sigma_intercept'] = kwargs.pop('centered_sigma_intercept', 'True') == 'True'
-            self.configs['random_sigma_slope'] = kwargs.pop('random_sigma_slope', 'False') == 'True'
-            self.configs['centered_sigma_slope'] = kwargs.pop('centered_sigma_slope', 'True') == 'True'
+            for p in ['mu', 'sigma', 'epsilon', 'delta']:
 
-            self.configs['epsilon_linear'] = kwargs.pop('epsilon_linear', 'False') == 'True'
-            self.configs['random_epsilon_intercept'] = kwargs.pop('random_epsilon_intercept', 'False') == 'True'
-            self.configs['centered_epsilon_intercept'] = kwargs.pop('centered_epsilon_intercept', 'True') == 'True'
-            self.configs['random_epsilon_slope'] = kwargs.pop('random_epsilon_slope', 'False') == 'True'
-            self.configs['centered_epsilon_slope'] = kwargs.pop('centered_epsilon_slope', 'True') == 'True'
+                ######## Deprecations (remove in later version)
+                if f'{p}_linear' in kwargs.keys():
+                    warnings.warn(f'The keyword \'{p}_linear\' is deprecated. It is now automatically replaced with \'linear_{p}\'', DeprecationWarning)
+                    self.configs[f'linear_{p}'] = kwargs.pop(f'{p}_linear', 'False') == 'True'
+                ##### End Deprecations 
 
-            self.configs['delta_linear'] = kwargs.pop('delta_linear', 'False') == 'True'
-            self.configs['random_delta_intercept'] = kwargs.pop('random_delta_intercept', 'False') == 'True'
-            self.configs['centered_delta_intercept'] = kwargs.pop('centered_delta_intercept', 'True') == 'True'
-            self.configs['random_delta_slope'] = kwargs.pop('random_delta_slope', 'False') == 'True'
-            self.configs['centered_delta_slope'] = kwargs.pop('centered_delta_slope', 'True') == 'True'
+
+                self.configs[f'linear_{p}'] = kwargs.pop(f'linear_{p}', 'False') == 'True'
+                for c in ['centered','random']:
+                    self.configs[f'{c}_{p}'] = kwargs.pop(f'{c}_{p}', 'False') == 'True'
+                    for sp in ['slope','intercept']:
+                        self.configs[f'{c}_{sp}_{p}'] = kwargs.pop(f'{c}_{sp}_{p}', 'False') == 'True'
+
+            ######## Deprecations (remove in later version)
+            if self.configs['linear_sigma']:
+                if 'random_noise' in kwargs.keys():
+                    warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_intercept_sigma\', because sigma is linear", DeprecationWarning)
+                    self.configs['random_intercept_sigma'] = kwargs.pop('random_noise','False') == 'True'
+            elif 'random_noise' in kwargs.keys():
+                warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed", DeprecationWarning
+                self.configs['random_sigma'] = kwargs.pop('random_noise','False') == 'True'
+            if 'random_slope' in kwargs.keys():
+                warnings.warn("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
+                self.configs['random_intercept_mu'] = kwargs.pop('random_slope','False') == 'True'
+            ##### End Deprecations 
+
 
         self.hbr = HBR(self.configs)
 
