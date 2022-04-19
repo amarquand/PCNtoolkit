@@ -171,13 +171,15 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             y_like = pm.Normal('y',mu=mu, sigma=sigma, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
+            """Note: any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work"""
             SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
-            mu = pb.make_param("mu").get_samples(pb)
-            sigma = pb.make_param("sigma").get_samples(pb)
+            mu = pb.make_param("mu", mu_intercept_mu_params = (0.,10.), mu_slope_mu_params=(0.,10.),sigma_intercept_mu_params = (0.,10.), sigma_slope_mu_params=(0.,10.)).get_samples(pb)
+            sigma = pb.make_param("sigma", mu_intercept_sigma_params = (0.,10.), mu_slope_sigma_params=(0.,10.),sigma_intercept_sigma_params = (0.,10.), sigma_slope_sigma_params=(0.,10.)).get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
             epsilon = pb.make_param("epsilon", epsilon_params=(0.,1.)).get_samples(pb)
-            delta = pb.make_param("delta", delta_dist='igamma',delta_params=(5.,6.)).get_samples(pb)
-            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta, observed = y)
+            delta = pb.make_param("delta", delta_dist='igamma',delta_params=(1.,1.)).get_samples(pb)
+            delta_plus = delta + 0.5
+            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
 
     return model
 
