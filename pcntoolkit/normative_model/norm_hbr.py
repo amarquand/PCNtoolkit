@@ -78,15 +78,14 @@ class NormHBR(NormBase):
         if self.configs['type'] in ['bspline', 'polynomial', 'linear']:
 
             for p in ['mu', 'sigma', 'epsilon', 'delta']:
+                self.configs[f'linear_{p}'] = kwargs.pop(f'linear_{p}', 'False') == 'True'
 
                 ######## Deprecations (remove in later version)
                 if f'{p}_linear' in kwargs.keys():
-                    warnings.warn(f'The keyword \'{p}_linear\' is deprecated. It is now automatically replaced with \'linear_{p}\'', DeprecationWarning)
+                    print(f'The keyword \'{p}_linear\' is deprecated. It is now automatically replaced with \'linear_{p}\'')
                     self.configs[f'linear_{p}'] = kwargs.pop(f'{p}_linear', 'False') == 'True'
                 ##### End Deprecations 
 
-
-                self.configs[f'linear_{p}'] = kwargs.pop(f'linear_{p}', 'False') == 'True'
                 for c in ['centered','random']:
                     self.configs[f'{c}_{p}'] = kwargs.pop(f'{c}_{p}', 'False') == 'True'
                     for sp in ['slope','intercept']:
@@ -95,13 +94,13 @@ class NormHBR(NormBase):
             ######## Deprecations (remove in later version)
             if self.configs['linear_sigma']:
                 if 'random_noise' in kwargs.keys():
-                    warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_intercept_sigma\', because sigma is linear", DeprecationWarning)
+                    print("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_intercept_sigma\', because sigma is linear")
                     self.configs['random_intercept_sigma'] = kwargs.pop('random_noise','False') == 'True'
             elif 'random_noise' in kwargs.keys():
-                warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed", DeprecationWarning)
+                print("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed")
                 self.configs['random_sigma'] = kwargs.pop('random_noise','False') == 'True'
             if 'random_slope' in kwargs.keys():
-                warnings.warn("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
+                print("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
                 self.configs['random_intercept_mu'] = kwargs.pop('random_slope','False') == 'True'
             ##### End Deprecations 
 
