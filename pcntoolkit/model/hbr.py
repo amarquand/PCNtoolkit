@@ -4,10 +4,13 @@
 Created on Thu Jul 25 13:23:15 2019
 
 @author: seykia
+@author: Stijn de Boer (AuguB)
 """
 
 from __future__ import print_function
 from __future__ import division
+from ast import Param
+from tkinter.font import names
 
 import numpy as np
 import pymc3 as pm
@@ -26,6 +29,7 @@ from util.utils import create_poly_basis
 from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
 
+from theano import printing, function
 
 def bspline_fit(X, order, nknots):
     feature_num = X.shape[1]
@@ -154,74 +158,26 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     X = theano.shared(X)
     y = theano.shared(y)
 
+
     with pm.Model() as model:
 
         # Make a param builder that will make the correct calls
-        parb = ParamBuilder(model, X, y, batch_effects, trace, configs)
-
-        # MU =========================================================================================================
-        if configs['mu_linear']:
-            # Make mu with an intercept and a slope
-            mu = parb.make_linear_param('mu', non_default_params={'sigma_intercept_dist': 'igamma',
-                                                                  'sigma_intercept_pars': (5, 6),
-                                                                  'offset_intercept_dist': 'uniform',
-                                                                  'offset_intercept_pars': (-0.1, 0.1)})
-            # mu = parb.make_linear_param('mu', non_default_params = {'offset_intercept_pars':(-1,1),
-            #                                                         'sigma_intercept_dist':'normal','sigma_intercept_pars':(0,1)})
-
-        else:
-            # This will probably never happen
-            mu = parb.make_fixed_param('mu', dist='normal', params=(0.0, 1.), exponentiate=False)
-
-        # sigma ========================================================================================================
-        if configs['sigma_linear']:
-            sigma = parb.make_linear_param('sigma', non_default_params={'mapfunc': 'softplus_epsilon'})
-        else:
-            sigma = parb.make_fixed_param('sigma', dist='igamma', params=(2, 3), exponentiate=False)
+        pb = ParamBuilder(model, X, y, batch_effects, trace, configs)
 
         if configs['likelihood'] == 'Normal':
-            y_like = pm.Normal('y_like',
-                               mu=mu.values,
-                               sigma=sigma.values,
-                               observed=y)
-        else:
-            # epsilon ==================================================================================================
-            if configs['epsilon_linear']:
-                epsilon = parb.make_linear_param('epsilon', non_default_params={'mu_intercept_pars': (0, 1),
-                                                                                'mu_slope_pars': (0, 1)})
-            else:
-                epsilon = parb.make_fixed_param('epsilon', dist='normal', params=(0., 1.), exponentiate=False)
+            mu = pb.make_param("mu").get_samples(pb)
+            sigma = pb.make_param("sigma").get_samples(pb)
+            sigma_plus = pm.math.log(1+pm.math.exp(sigma))
+            y_like = pm.Normal('y',mu=mu, sigma=sigma, observed=y)
 
-            # delta ==================================================================================================
-            if configs['delta_linear']:
-                delta = parb.make_linear_param('delta', non_default_params={'mu_intercept_pars': (0, 1),
-                                                                            'mu_slope_pars': (0, 1)})
-            else:
-                delta = parb.make_fixed_param('delta', dist='igamma', params=(10, 11), exponentiate=False)
-
-            if configs['likelihood'] == 'SHASHo':
-                y_like = SHASHo('y_like',
-                                mu=mu.values,
-                                sigma=sigma.values,
-                                epsilon=epsilon.values,
-                                delta=delta.values,
-                                observed=y)
-            elif configs['likelihood'] == 'SHASHo2':
-                y_like = SHASHo2('y_like',
-                                 mu=mu.values,
-                                 sigma=sigma.values,
-                                 epsilon=epsilon.values,
-                                 delta=delta.values,
-                                 observed=y)
-            elif configs['likelihood'] == 'SHASHb':
-                y_like = SHASHb('y_like',
-                                mu=mu.values,
-                                sigma=sigma.values,
-                                epsilon=epsilon.values,
-                                delta=delta.values,
-                                observed=y)
-            else:
-                print(f"Selected likelihood {configs['likelihood']} is invalid")
+        elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
+            SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
+            mu = pb.make_param("mu").get_samples(pb)
+            sigma = pb.make_param("sigma").get_samples(pb)
+            sigma_plus = pm.math.log(1+pm.math.exp(sigma))
+            epsilon = pb.make_param("epsilon", epsilon_params=(0.,1.)).get_samples(pb)
+            delta = pb.make_param("delta", delta_dist='igamma',delta_params=(5.,6.)).get_samples(pb)
+            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta, observed = y)
 
     return model
 
@@ -501,6 +457,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
 
 
 class HBR:
+
     """Hierarchical Bayesian Regression for normative modeling
 
     Basic usage::
@@ -533,7 +490,7 @@ class HBR:
             Slice,
             CategoricalGibbsMetropolis,
         )
-        :param m:
+        :param m: a PyMC3 model
         :return:
         """
         samplermap = {'NUTS': NUTS, 'MH': Metropolis, 'Slice': Slice, 'HMC': HamiltonianMC}
@@ -709,13 +666,58 @@ class HBR:
         return modeler(X, y, batch_effects, self.batch_effects_size, self.configs)
 
 
+class Prior:
+    """
+    A wrapper class for a PyMC3 distribution. 
+    - creates a fitted distribution from the trace, if one is present
+    - overloads the __getitem__ function with something that switches between indexing or not, based on the shape
+    """
+    def __init__(self, name, dist, params, pb, shape=(1,)) -> None:
+        self.dist = None
+        self.name = name
+        self.shape = shape
+        self.has_random_effect = True if len(shape)>1 else False
+        self.distmap = {'normal': pm.Normal,
+                   'hnormal': pm.HalfNormal,
+                   'gamma': pm.Gamma,
+                   'uniform': pm.Uniform,
+                   'igamma': pm.InverseGamma,
+                   'hcauchy': pm.HalfCauchy}
+        self.make_dist(dist, params, pb)
+ 
+    def make_dist(self, dist, params, pb):
+        """This creates a pymc3 distribution. If there is a trace, the distribution is fitted to the trace. If there isn't a trace, the prior is parameterized by the values in (params)"""
+        with pb.model as m:
+            if pb.trace is not None:
+                int_dist = from_posterior(param=self.name,
+                                            samples=pb.trace[self.name],
+                                            distribution=dist,
+                                            freedom=self.configs['freedom'])
+                self.dist = int_dist.reshape(self.shape)
+            else:
+                shape_prod = np.product(np.array(self.shape))
+                print(self.name)
+                print(f"{dist=}")
+                print(f"{params=}")
+                int_dist = self.distmap[dist](self.name, *params, shape=shape_prod)
+                self.dist = int_dist.reshape(self.shape)
+
+    def __getitem__(self, idx):
+        """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
+        assert self.dist is not None, "Distribution not initialized"
+        if self.has_random_effect:
+            return self.dist[idx]
+        else:
+            return self.dist
+
+
 class ParamBuilder:
     """
-    This is just a relay class. It simplifies the construction of Parameterization classes.
-    Makes the correctly parameterized calls to all the Parameter classes.
+    A class that simplifies the construction of parameterizations. 
+    It has a lot of attributes necessary for creating the model, including the data, but it is never saved with the model. 
+    It also contains a lot of decision logic for creating the parameterizations.
     """
 
-    # TODO verify that this class is not part of the model
     def __init__(self, model, X, y, batch_effects, trace, configs):
         """
 
@@ -734,7 +736,8 @@ class ParamBuilder:
         self.configs = configs
 
         self.feature_num = X.shape[1].eval().item()
-        self.y_shape = y.shape
+        self.y_shape = y.shape.eval()
+        self.n_ys = y.shape[0].eval().item()
         self.batch_effects_num = batch_effects.shape[1]
 
         self.batch_effects_size = []
@@ -757,260 +760,118 @@ class ParamBuilder:
             if idx[0].shape[0] != 0:
                 self.be_idx_tups.append((be, idx))
 
-    def make_fixed_param(self, name, dist, params, exponentiate):
-        return FixedParam(name, self.trace, self.model, self.configs, self.y_shape, self.be_idx_tups,
-                          self.batch_effects_size, dist, params, exponentiate)
-
-    def make_linear_param(self, name, non_default_params):
-        return LinearParam(name, self.trace, self.model, self.configs, non_default_params, self.batch_effects_size,
-                           self.feature_num, self.y_shape, self.be_idx_tups, self.X)
-
-
-class Random_Indexing_Switcher:
-    """
-    This enables indexing distributions, even if they are 1-dimensional. This allows us to treat the 1-dimensional
-     distribution the same as multi-dimensional distribution. You could call it syntactic sugar?
-    """
-
-    def __init__(self, name, dist, config):
-        self.name = name
-        self.dist = dist
-        self.config = config
-        self.is_random = self.config[f'random_{self.name}']
-
-    def __getitem__(self, idx):
-        if self.is_random:
-            return self.dist[idx]
+    def make_param(self, name, dim = (1,), **kwargs):
+        if self.configs.get(f'linear_{name}', False):
+            # First make a slope and intercept, and use those to make a linear parameterization 
+            slope_parameterization = self.make_param(f'slope_{name}', dim=[self.feature_num])
+            intercept_parameterization = self.make_param(f'intercept_{name}')
+            return LinearParameterization(name=name, dim=dim, 
+                                    slope_parameterization=slope_parameterization, intercept_parameterization=intercept_parameterization,
+                                    pb=self, 
+                                    **kwargs)
+        
+        elif self.configs.get(f'random_{name}', False):
+            if self.configs.get(f'centered_{name}', True):
+                return CentralRandomFixedParameterization(name=name, pb=self, dim=dim, **kwargs)
+            else:
+                return NonCentralRandomFixedParameterization(name=name, pb=self, dim=dim, **kwargs)
         else:
-            return self.dist
-
-
-class Trace_Dist:
-    """
-    Build a distribution from the posterior if there is a trace, otherwise construct something with a simple prior.
-    """
-
-    def __init__(self, model, name, dist, params, trace, configs, shape=None):
-        # this distmap needs to be put elsewhere
-        distmap = {'normal': pm.Normal,
-                   'hnormal': pm.HalfNormal,
-                   'gamma': pm.Gamma,
-                   'uniform': pm.Uniform,
-                   'igamma': pm.InverseGamma,
-                   'hcauchy': pm.HalfCauchy}
-        with model as model:
-            if trace is not None:
-                if shape is not None:
-                    int_dist = from_posterior(param=name,
-                                              samples=trace[name],
-                                              distribution=dist,
-                                              freedom=configs['freedom'])
-                    self.dist = int_dist.reshape(shape)
-                else:
-                    self.dist = from_posterior(param=name,
-                                               samples=trace[name],
-                                               distribution=dist,
-                                               freedom=configs['freedom'])
-            else:
-                if shape is not None:
-                    # Trying this
-                    shape_prod = np.product(np.array(shape))
-                    int_dist = distmap[dist](name, *params, shape=shape_prod)
-                    self.dist = int_dist.reshape(shape)
-                else:
-                    self.dist = distmap[dist](name, *params)
-
-
-class Random_Dist:
-    """
-    Create a multi-dimensional distribution when the 'random_X' keyword is true, and a 1-d dist when it is false.
-    """
-
-    def __init__(self, model, name, par_name, dist, params, shape, configs):
-        # this distmap needs to be put elsewhere
-        distmap = {'normal': pm.Normal,
-                   'hnormal': pm.HalfNormal,
-                   'gamma': pm.Gamma,
-                   'uniform': pm.Uniform,
-                   'igamma': pm.InverseGamma,
-                   'hcauchy': pm.HalfCauchy}
-        with model as model:
-            if configs[f'random_{par_name}']:
-                # This reshape was necessary because the pm MH sampler didn't like non-flat dists.
-                shape_prod = np.product(np.array(shape))
-                int_dist = distmap[dist](name, *params, shape=shape_prod)
-                self.shape = shape
-                self.dist = int_dist.reshape(shape)
-
-            else:
-                self.dist = distmap[dist](name, *params)
-                self.shape = (1,)
+            return FixedParameterization(name=name, dim=dim, pb=self,**kwargs)
 
 
 class Parameterization:
-
-    def __init__(self, name, trace, model, configs):
+    """
+    This is the top-level parameterization class from which all the other parameterizations inherit.
+    """
+    def __init__(self, name, dim):
         self.name = name
-        self.trace = trace
-        self.model = model
-        self.configs = configs
-        self.values = None
+        self.dim = dim
+        print(name, type(self))
 
-    def get_values(self):
-        return self.values
+    def get_samples(self, pb):
 
-
-class FixedParam(Parameterization):
-
-    def __init__(self, name, trace, model, configs, y_shape, be_idx_tups, batch_effects_size, dist='normal',
-                 params=(0, 2.5), exponentiate=False):
-        """
-
-        :param name: Name for the PyMC3 dist
-        :param shape: Output shape
-        :param trace:
-        :param model: PyMC3 model
-        :param configs:
-        :param y_shape:
-        :param be_idx_tups:
-        :param batch_effects_size:
-        :param dist:
-        :param params: parameters of 'dist'
-        :param exponentiate:
-        """
-        super().__init__(name, trace, model, configs)
-        self.dist = dist
-        self.params = params
-
-        prefix = 'log_' if exponentiate else ''
-        trace_dist_name = prefix + name
-
-        if configs[f'random_{name}_intercept']:
-            trace_dist_shape = batch_effects_size
-        else:
-            trace_dist_shape = None
-
-        trace_dist = Trace_Dist(model, trace_dist_name, dist, params, trace, configs, trace_dist_shape)
-        trace_dist = Random_Indexing_Switcher(f"{name}_intercept", trace_dist.dist, configs)
-        with model as model:
-            self.values = theano.tensor.zeros(y_shape)
-            mapfunc = np.exp if exponentiate else (lambda x: x)
-            for be, idx in be_idx_tups:
-                self.values = theano.tensor.set_subtensor(self.values[idx, 0], mapfunc(trace_dist[be]))
+        with pb.model:
+            samples = theano.tensor.zeros([pb.n_ys, *self.dim])
+            for be, idx in pb.be_idx_tups:
+                samples = theano.tensor.set_subtensor(samples[idx], self.dist[be])
+        return samples
 
 
-class LinearParam(Parameterization):
-    def __init__(self, name, trace, model, configs, non_default_params, batch_effects_size=None,
-                 feature_num=None, y_shape=None, be_idx_tups=None, X=None):
-        super().__init__(name, trace, model, configs)
-        default_pars = {'mu_slope_dist': 'normal',
-                        'mu_slope_pars': (0., 1.),
-                        'sigma_slope_dist': 'igamma',
-                        'sigma_slope_pars': (3., 4.),
-                        'offset_slope_dist': 'uniform',
-                        'offset_slope_pars': (-0.1, 0.1),
-                        'mu_intercept_dist': 'normal',
-                        'mu_intercept_pars': (0., 1.),
-                        'sigma_intercept_dist': 'igamma',
-                        'sigma_intercept_pars': (3., 4.),
-                        'offset_intercept_dist': 'uniform',
-                        'offset_intercept_pars': (-0.1, 0.1),
-                        'mapfunc': 'id'
-                        }
-        mapfuncmap = {'softplus_epsilon': lambda x: pm.math.log1pexp(x) + 1e-5,
-                      'id': (lambda x: x)}
-        pars = default_pars
-        for i in non_default_params.keys():
-            pars[i] = non_default_params[i]
+class FixedParameterization(Parameterization):
+    """
+    A parameterization that takes a single value for all input. It does not depend on anything except its hyperparameters
+    """
+    def __init__(self, name, dim, pb:ParamBuilder, **kwargs):
+        super().__init__(name, dim)
+        dist = kwargs.get(f'{name}_dist','normal')
+        params = kwargs.get(f'{name}_params',(0.,1.))
+        self.dist = Prior(name, dist, params, pb, shape = dim)
 
-        ############################################## SLOPE ###################################################
 
-        mu_prior_slope = Trace_Dist(name=f"mu_prior_slope_{name}",
-                                    dist=pars['mu_slope_dist'],
-                                    params=pars['mu_slope_pars'],
-                                    shape=(feature_num,), model=model, trace=trace, configs=configs)
+class CentralRandomFixedParameterization(Parameterization):
+    """
+    A parameterization that is fixed for each batch effect. This is sampled in a central fashion;
+    the values are sampled from normal distribution with a group mean and group variance 
+    """
+    def __init__(self, name, dim, pb:ParamBuilder, **kwargs):
+        super().__init__(name, dim)
 
-        if not self.configs[f'random_{name}_slope']:
-            with model as model:
-                slope = pm.Deterministic(f"slope_{name}", mu_prior_slope.dist)
+        # Normal distribution is default for mean
+        mu_dist = kwargs.get(f'mu_{name}_dist','normal')
+        mu_pars = kwargs.get(f'mu_{name}_pars',(0.,1.))
+        mu_prior = Prior(f'mu_{name}', mu_dist, mu_pars, pb, shape = dim)
 
-        else:
-            if not self.configs[f'centered_{name}_slope']:
-                sigma_prior_slope = Trace_Dist(name=f"sigma_prior_slope_{name}",
-                                               dist=pars['sigma_slope_dist'],
-                                               params=pars['sigma_slope_pars'],
-                                               shape=(feature_num,), model=model, trace=trace, configs=configs)
-                offset_prior_slope = Random_Dist(name=f"offset_prior_slope_{name}",
-                                                 par_name=f'{name}_slope',
-                                                 dist=pars['offset_slope_dist'],
-                                                 params=pars['offset_slope_pars'],
-                                                 shape=batch_effects_size + [feature_num], model=model, configs=configs)
-                with model as model:
-                    slope = pm.Deterministic(f"slope_{name}", mu_prior_slope.dist + offset_prior_slope.dist *
-                                             sigma_prior_slope.dist)
-            else:
-                sigma_prior_slope = Random_Dist(name=f"sigma_prior_slope_{name}",
-                                                par_name=f'{name}_slope',
-                                                dist=pars['sigma_slope_dist'],
-                                                params=pars['sigma_slope_pars'],
-                                                shape=batch_effects_size + [feature_num], model=model, configs=configs)
-                with model as model:
-                    slope = pm.Normal(name=f"slope_{name}", mu=mu_prior_slope.dist, sigma=sigma_prior_slope.dist,
-                                      shape=sigma_prior_slope.shape)
+        # HalfCauchy is default for sigma
+        sigma_dist = kwargs.get(f'sigma_{name}_dist','hcauchy')
+        sigma_pars = kwargs.get(f'sigma_{name}_pars',(1.,))
+        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_pars, pb, shape = [*pb.batch_effects_size, *dim])
 
-        slope = Random_Indexing_Switcher(f"{name}_slope", slope, configs)
+        self.dist = pm.Normal(name=name, mu=mu_prior.dist, sigma=sigma_prior.dist, shape = [*pb.batch_effects_size, *dim])
+    
 
-        ############################################ INTERCEPT #################################################
+class NonCentralRandomFixedParameterization(Parameterization):
+    """
+    A parameterization that is fixed for each batch effect. This is sampled in a non-central fashion;
+    the values are a sum of a group mean and noise values scaled with a group scaling factor 
+    """
+    def __init__(self, name,dim,  pb:ParamBuilder, **kwargs):
+        super().__init__(name, dim)
 
-        mu_prior_intercept = Trace_Dist(name=f"mu_prior_intercept_{name}",
-                                        dist=pars['mu_intercept_dist'],
-                                        params=pars['mu_intercept_pars'],
-                                        shape=(1,),
-                                        model=model, trace=trace, configs=configs)
+        # Normal distribution is default for mean
+        mu_dist = kwargs.get(f'mu_{name}_dist','normal')
+        mu_pars = kwargs.get(f'mu_{name}_pars',(0.,1.))
+        mu_prior = Prior(f'mu_{name}', mu_dist, mu_pars, pb, shape = dim)
 
-        if not self.configs[f'random_{name}_intercept']:
-            with model as model:
-                intercept = pm.Deterministic(f"intercept_{name}", mu_prior_intercept.dist)
+        # HalfCauchy is default for sigma
+        sigma_dist = kwargs.get(f'sigma_{name}_dist','hcauchy')
+        sigma_pars = kwargs.get(f'sigma_{name}_pars',(1.,))
+        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_pars, pb, shape = dim)
 
-        else:
-            if not self.configs[f'centered_{name}_intercept']:
-                sigma_prior_intercept = Trace_Dist(name=f"sigma_prior_intercept_{name}",
-                                                   dist=pars['sigma_intercept_dist'],
-                                                   params=pars['sigma_intercept_pars'],
-                                                   shape=(1,),
-                                                   model=model, trace=trace, configs=configs)
-                offset_prior_intercept = Random_Dist(name=f"offset_prior_intercept_{name}",
-                                                     par_name=f'{name}_intercept',
-                                                     dist=pars['offset_intercept_dist'],
-                                                     params=pars['offset_intercept_pars'],
-                                                     shape=batch_effects_size, model=model, configs=configs)
+        # Normal is default for offset
+        offset_dist = kwargs.get(f'offset_{name}_dist','normal')
+        offset_pars = kwargs.get(f'offset_{name}_pars',(0.,1.))
+        offset_prior = Prior(f'offset_{name}',offset_dist, offset_pars, pb, shape = [*pb.batch_effects_size, *dim])
 
-                with model as model:
-                    intercept = pm.Deterministic(f"intercept_{name}",
-                                                 mu_prior_intercept.dist + offset_prior_intercept.dist *
-                                                 sigma_prior_intercept.dist)
-            else:
-                sigma_prior_intercept = Random_Dist(name=f"sigma_prior_intercept_{name}",
-                                                    par_name=f'{name}_intercept',
-                                                    dist=pars['sigma_intercept_dist'],
-                                                    params=pars['sigma_intercept_pars'],
-                                                    shape=batch_effects_size, model=model, configs=configs)
-                with model as model:
-                    intercept = pm.Normal(name=f"intercept_{name}",
-                                          mu=mu_prior_intercept.dist,
-                                          sigma=sigma_prior_intercept.dist,
-                                          shape=sigma_prior_intercept.shape)
-        intercept = Random_Indexing_Switcher(f"{name}_intercept", intercept, configs)
+        self.dist = pm.Deterministic(name=name, var=mu_prior.dist+sigma_prior.dist*offset_prior.dist)
 
-        ########################################### REGRESSION #################################################
 
-        with model as model:
-            self.values = theano.tensor.zeros(y_shape)
-            mapfunc = mapfuncmap[pars['mapfunc']]
-            for be, idx in be_idx_tups:
-                self.values = theano.tensor.set_subtensor(self.values[idx, 0],
-                                                          mapfunc(intercept[be] + theano.tensor.dot(X[idx, :],
-                                                                                                    slope[be])))
+class LinearParameterization(Parameterization):
+    """
+    A parameterization that can model a linear dependence on X. 
+    """
+    def __init__(self, name, dim, slope_parameterization, intercept_parameterization, pb, **kwargs):
+        super().__init__( name, dim)
+        self.slope_parameterization = slope_parameterization
+        self.intercept_parameterization = intercept_parameterization
+
+    def get_samples(self, pb:ParamBuilder):
+        with pb.model:
+            samples = theano.tensor.zeros([pb.n_ys, *self.dim])
+            for be, idx in pb.be_idx_tups:
+                dot = theano.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be])
+                intercept = self.intercept_parameterization.dist[be]
+                samples = theano.tensor.set_subtensor(samples[idx,0],dot+intercept)
+        return samples
 
 
 def get_design_matrix(X, nm, basis="linear"):
