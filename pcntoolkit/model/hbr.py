@@ -210,6 +210,8 @@ class HBR:
 
     def get_step_methods(self, m):
         """
+        This can be used to assign default step functions. However, the nuts initialization keyword doesnt work together with this... so better not use it. 
+
         STEP_METHODS = (
             NUTS,
             HamiltonianMC,
@@ -223,12 +225,12 @@ class HBR:
         :return:
         """
         samplermap = {'NUTS': NUTS, 'MH': Metropolis, 'Slice': Slice, 'HMC': HamiltonianMC}
+        fallbacks = [Metropolis]         # We are using MH as a fallback method here
         if self.configs['sampler'] == 'NUTS':
             step_kwargs = {'nuts': {'target_accept': self.configs['target_accept']}}
         else:
             step_kwargs = None
-        # We are using MH as a fallback method here
-        return pm.sampling.assign_step_methods(m, methods=[samplermap[self.configs['sampler']]] + [Metropolis],
+        return pm.sampling.assign_step_methods(m, methods=[samplermap[self.configs['sampler']]] + fallbacks,
                                                step_kwargs=step_kwargs)
 
     def __init__(self, configs):
