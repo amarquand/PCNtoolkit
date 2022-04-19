@@ -98,7 +98,7 @@ class NormHBR(NormBase):
                     warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_intercept_sigma\', because sigma is linear", DeprecationWarning)
                     self.configs['random_intercept_sigma'] = kwargs.pop('random_noise','False') == 'True'
             elif 'random_noise' in kwargs.keys():
-                warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed", DeprecationWarning
+                warnings.warn("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed", DeprecationWarning)
                 self.configs['random_sigma'] = kwargs.pop('random_noise','False') == 'True'
             if 'random_slope' in kwargs.keys():
                 warnings.warn("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
