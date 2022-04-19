@@ -120,7 +120,7 @@ def single_parameter_forward(X, Z, model, sample, p_name):
     for be in all_bes:
         bet = tuple(be)
         idx = (Z==be).all(1)
-        if model.configs[f"{p_name}_linear"]:
+        if model.configs[f"linear_{p_name}"]:
             if model.configs[f'random_slope_{p_name}']:
                 slope_be = sample[f"slope_{p_name}"][bet]
             else:
@@ -142,7 +142,7 @@ def single_parameter_forward(X, Z, model, sample, p_name):
 def forward(X, Z, model, sample):
     """Get all likelihood paramameters given covariates and batch-effects and model parameters"""
     # TODO think if this is the correct spot for this
-    mapfuncs={'sigma': lambda x: np.log(1+np.exp(x))}
+    mapfuncs={'sigma': lambda x: np.log(1+np.exp(x)), "delta":lambda x: 0.5+x}
 
     likelihood = model.configs['likelihood']
     if likelihood == 'Normal':
