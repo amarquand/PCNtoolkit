@@ -174,7 +174,16 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             y_like = pm.Normal('y',mu=mu, sigma=sigma, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
-            """Note: any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. For example, the softplus applied to sigma here is also applied """
+            """
+            Comment 1
+            The current parameterizations are tuned towards standardized in- and output data. 
+            It is possible to adjust the priors through the XXX_dist and XXX_params kwargs, like here we do with epsilon_params.
+            Supported distributions are listed in the Prior class. 
+
+            Comment 2
+            Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. 
+            For example, the softplus applied to sigma here is also applied 
+            """
             SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
             mu = pb.make_param("mu").get_samples(pb)
             sigma = pb.make_param("sigma").get_samples(pb)
@@ -183,7 +192,6 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             delta = pb.make_param("delta", delta_dist='igamma',delta_params=(1.,1.)).get_samples(pb)
             delta_plus = delta + 0.5
             y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
-
 
     return model
 
