@@ -12,7 +12,7 @@ from pcntoolkit.model.SHASH import *
 from pcntoolkit.model.hbr import bspline_transform
 
 """
-@author: Stijn de Boer (AuguB)
+@author: augub
 """
 
 def MCMC_estimate(f, trace):
@@ -142,7 +142,7 @@ def single_parameter_forward(X, Z, model, sample, p_name):
 def forward(X, Z, model, sample):
     """Get all likelihood paramameters given covariates and batch-effects and model parameters"""
     # TODO think if this is the correct spot for this
-    mapfuncs={'sigma': lambda x: np.log(1+np.exp(x)), "delta":lambda x: 0.5+x}
+    mapfuncs={'sigma': lambda x: np.log(1+np.exp(x)), 'delta':lambda x :x+0.5}
 
     likelihood = model.configs['likelihood']
     if likelihood == 'Normal':
@@ -153,7 +153,7 @@ def forward(X, Z, model, sample):
         exit("Unsupported likelihood")
 
     for i in parameter_list:
-        if not i in mapfuncs.keys():
+        if not (i in mapfuncs.keys()):
             mapfuncs[i] = lambda x: x
 
     output_dict = {p_name:np.zeros(X.shape) for p_name in parameter_list}

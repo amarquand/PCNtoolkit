@@ -4,7 +4,7 @@
 Created on Thu Jul 25 13:23:15 2019
 
 @author: seykia
-@author: Stijn de Boer (AuguB)
+@author: augub
 """
 
 from __future__ import print_function
@@ -153,10 +153,13 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     :param batch_effects_size: [b1, b2,...,bM] List of counts of unique values of batch effects
     :param configs:
     :param trace:
+    :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it. 
     :return:
     """
     X = theano.shared(X)
+    X = theano.tensor.cast(X,'floatX')
     y = theano.shared(y)
+    y = theano.tensor.cast(y,'floatX')
 
 
     with pm.Model() as model:
@@ -171,7 +174,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             y_like = pm.Normal('y',mu=mu, sigma=sigma, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
-            """Note: any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work"""
+            """Note: any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. For example, the softplus applied to sigma here is also applied """
             SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
             mu = pb.make_param("mu").get_samples(pb)
             sigma = pb.make_param("sigma").get_samples(pb)
@@ -180,6 +183,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             delta = pb.make_param("delta", delta_dist='igamma',delta_params=(1.,1.)).get_samples(pb)
             delta_plus = delta + 0.5
             y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
+
 
     return model
 
@@ -389,7 +393,7 @@ class HBR:
             self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         modeler = self.get_modeler()
         X = self.transform_X(X)
-        return modeler(X, y, batch_effects, self.batch_effects_size, self.configs)
+        return modeler(X, y, batch_effects, self.batch_effects_size, self.configs, self.trace)
 
 
 class Prior:
@@ -418,7 +422,7 @@ class Prior:
                 int_dist = from_posterior(param=self.name,
                                             samples=pb.trace[self.name],
                                             distribution=dist,
-                                            freedom=self.configs['freedom'])
+                                            freedom=pb.configs['freedom'])
                 self.dist = int_dist.reshape(self.shape)
             else:
                 shape_prod = np.product(np.array(self.shape))

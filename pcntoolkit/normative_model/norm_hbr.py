@@ -4,7 +4,7 @@
 Created on Thu Jul 25 17:01:24 2019
 
 @author: seykia
-@author: Stijn de Boer (AuguB)
+@author: augub
 """
 
 from __future__ import print_function
