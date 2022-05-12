@@ -767,10 +767,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
-        Y = Y[:, m]
-        if meta_data:
-            mY = mY[m]
-            sY = sY[m]
+        if models is not None:
+            Y = Y[:, models]
+            if meta_data:
+                mY = mY[models]
+                sY = sY[models]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]

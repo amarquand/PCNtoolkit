@@ -19,6 +19,7 @@ from io import StringIO
 import subprocess
 import re
 from sklearn.metrics import roc_auc_score
+import scipy.special as spp
 
 
 try:  # run as a package if installed
@@ -1408,4 +1409,79 @@ def yes_or_no(question):
             return True
         if reply[:1] == 'n':
             return False
-        
+
+
+
+#====== This is stuff used for the SHASH distributions, but using numpy (not pymc or theano) ===
+
+def K(p, x):
+    return np.array(spp.kv(p, x))
+
+def P(q):
+    """
+    The P function as given in Jones et al.
+    :param q:
+    :return:
+    """
+    frac = np.exp(1 / 4) / np.sqrt(8 * np.pi)
+    K1 = K((q + 1) / 2, 1 / 4)
+    K2 = K((q - 1) / 2, 1 / 4)
+    a = (K1 + K2) * frac
+    return a
+
+def m(epsilon, delta, r):
+    """
+    The r'th uncentered moment. Given by Jones et al.
+    """
+    frac1 = 1 / np.power(2, r)
+    acc = 0
+    for i in range(r + 1):
+        combs = spp.comb(r, i)
+        flip = np.power(-1, i)
+        ex = np.exp((r - 2 * i) * epsilon / delta)
+        p = P((r - 2 * i) / delta)
+        acc += combs * flip * ex * p
+    return frac1 * acc
+
+#====== end stufff for SHASH
+
+# Design matrix function
+
+def z_score(y,  mean, std, skew=None, kurtosis=None, likelihood = "Normal"):
+
+    """
+    Computes Z-score of some data given parameters and a likelihood type string.
+    if likelihood == "Normal", parameters 'skew' and 'kurtosis' are ignored
+    :param y:
+    :param mean:
+    :param std:
+    :param skew:
+    :param kurtosis:
+    :param likelihood:
+    :return:
+    """
+    if likelihood == "SHASHo":
+        SHASH = (y-mean)/std
+        Z = np.sinh(np.arcsinh(SHASH)*kurtosis - skew)
+    elif likelihood == "SHASHo2":
+        std_d = std/kurtosis
+        SHASH = (y-mean)/std_d
+        Z = np.sinh(np.arcsinh(SHASH)*kurtosis - skew)
+    elif likelihood == "SHASHb":
+        true_mean = m(skew, kurtosis, 1)
+        true_std = np.sqrt((m(skew, kurtosis, 2) - true_mean ** 2))
+        SHASH_c = ((y-mean)/std)
+        SHASH = SHASH_c * true_std + true_mean
+        Z = np.sinh(np.arcsinh(SHASH) * kurtosis - skew)
+    else:
+        Z = (y-mean)/std
+    return Z
+
+
+def expand_all(*args):
+    def expand(a):
+        if len(a.shape) == 1:
+            return np.expand_dims(a, axis=1)
+        else:
+            return a
+    return [expand(x) for x in args]
