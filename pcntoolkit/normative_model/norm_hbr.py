@@ -147,8 +147,7 @@ class NormHBR(NormBase):
         return yhat.squeeze(), s2.squeeze()
 
     def estimate_on_new_sites(self, X, y, batch_effects):
-
-        self.hbr.adapt(X, y, batch_effects)
+        self.hbr.estimate_on_new_site(X, y, batch_effects)
         self.configs['transferred'] = True
         return self
 
