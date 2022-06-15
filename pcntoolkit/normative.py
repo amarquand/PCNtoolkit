@@ -914,7 +914,9 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if tsbefile is not None:
             batch_effects_test = fileio.load(tsbefile)
         else:
-            batch_effects_test = np.zeros([Xte.shape[0],2])
+            batch_effects_test = np.zeros([Xte.shape[0],2])  
+    else:
+        ts_sample_num = 0     
 
     Yhat = np.zeros([ts_sample_num, feature_num])
     S2 = np.zeros([ts_sample_num, feature_num])
