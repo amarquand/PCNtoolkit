@@ -171,7 +171,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             mu = pb.make_param("mu").get_samples(pb)
             sigma = pb.make_param("sigma").get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            y_like = pm.Normal('y',mu=mu, sigma=sigma, observed=y)
+            y_like = pm.Normal('y',mu=mu, sigma=sigma_plus, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
             """
@@ -182,15 +182,15 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
 
             Comment 2
             Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. 
-            For example, the softplus applied to sigma here is also applied 
+            For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
             """
             SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
             mu = pb.make_param("mu").get_samples(pb)
-            sigma = pb.make_param("sigma").get_samples(pb)
+            sigma = pb.make_param("sigma", intercept_sigma_params = (1., 1.)).get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            epsilon = pb.make_param("epsilon", epsilon_params=(0.,1.)).get_samples(pb)
-            delta = pb.make_param("delta", delta_dist='igamma',delta_params=(1.,1.)).get_samples(pb)
-            delta_plus = delta + 0.5
+            epsilon = pb.make_param("epsilon").get_samples(pb)
+            delta = pb.make_param("delta", intercept_delta_params=(1., 1.)).get_samples(pb)
+            delta_plus = pm.math.log(1+pm.math.exp(delta)) + 0.3
             y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
 
     return model
@@ -426,7 +426,7 @@ class Prior:
     def make_dist(self, dist, params, pb):
         """This creates a pymc3 distribution. If there is a trace, the distribution is fitted to the trace. If there isn't a trace, the prior is parameterized by the values in (params)"""
         with pb.model as m:
-            if pb.trace is not None:
+            if (pb.trace is not None) and (not self.has_random_effect):
                 int_dist = from_posterior(param=self.name,
                                             samples=pb.trace[self.name],
                                             distribution=dist,
@@ -606,9 +606,9 @@ class LinearParameterization(Parameterization):
         with pb.model:
             samples = theano.tensor.zeros([pb.n_ys, *self.dim])
             for be, idx in pb.be_idx_tups:
-                dot = theano.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be])
+                dot = theano.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be]).T
                 intercept = self.intercept_parameterization.dist[be]
-                samples = theano.tensor.set_subtensor(samples[idx,0],dot+intercept)
+                samples = theano.tensor.set_subtensor(samples[idx,:],dot+intercept)
         return samples
 
 
