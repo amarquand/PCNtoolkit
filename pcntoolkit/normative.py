@@ -767,7 +767,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     
     else:
         Y, maskvol = load_response_vars(respfile, maskfile)
-        if models is not None:
+        if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
                 mY = mY[models]
