@@ -171,7 +171,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             mu = pb.make_param("mu").get_samples(pb)
             sigma = pb.make_param("sigma").get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            y_like = pm.Normal('y',mu=mu, sigma=sigma_plus, observed=y)
+            y_like = pm.Normal('y_like',mu=mu, sigma=sigma_plus, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
             """
@@ -191,7 +191,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             epsilon = pb.make_param("epsilon").get_samples(pb)
             delta = pb.make_param("delta", intercept_delta_params=(1., 1.)).get_samples(pb)
             delta_plus = pm.math.log(1+pm.math.exp(delta)) + 0.3
-            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
+            y_like = SHASH_map[configs['likelihood']]('y_like', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
 
     return model
 
