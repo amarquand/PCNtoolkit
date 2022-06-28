@@ -197,7 +197,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             epsilon =       pb.make_param("epsilon",    epsilon_params = (0.,1.),  slope_epsilon_params=(0.,1.), intercept_epsilon_params=(0.,1)).get_samples(pb)
             delta =         pb.make_param("delta",      delta_params=(1.5,2.),     slope_delta_params=(0.,1),   intercept_delta_params=(2., 1)).get_samples(pb)
             delta_plus =    pm.math.log(1+pm.math.exp(delta)) + 0.3
-            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
+            y_like = SHASH_map[configs['likelihood']]('y_like', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
 
     return model
 
@@ -302,8 +302,7 @@ class HBR:
                                    tune=self.configs['n_tuning'],
                                    chains=self.configs['n_chains'],
                                    init=self.configs['init'], n_init=500000,
-                                   cores=self.configs['cores']
-                                   )
+                                   cores=self.configs['cores'])
         return self.trace
 
     def predict(self, X, batch_effects, pred='single'):
