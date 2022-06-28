@@ -78,13 +78,13 @@ def get_MCMC_quantiles(synthetic_X, z_scores, model, be):
         q = quantile(zs, ps['mu'], ps['sigma'],ps.get('epsilon',None),ps.get('delta',None), likelihood = model.configs['likelihood'])
         return q
     out = MCMC_estimate(f, model.hbr.trace)
-    return synthetic_X, out
+    return out
 
 
 def get_single_quantiles(synthetic_X, z_scores, model, be, sample):
     """Get the quantiles within a given range of covariates, given a model"""
     resolution = synthetic_X.shape[0]
-    synthetic_X_transformed = bspline_transform(synthetic_X, model.hbr.bsp)
+    synthetic_X_transformed = model.hbr.transform_X(synthetic_X)
     be = np.reshape(np.array(be),(1,-1))
     synthetic_Z = np.repeat(be, resolution, axis = 0)
     z_scores = np.reshape(np.array(z_scores),(1,-1))
@@ -142,7 +142,9 @@ def forward(X, Z, model, sample):
     """Get all likelihood paramameters given covariates and batch-effects and model parameters"""
     # TODO think if this is the correct spot for this
     mapfuncs={'sigma': lambda x: np.log(1+np.exp(x)), 'delta':lambda x :np.log(1+np.exp(x)) + 0.3}
+
     likelihood = model.configs['likelihood']
+
     if likelihood == 'Normal':
         parameter_list = ['mu','sigma']
     elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
@@ -164,10 +166,12 @@ def forward(X, Z, model, sample):
 
 def Rhats(model, thin = 1, resolution = 100, varnames = None):
     """Get Rhat as function of sampling iteration"""
+    trace = model.hbr.trace
+
     if varnames == None:
         varnames = trace.varnames
-    trace = model.hbr.trace
     chain_length = trace.get_values(varnames[0],chains=trace.chains[0], thin=thin).shape[0]
+    
     interval_skip=chain_length//resolution
 
     rhat_dict = {}
