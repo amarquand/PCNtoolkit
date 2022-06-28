@@ -119,7 +119,7 @@ class NormBLR(NormBase):
         print("configuring BLR ( order", model_order, ")")
         if (theta is None) or (len(theta) != self._n_params):
             print("Using default hyperparameters")
-            self.theta0 = np.zeros(self._n_params)
+            theta0 = np.zeros(self._n_params)
         else:
             self.theta0 = theta
         self.theta = self.theta0
