@@ -267,6 +267,8 @@ class HBR:
                 self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
             bspline = bspline_transform(X, self.bsp)
             Phi = np.concatenate((X, bspline), axis = 1)
+        else:
+            Phi = X
         return Phi
 
 
