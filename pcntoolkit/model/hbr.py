@@ -34,13 +34,19 @@ from theano import printing, function
 def bspline_fit(X, order, nknots):
     feature_num = X.shape[1]
     bsp_basis = []
+
     for i in range(feature_num):
-        knots = np.linspace(X[:, i].min(), X[:, i].max(), nknots)
+        minx = np.min(X[:,i])
+        maxx = np.max(X[:,i])
+        delta = maxx-minx
+        # Expand range by 20% (10% on both sides)
+        splinemin = minx-0.1*delta
+        splinemax = maxx+0.1*delta
+        knots = np.linspace(splinemin, splinemax, nknots)
         k = splinelab.augknt(knots, order)
         bsp_basis.append(bspline.Bspline(k, order))
 
     return bsp_basis
-
 
 def bspline_transform(X, bsp_basis):
     if type(bsp_basis) != list:
@@ -55,7 +61,6 @@ def bspline_transform(X, bsp_basis):
     X_transformed = np.concatenate(X_transformed, axis=1)
 
     return X_transformed
-
 
 def create_poly_basis(X, order):
     """ compute a polynomial basis expansion of the specified order"""
@@ -171,7 +176,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             mu = pb.make_param("mu").get_samples(pb)
             sigma = pb.make_param("sigma").get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            y_like = pm.Normal('y',mu=mu, sigma=sigma_plus, observed=y)
+            y_like = pm.Normal('y_like',mu=mu, sigma=sigma_plus, observed=y)
 
         elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
             """
@@ -185,13 +190,14 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
             """
             SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
-            mu = pb.make_param("mu").get_samples(pb)
-            sigma = pb.make_param("sigma", intercept_sigma_params = (1., 1.)).get_samples(pb)
-            sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            epsilon = pb.make_param("epsilon").get_samples(pb)
-            delta = pb.make_param("delta", intercept_delta_params=(1., 1.)).get_samples(pb)
-            delta_plus = pm.math.log(1+pm.math.exp(delta)) + 0.3
-            y_like = SHASH_map[configs['likelihood']]('y', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
+
+            mu =            pb.make_param("mu",         slope_mu_params = (0.,3.), mu_intercept_mu_params=(0.,1.), sigma_intercept_mu_params = (1.,)).get_samples(pb)
+            sigma =         pb.make_param("sigma",      sigma_params = (1.,2.),    slope_sigma_params=(0.,1.),     intercept_sigma_params = (1., 1.)).get_samples(pb)
+            sigma_plus =    pm.math.log(1+pm.math.exp(sigma))
+            epsilon =       pb.make_param("epsilon",    epsilon_params = (0.,1.),  slope_epsilon_params=(0.,1.), intercept_epsilon_params=(0.,1)).get_samples(pb)
+            delta =         pb.make_param("delta",      delta_params=(1.5,2.),     slope_delta_params=(0.,1),   intercept_delta_params=(2., 1)).get_samples(pb)
+            delta_plus =    pm.math.log(1+pm.math.exp(delta)) + 0.3
+            y_like = SHASH_map[configs['likelihood']]('y_like', mu=mu, sigma=sigma_plus, epsilon=epsilon, delta=delta_plus, observed = y)
 
     return model
 
@@ -246,22 +252,27 @@ class HBR:
                                                step_kwargs=step_kwargs)
 
     def __init__(self, configs):
-
+        self.bsp = None
         self.model_type = configs['type']
         self.configs = configs
 
     def get_modeler(self):
         return {'nn': nn_hbr}.get(self.model_type, hbr)
-
+        
     def transform_X(self, X):
         if self.model_type == 'polynomial':
-            X = create_poly_basis(X, self.configs['order'])
+            Phi = create_poly_basis(X, self.configs['order'])
         elif self.model_type == 'bspline':
-            self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
-            X = bspline_transform(X, self.bsp)
-        return X
+            if self.bsp is None:
+                self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
+            bspline = bspline_transform(X, self.bsp)
+            Phi = np.concatenate((X, bspline), axis = 1)
+        else:
+            Phi = X
+        return Phi
 
-    def find_map(self, X, y, batch_effects):
+
+    def find_map(self, X, y, batch_effects,method='L-BFGS-B'):
         """ Function to estimate the model """
         X, y, batch_effects = expand_all(X, y, batch_effects)
 
@@ -273,7 +284,7 @@ class HBR:
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
-            self.MAP = pm.find_MAP()
+            self.MAP = pm.find_MAP(method=method)
         return self.MAP
 
     def estimate(self, X, y, batch_effects):
