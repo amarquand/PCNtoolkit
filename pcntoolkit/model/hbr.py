@@ -446,8 +446,8 @@ class Prior:
             else:
                 shape_prod = np.product(np.array(self.shape))
                 print(self.name)
-                print(f"{dist=}")
-                print(f"{params=}")
+                print(f"dist={dist}")
+                print(f"params={params}")
                 int_dist = self.distmap[dist](self.name, *params, shape=shape_prod)
                 self.dist = int_dist.reshape(self.shape)
 
