@@ -61,3 +61,8 @@ Changes:
 version 0.24
 - Minor bug fix related to SHASH/HBR
 - Added change log
+
+version 0.25
+- Minor bug fixes related to imports
+- Minor bug fixes related to SHASH/HBR
+- Minor bug fix in normative.py (affecting SMSE)
