@@ -486,7 +486,7 @@ def estimate(covfile, respfile, **kwargs):
 
                         # evaluate and save results
                         mf = evaluate(Ytest[:, np.newaxis], Yhati, S2=S2i, 
-                                      mY=np.std(yw), sY=np.mean(yw), 
+                                      mY=np.mean(yw), sY=np.std(yw), 
                                       nlZ=nm.neg_log_lik, nm=nm, Xz_tr=Xz_tr, 
                                       alg=alg, metrics = metrics)
                         for k in metrics:
