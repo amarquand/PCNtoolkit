@@ -36,31 +36,33 @@ def get_single_zscores(X, Y, Z, model, sample):
     """Get the z-scores of y, given clinical covariates and a model"""
     likelihood = model.configs['likelihood']
     params = forward(X,Z,model,sample)
-    if likelihood == 'Normal':
-        return z_score(Y, params['mu'], params['sigma'], likelihood = likelihood)
-    elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
-        return z_score(Y, params['mu'], params['sigma'], params['epsilon'], params['delta'],likelihood = likelihood)
+    return z_score(Y, params, likelihood = likelihood)
+    
+
+def z_score(Y, params, likelihood = "Normal"):
+    """Get the z-scores of Y, given likelihood parameters"""
+    if likelihood.startswith('SHASH'):
+        mu = params['mu']
+        sigma = params['sigma']
+        epsilon = params['epsilon']
+        delta = params['delta']
+        if likelihood == "SHASHo":
+            SHASH = (Y-mu)/sigma
+            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+        elif likelihood == "SHASHo2":
+            sigma_d = sigma/delta
+            SHASH = (Y-mu)/sigma_d
+            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+        elif likelihood == "SHASHb":
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
+            SHASH_c = ((Y-mu)/sigma)
+            SHASH = SHASH_c * true_sigma + true_mu
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+    elif likelihood == 'Normal':
+        Z = (Y-params['mu'])/params['sigma']
     else:
         exit("Unsupported likelihood")
-
-
-def z_score(Y,  mu, sigma, epsilon=None, delta=None, likelihood = "Normal"):
-    """Get the z-scores of Y, given likelihood parameters"""
-    if likelihood == "SHASHo":
-        SHASH = (Y-mu)/sigma
-        Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
-    elif likelihood == "SHASHo2":
-        sigma_d = sigma/delta
-        SHASH = (Y-mu)/sigma_d
-        Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
-    elif likelihood == "SHASHb":
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-        SHASH_c = ((Y-mu)/sigma)
-        SHASH = SHASH_c * true_sigma + true_mu
-        Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    else:
-        Z = (Y-mu)/sigma
     return Z
 
 
@@ -68,14 +70,14 @@ def get_MCMC_quantiles(synthetic_X, z_scores, model, be):
     """Get an MCMC estimate of the quantiles"""
     """This does not use the get_single_quantiles function, for memory efficiency"""
     resolution = synthetic_X.shape[0]
-    synthetic_X_transformed = bspline_transform(synthetic_X, model.hbr.bsp)
+    synthetic_X_transformed = model.hbr.transform_X(synthetic_X)
     be = np.reshape(np.array(be),(1,-1))
-    synthetic_Z = np.repeat(be, resolution, axis = 0)[:,None]
+    synthetic_Z = np.repeat(be, resolution, axis = 0)
     z_scores = np.reshape(np.array(z_scores),(1,-1))
     zs = np.repeat(z_scores, resolution, axis=0)
     def f(sample):
-        ps = forward(synthetic_X_transformed,synthetic_Z, model,sample)
-        q = quantile(zs, ps['mu'], ps['sigma'],ps.get('epsilon',None),ps.get('delta',None), likelihood = model.configs['likelihood'])
+        params = forward(synthetic_X_transformed,synthetic_Z, model,sample)
+        q = quantile(zs, params, likelihood = model.configs['likelihood'])
         return q
     out = MCMC_estimate(f, model.hbr.trace)
     return out
@@ -89,25 +91,32 @@ def get_single_quantiles(synthetic_X, z_scores, model, be, sample):
     synthetic_Z = np.repeat(be, resolution, axis = 0)
     z_scores = np.reshape(np.array(z_scores),(1,-1))
     zs = np.repeat(z_scores, resolution, axis=0)
-    ps = forward(synthetic_X_transformed,synthetic_Z, model,sample)
-    q = quantile(zs, ps['mu'], ps['sigma'],ps.get('epsilon',None),ps.get('delta',None), likelihood = model.configs['likelihood'])
+    params = forward(synthetic_X_transformed,synthetic_Z, model,sample)
+    q = quantile(zs, params, likelihood = model.configs['likelihood'])
     return q
 
 
-def quantile(zs,  mu, sigma, epsilon=None, delta=None, likelihood = "Normal"):
+def quantile(zs, params, likelihood = "Normal"):
     """Get the zs'th quantiles given likelihood parameters"""
-    if likelihood == "SHASHo":
-        quantiles = S_inv(zs,epsilon,delta)*sigma + mu
-    elif likelihood == "SHASHo2":
-        sigma_d = sigma/delta
-        quantiles = S_inv(zs,epsilon,delta)*sigma_d + mu
-    elif likelihood == "SHASHb":
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-        SHASH_c = ((S_inv(zs,epsilon,delta)-true_mu)/true_sigma)
-        quantiles = SHASH_c *sigma + mu
+    if likelihood.startswith('SHASH'):
+        mu = params['mu']
+        sigma = params['sigma']
+        epsilon = params['epsilon']
+        delta = params['delta']
+        if likelihood == "SHASHo":
+            quantiles = S_inv(zs,epsilon,delta)*sigma + mu
+        elif likelihood == "SHASHo2":
+            sigma_d = sigma/delta
+            quantiles = S_inv(zs,epsilon,delta)*sigma_d + mu
+        elif likelihood == "SHASHb":
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
+            SHASH_c = ((S_inv(zs,epsilon,delta)-true_mu)/true_sigma)
+            quantiles = SHASH_c *sigma + mu
+    elif likelihood == 'Normal':
+        quantiles = zs*params['sigma'] + params['mu']
     else:
-        quantiles = zs*sigma + mu
+        exit("Unsupported likelihood")
     return quantiles
 
 
@@ -135,6 +144,7 @@ def single_parameter_forward(X, Z, model, sample, p_name):
                 outs[np.squeeze(idx),:] = sample[p_name][bet]
             else:
                 outs[np.squeeze(idx),:] = sample[p_name]
+
     return outs
 
 
