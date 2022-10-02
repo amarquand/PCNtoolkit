@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pcntoolkit',
-      version='0.25',
+      version='0.26',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',

@@ -949,8 +949,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
             if outscaler == 'standardize': 
-                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-                S2[:, i] = s2.squeeze() * sY[0][i]**2
+                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat.squeeze(), index=i)
+                S2[:, i] = s2.squeeze() * sY[i]**2
             elif outscaler in ['minmax', 'robminmax']:
                 Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
                 S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
