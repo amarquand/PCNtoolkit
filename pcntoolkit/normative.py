@@ -770,22 +770,29 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
-                mY = mY[models]
-                sY = sY[models]
+                mY = mY[fold][models]
+                sY = sY[fold][models]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
-        
-        # warp the targets?
-        if 'blr' in dir(nm):
-            if nm.blr.warp is not None:
+            
+        # warp the targets?   
+        if alg == 'blr' and nm.blr.warp is not None:
+            warp = True
+            Yw = np.zeros_like(Y)            
+            for i,m in enumerate(models):
+                nm = norm_init(Xz)
+                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                          str(m) + inputsuffix + '.pkl'))
+
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
-                Y = nm.blr.warp.f(Y, warp_param)
+                Yw[:,i] = nm.blr.warp.f(Y[:,i], warp_param)
+            Y = Yw;
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
         print("Evaluating the model ...")
-        if meta_data:
+        if meta_data and not warp:
             results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
         else:    
             results = evaluate(Y, Yhat, S2=S2, 
