@@ -788,6 +788,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                 Yw[:,i] = nm.blr.warp.f(Y[:,i], warp_param)
             Y = Yw;
+        else:
+            warp = False
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
