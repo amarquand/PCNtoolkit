@@ -96,11 +96,11 @@ def execute_nm(processing_dir,
         normative_path = ptkpath + '/normative.py'
         
     cv_folds = kwargs.get('cv_folds', None)
-    testcovfile_path = kwargs.get('testcovfile_path', None)
+    testcovfile_path = kwargs.pop('testcovfile_path', None)
     testrespfile_path= kwargs.get('testrespfile_path', None)
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
-    log_path = kwargs.pop('log_path', None)
+    log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
     
     split_nm(processing_dir,
@@ -138,9 +138,12 @@ def execute_nm(processing_dir,
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec == 'torque':
+                    
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
+                    
+
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -148,6 +151,7 @@ def execute_nm(processing_dir,
                                 covfile_path,
                                 batch_respfile_path,
                                 func=func,
+                                testcovfile_path=testcovfile_path,
                                 **kwargs)
                     job_id = qsub_nm(job_path=batch_job_path,
                             log_path=log_path,
@@ -337,7 +341,7 @@ def split_nm(processing_dir,
     ''' 
     
     testrespfile_path = kwargs.pop('testrespfile_path', None)
-
+    print("split_nm")
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != '.pkl'):
         raise(ValueError, """If binary is True the file format for the
@@ -348,6 +352,7 @@ def split_nm(processing_dir,
 
     # splits response into batches
     if testrespfile_path is None:
+        
         if (binary==False):
             respfile = fileio.load_ascii(respfile_path)
         else:
@@ -356,6 +361,7 @@ def split_nm(processing_dir,
         respfile = pd.DataFrame(respfile)
 
         numsub = respfile.shape[1]
+        print(f'{numsub=}, {batch_size=}')
         batch_vec = np.arange(0,
                               numsub,
                               batch_size)
@@ -399,6 +405,7 @@ def split_nm(processing_dir,
         testrespfile = pd.DataFrame(testrespfile)
 
         numsub = respfile.shape[1]
+        print(f'{numsub=}, {batch_size=}')
         batch_vec = np.arange(0, numsub,
                               batch_size)
         batch_vec = np.append(batch_vec,
@@ -855,6 +862,10 @@ def bashwrap_nm(processing_dir,
     cv_folds = kwargs.pop('cv_folds',None)
     testcovfile_path = kwargs.pop('testcovfile_path', None)
     testrespfile_path = kwargs.pop('testrespfile_path', None)
+    # tsbefile = kwargs.pop('tsbefile', None)
+    # trbefile = kwargs.pop('trbefile', None)
+    # model_path = kwargs.pop('model_path', None)
+    #print(f'{model_path}')
     alg = kwargs.pop('alg', None)
     configparam = kwargs.pop('configparam', None)
     
@@ -871,6 +882,7 @@ def bashwrap_nm(processing_dir,
         job_call = [python_path + ' ' + normative_path + ' -c ' +
                     covfile_path + ' -t ' + testcovfile_path + ' -r ' +
                     testrespfile_path + ' -f ' + func]
+                    #+ ' trbefile=' + trbefile + ' tsbefile=' + tsbefile + ' model_path=' +model_path
     elif (testrespfile_path is None) and (testcovfile_path is not None):
         job_call = [python_path + ' ' + normative_path + ' -c ' +
                     covfile_path + ' -t ' + testcovfile_path + ' -f ' + func]
@@ -966,7 +978,8 @@ def rerun_nm(processing_dir,
     '''
     
     job_ids = []
-    
+    # line for debugging
+    print("make sure to use this parallel....")
 
     if binary:
         file_extentions = '.pkl'
@@ -1134,11 +1147,10 @@ def sbatch_nm(job_path,
 
     # created qsub command
     sbatch_call = ['sbatch ' + job_path]
-
     # submits job to cluster
     call(sbatch_call, shell=True)
     
-def rerun_nm(processing_dir,
+def rerun_nm_SLURM(processing_dir,
                  memory,
                  duration,
                  new_memory=False,
@@ -1163,14 +1175,14 @@ def rerun_nm(processing_dir,
      written by (primarily) T Wolfers, (adapted) S Rutherford.
     '''
     log_path = kwargs.pop('log_path', None)
-    
     if binary:
         file_extentions = '.pkl'
         failed_batches = fileio.load(processing_dir + 'failed_batches' +  file_extentions)
         shape = failed_batches.shape
+        
         for n in range(0, shape[0]):
             jobpath = failed_batches[n, 0]
-            print(jobpath)
+            #print(jobpath)
             if new_duration != False:
                 with fileinput.FileInput(jobpath, inplace=True) as file:
                     for line in file:
@@ -1179,6 +1191,7 @@ def rerun_nm(processing_dir,
                     with fileinput.FileInput(jobpath, inplace=True) as file:
                         for line in file:
                             print(line.replace(memory, new_memory), end='')
+            #changed the tabbing here so it doesnt only execute with new duration (?)
                 sbatch_nm(jobpath, log_path)
 
     else:

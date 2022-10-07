@@ -125,10 +125,10 @@ def get_args(*args):
     
         exec("kw_args.update({'" +  kw_arg[0] + "' : " + 
                               "'" + str(kw_arg[1]) + "'" + "})")
-    
+     #args.model_path, args.trbefile, args.tsbefile,
     return respfile, maskfile, covfile, cvfolds, \
             testcov, testresp, args.func, args.alg, \
-            args.configparam, kw_args
+                args.configparam, kw_args
             
 
 def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, alg=None,
@@ -307,7 +307,6 @@ def estimate(covfile, respfile, **kwargs):
     The outputsuffix may be useful to estimate multiple normative models in the
     same directory (e.g. for custom cross-validation schemes)
     """
-    
     # parse keyword arguments 
     maskfile = kwargs.pop('maskfile',None)
     cvfolds = kwargs.pop('cvfolds', None)
@@ -486,7 +485,7 @@ def estimate(covfile, respfile, **kwargs):
 
                         # evaluate and save results
                         mf = evaluate(Ytest[:, np.newaxis], Yhati, S2=S2i, 
-                                      mY=np.mean(yw), sY=np.std(yw), 
+                                      mY=np.std(yw), sY=np.mean(yw), 
                                       nlZ=nm.neg_log_lik, nm=nm, Xz_tr=Xz_tr, 
                                       alg=alg, metrics = metrics)
                         for k in metrics:
@@ -736,7 +735,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = scaler_cov[0].transform(X)
     else:
         Xz = X
-    
+    print (f'{models=}, {feature_num=}')
     # estimate the models for all subjects
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)      
@@ -770,31 +769,22 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
-                mY = mY[fold][models]
-                sY = sY[fold][models]
+                mY = mY[models]
+                sY = sY[models]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
-            
-        # warp the targets?   
-        if alg == 'blr' and nm.blr.warp is not None:
-            warp = True
-            Yw = np.zeros_like(Y)            
-            for i,m in enumerate(models):
-                nm = norm_init(Xz)
-                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
-                                          str(m) + inputsuffix + '.pkl'))
-
+        
+        # warp the targets?
+        if 'blr' in dir(nm):
+            if nm.blr.warp is not None:
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
-                Yw[:,i] = nm.blr.warp.f(Y[:,i], warp_param)
-            Y = Yw;
-        else:
-            warp = False
+                Y = nm.blr.warp.f(Y, warp_param)
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
         print("Evaluating the model ...")
-        if meta_data and not warp:
+        if meta_data:
             results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
         else:    
             results = evaluate(Y, Yhat, S2=S2, 
@@ -836,30 +826,46 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
               * S2 - predictive variance
               * Z - Z scores
     '''
-    
-    alg = kwargs.pop('alg')
-    if alg != 'hbr':
-        print('Model transferring is only possible for HBR models.')
+    alg = kwargs.pop('alg').lower()
+    import pandas as pd
+    # NOTE: are these the only two options? then we can maybe remove this condition.
+    if alg != 'hbr' and alg != 'blr':
+        print('Model transfer function is only possible for HBR and BLR models.')
         return
-    elif (not 'model_path' in list(kwargs.keys())) or \
-        (not 'output_path' in list(kwargs.keys())) or \
+    # testing should not be obligatory for HBR, but should be for BLR (since it doesnt produce transfer models)
+    elif (not 'model_path' in list(kwargs.keys()))  or \
         (not 'trbefile' in list(kwargs.keys())):
-            print('InputError: Some mandatory arguments are missing.')
+            print(f'{kwargs=}')
+            print('InputError: Some general mandatory arguments are missing.')
             return
-    else:
-        model_path = kwargs.pop('model_path')
-        output_path = kwargs.pop('output_path')
-        trbefile = kwargs.pop('trbefile')
-        batch_effects_train = fileio.load(trbefile)
-    
+    # hbr has one additional mandatory arguments
+    elif alg =='hbr':
+        if (not 'output_path' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for hbr are missing.')
+                return
+    # for hbr, testing is not mandatory, for blr's predict/transfer it is. This will be an architectural choice.
+    #or (testresp==None)
+    elif alg =='blr':
+        if (testcov==None)   or \
+        (not 'tsbefile' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for blr are missing.')
+                return 
+
+    # NOTE: is it good practice to keep an else with all these pop statements or can it be removed?
+    else: pass
+    log_path = kwargs.pop('log_path', None)
+    model_path = kwargs.pop('model_path')
     outputsuffix = kwargs.pop('outputsuffix', 'transfer')
     outputsuffix = "_" + outputsuffix.replace("_", "")
     inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     tsbefile = kwargs.pop('tsbefile', None)
-    
+    trbefile = kwargs.pop('trbefile', None)
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
+    count_jobsdone = kwargs.pop('count_jobsdone','False') # for PCNonline automated parallel jobs loop
+    if type(count_jobsdone) is str:
+        count_jobsdone = count_jobsdone=='True'
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
@@ -881,10 +887,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             inscaler = 'None'
             outscaler = 'None'
             meta_data = False
-    
-    if not os.path.isdir(output_path):
-        os.mkdir(output_path)    
-       
+
     # load data
     print("Loading data ...")
     X = fileio.load(covfile)
@@ -904,6 +907,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Y = scaler_resp[0].transform(Y)
     
+    batch_effects_train = pd.read_pickle(trbefile).to_numpy(dtype=int)
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -921,7 +925,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             Yte = np.zeros([ts_sample_num, feature_num])
         
         if tsbefile is not None:
-            batch_effects_test = fileio.load(tsbefile)
+            batch_effects_test = pd.read_pickle(tsbefile).to_numpy(dtype=int)
         else:
             batch_effects_test = np.zeros([Xte.shape[0],2])  
     else:
@@ -930,46 +934,77 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     Yhat = np.zeros([ts_sample_num, feature_num])
     S2 = np.zeros([ts_sample_num, feature_num])
     Z = np.zeros([ts_sample_num, feature_num])
-    
+
     # estimate the models for all subjects
-    for i in range(feature_num):
-              
-        nm = norm_init(X)
-        if batch_size is not None: # when using normative_parallel
-            print("Transferring model ", job_id*batch_size+i)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + inputsuffix + 
-                                      '.pkl'))
-        else:
-            print("Transferring model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
-                                      inputsuffix + '.pkl'))
-        
-        nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
-        if batch_size is not None: 
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
-            nm.save(os.path.join('Models', 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
-        else:
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
-        
+    # enumerate it, like in predict, to match normative.predict
+    output_path = kwargs.get('output_path')
+    for i in range(feature_num):      
+        if alg == 'hbr':    
+
+            print("Using HBR transform...")
+            nm = norm_init(X)
+            if batch_size is not None: # when using normative_parallel
+                print("Transferring model ", job_id*batch_size+i)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                          str(job_id*batch_size+i) + inputsuffix + 
+                                          '.pkl'))
+            else:
+                print("Transferring model ", i+1, "of", feature_num)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                          inputsuffix + '.pkl'))
+            
+            nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
+            if batch_size is not None: 
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+                # Comment out: it's saved twice.
+                # nm.save(os.path.join('Models', 'NM_0_' + 
+                #                  str(i) + outputsuffix + '.pkl'))
+            else:
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(i) + outputsuffix + '.pkl'))
+            
+            if testcov is not None:
+                yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+                
+        # We basically use normative.predict script here.
+        if alg == 'blr':
+            print("Using BLR transform...")
+            fold = kwargs.pop('fold',0)
+            # Is it correct to say transfer here for BLR?
+            print("Transferring model ", i+1, "of", feature_num)      
+            nm = norm_init(X)
+            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                      str(i) + inputsuffix + '.pkl'))
+
+            yhat, s2 = nm.predict(Xte, 
+                                    respfile=testresp,
+                                    adaptrespfile = respfile, 
+                                    adaptcovfile = covfile,
+                                    adaptvargroupfile=trbefile,
+                                    testvargroupfile=tsbefile) # arguments provided instead of **kwargs
         if testcov is not None:
-            yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
             if outscaler == 'standardize': 
-                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat.squeeze(), index=i)
-                S2[:, i] = s2.squeeze() * sY[i]**2
+                            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
+                            S2[:, i] = s2.squeeze() * sY[0][i]**2
             elif outscaler in ['minmax', 'robminmax']:
                 Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
                 S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
             else:
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
-   
+                
+    # Creates a file for every job succesfully completed (for tracking failed jobs).
+    if count_jobsdone=='True':
+        from pathlib import Path
+        done_path = os.path.join(log_path, str(job_id)+".jobsdone")
+        Path(done_path).touch()
+
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
         return (Yhat, S2)
+
+    # this code snippet is a bit different in normative.predict - is that problematic?
     else:
         Z = (Yte - Yhat) / np.sqrt(S2)
     
@@ -1332,7 +1367,7 @@ def main(*args):
     for k in kw:
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
-
+    print(f'{all_args=}')
     # Executing the target function
     exec(func + '(' + all_args + ')')
 
