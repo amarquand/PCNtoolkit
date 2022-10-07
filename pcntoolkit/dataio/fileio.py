@@ -158,8 +158,24 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     return dat
 
 
-def save_nifti(data, filename, examplenii, mask):
-    """ Write output to nifti """
+def save_nifti(data, filename, examplenii, mask, dtype=None):
+    
+    '''
+    Write output to nifti
+    
+    Basic usage::
+
+        save_nifti(data, filename mask, dtype)
+
+    where the variables are defined below.
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    :param examplenii: nifti to copy the geometry and data type from
+    :mask: nifti image containing a mask for the image
+    :param dtype: data type for the output image (if different from the image)
+    '''
+    
 
     # load mask
     if isinstance(mask, str):
@@ -180,7 +196,12 @@ def save_nifti(data, filename, examplenii, mask):
     array_data = np.zeros((np.prod(dim), nvol))
     array_data[mask.flatten(), :] = data
     array_data = np.reshape(array_data, dim+(nvol,))
-    array_img = nib.Nifti1Image(array_data, ex_img.affine, ex_img.header)
+    hdr = ex_img.header
+    if dtype is None:
+        hdr.set_data_dtype(dtype)
+        array_data = array_data.astype(dtype)
+    array_img = nib.Nifti1Image(array_data, ex_img.affine, hdr)
+    
     nib.save(array_img, filename)
 
 # --------------
@@ -359,12 +380,12 @@ def save_ascii(data, filename):
 # ----------------
 
 
-def save(data, filename, example=None, mask=None, text=False):
+def save(data, filename, example=None, mask=None, text=False, dtype=None):
 
     if file_type(filename) == 'cifti':
         save_cifti(data.T, filename, example, vol=True)
     elif file_type(filename) == 'nifti':
-        save_nifti(data.T, filename, example, mask)
+        save_nifti(data.T, filename, example, mask, dtype=dtype)
     elif text or file_type(filename) == 'text':
         save_ascii(data, filename)
     elif file_type(filename) == 'binary':
