@@ -125,7 +125,6 @@ def get_args(*args):
     
         exec("kw_args.update({'" +  kw_arg[0] + "' : " + 
                               "'" + str(kw_arg[1]) + "'" + "})")
-     #args.model_path, args.trbefile, args.tsbefile,
     return respfile, maskfile, covfile, cvfolds, \
             testcov, testresp, args.func, args.alg, \
                 args.configparam, kw_args
@@ -485,7 +484,7 @@ def estimate(covfile, respfile, **kwargs):
 
                         # evaluate and save results
                         mf = evaluate(Ytest[:, np.newaxis], Yhati, S2=S2i, 
-                                      mY=np.std(yw), sY=np.mean(yw), 
+                                      mY=np.mean(yw), sY=np.std(yw), 
                                       nlZ=nm.neg_log_lik, nm=nm, Xz_tr=Xz_tr, 
                                       alg=alg, metrics = metrics)
                         for k in metrics:
@@ -735,7 +734,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = scaler_cov[0].transform(X)
     else:
         Xz = X
-    print (f'{models=}, {feature_num=}')
+
     # estimate the models for all subjects
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)      
@@ -843,6 +842,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if (not 'output_path' in list(kwargs.keys())):
                 print('InputError: Some mandatory arguments for hbr are missing.')
                 return
+        else: 
+            if not os.path.isdir(output_path):
+            os.mkdir(output_path) 
+
     # for hbr, testing is not mandatory, for blr's predict/transfer it is. This will be an architectural choice.
     #or (testresp==None)
     elif alg =='blr':
@@ -907,7 +910,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Y = scaler_resp[0].transform(Y)
     
-    batch_effects_train = pd.read_pickle(trbefile).to_numpy(dtype=int)
+    batch_effects_train = fileio.load(trbefile)#pd.read_pickle(trbefile).to_numpy(dtype=int)
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -925,7 +928,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             Yte = np.zeros([ts_sample_num, feature_num])
         
         if tsbefile is not None:
-            batch_effects_test = pd.read_pickle(tsbefile).to_numpy(dtype=int)
+            batch_effects_test = fileio.load(tsbefile)
         else:
             batch_effects_test = np.zeros([Xte.shape[0],2])  
     else:
@@ -1367,7 +1370,6 @@ def main(*args):
     for k in kw:
         kw_args.append(k + '=' + "'" + kw[k] + "'")
     all_args = ', '.join(pos_args + kw_args)
-    print(f'{all_args=}')
     # Executing the target function
     exec(func + '(' + all_args + ')')
 
