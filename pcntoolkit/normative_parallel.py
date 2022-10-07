@@ -97,10 +97,10 @@ def execute_nm(processing_dir,
         
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.pop('testcovfile_path', None)
-    testrespfile_path= kwargs.get('testrespfile_path', None)
+    testrespfile_path= kwargs.pop('testrespfile_path', None)
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
-    log_path = kwargs.get('log_path', None)
+    log_path = kwargs.get('log_path', None) # I think I changed this to pass it on to normative.py
     binary = kwargs.pop('binary', False)
     
     split_nm(processing_dir,
