@@ -471,6 +471,8 @@ def estimate(covfile, respfile, **kwargs):
                 if (run_cv or testresp is not None):
                     if warp is not None:
                         # TODO: Warping for scaled data
+                        if outscaler is not None and outscaler != 'None':
+                            raise(ValueError, "outscaler not yet supported warping")
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(Y[ts, nz[i]], warp_param)
                         Ytest = Ywarp[ts, nz[i]]
@@ -685,6 +687,9 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     alg = kwargs.pop('alg')
     fold = kwargs.pop('fold',0)
     models = kwargs.pop('models', None)
+    
+    if alg == 'gpr':
+        raise(ValueError, "gpr is not supported with predict()")
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -733,7 +738,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     Z = np.zeros([sample_num, feature_num])
     
     if inscaler in ['standardize', 'minmax', 'robminmax']:
-        Xz = scaler_cov[0].transform(X)
+        Xz = scaler_cov[fold].transform(X)
     else:
         Xz = X
     
@@ -751,11 +756,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
         if outscaler == 'standardize': 
-            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-            S2[:, i] = s2.squeeze() * sY[0][i]**2
+            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
+            S2[:, i] = s2.squeeze() * sY[fold][i]**2
         elif outscaler in ['minmax', 'robminmax']:
-            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-            S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
+            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
+            S2[:, i] = s2 * (scaler_resp[fold].max[i] - scaler_resp[fold].min[i])**2
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
@@ -795,7 +800,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         
         print("Evaluating the model ...")
         if meta_data and not warp:
-            results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
+            results = evaluate(Y, Yhat, S2=S2, mY=mY, sY=sY)
         else:    
             results = evaluate(Y, Yhat, S2=S2, 
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
