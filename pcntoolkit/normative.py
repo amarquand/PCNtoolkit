@@ -22,6 +22,8 @@ import pickle
 import glob
 
 from sklearn.model_selection import KFold
+from pathlib import Path
+            
 try:  # run as a package if installed
     from pcntoolkit import configs
     from pcntoolkit.dataio import fileio
@@ -841,30 +843,53 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
               * S2 - predictive variance
               * Z - Z scores
     '''
+    alg = kwargs.pop('alg').lower()
     
-    alg = kwargs.pop('alg')
-    if alg != 'hbr':
-        print('Model transferring is only possible for HBR models.')
+    if alg != 'hbr' and alg != 'blr':
+        print('Model transfer function is only possible for HBR and BLR models.')
         return
-    elif (not 'model_path' in list(kwargs.keys())) or \
-        (not 'output_path' in list(kwargs.keys())) or \
+    # testing should not be obligatory for HBR,
+    # but should be for BLR (since it doesn't produce transfer models)
+    elif (not 'model_path' in list(kwargs.keys()))  or \
         (not 'trbefile' in list(kwargs.keys())):
-            print('InputError: Some mandatory arguments are missing.')
+            print(f'{kwargs=}')
+            print('InputError: Some general mandatory arguments are missing.')
             return
-    else:
-        model_path = kwargs.pop('model_path')
-        output_path = kwargs.pop('output_path')
-        trbefile = kwargs.pop('trbefile')
-        batch_effects_train = fileio.load(trbefile)
-    
+    # hbr has one additional mandatory arguments
+    elif alg =='hbr':
+        if (not 'output_path' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for hbr are missing.')
+                return
+        else: 
+            output_path = kwargs.pop('output_path',None)
+            if not os.path.isdir(output_path):
+                os.mkdir(output_path) 
+
+    # for hbr, testing is not mandatory, for blr's predict/transfer it is. This will be an architectural choice.
+    #or (testresp==None)
+    elif alg =='blr':
+        if (testcov==None)   or \
+        (not 'tsbefile' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for blr are missing.')
+                return 
+            
+    log_path = kwargs.pop('log_path', None)
+    model_path = kwargs.pop('model_path')
     outputsuffix = kwargs.pop('outputsuffix', 'transfer')
     outputsuffix = "_" + outputsuffix.replace("_", "")
     inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     tsbefile = kwargs.pop('tsbefile', None)
-    
+    trbefile = kwargs.pop('trbefile', None)
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
+    fold = kwargs.pop('fold',0)
+    
+    # for PCNonline automated parallel jobs loop
+    count_jobsdone = kwargs.pop('count_jobsdone','False')
+    if type(count_jobsdone) is str:
+        count_jobsdone = count_jobsdone=='True'
+        
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
@@ -909,6 +934,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Y = scaler_resp[0].transform(Y)
     
+    # TODO: does this need a check? 
+    batch_effects_train = fileio.load(trbefile)
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -939,26 +966,49 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     # estimate the models for all subjects
     for i in range(feature_num):
               
-        nm = norm_init(X)
-        if batch_size is not None: # when using normative_parallel
-            print("Transferring model ", job_id*batch_size+i)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + inputsuffix + 
-                                      '.pkl'))
-        else:
-            print("Transferring model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
-                                      inputsuffix + '.pkl'))
-        
-        nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
-        if batch_size is not None: 
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
-            nm.save(os.path.join('Models', 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
-        else:
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
+        if alg == 'hbr':    
+
+            print("Using HBR transform...")
+            nm = norm_init(X)
+            if batch_size is not None: # when using normative_parallel
+                print("Transferring model ", job_id*batch_size+i)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                          str(job_id*batch_size+i) + inputsuffix + 
+                                          '.pkl'))
+            else:
+                print("Transferring model ", i+1, "of", feature_num)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                          inputsuffix + '.pkl'))
+            
+            nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
+            if batch_size is not None: 
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+                # Comment out: it's saved twice.
+                # nm.save(os.path.join('Models', 'NM_0_' + 
+                #                  str(i) + outputsuffix + '.pkl'))
+            else:
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(i) + outputsuffix + '.pkl'))
+            
+            if testcov is not None:
+                yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+                
+        # We basically use normative.predict script here.
+        if alg == 'blr':
+            print("Using BLR transform...")
+            # Is it correct to say transfer here for BLR?
+            print("Transferring model ", i+1, "of", feature_num)      
+            nm = norm_init(X)
+            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                      str(i) + inputsuffix + '.pkl'))
+
+            yhat, s2 = nm.predict(Xte, 
+                                    respfile=testresp,
+                                    adaptrespfile = respfile, 
+                                    adaptcovfile = covfile,
+                                    adaptvargroupfile=trbefile,
+                                    testvargroupfile=tsbefile) # arguments provided instead of **kwargs
         
         if testcov is not None:
             yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
@@ -971,6 +1021,12 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             else:
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
+                
+        # Creates a file for every job succesfully completed (for tracking failed jobs).
+        if count_jobsdone=='True':
+            done_path = os.path.join(log_path, str(job_id)+".jobsdone")
+            Path(done_path).touch()
+
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
