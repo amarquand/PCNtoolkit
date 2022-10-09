@@ -66,3 +66,9 @@ version 0.25
 - Minor bug fixes related to imports
 - Minor bug fixes related to SHASH/HBR
 - Minor bug fix in normative.py (affecting SMSE)
+
+version 0.26
+- Multiple bug fixes, relating to imports, predict() and transfer() functions
+- Added support for web portal
+- Provided a wrapper for blr to use transfer() functionality 
+- Also streamlined tutorials (PCNtoolkit-demo), so that all tutorials run with this version
