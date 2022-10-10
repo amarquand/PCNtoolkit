@@ -197,7 +197,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     array_data[mask.flatten(), :] = data
     array_data = np.reshape(array_data, dim+(nvol,))
     hdr = ex_img.header
-    if dtype is None:
+    if dtype is not None:
         hdr.set_data_dtype(dtype)
         array_data = array_data.astype(dtype)
     array_img = nib.Nifti1Image(array_data, ex_img.affine, hdr)
