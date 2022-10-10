@@ -777,8 +777,15 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
-                mY = mY[fold][models]
-                sY = sY[fold][models]
+                # are we using cross-validation?
+                if type(mY) is list:
+                    mY = mY[fold][models]
+                else:
+                    mY = mY[models]
+                if type(sY) is list:
+                    sY = sY[fold][models]
+                else:
+                    sY = sY[models]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
@@ -802,6 +809,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         
         print("Evaluating the model ...")
         if meta_data and not warp:
+            
             results = evaluate(Y, Yhat, S2=S2, mY=mY, sY=sY)
         else:    
             results = evaluate(Y, Yhat, S2=S2, 
