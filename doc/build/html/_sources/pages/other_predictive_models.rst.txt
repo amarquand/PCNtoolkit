@@ -3,7 +3,7 @@
 Predictive modeling using deviation scores
 =============================================
 
-The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://doi.org/10.1101/2021.08.08.455583.
+The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://www.nature.com/articles/s41596-022-00696-5.
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 

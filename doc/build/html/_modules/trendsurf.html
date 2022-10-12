@@ -129,7 +129,7 @@ except ImportError:
 
 
 
-<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.load_data">[docs]</a>def load_data(datafile, maskfile=None):
+<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../modindex.html#trendsurf.load_data">[docs]</a>def load_data(datafile, maskfile=None):
     &quot;&quot;&quot; load 4d nifti data &quot;&quot;&quot;
     if datafile.endswith(&quot;nii.gz&quot;) or datafile.endswith(&quot;nii&quot;):
         # we load the data this way rather than fileio.load() because we need
@@ -160,7 +160,7 @@ except ImportError:
     return dat, world, mask</div>
 
 
-<div class="viewcode-block" id="create_basis"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.create_basis">[docs]</a>def create_basis(X, basis, mask):
+<div class="viewcode-block" id="create_basis"><a class="viewcode-back" href="../modindex.html#trendsurf.create_basis">[docs]</a>def create_basis(X, basis, mask):
     &quot;&quot;&quot; Create a (polynomial) basis set &quot;&quot;&quot;
 
     # check whether we are using a polynomial basis set
@@ -189,7 +189,7 @@ except ImportError:
     return Phi</div>
 
 
-<div class="viewcode-block" id="write_nii"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.write_nii">[docs]</a>def write_nii(data, filename, examplenii, mask):
+<div class="viewcode-block" id="write_nii"><a class="viewcode-back" href="../modindex.html#trendsurf.write_nii">[docs]</a>def write_nii(data, filename, examplenii, mask):
     &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
 
     # load example image
@@ -207,7 +207,7 @@ except ImportError:
     nib.save(array_img, filename)</div>
 
 
-<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.get_args">[docs]</a>def get_args(*args):
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../modindex.html#trendsurf.get_args">[docs]</a>def get_args(*args):
     # parse arguments
     parser = argparse.ArgumentParser(description=&quot;Trend surface model&quot;)
     parser.add_argument(&quot;filename&quot;)
@@ -231,7 +231,7 @@ except ImportError:
     return filename, maskfile, basis, args.a, args.o</div>
 
 
-<div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.estimate">[docs]</a>def estimate(filename, maskfile, basis, ard=False, outputall=False,
+<div class="viewcode-block" id="estimate"><a class="viewcode-back" href="../modindex.html#trendsurf.estimate">[docs]</a>def estimate(filename, maskfile, basis, ard=False, outputall=False,
              saveoutput=True):
     &quot;&quot;&quot; Estimate a trend surface model
 
@@ -340,7 +340,7 @@ except ImportError:
             out.append(bs2)
         return out</div>
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../pages/modindex.html#trendsurf.main">[docs]</a>def main(*args):
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../modindex.html#trendsurf.main">[docs]</a>def main(*args):
     np.seterr(invalid=&#39;ignore&#39;)
 
     filename, maskfile, basis, ard, outputall = get_args(args)
