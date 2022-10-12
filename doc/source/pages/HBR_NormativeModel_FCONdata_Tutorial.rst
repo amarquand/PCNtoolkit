@@ -25,7 +25,7 @@ Step 0: Install necessary libraries & grab data files
 .. code:: ipython3
 
     ! pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
-    ! pip install pcntoolkit==0.22
+    ! pip install pcntoolkit==0.26
 
 
 For this tutorial we will use data from the `Functional Connectom

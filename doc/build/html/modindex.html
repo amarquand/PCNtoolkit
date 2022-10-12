@@ -543,10 +543,9 @@ on a torque cluster system.</p>
 <dd class="field-odd"><p><strong>jobs</strong> – List of job ids.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>returns the number of taks athat are queued, running, completed,</p>
+<dd class="field-even"><p>returns the number of taks athat are queued, running, completed, and other status.</p>
 </dd>
 </dl>
-<p>and other status.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -557,11 +556,10 @@ on a torque cluster system.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>jobs</strong> – list of job ids.</p></li>
-<li><p><strong>delay</strong> – the delay (in seconds) between two consequative checks,</p></li>
+<li><p><strong>delay</strong> – the delay (in seconds) between two consequative checks, defaults to 60.</p></li>
 </ul>
 </dd>
 </dl>
-<p>defaults to 60.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -671,27 +669,22 @@ functions.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.rerun_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">rerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#rerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.rerun_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.</p>
-<p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rerun_nm(processing_dir, memory, duration)
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">rerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#rerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.rerun_nm" title="Permalink to this definition"></a></dt>
+<dd><p>This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
+Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rerun_nm(processing_dir, log_path, memory, duration)
 </pre></div>
 </div>
-<dl class="field-list">
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>processing_dir</strong> – Full path to the processing directory.</p></li>
-<li><p><strong>memory</strong> – Memory requirements written as string, for example 4gb or 500mb.</p></li>
+<li><p><strong>processing_dir</strong> – Full path to the processing directory</p></li>
+<li><p><strong>memory</strong> – Memory requirements written as string for example 4gb or 500mb.</p></li>
 <li><p><strong>duration</strong> – The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.</p></li>
-<li><p><strong>new_memory</strong> – If you want to change the memory you have to indicate it here.</p></li>
-<li><p><strong>new_duration</strong> – If you want to change the duration you have to indicate it here.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Outputs</dt>
-<dd class="field-even"><p>Re-runs failed batches.</p>
-<p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
-</dd>
 </dl>
+<p>written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -729,10 +722,34 @@ command.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.sbatchrerun_nm">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchrerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatchrerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchrerun_nm" title="Permalink to this definition"></a></dt>
+<dd><p>This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rerun_nm(processing_dir, memory, duration)
+</pre></div>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>processing_dir</strong> – Full path to the processing directory.</p></li>
+<li><p><strong>memory</strong> – Memory requirements written as string, for example 4gb or 500mb.</p></li>
+<li><p><strong>duration</strong> – The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.</p></li>
+<li><p><strong>new_memory</strong> – If you want to change the memory you have to indicate it here.</p></li>
+<li><p><strong>new_duration</strong> – If you want to change the duration you have to indicate it here.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Outputs</dt>
+<dd class="field-even"><p>Re-runs failed batches.</p>
+<p>written by (primarily) T Wolfers, (adapted) S Rutherford.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.sbatchwrap_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/normative_parallel.html#sbatchwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchwrap_nm" title="Permalink to this definition"></a></dt>
-<dd><p>This function wraps normative modelling into a bash script to run it
-on a torque cluster system.</p>
+<dd><p>This function wraps normative modelling into a bash script to run it on a torque cluster system.</p>
 <p>Basic usage:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sbatchwrap_nm(processing_dir, python_path, normative_path, job_name, covfile_path, respfile_path, memory, duration)
 </pre></div>
@@ -995,7 +1012,7 @@ N, D and the prior covariance (Sigma) and precision (iSigma).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fileio.save">
-<span class="sig-prename descclassname"><span class="pre">fileio.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">example</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fileio.save" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">fileio.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">example</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fileio.save" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1011,8 +1028,26 @@ N, D and the prior covariance (Sigma) and precision (iSigma).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="fileio.save_nifti">
-<span class="sig-prename descclassname"><span class="pre">fileio.</span></span><span class="sig-name descname"><span class="pre">save_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examplenii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#save_nifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fileio.save_nifti" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">fileio.</span></span><span class="sig-name descname"><span class="pre">save_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examplenii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fileio.html#save_nifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fileio.save_nifti" title="Permalink to this definition"></a></dt>
 <dd><p>Write output to nifti</p>
+<p>Basic usage:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>save_nifti(data, filename mask, dtype)
+</pre></div>
+</div>
+<p>where the variables are defined below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+<li><p><strong>examplenii</strong> – nifti to copy the geometry and data type from</p></li>
+<li><p><strong>dtype</strong> – data type for the output image (if different from the image)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Mask</dt>
+<dd class="field-even"><p>nifti image containing a mask for the image</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

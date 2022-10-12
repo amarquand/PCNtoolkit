@@ -40,7 +40,10 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # Utility functions
 # -----------------
 def create_poly_basis(X, dimpoly):
-    """ compute a polynomial basis expansion of the specified order"""
+    """ 
+    Compute a polynomial basis expansion of the specified order
+    
+    """
     
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
@@ -54,10 +57,12 @@ def create_poly_basis(X, dimpoly):
     return Phi
 
 def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
-    """ compute a Bspline basis set where:
+    """ 
+    Compute a Bspline basis set where:
         
         :param p: order of spline (3 = cubic)
         :param nknots: number of knots (endpoints only counted once)
+
     """
     
     knots = np.linspace(xmin, xmax, nknots)
@@ -68,7 +73,8 @@ def create_bspline_basis(xmin, xmax, p = 3, nknots = 5):
 def create_design_matrix(X, intercept = True, basis = 'bspline',
                          basis_column = 0, site_ids=None, all_sites=None,
                          **kwargs):
-    """ Prepare a design matrix from a set of covariates sutiable for
+    """ 
+    Prepare a design matrix from a set of covariates sutiable for
         running Bayesian linar regression. This design matrix consists of 
         a set of user defined covariates, optoinal site intercepts 
         (fixed effects) and also optionally a nonlinear basis expansion over 
@@ -86,7 +92,8 @@ def create_design_matrix(X, intercept = True, basis = 'bspline',
         there are rows in X. If all_sites is specfied, these will be used to 
         create the site identifiers in place of site_ids. This accommocdates
         the scenario where not all the sites used to create the model are 
-        present in the test set (i.e. there will be some empty site columns)
+        present in the test set (i.e. there will be some empty site columns).
+
     """
     
     xmin = kwargs.pop('xmin', 0)
@@ -146,7 +153,10 @@ def create_design_matrix(X, intercept = True, basis = 'bspline',
     return Phi
 
 def squared_dist(x, z=None):
-    """ compute sum((x-z) ** 2) for all vectors in a 2d array"""
+    """ 
+    Compute sum((x-z) ** 2) for all vectors in a 2d array.
+    
+    """
 
     # do some basic checks
     if z is None:
@@ -176,7 +186,8 @@ def squared_dist(x, z=None):
 
 
 def compute_pearsonr(A, B):
-    """ Manually computes the Pearson correlation between two matrices.
+    """ 
+    Manually computes the Pearson correlation between two matrices.
 
         Basic usage::
 
@@ -192,7 +203,9 @@ def compute_pearsonr(A, B):
 
             This function is useful when M is large and only the diagonal entries
             of the resulting correlation matrix are of interest. This function
-            does not compute the full correlation matrix as an intermediate step"""
+            does not compute the full correlation matrix as an intermediate step
+    
+    """
 
     # N = A.shape[1]
     N = A.shape[0]
@@ -217,7 +230,8 @@ def compute_pearsonr(A, B):
     return Rho, pRho
 
 def explained_var(ytrue, ypred):
-    """ Computes the explained variance of predicted values.
+    """ 
+    Computes the explained variance of predicted values.
 
         Basic usage::
 
@@ -239,7 +253,8 @@ def explained_var(ytrue, ypred):
     return exp_var
 
 def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None): 
-    """ Computes the MSLL or MLL (not standardized) if 'train_mean' and 'train_var' are None.
+    """ 
+    Computes the MSLL or MLL (not standardized) if 'train_mean' and 'train_var' are None.
     
         Basic usage::
             
@@ -280,7 +295,7 @@ def compute_MSLL(ytrue, ypred, ypred_var, train_mean = None, train_var = None):
 
 def calibration_descriptives(x):
     """
-    compute statistics useful to assess the calibration of normative models,
+    Compute statistics useful to assess the calibration of normative models,
     including skew and kurtosis of the distribution, plus their standard
     deviation and standar errors (separately for each column in x)
 
@@ -311,7 +326,8 @@ def calibration_descriptives(x):
     return cd
 
 class WarpBase(with_metaclass(ABCMeta)):
-    """ Base class for likelihood warping following:
+    """ 
+    Base class for likelihood warping following:
         Rios and Torab (2019) Compositionally-warped Gaussian processes
         https://www.sciencedirect.com/science/article/pii/S0893608019301856
 
@@ -322,6 +338,7 @@ class WarpBase(with_metaclass(ABCMeta)):
             Warp.invf() - inverse warp
             Warp.df() - derivatives
             Warp.warp_predictions() - compute predictive distribution
+
     """
 
     def __init__(self):
@@ -336,7 +353,8 @@ class WarpBase(with_metaclass(ABCMeta)):
         return self.n_params
 
     def warp_predictions(self, mu, s2, param, percentiles=[0.025, 0.975]):
-        """ Compute the warped predictions from a gaussian predictive
+        """ 
+        Compute the warped predictions from a gaussian predictive
             distribution, specifed by a mean (mu) and variance (s2)
             
             :param mu: Gassian predictive mean 
@@ -346,6 +364,7 @@ class WarpBase(with_metaclass(ABCMeta)):
 
             :returns: * median - median of the predictive distribution
                       * pred_interval - predictive interval(s)
+
         """
 
         # Compute percentiles of a standard Gaussian
@@ -365,12 +384,14 @@ class WarpBase(with_metaclass(ABCMeta)):
     @abstractmethod
     def f(self, x, param):
         """ Evaluate the warping function (mapping non-Gaussian respone 
-            variables to Gaussian variables)"""
+            variables to Gaussian variables)
+        """
 
     @abstractmethod
     def invf(self, y, param):
         """ Evaluate the warping function (mapping Gaussian latent variables 
-            to non-Gaussian response variables) """
+            to non-Gaussian response variables)
+        """
 
     @abstractmethod
     def df(self, x, param):
@@ -642,7 +663,9 @@ class CustomCV:
         :param test: a list of indices of test splits (each itself a list)
 
         :returns tr: Indices for training set
-        :returns te: Indices for test set """
+        :returns te: Indices for test set 
+
+    """
 
     def __init__(self, train, test, X=None, y=None):
         self.train = train
@@ -668,18 +691,18 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
     """ This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
-    :param processing_dir: Full path to the processing dir
-    :param python_path: Full path to the python distribution
-    :param script_command: python command to execute
-    :param job_name: Name for the bash script output by this function
-    :param covfile_path: Full path to covariates
-    :param respfile_path: Full path to response variables
-    :param cv_folds: Number of cross validations
-    :param testcovfile_path: Full path to test covariates
-    :param testrespfile_path: Full path to tes responses
-    :param bash_environment: A file containing enviornment specific commands
-                                
-    :returns: A .sh file containing the commands for normative modelling
+        :param processing_dir: Full path to the processing dir
+        :param python_path: Full path to the python distribution
+        :param script_command: python command to execute
+        :param job_name: Name for the bash script output by this function
+        :param covfile_path: Full path to covariates
+        :param respfile_path: Full path to response variables
+        :param cv_folds: Number of cross validations
+        :param testcovfile_path: Full path to test covariates
+        :param testrespfile_path: Full path to tes responses
+        :param bash_environment: A file containing enviornment specific commands
+                                    
+        :returns: A .sh file containing the commands for normative modelling
 
     written by Thomas Wolfers
     """
@@ -711,20 +734,20 @@ def bashwrap(processing_dir, python_path, script_command, job_name,
     return bash_file_name
 
 def qsub(job_path, memory, duration, logdir=None):
-    '''This function submits a job.sh scipt to the torque custer using the qsub command.
+    """This function submits a job.sh scipt to the torque custer using the qsub command.
     
-    Basic usage::
+        Basic usage::
 
-        qsub_nm(job_path, log_path, memory, duration)
+            qsub_nm(job_path, log_path, memory, duration)
 
-    :param job_path: Full path to the job.sh file.
-    :param memory: Memory requirements written as string for example 4gb or 500mb.
-    :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
+        :param job_path: Full path to the job.sh file.
+        :param memory: Memory requirements written as string for example 4gb or 500mb.
+        :param duation: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
-    :outputs: Submission of the job to the (torque) cluster.
+        :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    '''
+    """
     if logdir is None:
         logdir = os.path.expanduser('~')
 
@@ -810,26 +833,25 @@ def calibration_error(Y,m,s,cal_levels):
 
 def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1, 
                   working_dir=None, plot=False, random_state=None, noise=None):
-    """
-    This function simulates linear synthetic data for testing pcntoolkit methods.
+    """ This function simulates linear synthetic data for testing pcntoolkit methods.
     
-    :param method: simulate 'linear' or 'non-linear' function.
-    :param n_samples: number of samples in each group of the training and test sets. 
-        If it is an int then the same sample number will be used for all groups. 
-        It can be also a list of size of n_grps that decides the number of samples 
-        in each group (default=100).
-    :param n_features: A positive integer that decides the number of features 
-        (default=1).
-    :param n_grps: A positive integer that decides the number of groups in data
-        (default=1).
-    :param working_dir: Directory to save data (default=None). 
-    :param plot: Boolean to plot the simulated training data (default=False).
-    :param random_state: random state for generating random numbers (Default=None).
-    :param noise: Type of added noise to the data. The options are 'gaussian', 
-        'exponential', and 'hetero_gaussian' (The defauls is None.). 
-    
-    :returns:
-         X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
+        :param method: simulate 'linear' or 'non-linear' function.
+        :param n_samples: number of samples in each group of the training and test sets. 
+            If it is an int then the same sample number will be used for all groups. 
+            It can be also a list of size of n_grps that decides the number of samples 
+            in each group (default=100).
+        :param n_features: A positive integer that decides the number of features 
+            (default=1).
+        :param n_grps: A positive integer that decides the number of groups in data
+            (default=1).
+        :param working_dir: Directory to save data (default=None). 
+        :param plot: Boolean to plot the simulated training data (default=False).
+        :param random_state: random state for generating random numbers (Default=None).
+        :param noise: Type of added noise to the data. The options are 'gaussian', 
+            'exponential', and 'hetero_gaussian' (The defauls is None.). 
+        
+        :returns:
+            X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
     
     """
     
@@ -954,9 +976,7 @@ def divergence_plot(nm, ylim=None):
     
 def load_freesurfer_measure(measure, data_path, subjects_list):
     
-    """
-    This is a utility function to load different Freesurfer measures in a pandas
-    Dataframe.
+    """This is a utility function to load different Freesurfer measures in a pandas Dataframe.
     
     Inputs
 
@@ -1169,7 +1189,7 @@ class scaler:
     
 def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
     
-    '''
+    """
     This function receives the freesurfer directory (including processed data 
     for several subjects) and retrieves the Euler number from the log files. If
     the log file does not exist, this function uses 'mris_euler_number' to recompute
@@ -1197,7 +1217,7 @@ def retrieve_freesurfer_eulernum(freesurfer_dir, subjects=None, save_path=None):
               
     Developed by S.M. Kia
     
-    '''
+    """
     
     if subjects is None:
         subjects = [temp for temp in os.listdir(freesurfer_dir) 
@@ -1371,21 +1391,20 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
 def cartesian_product(arrays):
     
     """
-    This is a utility function for creating dummy data (covariates). It computes 
-    the cartesian product of N 1D arrays.
+    This is a utility function for creating dummy data (covariates). It computes the cartesian product of N 1D arrays.
     
     Example:
         a = cartesian_product(np.arange(0,5), np.arange(6,10))
     
-    :param *arrays: a list of N input 1D numpy arrays with size d1,d2,dN
-    :return: A d1*d2*...*dN by N matrix of cartesian product of N arrays.
+    :param arrays: a list of N input 1D numpy arrays with size d1,d2,dN.
+    :return: A d1...dN by N matrix of cartesian product of N arrays.
 
     """
     
     la = len(arrays)
     dtype = np.result_type(arrays[0])
     arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
-    for i, a in enumerate(np.ix_(*arrays)):
+    for i, a in enumerate(np.ix_(arrays)):
         arr[...,i] = a
         
     return arr.reshape(-1, la)
@@ -1422,6 +1441,7 @@ def P(q):
     The P function as given in Jones et al.
     :param q:
     :return:
+
     """
     frac = np.exp(1 / 4) / np.sqrt(8 * np.pi)
     K1 = K((q + 1) / 2, 1 / 4)
