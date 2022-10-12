@@ -47,7 +47,7 @@ bad if you cannot complete everything during the tutorial.
 
     #install normative modeling
     ! pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
-    ! pip install pcntoolkit==0.20
+    ! pip install pcntoolkit==0.26
 
 
 **Option 1:** Connect your Google Drive account, and load data from

@@ -6,7 +6,7 @@ Braincharts: transfer
 Code for transfering the models from `Charting Brain Growth and Aging at High Spatial Precision. <https://elifesciences.org/articles/72904>`__ 
 
 .. image:: https://colab.research.google.com/assets/colab-badge.svg 
-    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models.ipynb 
+    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models_ct.ipynb 
 
 
 .. figure:: ./brainchart_fig1.png
@@ -28,7 +28,7 @@ at least version 0.20)
 
 .. code:: ipython3
 
-    !pip install pcntoolkit==0.20
+    !pip install pcntoolkit==0.26
 
 .. code:: ipython3
 
@@ -109,7 +109,7 @@ to be done and which model we want to use.
 
     # which model do we wish to use?
     model_name = 'lifespan_57K_82sites'
-    site_names = 'site_ids_82sites.txt'
+    site_names = 'site_ids_ct_82sites.txt'
     
     # where the analysis takes place
     root_dir = '/content/braincharts'
@@ -132,13 +132,13 @@ you can get these data by running the following commmands:
 .. code:: ipython3
 
     os.chdir(root_dir)
-    !wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_te.csv
-    !wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_tr.csv
+    !wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_ct_te.csv
+    !wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_ct_tr.csv
 
 
 .. parsed-literal::
 
-    --2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_te.csv
+    --2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_ct_te.csv
     Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...
     Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
     HTTP request sent, awaiting response... 200 OK
@@ -149,16 +149,16 @@ you can get these data by running the following commmands:
     
     2022-02-17 15:01:31 (22.0 MB/s) - ‘OpenNeuroTransfer_te.csv’ saved [628752/628752]
     
-    --2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_tr.csv
+    --2022-02-17 15:01:31--  https://raw.githubusercontent.com/predictive-clinical-neuroscience/braincharts/master/docs/OpenNeuroTransfer_ct_tr.csv
     Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.108.133, ...
     Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
     HTTP request sent, awaiting response... 200 OK
     Length: 163753 (160K) [text/plain]
     Saving to: ‘OpenNeuroTransfer_tr.csv’
     
-    OpenNeuroTransfer_t 100%[===================>] 159.92K  --.-KB/s    in 0.03s   
+    OpenNeuroTransfer_c 100%[===================>] 159.92K  --.-KB/s    in 0.03s   
     
-    2022-02-17 15:01:32 (6.08 MB/s) - ‘OpenNeuroTransfer_tr.csv’ saved [163753/163753]
+    2022-02-17 15:01:32 (6.08 MB/s) - ‘OpenNeuroTransfer_ct_tr.csv’ saved [163753/163753]
     
 
 
@@ -184,7 +184,7 @@ characteristic as described in the papers below.
 
 .. code:: ipython3
 
-    test_data = os.path.join(root_dir, 'OpenNeuroTransfer_te.csv')
+    test_data = os.path.join(root_dir, 'OpenNeuroTransfer_ct_te.csv')
     
     df_te = pd.read_csv(test_data)
     
@@ -207,7 +207,7 @@ same way, based on a the ‘sitenum’ column in the dataframe.
 
 .. code:: ipython3
 
-    adaptation_data = os.path.join(root_dir, 'OpenNeuroTransfer_tr.csv')
+    adaptation_data = os.path.join(root_dir, 'OpenNeuroTransfer_ct_tr.csv')
     
     df_ad = pd.read_csv(adaptation_data)
     
@@ -233,9 +233,9 @@ models for …
 .. code:: ipython3
 
     # load the list of idps for left and right hemispheres, plus subcortical regions
-    with open(os.path.join(root_dir,'docs','phenotypes_lh.txt')) as f:
+    with open(os.path.join(root_dir,'docs','phenotypes_ct_lh.txt')) as f:
         idp_ids_lh = f.read().splitlines()
-    with open(os.path.join(root_dir,'docs','phenotypes_rh.txt')) as f:
+    with open(os.path.join(root_dir,'docs','phenotypes_ct_rh.txt')) as f:
         idp_ids_rh = f.read().splitlines()
     with open(os.path.join(root_dir,'docs','phenotypes_sc.txt')) as f:
         idp_ids_sc = f.read().splitlines()

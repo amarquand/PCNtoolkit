@@ -122,7 +122,7 @@ onto unseen sites.</p>
 <div class="section" id="step-0-install-necessary-libraries-grab-data-files">
 <h2>Step 0: Install necessary libraries &amp; grab data files<a class="headerlink" href="#step-0-install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
-<span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.22
+<span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.26
 </pre></div>
 </div>
 <p>For this tutorial we will use data from the <a class="reference external" href="http://fcon_1000.projects.nitrc.org/">Functional Connectom
@@ -211,10 +211,10 @@ then displayed.</p>
 </div>
 <p>Otherwise you can just load these pre defined subsets:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional</span>
-<span class="n">fcon_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv&#39;</span><span class="p">)</span>
-<span class="n">fcon_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv&#39;</span><span class="p">)</span>
-<span class="n">icbm_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv&#39;</span><span class="p">)</span>
-<span class="n">icbm_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;</span><span class="p">)</span>
+<span class="c1"># fcon_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv&#39;)</span>
+<span class="c1"># fcon_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv&#39;)</span>
+<span class="c1"># icbm_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv&#39;)</span>
+<span class="c1"># icbm_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;)</span>
 </pre></div>
 </div>
 </div>
