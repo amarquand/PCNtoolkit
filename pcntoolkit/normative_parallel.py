@@ -65,7 +65,7 @@ def execute_nm(processing_dir,
                interactive=False,
                **kwargs):
 
-    """ Execute parallel normative models
+    ''' Execute parallel normative models
     This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
@@ -90,14 +90,14 @@ def execute_nm(processing_dir,
     :param binary: If True uses binary format for response file otherwise it is text
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    '''
     
     if normative_path is None:
         normative_path = ptkpath + '/normative.py'
         
     cv_folds = kwargs.get('cv_folds', None)
-    testcovfile_path = kwargs.pop('testcovfile_path', None)
-    testrespfile_path= kwargs.pop('testrespfile_path', None)
+    testcovfile_path = kwargs.get('testcovfile_path', None)
+    testrespfile_path= kwargs.get('testrespfile_path', None)
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
@@ -142,7 +142,6 @@ def execute_nm(processing_dir,
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
-
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -321,7 +320,7 @@ def split_nm(processing_dir,
              binary,
              **kwargs):
 
-    """ This function prepares the input files for normative_parallel.
+    ''' This function prepares the input files for normative_parallel.
     
     Basic usage::
 
@@ -336,7 +335,7 @@ def split_nm(processing_dir,
     :outputs: The creation of a folder struture for batch-wise processing.
 
     witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    ''' 
     
     testrespfile_path = kwargs.pop('testrespfile_path', None)
 
@@ -439,7 +438,7 @@ def collect_nm(processing_dir,
                batch_size=None,
                outputsuffix='_estimate'):
     
-    """Function to checks and collects all batches.
+    '''Function to checks and collects all batches.
 
     Basic usage::
 
@@ -456,7 +455,7 @@ def collect_nm(processing_dir,
     :returns 1: if bathches complete successfully
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    '''
 
     if binary:
         file_extentions = '.pkl'
@@ -794,7 +793,7 @@ def collect_nm(processing_dir,
 
 def delete_nm(processing_dir,
               binary=False):
-    """This function deletes all processing for normative modelling and just keeps the combined output.
+    '''This function deletes all processing for normative modelling and just keeps the combined output.
 
     Basic usage::
 
@@ -804,7 +803,7 @@ def delete_nm(processing_dir,
     :param binary: Results in pkl format.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    '''
     
     if binary:
         file_extentions = '.pkl'
@@ -829,7 +828,7 @@ def bashwrap_nm(processing_dir,
                 func='estimate',
                 **kwargs):
 
-    """ This function wraps normative modelling into a bash script to run it
+    ''' This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
     Basic usage::
@@ -851,7 +850,7 @@ def bashwrap_nm(processing_dir,
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    """
+    '''
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop('cv_folds',None)
@@ -859,7 +858,6 @@ def bashwrap_nm(processing_dir,
     testrespfile_path = kwargs.pop('testrespfile_path', None)
     alg = kwargs.pop('alg', None)
     configparam = kwargs.pop('configparam', None)
-    
     # change to processing dir
     os.chdir(processing_dir)
     output_changedir = ['cd ' + processing_dir + '\n']
@@ -917,7 +915,7 @@ def qsub_nm(job_path,
             memory,
             duration):
     
-    """This function submits a job.sh scipt to the torque custer using the qsub command.
+    '''This function submits a job.sh scipt to the torque custer using the qsub command.
     
     Basic usage::
 
@@ -931,7 +929,7 @@ def qsub_nm(job_path,
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    '''
   
     # created qsub command
     if log_path is None:
@@ -955,7 +953,7 @@ def rerun_nm(processing_dir,
              duration,
              binary=False, 
              interactive=False):
-    """This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
+    '''This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
     Basic usage::           
 
         rerun_nm(processing_dir, log_path, memory, duration)
@@ -965,7 +963,7 @@ def rerun_nm(processing_dir,
     :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    """
+    '''
     
     job_ids = []
     
@@ -1015,7 +1013,8 @@ def sbatchwrap_nm(processing_dir,
                   func='estimate',
                   **kwargs):
 
-    """This function wraps normative modelling into a bash script to run it on a torque cluster system.
+    '''This function wraps normative modelling into a bash script to run it
+    on a torque cluster system.
 
     Basic usage::
 
@@ -1036,7 +1035,7 @@ def sbatchwrap_nm(processing_dir,
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford
-    """
+    '''
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop('cv_folds',None)
@@ -1118,7 +1117,7 @@ def sbatchwrap_nm(processing_dir,
 def sbatch_nm(job_path,
               log_path):
     
-    """This function submits a job.sh scipt to the torque custer using the qsub
+    '''This function submits a job.sh scipt to the torque custer using the qsub
     command.
 
     Basic usage::
@@ -1131,7 +1130,7 @@ def sbatch_nm(job_path,
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    """
+    '''
 
     # created qsub command
     sbatch_call = ['sbatch ' + job_path]
@@ -1147,7 +1146,7 @@ def sbatchrerun_nm(processing_dir,
                  binary=False,
                  **kwargs):
         
-    """This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
+    '''This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
     
     Basic usage::
 
@@ -1162,7 +1161,7 @@ def sbatchrerun_nm(processing_dir,
     :outputs: Re-runs failed batches. 
     
      written by (primarily) T Wolfers, (adapted) S Rutherford.
-    """
+    '''
     log_path = kwargs.pop('log_path', None)
     
     if binary:
@@ -1202,11 +1201,13 @@ def sbatchrerun_nm(processing_dir,
 
 
 def retrieve_jobs():
-    """A utility function to retrieve task status from the outputs of qstat.
-        
-        :return: a dictionary of jobs.
     """
+    A utility function to retrieve task status from the outputs of qstat.
+    
+    :return: a dictionary of jobs.
 
+    """
+    
     output = check_output('qstat', shell=True).decode(sys.stdout.encoding)
     output = output.split('\n')
     jobs = dict()
@@ -1225,10 +1226,10 @@ def check_job_status(jobs):
     A utility function to count the tasks with different status.
     
     :param jobs: List of job ids.
-    :return: returns the number of taks athat are queued, running, completed, and other status.
+    :return: returns the number of taks athat are queued, running, completed,
+    and other status.
     
     """
-
     running_jobs = retrieve_jobs()
     
     r = 0
@@ -1259,7 +1260,8 @@ def check_jobs(jobs, delay=60):
     A utility function for chacking the status of submitted jobs.
     
     :param jobs: list of job ids.
-    :param delay: the delay (in seconds) between two consequative checks, defaults to 60.
+    :param delay: the delay (in seconds) between two consequative checks, 
+    defaults to 60.
 
     """
     
