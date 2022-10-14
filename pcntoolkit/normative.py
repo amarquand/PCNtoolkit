@@ -919,9 +919,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             inscaler = 'None'
             outscaler = 'None'
             meta_data = False
-    
-    if not os.path.isdir(output_path):
-        os.mkdir(output_path)    
        
     # load data
     print("Loading data ...")
@@ -1011,15 +1008,15 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
                                       str(i) + inputsuffix + '.pkl'))
 
-            yhat, s2 = nm.predict(Xte, 
-                                    respfile=testresp,
-                                    adaptrespfile = respfile, 
-                                    adaptcovfile = covfile,
-                                    adaptvargroupfile=trbefile,
-                                    testvargroupfile=tsbefile) # arguments provided instead of **kwargs
+            yhat, s2 = nm.predict(Xte, X, Y[:, i], **kwargs)
+                                    # respfile=testresp,
+                                    # adaptrespfile = respfile, 
+                                    # adaptcovfile = covfile,
+                                    # adaptvargroupfile=trbefile,
+                                    # testvargroupfile=tsbefile) # arguments provided instead of **kwargs
         
         if testcov is not None:
-            yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+            #yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
             if outscaler == 'standardize': 
                 Yhat[:, i] = scaler_resp[0].inverse_transform(yhat.squeeze(), index=i)
                 S2[:, i] = s2.squeeze() * sY[i]**2
