@@ -1028,7 +1028,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 S2[:, i] = s2.squeeze()
                 
         # Creates a file for every job succesfully completed (for tracking failed jobs).
-        if count_jobsdone=='True':
+        if count_jobsdone==True:
             done_path = os.path.join(log_path, str(job_id)+".jobsdone")
             Path(done_path).touch()
 
