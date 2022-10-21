@@ -1092,11 +1092,12 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param output_path: the path for saving the  the extended model
-    :param informative_prior: a flag to decide whether to use the initial model 
-    prior or learn it from scrach (default is False).
-    :param generation_factor: the number of samples generated for each combination
-    of covariates and batch effects. Default is 10.
-    
+    :param informative_prior: use initial model prior or learn from scratch (default is False).
+    :param generation_factor: see below
+
+    generation factor refers to the number of samples generated for each 
+    combination of covariates and batch effects. Default is 10.
+
 
     All outputs are written to disk in the same format as the input.
     
@@ -1203,11 +1204,13 @@ def tune(covfile, respfile, maskfile=None, **kwargs):
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param output_path: the path for saving the  the extended model
-    :param informative_prior: a flag to decide whether to use the initial model 
-    prior or learn it from scrach (default is False).
-    :param generation_factor: the number of samples generated for each combination
-    of covariates and batch effects. Default is 10.
+    :param informative_prior: use initial model prior or learn from scracth (default is False).
+    :param generation_factor: see below
     
+    
+    generation factor refers to the number of samples generated for each
+    combination of covariates and batch effects. Default is 10.
+
 
     All outputs are written to disk in the same format as the input.
     
@@ -1307,16 +1310,16 @@ def merge(covfile=None, respfile=None, **kwargs):
 
     :param covfile: Not required. Always set to None.
     :param respfile: Not required. Always set to None.
-    :param model_path1: Directory containing the normative model and metadata 
-    of the first model.
-    :param model_path2: Directory containing the normative model and metadata 
-    of the second model.
+    :param model_path1: Directory containing the model and metadata (1st model)
+    :param model_path2: Directory containing the  model and metadata (2nd model)
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param output_path: the path for saving the  the extended model
-    :param generation_factor: the number of samples generated for each combination
-    of covariates and batch effects. Default is 10.
-    
+    :param generation_factor: see below
+
+    The generation factor refers tothe number of samples generated for each 
+    combination of covariates and batch effects. Default is 10.
+
 
     All outputs are written to disk in the same format as the input.
     
