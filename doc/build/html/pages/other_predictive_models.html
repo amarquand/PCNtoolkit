@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Predictive modeling tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -109,7 +110,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="predictive-modeling-using-deviation-scores">
+  <section id="predictive-modeling-using-deviation-scores">
 <h1>Predictive modeling using deviation scores<a class="headerlink" href="#predictive-modeling-using-deviation-scores" title="Permalink to this headline"></a></h1>
 <p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://www.nature.com/articles/s41596-022-00696-5">https://www.nature.com/articles/s41596-022-00696-5</a>.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
@@ -149,7 +150,7 @@
 <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="n">BIGGER_SIZE</span><span class="p">)</span>  <span class="c1"># fontsize of the figure title</span>
 </pre></div>
 </div>
-<div class="section" id="load-data">
+<section id="load-data">
 <h2>Load Data<a class="headerlink" href="#load-data" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data/hcpya_z.npy&#39;</span><span class="p">)</span>
 <span class="n">hcp_ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data/hcpya_ct.npy&#39;</span><span class="p">)</span>
@@ -166,8 +167,8 @@
 (946,)
 </pre></div>
 </div>
-</div>
-<div class="section" id="create-train-test-splits">
+</section>
+<section id="create-train-test-splits">
 <h2>Create Train/Test Splits<a class="headerlink" href="#create-train-test-splits" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate train/test splits</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
@@ -195,8 +196,8 @@
 <span class="n">test_mu_centered_ct</span> <span class="o">=</span> <span class="p">(</span><span class="n">test_data_ct</span> <span class="o">-</span> <span class="n">train_data_ct</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="principal-component-regression-bbs">
+</section>
+<section id="principal-component-regression-bbs">
 <h2>Principal Component Regression (BBS)<a class="headerlink" href="#principal-component-regression-bbs" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pca_model_z</span> <span class="o">=</span> <span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">)</span>
 <span class="c1"># from pca documentation, &quot;the input data is centered but not scaled for each feature before applying the SVD&quot;</span>
@@ -236,8 +237,8 @@
 <span class="n">test_transformed_ct</span> <span class="o">=</span> <span class="n">pca_model_ct</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_data_ct</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fit-linear-regression-model">
+</section>
+<section id="fit-linear-regression-model">
 <h2>Fit Linear Regression Model<a class="headerlink" href="#fit-linear-regression-model" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># fast OLS using matrix math</span>
 <span class="c1"># we will check that this matches sklearn results later</span>
@@ -313,8 +314,8 @@
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Passed
 </pre></div>
 </div>
-</div>
-<div class="section" id="mean-squared-absolute-error-of-predictions">
+</section>
+<section id="mean-squared-absolute-error-of-predictions">
 <h2>Mean Squared/Absolute Error of Predictions<a class="headerlink" href="#mean-squared-absolute-error-of-predictions" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_r2_z</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">r2_score</span><span class="p">(</span><span class="n">train_phen</span><span class="p">,</span> <span class="n">train_pred_phen_lr_model_z</span><span class="p">)</span>
 <span class="n">train_mae_z</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">train_phen</span><span class="p">,</span> <span class="n">train_pred_phen_lr_model_z</span><span class="p">)</span>
@@ -354,8 +355,8 @@ Cortical thickness model Train MSE: 0.582
 Cortical thickness model Test MSE: 0.830
 </pre></div>
 </div>
-</div>
-<div class="section" id="bbs-cross-validation">
+</section>
+<section id="bbs-cross-validation">
 <h2>BBS Cross Validation<a class="headerlink" href="#bbs-cross-validation" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">bbs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">n_cv_splits</span><span class="p">,</span> <span class="n">pred_summary_function</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -456,8 +457,8 @@ CV Fold: 5          Train MAE: 0.614      Test MAE: 0.722
 </pre></div>
 </div>
 <img alt="../_images/other_predictive_models_33_3.png" src="../_images/other_predictive_models_33_3.png" />
-</div>
-<div class="section" id="connectome-predictive-modelling">
+</section>
+<section id="connectome-predictive-modelling">
 <h2>Connectome Predictive Modelling<a class="headerlink" href="#connectome-predictive-modelling" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># correlation train_brain with train_phenotype</span>
 <span class="n">train_z_pheno_corr_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">train_phen</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">train_data_z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>  <span class="c1"># train_pheno_corr_p: (259200, )</span>
@@ -579,8 +580,8 @@ Testing Error (MAE) (Negative CT Features Model) = 0.695
 Testing Error (MAE) (Positive/Negative CT Features Model) = 0.701
 </pre></div>
 </div>
-</div>
-<div class="section" id="cpm-cross-validation">
+</section>
+<section id="cpm-cross-validation">
 <h2>CPM Cross Validation<a class="headerlink" href="#cpm-cross-validation" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cpm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">n_cv_splits</span><span class="p">,</span> <span class="n">pred_summary_function</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -701,8 +702,8 @@ CV Fold: 5          Test  Pos-Edges Model MAE: 0.709      Test  Neg-Edges Model 
 </pre></div>
 </div>
 <img alt="../_images/other_predictive_models_51_2.png" src="../_images/other_predictive_models_51_2.png" />
-</div>
-<div class="section" id="lasso-linear-regression-l1-regularization">
+</section>
+<section id="lasso-linear-regression-l1-regularization">
 <h2>Lasso (Linear Regression + L1 Regularization)<a class="headerlink" href="#lasso-linear-regression-l1-regularization" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># LassoCV uses coordinate descent to select hyperparameter alpha</span>
 <span class="n">alpha_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="o">**</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)])</span>
@@ -775,8 +776,8 @@ Train MAE CT model: 0.650
 Test MAE CT model: 0.697
 </pre></div>
 </div>
-</div>
-<div class="section" id="ridge-linear-regression-l2-regularization">
+</section>
+<section id="ridge-linear-regression-l2-regularization">
 <h2>Ridge (Linear Regression + L2 Regularization)<a class="headerlink" href="#ridge-linear-regression-l2-regularization" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># RidgeCV uses generalized cross validation to select hyperparameter alpha</span>
 <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
@@ -836,8 +837,8 @@ Train MAE CT model: 0.600
 Test MAE CT model: 0.692
 </pre></div>
 </div>
-</div>
-<div class="section" id="elastic-net-linear-regression-l1-l2-regularization">
+</section>
+<section id="elastic-net-linear-regression-l1-l2-regularization">
 <h2>Elastic Net (Linear Regression + L1/L2 Regularization)<a class="headerlink" href="#elastic-net-linear-regression-l1-l2-regularization" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># RidgeCV uses generalized cross validation to select hyperparameter alpha</span>
 <span class="n">elasticnetCV_model_z</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">l1_ratio</span><span class="o">=</span><span class="p">[</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.7</span><span class="p">,</span> <span class="mf">.9</span><span class="p">,</span> <span class="mf">.95</span><span class="p">,</span> <span class="mf">.99</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_alphas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha_grid</span><span class="p">),</span> <span class="n">alphas</span><span class="o">=</span><span class="n">alpha_grid</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">,</span> <span class="n">train_phen</span><span class="p">)</span>
@@ -911,8 +912,8 @@ Train MAE CT model: 0.633
 Test MAE CT model: 0.692
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
