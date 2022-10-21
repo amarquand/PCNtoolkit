@@ -100,7 +100,7 @@ def execute_nm(processing_dir,
     testrespfile_path= kwargs.get('testrespfile_path', None)
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
-    log_path = kwargs.pop('log_path', None)
+    log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
     
     split_nm(processing_dir,
@@ -138,6 +138,7 @@ def execute_nm(processing_dir,
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec == 'torque':
+                    
                     # update the response file 
                     kwargs.update({'testrespfile_path': \
                                    batch_testrespfile_path})
@@ -857,7 +858,6 @@ def bashwrap_nm(processing_dir,
     testrespfile_path = kwargs.pop('testrespfile_path', None)
     alg = kwargs.pop('alg', None)
     configparam = kwargs.pop('configparam', None)
-    
     # change to processing dir
     os.chdir(processing_dir)
     output_changedir = ['cd ' + processing_dir + '\n']
@@ -1138,7 +1138,7 @@ def sbatch_nm(job_path,
     # submits job to cluster
     call(sbatch_call, shell=True)
     
-def rerun_nm(processing_dir,
+def sbatchrerun_nm(processing_dir,
                  memory,
                  duration,
                  new_memory=False,

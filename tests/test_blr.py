@@ -1,6 +1,6 @@
 import sys
 #sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
-sys.path.append('/home/preclineu/chafra/Desktop/PCNtoolkit/')
+#sys.path.append('/home/preclineu/chafra/Desktop/PCNtoolkit/')
 
 import numpy as np
 import scipy as sp
