@@ -102,7 +102,7 @@ from __future__ import division
 import numpy as np
 import torch
 
-<div class="viewcode-block" id="GPRRFA"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA">[docs]</a>class GPRRFA:
+<div class="viewcode-block" id="GPRRFA"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA">[docs]</a>class GPRRFA:
     &quot;&quot;&quot;Random Feature Approximation for Gaussian Process Regression
 
     Estimation and prediction of Bayesian linear regression models
@@ -183,11 +183,11 @@ import torch
         
         return X, y, hyp
     
-<div class="viewcode-block" id="GPRRFA.get_n_params"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.get_n_params">[docs]</a>    def get_n_params(self, X):
+<div class="viewcode-block" id="GPRRFA.get_n_params"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.get_n_params">[docs]</a>    def get_n_params(self, X):
         
         return X.shape[1] + 2</div>
         
-<div class="viewcode-block" id="GPRRFA.post"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.post">[docs]</a>    def post(self, hyp, X, y):
+<div class="viewcode-block" id="GPRRFA.post"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.post">[docs]</a>    def post(self, hyp, X, y):
         &quot;&quot;&quot; Generic function to compute posterior distribution.
 
             This function will save the posterior mean and precision matrix as
@@ -232,7 +232,7 @@ import torch
         if hasattr(self,&#39;_iterations&#39;):
             self._iterations += 1</div>
 
-<div class="viewcode-block" id="GPRRFA.loglik"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.loglik">[docs]</a>    def loglik(self, hyp, X, y):
+<div class="viewcode-block" id="GPRRFA.loglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.loglik">[docs]</a>    def loglik(self, hyp, X, y):
         &quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;
         X, y, hyp = self._numpy2torch(X, y, hyp)
 
@@ -266,14 +266,14 @@ import torch
         self.nlZ = nlZ
         return nlZ</div>
 
-<div class="viewcode-block" id="GPRRFA.dloglik"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.dloglik">[docs]</a>    def dloglik(self, hyp, X, y):
+<div class="viewcode-block" id="GPRRFA.dloglik"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.dloglik">[docs]</a>    def dloglik(self, hyp, X, y):
         &quot;&quot;&quot; Function to compute derivatives &quot;&quot;&quot;
 
         print(&quot;derivatives not available&quot;)
 
         return</div>
 
-<div class="viewcode-block" id="GPRRFA.estimate"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.estimate">[docs]</a>    def estimate(self, hyp0, X, y, optimizer=&#39;lbfgs&#39;):
+<div class="viewcode-block" id="GPRRFA.estimate"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.estimate">[docs]</a>    def estimate(self, hyp0, X, y, optimizer=&#39;lbfgs&#39;):
         &quot;&quot;&quot; Function to estimate the model &quot;&quot;&quot;
         
         if type(hyp0) is torch.Tensor:
@@ -315,7 +315,7 @@ import torch
 
         return self.hyp.detach().numpy()</div>
 
-<div class="viewcode-block" id="GPRRFA.predict"><a class="viewcode-back" href="../pages/modindex.html#rfa.GPRRFA.predict">[docs]</a>    def predict(self, hyp, X, y, Xs):
+<div class="viewcode-block" id="GPRRFA.predict"><a class="viewcode-back" href="../modindex.html#rfa.GPRRFA.predict">[docs]</a>    def predict(self, hyp, X, y, Xs):
         &quot;&quot;&quot; Function to make predictions from the model &quot;&quot;&quot;
 
         X, y, hyp = self._numpy2torch(X, y, hyp)

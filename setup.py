@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pcntoolkit',
-      version='0.25',
+      version='0.26',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',
@@ -15,7 +15,7 @@ setup(name='pcntoolkit',
           'sklearn', 
           'bspline',
           'matplotlib',
-          'numpy>=1.19.5',
+          'numpy>=1.19.5,<1.23',
           'scipy>=1.3.2',
           'pandas>=0.25.3',
           'torch>=1.1.0', 
