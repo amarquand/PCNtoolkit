@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Braincharts tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -107,13 +108,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="braincharts-transfer">
+  <section id="braincharts-transfer">
 <h1>Braincharts: transfer<a class="headerlink" href="#braincharts-transfer" title="Permalink to this headline"></a></h1>
 <p>Code for transfering the models from <a class="reference external" href="https://elifesciences.org/articles/72904">Charting Brain Growth and Aging at High Spatial Precision.</a></p>
 <a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/braincharts/blob/master/scripts/apply_normative_models_ct.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
-<div class="figure align-center">
+<figure class="align-center">
 <a class="reference internal image-reference" href="../_images/brainchart_fig1.png"><img alt="../_images/brainchart_fig1.png" src="../_images/brainchart_fig1.png" style="height: 400px;" /></a>
-</div>
+</figure>
 <p>This notebook shows how to apply the coefficients from pre-estimated
 normative models to new data. This can be done in two different ways:
 (i) using a new set of data derived from the same sites used to estimate
@@ -202,7 +203,7 @@ set. See the accompanying paper for more details</p>
     <span class="n">site_ids_tr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="section" id="download-test-dataset">
+<section id="download-test-dataset">
 <h2>Download test dataset<a class="headerlink" href="#download-test-dataset" title="Permalink to this headline"></a></h2>
 <p>As mentioned above, to demonstrate this tool we will use a test dataset
 derived from the FCON 1000 dataset. We provide a prepackaged
@@ -238,8 +239,8 @@ OpenNeuroTransfer_c 100%[===================&gt;] 159.92K  --.-KB/s    in 0.03s
 2022-02-17 15:01:32 (6.08 MB/s) - ‘OpenNeuroTransfer_ct_tr.csv’ saved [163753/163753]
 </pre></div>
 </div>
-</div>
-<div class="section" id="load-test-data">
+</section>
+<section id="load-test-data">
 <h2>Load test data<a class="headerlink" href="#load-test-data" title="Permalink to this headline"></a></h2>
 <p>Now we load the test data and remove some subjects that may have poor
 scan quality. This asssesment is based on the Freesurfer Euler
@@ -268,8 +269,8 @@ sites from the test dataframe.</p>
 <span class="n">site_ids_te</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="optional-load-adaptation-data">
+</section>
+<section id="optional-load-adaptation-data">
 <h2>(Optional) Load adaptation data<a class="headerlink" href="#optional-load-adaptation-data" title="Permalink to this headline"></a></h2>
 <p>If the data you wish to make predictions for is not derived from the
 same scanning sites as those in the trainig set, it is necessary to
@@ -292,8 +293,8 @@ same way, based on a the ‘sitenum’ column in the dataframe.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: some of the testing sites are not in the adaptation data&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="configure-which-models-to-fit">
+</section>
+<section id="configure-which-models-to-fit">
 <h2>Configure which models to fit<a class="headerlink" href="#configure-which-models-to-fit" title="Permalink to this headline"></a></h2>
 <p>Now, we configure which imaging derived phenotypes (IDPs) we would like
 to process. This is just a list of column names in the dataframe we have
@@ -316,8 +317,8 @@ models for …</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idp_ids</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;Left-Thalamus-Proper&#39;</span><span class="p">,</span> <span class="s1">&#39;Left-Lateral-Ventricle&#39;</span><span class="p">,</span> <span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="configure-covariates">
+</section>
+<section id="configure-covariates">
 <h2>Configure covariates<a class="headerlink" href="#configure-covariates" title="Permalink to this headline"></a></h2>
 <p>Now, we configure some parameters to fit the model. First, we choose
 which columns of the pandas dataframe contain the covariates (age and
@@ -347,8 +348,8 @@ accompanying paper and <a class="reference external" href="https://www.biorxiv.o
 <span class="n">outlier_thresh</span> <span class="o">=</span> <span class="mi">7</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="make-predictions">
+</section>
+<section id="make-predictions">
 <h2>Make predictions<a class="headerlink" href="#make-predictions" title="Permalink to this headline"></a></h2>
 <p>This will make predictions for each IDP separately. This is done by
 extracting a column from the dataframe (i.e. specifying the IDP as the
@@ -466,14 +467,14 @@ Evaluations Writing outputs ...
 Writing outputs ...
 </pre></div>
 </div>
-</div>
-<div class="section" id="evaluate-the-performance">
+</section>
+<section id="evaluate-the-performance">
 <h2>Evaluate the performance<a class="headerlink" href="#evaluate-the-performance" title="Permalink to this headline"></a></h2>
-<div class="figure align-center">
+<figure class="align-center">
 <a class="reference internal image-reference" href="../_images/brainchart_fig3.png"><img alt="../_images/brainchart_fig3.png" src="../_images/brainchart_fig3.png" style="height: 400px;" /></a>
-</div>
-</div>
-<div class="section" id="preparing-dummy-data-for-plotting">
+</figure>
+</section>
+<section id="preparing-dummy-data-for-plotting">
 <h2>Preparing dummy data for plotting<a class="headerlink" href="#preparing-dummy-data-for-plotting" title="Permalink to this headline"></a></h2>
 <p>Now, we plot the centiles of variation estimated by the normative model.</p>
 <p>We do this by making use of a set of dummy covariates that span the
@@ -507,8 +508,8 @@ dummy data for all the IDPs we wish to plot</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>configuring dummy data ...
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotting-the-normative-models">
+</section>
+<section id="plotting-the-normative-models">
 <h2>Plotting the normative models<a class="headerlink" href="#plotting-the-normative-models" title="Permalink to this headline"></a></h2>
 <p>Now we loop through the IDPs, plotting each one separately. The outputs
 of this step are a set of quantitative regression metrics for each IDP
@@ -736,8 +737,8 @@ into the original data file.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_te_Z</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;OpenNeuroTransfer_deviation_scores.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
