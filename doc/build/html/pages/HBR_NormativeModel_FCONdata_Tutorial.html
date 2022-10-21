@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HBR tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -108,7 +109,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="hierarchical-bayesian-regression">
+  <section id="hierarchical-bayesian-regression">
 <h1>Hierarchical Bayesian Regression<a class="headerlink" href="#hierarchical-bayesian-regression" title="Permalink to this headline"></a></h1>
 <p>This notebook will go through basic data preparation (training and
 testing set, <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb">see Saige’s
@@ -119,7 +120,7 @@ onto unseen sites.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
 <p>Adapted/edited by Andre Marquand and Pierre Berthet.</p>
 <a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/HBR_FCON/HBR_NormativeModel_FCONdata_Tutorial.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
-<div class="section" id="step-0-install-necessary-libraries-grab-data-files">
+<section id="step-0-install-necessary-libraries-grab-data-files">
 <h2>Step 0: Install necessary libraries &amp; grab data files<a class="headerlink" href="#step-0-install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip uninstall -y Theano-PyMC  # conflicts with Theano on some environments
 <span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.26
@@ -146,7 +147,7 @@ Freesurfer 6.0, and some covariates (eg age, site, gender).</p>
 <span class="n">processing_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="section" id="overview">
+<section id="overview">
 <h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h3>
 <p>Here we get the FCON dataset, remove the ICBM site for later transfer,
 assign some site id to the different scanner sites and print an overview
@@ -175,9 +176,9 @@ color coded by the various sites:</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="step-1-prepare-training-and-testing-sets">
+</section>
+</section>
+<section id="step-1-prepare-training-and-testing-sets">
 <h2>Step 1: Prepare training and testing sets<a class="headerlink" href="#step-1-prepare-training-and-testing-sets" title="Permalink to this headline"></a></h2>
 <p>Then we randomly split half of the samples (participants) to be either
 in the training or in the testing samples. We do this for the remaing
@@ -217,8 +218,8 @@ then displayed.</p>
 <span class="c1"># icbm_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="step-2-configure-hbr-inputs-covariates-measures-and-batch-effects">
+</section>
+<section id="step-2-configure-hbr-inputs-covariates-measures-and-batch-effects">
 <h2>Step 2: Configure HBR inputs: covariates, measures and batch effects<a class="headerlink" href="#step-2-configure-hbr-inputs-covariates-measures-and-batch-effects" title="Permalink to this headline"></a></h2>
 <p>We will here only use the mean cortical thickness for the Right and Left
 hemisphere: two idps.</p>
@@ -263,8 +264,8 @@ testing set (<code class="docutils literal notranslate"><span class="pre">_test<
         <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="step-3-files-and-folders-grooming">
+</section>
+<section id="step-3-files-and-folders-grooming">
 <h2>Step 3: Files and Folders grooming<a class="headerlink" href="#step-3-files-and-folders-grooming" title="Permalink to this headline"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">)</span>       <span class="c1"># measurements  (eg cortical thickness) of the training samples (columns: the various features/ROIs, rows: observations or subjects)</span>
 <span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_train.pkl&#39;</span><span class="p">)</span>        <span class="c1"># covariates (eg age) the training samples (columns: covariates, rows: observations or subjects)</span>
@@ -285,8 +286,8 @@ testing set (<code class="docutils literal notranslate"><span class="pre">_test<
 <span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_estimate&#39;</span>      <span class="c1"># a string to name the output files, of use only to you, so adapt it for your needs.</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="step-4-estimating-the-models">
+</section>
+<section id="step-4-estimating-the-models">
 <h2>Step 4: Estimating the models<a class="headerlink" href="#step-4-estimating-the-models" title="Permalink to this headline"></a></h2>
 <p>Now we have everything ready to estimate the normative models. The
 <code class="docutils literal notranslate"><span class="pre">estimate</span></code> function only needs the training and testing sets, each
@@ -311,8 +312,8 @@ and output files will be written and how they will be named.</p>
 could be of interest. This is covered in step 6 and in <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb">Saige’s
 tutorial</a>
 on Normative Modelling.</p>
-</div>
-<div class="section" id="step-5-transfering-the-models-to-unseen-sites">
+</section>
+<section id="step-5-transfering-the-models-to-unseen-sites">
 <h2>Step 5: Transfering the models to unseen sites<a class="headerlink" href="#step-5-transfering-the-models-to-unseen-sites" title="Permalink to this headline"></a></h2>
 <p>Similarly to what was done before for the FCON data, we also need to
 prepare the ICBM specific data, in order to run the transfer function:
@@ -374,8 +375,8 @@ and testing). That is basically the only difference.</p>
 </div>
 <p>And that is it, you now have models that benefited from prior knowledge
 about different scanner sites to learn on unseen sites.</p>
-</div>
-<div class="section" id="step-6-interpreting-model-performance">
+</section>
+<section id="step-6-interpreting-model-performance">
 <h2>Step 6: Interpreting model performance<a class="headerlink" href="#step-6-interpreting-model-performance" title="Permalink to this headline"></a></h2>
 <p>Output evaluation metrics definitions</p>
 <table class="docutils align-default">
@@ -421,8 +422,8 @@ about different scanner sites to learn on unseen sites.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
