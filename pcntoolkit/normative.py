@@ -835,8 +835,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
     where the variables are defined below.
 
-    :param covfile: test covariates used to predict the response variable
-    :param respfile: test response variables for the normative model
+    :param covfile: transfer covariates used to predict the response variable
+    :param respfile: transfer response variables for the normative model
     :param maskfile: mask used to apply to the data (nifti only)
     :param testcov: Test covariates
     :param testresp: Test responses
@@ -880,7 +880,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         (not 'tsbefile' in list(kwargs.keys())):
                 print('InputError: Some mandatory arguments for blr are missing.')
                 return 
-            
+    # general arguments       
     log_path = kwargs.pop('log_path', None)
     model_path = kwargs.pop('model_path')
     outputsuffix = kwargs.pop('outputsuffix', 'transfer')
@@ -892,7 +892,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
     fold = kwargs.pop('fold',0)
-    
+        
     # for PCNonline automated parallel jobs loop
     count_jobsdone = kwargs.pop('count_jobsdone','False')
     if type(count_jobsdone) is str:
@@ -920,7 +920,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             outscaler = 'None'
             meta_data = False
        
-    # load data
+    # load adaptation data
     print("Loading data ...")
     X = fileio.load(covfile)
     Y, maskvol = load_response_vars(respfile, maskfile)
@@ -939,8 +939,9 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Y = scaler_resp[0].transform(Y)
     
-    # TODO: does this need a check? 
     batch_effects_train = fileio.load(trbefile)
+    
+    # load test data
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -972,7 +973,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     for i in range(feature_num):
               
         if alg == 'hbr':    
-
             print("Using HBR transform...")
             nm = norm_init(X)
             if batch_size is not None: # when using normative_parallel
@@ -989,9 +989,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             if batch_size is not None: 
                 nm.save(os.path.join(output_path, 'NM_0_' + 
                                  str(job_id*batch_size+i) + outputsuffix + '.pkl'))
-                # Comment out: it's saved twice.
-                # nm.save(os.path.join('Models', 'NM_0_' + 
-                #                  str(i) + outputsuffix + '.pkl'))
             else:
                 nm.save(os.path.join(output_path, 'NM_0_' + 
                                  str(i) + outputsuffix + '.pkl'))
@@ -1002,21 +999,29 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         # We basically use normative.predict script here.
         if alg == 'blr':
             print("Using BLR transform...")
-            # Is it correct to say transfer here for BLR?
             print("Transferring model ", i+1, "of", feature_num)      
             nm = norm_init(X)
             nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
                                       str(i) + inputsuffix + '.pkl'))
-
-            yhat, s2 = nm.predict(Xte, X, Y[:, i], **kwargs)
-                                    # respfile=testresp,
-                                    # adaptrespfile = respfile, 
-                                    # adaptcovfile = covfile,
-                                    # adaptvargroupfile=trbefile,
-                                    # testvargroupfile=tsbefile) # arguments provided instead of **kwargs
+            
+            # translate the syntax to what blr understands
+            # first strip existing blr keyword arguments to avoid redundancy
+            adapt_cov = kwargs.pop('adaptcovfile', None)
+            adapt_res = kwargs.pop('adaptrespfile', None)
+            adapt_vg = kwargs.pop('adaptvargroupfile', None)
+            test_vg = kwargs.pop('testvargroupfile', None)
+            if adapt_cov is not None or adapt_res is not None \
+                or adapt_vg is not None or test_vg is not None:
+                print("Warning: redundant batch effect parameterisation. Using HBR syntax")
+            
+            yhat, s2 = nm.predict(Xte, X, Y[:, i],
+                                  adaptcovfile = covfile,
+                                  adaptrespfile = respfile,
+                                  adaptvargroupfile = trbefile,
+                                  testvargroupfile = tsbefile,
+                                  **kwargs)
         
         if testcov is not None:
-            #yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
             if outscaler == 'standardize': 
                 Yhat[:, i] = scaler_resp[0].inverse_transform(yhat.squeeze(), index=i)
                 S2[:, i] = s2.squeeze() * sY[i]**2
@@ -1037,10 +1042,30 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
         return (Yhat, S2)
     else:
+        # warp the targets?   
+        if alg == 'blr' and nm.blr.warp is not None:
+            warp = True
+            Yw = np.zeros_like(Yte)            
+            for i in range(feature_num):
+                nm = norm_init(Xte)
+                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                          str(i) + inputsuffix + '.pkl'))
+
+                warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                Yw[:,i] = nm.blr.warp.f(Yte[:,i], warp_param)
+            Yte = Yw;
+        else:
+            warp = False
+            
         Z = (Yte - Yhat) / np.sqrt(S2)
     
         print("Evaluating the model ...")
-        results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        #results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        if meta_data and not warp:  
+            results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        else:    
+            results = evaluate(Yte, Yhat, S2=S2, 
+                           metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
                 
         save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
                      outputsuffix=outputsuffix)
