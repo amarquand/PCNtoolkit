@@ -22,6 +22,8 @@ import pickle
 import glob
 
 from sklearn.model_selection import KFold
+from pathlib import Path
+            
 try:  # run as a package if installed
     from pcntoolkit import configs
     from pcntoolkit.dataio import fileio
@@ -471,6 +473,8 @@ def estimate(covfile, respfile, **kwargs):
                 if (run_cv or testresp is not None):
                     if warp is not None:
                         # TODO: Warping for scaled data
+                        if outscaler is not None and outscaler != 'None':
+                            raise(ValueError, "outscaler not yet supported warping")
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(Y[ts, nz[i]], warp_param)
                         Ytest = Ywarp[ts, nz[i]]
@@ -685,6 +689,9 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     alg = kwargs.pop('alg')
     fold = kwargs.pop('fold',0)
     models = kwargs.pop('models', None)
+    
+    if alg == 'gpr':
+        raise(ValueError, "gpr is not supported with predict()")
         
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")
@@ -733,7 +740,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     Z = np.zeros([sample_num, feature_num])
     
     if inscaler in ['standardize', 'minmax', 'robminmax']:
-        Xz = scaler_cov[0].transform(X)
+        Xz = scaler_cov[fold].transform(X)
     else:
         Xz = X
     
@@ -751,11 +758,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
         
         if outscaler == 'standardize': 
-            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-            S2[:, i] = s2.squeeze() * sY[0][i]**2
+            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
+            S2[:, i] = s2.squeeze() * sY[fold][i]**2
         elif outscaler in ['minmax', 'robminmax']:
-            Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-            S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
+            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
+            S2[:, i] = s2 * (scaler_resp[fold].max[i] - scaler_resp[fold].min[i])**2
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
@@ -770,23 +777,40 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
-                mY = mY[models]
-                sY = sY[models]
+                # are we using cross-validation?
+                if type(mY) is list:
+                    mY = mY[fold][models]
+                else:
+                    mY = mY[models]
+                if type(sY) is list:
+                    sY = sY[fold][models]
+                else:
+                    sY = sY[models]
         
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
-        
-        # warp the targets?
-        if 'blr' in dir(nm):
-            if nm.blr.warp is not None:
+            
+        # warp the targets?   
+        if alg == 'blr' and nm.blr.warp is not None:
+            warp = True
+            Yw = np.zeros_like(Y)            
+            for i,m in enumerate(models):
+                nm = norm_init(Xz)
+                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                          str(m) + inputsuffix + '.pkl'))
+
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
-                Y = nm.blr.warp.f(Y, warp_param)
+                Yw[:,i] = nm.blr.warp.f(Y[:,i], warp_param)
+            Y = Yw;
+        else:
+            warp = False
         
         Z = (Y - Yhat) / np.sqrt(S2)
         
         print("Evaluating the model ...")
-        if meta_data:
-            results = evaluate(Y, Yhat, S2=S2, mY=mY[0], sY=sY[0])
+        if meta_data and not warp:
+            
+            results = evaluate(Y, Yhat, S2=S2, mY=mY, sY=sY)
         else:    
             results = evaluate(Y, Yhat, S2=S2, 
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
@@ -811,8 +835,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
     where the variables are defined below.
 
-    :param covfile: test covariates used to predict the response variable
-    :param respfile: test response variables for the normative model
+    :param covfile: transfer covariates used to predict the response variable
+    :param respfile: transfer response variables for the normative model
     :param maskfile: mask used to apply to the data (nifti only)
     :param testcov: Test covariates
     :param testresp: Test responses
@@ -827,30 +851,53 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
               * S2 - predictive variance
               * Z - Z scores
     '''
+    alg = kwargs.pop('alg').lower()
     
-    alg = kwargs.pop('alg')
-    if alg != 'hbr':
-        print('Model transferring is only possible for HBR models.')
+    if alg != 'hbr' and alg != 'blr':
+        print('Model transfer function is only possible for HBR and BLR models.')
         return
-    elif (not 'model_path' in list(kwargs.keys())) or \
-        (not 'output_path' in list(kwargs.keys())) or \
+    # testing should not be obligatory for HBR,
+    # but should be for BLR (since it doesn't produce transfer models)
+    elif (not 'model_path' in list(kwargs.keys()))  or \
         (not 'trbefile' in list(kwargs.keys())):
-            print('InputError: Some mandatory arguments are missing.')
+            print(f'{kwargs=}')
+            print('InputError: Some general mandatory arguments are missing.')
             return
-    else:
-        model_path = kwargs.pop('model_path')
-        output_path = kwargs.pop('output_path')
-        trbefile = kwargs.pop('trbefile')
-        batch_effects_train = fileio.load(trbefile)
-    
+    # hbr has one additional mandatory arguments
+    elif alg =='hbr':
+        if (not 'output_path' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for hbr are missing.')
+                return
+        else: 
+            output_path = kwargs.pop('output_path',None)
+            if not os.path.isdir(output_path):
+                os.mkdir(output_path) 
+
+    # for hbr, testing is not mandatory, for blr's predict/transfer it is. This will be an architectural choice.
+    #or (testresp==None)
+    elif alg =='blr':
+        if (testcov==None)   or \
+        (not 'tsbefile' in list(kwargs.keys())):
+                print('InputError: Some mandatory arguments for blr are missing.')
+                return 
+    # general arguments       
+    log_path = kwargs.pop('log_path', None)
+    model_path = kwargs.pop('model_path')
     outputsuffix = kwargs.pop('outputsuffix', 'transfer')
     outputsuffix = "_" + outputsuffix.replace("_", "")
     inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     tsbefile = kwargs.pop('tsbefile', None)
-    
+    trbefile = kwargs.pop('trbefile', None)
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
+    fold = kwargs.pop('fold',0)
+        
+    # for PCNonline automated parallel jobs loop
+    count_jobsdone = kwargs.pop('count_jobsdone','False')
+    if type(count_jobsdone) is str:
+        count_jobsdone = count_jobsdone=='True'
+        
     if batch_size is not None:
         batch_size = int(batch_size)
         job_id = int(job_id) - 1
@@ -872,11 +919,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             inscaler = 'None'
             outscaler = 'None'
             meta_data = False
-    
-    if not os.path.isdir(output_path):
-        os.mkdir(output_path)    
        
-    # load data
+    # load adaptation data
     print("Loading data ...")
     X = fileio.load(covfile)
     Y, maskvol = load_response_vars(respfile, maskfile)
@@ -895,6 +939,9 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Y = scaler_resp[0].transform(Y)
     
+    batch_effects_train = fileio.load(trbefile)
+    
+    # load test data
     if testcov is not None:
         # we have a separate test dataset
         Xte = fileio.load(testcov)
@@ -925,47 +972,100 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     # estimate the models for all subjects
     for i in range(feature_num):
               
-        nm = norm_init(X)
-        if batch_size is not None: # when using normative_parallel
-            print("Transferring model ", job_id*batch_size+i)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + 
-                                      str(job_id*batch_size+i) + inputsuffix + 
-                                      '.pkl'))
-        else:
-            print("Transferring model ", i+1, "of", feature_num)
-            nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
-                                      inputsuffix + '.pkl'))
-        
-        nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
-        if batch_size is not None: 
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(job_id*batch_size+i) + outputsuffix + '.pkl'))
-            nm.save(os.path.join('Models', 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
-        else:
-            nm.save(os.path.join(output_path, 'NM_0_' + 
-                             str(i) + outputsuffix + '.pkl'))
+        if alg == 'hbr':    
+            print("Using HBR transform...")
+            nm = norm_init(X)
+            if batch_size is not None: # when using normative_parallel
+                print("Transferring model ", job_id*batch_size+i)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + 
+                                          str(job_id*batch_size+i) + inputsuffix + 
+                                          '.pkl'))
+            else:
+                print("Transferring model ", i+1, "of", feature_num)
+                nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) + 
+                                          inputsuffix + '.pkl'))
+            
+            nm = nm.estimate_on_new_sites(X, Y[:,i], batch_effects_train)
+            if batch_size is not None: 
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(job_id*batch_size+i) + outputsuffix + '.pkl'))
+            else:
+                nm.save(os.path.join(output_path, 'NM_0_' + 
+                                 str(i) + outputsuffix + '.pkl'))
+            
+            if testcov is not None:
+                yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+                
+        # We basically use normative.predict script here.
+        if alg == 'blr':
+            print("Using BLR transform...")
+            print("Transferring model ", i+1, "of", feature_num)      
+            nm = norm_init(X)
+            nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                      str(i) + inputsuffix + '.pkl'))
+            
+            # translate the syntax to what blr understands
+            # first strip existing blr keyword arguments to avoid redundancy
+            adapt_cov = kwargs.pop('adaptcovfile', None)
+            adapt_res = kwargs.pop('adaptrespfile', None)
+            adapt_vg = kwargs.pop('adaptvargroupfile', None)
+            test_vg = kwargs.pop('testvargroupfile', None)
+            if adapt_cov is not None or adapt_res is not None \
+                or adapt_vg is not None or test_vg is not None:
+                print("Warning: redundant batch effect parameterisation. Using HBR syntax")
+            
+            yhat, s2 = nm.predict(Xte, X, Y[:, i],
+                                  adaptcovfile = covfile,
+                                  adaptrespfile = respfile,
+                                  adaptvargroupfile = trbefile,
+                                  testvargroupfile = tsbefile,
+                                  **kwargs)
         
         if testcov is not None:
-            yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
             if outscaler == 'standardize': 
-                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-                S2[:, i] = s2.squeeze() * sY[0][i]**2
+                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat.squeeze(), index=i)
+                S2[:, i] = s2.squeeze() * sY[i]**2
             elif outscaler in ['minmax', 'robminmax']:
                 Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
                 S2[:, i] = s2 * (scaler_resp[0].max[i] - scaler_resp[0].min[i])**2
             else:
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
+                
+        # Creates a file for every job succesfully completed (for tracking failed jobs).
+        if count_jobsdone==True:
+            done_path = os.path.join(log_path, str(job_id)+".jobsdone")
+            Path(done_path).touch()
+
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
         return (Yhat, S2)
     else:
+        # warp the targets?   
+        if alg == 'blr' and nm.blr.warp is not None:
+            warp = True
+            Yw = np.zeros_like(Yte)            
+            for i in range(feature_num):
+                nm = norm_init(Xte)
+                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' + 
+                                          str(i) + inputsuffix + '.pkl'))
+
+                warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
+                Yw[:,i] = nm.blr.warp.f(Yte[:,i], warp_param)
+            Yte = Yw;
+        else:
+            warp = False
+            
         Z = (Yte - Yhat) / np.sqrt(S2)
     
         print("Evaluating the model ...")
-        results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        #results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        if meta_data and not warp:  
+            results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
+        else:    
+            results = evaluate(Yte, Yhat, S2=S2, 
+                           metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
                 
         save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
                      outputsuffix=outputsuffix)

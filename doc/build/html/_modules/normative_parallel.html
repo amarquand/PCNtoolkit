@@ -163,7 +163,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                interactive=False,
                **kwargs):
 
-    &#39;&#39;&#39; Execute parallel normative models
+    &quot;&quot;&quot; Execute parallel normative models
     This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
@@ -188,17 +188,17 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :param binary: If True uses binary format for response file otherwise it is text
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     
     if normative_path is None:
         normative_path = ptkpath + &#39;/normative.py&#39;
         
     cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
-    testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
-    testrespfile_path= kwargs.get(&#39;testrespfile_path&#39;, None)
+    testcovfile_path = kwargs.pop(&#39;testcovfile_path&#39;, None)
+    testrespfile_path= kwargs.pop(&#39;testrespfile_path&#39;, None)
     outputsuffix = kwargs.get(&#39;outputsuffix&#39;, &#39;estimate&#39;)
     cluster_spec = kwargs.pop(&#39;cluster_spec&#39;, &#39;torque&#39;)
-    log_path = kwargs.pop(&#39;log_path&#39;, None)
+    log_path = kwargs.get(&#39;log_path&#39;, None)
     binary = kwargs.pop(&#39;binary&#39;, False)
     
     split_nm(processing_dir,
@@ -236,9 +236,11 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                                            str(n) + file_extentions)
                 batch_job_path = batch_processing_dir + batch_job_name
                 if cluster_spec == &#39;torque&#39;:
+                    
                     # update the response file 
                     kwargs.update({&#39;testrespfile_path&#39;: \
                                    batch_testrespfile_path})
+
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -417,7 +419,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
              binary,
              **kwargs):
 
-    &#39;&#39;&#39; This function prepares the input files for normative_parallel.
+    &quot;&quot;&quot; This function prepares the input files for normative_parallel.
     
     Basic usage::
 
@@ -432,7 +434,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: The creation of a folder struture for batch-wise processing.
 
     witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39; 
+    &quot;&quot;&quot;
     
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
 
@@ -535,7 +537,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                batch_size=None,
                outputsuffix=&#39;_estimate&#39;):
     
-    &#39;&#39;&#39;Function to checks and collects all batches.
+    &quot;&quot;&quot;Function to checks and collects all batches.
 
     Basic usage::
 
@@ -552,7 +554,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :returns 1: if bathches complete successfully
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
 
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -890,7 +892,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 <div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
               binary=False):
-    &#39;&#39;&#39;This function deletes all processing for normative modelling and just keeps the combined output.
+    &quot;&quot;&quot;This function deletes all processing for normative modelling and just keeps the combined output.
 
     Basic usage::
 
@@ -900,7 +902,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :param binary: Results in pkl format.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -925,7 +927,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                 func=&#39;estimate&#39;,
                 **kwargs):
 
-    &#39;&#39;&#39; This function wraps normative modelling into a bash script to run it
+    &quot;&quot;&quot; This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
     Basic usage::
@@ -947,7 +949,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -1013,7 +1015,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             memory,
             duration):
     
-    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub command.
+    &quot;&quot;&quot;This function submits a job.sh scipt to the torque custer using the qsub command.
     
     Basic usage::
 
@@ -1027,7 +1029,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
   
     # created qsub command
     if log_path is None:
@@ -1045,13 +1047,13 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     return job_id</div>
 
 
-def rerun_nm(processing_dir,
+<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
              log_path,
              memory,
              duration,
              binary=False, 
              interactive=False):
-    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
+    &quot;&quot;&quot;This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
     Basic usage::           
 
         rerun_nm(processing_dir, log_path, memory, duration)
@@ -1061,7 +1063,7 @@ def rerun_nm(processing_dir,
     :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     
     job_ids = []
     
@@ -1094,7 +1096,7 @@ def rerun_nm(processing_dir,
             job_ids.append(job_id)
             
     if interactive: 
-        check_jobs(job_ids, delay=60)
+        check_jobs(job_ids, delay=60)</div>
         
 
 # COPY the rotines above here and aadapt those to your cluster
@@ -1111,8 +1113,7 @@ def rerun_nm(processing_dir,
                   func=&#39;estimate&#39;,
                   **kwargs):
 
-    &#39;&#39;&#39;This function wraps normative modelling into a bash script to run it
-    on a torque cluster system.
+    &quot;&quot;&quot;This function wraps normative modelling into a bash script to run it on a torque cluster system.
 
     Basic usage::
 
@@ -1133,7 +1134,7 @@ def rerun_nm(processing_dir,
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -1215,7 +1216,7 @@ def rerun_nm(processing_dir,
 <div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
               log_path):
     
-    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub
+    &quot;&quot;&quot;This function submits a job.sh scipt to the torque custer using the qsub
     command.
 
     Basic usage::
@@ -1228,7 +1229,7 @@ def rerun_nm(processing_dir,
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
 
     # created qsub command
     sbatch_call = [&#39;sbatch &#39; + job_path]
@@ -1236,7 +1237,7 @@ def rerun_nm(processing_dir,
     # submits job to cluster
     call(sbatch_call, shell=True)</div>
     
-<div class="viewcode-block" id="rerun_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.rerun_nm">[docs]</a>def rerun_nm(processing_dir,
+<div class="viewcode-block" id="sbatchrerun_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatchrerun_nm">[docs]</a>def sbatchrerun_nm(processing_dir,
                  memory,
                  duration,
                  new_memory=False,
@@ -1244,7 +1245,7 @@ def rerun_nm(processing_dir,
                  binary=False,
                  **kwargs):
         
-    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
+    &quot;&quot;&quot;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
     
     Basic usage::
 
@@ -1259,7 +1260,7 @@ def rerun_nm(processing_dir,
     :outputs: Re-runs failed batches. 
     
      written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     log_path = kwargs.pop(&#39;log_path&#39;, None)
     
     if binary:
@@ -1299,13 +1300,11 @@ def rerun_nm(processing_dir,
 
 
 <div class="viewcode-block" id="retrieve_jobs"><a class="viewcode-back" href="../modindex.html#normative_parallel.retrieve_jobs">[docs]</a>def retrieve_jobs():
+    &quot;&quot;&quot;A utility function to retrieve task status from the outputs of qstat.
+        
+        :return: a dictionary of jobs.
     &quot;&quot;&quot;
-    A utility function to retrieve task status from the outputs of qstat.
-    
-    :return: a dictionary of jobs.
 
-    &quot;&quot;&quot;
-    
     output = check_output(&#39;qstat&#39;, shell=True).decode(sys.stdout.encoding)
     output = output.split(&#39;\n&#39;)
     jobs = dict()
@@ -1324,10 +1323,10 @@ def rerun_nm(processing_dir,
     A utility function to count the tasks with different status.
     
     :param jobs: List of job ids.
-    :return: returns the number of taks athat are queued, running, completed,
-    and other status.
+    :return: returns the number of taks athat are queued, running, completed, and other status.
     
     &quot;&quot;&quot;
+
     running_jobs = retrieve_jobs()
     
     r = 0
@@ -1358,8 +1357,7 @@ def rerun_nm(processing_dir,
     A utility function for chacking the status of submitted jobs.
     
     :param jobs: list of job ids.
-    :param delay: the delay (in seconds) between two consequative checks, 
-    defaults to 60.
+    :param delay: the delay (in seconds) between two consequative checks, defaults to 60.
 
     &quot;&quot;&quot;
     
