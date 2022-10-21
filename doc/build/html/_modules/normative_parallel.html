@@ -163,7 +163,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                interactive=False,
                **kwargs):
 
-    &quot;&quot;&quot; Execute parallel normative models
+    &#39;&#39;&#39; Execute parallel normative models
     This function is a mother function that executes all parallel normative
     modelling routines. Different specifications are possible using the sub-
     functions.
@@ -188,14 +188,14 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :param binary: If True uses binary format for response file otherwise it is text
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     
     if normative_path is None:
         normative_path = ptkpath + &#39;/normative.py&#39;
         
     cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
-    testcovfile_path = kwargs.pop(&#39;testcovfile_path&#39;, None)
-    testrespfile_path= kwargs.pop(&#39;testrespfile_path&#39;, None)
+    testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
+    testrespfile_path= kwargs.get(&#39;testrespfile_path&#39;, None)
     outputsuffix = kwargs.get(&#39;outputsuffix&#39;, &#39;estimate&#39;)
     cluster_spec = kwargs.pop(&#39;cluster_spec&#39;, &#39;torque&#39;)
     log_path = kwargs.get(&#39;log_path&#39;, None)
@@ -240,7 +240,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                     # update the response file 
                     kwargs.update({&#39;testrespfile_path&#39;: \
                                    batch_testrespfile_path})
-
                     bashwrap_nm(batch_processing_dir,
                                 python_path,
                                 normative_path,
@@ -419,7 +418,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
              binary,
              **kwargs):
 
-    &quot;&quot;&quot; This function prepares the input files for normative_parallel.
+    &#39;&#39;&#39; This function prepares the input files for normative_parallel.
     
     Basic usage::
 
@@ -434,7 +433,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: The creation of a folder struture for batch-wise processing.
 
     witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39; 
     
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
 
@@ -537,7 +536,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                batch_size=None,
                outputsuffix=&#39;_estimate&#39;):
     
-    &quot;&quot;&quot;Function to checks and collects all batches.
+    &#39;&#39;&#39;Function to checks and collects all batches.
 
     Basic usage::
 
@@ -554,7 +553,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :returns 1: if bathches complete successfully
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
 
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -892,7 +891,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 <div class="viewcode-block" id="delete_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.delete_nm">[docs]</a>def delete_nm(processing_dir,
               binary=False):
-    &quot;&quot;&quot;This function deletes all processing for normative modelling and just keeps the combined output.
+    &#39;&#39;&#39;This function deletes all processing for normative modelling and just keeps the combined output.
 
     Basic usage::
 
@@ -902,7 +901,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :param binary: Results in pkl format.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     
     if binary:
         file_extentions = &#39;.pkl&#39;
@@ -927,7 +926,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                 func=&#39;estimate&#39;,
                 **kwargs):
 
-    &quot;&quot;&quot; This function wraps normative modelling into a bash script to run it
+    &#39;&#39;&#39; This function wraps normative modelling into a bash script to run it
     on a torque cluster system.
 
     Basic usage::
@@ -949,7 +948,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -957,7 +956,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
     alg = kwargs.pop(&#39;alg&#39;, None)
     configparam = kwargs.pop(&#39;configparam&#39;, None)
-    
     # change to processing dir
     os.chdir(processing_dir)
     output_changedir = [&#39;cd &#39; + processing_dir + &#39;\n&#39;]
@@ -1015,7 +1013,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
             memory,
             duration):
     
-    &quot;&quot;&quot;This function submits a job.sh scipt to the torque custer using the qsub command.
+    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub command.
     
     Basic usage::
 
@@ -1029,7 +1027,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
   
     # created qsub command
     if log_path is None:
@@ -1053,7 +1051,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
              duration,
              binary=False, 
              interactive=False):
-    &quot;&quot;&quot;This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
+    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
     Basic usage::           
 
         rerun_nm(processing_dir, log_path, memory, duration)
@@ -1063,7 +1061,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :param duration: The approximate duration of the job, a string with HH:MM:SS for example 01:01:01.
 
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     
     job_ids = []
     
@@ -1113,7 +1111,8 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                   func=&#39;estimate&#39;,
                   **kwargs):
 
-    &quot;&quot;&quot;This function wraps normative modelling into a bash script to run it on a torque cluster system.
+    &#39;&#39;&#39;This function wraps normative modelling into a bash script to run it
+    on a torque cluster system.
 
     Basic usage::
 
@@ -1134,7 +1133,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: A bash.sh file containing the commands for normative modelling saved to the processing directory (written to disk).
 
     written by (primarily) T Wolfers, (adapted) S Rutherford
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     
     # here we use pop not get to remove the arguments as they used 
     cv_folds = kwargs.pop(&#39;cv_folds&#39;,None)
@@ -1216,7 +1215,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 <div class="viewcode-block" id="sbatch_nm"><a class="viewcode-back" href="../modindex.html#normative_parallel.sbatch_nm">[docs]</a>def sbatch_nm(job_path,
               log_path):
     
-    &quot;&quot;&quot;This function submits a job.sh scipt to the torque custer using the qsub
+    &#39;&#39;&#39;This function submits a job.sh scipt to the torque custer using the qsub
     command.
 
     Basic usage::
@@ -1229,7 +1228,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: Submission of the job to the (torque) cluster.
 
     written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
 
     # created qsub command
     sbatch_call = [&#39;sbatch &#39; + job_path]
@@ -1245,7 +1244,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
                  binary=False,
                  **kwargs):
         
-    &quot;&quot;&quot;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
+    &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
     
     Basic usage::
 
@@ -1260,7 +1259,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :outputs: Re-runs failed batches. 
     
      written by (primarily) T Wolfers, (adapted) S Rutherford.
-    &quot;&quot;&quot;
+    &#39;&#39;&#39;
     log_path = kwargs.pop(&#39;log_path&#39;, None)
     
     if binary:
@@ -1300,11 +1299,13 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="retrieve_jobs"><a class="viewcode-back" href="../modindex.html#normative_parallel.retrieve_jobs">[docs]</a>def retrieve_jobs():
-    &quot;&quot;&quot;A utility function to retrieve task status from the outputs of qstat.
-        
-        :return: a dictionary of jobs.
     &quot;&quot;&quot;
+    A utility function to retrieve task status from the outputs of qstat.
+    
+    :return: a dictionary of jobs.
 
+    &quot;&quot;&quot;
+    
     output = check_output(&#39;qstat&#39;, shell=True).decode(sys.stdout.encoding)
     output = output.split(&#39;\n&#39;)
     jobs = dict()
@@ -1323,10 +1324,9 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     A utility function to count the tasks with different status.
     
     :param jobs: List of job ids.
-    :return: returns the number of taks athat are queued, running, completed, and other status.
-    
-    &quot;&quot;&quot;
+    :return: returns the number of taks athat are queued, running, completed etc
 
+    &quot;&quot;&quot;
     running_jobs = retrieve_jobs()
     
     r = 0
@@ -1357,7 +1357,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     A utility function for chacking the status of submitted jobs.
     
     :param jobs: list of job ids.
-    :param delay: the delay (in seconds) between two consequative checks, defaults to 60.
+    :param delay: the delay (in sec) between two consequative checks, defaults to 60.
 
     &quot;&quot;&quot;
     

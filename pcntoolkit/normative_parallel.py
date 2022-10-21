@@ -1226,9 +1226,8 @@ def check_job_status(jobs):
     A utility function to count the tasks with different status.
     
     :param jobs: List of job ids.
-    :return: returns the number of taks athat are queued, running, completed,
-    and other status.
-    
+    :return: returns the number of taks athat are queued, running, completed etc
+
     """
     running_jobs = retrieve_jobs()
     
@@ -1260,8 +1259,7 @@ def check_jobs(jobs, delay=60):
     A utility function for chacking the status of submitted jobs.
     
     :param jobs: list of job ids.
-    :param delay: the delay (in seconds) between two consequative checks, 
-    defaults to 60.
+    :param delay: the delay (in sec) between two consequative checks, defaults to 60.
 
     """
     
