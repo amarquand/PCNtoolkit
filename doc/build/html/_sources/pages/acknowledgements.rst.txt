@@ -13,3 +13,4 @@ Core developers of the toolbox are:
 - Mariam Zabihi
 - Charlotte Fraza
 - Augustijn de Boer
+- Pieter Barkema
