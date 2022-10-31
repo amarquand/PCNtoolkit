@@ -37,3 +37,5 @@ Rutherford, S., Kia, S. M., Wolfers, T., ... Beckmann, C. F., & Marquand, A. F. 
 Rutherford, S., Fraza, C., ... Beckmann, C. F., & Marquand, A. F. (2022). Charting Brain Growth and Aging at High Spatial Precision. eLife. https://elifesciences.org/articles/72904
 
 de Boer, A., Kia, S., ... & Marquand A. F. (2022). Non-Gaussian Normative Modelling With Hierarchical Bayesian Regression. bioRxiv. https://www.biorxiv.org/content/10.1101/2022.10.05.510988v1
+
+Fraza, C., Zabihi, M., Beckmann, C. F., & Marquand, A. F. (2022). The Extremes of Normative Modelling. bioRxiv. https://www.biorxiv.org/content/10.1101/2022.08.23.505049v1 
