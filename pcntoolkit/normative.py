@@ -1015,11 +1015,17 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 print("Warning: redundant batch effect parameterisation. Using HBR syntax")
             
             yhat, s2 = nm.predict(Xte, X, Y[:, i],
-                                  adaptcovfile = covfile,
-                                  adaptrespfile = respfile,
-                                  adaptvargroupfile = trbefile,
-                                  testvargroupfile = tsbefile,
+                                  adaptcov = X,
+                                  adaptresp = Y[:, i],
+                                  adaptvargroup = batch_effects_train,
+                                  testvargroup = batch_effects_test,
                                   **kwargs)
+            # yhat, s2 = nm.predict(Xte, X, Y[:, i],
+            #                       adaptcovfile = covfile,
+            #                       adaptrespfile = respfile,
+            #                       adaptvargroupfile = trbefile,
+            #                       testvargroupfile = tsbefile,
+            #                       **kwargs)
         
         if testcov is not None:
             if outscaler == 'standardize': 
