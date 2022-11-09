@@ -1015,10 +1015,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 print("Warning: redundant batch effect parameterisation. Using HBR syntax")
             
             yhat, s2 = nm.predict(Xte, X, Y[:, i],
-                                  adaptcovfile = covfile,
-                                  adaptrespfile = respfile,
-                                  adaptvargroupfile = trbefile,
-                                  testvargroupfile = tsbefile,
+                                  adaptcov = X,
+                                  adaptresp = Y[:, i],
+                                  adaptvargroup = batch_effects_train,
+                                  testvargroup = batch_effects_test,
                                   **kwargs)
         
         if testcov is not None:
@@ -1060,7 +1060,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         Z = (Yte - Yhat) / np.sqrt(S2)
     
         print("Evaluating the model ...")
-        #results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
         if meta_data and not warp:  
             results = evaluate(Yte, Yhat, S2=S2, mY=mY, sY=sY)
         else:    
