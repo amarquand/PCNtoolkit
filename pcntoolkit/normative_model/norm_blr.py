@@ -170,59 +170,72 @@ class NormBLR(NormBase):
         theta = self.theta # always use the estimated coefficients
         # remove from kwargs to avoid downstream problems
         kwargs.pop('theta', None)
-        
-        
 
         Phis = create_poly_basis(Xs, self._model_order)
         
         if X is None:
-            Phi =None
+            Phi = None
         else:
             Phi = create_poly_basis(X, self._model_order)
         
         # process variance groups for the test data
-        if 'testvargroupfile' in kwargs:
-            var_groups_test_file = kwargs.pop('testvargroupfile')
-            if var_groups_test_file.endswith('.pkl'):
-                var_groups_te = pd.read_pickle(var_groups_test_file)
-            else:
-                var_groups_te = np.loadtxt(var_groups_test_file)
+        if 'testvargroup' in kwargs:
+            var_groups_te = kwargs.pop('testvargroup')
         else:
-            var_groups_te = None
+            if 'testvargroupfile' in kwargs:
+                var_groups_test_file = kwargs.pop('testvargroupfile')
+                if var_groups_test_file.endswith('.pkl'):
+                    var_groups_te = pd.read_pickle(var_groups_test_file)
+                else:
+                    var_groups_te = np.loadtxt(var_groups_test_file)
+            else:
+                var_groups_te = None
         
         # process test variance covariates
-        if 'testvarcovfile' in kwargs:
-            var_cov_test_file = kwargs.get('testvarcovfile')
-            if var_cov_test_file.endswith('.pkl'):
-                var_cov_te = pd.read_pickle(var_cov_test_file)
-            else:
-                var_cov_te = np.loadtxt(var_cov_test_file)
+        if 'testvarcov' in kwargs:
+            var_cov_te = kwargs.pop('testvarcov')
         else:
-            var_cov_te = None
+            if 'testvarcovfile' in kwargs:
+                var_cov_test_file = kwargs.get('testvarcovfile')
+                if var_cov_test_file.endswith('.pkl'):
+                    var_cov_te = pd.read_pickle(var_cov_test_file)
+                else:
+                    var_cov_te = np.loadtxt(var_cov_test_file)
+            else:
+                var_cov_te = None
         
         # do we want to adjust the responses?
-        if 'adaptrespfile' in kwargs:
-            y_adapt = fileio.load(kwargs.pop('adaptrespfile'))
-            if len(y_adapt.shape) == 1:
-                y_adapt = y_adapt[:, np.newaxis]
+        if 'adaptresp' in kwargs:
+            y_adapt = kwargs.pop('adaptresp')
         else:
-            y_adapt = None
+            if 'adaptrespfile' in kwargs:
+                y_adapt = fileio.load(kwargs.pop('adaptrespfile'))
+                if len(y_adapt.shape) == 1:
+                    y_adapt = y_adapt[:, np.newaxis]
+            else:
+                y_adapt = None
         
-        if 'adaptcovfile' in kwargs:
-            X_adapt = fileio.load(kwargs.pop('adaptcovfile'))
+        if 'adaptcov' in kwargs:
+            X_adapt = kwargs.pop('adaptcov')
             Phi_adapt = create_poly_basis(X_adapt, self._model_order)
         else:
-            Phi_adapt = None
-        
-        if 'adaptvargroupfile' in kwargs: 
-            var_groups_adapt_file = kwargs.pop('adaptvargroupfile')
-            if var_groups_adapt_file.endswith('.pkl'):
-                var_groups_ad = pd.read_pickle(var_groups_adapt_file)
+            if 'adaptcovfile' in kwargs:
+                X_adapt = fileio.load(kwargs.pop('adaptcovfile'))
+                Phi_adapt = create_poly_basis(X_adapt, self._model_order)
             else:
-                var_groups_ad = np.loadtxt(var_groups_adapt_file)
+                Phi_adapt = None
+        
+        if 'adaptvargroup' in kwargs:
+            var_groups_ad = kwargs.pop('adaptvargroup')
         else:
-            var_groups_ad = None
-            
+            if 'adaptvargroupfile' in kwargs: 
+                var_groups_adapt_file = kwargs.pop('adaptvargroupfile')
+                if var_groups_adapt_file.endswith('.pkl'):
+                    var_groups_ad = pd.read_pickle(var_groups_adapt_file)
+                else:
+                    var_groups_ad = np.loadtxt(var_groups_adapt_file)
+            else:
+                var_groups_ad = None
         
         if y_adapt is None:
             yhat, s2 = self.blr.predict(theta, Phi, y, Phis, 
