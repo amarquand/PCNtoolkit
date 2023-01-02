@@ -24,4 +24,5 @@ setup(name='pcntoolkit',
           'theano==1.0.5',
           'arviz==0.11.0'
       ],
+      python_requires='<3.10',
       zip_safe=False)
