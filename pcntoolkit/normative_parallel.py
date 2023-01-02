@@ -899,7 +899,7 @@ def bashwrap_nm(processing_dir,
     
     # add in optional arguments. 
     for k in kwargs:
-        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+        job_call = [job_call[0] + ' ' + k + '=' + str(kwargs[k])]
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:
