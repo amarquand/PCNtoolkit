@@ -25,4 +25,5 @@ RUN ln -s /opt/conda/lib/python3.10/site-packages/pcntoolkit /opt/ptk
 RUN chmod 755 /opt/ptk/normative.py
 RUN chmod 755 /opt/ptk/normative_parallel.py
 RUN chmod 755 /opt/ptk/trendsurf.py
+RUN echo "export PATH=${PATH}:/opt/ptk" >> ~/.bashrc
 RUN rm -rf PCNtoolkit-dev dev.zip
