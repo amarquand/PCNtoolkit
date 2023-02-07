@@ -1,4 +1,4 @@
-#!/.../anaconda/bin/python/
+#!/opt/conda/bin/python
 
 # -----------------------------------------------------------------------------
 # Run parallel normative modelling.
