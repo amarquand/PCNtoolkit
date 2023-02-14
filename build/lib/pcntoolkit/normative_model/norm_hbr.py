@@ -101,17 +101,14 @@ class NormHBR(NormBase):
                 self.configs['random_sigma'] = kwargs.pop('random_noise','False') == 'True'
             if 'random_slope' in kwargs.keys():
                 print("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
-                self.configs['random_slope_mu'] = kwargs.pop('random_slope','False') == 'True'
+                self.configs['random_intercept_mu'] = kwargs.pop('random_slope','False') == 'True'
             ##### End Deprecations 
 
-
-        ## Default parameters
         self.configs['linear_mu'] = kwargs.pop('linear_mu','True') == 'True'
         self.configs['random_intercept_mu'] = kwargs.pop('random_intercept_mu','True') == 'True'
         self.configs['random_slope_mu'] = kwargs.pop('random_slope_mu','True') == 'True'
         self.configs['random_sigma'] = kwargs.pop('random_sigma','True') == 'True'
-        ## End default parameters
-
+        
         self.hbr = HBR(self.configs)
 
     @property
