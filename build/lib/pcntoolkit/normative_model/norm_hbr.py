@@ -104,7 +104,11 @@ class NormHBR(NormBase):
                 self.configs['random_intercept_mu'] = kwargs.pop('random_slope','False') == 'True'
             ##### End Deprecations 
 
-
+        self.configs['linear_mu'] = kwargs.pop('linear_mu','True') == 'True'
+        self.configs['random_intercept_mu'] = kwargs.pop('random_intercept_mu','True') == 'True'
+        self.configs['random_slope_mu'] = kwargs.pop('random_slope_mu','True') == 'True'
+        self.configs['random_sigma'] = kwargs.pop('random_sigma','True') == 'True'
+        
         self.hbr = HBR(self.configs)
 
     @property
