@@ -199,8 +199,6 @@ class NormHBR(NormBase):
         self.configs['random_slope_mu'] = kwargs.pop('random_slope_mu','True') == 'True'
         self.configs['random_sigma'] = kwargs.pop('random_sigma','True') == 'True'
         self.configs['centered_sigma'] = kwargs.pop('centered_sigma','True') == 'True'
-        self.configs['centered_slope_mu'] = kwargs.pop('centered_slope_mu','True') == 'True'
-        self.configs['centered_intercept_mu'] = kwargs.pop('centered_intercept_mu','True') == 'True'
         ## End default parameters
 
         self.hbr = HBR(self.configs)
