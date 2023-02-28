@@ -1094,10 +1094,29 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
 
 class scaler:
     
-    def __init__(self, scaler_type='standardize', tail=0.01):
+    def __init__(self, scaler_type='standardize', tail=0.05, 
+                 adjust_outliers=True):
+        
+        """ 
+        A class for rescaling data using either standardization or minmax 
+        normalization.
+        
+        :param scaler_type: String that decides the type of scaler including 
+            1) 'standardize' for standardizing data, 2) 'minmax' for minmax normalization
+            in range of [0,1], and 3) 'robminmax' for robust (to outliers) minmax 
+            normalization.The default is 'standardize'.
+        :param tail: Is a decimal in range [0,1] that decides the tails of
+            distribution for finding robust min and max in 'robminmax' 
+            normalization. The defualt is 0.05.
+        :param adjust_outliers: Boolean that decides whether to adjust the 
+            outliers in 'robminmax' normalization or not. If True the outliers 
+            values are truncated to 0 or 1. The defauls is True.
+        
+        """
         
         self.scaler_type = scaler_type
         self.tail = tail
+        self.adjust_outliers = adjust_outliers
         
         if self.scaler_type not in ['standardize', 'minmax', 'robminmax']:
              raise ValueError("Undifined scaler type!")  
@@ -1122,7 +1141,7 @@ class scaler:
                 self.max[i] = np.median(np.sort(X[:,i])[-int(np.round(X.shape[0] * self.tail)):])   
                 
                 
-    def transform(self, X, adjust_outliers=False):
+    def transform(self, X):
         
         if self.scaler_type == 'standardize':
             
@@ -1132,7 +1151,7 @@ class scaler:
             
             X = (X - self.min) / (self.max - self.min)
             
-            if adjust_outliers:
+            if self.adjust_outliers:
                 
                 X[X < 0] = 0
                 X[X > 1] = 1
@@ -1154,7 +1173,7 @@ class scaler:
                 X = X * (self.max[index] - self.min[index]) + self.min[index]
         return X
     
-    def fit_transform(self, X, adjust_outliers=False):
+    def fit_transform(self, X):
         
         if self.scaler_type == 'standardize':
             
@@ -1179,7 +1198,7 @@ class scaler:
             
             X = (X - self.min) / (self.max - self.min)
             
-            if adjust_outliers:             
+            if self.adjust_outliers:             
                 X[X < 0] = 0
                 X[X > 1] = 1
         
