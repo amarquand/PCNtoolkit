@@ -1,14 +1,13 @@
-import theano.tensor
-from pymc3.distributions import Continuous, draw_values, generate_samples
-import theano.tensor as tt
+import aesara.tensor
+from pymc.distributions import Continuous, draw_values, generate_samples
+import aesara.tensor as tt
 import numpy as np
-from pymc3.distributions.dist_math import bound
+from pymc.distributions.dist_math import bound
 import scipy.special as spp
-from theano import as_op
-from theano.gof.fg import NullType
-from theano.gof.op import Op
-from theano.gof.graph import Apply
-from theano.gradient import grad_not_implemented
+
+from aesara.graph.op import Op
+from aesara.graph import Apply
+from aesara.gradient import grad_not_implemented
 
 """
 @author: Stijn de Boer (AuguB)
@@ -19,11 +18,11 @@ See: Jones et al. (2009), Sinh-Arcsinh distributions.
 
 class K(Op):
     """
-    Modified Bessel function of the second kind, theano implementation
+    Modified Bessel function of the second kind, aesara implementation
     """
     def make_node(self, p, x):
-        p = theano.tensor.as_tensor_variable(p, 'floatX')
-        x = theano.tensor.as_tensor_variable(x, 'floatX')
+        p = aesara.tensor.as_tensor_variable(p, 'floatX')
+        x = aesara.tensor.as_tensor_variable(x, 'floatX')
         return Apply(self, [p,x], [p.type()])
 
     def perform(self, node, inputs, output_storage, params=None):
@@ -124,8 +123,8 @@ class SHASH(Continuous):
             combs = spp.comb(r, i)
             flip = np.power(-1, i)
             ex = np.exp((r - 2 * i) * self.epsilon / self.delta)
-            # This is the reason we can not sample delta/kurtosis using NUTS; the gradient of P is unknown to pymc3
-            # TODO write a class that inherits theano.Op and do the gradient in there :)
+            # This is the reason we can not sample delta/kurtosis using NUTS; the gradient of P is unknown to pymc
+            # TODO write a class that inherits aesara.Op and do the gradient in there :)
             p = self.P((r - 2 * i) / self.delta)
             acc += combs * flip * ex * p
         return frac1 * acc
