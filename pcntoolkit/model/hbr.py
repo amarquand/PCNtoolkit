@@ -421,7 +421,6 @@ class Prior:
         self.shape = shape
         self.has_random_effect = True if len(shape)>1 else False
         # TODO
-        print(self.has_random_effect)
         self.distmap = {'normal': pm.Normal,
                    'hnormal': pm.HalfNormal,
                    'gamma': pm.Gamma,
