@@ -72,3 +72,9 @@ version 0.26
 - Added support for web portal
 - Provided a wrapper for blr to use transfer() functionality 
 - Also streamlined tutorials (PCNtoolkit-demo), so that all tutorials run with this version
+
+version 0.27
+- Configured more sensible default options for HBR
+- Fixed a translation problem between the previous naming convention for HBR models (only Gaussian models) and the current naming (also SHASH models)
+- Minor updates to fix synchronisation problems in PCNportal (related to the HBR updates above)
+- Added configuration files for containerisation with Docker
