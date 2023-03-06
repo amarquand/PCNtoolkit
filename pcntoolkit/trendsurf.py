@@ -1,4 +1,4 @@
-#!/Users/andre/sfw/anaconda3/bin/python
+#!/opt/conda/bin/python
 
 # ------------------------------------------------------------------------------
 #  Usage:

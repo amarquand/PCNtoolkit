@@ -173,8 +173,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         pb = ParamBuilder(model, X, y, batch_effects, trace, configs)
 
         if configs['likelihood'] == 'Normal':
-            mu = pb.make_param("mu").get_samples(pb)
-            sigma = pb.make_param("sigma").get_samples(pb)
+            mu = pb.make_param("mu", mu_slope_mu_params = (0.,10.), 
+                               sigma_slope_mu_params = (5.,), 
+                               mu_intercept_mu_params=(0.,10.), 
+                               sigma_intercept_mu_params = (5.,)).get_samples(pb)
+            sigma = pb.make_param("sigma", mu_sigma_params = (10., 5.),
+                                  sigma_sigma_params = (5.,)).get_samples(pb)
             sigma_plus = pm.math.log(1+pm.math.exp(sigma))
             y_like = pm.Normal('y_like',mu=mu, sigma=sigma_plus, observed=y)
 
@@ -530,7 +534,8 @@ class ParamBuilder:
             slope_parameterization = self.make_param(f'slope_{name}', dim=[self.feature_num], **kwargs)
             intercept_parameterization = self.make_param(f'intercept_{name}', **kwargs)
             return LinearParameterization(name=name, dim=dim, 
-                                    slope_parameterization=slope_parameterization, intercept_parameterization=intercept_parameterization,
+                                    slope_parameterization=slope_parameterization, 
+                                    intercept_parameterization=intercept_parameterization,
                                     pb=self, 
                                     **kwargs)
         
