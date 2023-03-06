@@ -63,3 +63,5 @@ Temporary Items
 # IDE 
 .vscode
 
+build
+pcntoolkit.egg-info
