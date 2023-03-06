@@ -226,4 +226,4 @@ class NormNP(NormBase):
         y_sigma_84 = y_sigma_84.cpu().numpy() * (self.scaler.data_max_ - self.scaler.data_min_)
         sigma_al = y_hat - y_hat_84
         return y_hat.squeeze(), (y_sigma**2 + sigma_al**2).squeeze() #, z_context[0].cpu().numpy(), z_context[1].cpu().numpy()
-    
+        

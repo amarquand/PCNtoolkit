@@ -1,4 +1,4 @@
-#!/.../anaconda/bin/python/
+#!/opt/conda/bin/python
 
 # -----------------------------------------------------------------------------
 # Run parallel normative modelling.
@@ -88,8 +88,17 @@ def execute_nm(processing_dir,
     :param testrespfile_path: Full path to a .txt file that contains all test features
     :param log_path: Path for saving log files
     :param binary: If True uses binary format for response file otherwise it is text
+    :param interactive: If False (default) the user should manually 
+                        rerun the failed jobs or collect the results.
+                        If 'auto' the job status are checked until all 
+                        jobs are completed then the failed jobs are rerun
+                        and the results are automaticallu collectted.
+                        Using 'query' is similar to 'auto' unless it
+                        asks for user verification thius is immune to 
+                        endless loop in the case of bugs in the code.
 
-    written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
+    written by (primarily) T Wolfers, (adapted) SM Kia
+    The documentation is adapated by S Rutherford.
     '''
     
     if normative_path is None:
@@ -899,7 +908,7 @@ def bashwrap_nm(processing_dir,
     
     # add in optional arguments. 
     for k in kwargs:
-        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+        job_call = [job_call[0] + ' ' + k + '=' + str(kwargs[k])]
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:

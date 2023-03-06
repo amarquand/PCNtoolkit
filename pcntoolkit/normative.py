@@ -1,4 +1,4 @@
-#!/Users/andre/sfw/anaconda3/bin/python
+#!/opt/conda/bin/python
 
 # ------------------------------------------------------------------------------
 #  Usage:
@@ -1032,11 +1032,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
                 
-        # Creates a file for every job succesfully completed (for tracking failed jobs).
-        if count_jobsdone==True:
-            done_path = os.path.join(log_path, str(job_id)+".jobsdone")
-            Path(done_path).touch()
-
+        
    
     if testresp is None:
         save_results(respfile, Yhat, S2, maskvol, outputsuffix=outputsuffix)
@@ -1069,7 +1065,17 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         save_results(respfile, Yhat, S2, maskvol, Z=Z, results=results,
                      outputsuffix=outputsuffix)
         
+        # Creates a file for every job succesfully completed (for tracking failed jobs).
+        if count_jobsdone==True:
+            done_path = os.path.join(log_path, str(job_id)+".jobsdone")
+            Path(done_path).touch()
+        
         return (Yhat, S2, Z)
+    
+    # Creates a file for every job succesfully completed (for tracking failed jobs).
+    if count_jobsdone==True:
+        done_path = os.path.join(log_path, str(job_id)+".jobsdone")
+        Path(done_path).touch()
 
 
 def extend(covfile, respfile, maskfile=None, **kwargs):

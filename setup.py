@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pcntoolkit',
-      version='0.26',
+      version='0.27',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',
@@ -12,7 +12,7 @@ setup(name='pcntoolkit',
           'argparse',
           'nibabel>=2.5.1',
           'six',
-          'sklearn', 
+          'scikit-learn', 
           'bspline',
           'matplotlib',
           'numpy>=1.19.5,<1.23',
@@ -24,4 +24,5 @@ setup(name='pcntoolkit',
           'theano==1.0.5',
           'arviz==0.11.0'
       ],
+      #python_requires='<3.10',
       zip_safe=False)

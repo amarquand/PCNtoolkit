@@ -77,4 +77,3 @@ def np_loss(y_hat, y_hat_84, y, z_all, z_context):
             0.16 * F.binary_cross_entropy(torch.squeeze(y_hat_84[idx2,:]), torch.mean(y[idx2,:],dim=1), reduction="sum")
     KLD = kl_div_gaussians(z_all[0], z_all[1], z_context[0], z_context[1])
     return BCE + KLD + BCE84
-
