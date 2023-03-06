@@ -63,3 +63,8 @@ Temporary Items
 # IDE 
 .vscode
 
+# build folder 
+build
+
+# egg
+pcntoolkit.egg-info
