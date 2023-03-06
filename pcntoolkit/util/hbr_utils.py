@@ -7,7 +7,7 @@ import scipy.special as spp
 import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
-import pymc3 as pm
+import pymc as pm
 from pcntoolkit.model.SHASH import *
 from pcntoolkit.model.hbr import bspline_transform
 

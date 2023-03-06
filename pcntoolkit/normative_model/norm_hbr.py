@@ -122,36 +122,36 @@ class NormHBR(NormBase):
 
         self.configs = dict()
         # inputs
-        self.configs['trbefile'] = kwargs.pop('trbefile', None)
-        self.configs['tsbefile'] = kwargs.pop('tsbefile', None)
+        self.configs['trbefile'] = kwargs.get('trbefile', None)
+        self.configs['tsbefile'] = kwargs.get('tsbefile', None)
         # Model settings
-        self.configs['type'] = kwargs.pop('model_type', 'linear')
-        self.configs['random_noise'] = kwargs.pop('random_noise', 'True') == 'True'
-        self.configs['likelihood'] = kwargs.pop('likelihood', 'Normal')
+        self.configs['type'] = kwargs.get('model_type', 'linear')
+        self.configs['random_noise'] = kwargs.get('random_noise', 'True') == 'True'
+        self.configs['likelihood'] = kwargs.get('likelihood', 'Normal')
         # sampler settings
-        self.configs['n_samples'] = int(kwargs.pop('n_samples', '1000'))
-        self.configs['n_tuning'] = int(kwargs.pop('n_tuning', '500'))
-        self.configs['n_chains'] = int(kwargs.pop('n_chains', '1'))
-        self.configs['sampler'] = kwargs.pop('sampler', 'NUTS')
-        self.configs['target_accept'] = float(kwargs.pop('target_accept', '0.8'))
-        self.configs['init'] = kwargs.pop('init', 'jitter+adapt_diag')
-        self.configs['cores'] = int(kwargs.pop('cores', '1'))
+        self.configs['n_samples'] = int(kwargs.get('n_samples', '1000'))
+        self.configs['n_tuning'] = int(kwargs.get('n_tuning', '500'))
+        self.configs['n_chains'] = int(kwargs.get('n_chains', '1'))
+        self.configs['sampler'] = kwargs.get('sampler', 'NUTS')
+        self.configs['target_accept'] = float(kwargs.get('target_accept', '0.8'))
+        self.configs['init'] = kwargs.get('init', 'jitter+adapt_diag')
+        self.configs['cores'] = int(kwargs.get('cores', '1'))
         # model transfer setting
-        self.configs['freedom'] = int(kwargs.pop('freedom', '1'))
+        self.configs['freedom'] = int(kwargs.get('freedom', '1'))
         self.configs['transferred'] = False
         # deprecated settings
-        self.configs['skewed_likelihood'] = kwargs.pop('skewed_likelihood', 'False') == 'True'
+        self.configs['skewed_likelihood'] = kwargs.get('skewed_likelihood', 'False') == 'True'
         # misc
-        self.configs['pred_type'] = kwargs.pop('pred_type', 'single')
+        self.configs['pred_type'] = kwargs.get('pred_type', 'single')
 
         if self.configs['type'] == 'bspline':
-            self.configs['order'] = int(kwargs.pop('order', '3'))
-            self.configs['nknots'] = int(kwargs.pop('nknots', '5'))
+            self.configs['order'] = int(kwargs.get('order', '3'))
+            self.configs['nknots'] = int(kwargs.get('nknots', '5'))
         elif self.configs['type'] == 'polynomial':
-            self.configs['order'] = int(kwargs.pop('order', '3'))
+            self.configs['order'] = int(kwargs.get('order', '3'))
         elif self.configs['type'] == 'nn':
-            self.configs['nn_hidden_neuron_num'] = int(kwargs.pop('nn_hidden_neuron_num', '2'))
-            self.configs['nn_hidden_layers_num'] = int(kwargs.pop('nn_hidden_layers_num', '2'))
+            self.configs['nn_hidden_neuron_num'] = int(kwargs.get('nn_hidden_neuron_num', '2'))
+            self.configs['nn_hidden_layers_num'] = int(kwargs.get('nn_hidden_layers_num', '2'))
             if self.configs['nn_hidden_layers_num'] > 2:
                 raise ValueError("Using " + str(self.configs['nn_hidden_layers_num']) \
                                  + " layers was not implemented. The number of " \
@@ -165,40 +165,41 @@ class NormHBR(NormBase):
         if self.configs['type'] in ['bspline', 'polynomial', 'linear']:
 
             for p in ['mu', 'sigma', 'epsilon', 'delta']:
-                self.configs[f'linear_{p}'] = kwargs.pop(f'linear_{p}', 'False') == 'True'
+                self.configs[f'linear_{p}'] = kwargs.get(f'linear_{p}', 'False') == 'True'
 
                 ######## Deprecations (remove in later version)
                 if f'{p}_linear' in kwargs.keys():
                     print(f'The keyword \'{p}_linear\' is deprecated. It is now automatically replaced with \'linear_{p}\'')
-                    self.configs[f'linear_{p}'] = kwargs.pop(f'{p}_linear', 'False') == 'True'
+                    self.configs[f'linear_{p}'] = kwargs.get(f'{p}_linear', 'False') == 'True'
                 ##### End Deprecations 
 
                 for c in ['centered','random']:
-                    self.configs[f'{c}_{p}'] = kwargs.pop(f'{c}_{p}', 'False') == 'True'
+                    self.configs[f'{c}_{p}'] = kwargs.get(f'{c}_{p}', 'False') == 'True'
                     for sp in ['slope','intercept']:
-                        self.configs[f'{c}_{sp}_{p}'] = kwargs.pop(f'{c}_{sp}_{p}', 'False') == 'True'
+                        self.configs[f'{c}_{sp}_{p}'] = kwargs.get(f'{c}_{sp}_{p}', 'False') == 'True'
 
             ######## Deprecations (remove in later version)
             if self.configs['linear_sigma']:
                 if 'random_noise' in kwargs.keys():
                     print("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_intercept_sigma\', because sigma is linear")
-                    self.configs['random_intercept_sigma'] = kwargs.pop('random_noise','True') == 'True'
+                    self.configs['random_intercept_sigma'] = kwargs.get('random_noise','True') == 'True'
             elif 'random_noise' in kwargs.keys():
                 print("The keyword \'random_noise\' is deprecated. It is now automatically replaced with \'random_sigma\', because sigma is fixed")
-                self.configs['random_sigma'] = kwargs.pop('random_noise','True') == 'True'
+                self.configs['random_sigma'] = kwargs.get('random_noise','True') == 'True'
             if 'random_slope' in kwargs.keys():
                 print("The keyword \'random_slope\' is deprecated. It is now automatically replaced with \'random_intercept_mu\'")
-                self.configs['random_slope_mu'] = kwargs.pop('random_slope','True') == 'True'
+                self.configs['random_slope_mu'] = kwargs.get('random_slope','True') == 'True'
             ##### End Deprecations 
 
 
         ## Default parameters
-        self.configs['linear_mu'] = kwargs.pop('linear_mu','True') == 'True'
-        self.configs['random_mu'] = kwargs.pop('random_mu','True') == 'True'
-        self.configs['random_intercept_mu'] = kwargs.pop('random_intercept_mu','True') == 'True'
-        self.configs['random_slope_mu'] = kwargs.pop('random_slope_mu','True') == 'True'
-        self.configs['random_sigma'] = kwargs.pop('random_sigma','True') == 'True'
-        self.configs['centered_sigma'] = kwargs.pop('centered_sigma','True') == 'True'
+        self.configs['linear_mu'] = kwargs.get('linear_mu','True') == 'True'
+        print(self.configs['linear_mu'])
+        self.configs['random_mu'] = kwargs.get('random_mu','True') == 'True'
+        self.configs['random_intercept_mu'] = kwargs.get('random_intercept_mu','True') == 'True'
+        self.configs['random_slope_mu'] = kwargs.get('random_slope_mu','True') == 'True'
+        self.configs['random_sigma'] = kwargs.get('random_sigma','True') == 'True'
+        self.configs['centered_sigma'] = kwargs.get('centered_sigma','True') == 'True'
         ## End default parameters
 
         self.hbr = HBR(self.configs)
@@ -213,7 +214,7 @@ class NormHBR(NormBase):
 
     def estimate(self, X, y, **kwargs):
 
-        trbefile = kwargs.pop('trbefile', None)
+        trbefile = kwargs.get('trbefile', None)
         if trbefile is not None:
             batch_effects_train = fileio.load(trbefile)
         else:
@@ -226,7 +227,7 @@ class NormHBR(NormBase):
 
     def predict(self, Xs, X=None, Y=None, **kwargs):
 
-        tsbefile = kwargs.pop('tsbefile', None)
+        tsbefile = kwargs.get('tsbefile', None)
         if tsbefile is not None:
             batch_effects_test = fileio.load(tsbefile)
         else:
