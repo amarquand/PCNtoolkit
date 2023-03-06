@@ -74,7 +74,7 @@ version 0.26
 - Also streamlined tutorials (PCNtoolkit-demo), so that all tutorials run with this version
 
 version 0.27
-- Configured more sensible default options for HBR
+- Configured more sensible default options for HBR (random slope and intercept for mu and random intercept for sigma)
 - Fixed a translation problem between the previous naming convention for HBR models (only Gaussian models) and the current naming (also SHASH models)
 - Minor updates to fix synchronisation problems in PCNportal (related to the HBR updates above)
 - Added configuration files for containerisation with Docker
