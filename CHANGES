@@ -5,7 +5,6 @@ version 0.16
 Minor bug fix relative to release 0.15. Fixed a transpose operation that would cause normative.py to fail in certain cases
 
 version 0.17:
-Changes:
 - New syntax for functions related to parallelization (python path is automatically generated)
 - Support for slurm clusters has been added
 - Updates to hierarchical Bayesian regression (different priors for intercepts and noise) for improved transfer
@@ -15,12 +14,10 @@ Changes:
 - Updated sphinx documentation
 
 version 0.18
-Changes:
 - addition of cross-validation functionality for HBR
 - minor bug fixes for HBR
 
 version 0.19
-Changes:
 - separate standardization of responses and covariates
 - standardization is no longer on by default
 - new standardization methods
@@ -28,7 +25,6 @@ Changes:
 - minor bugs resolved (CV with HBR)
 
 version 0.20
-Changes:
 - Major code refactoring
 - Requirements updated for python 3.8.3
 - Updates to documentation and Integrations with Read the Docs
@@ -54,7 +50,6 @@ Some minor updates and bug fixes:
 - other minor bug fixes related to cross-validation (computation of error metrics), import problems and calibration statistics
 
 version 0.23
-Changes:
 - SHASH functionality for HBR added
 - Bug fix for normative model predict() function
 
@@ -72,3 +67,9 @@ version 0.26
 - Added support for web portal
 - Provided a wrapper for blr to use transfer() functionality 
 - Also streamlined tutorials (PCNtoolkit-demo), so that all tutorials run with this version
+
+version 0.27
+- Configured more sensible default options for HBR (random slope and intercept for mu and random intercept for sigma)
+- Fixed a translation problem between the previous naming convention for HBR models (only Gaussian models) and the current naming (also SHASH models)
+- Minor updates to fix synchronisation problems in PCNportal (related to the HBR updates above)
+- Added configuration files for containerisation with Docker

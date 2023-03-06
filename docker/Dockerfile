@@ -20,10 +20,20 @@ RUN unzip dev.zip
 RUN pip install scikit-learn
 RUN cd PCNtoolkit-dev; pip install . ; cd ..
 
-# Add command line links and clean up 
+# Add command line links
 RUN ln -s /opt/conda/lib/python3.10/site-packages/pcntoolkit /opt/ptk
 RUN chmod 755 /opt/ptk/normative.py
 RUN chmod 755 /opt/ptk/normative_parallel.py
 RUN chmod 755 /opt/ptk/trendsurf.py
 RUN echo "export PATH=${PATH}:/opt/ptk" >> ~/.bashrc
+
+# clean up
 RUN rm -rf PCNtoolkit-dev dev.zip
+RUN conda clean -a 
+RUN pip cache purge
+RUN apt-get clean
+
+# execute entrypoint
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT [ "./entrypoint.sh" ]
