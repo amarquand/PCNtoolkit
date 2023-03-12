@@ -432,15 +432,13 @@ class Prior:
         """This creates a pymc distribution. If there is a trace, the distribution is fitted to the trace. If there isn't a trace, the prior is parameterized by the values in (params)"""
         with pb.model as m:
             if (pb.trace is not None) and (not self.has_random_effect):
-                int_dist = from_posterior(param=self.name,
+                self.dist = from_posterior(param=self.name,
                                             samples=pb.trace[self.name],
                                             distribution=dist,
                                             freedom=pb.configs['freedom'])
-                self.dist = int_dist.reshape(self.shape)
             else:
-                shape_prod = int(np.product(np.array(self.shape)))
                 print(f"{self.name} \tdist = {dist}")
-                self.dist = self.distmap[dist](self.name, *params, shape=shape_prod)
+                self.dist = self.distmap[dist](self.name, *params, shape=self.shape)
 
     def __getitem__(self, idx):
         """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
@@ -448,7 +446,7 @@ class Prior:
         if self.has_random_effect:
             return self.dist[idx]
         else:
-            return self.dist
+            return self.dist[tuple([0]*len(self.shape))]
 
 
 class ParamBuilder:
@@ -464,14 +462,14 @@ class ParamBuilder:
         :param model: model to attach all the distributions to
         :param X: Covariates
         :param y: IDPs
-        :param batch_effects: I guess this speaks for itself
+        :param batch_effects: array of batch effects
         :param trace:  idem
         :param configs: idem
         """
         self.model = model
         self.X = X
         self.y = y
-        self.batch_effects = batch_effects
+        self.batch_effects = batch_effects.astype(np.int16)
         self.trace = trace
         self.configs = configs
 
@@ -483,10 +481,14 @@ class ParamBuilder:
         self.batch_effects_size = []
         self.all_idx = []
         for i in range(self.batch_effects_num):
-            # Count the unique values for each batch effect
-            self.batch_effects_size.append(len(np.unique(self.batch_effects[:, i])))
+            # # Count the unique values for each batch effect
+            # self.batch_effects_size.append(len(np.unique(self.batch_effects[:, i])))
+            # # Store the unique values for each batch effect
+            # self.all_idx.append(np.int16(np.unique(self.batch_effects[:, i])))
+
+            self.batch_effects_size.append(self.batch_effects[:,i].max()+1)
             # Store the unique values for each batch effect
-            self.all_idx.append(np.int16(np.unique(self.batch_effects[:, i])))
+            self.all_idx.append(np.arange(self.batch_effects_size[-1]+1))
         # Make a cartesian product of all the unique values of each batch effect
         self.be_idx = list(product(*self.all_idx))
 

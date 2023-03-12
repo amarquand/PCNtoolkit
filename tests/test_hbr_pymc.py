@@ -15,19 +15,27 @@ def main():
     # Optional
     fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv')
     fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv')
-    icbm_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
-    icbm_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
+    # fcon_tr = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv')
+    # fcon_te = pd.read_csv('https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv')
     idps = ['rh_MeanThickness_thickness']
 
     X_train = (fcon_tr['age']/100).to_numpy(dtype=float)
     Y_train = fcon_tr[idps].to_numpy(dtype=float)
 
+
+    # fcon_tr.loc[fcon_tr['sitenum'] == 21,'sitenum'] = 13
+    # fcon_te.loc[fcon_te['sitenum'] == 21,'sitenum'] = 13
+
     # configure batch effects for site and sex
-    # batch_effects_train = fcon_tr[['sitenum','sex']].to_numpy(dtype=int)
+    batch_effects_train = fcon_tr[['sitenum','sex']].to_numpy(dtype=int)
+
 
     # or only site
-    batch_effects_train = fcon_tr[['sitenum']].to_numpy(dtype=int)
-        
+    # batch_effects_train = fcon_tr[['sitenum']].to_numpy(dtype=int)
+
+    print(np.unique(batch_effects_train,axis=0))     # Here we see there are missing sites
+
+
     with open('X_train.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_train), file)
     with open('Y_train.pkl', 'wb') as file:
@@ -38,8 +46,8 @@ def main():
 
     X_test = (fcon_te['age']/100).to_numpy(dtype=float)
     Y_test = fcon_te[idps].to_numpy(dtype=float)
-    #batch_effects_test = fcon_te[['sitenum','sex']].to_numpy(dtype=int)
-    batch_effects_test = fcon_te[['sitenum']].to_numpy(dtype=int)
+    batch_effects_test = fcon_te[['sitenum','sex']].to_numpy(dtype=int)
+    # batch_effects_test = fcon_te[['sitenum']].to_numpy(dtype=int)
         
     with open('X_test.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_test), file)
@@ -75,11 +83,11 @@ def main():
                        tsbefile=tsbefile, 
                        trbefile=trbefile, 
                        alg='hbr', 
-                       linear_mu='False',
-                       random_mu='False',
-                       random_intercept_mu='False',
-                       random_slope_mu='False',
-                       random_sigma='False',
+                       linear_mu='True',
+                       random_mu='True',
+                       random_intercept_mu='True',
+                       random_slope_mu='True',
+                       random_sigma='True',
                        log_path=log_dir, 
                        binary=True,
                        output_path=output_path, 
