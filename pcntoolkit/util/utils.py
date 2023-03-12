@@ -1322,10 +1322,10 @@ def get_package_versions():
     versions['Python'] = platform.python_version()
     
     try: 
-        import aesara
-        versions['Aesara'] = aesara.__version__
+        import pytensor
+        versions['pytensor'] = pytensor.__version__
     except:
-        versions['Aesara'] = ''
+        versions['pytensor'] = ''
         
     try: 
         import pymc
@@ -1450,7 +1450,7 @@ def yes_or_no(question):
 
 
 
-#====== This is stuff used for the SHASH distributions, but using numpy (not pymc or aesara) ===
+#====== This is stuff used for the SHASH distributions, but using numpy (not pymc or pytensor) ===
 
 def K(p, x):
     return np.array(spp.kv(p, x))
