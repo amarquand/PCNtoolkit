@@ -194,7 +194,6 @@ class NormHBR(NormBase):
 
         ## Default parameters
         self.configs['linear_mu'] = kwargs.get('linear_mu','True') == 'True'
-        print(self.configs['linear_mu'])
         self.configs['random_mu'] = kwargs.get('random_mu','True') == 'True'
         self.configs['random_intercept_mu'] = kwargs.get('random_intercept_mu','True') == 'True'
         self.configs['random_slope_mu'] = kwargs.get('random_slope_mu','True') == 'True'

@@ -14,7 +14,7 @@ from tkinter.font import names
 
 import numpy as np
 import pymc as pm
-import aesara
+import pytensor
 
 from itertools import product
 from functools import reduce
@@ -158,10 +158,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
     :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it. 
     :return:
     """
-    X = aesara.shared(X)
-    X = aesara.tensor.cast(X,'floatX')
-    y = aesara.shared(y)
-    y = aesara.tensor.cast(y,'floatX')
+    X = pytensor.shared(X)
+    X = pytensor.tensor.cast(X,'floatX')
+    y = pytensor.shared(y)
+    y = pytensor.tensor.cast(y,'floatX')
 
     with pm.Model() as model:
 
@@ -297,9 +297,9 @@ class HBR:
             X = self.transform_X(X)
             modeler = self.get_modeler()
             with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True)
-            pred_mean = ppc['y_like'].mean(axis=0)
-            pred_var = ppc['y_like'].var(axis=0)
+                ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
+            pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
+            pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
 
         return pred_mean, pred_var
 
@@ -334,9 +334,9 @@ class HBR:
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, trace=self.trace):
-            ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True)
-        pred_mean = ppc['y_like'].mean(axis=0)
-        pred_var = ppc['y_like'].var(axis=0)
+            ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
+        pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
+        pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
 
         return pred_mean, pred_var
 
@@ -349,9 +349,9 @@ class HBR:
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-            ppc = pm.sample_posterior_predictive(self.trace, samples=samples, progressbar=True)
+            ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
 
-        generated_samples = np.reshape(ppc['y_like'].squeeze().T, [X.shape[0] * samples, 1])
+        generated_samples = np.reshape(ppc.posterior_predictive['y_like'].squeeze().T, [X.shape[0] * samples, 1])
         X = np.repeat(X, samples)
         if len(X.shape) == 1:
             X = np.expand_dims(X, axis=1)
@@ -420,7 +420,6 @@ class Prior:
         self.name = name
         self.shape = shape
         self.has_random_effect = True if len(shape)>1 else False
-        # TODO
         self.distmap = {'normal': pm.Normal,
                    'hnormal': pm.HalfNormal,
                    'gamma': pm.Gamma,
@@ -439,21 +438,15 @@ class Prior:
                                             freedom=pb.configs['freedom'])
                 self.dist = int_dist.reshape(self.shape)
             else:
-                # shape_prod = int(np.product(np.array(self.shape)))
-                print(self.name)
-                print(f"dist={dist}")
-                print(params)
-                self.dist = self.distmap[dist](self.name, *params, shape=self.shape)
-                # self.dist = int_dist.reshape(self.shape)
-                print(type(self.dist))
+                shape_prod = int(np.product(np.array(self.shape)))
+                print(f"{self.name} \tdist = {dist}")
+                self.dist = self.distmap[dist](self.name, *params, shape=shape_prod)
 
     def __getitem__(self, idx):
         """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
         assert self.dist is not None, "Distribution not initialized"
         if self.has_random_effect:
-            # TODO 
-            # return self.dist[idx]
-            return self.dist
+            return self.dist[idx]
         else:
             return self.dist
 
@@ -539,9 +532,9 @@ class Parameterization:
     def get_samples(self, pb):
 
         with pb.model:
-            samples = aesara.tensor.zeros([pb.n_ys, *self.dim])
+            samples = pytensor.tensor.zeros([pb.n_ys, *self.dim])
             for be, idx in pb.be_idx_tups:
-                samples = aesara.tensor.set_subtensor(samples[idx], self.dist[be])
+                samples = pytensor.tensor.set_subtensor(samples[idx], self.dist[be])
         return samples
 
 
@@ -614,11 +607,11 @@ class LinearParameterization(Parameterization):
 
     def get_samples(self, pb:ParamBuilder):
         with pb.model:
-            samples = aesara.tensor.zeros([pb.n_ys, *self.dim])
+            samples = pytensor.tensor.zeros([pb.n_ys, *self.dim])
             for be, idx in pb.be_idx_tups:
-                dot = aesara.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be]).T
+                dot = pytensor.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be]).T
                 intercept = self.intercept_parameterization.dist[be]
-                samples = aesara.tensor.set_subtensor(samples[idx,:],dot+intercept)
+                samples = pytensor.tensor.set_subtensor(samples[idx,:],dot+intercept)
         return samples
 
 
@@ -747,7 +740,7 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                                       mu_prior_intercept * sigma_prior_intercept)
 
         # Build the neural network and estimate y_hat:
-        y_hat = aesara.tensor.zeros(y.shape)
+        y_hat = pytensor.tensor.zeros(y.shape)
         for be in be_idx:
             # Find the indices corresponding to 'group be':
             a = []
@@ -755,14 +748,14 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 a.append(batch_effects[:, i] == b)
             idx = reduce(np.logical_and, a).nonzero()
             if idx[0].shape[0] != 0:
-                act_1 = pm.math.tanh(aesara.tensor.dot(X[idx, :], weights_in_1[be]))
+                act_1 = pm.math.tanh(pytensor.tensor.dot(X[idx, :], weights_in_1[be]))
                 if n_layers == 2:
-                    act_2 = pm.math.tanh(aesara.tensor.dot(act_1, weights_1_2[be]))
-                    y_hat = aesara.tensor.set_subtensor(y_hat[idx, 0],
-                                                        intercepts[be] + aesara.tensor.dot(act_2, weights_2_out[be]))
+                    act_2 = pm.math.tanh(pytensor.tensor.dot(act_1, weights_1_2[be]))
+                    y_hat = pytensor.tensor.set_subtensor(y_hat[idx, 0],
+                                                        intercepts[be] + pytensor.tensor.dot(act_2, weights_2_out[be]))
                 else:
-                    y_hat = aesara.tensor.set_subtensor(y_hat[idx, 0],
-                                                        intercepts[be] + aesara.tensor.dot(act_1, weights_2_out[be]))
+                    y_hat = pytensor.tensor.set_subtensor(y_hat[idx, 0],
+                                                        intercepts[be] + pytensor.tensor.dot(act_1, weights_2_out[be]))
 
         # If we want to estimate varying noise terms across groups:
         if configs['random_noise']:
@@ -843,20 +836,20 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 #                      intercepts_offset_noise * sigma_prior_intercept_noise)
 
                 # Build the neural network and estimate the sigma_y:
-                sigma_y = aesara.tensor.zeros(y.shape)
+                sigma_y = pytensor.tensor.zeros(y.shape)
                 for be in be_idx:
                     a = []
                     for i, b in enumerate(be):
                         a.append(batch_effects[:, i] == b)
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        act_1_noise = pm.math.sigmoid(aesara.tensor.dot(X[idx, :], weights_in_1_noise[be]))
+                        act_1_noise = pm.math.sigmoid(pytensor.tensor.dot(X[idx, :], weights_in_1_noise[be]))
                         if n_layers == 2:
-                            act_2_noise = pm.math.sigmoid(aesara.tensor.dot(act_1_noise, weights_1_2_noise[be]))
-                            temp = pm.math.log1pexp(aesara.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
+                            act_2_noise = pm.math.sigmoid(pytensor.tensor.dot(act_1_noise, weights_1_2_noise[be]))
+                            temp = pm.math.log1pexp(pytensor.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
                         else:
-                            temp = pm.math.log1pexp(aesara.tensor.dot(act_1_noise, weights_2_out_noise[be])) + 1e-5
-                        sigma_y = aesara.tensor.set_subtensor(sigma_y[idx, 0], temp)
+                            temp = pm.math.log1pexp(pytensor.tensor.dot(act_1_noise, weights_2_out_noise[be])) + 1e-5
+                        sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], temp)
 
             else:  # homoscedastic noise:
                 if trace is not None:  # Used for transferring the priors
@@ -865,14 +858,14 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
 
-                sigma_y = aesara.tensor.zeros(y.shape)
+                sigma_y = pytensor.tensor.zeros(y.shape)
                 for be in be_idx:
                     a = []
                     for i, b in enumerate(be):
                         a.append(batch_effects[:, i] == b)
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        sigma_y = aesara.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise[be])
+                        sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise[be])
 
         else:  # do not allow for random noise terms across groups:
             if trace is not None:  # Used for transferring the priors
@@ -880,25 +873,25 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2 * upper_bound)
             else:
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
-            sigma_y = aesara.tensor.zeros(y.shape)
+            sigma_y = pytensor.tensor.zeros(y.shape)
             for be in be_idx:
                 a = []
                 for i, b in enumerate(be):
                     a.append(batch_effects[:, i] == b)
                 idx = reduce(np.logical_and, a).nonzero()
                 if idx[0].shape[0] != 0:
-                    sigma_y = aesara.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise)
+                    sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise)
 
         if configs['skewed_likelihood']:
             skewness = pm.Uniform('skewness', lower=-10, upper=10, shape=(batch_effects_size))
-            alpha = aesara.tensor.zeros(y.shape)
+            alpha = pytensor.tensor.zeros(y.shape)
             for be in be_idx:
                 a = []
                 for i, b in enumerate(be):
                     a.append(batch_effects[:, i] == b)
                 idx = reduce(np.logical_and, a).nonzero()
                 if idx[0].shape[0] != 0:
-                    alpha = aesara.tensor.set_subtensor(alpha[idx, 0], skewness[be])
+                    alpha = pytensor.tensor.set_subtensor(alpha[idx, 0], skewness[be])
         else:
             alpha = 0  # symmetrical normal distribution
 
