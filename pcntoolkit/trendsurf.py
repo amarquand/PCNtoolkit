@@ -134,7 +134,7 @@ def get_args(*args):
 
 
 def estimate(filename, maskfile, basis, ard=False, outputall=False,
-             saveoutput=True):
+             saveoutput=True, **kwargs):
     """ Estimate a trend surface model
 
     This will estimate a trend surface model, independently for each subject.
@@ -166,7 +166,10 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
               * explainedvar - explained variance
               * rmse - standardised mean squared error
     """
-
+    
+    # parse arguments
+    optim = kwargs.get('optimizer', 'powell')
+    
     # load data
     print("Processing data in", filename)
     Y, X, mask = load_data(filename, maskfile)
@@ -204,7 +207,7 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
     for i in range(0, N):
         print("Estimating model ", i+1, "of", N)
         breg = BLR()
-        hyp[i, :] = breg.estimate(hyp0, Phi, Yz[:, i])
+        hyp[i, :] = breg.estimate(hyp0, Phi, Yz[:, i], optimizer=optim)
         m[i, :] = breg.m
         nlZ[i] = breg.nlZ
 
