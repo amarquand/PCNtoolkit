@@ -916,7 +916,7 @@ def bashwrap_nm(processing_dir,
                              job_call + ["\n"])
 
     # changes permissoins for bash.sh file
-    os.chmod(processing_dir + job_name, 0o700)
+    os.chmod(processing_dir + job_name, 0o770)
 
 
 def qsub_nm(job_path,
@@ -1121,7 +1121,7 @@ def sbatchwrap_nm(processing_dir,
                              job_call + ["\n"] + [sbatch_exit])
 
     # changes permissoins for bash.sh file
-    os.chmod(processing_dir + job_name, 0o700)
+    os.chmod(processing_dir + job_name, 0o770)
 
 def sbatch_nm(job_path,
               log_path):
