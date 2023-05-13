@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
 import pymc as pm
-from pcntoolkit.model.SHASH import *
+# from pcntoolkit.model.SHASH import *
 from pcntoolkit.model.hbr import bspline_transform
 
 """
@@ -41,25 +41,25 @@ def get_single_zscores(X, Y, Z, model, sample):
 
 def z_score(Y, params, likelihood = "Normal"):
     """Get the z-scores of Y, given likelihood parameters"""
-    if likelihood.startswith('SHASH'):
-        mu = params['mu']
-        sigma = params['sigma']
-        epsilon = params['epsilon']
-        delta = params['delta']
-        if likelihood == "SHASHo":
-            SHASH = (Y-mu)/sigma
-            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
-        elif likelihood == "SHASHo2":
-            sigma_d = sigma/delta
-            SHASH = (Y-mu)/sigma_d
-            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
-        elif likelihood == "SHASHb":
-            true_mu = m(epsilon, delta, 1)
-            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-            SHASH_c = ((Y-mu)/sigma)
-            SHASH = SHASH_c * true_sigma + true_mu
-            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == 'Normal':
+    # if likelihood.startswith('SHASH'):
+    #     mu = params['mu']
+    #     sigma = params['sigma']
+    #     epsilon = params['epsilon']
+    #     delta = params['delta']
+    #     if likelihood == "SHASHo":
+    #         SHASH = (Y-mu)/sigma
+    #         Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+    #     elif likelihood == "SHASHo2":
+    #         sigma_d = sigma/delta
+    #         SHASH = (Y-mu)/sigma_d
+    #         Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+    #     elif likelihood == "SHASHb":
+    #         true_mu = m(epsilon, delta, 1)
+    #         true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
+    #         SHASH_c = ((Y-mu)/sigma)
+    #         SHASH = SHASH_c * true_sigma + true_mu
+    #         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+    if likelihood == 'Normal':
         Z = (Y-params['mu'])/params['sigma']
     else:
         exit("Unsupported likelihood")
@@ -98,22 +98,22 @@ def get_single_quantiles(synthetic_X, z_scores, model, be, sample):
 
 def quantile(zs, params, likelihood = "Normal"):
     """Get the zs'th quantiles given likelihood parameters"""
-    if likelihood.startswith('SHASH'):
-        mu = params['mu']
-        sigma = params['sigma']
-        epsilon = params['epsilon']
-        delta = params['delta']
-        if likelihood == "SHASHo":
-            quantiles = S_inv(zs,epsilon,delta)*sigma + mu
-        elif likelihood == "SHASHo2":
-            sigma_d = sigma/delta
-            quantiles = S_inv(zs,epsilon,delta)*sigma_d + mu
-        elif likelihood == "SHASHb":
-            true_mu = m(epsilon, delta, 1)
-            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-            SHASH_c = ((S_inv(zs,epsilon,delta)-true_mu)/true_sigma)
-            quantiles = SHASH_c *sigma + mu
-    elif likelihood == 'Normal':
+    # if likelihood.startswith('SHASH'):
+    #     mu = params['mu']
+    #     sigma = params['sigma']
+    #     epsilon = params['epsilon']
+    #     delta = params['delta']
+    #     if likelihood == "SHASHo":
+    #         quantiles = S_inv(zs,epsilon,delta)*sigma + mu
+    #     elif likelihood == "SHASHo2":
+    #         sigma_d = sigma/delta
+    #         quantiles = S_inv(zs,epsilon,delta)*sigma_d + mu
+    #     elif likelihood == "SHASHb":
+    #         true_mu = m(epsilon, delta, 1)
+    #         true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
+    #         SHASH_c = ((S_inv(zs,epsilon,delta)-true_mu)/true_sigma)
+    #         quantiles = SHASH_c *sigma + mu
+    if likelihood == 'Normal':
         quantiles = zs*params['sigma'] + params['mu']
     else:
         exit("Unsupported likelihood")
@@ -157,8 +157,8 @@ def forward(X, Z, model, sample):
 
     if likelihood == 'Normal':
         parameter_list = ['mu','sigma']
-    elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
-        parameter_list = ['mu','sigma','epsilon','delta']
+    # elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
+    #     parameter_list = ['mu','sigma','epsilon','delta']
     else:
         exit("Unsupported likelihood")
 
