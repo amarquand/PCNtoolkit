@@ -27,6 +27,7 @@ from bspline import splinelab
 from util.utils import create_poly_basis
 from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
+from pcntoolkit.model.SHASH import *
 
 def bspline_fit(X, order, nknots):
     feature_num = X.shape[1]
@@ -173,6 +174,24 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
             mu = pb.make_param("mu", mu_slope_mu_params = (0.,2.), sigma_slope_mu_params = (5.,), mu_intercept_mu_params=(0.,5.), sigma_intercept_mu_params = (5.,)).get_samples(pb)
             sigma = pb.make_param("sigma", mu_sigma_params = (0., 2.), sigma_sigma_params = (5.,), apply_softplus=True).get_samples(pb)
             y_like = pm.Normal('y_like',mu=mu, sigma=sigma, observed=y)
+
+        elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
+                    """
+                    Comment 1
+                    The current parameterizations are tuned towards standardized in- and output data. 
+                    It is possible to adjust the priors through the XXX_dist and XXX_params kwargs, like here we do with epsilon_params.
+                    Supported distributions are listed in the Prior class. 
+                    Comment 2
+                    Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. 
+                    For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
+                    """
+                    SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
+
+                    mu =            pb.make_param("mu",         slope_mu_params = (0.,3.), mu_intercept_mu_params=(0.,1.), sigma_intercept_mu_params = (2.,)).get_samples(pb)
+                    sigma =         pb.make_param("sigma",      sigma_params = (1.,2.),    slope_sigma_params=(0.,2.),     intercept_sigma_params = (0., 2.), apply_softplus=True).get_samples(pb)
+                    epsilon =       pb.make_param("epsilon",    epsilon_params = (0.,1.),  slope_epsilon_params=(0.,1.), intercept_epsilon_params=(0.,1)).get_samples(pb)
+                    delta =         pb.make_param("delta",      delta_params=(1.5,2.),     slope_delta_params=(0.,2),   intercept_delta_params=(0., 2), apply_softplus=True).get_samples(pb)
+                    y_like = SHASH_map[configs['likelihood']]('y_like', mu=mu, sigma=sigma, epsilon=epsilon, delta=delta, observed = y)
 
     return model
 
