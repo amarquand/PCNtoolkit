@@ -4,6 +4,7 @@ import pcntoolkit as ptk
 import numpy as np
 import pickle
 from matplotlib import pyplot as plt
+import arviz as az
 processing_dir = "HBR_demo/"    # replace with a path to your working directory
 if not os.path.isdir(processing_dir):
     os.makedirs(processing_dir)
@@ -22,19 +23,21 @@ def main():
     X_train = (fcon_tr['age']/100).to_numpy(dtype=float)
     Y_train = fcon_tr[idps].to_numpy(dtype=float)
 
-
     # fcon_tr.loc[fcon_tr['sitenum'] == 21,'sitenum'] = 13
     # fcon_te.loc[fcon_te['sitenum'] == 21,'sitenum'] = 13
 
+# 
     # configure batch effects for site and sex
     batch_effects_train = fcon_tr[['sitenum','sex']].to_numpy(dtype=int)
-
 
     # or only site
     # batch_effects_train = fcon_tr[['sitenum']].to_numpy(dtype=int)
 
-    print(np.unique(batch_effects_train,axis=0))     # Here we see there are missing sites
-
+    max_sitenum = 15
+    tr_idxs = batch_effects_train[:,0] < max_sitenum
+    X_train = X_train[tr_idxs]
+    Y_train = Y_train[tr_idxs]
+    batch_effects_train=batch_effects_train[tr_idxs]
 
     with open('X_train.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_train), file)
@@ -48,6 +51,11 @@ def main():
     Y_test = fcon_te[idps].to_numpy(dtype=float)
     batch_effects_test = fcon_te[['sitenum','sex']].to_numpy(dtype=int)
     # batch_effects_test = fcon_te[['sitenum']].to_numpy(dtype=int)
+
+    te_idxs = batch_effects_test[:,0] < max_sitenum
+    X_test = X_test[te_idxs]
+    Y_test = Y_test[te_idxs]
+    batch_effects_test=batch_effects_test[te_idxs]
         
     with open('X_test.pkl', 'wb') as file:
         pickle.dump(pd.DataFrame(X_test), file)
@@ -78,23 +86,30 @@ def main():
         os.mkdir(log_dir)
 
     outputsuffix = '_estimate'      # a string to name the output files, of use only to you, so adapt it for your needs.`
-    ptk.normative.estimate(covfile=covfile, 
+    nm = ptk.normative.fit(covfile=covfile, 
                        respfile=respfile,
-                       tsbefile=tsbefile, 
                        trbefile=trbefile, 
                        alg='hbr', 
                        linear_mu='True',
-                       random_mu='True',
                        random_intercept_mu='True',
-                       random_slope_mu='True',
+                       centered_intercept_mu='False',
+                       random_slope_mu='False',
                        random_sigma='True',
                        log_path=log_dir, 
-                       binary=True,
+                       binary='True',
+                       n_samples=1000,
+                       n_tuning=1000,
+                       n_chains=4,
+                       cores=4,
+                       target_accept=0.99,
+                       init='jitter+adapt_diag',
+                       inscaler='standardize',
+                       outscaler='standardize',
                        output_path=output_path, 
-                       testcov= testcovfile_path,
-                       testresp = testrespfile_path,
                        outputsuffix=outputsuffix, 
                        savemodel=True)
+    az.plot_trace(nm.hbr.trace)
+    plt.show()
     
 if __name__=="__main__":
     main()
