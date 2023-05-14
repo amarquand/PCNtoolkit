@@ -22,7 +22,7 @@ filterwarnings('ignore')
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/preclineu/seykia/temp/tests/'  # Specift a working directory
+working_dir = '/home/stijn/temp/tests/'  # Specift a working directory
                                                     # to save data and results.
 
 simulation_method = 'linear' # 'non-linear'
