@@ -62,7 +62,7 @@ for model_type in model_types:
         for j in range(n_grps):
             plt.scatter(temp_X[temp_be==j,], temp_Y[temp_be==j,], 
                         label='Group' + str(j))
-            plt.plot(temp_X[temp_be==j,], temp_yhat[[temp_be==j,]])
+            plt.plot(temp_X[temp_be==j,], temp_yhat[temp_be==j,])
             plt.fill_between(temp_X[temp_be==j,], temp_yhat[temp_be==j,] - 
                              1.96 * np.sqrt(temp_s2[temp_be==j,]), 
                              temp_yhat[temp_be==j,] + 
