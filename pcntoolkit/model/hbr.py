@@ -15,6 +15,7 @@ from tkinter.font import names
 import numpy as np
 import pymc as pm
 import pytensor
+import arviz as az
 
 from itertools import product
 from functools import reduce
@@ -24,9 +25,8 @@ from scipy import stats
 import bspline
 from bspline import splinelab
 
-from util.utils import create_poly_basis
-from util.utils import expand_all
-from pcntoolkit.util.utils import cartesian_product
+from pcntoolkit.util.utils import expand_all, cartesian_product
+
 
 def bspline_fit(X, order, nknots):
     feature_num = X.shape[1]
@@ -70,9 +70,7 @@ def create_poly_basis(X, order):
     for d in range(1, order + 1):
         Phi[:, colid] = X ** d
         colid += D
-
     return Phi
-
 
 def from_posterior(param, samples, distribution=None, half=False, freedom=1):
     if len(samples.shape) > 1:
@@ -147,14 +145,14 @@ def from_posterior(param, samples, distribution=None, half=False, freedom=1):
             return pm.InverseGamma(param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape)
 
 
-def hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
+def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     """
     :param X: [N×P] array of clinical covariates
     :param y: [N×1] array of neuroimaging measures
     :param batch_effects: [N×M] array of batch effects
     :param batch_effects_size: [b1, b2,...,bM] List of counts of unique values of batch effects
     :param configs:
-    :param trace:
+    :param idata:
     :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it. 
     :return:
     """
@@ -185,7 +183,7 @@ class HBR:
     Basic usage::
 
         model = HBR(configs)
-        trace = model.estimate(X, y, batch_effects)
+        idata = model.estimate(X, y, batch_effects)
         ys,s2 = model.predict(X, batch_effects)
 
     where the variables are
@@ -273,13 +271,16 @@ class HBR:
             self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         X = self.transform_X(X)
         modeler = self.get_modeler()
+        print(X)
+        print(y)
+        print(batch_effects)
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
-            self.trace = pm.sample(draws=self.configs['n_samples'],
+            self.idata = pm.sample(draws=self.configs['n_samples'],
                                    tune=self.configs['n_tuning'],
                                    chains=self.configs['n_chains'],
                                    init=self.configs['init'], n_init=500000,
                                    cores=self.configs['cores'])
-        return self.trace
+        return self.idata
 
     def predict(self, X, batch_effects, pred='single'):
         """ Function to make predictions from the model """
@@ -292,7 +293,7 @@ class HBR:
             X = self.transform_X(X)
             modeler = self.get_modeler()
             with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
+                ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
             pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
             pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
 
@@ -310,14 +311,14 @@ class HBR:
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size,
-                     self.configs, trace=self.trace) as m:
-            self.trace = pm.sample(self.configs['n_samples'],
+                     self.configs, idata=self.idata) as m:
+            self.idata = pm.sample(self.configs['n_samples'],
                                    tune=self.configs['n_tuning'],
                                    chains=self.configs['n_chains'],
                                    target_accept=self.configs['target_accept'],
                                    init=self.configs['init'], n_init=50000,
                                    cores=self.configs['cores'])
-        return self.trace
+        return self.idata
 
     def predict_on_new_site(self, X, batch_effects):
         """ Function to make predictions from the model """
@@ -328,8 +329,10 @@ class HBR:
 
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, trace=self.trace):
-            ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
+        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, idata=self.idata):
+            # TODO need to adapt this to new pymc
+
+            ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
         pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
         pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
 
@@ -344,7 +347,8 @@ class HBR:
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-            ppc = pm.sample_posterior_predictive(self.trace, progressbar=True)
+            # TODO need to adapt this to new pymc
+            ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
 
         generated_samples = np.reshape(ppc.posterior_predictive['y_like'].squeeze().T, [X.shape[0] * samples, 1])
         X = np.repeat(X, samples)
@@ -356,7 +360,7 @@ class HBR:
 
         return X, batch_effects, generated_samples
 
-    def sample_prior_predictive(self, X, batch_effects, samples, trace=None):
+    def sample_prior_predictive(self, X, batch_effects, samples, idata=None):
         """ Function to sample from prior predictive distribution """
 
         if len(X.shape) == 1:
@@ -373,7 +377,9 @@ class HBR:
 
         if self.model_type == 'linear':
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
-                     trace):
+                     idata):
+                # TODO need to adapt this to new pymc
+
                 ppc = pm.sample_prior_predictive(samples=samples)
         return ppc
 
@@ -386,7 +392,7 @@ class HBR:
             self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         modeler = self.get_modeler()
         X = self.transform_X(X)
-        return modeler(X, y, batch_effects, self.batch_effects_size, self.configs, self.trace)
+        return modeler(X, y, batch_effects, self.batch_effects_size, self.configs, self.idata)
 
     def create_dummy_inputs(self, covariate_ranges = [[0.1,0.9,0.01]]):
 
@@ -460,14 +466,14 @@ class ParamBuilder:
         :param X: Covariates
         :param y: IDPs
         :param batch_effects: array of batch effects
-        :param trace:  idem
+        :param idata:  idem
         :param configs: idem
         """
         self.model = None # Needs to be set later, because coords need to be passed at construction of Model
         self.X = X
         self.y = y
         self.batch_effects = batch_effects.astype(np.int16)
-        self.trace = trace
+        self.idata:az.InferenceData = idata
         self.configs = configs
 
         self.y_shape = y.shape.eval()
@@ -504,6 +510,46 @@ class ParamBuilder:
                 return NonCentralRandomFixedParameterization(name=name, pb=self,**kwargs)
         else:
             return FixedParameterization(name=name, pb=self,**kwargs)
+
+class Prior:
+    """
+    A wrapper class for a PyMC distribution. 
+    - creates a fitted distribution from the idata, if one is present
+    - overloads the __getitem__ function with something that switches between indexing or not, based on the shape
+    """
+    def __init__(self, name, dist, params, pb, shape=(1,)) -> None:
+        self.dist = None
+        self.name = name
+        self.shape = shape
+        self.has_random_effect = True if len(shape)>1 else False
+        self.distmap = {'normal': pm.Normal,
+                   'hnormal': pm.HalfNormal,
+                   'gamma': pm.Gamma,
+                   'uniform': pm.Uniform,
+                   'igamma': pm.InverseGamma,
+                   'hcauchy': pm.HalfCauchy}
+        self.make_dist(dist, params, pb)
+ 
+    def make_dist(self, dist, params, pb:ParamBuilder):
+        """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
+        with pb.model as m:
+            if (pb.idata is not None) and (not self.has_random_effect):
+                self.dist = from_posterior(param=self.name,
+                                            samples=pb.idata.posterior[self.name],
+                                            distribution=dist,
+                                            freedom=pb.configs['freedom'])
+            else:
+                print(f"{self.name} \tdist = {dist}")
+                self.dist = self.distmap[dist](self.name, *params, shape=self.shape)
+
+    def __getitem__(self, idx):
+        """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
+        assert self.dist is not None, "Distribution not initialized"
+        if self.has_random_effect:
+            return self.dist[idx]
+        else:
+            return self.dist[tuple([0]*len(self.shape))]
+
 
 
 class Parameterization:
@@ -621,7 +667,8 @@ def get_design_matrix(X, nm, basis="linear"):
     return Phi
 
 
-def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
+
+def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     n_hidden = configs['nn_hidden_neuron_num']
     n_layers = configs['nn_hidden_layers_num']
     feature_num = X.shape[1]
@@ -657,29 +704,29 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         X = pm.Data('X', X)
         y = pm.Data('y', y)
 
-        if trace is not None:  # Used when estimating/predicting on a new site
-            weights_in_1_grp = from_posterior('w_in_1_grp', trace['w_in_1_grp'],
+        if idata is not None:  # Used when estimating/predicting on a new site
+            weights_in_1_grp = from_posterior('w_in_1_grp', idata['w_in_1_grp'],
                                               distribution='normal', freedom=configs['freedom'])
 
-            weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', trace['w_in_1_grp_sd'],
+            weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', idata['w_in_1_grp_sd'],
                                                  distribution='hcauchy', freedom=configs['freedom'])
 
             if n_layers == 2:
-                weights_1_2_grp = from_posterior('w_1_2_grp', trace['w_1_2_grp'],
+                weights_1_2_grp = from_posterior('w_1_2_grp', idata['w_1_2_grp'],
                                                  distribution='normal', freedom=configs['freedom'])
 
-                weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', trace['w_1_2_grp_sd'],
+                weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', idata['w_1_2_grp_sd'],
                                                     distribution='hcauchy', freedom=configs['freedom'])
 
-            weights_2_out_grp = from_posterior('w_2_out_grp', trace['w_2_out_grp'],
+            weights_2_out_grp = from_posterior('w_2_out_grp', idata['w_2_out_grp'],
                                                distribution='normal', freedom=configs['freedom'])
 
-            weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', trace['w_2_out_grp_sd'],
+            weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', idata['w_2_out_grp_sd'],
                                                   distribution='hcauchy', freedom=configs['freedom'])
 
-            mu_prior_intercept = from_posterior('mu_prior_intercept', trace['mu_prior_intercept'],
+            mu_prior_intercept = from_posterior('mu_prior_intercept', idata['mu_prior_intercept'],
                                                 distribution='normal', freedom=configs['freedom'])
-            sigma_prior_intercept = from_posterior('sigma_prior_intercept', trace['sigma_prior_intercept'],
+            sigma_prior_intercept = from_posterior('sigma_prior_intercept', idata['sigma_prior_intercept'],
                                                    distribution='hcauchy', freedom=configs['freedom'])
 
         else:
@@ -755,30 +802,30 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
         # If we want to estimate varying noise terms across groups:
         if configs['random_noise']:
             if configs['hetero_noise']:
-                if trace is not None:  # # Used when estimating/predicting on a new site
+                if idata is not None:  # # Used when estimating/predicting on a new site
                     weights_in_1_grp_noise = from_posterior('w_in_1_grp_noise',
-                                                            trace['w_in_1_grp_noise'],
+                                                            idata['w_in_1_grp_noise'],
                                                             distribution='normal', freedom=configs['freedom'])
 
                     weights_in_1_grp_sd_noise = from_posterior('w_in_1_grp_sd_noise',
-                                                               trace['w_in_1_grp_sd_noise'],
+                                                               idata['w_in_1_grp_sd_noise'],
                                                                distribution='hcauchy', freedom=configs['freedom'])
 
                     if n_layers == 2:
                         weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise',
-                                                               trace['w_1_2_grp_noise'],
+                                                               idata['w_1_2_grp_noise'],
                                                                distribution='normal', freedom=configs['freedom'])
 
                         weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise',
-                                                                  trace['w_1_2_grp_sd_noise'],
+                                                                  idata['w_1_2_grp_sd_noise'],
                                                                   distribution='hcauchy', freedom=configs['freedom'])
 
                     weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise',
-                                                             trace['w_2_out_grp_noise'],
+                                                             idata['w_2_out_grp_noise'],
                                                              distribution='normal', freedom=configs['freedom'])
 
                     weights_2_out_grp_sd_noise = from_posterior('w_2_out_grp_sd_noise',
-                                                                trace['w_2_out_grp_sd_noise'],
+                                                                idata['w_2_out_grp_sd_noise'],
                                                                 distribution='hcauchy', freedom=configs['freedom'])
 
                 else:
@@ -847,8 +894,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], temp)
 
             else:  # homoscedastic noise:
-                if trace is not None:  # Used for transferring the priors
-                    upper_bound = np.percentile(trace['sigma_noise'], 95)
+                if idata is not None:  # Used for transferring the priors
+                    upper_bound = np.percentile(idata['sigma_noise'], 95)
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2 * upper_bound, shape=(batch_effects_size))
                 else:
                     sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
@@ -863,8 +910,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, trace=None):
                         sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise[be])
 
         else:  # do not allow for random noise terms across groups:
-            if trace is not None:  # Used for transferring the priors
-                upper_bound = np.percentile(trace['sigma_noise'], 95)
+            if idata is not None:  # Used for transferring the priors
+                upper_bound = np.percentile(idata['sigma_noise'], 95)
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2 * upper_bound)
             else:
                 sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
