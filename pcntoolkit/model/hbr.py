@@ -275,7 +275,6 @@ class HBR:
         self.batch_effects_size = []
         for i in range(self.batch_effects_num):
             self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
-
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
@@ -481,14 +480,11 @@ class ParamBuilder:
         self.batch_effects_size = []
         self.all_idx = []
         for i in range(self.batch_effects_num):
-            # # Count the unique values for each batch effect
-            # self.batch_effects_size.append(len(np.unique(self.batch_effects[:, i])))
-            # # Store the unique values for each batch effect
-            # self.all_idx.append(np.int16(np.unique(self.batch_effects[:, i])))
-
-            self.batch_effects_size.append(self.batch_effects[:,i].max()+1)
+            # Count the unique values for each batch effect
+            self.batch_effects_size.append(len(np.unique(self.batch_effects[:, i])))
             # Store the unique values for each batch effect
-            self.all_idx.append(np.arange(self.batch_effects_size[-1]+1))
+            self.all_idx.append(np.int16(np.unique(self.batch_effects[:, i])))
+
         # Make a cartesian product of all the unique values of each batch effect
         self.be_idx = list(product(*self.all_idx))
 
