@@ -9,6 +9,8 @@ Created on Thu Jul 25 13:23:15 2019
 
 from __future__ import print_function
 from __future__ import division
+from collections import OrderedDict
+
 from ast import Param
 from tkinter.font import names
 
@@ -143,8 +145,7 @@ def from_posterior(param, samples, distribution=None, half=False, freedom=1):
             return pm.InverseGamma(param, alpha=freedom * alpha_fit, beta=freedom * beta_fit)
         else:
             return pm.InverseGamma(param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape)
-
-
+        
 def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     """
     :param X: [N×P] array of clinical covariates
@@ -160,21 +161,22 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     X = pytensor.tensor.cast(X,'floatX')
     y = pytensor.shared(y)
     y = pytensor.tensor.cast(y,'floatX')
+    
 
-    with pm.Model() as model:
+    # Make a param builder that will make the correct calls
+    pb = ParamBuilder(X, y, batch_effects, idata, configs)
 
-        # Make a param builder that will make the correct calls
-        pb = ParamBuilder(model, X, y, batch_effects, idata, configs)
+    with pm.Model(coords=pb.coords) as model:
+        pb.model=model
+        pb.batch_effect_indices = [pm.Data(pb.batch_effect_dim_names[i], pb.batch_effect_indices[i],mutable=True) for i in range(len(pb.batch_effect_indices))]
 
         if configs['likelihood'] == 'Normal':
-            mu = pb.make_param("mu", mu_slope_mu_params = (0.,10.), 
-                               sigma_slope_mu_params = (5.,), 
-                               mu_intercept_mu_params=(0.,10.), 
-                               sigma_intercept_mu_params = (5.,)).get_samples(pb)
-            sigma = pb.make_param("sigma", mu_sigma_params = (10., 5.),
-                                  sigma_sigma_params = (5.,)).get_samples(pb)
-            sigma_plus = pm.math.log(1+pm.math.exp(sigma))
-            y_like = pm.Normal('y_like',mu=mu, sigma=sigma_plus, observed=y)
+            mu = pb.make_param("mu", mu_slope_mu_params = (0.,5.), sigma_slope_mu_params = (5.,), mu_intercept_mu_params=(0.,5.), sigma_intercept_mu_params = (5.,)).get_samples(pb)
+            # print(f"{mu.shape.eval()=}")
+            sigma = pb.make_param("sigma", mu_sigma_params = (0., 2.), sigma_sigma_params = (5.,)).get_samples(pb)
+            # print(f"{sigma.shape.eval()=}")
+            sigma_plus = pm.Deterministic('sigma_plus', pm.math.log(1+pm.math.exp(sigma)))
+            y_like = pm.Normal('y_like', mu, sigma=sigma_plus, observed=y)
 
     return model
 
@@ -275,9 +277,6 @@ class HBR:
             self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        print(X)
-        print(y)
-        print(batch_effects)
         with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
             self.idata = pm.sample(draws=self.configs['n_samples'],
                                    tune=self.configs['n_tuning'],
@@ -297,9 +296,9 @@ class HBR:
             X = self.transform_X(X)
             modeler = self.get_modeler()
             with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-                ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
-            pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
-            pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
+                self.idata = pm.sample_posterior_predictive(trace = self.idata,  progressbar=True)
+            pred_mean = self.idata.posterior_predictive['y_like'].mean(axis=(0,1))
+            pred_var = self.idata.posterior_predictive['y_like'].var(axis=(0,1))
 
         return pred_mean, pred_var
 
@@ -333,12 +332,12 @@ class HBR:
 
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, idata=self.idata):
-            # TODO need to adapt this to new pymc
 
-            ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
-        pred_mean = ppc.posterior_predictive['y_like'].mean(axis=(0,1))
-        pred_var = ppc.posterior_predictive['y_like'].var(axis=(0,1))
+
+        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, idata=self.idata):
+            self.idata = pm.sample_posterior_predictive(self.idata, extend_inferencedata=True,  progressbar=True)
+        pred_mean = self.idata.posterior_predictive['y_like'].mean(axis=(0,1))
+        pred_var = self.idata.posterior_predictive['y_like'].var(axis=(0,1))
 
         return pred_mean, pred_var
 
@@ -382,10 +381,8 @@ class HBR:
         if self.model_type == 'linear':
             with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
                      idata):
-                # TODO need to adapt this to new pymc
-
-                ppc = pm.sample_prior_predictive(samples=samples)
-        return ppc
+                idata = pm.sample_prior_predictive(samples=samples)
+        return idata
 
     def get_model(self, X, y, batch_effects):
         X, y, batch_effects = expand_all(X, y, batch_effects)
@@ -414,6 +411,55 @@ class HBR:
 
         return X_dummy, batch_effects_dummy 
 
+class Prior:
+    """
+    A wrapper class for a PyMC distribution. 
+    - creates a fitted distribution from the idata, if one is present
+    - overloads the __getitem__ function with something that switches between indexing or not, based on the shape
+    """
+    def __init__(self, name, dist, params, pb, has_random_effect=False) -> None:
+        self.dist = None
+        self.name = name
+        self.has_random_effect = has_random_effect
+        self.distmap = {'normal': pm.Normal,
+                   'hnormal': pm.HalfNormal,
+                   'gamma': pm.Gamma,
+                   'uniform': pm.Uniform,
+                   'igamma': pm.InverseGamma,
+                   'hcauchy': pm.HalfCauchy,
+                   'hstudt':pm.HalfStudentT,
+                   'studt':pm.StudentT}
+        self.make_dist(dist, params, pb)
+ 
+    def make_dist(self, dist, params, pb):
+        """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
+        with pb.model as m:
+            # If self.name.startswith slope:
+            # use the basis functions dim
+            # Otherwise, use the empty dim
+            dim = 'basis_functions' if (self.name.startswith('slope') or self.name.startswith('offset_slope')) else 'empty'
+
+            if (pb.idata is not None):
+                samples = az.extract(pb.idata, var_names=self.name).to_numpy()
+                if not self.has_random_effect:
+                    samples = np.reshape(samples, (-1,))
+                self.dist = from_posterior(param=self.name,
+                                           samples = samples,
+                                            distribution=dist,
+                                            freedom=pb.configs['freedom'])
+            elif self.has_random_effect:
+                self.dist = self.distmap[dist](self.name, *params, dims=[*pb.batch_effect_dim_names, dim])
+            else:
+                self.dist = self.distmap[dist](self.name, *params, dims=dim)
+
+    def __getitem__(self, idx):
+        """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
+        assert self.dist is not None, "Distribution not initialized"
+        if self.has_random_effect:
+            return self.dist[idx]
+        else:
+            return self.dist
+
 class ParamBuilder:
     """
     A class that simplifies the construction of parameterizations. 
@@ -421,7 +467,7 @@ class ParamBuilder:
     It also contains a lot of decision logic for creating the parameterizations.
     """
 
-    def __init__(self, model, X, y, batch_effects, idata, configs):
+    def __init__(self, X, y, batch_effects, idata, configs):
         """
 
         :param model: model to attach all the distributions to
@@ -431,96 +477,49 @@ class ParamBuilder:
         :param idata:  idem
         :param configs: idem
         """
-        self.model = model
+        self.model = None # Needs to be set later, because coords need to be passed at construction of Model
         self.X = X
         self.y = y
         self.batch_effects = batch_effects.astype(np.int16)
         self.idata:az.InferenceData = idata
         self.configs = configs
 
-        self.feature_num = X.shape[1].eval().item()
         self.y_shape = y.shape.eval()
         self.n_ys = y.shape[0].eval().item()
         self.batch_effects_num = batch_effects.shape[1]
 
-        self.batch_effects_size = []
-        self.all_idx = []
+        self.batch_effect_dim_names = []
+        self.batch_effect_indices = []
+        self.coords = OrderedDict()
+
         for i in range(self.batch_effects_num):
-            # Count the unique values for each batch effect
-            self.batch_effects_size.append(len(np.unique(self.batch_effects[:, i])))
-            # Store the unique values for each batch effect
-            self.all_idx.append(np.int16(np.unique(self.batch_effects[:, i])))
+            batch_effect_dim_name = f"batch_effect_{i}"
+            self.batch_effect_dim_names.append(batch_effect_dim_name)
+            this_be_values, this_be_indices = np.unique(self.batch_effects[:,i], return_inverse=True)
+            self.coords[batch_effect_dim_name] = this_be_values
+            self.batch_effect_indices.append(this_be_indices)
+        self.coords['empty']=[0]
+        self.coords['basis_functions'] = [i for i in range(X.shape.eval()[1])]
 
-        # Make a cartesian product of all the unique values of each batch effect
-        self.be_idx = list(product(*self.all_idx))
 
-        # Make tuples of batch effects ID's and indices of datapoints with that specific combination of batch effects
-        self.be_idx_tups = []
-        for be in self.be_idx:
-            a = []
-            for i, b in enumerate(be):
-                a.append(self.batch_effects[:, i] == b)
-            idx = reduce(np.logical_and, a).nonzero()
-            if idx[0].shape[0] != 0:
-                self.be_idx_tups.append((be, idx))
-
-    def make_param(self, name, dim = (1,), **kwargs):
+    # TODO reinstigate the 'dim' keyword, for the slope parameters
+    def make_param(self, name, **kwargs):
         if self.configs.get(f'linear_{name}', False):
             # First make a slope and intercept, and use those to make a linear parameterization 
-            slope_parameterization = self.make_param(f'slope_{name}', dim=[self.feature_num], **kwargs)
+            slope_parameterization = self.make_param(f'slope_{name}',**kwargs)
             intercept_parameterization = self.make_param(f'intercept_{name}', **kwargs)
-            return LinearParameterization(name=name, dim=dim, 
+            return LinearParameterization(name=name,
                                     slope_parameterization=slope_parameterization, 
                                     intercept_parameterization=intercept_parameterization,
-                                    pb=self, 
                                     **kwargs)
         
         elif self.configs.get(f'random_{name}', False):
             if self.configs.get(f'centered_{name}', True):
-                return CentralRandomFixedParameterization(name=name, pb=self, dim=dim, **kwargs)
+                return CentralRandomFixedParameterization(name=name, pb=self,  **kwargs)
             else:
-                return NonCentralRandomFixedParameterization(name=name, pb=self, dim=dim, **kwargs)
+                return NonCentralRandomFixedParameterization(name=name, pb=self, **kwargs)
         else:
-            return FixedParameterization(name=name, dim=dim, pb=self,**kwargs)
-
-class Prior:
-    """
-    A wrapper class for a PyMC distribution. 
-    - creates a fitted distribution from the idata, if one is present
-    - overloads the __getitem__ function with something that switches between indexing or not, based on the shape
-    """
-    def __init__(self, name, dist, params, pb, shape=(1,)) -> None:
-        self.dist = None
-        self.name = name
-        self.shape = shape
-        self.has_random_effect = True if len(shape)>1 else False
-        self.distmap = {'normal': pm.Normal,
-                   'hnormal': pm.HalfNormal,
-                   'gamma': pm.Gamma,
-                   'uniform': pm.Uniform,
-                   'igamma': pm.InverseGamma,
-                   'hcauchy': pm.HalfCauchy}
-        self.make_dist(dist, params, pb)
- 
-    def make_dist(self, dist, params, pb:ParamBuilder):
-        """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
-        with pb.model as m:
-            if (pb.idata is not None) and (not self.has_random_effect):
-                self.dist = from_posterior(param=self.name,
-                                            samples=pb.idata.posterior[self.name],
-                                            distribution=dist,
-                                            freedom=pb.configs['freedom'])
-            else:
-                print(f"{self.name} \tdist = {dist}")
-                self.dist = self.distmap[dist](self.name, *params, shape=self.shape)
-
-    def __getitem__(self, idx):
-        """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
-        assert self.dist is not None, "Distribution not initialized"
-        if self.has_random_effect:
-            return self.dist[idx]
-        else:
-            return self.dist[tuple([0]*len(self.shape))]
+            return FixedParameterization(name=name, pb=self, **kwargs)
 
 
 
@@ -528,96 +527,108 @@ class Parameterization:
     """
     This is the top-level parameterization class from which all the other parameterizations inherit.
     """
-    def __init__(self, name, dim):
+    def __init__(self, name):
         self.name = name
-        self.dim = dim
         print(name, type(self))
 
     def get_samples(self, pb):
-
-        with pb.model:
-            samples = pytensor.tensor.zeros([pb.n_ys, *self.dim])
-            for be, idx in pb.be_idx_tups:
-                samples = pytensor.tensor.set_subtensor(samples[idx], self.dist[be])
-        return samples
-
+        pass
 
 class FixedParameterization(Parameterization):
     """
     A parameterization that takes a single value for all input. It does not depend on anything except its hyperparameters
     """
-    def __init__(self, name, dim, pb:ParamBuilder, **kwargs):
-        super().__init__(name, dim)
+    def __init__(self, name, pb:ParamBuilder,**kwargs):
+        super().__init__(name)
         dist = kwargs.get(f'{name}_dist','normal')
         params = kwargs.get(f'{name}_params',(0.,1.))
-        self.dist = Prior(name, dist, params, pb, shape = dim)
+        self.dist = Prior(name, dist, params, pb)
 
+    def get_samples(self, pb):
+        with pb.model:
+            return self.dist[0]
 
 class CentralRandomFixedParameterization(Parameterization):
     """
     A parameterization that is fixed for each batch effect. This is sampled in a central fashion;
     the values are sampled from normal distribution with a group mean and group variance 
     """
-    def __init__(self, name, dim, pb:ParamBuilder, **kwargs):
-        super().__init__(name, dim)
+    def __init__(self, name, pb:ParamBuilder, **kwargs):
+        super().__init__(name)
 
         # Normal distribution is default for mean
         mu_dist = kwargs.get(f'mu_{name}_dist','normal')
         mu_params = kwargs.get(f'mu_{name}_params',(0.,1.))
-        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb, shape = dim)
+        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb)
 
-        # HalfCauchy is default for sigma
-        sigma_dist = kwargs.get(f'sigma_{name}_dist','hcauchy')
+        # HalfStudent is default for sigma
+        sigma_dist = kwargs.get(f'sigma_{name}_dist','hnormal')
         sigma_params = kwargs.get(f'sigma_{name}_params',(1.,))
-        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb, shape = [*pb.batch_effects_size, *dim])
+        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb)
 
-        self.dist = pm.Normal(name=name, mu=mu_prior.dist, sigma=sigma_prior.dist, shape = [*pb.batch_effects_size, *dim])
-    
+        dim = 'basis_functions' if self.name.startswith('slope') else 'empty'
+        self.dist = pm.Normal(name=name, mu=mu_prior.dist, sigma=sigma_prior.dist, dims=[*pb.batch_effect_dim_names,dim])
+
+    def get_samples(self, pb:ParamBuilder):
+        with pb.model:
+            samples = self.dist[*pb.batch_effect_indices]
+            return samples
 
 class NonCentralRandomFixedParameterization(Parameterization):
     """
     A parameterization that is fixed for each batch effect. This is sampled in a non-central fashion;
     the values are a sum of a group mean and noise values scaled with a group scaling factor 
     """
-    def __init__(self, name,dim,  pb:ParamBuilder, **kwargs):
-        super().__init__(name, dim)
+    def __init__(self, name, pb:ParamBuilder, **kwargs):
+        super().__init__(name)
 
         # Normal distribution is default for mean
         mu_dist = kwargs.get(f'mu_{name}_dist','normal')
         mu_params = kwargs.get(f'mu_{name}_params',(0.,1.))
-        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb, shape = dim)
+        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb)
 
-        # HalfCauchy is default for sigma
-        sigma_dist = kwargs.get(f'sigma_{name}_dist','hcauchy')
+        # HalfStudent is default for sigma
+        sigma_dist = kwargs.get(f'sigma_{name}_dist','hnormal')
         sigma_params = kwargs.get(f'sigma_{name}_params',(1.,))
-        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb, shape = dim)
+        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb)
 
         # Normal is default for offset
         offset_dist = kwargs.get(f'offset_{name}_dist','normal')
         offset_params = kwargs.get(f'offset_{name}_params',(0.,1.))
-        offset_prior = Prior(f'offset_{name}',offset_dist, offset_params, pb, shape = [*pb.batch_effects_size, *dim])
+        offset_prior = Prior(f'offset_{name}',offset_dist, offset_params, pb, has_random_effect=True)
 
-        self.dist = pm.Deterministic(name=name, var=mu_prior.dist+sigma_prior.dist*offset_prior.dist)
+        dim = 'basis_functions' if self.name.startswith('slope') else 'empty'
+        self.dist = pm.Deterministic(name=name, var=mu_prior.dist+sigma_prior.dist*offset_prior.dist,dims=[*pb.batch_effect_dim_names,dim])
 
+
+    def get_samples(self, pb:ParamBuilder):
+        with pb.model:
+            # print(f"{self.dist.shape.eval()=}")
+            samples = self.dist[*pb.batch_effect_indices]
+            return samples
 
 class LinearParameterization(Parameterization):
     """
     A parameterization that can model a linear dependence on X. 
     """
-    def __init__(self, name, dim, slope_parameterization, intercept_parameterization, pb, **kwargs):
-        super().__init__( name, dim)
+    def __init__(self, name, slope_parameterization, intercept_parameterization,**kwargs):
+        super().__init__(name)
         self.slope_parameterization = slope_parameterization
         self.intercept_parameterization = intercept_parameterization
 
-    def get_samples(self, pb:ParamBuilder):
+    def get_samples(self, pb):
         with pb.model:
-            samples = pytensor.tensor.zeros([pb.n_ys, *self.dim])
-            for be, idx in pb.be_idx_tups:
-                dot = pytensor.tensor.dot(pb.X[idx,:], self.slope_parameterization.dist[be]).T
-                intercept = self.intercept_parameterization.dist[be]
-                samples = pytensor.tensor.set_subtensor(samples[idx,:],dot+intercept)
-        return samples
+            intc = self.intercept_parameterization.get_samples(pb)
+            slope_samples = self.slope_parameterization.get_samples(pb)
+            if pb.configs[f'random_slope_{self.name}']:
+                slope = pb.X*self.slope_parameterization.get_samples(pb)
+                slope = slope.sum(axis=-1)
+            else:
+                slope = pb.X@self.slope_parameterization.get_samples(pb)
 
+            samples = pm.math.flatten(intc) + pm.math.flatten(slope)
+            samples = samples.reshape((samples.shape[0],1))
+            return samples
 
 def get_design_matrix(X, nm, basis="linear"):
     if basis == "bspline":
@@ -627,7 +638,6 @@ def get_design_matrix(X, nm, basis="linear"):
     else:
         Phi = X
     return Phi
-
 
 
 def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
