@@ -32,22 +32,24 @@ from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
 from pcntoolkit.model.SHASH import *
 
+
 def bspline_fit(X, order, nknots):
     feature_num = X.shape[1]
     bsp_basis = []
 
     for i in range(feature_num):
-        minx = np.min(X[:,i])
-        maxx = np.max(X[:,i])
-        delta = maxx-minx
+        minx = np.min(X[:, i])
+        maxx = np.max(X[:, i])
+        delta = maxx - minx
         # Expand range by 20% (10% on both sides)
-        splinemin = minx-0.1*delta
-        splinemax = maxx+0.1*delta
+        splinemin = minx - 0.1 * delta
+        splinemax = maxx + 0.1 * delta
         knots = np.linspace(splinemin, splinemax, nknots)
         k = splinelab.augknt(knots, order)
         bsp_basis.append(bspline.Bspline(k, order))
 
     return bsp_basis
+
 
 def bspline_transform(X, bsp_basis):
     if type(bsp_basis) != list:
@@ -63,8 +65,9 @@ def bspline_transform(X, bsp_basis):
 
     return X_transformed
 
+
 def create_poly_basis(X, order):
-    """ compute a polynomial basis expansion of the specified order"""
+    """compute a polynomial basis expansion of the specified order"""
 
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
@@ -72,9 +75,10 @@ def create_poly_basis(X, order):
     Phi = np.zeros((X.shape[0], D * order))
     colid = np.arange(0, D)
     for d in range(1, order + 1):
-        Phi[:, colid] = X ** d
+        Phi[:, colid] = X**d
         colid += D
     return Phi
+
 
 def from_posterior(param, samples, distribution=None, half=False, freedom=1):
     if len(samples.shape) > 1:
@@ -82,7 +86,7 @@ def from_posterior(param, samples, distribution=None, half=False, freedom=1):
     else:
         shape = None
 
-    if (distribution is None):
+    if distribution is None:
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
         x = np.linspace(smin, smax, 1000)
@@ -97,58 +101,77 @@ def from_posterior(param, samples, distribution=None, half=False, freedom=1):
             return pm.distributions.Interpolated(param, x, y)
         else:
             return pm.distributions.Interpolated(param, x, y, shape=shape)
-    elif (distribution == 'normal'):
+    elif distribution == "normal":
         temp = stats.norm.fit(samples)
         if shape is None:
             return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1])
         else:
             return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1], shape=shape)
-    elif (distribution == 'hnormal'):
+    elif distribution == "hnormal":
         temp = stats.halfnorm.fit(samples)
         if shape is None:
             return pm.HalfNormal(param, sigma=freedom * temp[1])
         else:
             return pm.HalfNormal(param, sigma=freedom * temp[1], shape=shape)
-    elif (distribution == 'hcauchy'):
+    elif distribution == "hcauchy":
         temp = stats.halfcauchy.fit(samples)
         if shape is None:
             return pm.HalfCauchy(param, freedom * temp[1])
         else:
             return pm.HalfCauchy(param, freedom * temp[1], shape=shape)
-    elif (distribution == 'uniform'):
+    elif distribution == "uniform":
         upper_bound = np.percentile(samples, 95)
         lower_bound = np.percentile(samples, 5)
         r = np.abs(upper_bound - lower_bound)
         if shape is None:
-            return pm.Uniform(param, lower=lower_bound - freedom * r,
-                              upper=upper_bound + freedom * r)
+            return pm.Uniform(
+                param, lower=lower_bound - freedom * r, upper=upper_bound + freedom * r
+            )
         else:
-            return pm.Uniform(param, lower=lower_bound - freedom * r,
-                              upper=upper_bound + freedom * r, shape=shape)
-    elif (distribution == 'huniform'):
+            return pm.Uniform(
+                param,
+                lower=lower_bound - freedom * r,
+                upper=upper_bound + freedom * r,
+                shape=shape,
+            )
+    elif distribution == "huniform":
         upper_bound = np.percentile(samples, 95)
         lower_bound = np.percentile(samples, 5)
         r = np.abs(upper_bound - lower_bound)
         if shape is None:
             return pm.Uniform(param, lower=0, upper=upper_bound + freedom * r)
         else:
-            return pm.Uniform(param, lower=0, upper=upper_bound + freedom * r, shape=shape)
+            return pm.Uniform(
+                param, lower=0, upper=upper_bound + freedom * r, shape=shape
+            )
 
-    elif (distribution == 'gamma'):
+    elif distribution == "gamma":
         alpha_fit, loc_fit, invbeta_fit = stats.gamma.fit(samples)
         if shape is None:
-            return pm.Gamma(param, alpha=freedom * alpha_fit, beta=freedom / invbeta_fit)
+            return pm.Gamma(
+                param, alpha=freedom * alpha_fit, beta=freedom / invbeta_fit
+            )
         else:
-            return pm.Gamma(param, alpha=freedom * alpha_fit, beta=freedom / invbeta_fit, shape=shape)
+            return pm.Gamma(
+                param,
+                alpha=freedom * alpha_fit,
+                beta=freedom / invbeta_fit,
+                shape=shape,
+            )
 
-    elif (distribution == 'igamma'):
+    elif distribution == "igamma":
         alpha_fit, loc_fit, beta_fit = stats.gamma.fit(samples)
         if shape is None:
-            return pm.InverseGamma(param, alpha=freedom * alpha_fit, beta=freedom * beta_fit)
+            return pm.InverseGamma(
+                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit
+            )
         else:
-            return pm.InverseGamma(param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape)
-        
-def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
+            return pm.InverseGamma(
+                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape
+            )
+
+
+def hbr(X, y, batch_effects, configs, idata=None):
     """
     :param X: [N×P] array of clinical covariates
     :param y: [N×1] array of neuroimaging measures
@@ -156,49 +179,98 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     :param batch_effects_size: [b1, b2,...,bM] List of counts of unique values of batch effects
     :param configs:
     :param idata:
-    :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it. 
+    :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it.
     :return:
     """
     X = pytensor.shared(X)
-    X = pytensor.tensor.cast(X,'floatX')
+    X = pytensor.tensor.cast(X, "floatX")
     y = pytensor.shared(y)
-    y = pytensor.tensor.cast(y,'floatX')
-    
+    y = pytensor.tensor.cast(y, "floatX")
 
     # Make a param builder that will make the correct calls
     pb = ParamBuilder(X, y, batch_effects, idata, configs)
 
     with pm.Model(coords=pb.coords) as model:
-        pb.model=model
-        pb.batch_effect_indices = [pm.Data(pb.batch_effect_dim_names[i], pb.batch_effect_indices[i],mutable=True) for i in range(len(pb.batch_effect_indices))]
+        pb.model = model
+        pb.batch_effect_indices = [
+            pm.Data(
+                pb.batch_effect_dim_names[i], pb.batch_effect_indices[i], mutable=True
+            )
+            for i in range(len(pb.batch_effect_indices))
+        ]
 
-        if configs['likelihood'] == 'Normal':
-            mu = pb.make_param("mu", mu_slope_mu_params = (0.,5.), sigma_slope_mu_params = (5.,), mu_intercept_mu_params=(0.,5.), sigma_intercept_mu_params = (5.,)).get_samples(pb)
+        if configs["likelihood"] == "Normal":
+            mu = pb.make_param(
+                "mu",
+                mu_slope_mu_params=(0.0, 1.0),
+                sigma_slope_mu_params=(1.0,),
+                mu_intercept_mu_params=(0.0, 1.0),
+                sigma_intercept_mu_params=(1.0,),
+            ).get_samples(pb)
             # print(f"{mu.shape.eval()=}")
-            sigma = pb.make_param("sigma", mu_sigma_params = (0., 2.), sigma_sigma_params = (5.,)).get_samples(pb)
+            sigma = pb.make_param(
+                "sigma", mu_sigma_params=(1.0, 0.2), 
+                sigma_sigma_params=(0.2,),
+                slope_sigma_params=(0.0, 0.3),
+                intercept_sigma_params=(1.0, 0.2)
+            ).get_samples(pb)
             # print(f"{sigma.shape.eval()=}")
-            sigma_plus = pm.Deterministic('sigma_plus', pm.math.log(1+pm.math.exp(sigma)))
-            y_like = pm.Normal('y_like', mu, sigma=sigma_plus, observed=y)
+            sigma_plus =  np.log(1 + np.exp(sigma))
+            y_like = pm.Normal("y_like", mu, sigma=sigma_plus, observed=y)
 
-        elif configs['likelihood'] in ['SHASHb','SHASHo','SHASHo2']:
-                            """
-                            Comment 1
-                            The current parameterizations are tuned towards standardized in- and output data. 
-                            It is possible to adjust the priors through the XXX_dist and XXX_params kwargs, like here we do with epsilon_params.
-                            Supported distributions are listed in the Prior class. 
-                            Comment 2
-                            Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work. 
-                            For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
-                            """
-                            SHASH_map = {'SHASHb':SHASHb,'SHASHo':SHASHo,'SHASHo2':SHASHo2}
+        elif configs["likelihood"] in ["SHASHb", "SHASHo", "SHASHo2"]:
+            """
+            Comment 1
+            The current parameterizations are tuned towards standardized in- and output data.
+            It is possible to adjust the priors through the XXX_dist and XXX_params kwargs, like here we do with epsilon_params.
+            Supported distributions are listed in the Prior class.
+            Comment 2
+            Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work.
+            For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
+            """
+            SHASH_map = {"SHASHb": SHASHb, "SHASHo": SHASHo, "SHASHo2": SHASHo2}
 
-                            mu =            pb.make_param("mu",         slope_mu_params = (0.,3.), mu_intercept_mu_params=(0.,1.), sigma_intercept_mu_params = (2.,)).get_samples(pb)
-                            sigma =         pb.make_param("sigma",      sigma_params = (1.,2.),    slope_sigma_params=(0.,2.),     intercept_sigma_params = (0., 2.), apply_softplus=True).get_samples(pb)
-                            epsilon =       pb.make_param("epsilon",    epsilon_params = (0.,1.),  slope_epsilon_params=(0.,1.), intercept_epsilon_params=(0.,1)).get_samples(pb)
-                            delta =         pb.make_param("delta",      delta_params=(1.5,2.),     slope_delta_params=(0.,2),   intercept_delta_params=(0., 2), apply_softplus=True).get_samples(pb)
-                            y_like = SHASH_map[configs['likelihood']]('y_like', mu=mu, sigma=sigma, epsilon=epsilon, delta=delta, observed = y)
+            mu = pb.make_param(
+                "mu",
+                slope_mu_params=(0.0, 1.0),
+                mu_slope_mu_params=(0.0, 1.0),
+                sigma_slope_mu_params=(1.0,),
+                mu_intercept_mu_params=(0.0, 1.0),
+                sigma_intercept_mu_params=(1.0,),
+            ).get_samples(pb)
+            sigma = pb.make_param(
+                "sigma",
+                sigma_params=(1.0, 0.2),
+                sigma_dist="normal",
+                slope_sigma_params=(0.0, 0.3),
+                intercept_sigma_params=(1.0, 0.2),
+            ).get_samples(pb)
+            sigma_plus = np.log(1 + np.exp(sigma))
+            sigma_plus = sigma
+            epsilon = pb.make_param(
+                "epsilon",
+                epsilon_params=(0.0, 1.),
+                slope_epsilon_params=(0.0, 0.2),
+                intercept_epsilon_params=(0.0, 0.2),
+            ).get_samples(pb)
+            delta = pb.make_param(
+                "delta",
+                delta_params=(1.0, 0.1),
+                delta_dist="normal",
+                slope_epsilon_params=(0.0, 0.2),
+                intercept_epsilon_params=(1.0, 0.05),
+            ).get_samples(pb)
+            delta_plus = np.log(1 + np.exp(delta * 10)) / 10 + 0.3
+            # delta_plus = delta
+            y_like = SHASH_map[configs["likelihood"]](
+                "y_like",
+                mu=mu,
+                sigma=sigma_plus,
+                epsilon=epsilon,
+                delta=delta_plus,
+                observed=y,
+            )
         return model
-
 
 
 class HBR:
@@ -226,7 +298,7 @@ class HBR:
 
     def get_step_methods(self, m):
         """
-        This can be used to assign default step functions. However, the nuts initialization keyword doesnt work together with this... so better not use it. 
+        This can be used to assign default step functions. However, the nuts initialization keyword doesnt work together with this... so better not use it.
 
         STEP_METHODS = (
             NUTS,
@@ -240,234 +312,228 @@ class HBR:
         :param m: a PyMC model
         :return:
         """
-        samplermap = {'NUTS': NUTS, 'MH': Metropolis, 'Slice': Slice, 'HMC': HamiltonianMC}
-        fallbacks = [Metropolis]         # We are using MH as a fallback method here
-        if self.configs['sampler'] == 'NUTS':
-            step_kwargs = {'nuts': {'target_accept': self.configs['target_accept']}}
+        samplermap = {
+            "NUTS": NUTS,
+            "MH": Metropolis,
+            "Slice": Slice,
+            "HMC": HamiltonianMC,
+        }
+        fallbacks = [Metropolis]  # We are using MH as a fallback method here
+        if self.configs["sampler"] == "NUTS":
+            step_kwargs = {"nuts": {"target_accept": self.configs["target_accept"]}}
         else:
             step_kwargs = None
-        return pm.sampling.assign_step_methods(m, methods=[samplermap[self.configs['sampler']]] + fallbacks,
-                                               step_kwargs=step_kwargs)
+        return pm.sampling.assign_step_methods(
+            m,
+            methods=[samplermap[self.configs["sampler"]]] + fallbacks,
+            step_kwargs=step_kwargs,
+        )
 
     def __init__(self, configs):
         self.bsp = None
-        self.model_type = configs['type']
+        self.model_type = configs["type"]
         self.configs = configs
 
     def get_modeler(self):
-        return {'nn': nn_hbr}.get(self.model_type, hbr)
-        
+        return hbr
+
     def transform_X(self, X):
-        if self.model_type == 'polynomial':
-            Phi = create_poly_basis(X, self.configs['order'])
-        elif self.model_type == 'bspline':
+        if self.model_type == "polynomial":
+            Phi = create_poly_basis(X, self.configs["order"])
+        elif self.model_type == "bspline":
             if self.bsp is None:
-                self.bsp = bspline_fit(X, self.configs['order'], self.configs['nknots'])
+                self.bsp = bspline_fit(X, self.configs["order"], self.configs["nknots"])
             bspline = bspline_transform(X, self.bsp)
-            Phi = np.concatenate((X, bspline), axis = 1)
+            Phi = np.concatenate((X, bspline), axis=1)
         else:
             Phi = X
         return Phi
 
-
-    def find_map(self, X, y, batch_effects,method='L-BFGS-B'):
-        """ Function to estimate the model """
+    def find_map(self, X, y, batch_effects, method="L-BFGS-B"):
+        """Function to estimate the model"""
         X, y, batch_effects = expand_all(X, y, batch_effects)
-
-        self.batch_effects_num = batch_effects.shape[1]
-        self.batch_effects_size = []
-        for i in range(self.batch_effects_num):
-            self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
-
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
+        with modeler(X, y, batch_effects, self.configs) as m:
             self.MAP = pm.find_MAP(method=method)
         return self.MAP
 
     def estimate(self, X, y, batch_effects):
-
-        """ Function to estimate the model """
+        """Function to estimate the model"""
         X, y, batch_effects = expand_all(X, y, batch_effects)
-
-        self.batch_effects_num = batch_effects.shape[1]
-        self.batch_effects_size = []
-        for i in range(self.batch_effects_num):
-            self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs) as m:
-            self.idata = pm.sample(draws=self.configs['n_samples'],
-                                   tune=self.configs['n_tuning'],
-                                   chains=self.configs['n_chains'],
-                                   init=self.configs['init'], n_init=500000,
-                                   cores=self.configs['cores'])
+        with modeler(X, y, batch_effects, self.configs) as m:
+            self.idata = pm.sample(
+                draws=self.configs["n_samples"],
+                tune=self.configs["n_tuning"],
+                chains=self.configs["n_chains"],
+                init=self.configs["init"],
+                n_init=500000,
+                cores=self.configs["cores"],
+            )
         return self.idata
 
-    def predict(self, X, batch_effects, pred='single'):
-        """ Function to make predictions from the model """
+    def predict(self, X, batch_effects, pred="single"):
+        """Function to make predictions from the model"""
         X, batch_effects = expand_all(X, batch_effects)
-
-        samples = self.configs['n_samples']
+        samples = self.configs["n_samples"]
         y = np.zeros([X.shape[0], 1])
-
-        if pred == 'single':
-            X = self.transform_X(X)
-            modeler = self.get_modeler()
-            with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-                self.idata = pm.sample_posterior_predictive(trace = self.idata,  progressbar=True)
-            pred_mean = self.idata.posterior_predictive['y_like'].mean(axis=(0,1))
-            pred_var = self.idata.posterior_predictive['y_like'].var(axis=(0,1))
+        X = self.transform_X(X)
+        modeler = self.get_modeler()
+        with modeler(X, y, batch_effects, self.configs):
+            self.idata = pm.sample_posterior_predictive(
+                trace=self.idata, progressbar=True
+            )
+        pred_mean = self.idata.posterior_predictive["y_like"].mean(axis=(0, 1))
+        pred_var = self.idata.posterior_predictive["y_like"].var(axis=(0, 1))
 
         return pred_mean, pred_var
 
     def estimate_on_new_site(self, X, y, batch_effects):
-        """ Function to adapt the model """
+        """Function to adapt the model"""
         X, y, batch_effects = expand_all(X, y, batch_effects)
-
-        self.batch_effects_num = batch_effects.shape[1]
-        self.batch_effects_size = []
-        for i in range(self.batch_effects_num):
-            self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
-
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size,
-                     self.configs, idata=self.idata) as m:
-            self.idata = pm.sample(self.configs['n_samples'],
-                                   tune=self.configs['n_tuning'],
-                                   chains=self.configs['n_chains'],
-                                   target_accept=self.configs['target_accept'],
-                                   init=self.configs['init'], n_init=50000,
-                                   cores=self.configs['cores'])
+        with modeler(X, y, batch_effects, self.configs, idata=self.idata) as m:
+            self.idata = pm.sample(
+                self.configs["n_samples"],
+                tune=self.configs["n_tuning"],
+                chains=self.configs["n_chains"],
+                target_accept=self.configs["target_accept"],
+                init=self.configs["init"],
+                n_init=50000,
+                cores=self.configs["cores"],
+            )
         return self.idata
 
     def predict_on_new_site(self, X, batch_effects):
-        """ Function to make predictions from the model """
+        """Function to make predictions from the model"""
         X, batch_effects = expand_all(X, batch_effects)
-
-        samples = self.configs['n_samples']
+        samples = self.configs["n_samples"]
         y = np.zeros([X.shape[0], 1])
-
         X = self.transform_X(X)
         modeler = self.get_modeler()
-
-
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs, idata=self.idata):
-            self.idata = pm.sample_posterior_predictive(self.idata, extend_inferencedata=True,  progressbar=True)
-        pred_mean = self.idata.posterior_predictive['y_like'].mean(axis=(0,1))
-        pred_var = self.idata.posterior_predictive['y_like'].var(axis=(0,1))
+        with modeler(X, y, batch_effects, self.configs, idata=self.idata):
+            self.idata = pm.sample_posterior_predictive(
+                self.idata, extend_inferencedata=True, progressbar=True
+            )
+        pred_mean = self.idata.posterior_predictive["y_like"].mean(axis=(0, 1))
+        pred_var = self.idata.posterior_predictive["y_like"].var(axis=(0, 1))
 
         return pred_mean, pred_var
 
     def generate(self, X, batch_effects, samples):
-        """ Function to generate samples from posterior predictive distribution """
+        """Function to generate samples from posterior predictive distribution"""
         X, batch_effects = expand_all(X, batch_effects)
 
         y = np.zeros([X.shape[0], 1])
 
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.batch_effects_size, self.configs):
-            # TODO need to adapt this to new pymc
+        with modeler(X, y, batch_effects, self.configs):
             ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
-
-        generated_samples = np.reshape(ppc.posterior_predictive['y_like'].squeeze().T, [X.shape[0] * samples, 1])
+        generated_samples = np.reshape(
+            ppc.posterior_predictive["y_like"].squeeze().T, [X.shape[0] * samples, 1]
+        )
         X = np.repeat(X, samples)
         if len(X.shape) == 1:
             X = np.expand_dims(X, axis=1)
         batch_effects = np.repeat(batch_effects, samples, axis=0)
         if len(batch_effects.shape) == 1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
-
         return X, batch_effects, generated_samples
 
     def sample_prior_predictive(self, X, batch_effects, samples, idata=None):
-        """ Function to sample from prior predictive distribution """
-
-        if len(X.shape) == 1:
-            X = np.expand_dims(X, axis=1)
-        if len(batch_effects.shape) == 1:
-            batch_effects = np.expand_dims(batch_effects, axis=1)
-
-        self.batch_effects_num = batch_effects.shape[1]
-        self.batch_effects_size = []
-        for i in range(self.batch_effects_num):
-            self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
-
+        """Function to sample from prior predictive distribution"""
+        X, batch_effects = expand_all(X, batch_effects)
         y = np.zeros([X.shape[0], 1])
-
-        if self.model_type == 'linear':
-            with hbr(X, y, batch_effects, self.batch_effects_size, self.configs,
-                     idata):
-                idata = pm.sample_prior_predictive(samples=samples)
+        X = self.transform_X(X)
+        modeler = self.get_modeler()
+        with modeler(X, y, batch_effects, self.configs, idata):
+            idata = pm.sample_prior_predictive(samples=samples)
         return idata
 
     def get_model(self, X, y, batch_effects):
         X, y, batch_effects = expand_all(X, y, batch_effects)
-
-        self.batch_effects_num = batch_effects.shape[1]
-        self.batch_effects_size = []
-        for i in range(self.batch_effects_num):
-            self.batch_effects_size.append(len(np.unique(batch_effects[:, i])))
         modeler = self.get_modeler()
         X = self.transform_X(X)
-        return modeler(X, y, batch_effects, self.batch_effects_size, self.configs, self.idata)
+        idata = self.idata if hasattr(self, 'idata') else None
+        return modeler(X, y, batch_effects, self.configs, idata=idata)
 
-    def create_dummy_inputs(self, covariate_ranges = [[0.1,0.9,0.01]]):
-
+    def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
+        #TODO this function needs to be able to compute the batch_effects_size somehow
         arrays = []
         for i in range(len(covariate_ranges)):
-            arrays.append(np.arange(covariate_ranges[i][0],covariate_ranges[i][1], covariate_ranges[i][2]))
+            arrays.append(
+                np.arange(
+                    covariate_ranges[i][0],
+                    covariate_ranges[i][1],
+                    covariate_ranges[i][2],
+                )
+            )
         X = cartesian_product(arrays)
         X_dummy = np.concatenate([X for i in range(np.prod(self.batch_effects_size))])
-
         arrays = []
         for i in range(self.batch_effects_num):
             arrays.append(np.arange(0, self.batch_effects_size[i]))
         batch_effects = cartesian_product(arrays)
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
+        return X_dummy, batch_effects_dummy
 
-        return X_dummy, batch_effects_dummy 
 
 class Prior:
     """
-    A wrapper class for a PyMC distribution. 
+    A wrapper class for a PyMC distribution.
     - creates a fitted distribution from the idata, if one is present
     - overloads the __getitem__ function with something that switches between indexing or not, based on the shape
     """
+
     def __init__(self, name, dist, params, pb, has_random_effect=False) -> None:
         self.dist = None
         self.name = name
         self.has_random_effect = has_random_effect
-        self.distmap = {'normal': pm.Normal,
-                   'hnormal': pm.HalfNormal,
-                   'gamma': pm.Gamma,
-                   'uniform': pm.Uniform,
-                   'igamma': pm.InverseGamma,
-                   'hcauchy': pm.HalfCauchy,
-                   'hstudt':pm.HalfStudentT,
-                   'studt':pm.StudentT}
+        self.distmap = {
+            "normal": pm.Normal,
+            "hnormal": pm.HalfNormal,
+            "gamma": pm.Gamma,
+            "uniform": pm.Uniform,
+            "igamma": pm.InverseGamma,
+            "hcauchy": pm.HalfCauchy,
+            "hstudt": pm.HalfStudentT,
+            "studt": pm.StudentT,
+        }
         self.make_dist(dist, params, pb)
- 
+
     def make_dist(self, dist, params, pb):
         """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
         with pb.model as m:
             # If self.name.startswith slope:
             # use the basis functions dim
             # Otherwise, use the empty dim
-            dim = 'basis_functions' if (self.name.startswith('slope') or self.name.startswith('offset_slope')) else 'empty'
+            dim = (
+                "basis_functions"
+                if (
+                    self.name.startswith("slope")
+                    or self.name.startswith("offset_slope")
+                )
+                else "empty"
+            )
 
-            if (pb.idata is not None):
+            if pb.idata is not None:
                 samples = az.extract(pb.idata, var_names=self.name).to_numpy()
                 if not self.has_random_effect:
                     samples = np.reshape(samples, (-1,))
-                self.dist = from_posterior(param=self.name,
-                                           samples = samples,
-                                            distribution=dist,
-                                            freedom=pb.configs['freedom'])
+                self.dist = from_posterior(
+                    param=self.name,
+                    samples=samples,
+                    distribution=dist,
+                    freedom=pb.configs["freedom"],
+                )
             elif self.has_random_effect:
-                self.dist = self.distmap[dist](self.name, *params, dims=[*pb.batch_effect_dim_names, dim])
+                self.dist = self.distmap[dist](
+                    self.name, *params, dims=[*pb.batch_effect_dim_names, dim]
+                )
             else:
                 self.dist = self.distmap[dist](self.name, *params, dims=dim)
 
@@ -479,10 +545,11 @@ class Prior:
         else:
             return self.dist
 
+
 class ParamBuilder:
     """
-    A class that simplifies the construction of parameterizations. 
-    It has a lot of attributes necessary for creating the model, including the data, but it is never saved with the model. 
+    A class that simplifies the construction of parameterizations.
+    It has a lot of attributes necessary for creating the model, including the data, but it is never saved with the model.
     It also contains a lot of decision logic for creating the parameterizations.
     """
 
@@ -496,11 +563,11 @@ class ParamBuilder:
         :param idata:  idem
         :param configs: idem
         """
-        self.model = None # Needs to be set later, because coords need to be passed at construction of Model
+        self.model = None  # Needs to be set later, because coords need to be passed at construction of Model
         self.X = X
         self.y = y
         self.batch_effects = batch_effects.astype(np.int16)
-        self.idata:az.InferenceData = idata
+        self.idata: az.InferenceData = idata
         self.configs = configs
 
         self.y_shape = y.shape.eval()
@@ -514,38 +581,43 @@ class ParamBuilder:
         for i in range(self.batch_effects_num):
             batch_effect_dim_name = f"batch_effect_{i}"
             self.batch_effect_dim_names.append(batch_effect_dim_name)
-            this_be_values, this_be_indices = np.unique(self.batch_effects[:,i], return_inverse=True)
+            this_be_values, this_be_indices = np.unique(
+                self.batch_effects[:, i], return_inverse=True
+            )
             self.coords[batch_effect_dim_name] = this_be_values
             self.batch_effect_indices.append(this_be_indices)
-        self.coords['empty']=[0]
-        self.coords['basis_functions'] = [i for i in range(X.shape.eval()[1])]
-
+        self.coords["empty"] = [0]
+        self.coords["basis_functions"] = [i for i in range(X.shape.eval()[1])]
 
     # TODO reinstigate the 'dim' keyword, for the slope parameters
     def make_param(self, name, **kwargs):
-        if self.configs.get(f'linear_{name}', False):
-            # First make a slope and intercept, and use those to make a linear parameterization 
-            slope_parameterization = self.make_param(f'slope_{name}',**kwargs)
-            intercept_parameterization = self.make_param(f'intercept_{name}', **kwargs)
-            return LinearParameterization(name=name,
-                                    slope_parameterization=slope_parameterization, 
-                                    intercept_parameterization=intercept_parameterization,
-                                    **kwargs)
-        
-        elif self.configs.get(f'random_{name}', False):
-            if self.configs.get(f'centered_{name}', True):
-                return CentralRandomFixedParameterization(name=name, pb=self,  **kwargs)
+        if self.configs.get(f"linear_{name}", False):
+            # First make a slope and intercept, and use those to make a linear parameterization
+            slope_parameterization = self.make_param(f"slope_{name}", **kwargs)
+            intercept_parameterization = self.make_param(f"intercept_{name}", **kwargs)
+            return LinearParameterization(
+                name=name,
+                slope_parameterization=slope_parameterization,
+                intercept_parameterization=intercept_parameterization,
+                **kwargs,
+            )
+
+        elif self.configs.get(f"random_{name}", False):
+            if self.configs.get(f"centered_{name}", True):
+                return CentralRandomFixedParameterization(name=name, pb=self, **kwargs)
             else:
-                return NonCentralRandomFixedParameterization(name=name, pb=self, **kwargs)
+                return NonCentralRandomFixedParameterization(
+                    name=name, pb=self, **kwargs
+                )
         else:
             return FixedParameterization(name=name, pb=self, **kwargs)
-
 
 
 class Parameterization:
     """
     This is the top-level parameterization class from which all the other parameterizations inherit.
     """
+
     def __init__(self, name):
         self.name = name
         print(name, type(self))
@@ -553,85 +625,104 @@ class Parameterization:
     def get_samples(self, pb):
         pass
 
+
 class FixedParameterization(Parameterization):
     """
     A parameterization that takes a single value for all input. It does not depend on anything except its hyperparameters
     """
-    def __init__(self, name, pb:ParamBuilder,**kwargs):
+
+    def __init__(self, name, pb: ParamBuilder, **kwargs):
         super().__init__(name)
-        dist = kwargs.get(f'{name}_dist','normal')
-        params = kwargs.get(f'{name}_params',(0.,1.))
+        dist = kwargs.get(f"{name}_dist", "normal")
+        params = kwargs.get(f"{name}_params", (0.0, 1.0))
         self.dist = Prior(name, dist, params, pb)
 
     def get_samples(self, pb):
         with pb.model:
             return self.dist[0]
 
+
 class CentralRandomFixedParameterization(Parameterization):
     """
     A parameterization that is fixed for each batch effect. This is sampled in a central fashion;
-    the values are sampled from normal distribution with a group mean and group variance 
+    the values are sampled from normal distribution with a group mean and group variance
     """
-    def __init__(self, name, pb:ParamBuilder, **kwargs):
+
+    def __init__(self, name, pb: ParamBuilder, **kwargs):
         super().__init__(name)
 
         # Normal distribution is default for mean
-        mu_dist = kwargs.get(f'mu_{name}_dist','normal')
-        mu_params = kwargs.get(f'mu_{name}_params',(0.,1.))
-        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb)
+        mu_dist = kwargs.get(f"mu_{name}_dist", "normal")
+        mu_params = kwargs.get(f"mu_{name}_params", (0.0, 1.0))
+        mu_prior = Prior(f"mu_{name}", mu_dist, mu_params, pb)
 
         # HalfNormal is default for sigma
-        sigma_dist = kwargs.get(f'sigma_{name}_dist','hnormal')
-        sigma_params = kwargs.get(f'sigma_{name}_params',(1.,))
-        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb)
+        sigma_dist = kwargs.get(f"sigma_{name}_dist", "hnormal")
+        sigma_params = kwargs.get(f"sigma_{name}_params", (1.0,))
+        sigma_prior = Prior(f"sigma_{name}", sigma_dist, sigma_params, pb)
 
-        dim = 'basis_functions' if self.name.startswith('slope') else 'empty'
-        self.dist = pm.Normal(name=name, mu=mu_prior.dist, sigma=sigma_prior.dist, dims=[*pb.batch_effect_dim_names,dim])
+        dim = "basis_functions" if self.name.startswith("slope") else "empty"
+        self.dist = pm.Normal(
+            name=name,
+            mu=mu_prior.dist,
+            sigma=sigma_prior.dist,
+            dims=[*pb.batch_effect_dim_names, dim],
+        )
 
-    def get_samples(self, pb:ParamBuilder):
+    def get_samples(self, pb: ParamBuilder):
         with pb.model:
             samples = self.dist[*pb.batch_effect_indices]
             return samples
 
+
 class NonCentralRandomFixedParameterization(Parameterization):
     """
     A parameterization that is fixed for each batch effect. This is sampled in a non-central fashion;
-    the values are a sum of a group mean and noise values scaled with a group scaling factor 
+    the values are a sum of a group mean and noise values scaled with a group scaling factor
     """
-    def __init__(self, name, pb:ParamBuilder, **kwargs):
+
+    def __init__(self, name, pb: ParamBuilder, **kwargs):
         super().__init__(name)
 
         # Normal distribution is default for mean
-        mu_dist = kwargs.get(f'mu_{name}_dist','normal')
-        mu_params = kwargs.get(f'mu_{name}_params',(0.,1.))
-        mu_prior = Prior(f'mu_{name}', mu_dist, mu_params, pb)
+        mu_dist = kwargs.get(f"mu_{name}_dist", "normal")
+        mu_params = kwargs.get(f"mu_{name}_params", (0.0, 1.0))
+        mu_prior = Prior(f"mu_{name}", mu_dist, mu_params, pb)
 
         # HalfNormal is default for sigma
-        sigma_dist = kwargs.get(f'sigma_{name}_dist','hnormal')
-        sigma_params = kwargs.get(f'sigma_{name}_params',(1.,))
-        sigma_prior = Prior(f'sigma_{name}',sigma_dist, sigma_params, pb)
+        sigma_dist = kwargs.get(f"sigma_{name}_dist", "hnormal")
+        sigma_params = kwargs.get(f"sigma_{name}_params", (1.0,))
+        sigma_prior = Prior(f"sigma_{name}", sigma_dist, sigma_params, pb)
 
         # Normal is default for offset
-        offset_dist = kwargs.get(f'offset_{name}_dist','normal')
-        offset_params = kwargs.get(f'offset_{name}_params',(0.,1.))
-        offset_prior = Prior(f'offset_{name}',offset_dist, offset_params, pb, has_random_effect=True)
+        offset_dist = kwargs.get(f"offset_{name}_dist", "normal")
+        offset_params = kwargs.get(f"offset_{name}_params", (0.0, 1.0))
+        offset_prior = Prior(
+            f"offset_{name}", offset_dist, offset_params, pb, has_random_effect=True
+        )
 
-        dim = 'basis_functions' if self.name.startswith('slope') else 'empty'
-        self.dist = pm.Deterministic(name=name, var=mu_prior.dist+sigma_prior.dist*offset_prior.dist,dims=[*pb.batch_effect_dim_names,dim])
+        dim = "basis_functions" if self.name.startswith("slope") else "empty"
+        self.dist = pm.Deterministic(
+            name=name,
+            var=mu_prior.dist + sigma_prior.dist * offset_prior.dist,
+            dims=[*pb.batch_effect_dim_names, dim],
+        )
 
-
-
-    def get_samples(self, pb:ParamBuilder):
+    def get_samples(self, pb: ParamBuilder):
         with pb.model:
             # print(f"{self.dist.shape.eval()=}")
             samples = self.dist[*pb.batch_effect_indices]
             return samples
 
+
 class LinearParameterization(Parameterization):
     """
-    A parameterization that can model a linear dependence on X. 
+    A parameterization that can model a linear dependence on X.
     """
-    def __init__(self, name, slope_parameterization, intercept_parameterization,**kwargs):
+
+    def __init__(
+        self, name, slope_parameterization, intercept_parameterization, **kwargs
+    ):
         super().__init__(name)
         self.slope_parameterization = slope_parameterization
         self.intercept_parameterization = intercept_parameterization
@@ -640,14 +731,14 @@ class LinearParameterization(Parameterization):
         with pb.model:
             intc = self.intercept_parameterization.get_samples(pb)
             slope_samples = self.slope_parameterization.get_samples(pb)
-            if pb.configs[f'random_slope_{self.name}']:
-                slope = pb.X*self.slope_parameterization.get_samples(pb)
+            if pb.configs[f"random_slope_{self.name}"]:
+                slope = pb.X * self.slope_parameterization.get_samples(pb)
                 slope = slope.sum(axis=-1)
             else:
-                slope = pb.X@self.slope_parameterization.get_samples(pb)
+                slope = pb.X @ self.slope_parameterization.get_samples(pb)
 
             samples = pm.math.flatten(intc) + pm.math.flatten(slope)
-            samples = samples.reshape((samples.shape[0],1))
+            samples = samples.reshape((samples.shape[0], 1))
             return samples
 
 
@@ -662,8 +753,8 @@ def get_design_matrix(X, nm, basis="linear"):
 
 
 def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
-    n_hidden = configs['nn_hidden_neuron_num']
-    n_layers = configs['nn_hidden_layers_num']
+    n_hidden = configs["nn_hidden_neuron_num"]
+    n_layers = configs["nn_hidden_layers_num"]
     feature_num = X.shape[1]
     batch_effects_num = batch_effects.shape[1]
     all_idx = []
@@ -672,14 +763,18 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     be_idx = list(product(*all_idx))
 
     # Initialize random weights between each layer for the mu:
-    init_1 = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1 / feature_num))
+    init_1 = pm.floatX(
+        np.random.randn(feature_num, n_hidden) * np.sqrt(1 / feature_num)
+    )
     init_out = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1 / n_hidden))
 
     std_init_1 = pm.floatX(np.random.rand(feature_num, n_hidden))
     std_init_out = pm.floatX(np.random.rand(n_hidden))
 
     # And initialize random weights between each layer for sigma_noise:
-    init_1_noise = pm.floatX(np.random.randn(feature_num, n_hidden) * np.sqrt(1 / feature_num))
+    init_1_noise = pm.floatX(
+        np.random.randn(feature_num, n_hidden) * np.sqrt(1 / feature_num)
+    )
     init_out_noise = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1 / n_hidden))
 
     std_init_1_noise = pm.floatX(np.random.rand(feature_num, n_hidden))
@@ -689,90 +784,134 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     if n_layers == 2:
         init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1 / n_hidden))
         std_init_2 = pm.floatX(np.random.rand(n_hidden, n_hidden))
-        init_2_noise = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1 / n_hidden))
+        init_2_noise = pm.floatX(
+            np.random.randn(n_hidden, n_hidden) * np.sqrt(1 / n_hidden)
+        )
         std_init_2_noise = pm.floatX(np.random.rand(n_hidden, n_hidden))
 
     with pm.Model() as model:
-
-        X = pm.Data('X', X)
-        y = pm.Data('y', y)
+        X = pm.Data("X", X)
+        y = pm.Data("y", y)
 
         if idata is not None:  # Used when estimating/predicting on a new site
-            weights_in_1_grp = from_posterior('w_in_1_grp', idata['w_in_1_grp'],
-                                              distribution='normal', freedom=configs['freedom'])
+            weights_in_1_grp = from_posterior(
+                "w_in_1_grp",
+                idata["w_in_1_grp"],
+                distribution="normal",
+                freedom=configs["freedom"],
+            )
 
-            weights_in_1_grp_sd = from_posterior('w_in_1_grp_sd', idata['w_in_1_grp_sd'],
-                                                 distribution='hcauchy', freedom=configs['freedom'])
+            weights_in_1_grp_sd = from_posterior(
+                "w_in_1_grp_sd",
+                idata["w_in_1_grp_sd"],
+                distribution="hcauchy",
+                freedom=configs["freedom"],
+            )
 
             if n_layers == 2:
-                weights_1_2_grp = from_posterior('w_1_2_grp', idata['w_1_2_grp'],
-                                                 distribution='normal', freedom=configs['freedom'])
+                weights_1_2_grp = from_posterior(
+                    "w_1_2_grp",
+                    idata["w_1_2_grp"],
+                    distribution="normal",
+                    freedom=configs["freedom"],
+                )
 
-                weights_1_2_grp_sd = from_posterior('w_1_2_grp_sd', idata['w_1_2_grp_sd'],
-                                                    distribution='hcauchy', freedom=configs['freedom'])
+                weights_1_2_grp_sd = from_posterior(
+                    "w_1_2_grp_sd",
+                    idata["w_1_2_grp_sd"],
+                    distribution="hcauchy",
+                    freedom=configs["freedom"],
+                )
 
-            weights_2_out_grp = from_posterior('w_2_out_grp', idata['w_2_out_grp'],
-                                               distribution='normal', freedom=configs['freedom'])
+            weights_2_out_grp = from_posterior(
+                "w_2_out_grp",
+                idata["w_2_out_grp"],
+                distribution="normal",
+                freedom=configs["freedom"],
+            )
 
-            weights_2_out_grp_sd = from_posterior('w_2_out_grp_sd', idata['w_2_out_grp_sd'],
-                                                  distribution='hcauchy', freedom=configs['freedom'])
+            weights_2_out_grp_sd = from_posterior(
+                "w_2_out_grp_sd",
+                idata["w_2_out_grp_sd"],
+                distribution="hcauchy",
+                freedom=configs["freedom"],
+            )
 
-            mu_prior_intercept = from_posterior('mu_prior_intercept', idata['mu_prior_intercept'],
-                                                distribution='normal', freedom=configs['freedom'])
-            sigma_prior_intercept = from_posterior('sigma_prior_intercept', idata['sigma_prior_intercept'],
-                                                   distribution='hcauchy', freedom=configs['freedom'])
+            mu_prior_intercept = from_posterior(
+                "mu_prior_intercept",
+                idata["mu_prior_intercept"],
+                distribution="normal",
+                freedom=configs["freedom"],
+            )
+            sigma_prior_intercept = from_posterior(
+                "sigma_prior_intercept",
+                idata["sigma_prior_intercept"],
+                distribution="hcauchy",
+                freedom=configs["freedom"],
+            )
 
         else:
             # Group the mean distribution for input to the hidden layer:
-            weights_in_1_grp = pm.Normal('w_in_1_grp', 0, sd=1,
-                                         shape=(feature_num, n_hidden), testval=init_1)
+            weights_in_1_grp = pm.Normal(
+                "w_in_1_grp", 0, sd=1, shape=(feature_num, n_hidden), testval=init_1
+            )
 
             # Group standard deviation:
-            weights_in_1_grp_sd = pm.HalfCauchy('w_in_1_grp_sd', 1.,
-                                                shape=(feature_num, n_hidden), testval=std_init_1)
+            weights_in_1_grp_sd = pm.HalfCauchy(
+                "w_in_1_grp_sd", 1.0, shape=(feature_num, n_hidden), testval=std_init_1
+            )
 
             if n_layers == 2:
                 # Group the mean distribution for hidden layer 1 to hidden layer 2:
-                weights_1_2_grp = pm.Normal('w_1_2_grp', 0, sd=1,
-                                            shape=(n_hidden, n_hidden), testval=init_2)
+                weights_1_2_grp = pm.Normal(
+                    "w_1_2_grp", 0, sd=1, shape=(n_hidden, n_hidden), testval=init_2
+                )
 
                 # Group standard deviation:
-                weights_1_2_grp_sd = pm.HalfCauchy('w_1_2_grp_sd', 1.,
-                                                   shape=(n_hidden, n_hidden), testval=std_init_2)
+                weights_1_2_grp_sd = pm.HalfCauchy(
+                    "w_1_2_grp_sd", 1.0, shape=(n_hidden, n_hidden), testval=std_init_2
+                )
 
             # Group the mean distribution for hidden to output:
-            weights_2_out_grp = pm.Normal('w_2_out_grp', 0, sd=1,
-                                          shape=(n_hidden,), testval=init_out)
+            weights_2_out_grp = pm.Normal(
+                "w_2_out_grp", 0, sd=1, shape=(n_hidden,), testval=init_out
+            )
 
             # Group standard deviation:
-            weights_2_out_grp_sd = pm.HalfCauchy('w_2_out_grp_sd', 1.,
-                                                 shape=(n_hidden,), testval=std_init_out)
+            weights_2_out_grp_sd = pm.HalfCauchy(
+                "w_2_out_grp_sd", 1.0, shape=(n_hidden,), testval=std_init_out
+            )
 
             # mu_prior_intercept = pm.Uniform('mu_prior_intercept', lower=-100, upper=100)
-            mu_prior_intercept = pm.Normal('mu_prior_intercept', mu=0., sigma=1e3)
-            sigma_prior_intercept = pm.HalfCauchy('sigma_prior_intercept', 5)
+            mu_prior_intercept = pm.Normal("mu_prior_intercept", mu=0.0, sigma=1e3)
+            sigma_prior_intercept = pm.HalfCauchy("sigma_prior_intercept", 5)
 
         # Now create separate weights for each group, by doing
         # weights * group_sd + group_mean, we make sure the new weights are
         # coming from the (group_mean, group_sd) distribution.
-        weights_in_1_raw = pm.Normal('w_in_1', 0, sd=1,
-                                     shape=(batch_effects_size + [feature_num, n_hidden]))
+        weights_in_1_raw = pm.Normal(
+            "w_in_1", 0, sd=1, shape=(batch_effects_size + [feature_num, n_hidden])
+        )
         weights_in_1 = weights_in_1_raw * weights_in_1_grp_sd + weights_in_1_grp
 
         if n_layers == 2:
-            weights_1_2_raw = pm.Normal('w_1_2', 0, sd=1,
-                                        shape=(batch_effects_size + [n_hidden, n_hidden]))
+            weights_1_2_raw = pm.Normal(
+                "w_1_2", 0, sd=1, shape=(batch_effects_size + [n_hidden, n_hidden])
+            )
             weights_1_2 = weights_1_2_raw * weights_1_2_grp_sd + weights_1_2_grp
 
-        weights_2_out_raw = pm.Normal('w_2_out', 0, sd=1,
-                                      shape=(batch_effects_size + [n_hidden]))
+        weights_2_out_raw = pm.Normal(
+            "w_2_out", 0, sd=1, shape=(batch_effects_size + [n_hidden])
+        )
         weights_2_out = weights_2_out_raw * weights_2_out_grp_sd + weights_2_out_grp
 
-        intercepts_offset = pm.Normal('intercepts_offset', mu=0, sd=1,
-                                      shape=(batch_effects_size))
+        intercepts_offset = pm.Normal(
+            "intercepts_offset", mu=0, sd=1, shape=(batch_effects_size)
+        )
 
-        intercepts = pm.Deterministic('intercepts', intercepts_offset +
-                                      mu_prior_intercept * sigma_prior_intercept)
+        intercepts = pm.Deterministic(
+            "intercepts", intercepts_offset + mu_prior_intercept * sigma_prior_intercept
+        )
 
         # Build the neural network and estimate y_hat:
         y_hat = pytensor.tensor.zeros(y.shape)
@@ -786,83 +925,144 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                 act_1 = pm.math.tanh(pytensor.tensor.dot(X[idx, :], weights_in_1[be]))
                 if n_layers == 2:
                     act_2 = pm.math.tanh(pytensor.tensor.dot(act_1, weights_1_2[be]))
-                    y_hat = pytensor.tensor.set_subtensor(y_hat[idx, 0],
-                                                        intercepts[be] + pytensor.tensor.dot(act_2, weights_2_out[be]))
+                    y_hat = pytensor.tensor.set_subtensor(
+                        y_hat[idx, 0],
+                        intercepts[be] + pytensor.tensor.dot(act_2, weights_2_out[be]),
+                    )
                 else:
-                    y_hat = pytensor.tensor.set_subtensor(y_hat[idx, 0],
-                                                        intercepts[be] + pytensor.tensor.dot(act_1, weights_2_out[be]))
+                    y_hat = pytensor.tensor.set_subtensor(
+                        y_hat[idx, 0],
+                        intercepts[be] + pytensor.tensor.dot(act_1, weights_2_out[be]),
+                    )
 
         # If we want to estimate varying noise terms across groups:
-        if configs['random_noise']:
-            if configs['hetero_noise']:
+        if configs["random_noise"]:
+            if configs["hetero_noise"]:
                 if idata is not None:  # # Used when estimating/predicting on a new site
-                    weights_in_1_grp_noise = from_posterior('w_in_1_grp_noise',
-                                                            idata['w_in_1_grp_noise'],
-                                                            distribution='normal', freedom=configs['freedom'])
+                    weights_in_1_grp_noise = from_posterior(
+                        "w_in_1_grp_noise",
+                        idata["w_in_1_grp_noise"],
+                        distribution="normal",
+                        freedom=configs["freedom"],
+                    )
 
-                    weights_in_1_grp_sd_noise = from_posterior('w_in_1_grp_sd_noise',
-                                                               idata['w_in_1_grp_sd_noise'],
-                                                               distribution='hcauchy', freedom=configs['freedom'])
+                    weights_in_1_grp_sd_noise = from_posterior(
+                        "w_in_1_grp_sd_noise",
+                        idata["w_in_1_grp_sd_noise"],
+                        distribution="hcauchy",
+                        freedom=configs["freedom"],
+                    )
 
                     if n_layers == 2:
-                        weights_1_2_grp_noise = from_posterior('w_1_2_grp_noise',
-                                                               idata['w_1_2_grp_noise'],
-                                                               distribution='normal', freedom=configs['freedom'])
+                        weights_1_2_grp_noise = from_posterior(
+                            "w_1_2_grp_noise",
+                            idata["w_1_2_grp_noise"],
+                            distribution="normal",
+                            freedom=configs["freedom"],
+                        )
 
-                        weights_1_2_grp_sd_noise = from_posterior('w_1_2_grp_sd_noise',
-                                                                  idata['w_1_2_grp_sd_noise'],
-                                                                  distribution='hcauchy', freedom=configs['freedom'])
+                        weights_1_2_grp_sd_noise = from_posterior(
+                            "w_1_2_grp_sd_noise",
+                            idata["w_1_2_grp_sd_noise"],
+                            distribution="hcauchy",
+                            freedom=configs["freedom"],
+                        )
 
-                    weights_2_out_grp_noise = from_posterior('w_2_out_grp_noise',
-                                                             idata['w_2_out_grp_noise'],
-                                                             distribution='normal', freedom=configs['freedom'])
+                    weights_2_out_grp_noise = from_posterior(
+                        "w_2_out_grp_noise",
+                        idata["w_2_out_grp_noise"],
+                        distribution="normal",
+                        freedom=configs["freedom"],
+                    )
 
-                    weights_2_out_grp_sd_noise = from_posterior('w_2_out_grp_sd_noise',
-                                                                idata['w_2_out_grp_sd_noise'],
-                                                                distribution='hcauchy', freedom=configs['freedom'])
+                    weights_2_out_grp_sd_noise = from_posterior(
+                        "w_2_out_grp_sd_noise",
+                        idata["w_2_out_grp_sd_noise"],
+                        distribution="hcauchy",
+                        freedom=configs["freedom"],
+                    )
 
                 else:
                     # The input layer to the first hidden layer:
-                    weights_in_1_grp_noise = pm.Normal('w_in_1_grp_noise', 0, sd=1,
-                                                       shape=(feature_num, n_hidden),
-                                                       testval=init_1_noise)
-                    weights_in_1_grp_sd_noise = pm.HalfCauchy('w_in_1_grp_sd_noise', 1,
-                                                              shape=(feature_num, n_hidden),
-                                                              testval=std_init_1_noise)
+                    weights_in_1_grp_noise = pm.Normal(
+                        "w_in_1_grp_noise",
+                        0,
+                        sd=1,
+                        shape=(feature_num, n_hidden),
+                        testval=init_1_noise,
+                    )
+                    weights_in_1_grp_sd_noise = pm.HalfCauchy(
+                        "w_in_1_grp_sd_noise",
+                        1,
+                        shape=(feature_num, n_hidden),
+                        testval=std_init_1_noise,
+                    )
 
                     # The first hidden layer to second hidden layer:
                     if n_layers == 2:
-                        weights_1_2_grp_noise = pm.Normal('w_1_2_grp_noise', 0, sd=1,
-                                                          shape=(n_hidden, n_hidden),
-                                                          testval=init_2_noise)
-                        weights_1_2_grp_sd_noise = pm.HalfCauchy('w_1_2_grp_sd_noise', 1,
-                                                                 shape=(n_hidden, n_hidden),
-                                                                 testval=std_init_2_noise)
+                        weights_1_2_grp_noise = pm.Normal(
+                            "w_1_2_grp_noise",
+                            0,
+                            sd=1,
+                            shape=(n_hidden, n_hidden),
+                            testval=init_2_noise,
+                        )
+                        weights_1_2_grp_sd_noise = pm.HalfCauchy(
+                            "w_1_2_grp_sd_noise",
+                            1,
+                            shape=(n_hidden, n_hidden),
+                            testval=std_init_2_noise,
+                        )
 
                     # The second hidden layer to output layer:
-                    weights_2_out_grp_noise = pm.Normal('w_2_out_grp_noise', 0, sd=1,
-                                                        shape=(n_hidden,),
-                                                        testval=init_out_noise)
-                    weights_2_out_grp_sd_noise = pm.HalfCauchy('w_2_out_grp_sd_noise', 1,
-                                                               shape=(n_hidden,),
-                                                               testval=std_init_out_noise)
+                    weights_2_out_grp_noise = pm.Normal(
+                        "w_2_out_grp_noise",
+                        0,
+                        sd=1,
+                        shape=(n_hidden,),
+                        testval=init_out_noise,
+                    )
+                    weights_2_out_grp_sd_noise = pm.HalfCauchy(
+                        "w_2_out_grp_sd_noise",
+                        1,
+                        shape=(n_hidden,),
+                        testval=std_init_out_noise,
+                    )
 
                     # mu_prior_intercept_noise = pm.HalfNormal('mu_prior_intercept_noise', sigma=1e3)
                     # sigma_prior_intercept_noise = pm.HalfCauchy('sigma_prior_intercept_noise', 5)
 
                 # Now create separate weights for each group:
-                weights_in_1_raw_noise = pm.Normal('w_in_1_noise', 0, sd=1,
-                                                   shape=(batch_effects_size + [feature_num, n_hidden]))
-                weights_in_1_noise = weights_in_1_raw_noise * weights_in_1_grp_sd_noise + weights_in_1_grp_noise
+                weights_in_1_raw_noise = pm.Normal(
+                    "w_in_1_noise",
+                    0,
+                    sd=1,
+                    shape=(batch_effects_size + [feature_num, n_hidden]),
+                )
+                weights_in_1_noise = (
+                    weights_in_1_raw_noise * weights_in_1_grp_sd_noise
+                    + weights_in_1_grp_noise
+                )
 
                 if n_layers == 2:
-                    weights_1_2_raw_noise = pm.Normal('w_1_2_noise', 0, sd=1,
-                                                      shape=(batch_effects_size + [n_hidden, n_hidden]))
-                    weights_1_2_noise = weights_1_2_raw_noise * weights_1_2_grp_sd_noise + weights_1_2_grp_noise
+                    weights_1_2_raw_noise = pm.Normal(
+                        "w_1_2_noise",
+                        0,
+                        sd=1,
+                        shape=(batch_effects_size + [n_hidden, n_hidden]),
+                    )
+                    weights_1_2_noise = (
+                        weights_1_2_raw_noise * weights_1_2_grp_sd_noise
+                        + weights_1_2_grp_noise
+                    )
 
-                weights_2_out_raw_noise = pm.Normal('w_2_out_noise', 0, sd=1,
-                                                    shape=(batch_effects_size + [n_hidden]))
-                weights_2_out_noise = weights_2_out_raw_noise * weights_2_out_grp_sd_noise + weights_2_out_grp_noise
+                weights_2_out_raw_noise = pm.Normal(
+                    "w_2_out_noise", 0, sd=1, shape=(batch_effects_size + [n_hidden])
+                )
+                weights_2_out_noise = (
+                    weights_2_out_raw_noise * weights_2_out_grp_sd_noise
+                    + weights_2_out_grp_noise
+                )
 
                 # intercepts_offset_noise = pm.Normal('intercepts_offset_noise', mu=0, sd=1,
                 #                          shape=(batch_effects_size))
@@ -878,20 +1078,45 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                         a.append(batch_effects[:, i] == b)
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        act_1_noise = pm.math.sigmoid(pytensor.tensor.dot(X[idx, :], weights_in_1_noise[be]))
+                        act_1_noise = pm.math.sigmoid(
+                            pytensor.tensor.dot(X[idx, :], weights_in_1_noise[be])
+                        )
                         if n_layers == 2:
-                            act_2_noise = pm.math.sigmoid(pytensor.tensor.dot(act_1_noise, weights_1_2_noise[be]))
-                            temp = pm.math.log1pexp(pytensor.tensor.dot(act_2_noise, weights_2_out_noise[be])) + 1e-5
+                            act_2_noise = pm.math.sigmoid(
+                                pytensor.tensor.dot(act_1_noise, weights_1_2_noise[be])
+                            )
+                            temp = (
+                                pm.math.log1pexp(
+                                    pytensor.tensor.dot(
+                                        act_2_noise, weights_2_out_noise[be]
+                                    )
+                                )
+                                + 1e-5
+                            )
                         else:
-                            temp = pm.math.log1pexp(pytensor.tensor.dot(act_1_noise, weights_2_out_noise[be])) + 1e-5
+                            temp = (
+                                pm.math.log1pexp(
+                                    pytensor.tensor.dot(
+                                        act_1_noise, weights_2_out_noise[be]
+                                    )
+                                )
+                                + 1e-5
+                            )
                         sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], temp)
 
             else:  # homoscedastic noise:
                 if idata is not None:  # Used for transferring the priors
-                    upper_bound = np.percentile(idata['sigma_noise'], 95)
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2 * upper_bound, shape=(batch_effects_size))
+                    upper_bound = np.percentile(idata["sigma_noise"], 95)
+                    sigma_noise = pm.Uniform(
+                        "sigma_noise",
+                        lower=0,
+                        upper=2 * upper_bound,
+                        shape=(batch_effects_size),
+                    )
                 else:
-                    sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100, shape=(batch_effects_size))
+                    sigma_noise = pm.Uniform(
+                        "sigma_noise", lower=0, upper=100, shape=(batch_effects_size)
+                    )
 
                 sigma_y = pytensor.tensor.zeros(y.shape)
                 for be in be_idx:
@@ -900,14 +1125,16 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                         a.append(batch_effects[:, i] == b)
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
-                        sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise[be])
+                        sigma_y = pytensor.tensor.set_subtensor(
+                            sigma_y[idx, 0], sigma_noise[be]
+                        )
 
         else:  # do not allow for random noise terms across groups:
             if idata is not None:  # Used for transferring the priors
-                upper_bound = np.percentile(idata['sigma_noise'], 95)
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=2 * upper_bound)
+                upper_bound = np.percentile(idata["sigma_noise"], 95)
+                sigma_noise = pm.Uniform("sigma_noise", lower=0, upper=2 * upper_bound)
             else:
-                sigma_noise = pm.Uniform('sigma_noise', lower=0, upper=100)
+                sigma_noise = pm.Uniform("sigma_noise", lower=0, upper=100)
             sigma_y = pytensor.tensor.zeros(y.shape)
             for be in be_idx:
                 a = []
@@ -915,10 +1142,14 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                     a.append(batch_effects[:, i] == b)
                 idx = reduce(np.logical_and, a).nonzero()
                 if idx[0].shape[0] != 0:
-                    sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], sigma_noise)
+                    sigma_y = pytensor.tensor.set_subtensor(
+                        sigma_y[idx, 0], sigma_noise
+                    )
 
-        if configs['skewed_likelihood']:
-            skewness = pm.Uniform('skewness', lower=-10, upper=10, shape=(batch_effects_size))
+        if configs["skewed_likelihood"]:
+            skewness = pm.Uniform(
+                "skewness", lower=-10, upper=10, shape=(batch_effects_size)
+            )
             alpha = pytensor.tensor.zeros(y.shape)
             for be in be_idx:
                 a = []
@@ -930,6 +1161,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
         else:
             alpha = 0  # symmetrical normal distribution
 
-        y_like = pm.SkewNormal('y_like', mu=y_hat, sigma=sigma_y, alpha=alpha, observed=y)
+        y_like = pm.SkewNormal(
+            "y_like", mu=y_hat, sigma=sigma_y, alpha=alpha, observed=y
+        )
 
     return model
