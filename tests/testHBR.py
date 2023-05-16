@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jul 29 13:26:35 2019
@@ -16,6 +16,8 @@ from pcntoolkit.util.utils import simulate_data
 import matplotlib.pyplot as plt
 from pcntoolkit.normative import estimate
 from warnings import filterwarnings
+from pcntoolkit.util.utils import scaler
+
 filterwarnings('ignore')
 
 
@@ -25,7 +27,7 @@ filterwarnings('ignore')
 working_dir = '/home/stijn/temp/tests/'  # Specift a working directory
                                                     # to save data and results.
 
-simulation_method = 'linear' # 'non-linear'
+simulation_method = 'non-linear'
 n_features = 1      # The number of input features of X
 n_grps = 2          # Number of batches in data 
 n_samples = 500     # Number of samples in each group (use a list for different
@@ -39,7 +41,6 @@ model_types = ['linear', 'polynomial', 'bspline']  # models to try
 X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     simulate_data(simulation_method, n_samples, n_features, n_grps, 
                   working_dir=working_dir, plot=True)
-    
 
 ################################# Methods Tests ###############################
     
@@ -62,7 +63,7 @@ for model_type in model_types:
         for j in range(n_grps):
             plt.scatter(temp_X[temp_be==j,], temp_Y[temp_be==j,], 
                         label='Group' + str(j))
-            plt.plot(temp_X[temp_be==j,], temp_yhat[[temp_be==j,]])
+            plt.plot(temp_X[temp_be==j,], temp_yhat[temp_be==j,])
             plt.fill_between(temp_X[temp_be==j,], temp_yhat[temp_be==j,] - 
                              1.96 * np.sqrt(temp_s2[temp_be==j,]), 
                              temp_yhat[temp_be==j,] + 
@@ -70,6 +71,7 @@ for model_type in model_types:
                              color='gray', alpha=0.2)
         plt.title('Model %s, Feature %d' %(model_type, i))
         plt.legend()
+        plt.show()
 
 
 ############################## Normative Modelling Test #######################
