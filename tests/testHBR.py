@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jul 29 13:26:35 2019
@@ -16,16 +16,18 @@ from pcntoolkit.util.utils import simulate_data
 import matplotlib.pyplot as plt
 from pcntoolkit.normative import estimate
 from warnings import filterwarnings
+from pcntoolkit.util.utils import scaler
+
 filterwarnings('ignore')
 
 
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/preclineu/seykia/temp/tests/'  # Specift a working directory
+working_dir = '/home/stijn/temp/tests/'  # Specift a working directory
                                                     # to save data and results.
 
-simulation_method = 'linear' # 'non-linear'
+simulation_method = 'non-linear'
 n_features = 1      # The number of input features of X
 n_grps = 2          # Number of batches in data 
 n_samples = 500     # Number of samples in each group (use a list for different
@@ -39,14 +41,13 @@ model_types = ['linear', 'polynomial', 'bspline']  # models to try
 X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     simulate_data(simulation_method, n_samples, n_features, n_grps, 
                   working_dir=working_dir, plot=True)
-    
 
 ################################# Methods Tests ###############################
     
     
 for model_type in model_types:
     
-    nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type)
+    nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type,n_samples=100,n_tuning=10)
     nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
     yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
     
