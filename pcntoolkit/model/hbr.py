@@ -272,7 +272,6 @@ def hbr(X, y, batch_effects, configs, idata=None):
             )
         return model
 
-
 class HBR:
 
     """Hierarchical Bayesian Regression for normative modeling
@@ -344,6 +343,7 @@ class HBR:
     def predict(self, X, batch_effects, pred="single"):
         """Function to make predictions from the model"""
         X, batch_effects = expand_all(X, batch_effects)
+
         samples = self.configs["n_samples"]
         y = np.zeros([X.shape[0], 1])
         X = self.transform_X(X)
@@ -447,7 +447,6 @@ class HBR:
         batch_effects = cartesian_product(arrays)
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
         return X_dummy, batch_effects_dummy
-
 
 class Prior:
     """
@@ -677,7 +676,6 @@ class NonCentralRandomFixedParameterization(Parameterization):
 
     def get_samples(self, pb: ParamBuilder):
         with pb.model:
-            # print(f"{self.dist.shape.eval()=}")
             samples = self.dist[*pb.batch_effect_indices]
             return samples
 
