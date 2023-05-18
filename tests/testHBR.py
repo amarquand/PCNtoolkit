@@ -24,7 +24,7 @@ filterwarnings('ignore')
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/stijn/temp/tests/'  # Specift a working directory
+working_dir = '/home/preclineu/andmar/py.sandbox/tmp/'  # Specift a working directory
                                                     # to save data and results.
 
 simulation_method = 'non-linear'
