@@ -624,7 +624,7 @@ class CentralRandomFixedParameterization(Parameterization):
 
     def get_samples(self, pb: ParamBuilder):
         with pb.model:
-            samples = self.dist[*pb.batch_effect_indices]
+            samples = self.dist[(*pb.batch_effect_indices,)]
             return samples
 
 
@@ -663,7 +663,7 @@ class NonCentralRandomFixedParameterization(Parameterization):
 
     def get_samples(self, pb: ParamBuilder):
         with pb.model:
-            samples = self.dist[*pb.batch_effect_indices]
+            samples = self.dist[(*pb.batch_effect_indices,)]
             return samples
 
 
