@@ -216,6 +216,7 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
             sigma = np.log(1 + np.exp(inv_softplus_sigma))
             y_like = pm.Normal("y_like", mu, sigma=sigma, observed=y)
 
+
     return model
 
 
