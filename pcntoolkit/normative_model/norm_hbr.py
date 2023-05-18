@@ -10,7 +10,7 @@ Created on Thu Jul 25 17:01:24 2019
 from __future__ import print_function
 from __future__ import division
 
-
+from itertools import product
 import os
 import warnings
 import sys
@@ -220,6 +220,7 @@ class NormHBR(NormBase):
             print('Could not find batch-effects file! Initilizing all as zeros ...')
             batch_effects_train = np.zeros([X.shape[0], 1])
 
+        self.batch_effects_train = batch_effects_train
         self.hbr.estimate(X, y, batch_effects_train)
 
         return self
@@ -236,7 +237,8 @@ class NormHBR(NormBase):
         pred_type = self.configs['pred_type']
 
         if self.configs['transferred'] == False:
-            yhat, s2 = self.hbr.predict(Xs, batch_effects_test, pred=pred_type)
+            
+            yhat, s2 = self.hbr.predict(X=Xs, batch_effects = batch_effects_test, batch_effects_train=self.batch_effects_train, pred=pred_type)
         else:
             raise ValueError("This is a transferred model. Please use predict_on_new_sites function.")
 
