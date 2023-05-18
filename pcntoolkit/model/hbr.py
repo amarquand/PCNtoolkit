@@ -203,10 +203,10 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                 mu_intercept_mu_params=(0.0, 5.0),
                 sigma_intercept_mu_params=(5.0,),
             ).get_samples(pb)
-            sigma = pb.make_param(
-                "sigma", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(5.0,)
+            inv_softplus_sigma = pb.make_param(
+                "inv_softplus_(sigma)", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(5.0,)
             ).get_samples(pb)
-            sigma_plus = np.log(1 + np.exp(sigma))
+            sigma = np.log(1 + np.exp(inv_softplus_sigma))
             y_like = pm.Normal("y_like", mu, sigma=sigma_plus, observed=y)
 
     return model
