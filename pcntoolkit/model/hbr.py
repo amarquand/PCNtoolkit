@@ -213,12 +213,13 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 sigma_intercept_mu_params=(1.0,),
             ).get_samples(pb)
             sigma = pb.make_param(
-                "sigma", mu_sigma_params=(1.0, 0.2), 
+                "sigma",
+                mu_sigma_params=(1.0, 0.2),
                 sigma_sigma_params=(0.2,),
                 slope_sigma_params=(0.0, 0.3),
-                intercept_sigma_params=(1.0, 0.2)
+                intercept_sigma_params=(1.0, 0.2),
             ).get_samples(pb)
-            sigma_plus =  np.log(1 + np.exp(sigma))
+            sigma_plus = np.log(1 + np.exp(sigma))
             y_like = pm.Normal("y_like", mu, sigma=sigma_plus, observed=y)
 
         elif configs["likelihood"] in ["SHASHb", "SHASHo", "SHASHo2"]:
@@ -252,7 +253,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
             sigma_plus = sigma
             epsilon = pb.make_param(
                 "epsilon",
-                epsilon_params=(0.0, 1.),
+                epsilon_params=(0.0, 1.0),
                 slope_epsilon_params=(0.0, 0.2),
                 intercept_epsilon_params=(0.0, 0.2),
             ).get_samples(pb)
@@ -274,6 +275,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 observed=y,
             )
         return model
+
 
 class HBR:
 
@@ -428,11 +430,11 @@ class HBR:
         X, y, batch_effects = expand_all(X, y, batch_effects)
         modeler = self.get_modeler()
         X = self.transform_X(X)
-        idata = self.idata if hasattr(self, 'idata') else None
+        idata = self.idata if hasattr(self, "idata") else None
         return modeler(X, y, batch_effects, self.configs, idata=idata)
 
     def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
-        #TODO this function needs to be able to compute the batch_effects_size somehow
+        # TODO this function needs to be able to compute the batch_effects_size somehow
         arrays = []
         for i in range(len(covariate_ranges)):
             arrays.append(
@@ -450,6 +452,7 @@ class HBR:
         batch_effects = cartesian_product(arrays)
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
         return X_dummy, batch_effects_dummy
+
 
 class Prior:
     """
