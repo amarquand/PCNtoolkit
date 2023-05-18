@@ -188,12 +188,12 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
 
     with pm.Model(coords=pb.coords) as model:
         pb.model = model
-        pb.batch_effect_indices = [
+        pb.batch_effect_indices = tuple([
             pm.Data(
                 pb.batch_effect_dim_names[i], pb.batch_effect_indices[i], mutable=True
             )
             for i in range(len(pb.batch_effect_indices))
-        ]
+        ])
 
         if configs["likelihood"] == "Normal":
             mu = pb.make_param(
@@ -624,7 +624,7 @@ class CentralRandomFixedParameterization(Parameterization):
 
     def get_samples(self, pb: ParamBuilder):
         with pb.model:
-            samples = self.dist[(*pb.batch_effect_indices,)]
+            samples = self.dist[pb.batch_effect_indices]
             return samples
 
 
@@ -663,7 +663,7 @@ class NonCentralRandomFixedParameterization(Parameterization):
 
     def get_samples(self, pb: ParamBuilder):
         with pb.model:
-            samples = self.dist[(*pb.batch_effect_indices,)]
+            samples = self.dist[pb.batch_effect_indices]
             return samples
 
 
