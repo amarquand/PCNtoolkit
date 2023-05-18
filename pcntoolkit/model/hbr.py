@@ -76,6 +76,7 @@ def create_poly_basis(X, order):
         colid += D
     return Phi
 
+
 def from_posterior(param, samples, distribution=None, half=False, freedom=1):
     if len(samples.shape) > 1:
         shape = samples.shape[1:]
@@ -188,12 +189,16 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
 
     with pm.Model(coords=pb.coords) as model:
         pb.model = model
-        pb.batch_effect_indices = tuple([
-            pm.Data(
-                pb.batch_effect_dim_names[i], pb.batch_effect_indices[i], mutable=True
-            )
-            for i in range(len(pb.batch_effect_indices))
-        ])
+        pb.batch_effect_indices = tuple(
+            [
+                pm.Data(
+                    pb.batch_effect_dim_names[i],
+                    pb.batch_effect_indices[i],
+                    mutable=True,
+                )
+                for i in range(len(pb.batch_effect_indices))
+            ]
+        )
 
         if configs["likelihood"] == "Normal":
             mu = pb.make_param(
@@ -204,7 +209,9 @@ def hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                 sigma_intercept_mu_params=(5.0,),
             ).get_samples(pb)
             inv_softplus_sigma = pb.make_param(
-                "inv_softplus_(sigma)", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(5.0,)
+                "inv_softplus_(sigma)",
+                mu_sigma_params=(0.0, 2.0),
+                sigma_sigma_params=(5.0,),
             ).get_samples(pb)
             sigma = np.log(1 + np.exp(inv_softplus_sigma))
             y_like = pm.Normal("y_like", mu, sigma=sigma, observed=y)
@@ -495,6 +502,7 @@ class Prior:
         else:
             return self.dist
 
+
 class ParamBuilder:
     """
     A class that simplifies the construction of parameterizations.
@@ -688,6 +696,7 @@ class LinearParameterization(Parameterization):
             samples = pm.math.flatten(intc) + pm.math.flatten(slope)
             samples = samples.reshape((samples.shape[0], 1))
             return samples
+
 
 def get_design_matrix(X, nm, basis="linear"):
     if basis == "bspline":
