@@ -186,6 +186,17 @@ def hbr(X, y, batch_effects, configs, idata=None):
     # Make a param builder that will make the correct calls
     pb = ParamBuilder(X, y, batch_effects, idata, configs)
 
+    def get_sample_dims(var):
+        if configs[f'random_{var}']:
+            return 'datapoints'
+        elif configs[f'random_slope_{var}']:
+            return 'datapoints'
+        elif configs[f'random_intercept_{var}']:
+            return 'datapoints'
+        elif configs[f'linear_{var}']:
+            return 'datapoints'
+        return None
+
     with pm.Model(coords=pb.coords) as model:
         model.add_coord("datapoints", np.arange(X.shape[0]), mutable=True)
         X = pm.MutableData("X", X, dims=("datapoints", "basis_functions"))
@@ -205,6 +216,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
         )
 
         if configs["likelihood"] == "Normal":
+            
             mu = pm.Deterministic(
                 "mu_samples",
                 pb.make_param(
@@ -214,17 +226,17 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     mu_intercept_mu_params=(0.0, 1.0),
                     sigma_intercept_mu_params=(1.0,),
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('mu'),
             )
             sigma = pm.Deterministic(
                 "sigma_samples",
                 pb.make_param(
                     "sigma", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(5.0,)
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus", pm.math.log(1 + pm.math.exp(sigma)), dims="datapoints"
+                "sigma_plus", pm.math.log(1 + pm.math.exp(sigma)), dims=get_sample_dims('sigma')
             )
             y_like = pm.Normal(
                 "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
@@ -252,7 +264,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     mu_intercept_mu_params=(0.0, 2.0),
                     sigma_intercept_mu_params=(2.0,),
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('mu'),
             )
             sigma = pm.Deterministic(
                 "sigma_samples",
@@ -263,10 +275,10 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     slope_sigma_params=(0.0, 1.0),
                     intercept_sigma_params=(1.0, 1.0),
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.log(1 + np.exp(sigma)), dims="datapoints"
+                "sigma_plus_samples", np.log(1 + np.exp(sigma)), dims=get_sample_dims('sigma')
             )
             epsilon = pm.Deterministic(
                 "epsilon_samples",
@@ -276,7 +288,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     slope_epsilon_params=(0.0, 1.0),
                     intercept_epsilon_params=(0.0, 1.0),
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('epsilon'),
             )
             delta = pm.Deterministic(
                 "delta_samples",
@@ -287,12 +299,12 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     slope_epsilon_params=(0.0, 1.0),
                     intercept_epsilon_params=(1.0, 1.0),
                 ).get_samples(pb),
-                dims="datapoints",
+                dims=get_sample_dims('delta'),
             )
             delta_plus = pm.Deterministic(
                 "delta_plus_samples",
                 np.log(1 + np.exp(delta * 10)) / 10 + 0.3,
-                dims="datapoints",
+                dims=get_sample_dims('delta'),
             )
             y_like = SHASH_map[configs["likelihood"]](
                 "y_like",
@@ -305,6 +317,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
             )
         return model
 
+  
 
 class HBR:
 
@@ -496,7 +509,6 @@ class HBR:
         return modeler(X, y, batch_effects, self.configs, idata=idata)
 
     def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
-        # TODO this function needs to be able to compute the batch_effects_size somehow
         arrays = []
         for i in range(len(covariate_ranges)):
             arrays.append(
@@ -515,6 +527,22 @@ class HBR:
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
         return X_dummy, batch_effects_dummy
 
+    def Rhats(self, var_names, thin = 1, resolution = 100):
+        """Get Rhat of posterior samples as function of sampling iteration"""
+        idata = self.idata
+        testvars = az.extract(idata, group='posterior', var_names=var_names, combined=False)
+        rhat_dict={}
+        for var_name in var_names:
+            var = np.stack(testvars[var_name].to_numpy())[:,::thin]     
+            var = var.reshape((var.shape[0], var.shape[1], -1))
+            vardim = var.shape[2]
+            interval_skip=var.shape[1]//resolution
+            rhats_var = np.zeros((resolution, vardim))
+            for v in range(vardim):
+                for j in range(resolution):
+                    rhats_var[j,v] = az.rhat(var[:,:j*interval_skip,v])
+            rhat_dict[var_name] = rhats_var
+        return rhat_dict
 
 class Prior:
     """
