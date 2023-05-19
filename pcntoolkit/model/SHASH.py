@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 See: Jones et al. (2009), Sinh-Arcsinh distributions.
 """
 
+
 def numpy_P(q):
     """
     The P function as given in Jones et al.
@@ -34,6 +35,7 @@ def numpy_P(q):
     a = (K1 + K2) * frac
     return a
 
+
 def numpy_K(p, x):
     """
     Computes the values of spp.kv(p,x) for only the unique values of p
@@ -41,6 +43,7 @@ def numpy_K(p, x):
 
     ps, idxs = np.unique(p, return_inverse=True)
     return spp.kv(ps, x)[idxs].reshape(p.shape)
+
 
 class K(Op):
     """
@@ -135,16 +138,16 @@ def m(epsilon, delta, r):
             - 4 * np.cosh(2 * epsilon / delta) * P(2 / delta)
             + 3
         ) / 8
-    else:
-        frac1 = ptt.as_tensor_variable(1 / pm.power(2, r))
-        acc = ptt.as_tensor_variable(0)
-        for i in range(r + 1):
-            combs = spp.comb(r, i)
-            flip = pm.power(-1, i)
-            ex = np.exp((r - 2 * i) * epsilon / delta)
-            p = P((r - 2 * i) / delta)
-            acc += combs * flip * ex * p
-        return frac1 * acc
+    # else:
+    #     frac1 = ptt.as_tensor_variable(1 / pm.power(2, r))
+    #     acc = ptt.as_tensor_variable(0)
+    #     for i in range(r + 1):
+    #         combs = spp.comb(r, i)
+    #         flip = pm.power(-1, i)
+    #         ex = np.exp((r - 2 * i) * epsilon / delta)
+    #         p = P((r - 2 * i) / delta)
+    #         acc += combs * flip * ex * p
+    #     return frac1 * acc
 
 
 class SHASH(RandomVariable):
@@ -156,7 +159,9 @@ class SHASH(RandomVariable):
 
     @classmethod
     def rng_fn(cls, rng, epsilon, delta, size=None) -> np.ndarray:
-        return np.sinh((np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta)
+        return np.sinh(
+            (np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta
+        )
 
 
 shash = SHASH()
@@ -325,8 +330,8 @@ class SHASHb(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
-        mean = m(epsilon,delta,1)
-        var = m(epsilon,delta,2)
+        mean = m(epsilon, delta, 1)
+        var = m(epsilon, delta, 2)
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
@@ -338,4 +343,4 @@ class SHASHb(Continuous):
             - np.log(1 + np.square(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp + np.log(var)/2 - np.log(sigma)
+        return frac1 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
