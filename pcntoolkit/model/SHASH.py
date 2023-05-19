@@ -219,7 +219,6 @@ class SHASHo(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
-        print(mu, sigma, epsilon, delta)
         remapped_value = (value - mu) / sigma
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = ptt.sqr(this_S)
