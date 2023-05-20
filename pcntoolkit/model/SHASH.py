@@ -67,13 +67,12 @@ class K(Op):
         outputs = unique_outputs[inverse_indices].reshape(inputs_storage[0].shape)
         output_storage[0][0] = outputs
 
-    # TODO see if writing a non-pytensor perform and using it in grad instead of self() will speed it up
     def grad(self, inputs, output_grads):
         # Approximation of the derivative. This should suffice for using NUTS
         dp = 1e-10
         p = inputs[0]
         x = inputs[1]
-        grad = (self(p + dp, x) - self(p, x)) / dp
+        grad = (numpy_K(p + dp, x) - numpy_K(p, x)) / dp
         return [output_grads[0] * grad, grad_not_implemented(0, 1, 2, 3)]
 
 
