@@ -217,7 +217,7 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, 
     
     return results
 
-def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None, 
+def save_results(respfile, Yhat, S2, maskvol, Z=None, Y=None, outputsuffix=None, 
                  results=None, save_path=''):
     
     print("Writing outputs ...")
@@ -244,7 +244,9 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, outputsuffix=None,
     if Z is not None:
         fileio.save(Z, os.path.join(save_path, 'Z' + ext), example=exfile, 
                     mask=maskvol)
-
+    if Y is not None:
+        fileio.save(Y, os.path.join(save_path, 'Y' + ext), example=exfile, 
+                    mask=maskvol)
     if results is not None:        
         for metric in list(results.keys()):
             if (metric == 'NLL' or metric == 'BIC') and file_ext == '.nii.gz':
@@ -670,12 +672,14 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     :param job_id: batch id
     :param fold: which cross-validation fold to use (default = 0)
     :param fold: list of model IDs to predict (if not specified all are computed)
+    :param return_y: return the (transformed) response variable (default = False)
 
     All outputs are written to disk in the same format as the input. These are:
 
     :outputs: * Yhat - predictive mean
               * S2 - predictive variance
               * Z - Z scores
+              * Y - response variable (if return_y is True)
     '''
     
     
@@ -689,6 +693,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     alg = kwargs.pop('alg')
     fold = kwargs.pop('fold',0)
     models = kwargs.pop('models', None)
+    return_y = kwargs.pop('return_y', False)
     
     if alg == 'gpr':
         raise(ValueError, "gpr is not supported with predict()")
@@ -816,10 +821,15 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
                            metrics = ['Rho', 'RMSE', 'SMSE', 'EXPV'])
         
         print("Evaluations Writing outputs ...")
-        save_results(respfile, Yhat, S2, maskvol, Z=Z, 
-                     outputsuffix=outputsuffix, results=results)
         
-        return (Yhat, S2, Z)
+        if return_y:
+            save_results(respfile, Yhat, S2, maskvol, Z=Z, Y=Y,
+                     outputsuffix=outputsuffix, results=results)
+            return (Yhat, S2, Z, Y)
+        else:
+            save_results(respfile, Yhat, S2, maskvol, Z=Z, 
+                     outputsuffix=outputsuffix, results=results)
+            return (Yhat, S2, Z)
 
     
 def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None, 
