@@ -75,7 +75,7 @@ def main():
                     testresp=testrespfile_path,
                     tsbefile=tsbefile,
                     alg='hbr', 
-                    likelihood='SHASHb',
+                    likelihood='Normal',
                     # model_type='bspline',
                    linear_mu='False',
                     random_intercept_mu = 'False',
