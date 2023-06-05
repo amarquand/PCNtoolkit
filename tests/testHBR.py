@@ -17,17 +17,19 @@ import matplotlib.pyplot as plt
 from pcntoolkit.normative import estimate
 from warnings import filterwarnings
 from pcntoolkit.util.utils import scaler
+import xarray
 
 filterwarnings('ignore')
 
+np.random.seed(10)
 
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/preclineu/andmar/py.sandbox/tmp/'  # Specift a working directory
+working_dir = '/home/stijn/temp/'  # Specifyexit() a working directory
                                                     # to save data and results.
 
-simulation_method = 'non-linear'
+simulation_method = 'linear'
 n_features = 1      # The number of input features of X
 n_grps = 2          # Number of batches in data 
 n_samples = 500     # Number of samples in each group (use a list for different
@@ -47,10 +49,10 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     
 for model_type in model_types:
     
-    nm = norm_init(X_train, Y_train, alg='hbr',likelihood='SHASHb', model_type=model_type,n_samples=100,n_tuning=10)
+    nm = norm_init(X_train, Y_train, alg='hbr',likelihood='Normal', model_type=model_type,n_samples=100,n_tuning=10)
     nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
     yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
-    
+
     for i in range(n_features):
         sorted_idx = X_test[:,i].argsort(axis=0).squeeze()
         temp_X = X_test[sorted_idx,i]

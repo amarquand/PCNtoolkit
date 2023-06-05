@@ -141,6 +141,7 @@ class NormHBR(NormBase):
         self.configs["target_accept"] = float(kwargs.get("target_accept", "0.8"))
         self.configs["init"] = kwargs.get("init", "jitter+adapt_diag")
         self.configs["cores"] = int(kwargs.get("cores", "1"))
+        self.configs["remove_datapoints_from_posterior"] = kwargs.get("remove_datapoints_from_posterior","True") == "True"
         # model transfer setting
         self.configs["freedom"] = int(kwargs.get("freedom", "1"))
         self.configs["transferred"] = False

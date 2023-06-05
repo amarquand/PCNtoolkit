@@ -18,6 +18,7 @@ import numpy as np
 import pymc as pm
 import pytensor
 import arviz as az
+import xarray
 
 from itertools import product
 from functools import reduce
@@ -371,7 +372,7 @@ class HBR:
             self.MAP = pm.find_MAP(method=method)
         return self.MAP
 
-    def estimate(self, X, y, batch_effects):
+    def estimate(self, X, y, batch_effects, **kwargs):
         """Function to estimate the model"""
         X, y, batch_effects = expand_all(X, y, batch_effects)
         X = self.transform_X(X)
@@ -387,10 +388,19 @@ class HBR:
                 n_init=500000,
                 cores=self.configs["cores"],
             )
+        self.vars_to_sample = ['y_like']
+        if self.configs['remove_datapoints_from_posterior']:
+            chain = self.idata.posterior.coords['chain'].data
+            draw = self.idata.posterior.coords['draw'].data
+            for j in self.idata.posterior.variables.mapping.keys():
+                if j.endswith('_samples'):
+                    dummy_array = xarray.DataArray(data = np.zeros((len(chain), len(draw), 1)), coords = {'chain':chain, 'draw':draw,'empty':np.array([0])}, name=j)
+                    self.idata.posterior[j] = dummy_array
+                    self.vars_to_sample.append(j)
         return self.idata
 
     def predict(
-        self, X, batch_effects, batch_effects_maps, pred="single", var_names=["y_like"]
+        self, X, batch_effects, batch_effects_maps, pred="single", var_names=None, **kwargs
     ):
         """Function to make predictions from the model
         Args:
@@ -413,10 +423,13 @@ class HBR:
             ],
             axis=1,
         )
+
+        # See if a list of var_names is provided, set to self.vars_to_sample otherwise
+        if (var_names is None) or (var_names == ['y_like']):
+            var_names = self.vars_to_sample
+
         n_samples = X.shape[0]
         with modeler(X, y, truncated_batch_effects_train, self.configs) as model:
-            # TODO
-            # This fails because the batch_effects provided here may not contain the same batch_effects as in the training set. If some are missing, the dimensions of the distributions don't match
             # For each batch effect dim
             for i in range(batch_effects.shape[1]):
                 # Make a map that maps batch effect values to their index
