@@ -53,8 +53,8 @@ class K(Op):
     __props__ = ()
 
     def make_node(self, p, x):
-        p = pt.tensor.as_tensor_variable(p, "floatX")
-        x = pt.tensor.as_tensor_variable(x, "floatX")
+        p = pt.tensor.as_tensor_variable(p)
+        x = pt.tensor.as_tensor_variable(x)
         return Apply(self, [p, x], [p.type()])
 
     def perform(self, node, inputs_storage, output_storage):
@@ -72,7 +72,7 @@ class K(Op):
         dp = 1e-10
         p = inputs[0]
         x = inputs[1]
-        grad = (numpy_K(p + dp, x) - numpy_K(p, x)) / dp
+        grad = (self(p + dp, x) - self(p, x)) / dp
         return [output_grads[0] * grad, grad_not_implemented(0, 1, 2, 3)]
 
 
