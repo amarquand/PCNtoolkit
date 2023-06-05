@@ -430,7 +430,6 @@ class NormHBR(NormBase):
         if z_scores is None:
             z_scores = np.arange(-3, 4)
         likelihood=self.configs['likelihood']
-        print(f"{likelihood=}")
 
         # Determine the variables to predict
         if self.configs["likelihood"] == "Normal":
@@ -580,7 +579,7 @@ def m(epsilon, delta, r):
         acc += combs * flip * ex * p
     return frac1 * acc
 
-def quantile( mu, sigma, epsilon, delta, zs=0, likelihood = "Normal"):
+def quantile( mu, sigma, epsilon=None, delta=None, zs=0, likelihood = "Normal"):
     """Get the zs'th quantiles given likelihood parameters"""
     if likelihood.startswith('SHASH'):
         if likelihood == "SHASHo":
@@ -600,7 +599,7 @@ def quantile( mu, sigma, epsilon, delta, zs=0, likelihood = "Normal"):
     return quantiles
 
     
-def z_score(mu, sigma, epsilon, delta, y, likelihood = "Normal"):
+def z_score(mu, sigma, epsilon=None, delta=None, y=None, likelihood = "Normal"):
     """Get the z-scores of Y, given likelihood parameters"""
     if likelihood.startswith('SHASH'):
         if likelihood == "SHASHo":

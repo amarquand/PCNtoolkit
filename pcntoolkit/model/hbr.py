@@ -236,7 +236,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus", pm.math.log(1 + pm.math.exp(sigma)), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", pm.math.log(1 + pm.math.exp(sigma)), dims=get_sample_dims('sigma')
             )
             y_like = pm.Normal(
                 "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
@@ -285,8 +285,8 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 pb.make_param(
                     "epsilon",
                     epsilon_params=(0.0, 1.0),
-                    slope_epsilon_params=(0.0, 1.0),
-                    intercept_epsilon_params=(0.0, 1.0),
+                    slope_epsilon_params=(0.0, 0.2),
+                    intercept_epsilon_params=(0.0, 0.2),
                 ).get_samples(pb),
                 dims=get_sample_dims('epsilon'),
             )
@@ -296,8 +296,8 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     "delta",
                     delta_params=(1.0, 1.0),
                     delta_dist="normal",
-                    slope_epsilon_params=(0.0, 1.0),
-                    intercept_epsilon_params=(1.0, 1.0),
+                    slope_delta_params=(0.0, 0.2),
+                    intercept_delta_params=(1.0, 0.3),
                 ).get_samples(pb),
                 dims=get_sample_dims('delta'),
             )
@@ -376,7 +376,7 @@ class HBR:
         X, y, batch_effects = expand_all(X, y, batch_effects)
         X = self.transform_X(X)
         modeler = self.get_modeler()
-        if self.idata:
+        if hasattr(self, 'idata'):
             del self.idata
         with modeler(X, y, batch_effects, self.configs) as m:
             self.idata = pm.sample(
@@ -491,10 +491,12 @@ class HBR:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         return X, batch_effects, generated_samples
 
-    def sample_prior_predictive(self, X, batch_effects, samples, idata=None):
+    def sample_prior_predictive(self, X, batch_effects, samples, y = None, idata=None):
         """Function to sample from prior predictive distribution"""
-        X, batch_effects = expand_all(X, batch_effects)
-        y = np.zeros([X.shape[0], 1])
+        if y is None:
+            y = np.zeros([X.shape[0], 1])
+        X, y, batch_effects = expand_all(X, y, batch_effects)
+
         X = self.transform_X(X)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.configs, idata):
