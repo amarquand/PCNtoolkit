@@ -81,12 +81,7 @@ def create_poly_basis(X, order):
     return Phi
 
 
-def from_posterior(param, samples, distribution=None, half=False, freedom=1):
-    if len(samples.shape) > 1:
-        shape = samples.shape[1:]
-    else:
-        shape = None
-
+def from_posterior(param, samples, shape,  distribution=None, half=False, freedom=1):
     if distribution is None:
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
@@ -222,22 +217,22 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
-                    mu_slope_mu_params=(0.0, 1.0),
-                    sigma_slope_mu_params=(1.0,),
-                    mu_intercept_mu_params=(0.0, 1.0),
-                    sigma_intercept_mu_params=(1.0,),
+                    mu_slope_mu_params=(0.0, 3.0),
+                    sigma_slope_mu_params=(3.0,),
+                    mu_intercept_mu_params=(0.0, 3.0),
+                    sigma_intercept_mu_params=(3.0,),
                 ).get_samples(pb),
                 dims=get_sample_dims('mu'),
             )
             sigma = pm.Deterministic(
                 "sigma_samples",
                 pb.make_param(
-                    "sigma", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(5.0,)
+                    "sigma", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(2.0,)
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", pm.math.log(1 + pm.math.exp(sigma)), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", pm.math.log(1 + pm.math.exp(sigma/3))*3, dims=get_sample_dims('sigma')
             )
             y_like = pm.Normal(
                 "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
@@ -586,24 +581,39 @@ class Prior:
         """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
         with pb.model as m:
             if pb.idata is not None:
-                samples = az.extract(pb.idata, var_names=self.name).to_numpy()
-                if not self.has_random_effect:
-                    samples = np.reshape(samples, (-1,))
+                # Get samples
+                samples = az.extract(pb.idata, var_names=self.name)
+                # Define mapping to new shape
+                def get_new_dim_size(tup):
+                    oldsize, name = tup
+                    if name.startswith('batch_effect_'):
+                        ind = pb.batch_effect_dim_names.index(name)
+                        return len(np.unique(pb.batch_effect_indices[ind].container.data))
+                    return oldsize
+                
+                new_shape = list(map(get_new_dim_size, zip(samples.shape,samples.dims)))
+                if len(new_shape) == 1:
+                    new_shape = None
+                else:
+                    new_shape = new_shape[:-1]
                 self.dist = from_posterior(
                     param=self.name,
-                    samples=samples,
+                    samples=samples.to_numpy(),
+                    shape = new_shape,
                     distribution=dist,
                     freedom=pb.configs["freedom"],
                 )
-            dims = []
-            if self.has_random_effect:
-                dims = dims + pb.batch_effect_dim_names
-            if self.name.startswith("slope") or self.name.startswith("offset_slope"):
-                dims = dims + ["basis_functions"]
-            if dims == []:
-                self.dist = self.distmap[dist](self.name, *params)
+
             else:
-                self.dist = self.distmap[dist](self.name, *params, dims=dims)
+                dims = []
+                if self.has_random_effect:
+                    dims = dims + pb.batch_effect_dim_names
+                if self.name.startswith("slope") or self.name.startswith("offset_slope"):
+                    dims = dims + ["basis_functions"]
+                if dims == []:
+                    self.dist = self.distmap[dist](self.name, *params)
+                else:
+                    self.dist = self.distmap[dist](self.name, *params, dims=dims)
 
     def __getitem__(self, idx):
         """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
@@ -687,7 +697,7 @@ class Parameterization:
 
     def __init__(self, name):
         self.name = name
-        print(name, type(self))
+        # print(name, type(self))
 
     def get_samples(self, pb):
         pass
@@ -805,7 +815,7 @@ class LinearParameterization(Parameterization):
             intc = self.intercept_parameterization.get_samples(pb)
             slope_samples = self.slope_parameterization.get_samples(pb)
             if pb.configs[f"random_slope_{self.name}"]:
-                slope = pb.X * self.slope_parameterization.get_samples(pb)
+                slope = pb.X * slope_samples
                 slope = slope.sum(axis=-1)
             else:
                 slope = pb.X @ self.slope_parameterization.get_samples(pb)
