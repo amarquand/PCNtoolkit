@@ -6,7 +6,6 @@ import numpy as np
 import pickle
 from matplotlib import pyplot as plt
 import arviz as az
-from pcntoolkit.util.utils import scaler
 processing_dir = "HBR_demo/"    # replace with a path to your working directory
 if not os.path.isdir(processing_dir):
     os.makedirs(processing_dir)
@@ -76,18 +75,14 @@ def main():
                     testresp=testrespfile_path,
                     tsbefile=tsbefile,
                     alg='hbr', 
-                    likelihood='SHASHb',
+                    likelihood='Normal',
                     # model_type='bspline',
-                    linear_mu='True',
-                    random_intercept_mu = 'True',
-                    centered_intercept_mu='True',
-                    random_slope_mu='False',
-                    centered_slope_mu='False',
-                    random_sigma='True',
-                    random_intercept_sigma = 'True',
-                    centered_intercept_sigma='False',
-                    random_slope_sigma='True',
-                    centered_slope_sigma='True',
+                   linear_mu='False',
+                    random_intercept_mu = 'False',
+                    random_slope_mu = 'False',
+                    random_intercept_sigma='False',
+                    random_sigma='False',
+                    random_mu='False',
                     log_path=log_dir, 
                     binary='True',
                     n_samples=17,

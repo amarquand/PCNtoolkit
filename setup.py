@@ -21,7 +21,6 @@ setup(name='pcntoolkit',
           'torch>=1.1.0', 
           'sphinx-tabs',
           'pymc>=5.1.0',
-          'pytensor',
           'arviz==0.13.0'
       ],
       #python_requires='<3.10',
