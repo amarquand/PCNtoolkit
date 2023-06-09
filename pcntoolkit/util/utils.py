@@ -14,7 +14,7 @@ import pandas as pd
 import bspline
 from bspline import splinelab
 from sklearn.datasets import make_regression
-import pymc3 as pm
+import pymc as pm
 from io import StringIO
 import subprocess
 import re
@@ -1322,16 +1322,16 @@ def get_package_versions():
     versions['Python'] = platform.python_version()
     
     try: 
-        import theano
-        versions['Theano'] = theano.__version__
+        import pytensor
+        versions['pytensor'] = pytensor.__version__
     except:
-        versions['Theano'] = ''
+        versions['pytensor'] = ''
         
     try: 
-        import pymc3
-        versions['PyMC3'] = pymc3.__version__
+        import pymc
+        versions['PyMC'] = pymc.__version__
     except:
-        versions['PyMC3'] = ''
+        versions['PyMC'] = ''
         
     try: 
         import pcntoolkit
@@ -1450,7 +1450,7 @@ def yes_or_no(question):
 
 
 
-#====== This is stuff used for the SHASH distributions, but using numpy (not pymc or theano) ===
+#====== This is stuff used for the SHASH distributions, but using numpy (not pymc or pytensor) ===
 
 def K(p, x):
     return np.array(spp.kv(p, x))
