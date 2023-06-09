@@ -7,7 +7,7 @@ import scipy.special as spp
 import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
-import pymc3 as pm
+import pymc as pm
 from pcntoolkit.model.SHASH import *
 from pcntoolkit.model.hbr import bspline_transform
 
@@ -59,7 +59,7 @@ def z_score(Y, params, likelihood = "Normal"):
             SHASH_c = ((Y-mu)/sigma)
             SHASH = SHASH_c * true_sigma + true_mu
             Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == 'Normal':
+    if likelihood == 'Normal':
         Z = (Y-params['mu'])/params['sigma']
     else:
         exit("Unsupported likelihood")
@@ -113,7 +113,7 @@ def quantile(zs, params, likelihood = "Normal"):
             true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
             SHASH_c = ((S_inv(zs,epsilon,delta)-true_mu)/true_sigma)
             quantiles = SHASH_c *sigma + mu
-    elif likelihood == 'Normal':
+    if likelihood == 'Normal':
         quantiles = zs*params['sigma'] + params['mu']
     else:
         exit("Unsupported likelihood")
@@ -157,8 +157,8 @@ def forward(X, Z, model, sample):
 
     if likelihood == 'Normal':
         parameter_list = ['mu','sigma']
-    elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
-        parameter_list = ['mu','sigma','epsilon','delta']
+    # elif likelihood in ['SHASHb','SHASHo','SHASHo2']:
+    #     parameter_list = ['mu','sigma','epsilon','delta']
     else:
         exit("Unsupported likelihood")
 
