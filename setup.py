@@ -23,5 +23,4 @@ setup(name='pcntoolkit',
           'pymc>=5.1.0',
           'arviz==0.13.0'
       ],
-      #python_requires='<3.10',
       zip_safe=False)
