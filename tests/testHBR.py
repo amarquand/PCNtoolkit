@@ -49,7 +49,7 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     
 for model_type in model_types:
     
-    nm = norm_init(X_train, Y_train, alg='hbr',likelihood='Normal', model_type=model_type,n_samples=100,n_tuning=10)
+    nm = norm_init(X_train, Y_train, alg='hbr',likelihood='SHASHb', model_type=model_type,n_samples=100,n_tuning=10)
     nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
     yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
 
@@ -63,7 +63,7 @@ for model_type in model_types:
         
         plt.figure()
         for j in range(n_grps):
-            plt.scatter(temp_X[temp_be==j,], temp_Y[temp_be==j,], 
+            scat1 = plt.scatter(temp_X[temp_be==j,], temp_Y[temp_be==j,], 
                         label='Group' + str(j))
             plt.plot(temp_X[temp_be==j,], temp_yhat[temp_be==j,])
             plt.fill_between(temp_X[temp_be==j,], temp_yhat[temp_be==j,] - 
@@ -71,9 +71,18 @@ for model_type in model_types:
                              temp_yhat[temp_be==j,] + 
                              1.96 * np.sqrt(temp_s2[temp_be==j,]),
                              color='gray', alpha=0.2)
+
+            # Showing the quantiles
+            resolution = 200
+            synth_X = np.linspace(-3, 3, resolution)
+            q = nm.get_mcmc_quantiles(synth_X, batch_effects=j*np.ones(resolution))
+            col = scat1.get_facecolors()[0]
+            plt.plot(synth_X, q.T,  linewidth=1, color=col, zorder = 0)
+
         plt.title('Model %s, Feature %d' %(model_type, i))
         plt.legend()
         plt.show()
+
 
 
 ############################## Normative Modelling Test #######################
