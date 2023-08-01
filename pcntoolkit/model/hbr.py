@@ -537,12 +537,13 @@ class HBR:
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
         return X_dummy, batch_effects_dummy
 
-    def Rhats(self, var_names, thin = 1, resolution = 100):
+    def Rhats(self, var_names=None, thin = 1, resolution = 100):
         """Get Rhat of posterior samples as function of sampling iteration"""
         idata = self.idata
         testvars = az.extract(idata, group='posterior', var_names=var_names, combined=False)
+        testvar_names = [var for var in list(testvars.data_vars.keys()) if not '_samples' in var]
         rhat_dict={}
-        for var_name in var_names:
+        for var_name in testvar_names:
             var = np.stack(testvars[var_name].to_numpy())[:,::thin]     
             var = var.reshape((var.shape[0], var.shape[1], -1))
             vardim = var.shape[2]
