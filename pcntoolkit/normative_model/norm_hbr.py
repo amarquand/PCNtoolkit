@@ -432,14 +432,16 @@ class NormHBR(NormBase):
             z_scores = np.arange(-3, 4)
         likelihood=self.configs['likelihood']
 
-        # Determine the variables to predict
+       # Determine the variables to predict
         if self.configs["likelihood"] == "Normal":
-            var_names = ["mu_samples", "sigma_plus_samples"]
+            var_names = ["mu_samples", "sigma_samples","sigma_plus_samples"]
         elif self.configs["likelihood"].startswith("SHASH"):
             var_names = [
                 "mu_samples",
+                "sigma_samples",
                 "sigma_plus_samples",
                 "epsilon_samples",
+                "delta_samples",
                 "delta_plus_samples",
             ]
         else:
@@ -462,6 +464,11 @@ class NormHBR(NormBase):
         post_pred = az.extract(
             self.hbr.idata, "posterior_predictive", var_names=var_names
         )
+        
+        # Remove superfluous var_nammes
+        var_names.remove('sigma_samples')
+        if 'delta_samples' in var_names:
+            var_names.remove('delta_samples')
 
         # Separate the samples into a list so that they can be unpacked 
         array_of_vars = list(map(lambda x: post_pred[x], var_names))
@@ -498,12 +505,14 @@ class NormHBR(NormBase):
             
         # Determine the variables to predict
         if self.configs["likelihood"] == "Normal":
-            var_names = ["mu_samples", "sigma_plus_samples"]
+            var_names = ["mu_samples", "sigma_samples","sigma_plus_samples"]
         elif self.configs["likelihood"].startswith("SHASH"):
             var_names = [
                 "mu_samples",
+                "sigma_samples",
                 "sigma_plus_samples",
                 "epsilon_samples",
+                "delta_samples",
                 "delta_plus_samples",
             ]
         else:
@@ -526,6 +535,11 @@ class NormHBR(NormBase):
         post_pred = az.extract(
             self.hbr.idata, "posterior_predictive", var_names=var_names
         )
+        
+        # Remove superfluous var_nammes
+        var_names.remove('sigma_samples')
+        if 'delta_samples' in var_names:
+            var_names.remove('delta_samples')
 
         # Separate the samples into a list so that they can be unpacked 
         array_of_vars = list(map(lambda x: post_pred[x], var_names))
@@ -541,7 +555,7 @@ class NormHBR(NormBase):
         )
         return z_scores.mean(axis=-1)
     
-    
+
 
 def S_inv(x, e, d):
     return np.sinh((np.arcsinh(x) + e) / d)
