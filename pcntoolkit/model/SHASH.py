@@ -330,7 +330,7 @@ class SHASHb(Continuous):
 
     def logp(value, mu, sigma, epsilon, delta):
         mean = m(epsilon, delta, 1)
-        var = m(epsilon, delta, 2)
+        var = m(epsilon, delta, 2) - mean**2
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
