@@ -76,3 +76,4 @@ ssh_error_log.txt
 HBR_demo/*
 dist/pcntoolkit-0.27-py3.11.egg
 
+tests/test_SHASH.ipynb
