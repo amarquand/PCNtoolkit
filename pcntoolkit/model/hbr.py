@@ -392,6 +392,8 @@ class HBR:
                     dummy_array = xarray.DataArray(data = np.zeros((len(chain), len(draw), 1)), coords = {'chain':chain, 'draw':draw,'empty':np.array([0])}, name=j)
                     self.idata.posterior[j] = dummy_array
                     self.vars_to_sample.append(j)
+            self.idata.observed_data = None
+            self.idata.constant_data = None
         return self.idata
 
     def predict(
