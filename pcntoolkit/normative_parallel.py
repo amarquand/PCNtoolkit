@@ -458,7 +458,7 @@ def collect_nm(processing_dir,
     :param collect: If True data is checked for failed batches and collected; if False data is just checked
     :param binary: Results in pkl format
 
-    :outputs: Text files containing all results accross all batches the combined output (written to disk).
+    :outputs: Text or pkl files containing all results accross all batches the combined output (written to disk).
 
     :returns 0: if batches fail
     :returns 1: if bathches complete successfully
@@ -492,7 +492,10 @@ def collect_nm(processing_dir,
         else:
             file_example = pd.read_pickle(file_example[0])
         numsubjects = file_example.shape[0]
-        batch_size = file_example.shape[1]
+        try:
+            batch_size = file_example.shape[1] # doesn't exist if size=1, and txt file
+        except:
+            batch_size = 1
     
         # artificially creates files for batches that were not executed
         batch_dirs = glob.glob(processing_dir + 'batch_*/')
@@ -600,7 +603,10 @@ def collect_nm(processing_dir,
             pRho_filenames = fileio.sort_nicely(pRho_filenames)
             pRho_dfs = []
             for pRho_filename in pRho_filenames:
-                pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file 
+                    pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:                    
+                    pRho_dfs.append(pd.DataFrame(fileio.load(pRho_filename)))
             pRho_dfs = pd.concat(pRho_dfs, ignore_index=True, axis=0)
             fileio.save(pRho_dfs, processing_dir + 'pRho' + outputsuffix +
                         file_extentions)
@@ -612,7 +618,10 @@ def collect_nm(processing_dir,
             Rho_filenames = fileio.sort_nicely(Rho_filenames)
             Rho_dfs = []
             for Rho_filename in Rho_filenames:
-                Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array
+                else: 
+                    Rho_dfs.append(pd.DataFrame(fileio.load(Rho_filename)))
             Rho_dfs = pd.concat(Rho_dfs, ignore_index=True, axis=0)
             fileio.save(Rho_dfs, processing_dir + 'Rho' + outputsuffix +
                         file_extentions)
@@ -660,7 +669,10 @@ def collect_nm(processing_dir,
             rmse_filenames = fileio.sort_nicely(rmse_filenames)
             rmse_dfs = []
             for rmse_filename in rmse_filenames:
-                rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else: 
+                    rmse_dfs.append(pd.DataFrame(fileio.load(rmse_filename)))
             rmse_dfs = pd.concat(rmse_dfs, ignore_index=True, axis=0)
             fileio.save(rmse_dfs, processing_dir + 'RMSE' + outputsuffix +
                         file_extentions)
@@ -672,7 +684,10 @@ def collect_nm(processing_dir,
             smse_filenames = fileio.sort_nicely(smse_filenames)
             smse_dfs = []
             for smse_filename in smse_filenames:
-                smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:
+                    smse_dfs.append(pd.DataFrame(fileio.load(smse_filename)))
             smse_dfs = pd.concat(smse_dfs, ignore_index=True, axis=0)
             fileio.save(smse_dfs, processing_dir + 'SMSE' + outputsuffix +
                         file_extentions)
@@ -684,7 +699,10 @@ def collect_nm(processing_dir,
             expv_filenames = fileio.sort_nicely(expv_filenames)
             expv_dfs = []
             for expv_filename in expv_filenames:
-                expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:
+                    expv_dfs.append(pd.DataFrame(fileio.load(expv_filename)))
             expv_dfs = pd.concat(expv_dfs, ignore_index=True, axis=0)
             fileio.save(expv_dfs, processing_dir + 'EXPV' + outputsuffix +
                         file_extentions)
@@ -696,7 +714,10 @@ def collect_nm(processing_dir,
             msll_filenames = fileio.sort_nicely(msll_filenames)
             msll_dfs = []
             for msll_filename in msll_filenames:
-                msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:
+                    msll_dfs.append(pd.DataFrame(fileio.load(msll_filename)))
             msll_dfs = pd.concat(msll_dfs, ignore_index=True, axis=0)
             fileio.save(msll_dfs, processing_dir + 'MSLL' + outputsuffix +
                         file_extentions)
@@ -708,7 +729,10 @@ def collect_nm(processing_dir,
             nll_filenames = fileio.sort_nicely(nll_filenames)
             nll_dfs = []
             for nll_filename in nll_filenames:
-                nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:
+                    nll_dfs.append(pd.DataFrame(fileio.load(nll_filename)))
             nll_dfs = pd.concat(nll_dfs, ignore_index=True, axis=0)
             fileio.save(nll_dfs, processing_dir + 'NLL' + outputsuffix +
                         file_extentions)
@@ -720,7 +744,10 @@ def collect_nm(processing_dir,
             bic_filenames = fileio.sort_nicely(bic_filenames)
             bic_dfs = []
             for bic_filename in bic_filenames:
-                bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)))
+                if batch_size == 1 and binary is False: #if batch size = 1 and .txt file
+                    bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)[np.newaxis,])) # from 0d (scalar) to 1d-array 
+                else:
+                    bic_dfs.append(pd.DataFrame(fileio.load(bic_filename)))
             bic_dfs = pd.concat(bic_dfs, ignore_index=True, axis=0)
             fileio.save(bic_dfs, processing_dir + 'BIC' + outputsuffix +
                         file_extentions)
