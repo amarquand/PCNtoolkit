@@ -49,7 +49,7 @@ conda install -y pandas scipy
 Install pip dependencies
 
 ```
-pip --no-cache-dir install nibabel sklearn torch glob3 
+pip --no-cache-dir install nibabel scikit-learn torch glob3 
 ```
 
 Clone the repo
