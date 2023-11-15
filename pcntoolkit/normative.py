@@ -447,7 +447,7 @@ def estimate(covfile, respfile, **kwargs):
             kwargs['trbefile'] = 'be_kfold_tr_tempfile.pkl'
             kwargs['tsbefile'] = 'be_kfold_ts_tempfile.pkl'
 
-        # estimate the models for all subjects
+        # estimate the models for all response variables
         for i in range(0, len(nz)):              
             print("Estimating model ", i+1, "of", len(nz))
             nm = norm_init(Xz_tr, Yz_tr[:, i], alg=alg, **kwargs)
@@ -500,7 +500,14 @@ def estimate(covfile, respfile, **kwargs):
                     else:
                         Ytest = Y[ts, nz[i]] 
                     
-                    Z[ts, nz[i]] = (Ytest - Yhat[ts, nz[i]]) / \
+                    if alg=='hbr':
+                        if outscaler in ['standardize', 'minmax', 'robminmax']:
+                            Ytestz = Y_scaler.transform(Ytest.reshape(-1,1), index=i)
+                        else:
+                            Ytestz = Ytest.reshape(-1,1)
+                        Z[ts, nz[i]] = nm.get_mcmc_zscores(Xz_ts, Ytestz, **kwargs)
+                    else:
+                        Z[ts, nz[i]] = (Ytest - Yhat[ts, nz[i]]) / \
                                     np.sqrt(S2[ts, nz[i]])       
                     
             except Exception as e:
@@ -749,7 +756,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     else:
         Xz = X
     
-    # estimate the models for all subjects
+    # estimate the models for all variabels
+    #TODO Z-scores adaptation for SHASH HBR
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)      
         nm = norm_init(Xz)
@@ -806,7 +814,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
 
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1] 
                 Yw[:,i] = nm.blr.warp.f(Y[:,i], warp_param)
-            Y = Yw;
+            Y = Yw
         else:
             warp = False
         
@@ -1062,7 +1070,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             Yte = Yw;
         else:
             warp = False
-            
+        
+        #TODO Z-scores adaptation for SHASH HBR    
         Z = (Yte - Yhat) / np.sqrt(S2)
     
         print("Evaluating the model ...")
