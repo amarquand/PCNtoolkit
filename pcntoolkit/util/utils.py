@@ -1141,15 +1141,19 @@ class scaler:
                 self.max[i] = np.median(np.sort(X[:,i])[-int(np.round(X.shape[0] * self.tail)):])   
                 
                 
-    def transform(self, X):
+    def transform(self, X, index=None):
         
         if self.scaler_type == 'standardize':
-            
-            X = (X - self.m) / self.s 
+            if index is None:
+                X = (X - self.m) / self.s 
+            else:
+                X = (X - self.m[index]) / self.s[index]
         
         elif self.scaler_type in ['minmax', 'robminmax']:
-            
-            X = (X - self.min) / (self.max - self.min)
+            if index is None:
+                X = (X - self.min) / (self.max - self.min)
+            else:
+                X = (X - self.min[index]) / (self.max[index] - self.min[index])
             
             if self.adjust_outliers:
                 
