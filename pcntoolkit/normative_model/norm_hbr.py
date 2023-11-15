@@ -488,7 +488,7 @@ class NormHBR(NormBase):
         return quantiles.mean(axis=-1)
     
 
-    def get_mcmc_zscores(self, X, y, batch_effects=None):
+    def get_mcmc_zscores(self, X, y, **kwargs):
 
         """
         Computes zscores of data given an estimated model
@@ -496,13 +496,17 @@ class NormHBR(NormBase):
         Args:
             X ([N*p]ndarray): covariates
             y ([N*1]ndarray): response variables
-            batch_effects (ndarray): the batch effects corresponding to X
         """
-        # Set batch effects to zero if none are provided
+        
         print(self.configs['likelihood'])
-        if batch_effects is None:
-            batch_effects = batch_effects_test = np.zeros([X.shape[0], 1])
-            
+        
+        tsbefile = kwargs.get("tsbefile", None)
+        if tsbefile is not None:
+            batch_effects_test = fileio.load(tsbefile)
+        else:         # Set batch effects to zero if none are provided
+            print("Could not find batch-effects file! Initializing all as zeros ...")
+            batch_effects_test = np.zeros([X.shape[0], 1])
+
         # Determine the variables to predict
         if self.configs["likelihood"] == "Normal":
             var_names = ["mu_samples", "sigma_samples","sigma_plus_samples"]
@@ -525,7 +529,7 @@ class NormHBR(NormBase):
         # Do a forward to get the posterior predictive in the idata
         self.hbr.predict(
             X=X,
-            batch_effects=batch_effects,
+            batch_effects=batch_effects_test,
             batch_effects_maps=self.batch_effects_maps,
             pred="single",
             var_names=var_names+["y_like"],
@@ -536,7 +540,7 @@ class NormHBR(NormBase):
             self.hbr.idata, "posterior_predictive", var_names=var_names
         )
         
-        # Remove superfluous var_nammes
+        # Remove superfluous var_names
         var_names.remove('sigma_samples')
         if 'delta_samples' in var_names:
             var_names.remove('delta_samples')
@@ -553,7 +557,7 @@ class NormHBR(NormBase):
             *array_of_vars,
             kwargs={"y": y, "likelihood": self.configs['likelihood']},
         )
-        return z_scores.mean(axis=-1)
+        return z_scores.mean(axis=-1).values
     
 
 
