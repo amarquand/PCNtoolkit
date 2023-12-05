@@ -431,6 +431,11 @@ class HBR:
             var_names = self.vars_to_sample
 
         n_samples = X.shape[0]
+
+        # Need to delete self.idata.posterior_predictive, otherwise, if it exists, it will not be overwritten
+        if hasattr(self.idata, 'posterior_predictive'):
+            del self.idata.posterior_predictive
+            
         with modeler(X, y, truncated_batch_effects_train, self.configs) as model:
             # For each batch effect dim
             for i in range(batch_effects.shape[1]):
