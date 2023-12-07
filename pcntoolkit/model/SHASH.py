@@ -169,8 +169,7 @@ shash = SHASH()
 class SHASH(Continuous):
     rv_op = shash
     """
-    SHASH described by Jones et al., based on a standard normal
-    All SHASH subclasses inherit from this
+    SHASH described by Jones et al., based on a standard normal distribution.
     """
 
     @classmethod
@@ -210,8 +209,7 @@ shasho = SHASHoRV()
 class SHASHo(Continuous):
     rv_op = shasho
     """
-    This is the shash where the location and scale parameters have simply been applied as an linear transformation
-    directly on the original shash.
+    This is the transformation where the location and scale parameters have simply been applied as an linear transformation directly on the original distribution.
     """
 
     @classmethod
@@ -257,7 +255,7 @@ shasho2 = SHASHo2RV()
 class SHASHo2(Continuous):
     rv_op = shasho2
     """
-    This is the shash where we apply the reparameterization provided in section 4.3 in Jones et al.
+    This is the reparameterization where we apply the transformation provided in section 4.3 in Jones et al.
     """
 
     @classmethod
@@ -316,8 +314,7 @@ shashb = SHASHbRV()
 class SHASHb(Continuous):
     rv_op = shashb
     """
-    This is the shash where the location and scale parameters been applied as an linear transformation on the shash
-    distribution which was corrected for mean and variance.
+    This is the reparameterization where the location and scale parameters been applied as an linear transformation on the shash distribution which was corrected for mean and variance.
     """
 
     @classmethod

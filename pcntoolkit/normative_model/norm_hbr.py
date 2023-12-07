@@ -103,7 +103,7 @@ class NormHBR(NormBase):
         is important for some convergence checks.
     :param cores: String that specifies the number of chains to run in parallel.
         (defauls is '1').
-    :param Initialization method to use for auto-assigned NUTS samplers. The
+    :param init: Initialization method to use for auto-assigned NUTS samplers. The
         defauls is 'jitter+adapt_diag' that starts with a identity mass matrix
         and then adapt a diagonal based on the variance of the tuning samples
         while adding a uniform jitter in [-1, 1] to the starting point in each chain.
@@ -251,6 +251,19 @@ class NormHBR(NormBase):
         return -1
 
     def estimate(self, X, y, **kwargs):
+        """
+        Sample from the posterior of the Hierarchical Bayesian Regression model.
+
+        This function samples from the posterior distribution of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'. 
+        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data. 
+        Otherwise, the batch effects are initialized as zeros.
+
+        :param X: Data matrix.
+        :param y: Target values.
+        :param kwargs: Keyword arguments which may include:
+            - 'trbefile': File containing the batch effects for the training data. Optional.
+        :return: The instance of the NormHBR object.
+        """
         trbefile = kwargs.get("trbefile", None)
         if trbefile is not None:
             batch_effects_train = fileio.load(trbefile)
@@ -268,6 +281,22 @@ class NormHBR(NormBase):
         return self
 
     def predict(self, Xs, X=None, Y=None, **kwargs):
+        """
+        Predict the target values for the given test data.
+
+        This function predicts the target values for the given test data 'Xs' using the Hierarchical Bayesian Regression (HBR) model. 
+        If 'X' and 'Y' are provided, they are used to update the model before prediction. 
+        If 'tsbefile' is provided in kwargs, it is used to as batch effects for the test data. 
+        Otherwise, the batch effects are initialized as zeros.
+
+        :param Xs: Test data matrix.
+        :param X: Training data matrix. Optional.
+        :param Y: Training target values. Optional.
+        :param kwargs: Keyword arguments which may include:
+            - 'tsbefile': File containing the batch effects for the test data. Optional.
+        :return: A tuple containing the predicted target values and the marginal variances for the test data.
+        :raises ValueError: If the model is a transferred model. In this case, use the predict_on_new_sites function.
+        """
         tsbefile = kwargs.get("tsbefile", None)
         if tsbefile is not None:
             batch_effects_test = fileio.load(tsbefile)
@@ -295,11 +324,34 @@ class NormHBR(NormBase):
     
 
     def estimate_on_new_sites(self, X, y, batch_effects):
+        """
+        Samples from the posterior of the Hierarchical Bayesian Regression model.
+
+        This function samples from the posterior of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'. The posterior samples from the previous iteration are used to construct the priors for this one.  
+        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data. 
+        Otherwise, the batch effects are initialized as zeros.
+
+        :param X: Data matrix.
+        :param y: Target values.
+        :param kwargs: Keyword arguments which may include:
+            - 'trbefile': File containing the batch effects for the training data. Optional.
+        :return: The instance of the NormHBR object.
+        """
         self.hbr.estimate_on_new_site(X, y, batch_effects)
         self.configs["transferred"] = True
         return self
 
     def predict_on_new_sites(self, X, batch_effects):
+        """
+        Predict the target values for the given test data on new sites.
+
+        This function predicts the target values for the given test data 'X' on new sites using the Hierarchical Bayesian Regression (HBR) model. 
+        The batch effects for the new sites must be provided.
+
+        :param X: Test data matrix for the new sites.
+        :param batch_effects: Batch effects for the new sites.
+        :return: A tuple containing the predicted target values and the marginal variances for the test data on the new sites.
+        """
         yhat, s2 = self.hbr.predict_on_new_site(X, batch_effects)
         return yhat, s2
 
@@ -313,6 +365,23 @@ class NormHBR(NormBase):
         samples=10,
         informative_prior=False,
     ):
+
+        """
+        Extend the Hierarchical Bayesian Regression model using data sampled from the posterior predictive distribution.
+
+        This function extends the Hierarchical Bayesian Regression (HBR) model, given the data matrix 'X' and target 'y'. 
+        It also generates data from the posterior predictive distribution and merges it with the new data before estimation. 
+        If 'informative_prior' is True, it uses the adapt method for estimation. Otherwise, it uses the estimate method.
+
+        :param X: Data matrix for the new sites.
+        :param y: Target values for the new sites.
+        :param batch_effects: Batch effects for the new sites.
+        :param X_dummy_ranges: Ranges for generating the dummy data. Default is [[0.1, 0.9, 0.01]].
+        :param merge_batch_dim: Dimension for merging the batch effects. Default is 0.
+        :param samples: Number of samples to generate for the dummy data. Default is 10.
+        :param informative_prior: Whether to use the adapt method for estimation. Default is False.
+        :return: The instance of the NormHBR object.
+        """
         X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(X_dummy_ranges)
 
         X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(
@@ -350,8 +419,11 @@ class NormHBR(NormBase):
         samples=10,
         informative_prior=False,
     ):
+        
+        #TODO need to check if this is correct
+        
         tune_ids = list(np.unique(batch_effects[:, merge_batch_dim]))
-
+        
         X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(X_dummy_ranges)
 
         for idx in tune_ids:
@@ -382,6 +454,17 @@ class NormHBR(NormBase):
     def merge(
         self, nm, X_dummy_ranges=[[0.1, 0.9, 0.01]], merge_batch_dim=0, samples=10
     ):
+        """
+        Samples from the posterior predictive distribitions of two models, merges them, and estimates a model on the merged data.
+
+        This function samples from the posterior predictive distribitions of two models, merges them, and estimates a model on the merged data.
+
+        :param nm: The other NormHBR object.
+        :param X_dummy_ranges: Ranges for generating the dummy data. Default is [[0.1, 0.9, 0.01]].
+        :param merge_batch_dim: Dimension for merging the batch effects. Default is 0.
+        :param samples: Number of samples to generate for the dummy data. Default is 10.
+        """
+
         X_dummy1, batch_effects_dummy1 = self.hbr.create_dummy_inputs(X_dummy_ranges)
         X_dummy2, batch_effects_dummy2 = nm.hbr.create_dummy_inputs(X_dummy_ranges)
 
