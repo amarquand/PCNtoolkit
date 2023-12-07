@@ -32,6 +32,21 @@ class NormBLR(NormBase):
     """     
             
     def __init__(self,  **kwargs):
+        """
+        Initialize the NormBLR object.
+
+        This function initializes the NormBLR object with the given arguments. It requires a data matrix 'X' and optionally takes a target 'y' and parameters 'theta'.
+        It also configures the model order and heteroskedastic noise if specified in the arguments.
+
+        :param kwargs: Keyword arguments which should include:
+            - 'X': Data matrix. Must be specified.
+            - 'y': Target values. Optional.
+            - 'theta': Parameters for the model. Optional.
+            - 'optimizer': The optimization algorithm to use. Default is 'powell'.
+            - 'configparam' or 'model_order': The order of the model. Default is 1.
+            - 'varcovfile': File containing the variance-covariance matrix for heteroskedastic noise. Optional.
+        :raises ValueError: If 'X' is not specified in kwargs.
+        """
         X = kwargs.pop('X', None)
         y = kwargs.pop('y', None)
         theta = kwargs.pop('theta', None)
@@ -141,6 +156,20 @@ class NormBLR(NormBase):
         return self.blr.nlZ
 
     def estimate(self, X, y, **kwargs):
+        """
+        Estimate the parameters of the model.
+
+        This function estimates the parameters of the model given the data matrix 'X' and target 'y'. 
+        If 'theta' is provided in kwargs, it is used as the initial guess for the parameters. 
+        Otherwise, the initial guess is set to the current value of 'self.theta'.
+
+        :param X: Data matrix.
+        :param y: Target values.
+        :param kwargs: Keyword arguments which may include:
+            - 'theta': Initial guess for the parameters. Optional.
+            - 'warp': String representing the warp function. It is removed from kwargs before passing to the BLR object.
+        :return: The instance of the NormBLR object.
+        """
         theta = kwargs.pop('theta', None)
         if isinstance(theta, str):
             theta = np.array(literal_eval(theta))
@@ -166,6 +195,28 @@ class NormBLR(NormBase):
         return self
 
     def predict(self, Xs, X=None, y=None, **kwargs):      
+        """
+        Predict the target values for the given test data.
+
+        This function predicts the target values for the given test data 'Xs' using the estimated parameters of the model. 
+        If 'X' and 'y' are provided, they are used to update the model before prediction.
+
+        :param Xs: Test data matrix.
+        :param X: Training data matrix. Optional.
+        :param y: Training target values. Optional.
+        :param kwargs: Keyword arguments which may include:
+            - 'testvargroup': Variance groups for the test data. Optional.
+            - 'testvargroupfile': File containing the variance groups for the test data. Optional.
+            - 'testvarcov': Variance covariates for the test data. Optional.
+            - 'testvarcovfile': File containing the variance covariates for the test data. Optional.
+            - 'adaptresp': Responses to adapt to. Optional.
+            - 'adaptrespfile': File containing the responses to adapt to. Optional.
+            - 'adaptcov': Covariates to adapt to. Optional.
+            - 'adaptcovfile': File containing the covariates to adapt to. Optional.
+            - 'adaptvargroup': Variance groups to adapt to. Optional.
+            - 'adaptvargroupfile': File containing the variance groups to adapt to. Optional.
+        :return: The predicted target values for the test data.
+        """
         
         theta = self.theta # always use the estimated coefficients
         # remove from kwargs to avoid downstream problems

@@ -37,7 +37,30 @@ class struct(object):
     pass
    
 class Encoder(nn.Module):
+    """
+    Encoder module for the Neural Process Regression model.
+
+    This module is responsible for encoding the input data into a latent representation. 
+    It is a part of the Neural Process Regression (NPR) model and is implemented as a PyTorch module.
+
+    :param x: Input data matrix.
+    :param y: Target values.
+    :param args: A dictionary-like object containing the following attributes:
+        - r_dim: Dimension of the latent representation.
+        - z_dim: Dimension of the latent variable.
+        - hidden_neuron_num: Number of neurons in the hidden layers.
+    """
     def __init__(self, x, y, args):
+        """
+        Initialize the Encoder module.
+
+        :param x: Input data matrix.
+        :param y: Target values.
+        :param args: A dictionary-like object containing the following attributes:
+            - r_dim: Dimension of the latent representation.
+            - z_dim: Dimension of the latent variable.
+            - hidden_neuron_num: Number of neurons in the hidden layers.
+        """
         super(Encoder, self).__init__()
         self.r_dim = args.r_dim
         self.z_dim = args.z_dim
@@ -47,6 +70,14 @@ class Encoder(nn.Module):
         self.h_3 = nn.Linear(self.hidden_neuron_num, self.r_dim)
 
     def forward(self, x, y):
+        """
+        Forward pass of the Encoder module.
+
+        :param x: Input data matrix.
+        :param y: Target values.
+        :return: The latent representation of the input data.
+        """
+
         x_y = torch.cat([x, y], dim=2)
         x_y = F.relu(self.h_1(x_y))
         x_y = F.relu(self.h_2(x_y))
@@ -56,7 +87,30 @@ class Encoder(nn.Module):
     
     
 class Decoder(nn.Module):
+    """
+    Decoder module for the Neural Process Regression model.
+
+    This module is responsible for decoding the latent representation into the target values. 
+    It is a part of the Neural Process Regression (NPR) model and is implemented as a PyTorch module.
+
+    :param x: Input data matrix.
+    :param y: Target values.
+    :param args: A dictionary-like object containing the following attributes:
+        - r_dim: Dimension of the latent representation.
+        - z_dim: Dimension of the latent variable.
+        - hidden_neuron_num: Number of neurons in the hidden layers.
+    """
     def __init__(self, x, y, args):
+        """
+        Initialize the Decoder module.
+
+        :param x: Input data matrix.
+        :param y: Target values.
+        :param args: A dictionary-like object containing the following attributes:
+            - r_dim: Dimension of the latent representation.
+            - z_dim: Dimension of the latent variable.
+            - hidden_neuron_num: Number of neurons in the hidden layers.
+        """
         super(Decoder, self).__init__()
         self.r_dim = args.r_dim
         self.z_dim = args.z_dim
@@ -71,6 +125,12 @@ class Decoder(nn.Module):
         self.g_3_84 = nn.Linear(self.hidden_neuron_num, y.shape[1])
     
     def forward(self, z_sample):
+        """
+        Forward pass of the Decoder module.
+
+        :param z_sample: Sampled latent variable.
+        :return: The predicted target values.
+        """
         z_hat = F.relu(self.g_1(z_sample))
         z_hat = F.relu(self.g_2(z_hat))
         y_hat = torch.sigmoid(self.g_3(z_hat))
@@ -89,6 +149,17 @@ class NormNP(NormBase):
     """
     
     def __init__(self, X, y, configparam=None):
+        """
+        Initialize the NormNP object.
+
+        This function initializes the NormNP object with the given arguments. It requires a data matrix 'X' and target 'y'. 
+        It also takes an optional 'configparam' which is a path to a pickle file containing configuration parameters. 
+        If 'configparam' is not provided, default values are used for the configuration parameters.
+
+        :param X: Data matrix.
+        :param y: Target values.
+        :param configparam: Path to a pickle file containing configuration parameters. Optional.
+        """
         self.configparam = configparam
         if configparam is not None: 
             with open(configparam, 'rb') as handle:
@@ -155,6 +226,16 @@ class NormNP(NormBase):
         return -1
     
     def estimate(self, X, y):
+        """
+        Estimate the parameters of the Neural Process Regression model.
+
+        This function estimates the parameters of the Neural Process Regression (NPR) model given the data matrix 'X' and target 'y'. 
+        It uses mini-batch gradient descent for optimization and updates the model parameters in place.
+
+        :param X: Data matrix.
+        :param y: Target values. If y is one-dimensional, it is reshaped to (-1, 1).
+        :return: The instance of the norm_np object with updated parameters.
+        """
         if y.ndim == 1:
             y = y.reshape(-1,1)
         sample_num = X.shape[0]
@@ -207,6 +288,17 @@ class NormNP(NormBase):
         return self
         
     def predict(self, Xs, X=None, Y=None, theta=None): 
+        """
+        Predict the target values for the given test data.
+
+        This function predicts the target values for the given test data 'Xs' using the Neural Process Regression (NPR) model. 
+
+        :param Xs: Test data matrix.
+        :param X: Not used in this function.
+        :param Y: Not used in this function.
+        :param theta: Not used in this function.
+        :return: A tuple containing the predicted target values and the marginal variances for the test data.
+        """
         sample_num = Xs.shape[0]
         factor_num = self.args.m
         x_context_test = np.zeros([sample_num, factor_num, Xs.shape[1]])
