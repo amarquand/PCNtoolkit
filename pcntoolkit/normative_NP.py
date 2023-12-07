@@ -48,7 +48,26 @@ except ImportError:
     import configs
 
 def get_args(*args):
-    """ Parse command line arguments"""
+    """
+    Parses command-line arguments for the Neural Processes (NP) for Deep Normative Modeling script.
+
+    Parameters:
+    *args: Variable length argument list.
+
+    Returns:
+    argparse.Namespace: An object that holds the command-line arguments as attributes. The arguments include:
+        - respfile: Training response nifti file address.
+        - covfile: Training covariates pickle file address.
+        - testcovfile: Test covariates pickle file address.
+        - testrespfile: Test response nifti file address.
+        - mask: Mask nifti file address.
+        - outdir: Output directory address.
+        - m: Number of fixed-effect estimations.
+        - batchnum: Input batch size for training.
+        - epochs: Number of epochs to train.
+        - device: Either cpu or cuda.
+        - estimator: Fixed-effect estimator type.
+    """
 
     ############################ Parsing inputs ###############################
     
@@ -91,6 +110,27 @@ def get_args(*args):
     return args
     
 def estimate(args):
+    """
+    Estimates the fixed-effects for the Neural Processes (NP) for Deep Normative Modeling script.
+
+    Parameters:
+    args (argparse.Namespace): An object that holds the command-line arguments as attributes. The arguments include:
+        - respfile: Training response nifti file address.
+        - covfile: Training covariates pickle file address.
+        - testcovfile: Test covariates pickle file address.
+        - mask: Mask nifti file address.
+        - outdir: Output directory address.
+        - m: Number of fixed-effect estimations.
+        - device: Either cpu or cuda.
+        - estimator: Fixed-effect estimator type.
+
+    Returns:
+    None
+
+    This function loads the input data, normalizes it, and estimates the fixed-effects using either single-task (ST) 
+    or multi-task (MT) regression. The results are stored in the `y_context` and `y_context_test` variables.
+    """
+
     torch.set_default_dtype(torch.float32)
     args.type = 'MT'
     print('Loading the input Data ...')

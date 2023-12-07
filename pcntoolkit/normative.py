@@ -49,7 +49,18 @@ except ImportError:
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 def load_response_vars(datafile, maskfile=None, vol=True):
-    """ load response variables (of any data type)"""
+    """
+    Load response variables from file. This will load the data and mask it if
+    necessary. If the data is in ascii format it will be converted into a numpy
+    array. If the data is in neuroimaging format it will be reshaped into a
+    2D array (subjects x variables) and a mask will be created if necessary.
+
+    :param datafile: File containing the response variables
+    :param maskfile: Mask file (nifti only)
+    :param vol: If True, load the data as a 4D volume (nifti only)
+    :returns Y: Response variables
+    :returns volmask: Mask file (nifti only)
+    """
 
     if fileio.file_type(datafile) == 'nifti':
         dat = fileio.load_nifti(datafile, vol=vol)
@@ -65,7 +76,22 @@ def load_response_vars(datafile, maskfile=None, vol=True):
 
 
 def get_args(*args):
-    """ Parse command line arguments"""
+    """
+    Parse command line arguments for normative modeling
+
+    :param args: command line arguments
+    :returns respfile: response variables for the normative model
+    :returns maskfile: mask used to apply to the data (nifti only)
+    :returns covfile: covariates used to predict the response variable
+    :returns cvfolds: Number of cross-validation folds
+    :returns testcov: Test covariates
+    :returns testresp: Test responses
+    :returns func: Function to call
+    :returns alg: Algorithm for normative model
+    :returns configparam: Parameters controlling the estimation algorithm
+    :returns kw_args: Additional keyword arguments
+    """
+
 
     # parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
@@ -219,6 +245,23 @@ def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, 
 
 def save_results(respfile, Yhat, S2, maskvol, Z=None, Y=None, outputsuffix=None, 
                  results=None, save_path=''):
+    """
+    Writes the results of the normative model to disk.
+
+    Parameters:
+    respfile (str): The response variables file.
+    Yhat (np.array): The predicted response variables.
+    S2 (np.array): The predictive variance.
+    maskvol (np.array): The mask volume.
+    Z (np.array, optional): The latent variable. Defaults to None.
+    Y (np.array, optional): The observed response variables. Defaults to None.
+    outputsuffix (str, optional): The suffix to append to the output files. Defaults to None.
+    results (dict, optional): The results of the normative model. Defaults to None.
+    save_path (str, optional): The directory to save the results to. Defaults to ''.
+
+    Returns:
+    None
+    """
     
     print("Writing outputs ...")
     if respfile is None:
@@ -255,6 +298,7 @@ def save_results(respfile, Yhat, S2, maskvol, Z=None, Y=None, outputsuffix=None,
             else:
                 fileio.save(results[metric], os.path.join(save_path, metric + ext), 
                             example=exfile, mask=maskvol)
+                
 
 def estimate(covfile, respfile, **kwargs):
     """ Estimate a normative model
@@ -578,6 +622,22 @@ def estimate(covfile, respfile, **kwargs):
 
 
 def fit(covfile, respfile, **kwargs):
+    """
+    Fits a normative model to the data.
+
+    Parameters:
+    covfile (str): The path to the covariates file.
+    respfile (str): The path to the response variables file.
+    maskfile (str, optional): The path to the mask file. Defaults to None.
+    alg (str, optional): The algorithm to use. Defaults to 'gpr'.
+    savemodel (bool, optional): Whether to save the model. Defaults to True.
+    outputsuffix (str, optional): The suffix to append to the output files. Defaults to 'fit'.
+    inscaler (str, optional): The scaler to use for the input data. Defaults to 'None'.
+    outscaler (str, optional): The scaler to use for the output data. Defaults to 'None'.
+
+    Returns:
+    None
+    """
     
     # parse keyword arguments 
     maskfile = kwargs.pop('maskfile',None)

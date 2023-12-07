@@ -88,6 +88,14 @@ class BLR:
         self.gamma = None
     
     def _parse_hyps(self, hyp, X, Xv=None):
+        """
+        Parse hyperparameters into noise precision, lengthscale precision and
+        lengthscale parameters.
+
+        :param hyp: hyperparameter vector
+        :param X: covariates
+        :param Xv: covariates for heteroskedastic noise
+        """
 
         N = X.shape[0]
         
@@ -108,7 +116,7 @@ class BLR:
             beta = np.asarray([np.exp(hyp[0])]) 
             n_lik_param = len(beta)
          
-        # parameters for warping the likelhood function
+        # parameters for warping the likelihood function
         if self.warp is not None:
             gamma = hyp[n_lik_param:(n_lik_param + self.n_warp_param)]
             n_lik_param += self.n_warp_param

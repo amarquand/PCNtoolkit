@@ -24,7 +24,18 @@ class NormRFA(NormBase):
     """
 
     def __init__(self, X, y=None, theta=None, n_feat=None):
-                        
+        """
+        Initialize the NormRFA object.
+
+        This function initializes the NormRFA object with the given arguments. It requires a data matrix 'X' and optionally takes a target 'y', parameters 'theta', and the number of random features 'n_feat'.
+        It initializes the Gaussian Process Regression with Random Feature Approximation (GPRRFA) model and sets the initial parameters.
+
+        :param X: Data matrix. Must be specified.
+        :param y: Not used.
+        :param theta: Parameters for the model. Optional.
+        :param n_feat: Number of random features for the GPRRFA model. Optional.
+        :raises ValueError: If 'X' is not specified.
+        """
         if (X is not None):
             if n_feat is None:
                 print("initialising RFA")
@@ -56,6 +67,18 @@ class NormRFA(NormBase):
         return self.gprrfa.nlZ
 
     def estimate(self, X, y, theta=None):
+        """
+        Estimate the parameters of the Random Feature Approximation model.
+
+        This function estimates the parameters of the Random Feature Approximation (RFA) model given the data matrix 'X' and target 'y'. 
+        If 'theta' is provided, it is used as the initial parameters for estimation. 
+        Otherwise, the current value of 'self.theta0' is used.
+
+        :param X: Data matrix.
+        :param y: Target values.
+        :param theta: Initial parameters for estimation. Optional.
+        :return: The instance of the NormRFA object with updated parameters.
+        """
         if theta is None:
             theta = self.theta0
         self.gprrfa = GPRRFA(theta, X, y)
@@ -64,6 +87,20 @@ class NormRFA(NormBase):
         return self
 
     def predict(self, Xs, X, y, theta=None):
+        """
+        Predict the target values for the given test data.
+
+        This function predicts the target values for the given test data 'Xs' using the Random Feature Approximation (RFA) model. 
+        If 'X' and 'y' are provided, they are used to update the model before prediction. 
+        If 'theta' is provided, it is used as the parameters for prediction. 
+        Otherwise, the current value of 'self.theta' is used.
+
+        :param Xs: Test data matrix.
+        :param X: Training data matrix.
+        :param y: Training target values.
+        :param theta: Parameters for prediction. Optional.
+        :return: A tuple containing the predicted target values and the marginal variances for the test data.
+        """
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gprrfa.predict(theta, X, y, Xs)

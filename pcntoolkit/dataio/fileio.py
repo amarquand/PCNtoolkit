@@ -35,6 +35,9 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 def predictive_interval(s2_forward,
                         cov_forward,
                         multiplicator):
+    """
+    Calculates a predictive interval for the forward model
+    """
   # calculates a predictive interval
   
     PI=np.zeros(len(cov_forward))
@@ -44,6 +47,18 @@ def predictive_interval(s2_forward,
     return PI
 
 def create_mask(data_array, mask, verbose=False):
+    """
+    Create a mask from a data array or a nifti file
+
+    Basic usage::
+    
+            create_mask(data_array, mask, verbose)
+
+    :param data_array: numpy array containing the data to write out
+    :param mask: nifti image containing a mask for the image
+    :param verbose: verbose output
+    """
+
     # create a (volumetric) mask either from an input nifti or the nifti itself
 
     if mask is not None:
@@ -68,6 +83,17 @@ def create_mask(data_array, mask, verbose=False):
 
 
 def vol2vec(dat, mask, verbose=False):
+    """
+    Vectorise a 3d image
+
+    Basic usage::
+        
+                vol2vec(dat, mask, verbose)
+
+    :param dat: numpy array containing the data to write out
+    :param mask: nifti image containing a mask for the image
+    :param verbose: verbose output
+    """
     # vectorise a 3d image
 
     if len(dat.shape) < 4:
@@ -92,6 +118,15 @@ def vol2vec(dat, mask, verbose=False):
 
 
 def file_type(filename):
+    """
+    Determine the file type of a file
+
+    Basic usage::
+            
+                    file_type(filename)
+
+    :param filename: name of the file to check
+    """
     # routine to determine filetype
 
     if filename.endswith(('.dtseries.nii', '.dscalar.nii', '.dlabel.nii')):
@@ -109,6 +144,16 @@ def file_type(filename):
 
 
 def file_extension(filename):
+    """
+    Determine the file extension of a file (e.g. .nii.gz)
+
+    Basic usage::
+                
+                        file_extension(filename)
+
+    :param filename: name of the file to check
+    """
+
     # routine to get the full file extension (e.g. .nii.gz, not just .gz)
 
     parts = filename.split(os.extsep)
@@ -131,7 +176,15 @@ def file_extension(filename):
 
 
 def file_stem(filename):
+    """
+    Determine the file stem of a file (e.g. /path/to/file.nii.gz -> file)
 
+    Basic usage::
+                        
+                                file_stem(filename)
+
+    :param filename: name of the file to check
+    """
     idx = filename.find(file_extension(filename))
     stm = filename[0:idx]
 
@@ -143,6 +196,18 @@ def file_stem(filename):
 
 
 def load_nifti(datafile, mask=None, vol=False, verbose=False):
+    """
+    Load a nifti file into a numpy array
+
+    Basic usage::
+                
+                    load_nifti(datafile, mask, vol, verbose)
+
+    :param datafile: name of the file to load
+    :param mask: nifti image containing a mask for the image
+    :param vol: whether to load the image as a volume
+    :param verbose: verbose output
+    """
 
     if verbose:
         print('Loading nifti: ' + datafile + ' ...')
@@ -166,8 +231,6 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     Basic usage::
 
         save_nifti(data, filename mask, dtype)
-
-    where the variables are defined below.
 
     :param data: numpy array containing the data to write out
     :param filename: where to store it
@@ -210,7 +273,18 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
 
 
 def load_cifti(filename, vol=False, mask=None, rmtmp=True):
+    """
+    Load a cifti file into a numpy array 
 
+    Basic usage::
+                    
+                        load_cifti(filename, vol, mask, rmtmp)
+
+    :param filename: name of the file to load
+    :param vol: whether to load the image as a volume
+    :param mask: nifti image containing a mask for the image
+    :param rmtmp: whether to remove temporary files
+    """
     # parse the name
     dnam, fnam = os.path.split(filename)
     fpref = file_stem(fnam)
@@ -261,7 +335,20 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
 
 
 def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
-    """ Write output to nifti """
+    """
+    Save a cifti file from a numpy array
+
+    Basic usage::
+                        
+                            save_cifti(data, filename, example, mask, vol, volatlas)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    :param example: example file to copy the geometry from
+    :param mask: nifti image containing a mask for the image
+    :param vol: whether to load the image as a volume
+    :param volatlas: atlas to use for the volume
+    """
 
     # do some sanity checks
     if data.dtype == 'float32' or \
@@ -349,6 +436,16 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
 
 
 def load_pd(filename):
+    """
+    Load a csv file into a pandas dataframe
+
+    Basic usage::
+            
+                    load_pd(filename)
+
+    :param filename: name of the file to load
+    """
+
     # based on pandas
     x = pd.read_csv(filename,
                     sep=' ',
@@ -357,6 +454,16 @@ def load_pd(filename):
 
 
 def save_pd(data, filename):
+    """
+    Save a pandas dataframe to a csv file
+
+    Basic usage::
+
+        save_pd(data, filename)
+
+    :param data: pandas dataframe containing the data to write out
+    :param filename: where to store it
+    """
     # based on pandas
     data.to_csv(filename,
                 index=None,
@@ -366,12 +473,32 @@ def save_pd(data, filename):
 
 
 def load_ascii(filename):
+    """
+    Load an ascii file into a numpy array
+
+    Basic usage::
+    
+            load_ascii(filename)
+
+    :param filename: name of the file to load
+    """
+
     # based on pandas
     x = np.loadtxt(filename)
     return x
 
 
 def save_ascii(data, filename):
+    """
+    Save a numpy array to an ascii file
+
+    Basic usage::
+
+        save_ascii(data, filename)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    """
     # based on pandas
     np.savetxt(filename, data)
 
@@ -381,6 +508,21 @@ def save_ascii(data, filename):
 
 
 def save(data, filename, example=None, mask=None, text=False, dtype=None):
+    """
+    Save a numpy array to a file
+
+    Basic usage::
+        
+                save(data, filename, example, mask, text, dtype)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    :param example: example file to copy the geometry from
+    :param mask: nifti image containing a mask for the image
+    :param text: whether to write out a text file
+    :param dtype: data type for the output image (if different from the image)
+    """
+
 
     if file_type(filename) == 'cifti':
         save_cifti(data.T, filename, example, vol=True)
@@ -394,6 +536,18 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
 
 
 def load(filename, mask=None, text=False, vol=True):
+    """
+    Load a numpy array from a file
+
+    Basic usage::
+            
+                    load(filename, mask, text, vol)
+
+    :param filename: name of the file to load
+    :param mask: nifti image containing a mask for the image
+    :param text: whether to write out a text file
+    :param vol: whether to load the image as a volume
+    """
 
     if file_type(filename) == 'cifti':
         x = load_cifti(filename, vol=vol)
@@ -404,7 +558,6 @@ def load(filename, mask=None, text=False, vol=True):
     elif file_type(filename) == 'binary':
         x = pd.read_pickle(filename)
         x = x.to_numpy()
-
     return x
 
 # -------------------
@@ -413,6 +566,16 @@ def load(filename, mask=None, text=False, vol=True):
 
 
 def tryint(s):
+    """
+    Try to convert a string to an integer
+
+    Basic usage::
+            
+                    tryint(s)
+
+    :param s: string to convert
+    """
+
     try:
         return int(s)
     except ValueError:
@@ -420,8 +583,27 @@ def tryint(s):
 
 
 def alphanum_key(s):
+    """
+    Turn a string into a list of numbers
+    
+    Basic usage::
+            
+                    alphanum_key(s) 
+
+    :param s: string to convert
+    """
     return [tryint(c) for c in re.split('([0-9]+)', s)]
 
 
 def sort_nicely(l):
+    """
+    Sort a list of strings in a natural way
+
+    Basic usage::
+
+        sort_nicely(l)  
+
+    :param l: list of strings to sort
+    """
+
     return sorted(l, key=alphanum_key)
