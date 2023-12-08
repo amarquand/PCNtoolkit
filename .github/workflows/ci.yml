@@ -26,7 +26,7 @@ jobs:
     - name: Install Dependencies
       run: | 
         pip install -r requirements.txt
-        pip install pytest 
+        pip install pytest pytest-html
 
     - name: Run Tests with pytest
       run: pytest pytest/ --html=report.html # Test everything in the 'pytest' directory, create HTML report
