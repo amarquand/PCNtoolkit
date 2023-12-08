@@ -1,13 +1,13 @@
 # NOTE: must be run with kernprof (otherwise the inmports get screwed up)
 
-#import pcntoolkit
+# import pcntoolkit
+from bayesreg import BLR
+from line_profiler import LineProfiler
+from trendsurf import estimate
 import os
 import sys
 
 sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
-from trendsurf import estimate
-from line_profiler import LineProfiler
-from bayesreg import BLR
 
 # with test covariates
 wdir = '/home/preclineu/andmar/py.sandbox/unittests'

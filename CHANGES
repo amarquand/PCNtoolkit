@@ -75,6 +75,6 @@ version 0.27
 - Added configuration files for containerisation with Docker
 
 version 0.28
-- Updated to PyMC5 (including migrating back-end to PyTensor
+- Updated to PyMC5 (including migrating back-end to PyTensor)
 - Added support for longitudinal normative modelling with BLR (see Buckova-Rehak et al 2023)
 - Changed default optimiser for trend surface models (for scalability)

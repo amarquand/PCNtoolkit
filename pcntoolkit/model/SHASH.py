@@ -64,7 +64,8 @@ class K(Op):
             inputs_storage[0], return_inverse=True
         )
         unique_outputs = spp.kv(unique_inputs, inputs_storage[1])
-        outputs = unique_outputs[inverse_indices].reshape(inputs_storage[0].shape)
+        outputs = unique_outputs[inverse_indices].reshape(
+            inputs_storage[0].shape)
         output_storage[0][0] = outputs
 
     def grad(self, inputs, output_grads):
@@ -184,7 +185,8 @@ class SHASH(Continuous):
         this_C_sqr = 1 + this_S_sqr
         frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
-            ptt.log(delta) + ptt.log(this_C_sqr) / 2 - ptt.log(1 + ptt.sqr(value)) / 2
+            ptt.log(delta) + ptt.log(this_C_sqr) /
+            2 - ptt.log(1 + ptt.sqr(value)) / 2
         )
         exp = -this_S_sqr / 2
         return frac1 + frac2 + exp
@@ -301,7 +303,8 @@ class SHASHbRV(RandomVariable):
     ) -> np.ndarray:
         s = rng.normal(size=size)
         mean = np.sinh(epsilon / delta) * numpy_P(1 / delta)
-        var = ((np.cosh(2 * epsilon / delta) * numpy_P(2 / delta) - 1) / 2) - mean**2
+        var = ((np.cosh(2 * epsilon / delta) *
+               numpy_P(2 / delta) - 1) / 2) - mean**2
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
         ) * sigma + mu
