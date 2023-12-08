@@ -1,3 +1,3 @@
 def test_sanity():
-    assert true
+    assert True
     assert 1 + 1 == 2
