@@ -10,7 +10,7 @@ on:
   push:
     branches:
       # - master 
-      - test_sanity
+      - 147_CI-pipeline
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,14 +26,29 @@ jobs:
     - name: Install Dependencies
       run: | 
         pip install -r requirements.txt
-        pip install pytest pytest-html
+        pip install pytest pytest-html pytest-cov
 
-    - name: Run Tests with pytest
-      run: pytest pytest/ --html=report.html # Test everything in the 'pytest' directory, create HTML report
+    - name: Run Tests with coverage and save report
+      run: |
+        coverage run -m pytest pytest/
+        coverage xml -o coverage.xml
+        pytest pytest/ --junitxml=report.xml --html=report.html
       continue-on-error: true  # Continue to the next step even if tests fail
 
-    - name: Upload HTML Report as Artifact
+    - name: Upload HTML Report
       uses: actions/upload-artifact@v2
       with:
-        name: test-report
+        name: test-report-html
         path: report.html
+
+    - name: Upload XML Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report-xml
+        path: report.xml
+      
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: coverage.xml
