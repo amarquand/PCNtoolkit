@@ -14,7 +14,7 @@ except ImportError:
     pass
 
     path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.dirname(path) # parent directory 
+    path = os.path.dirname(path)  # parent directory
     if path not in sys.path:
         sys.path.append(path)
     del path
@@ -32,6 +32,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # general utility routines
 # ------------------------
 
+
 def predictive_interval(s2_forward,
                         cov_forward,
                         multiplicator):
@@ -39,19 +40,20 @@ def predictive_interval(s2_forward,
     Calculates a predictive interval for the forward model
     """
   # calculates a predictive interval
-  
-    PI=np.zeros(len(cov_forward))
-    for i,xdot in enumerate(cov_forward):
-        s=np.sqrt(s2_forward[i])
-        PI[i]=multiplicator*s
+
+    PI = np.zeros(len(cov_forward))
+    for i, xdot in enumerate(cov_forward):
+        s = np.sqrt(s2_forward[i])
+        PI[i] = multiplicator*s
     return PI
+
 
 def create_mask(data_array, mask, verbose=False):
     """
     Create a mask from a data array or a nifti file
 
     Basic usage::
-    
+
             create_mask(data_array, mask, verbose)
 
     :param data_array: numpy array containing the data to write out
@@ -87,7 +89,7 @@ def vol2vec(dat, mask, verbose=False):
     Vectorise a 3d image
 
     Basic usage::
-        
+
                 vol2vec(dat, mask, verbose)
 
     :param dat: numpy array containing the data to write out
@@ -100,8 +102,8 @@ def vol2vec(dat, mask, verbose=False):
         dim = dat.shape[0:3] + (1,)
     else:
         dim = dat.shape[0:3] + (dat.shape[3],)
-        
-    #mask = create_mask(dat, mask=mask, verbose=verbose)
+
+    # mask = create_mask(dat, mask=mask, verbose=verbose)
     if mask is None:
         mask = create_mask(dat, mask=mask, verbose=verbose)
 
@@ -122,7 +124,7 @@ def file_type(filename):
     Determine the file type of a file
 
     Basic usage::
-            
+
                     file_type(filename)
 
     :param filename: name of the file to check
@@ -148,7 +150,7 @@ def file_extension(filename):
     Determine the file extension of a file (e.g. .nii.gz)
 
     Basic usage::
-                
+
                         file_extension(filename)
 
     :param filename: name of the file to check
@@ -180,7 +182,7 @@ def file_stem(filename):
     Determine the file stem of a file (e.g. /path/to/file.nii.gz -> file)
 
     Basic usage::
-                        
+
                                 file_stem(filename)
 
     :param filename: name of the file to check
@@ -200,7 +202,7 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     Load a nifti file into a numpy array
 
     Basic usage::
-                
+
                     load_nifti(datafile, mask, vol, verbose)
 
     :param datafile: name of the file to load
@@ -215,7 +217,7 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     dat = img.get_data()
 
     if mask is not None:
-        mask=load_nifti(mask, vol=True)
+        mask = load_nifti(mask, vol=True)
 
     if not vol:
         dat = vol2vec(dat, mask)
@@ -224,10 +226,9 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
 
 
 def save_nifti(data, filename, examplenii, mask, dtype=None):
-    
     '''
     Write output to nifti
-    
+
     Basic usage::
 
         save_nifti(data, filename mask, dtype)
@@ -238,7 +239,6 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     :mask: nifti image containing a mask for the image
     :param dtype: data type for the output image (if different from the image)
     '''
-    
 
     # load mask
     if isinstance(mask, str):
@@ -264,7 +264,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
         hdr.set_data_dtype(dtype)
         array_data = array_data.astype(dtype)
     array_img = nib.Nifti1Image(array_data, ex_img.affine, hdr)
-    
+
     nib.save(array_img, filename)
 
 # --------------
@@ -277,7 +277,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     Load a cifti file into a numpy array 
 
     Basic usage::
-                    
+
                         load_cifti(filename, vol, mask, rmtmp)
 
     :param filename: name of the file to load
@@ -339,7 +339,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     Save a cifti file from a numpy array
 
     Basic usage::
-                        
+
                             save_cifti(data, filename, example, mask, vol, volatlas)
 
     :param data: numpy array containing the data to write out
@@ -357,7 +357,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         data = data.astype('float32')  # force 32 bit output
         dtype = 'NIFTI_TYPE_FLOAT32'
     else:
-        raise(ValueError, 'Only float data types currently handled')
+        raise (ValueError, 'Only float data types currently handled')
 
     if len(data.shape) == 1:
         Nimg = 1
@@ -385,7 +385,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysl.append(
             nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
     fnamel = fstem + '-left.func.gii'
     nib.save(giil, fnamel)
@@ -397,7 +397,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     for i in range(0, Nimg):
         garraysr.append(
             nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
     fnamer = fstem + '-right.func.gii'
     nib.save(giir, fnamer)
@@ -440,7 +440,7 @@ def load_pd(filename):
     Load a csv file into a pandas dataframe
 
     Basic usage::
-            
+
                     load_pd(filename)
 
     :param filename: name of the file to load
@@ -477,7 +477,7 @@ def load_ascii(filename):
     Load an ascii file into a numpy array
 
     Basic usage::
-    
+
             load_ascii(filename)
 
     :param filename: name of the file to load
@@ -512,7 +512,7 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
     Save a numpy array to a file
 
     Basic usage::
-        
+
                 save(data, filename, example, mask, text, dtype)
 
     :param data: numpy array containing the data to write out
@@ -522,7 +522,6 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
     :param text: whether to write out a text file
     :param dtype: data type for the output image (if different from the image)
     """
-
 
     if file_type(filename) == 'cifti':
         save_cifti(data.T, filename, example, vol=True)
@@ -540,7 +539,7 @@ def load(filename, mask=None, text=False, vol=True):
     Load a numpy array from a file
 
     Basic usage::
-            
+
                     load(filename, mask, text, vol)
 
     :param filename: name of the file to load
@@ -570,7 +569,7 @@ def tryint(s):
     Try to convert a string to an integer
 
     Basic usage::
-            
+
                     tryint(s)
 
     :param s: string to convert
@@ -585,9 +584,9 @@ def tryint(s):
 def alphanum_key(s):
     """
     Turn a string into a list of numbers
-    
+
     Basic usage::
-            
+
                     alphanum_key(s) 
 
     :param s: string to convert

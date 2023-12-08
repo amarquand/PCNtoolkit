@@ -7,7 +7,7 @@ import numpy as np
 
 try:  # run as a package if installed
     from pcntoolkit.normative_model.norm_base import NormBase
-    from pcntoolkit.model.rfa import GPRRFA 
+    from pcntoolkit.model.rfa import GPRRFA
 except ImportError:
     pass
 
@@ -18,6 +18,7 @@ except ImportError:
 
     from model.rfa import GPRRFA
     from norm_base import NormBase
+
 
 class NormRFA(NormBase):
     """ Classical GPR-based normative modelling approach
@@ -44,24 +45,24 @@ class NormRFA(NormBase):
             self.gprrfa = GPRRFA(theta, X, n_feat=n_feat)
             self._n_params = self.gprrfa.get_n_params(X)
         else:
-            raise(ValueError, 'please specify covariates')
+            raise (ValueError, 'please specify covariates')
             return
-        
+
         if theta is None:
             self.theta0 = np.zeros(self._n_params)
         else:
             if len(theta) == self._n_params:
                 self.theta0 = theta
             else:
-                raise(ValueError, 'hyperparameter vector has incorrect size')
-       
+                raise (ValueError, 'hyperparameter vector has incorrect size')
+
         self.theta = self.theta0
-            
+
     @property
     def n_params(self):
-           
+
         return self._n_params
-    
+
     @property
     def neg_log_lik(self):
         return self.gprrfa.nlZ
@@ -83,7 +84,7 @@ class NormRFA(NormBase):
             theta = self.theta0
         self.gprrfa = GPRRFA(theta, X, y)
         self.theta = self.gprrfa.estimate(theta, X, y)
-        
+
         return self
 
     def predict(self, Xs, X, y, theta=None):
@@ -104,6 +105,5 @@ class NormRFA(NormBase):
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gprrfa.predict(theta, X, y, Xs)
-        
+
         return yhat, s2
-    

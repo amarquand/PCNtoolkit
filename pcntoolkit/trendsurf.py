@@ -30,7 +30,6 @@ except ImportError:
     from model.bayesreg import BLR
 
 
-
 def load_data(datafile, maskfile=None):
     """
     Load data from disk
@@ -184,7 +183,7 @@ def get_args(*args):
         maskfile = os.path.join(wdir, args.maskfile)
     basis = args.basis
     if args.covfile is not None:
-        raise(NotImplementedError, "Covariates not implemented yet.")
+        raise (NotImplementedError, "Covariates not implemented yet.")
 
     return filename, maskfile, basis, args.a, args.o
 
@@ -222,10 +221,10 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
               * explainedvar - explained variance
               * rmse - standardised mean squared error
     """
-    
+
     # parse arguments
     optim = kwargs.get('optimizer', 'powell')
-    
+
     # load data
     print("Processing data in", filename)
     Y, X, mask = load_data(filename, maskfile)
@@ -301,11 +300,13 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
             out.append(bs2)
         return out
 
+
 def main(*args):
     np.seterr(invalid='ignore')
 
     filename, maskfile, basis, ard, outputall = get_args(args)
     estimate(filename, maskfile, basis, ard, outputall)
+
 
 # For running from the command line:
 if __name__ == "__main__":

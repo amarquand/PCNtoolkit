@@ -19,11 +19,12 @@ except ImportError:
     from model.gp import GPR, CovSum
     from norm_base import NormBase
 
+
 class NormGPR(NormBase):
     """ Classical GPR-based normative modelling approach
     """
 
-    def __init__(self, **kwargs): #X=None, y=None, theta=None,
+    def __init__(self, **kwargs):  # X=None, y=None, theta=None,
         """
         Initialize the NormGPR object.
 
@@ -42,20 +43,20 @@ class NormGPR(NormBase):
         self.covfunc = CovSum(X, ('CovLin', 'CovSqExpARD'))
         self.theta0 = np.zeros(self.covfunc.get_n_params() + 1)
         self.theta = self.theta0
-        
+
         if (theta is not None) and (X is not None) and (y is not None):
             self.gpr = GPR(theta, self.covfunc, X, y)
             self._n_params = self.covfunc.get_n_params() + 1
         else:
             self.gpr = GPR()
-            
+
     @property
     def n_params(self):
-        if not hasattr(self,'_n_params'):
-             self._n_params = self.covfunc.get_n_params() + 1
-    
+        if not hasattr(self, '_n_params'):
+            self._n_params = self.covfunc.get_n_params() + 1
+
         return self._n_params
-    
+
     @property
     def neg_log_lik(self):
         return self.gpr.nlZ
@@ -80,7 +81,7 @@ class NormGPR(NormBase):
             theta = self.theta0
             self.gpr = GPR(theta, self.covfunc, X, y)
         self.theta = self.gpr.estimate(theta, self.covfunc, X, y)
-        
+
         return self
 
     def predict(self, Xs, X, y, **kwargs):
@@ -103,10 +104,9 @@ class NormGPR(NormBase):
         if theta is None:
             theta = self.theta
         yhat, s2 = self.gpr.predict(theta, X, y, Xs)
-        
+
         # only return the marginal variances
         if len(s2.shape) == 2:
             s2 = np.diag(s2)
-        
+
         return yhat, s2
-    
