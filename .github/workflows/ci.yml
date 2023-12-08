@@ -26,14 +26,14 @@ jobs:
     - name: Install Dependencies
       run: | 
         pip install -r requirements.txt
-        pip install pytest
+        pip install pytest 
 
     - name: Run Tests with pytest
-      run: pytest pytest/test_sanity.py --junitxml=test-report.xml
+      run: pytest pytest/ --html=report.html # Test everything in the 'pytest' directory, create HTML report
       continue-on-error: true  # Continue to the next step even if tests fail
 
-    - name: Upload Test Artifacts
+    - name: Upload HTML Report as Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: test-results
-        path: test-report.xml
+        name: test-report
+        path: report.html
