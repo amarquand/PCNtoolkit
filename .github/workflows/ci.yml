@@ -31,6 +31,7 @@ jobs:
     - name: Run Tests with coverage and save report
       run: |
         coverage run -m pytest pytest/ --junitxml=report.xml --html=report.html
+        coverage xml -o coverage.xml
       continue-on-error: true  # Continue to the next step even if tests fail
 
     - name: Upload HTML Report
@@ -45,3 +46,8 @@ jobs:
         name: test-report-xml
         path: report.xml
       
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: coverage.xml
