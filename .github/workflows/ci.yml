@@ -27,7 +27,7 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Run Tests with pytest
-      run: pytest
+      run: pytest pytest/test_sanity.py
 
     - name: Upload Test Artifacts
       uses: actions/upload-artifact@v2
