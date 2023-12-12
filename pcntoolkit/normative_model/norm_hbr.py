@@ -419,8 +419,13 @@ class NormHBR(NormBase):
         samples=10,
         informative_prior=False,
     ):
+        """
+        This function tunes the Hierarchical Bayesian Regression model using data sampled from the posterior predictive distribution. Its behavior is not tested, and it is unclear if the desired behavior is achieved.
+        """
         
         #TODO need to check if this is correct
+
+        print("The 'tune' function is being called, but it is currently in development and its behavior is not tested. It is unclear if the desired behavior is achieved. Any output following this should be treated as unreliable.")
         
         tune_ids = list(np.unique(batch_effects[:, merge_batch_dim]))
         
