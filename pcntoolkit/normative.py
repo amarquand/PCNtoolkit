@@ -337,9 +337,9 @@ def estimate(covfile, respfile, **kwargs):
     :param configparam: Parameters controlling the estimation algorithm
     :param saveoutput: Save the output to disk? Otherwise returned as arrays
     :param outputsuffix: Text string to add to the output filenames
-    :param inscale: Scaling approach for input covariates, could be 'None' (Default), 
+    :param inscaler: Scaling approach for input covariates, could be 'None' (Default), 
                     'standardize', 'minmax', or 'robminmax'.
-    :param outscale: Scaling approach for output responses, could be 'None' (Default), 
+    :param outscaler: Scaling approach for output responses, could be 'None' (Default), 
                     'standardize', 'minmax', or 'robminmax'.
 
     All outputs are written to disk in the same format as the input. These are:
