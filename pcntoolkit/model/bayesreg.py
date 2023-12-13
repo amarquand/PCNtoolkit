@@ -469,7 +469,7 @@ class BLR:
 
             # do we need to re-estimate the posterior?
             if (hyp != self.hyp).any() or not (hasattr(self, 'A')):
-                raise (ValueError, 'posterior not properly estimated')
+                raise ValueError('posterior not properly estimated')
 
         N_test = Xs.shape[0]
 
@@ -477,7 +477,7 @@ class BLR:
 
         if self.var_groups is not None:
             if len(var_groups_test) != N_test:
-                raise (ValueError, 'Invalid variance groups for test')
+                raise ValueError('Invalid variance groups for test')
             # separate variance groups
             s2n = np.ones(N_test)
             for v in range(len(self.var_ids)):

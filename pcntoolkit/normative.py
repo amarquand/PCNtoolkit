@@ -120,7 +120,7 @@ def get_args(*args):
     wdir = os.path.realpath(os.path.curdir)
     respfile = os.path.join(wdir, args.responses)
     if args.covfile is None:
-        raise (ValueError, "No covariates specified")
+        raise ValueError("No covariates specified")
     else:
         covfile = args.covfile
 
@@ -522,8 +522,7 @@ def estimate(covfile, respfile, **kwargs):
                     if warp is not None:
                         # TODO: Warping for scaled data
                         if outscaler is not None and outscaler != 'None':
-                            raise (
-                                ValueError, "outscaler not yet supported warping")
+                            raise ValueError("outscaler not yet supported warping")
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1]
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(
                             Y[ts, nz[i]], warp_param)
@@ -767,7 +766,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     return_y = kwargs.pop('return_y', False)
 
     if alg == 'gpr':
-        raise (ValueError, "gpr is not supported with predict()")
+        raise ValueError("gpr is not supported with predict()")
 
     if respfile is not None and not os.path.exists(respfile):
         print("Response file does not exist. Only returning predictions")

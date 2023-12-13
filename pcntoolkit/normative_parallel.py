@@ -133,7 +133,7 @@ def execute_nm(processing_dir,
         kwargs.update({'job_id': str(n)})
         if testrespfile_path is not None:
             if cv_folds is not None:
-                raise (ValueError, """If the response file is specified
+                raise ValueError("""If the response file is specified
                                      cv_folds must be equal to None""")
             else:
                 # specified train/test split
@@ -349,10 +349,10 @@ def split_nm(processing_dir,
 
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != '.pkl'):
-        raise (ValueError, """If binary is True the file format for the
+        raise ValueError("""If binary is True the file format for the
               testrespfile file must be .pkl""")
     elif (binary == False and respfile_extension != '.txt'):
-        raise (ValueError, """If binary is False the file format for the
+        raise ValueError("""If binary is False the file format for the
               testrespfile file must be .txt""")
 
     # splits response into batches
@@ -391,10 +391,10 @@ def split_nm(processing_dir,
     else:
         dummy, testrespfile_extension = os.path.splitext(testrespfile_path)
         if (binary and testrespfile_extension != '.pkl'):
-            raise (ValueError, """If binary is True the file format for the
+            raise ValueError("""If binary is True the file format for the
                   testrespfile file must be .pkl""")
         elif (binary == False and testrespfile_extension != '.txt'):
-            raise (ValueError, """If binary is False the file format for the
+            raise ValueError("""If binary is False the file format for the
                   testrespfile file must be .txt""")
 
         if (binary == False):
@@ -931,7 +931,7 @@ def bashwrap_nm(processing_dir,
         job_call = [python_path + ' ' + normative_path + ' -c ' +
                     covfile_path + ' -f ' + func]
     else:
-        raise (ValueError, """For 'estimate' function either testcov or cvfold
+        raise ValueError("""For 'estimate' function either testcov or cvfold
               must be specified.""")
 
     # add algorithm-specific parameters
@@ -1134,7 +1134,7 @@ def sbatchwrap_nm(processing_dir,
         job_call = [python_path + ' ' + normative_path + ' -c ' +
                     covfile_path + ' -f ' + func]
     else:
-        raise (ValueError, """For 'estimate' function either testcov or cvfold
+        raise ValueError("""For 'estimate' function either testcov or cvfold
               must be specified.""")
 
     # add algorithm-specific parameters

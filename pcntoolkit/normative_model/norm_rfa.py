@@ -45,7 +45,7 @@ class NormRFA(NormBase):
             self.gprrfa = GPRRFA(theta, X, n_feat=n_feat)
             self._n_params = self.gprrfa.get_n_params(X)
         else:
-            raise (ValueError, 'please specify covariates')
+            raise ValueError('Covariates not specified')
             return
 
         if theta is None:
@@ -54,7 +54,7 @@ class NormRFA(NormBase):
             if len(theta) == self._n_params:
                 self.theta0 = theta
             else:
-                raise (ValueError, 'hyperparameter vector has incorrect size')
+                raise ValueError('hyperparameter vector has incorrect size')
 
         self.theta = self.theta0
 
