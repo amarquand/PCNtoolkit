@@ -56,7 +56,7 @@ class NormBLR(NormBase):
         self.optim_alg = kwargs.get('optimizer', 'powell')
 
         if X is None:
-            raise (ValueError, "Data matrix must be specified")
+            raise ValueError("Data matrix must be specified")
 
         if len(X.shape) == 1:
             self.D = 1

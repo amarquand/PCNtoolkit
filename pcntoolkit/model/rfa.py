@@ -63,7 +63,7 @@ class GPRRFA:
         elif type(X) is np.ndarray:
             X = torch.from_numpy(X)
         else:
-            raise (ValueError, 'Unknown data type (X)')
+            ValueError('Unknown data type (X)')
         X = X.double()
 
         if y is not None:
@@ -72,7 +72,7 @@ class GPRRFA:
             elif type(y) is np.ndarray:
                 y = torch.from_numpy(y)
             else:
-                raise (ValueError, 'Unknown data type (y)')
+                raise ValueError('Unknown data type (y)')
 
             if len(y.shape) == 1:
                 y.resize_(y.shape[0], 1)
@@ -191,7 +191,7 @@ class GPRRFA:
         if optimizer.lower() == 'lbfgs':
             opt = torch.optim.LBFGS([hyp])
         else:
-            raise (ValueError, "Optimizer " + " not implemented")
+            raise ValueError("Optimizer " + " not implemented")
         self._iterations = 0
 
         def closure():

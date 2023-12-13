@@ -24,6 +24,6 @@ def norm_init(X, y=None, theta=None, alg='gpr', **kwargs):
     elif alg == 'np':
         nm = NormNP(X=X, y=y, **kwargs)
     else:
-        raise (ValueError, "Algorithm " + alg + " not known.")
+        raise ValueError("Algorithm " + alg + " not known.")
 
     return nm
