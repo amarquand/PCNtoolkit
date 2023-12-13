@@ -357,7 +357,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         data = data.astype('float32')  # force 32 bit output
         dtype = 'NIFTI_TYPE_FLOAT32'
     else:
-        raise (ValueError, 'Only float data types currently handled')
+        raise ValueError('Only float data types currently handled')
 
     if len(data.shape) == 1:
         Nimg = 1

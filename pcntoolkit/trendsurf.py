@@ -183,7 +183,7 @@ def get_args(*args):
         maskfile = os.path.join(wdir, args.maskfile)
     basis = args.basis
     if args.covfile is not None:
-        raise (NotImplementedError, "Covariates not implemented yet.")
+        raise NotImplementedError("Covariates not implemented yet.")
 
     return filename, maskfile, basis, args.a, args.o
 

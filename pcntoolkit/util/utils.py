@@ -42,11 +42,31 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 def create_poly_basis(X, dimpoly):
-    """ 
-    Compute a polynomial basis expansion of the specified order
-
     """
+    Creates a polynomial basis matrix for the given input matrix.
 
+    This function takes an input matrix `X` and a degree `dimpoly`, and returns a new matrix where each column is `X` raised to the power of a degree. The degrees range from 1 to `dimpoly`. If `X` is a 1D array, it is reshaped into a 2D array with one column.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        The input matrix, a 2D array where each row is a sample and each column is a feature. If `X` is a 1D array, it is reshaped into a 2D array with one column.
+    dimpoly : int
+        The degree of the polynomial basis. The output matrix will have `dimpoly` times as many columns as `X`.
+
+    Returns
+    -------
+    Phi : numpy.ndarray
+        The polynomial basis matrix, a 2D array where each row is a sample and each column is a feature raised to a degree. The degrees range from 1 to `dimpoly`.
+
+    Examples
+    --------
+    >>> X = np.array([[1, 2], [3, 4], [5, 6]])
+    >>> create_poly_basis(X, 2)
+    array([[ 1.,  2.,  1.,  4.],
+           [ 3.,  4.,  9., 16.],
+           [ 5.,  6., 25., 36.]])
+    """
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
     D = X.shape[1]
@@ -79,8 +99,8 @@ def create_design_matrix(X, intercept=True, basis='bspline',
                          **kwargs):
     """ 
     Prepare a design matrix from a set of covariates sutiable for
-        running Bayesian linar regression. This design matrix consists of 
-        a set of user defined covariates, optoinal site intercepts 
+        running Bayesian linear regression. This design matrix consists of 
+        a set of user defined covariates, optional site intercepts 
         (fixed effects) and also optionally a nonlinear basis expansion over 
         one of the columns
 
@@ -94,7 +114,8 @@ def create_design_matrix(X, intercept=True, basis='bspline',
 
         if site_ids is specified, this must have the same number of entries as
         there are rows in X. If all_sites is specfied, these will be used to 
-        create the site identifiers in place of site_ids. This accommocdates
+        create the site identifiers in place of site_ids. This accommo
+        dates
         the scenario where not all the sites used to create the model are 
         present in the test set (i.e. there will be some empty site columns).
 
@@ -448,8 +469,7 @@ class WarpAffine(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise (ValueError,
-                   'number of parameters must be ' + str(self.n_params))
+            raise ValueError('number of parameters must be ' + str(self.n_params))
         return param[0], np.exp(param[1])
 
     def f(self, x, params):
@@ -550,8 +570,7 @@ class WarpSinArcsinh(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise (ValueError,
-                   'number of parameters must be ' + str(self.n_params))
+            raise ValueError('number of parameters must be ' + str(self.n_params))
 
         epsilon = param[0]
         b = np.exp(param[1])

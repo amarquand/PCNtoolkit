@@ -100,7 +100,7 @@ def get_args(*args):
     args = parser.parse_args()
 
     if (args.respfile == None or args.covfile == None or args.testcovfile == None):
-        raise (ValueError, "Training response nifti file, Training covariates pickle file, and \
+        raise ValueError("Training response nifti file, Training covariates pickle file, and \
               Test covariates pickle file must be specified.")
     if (args.outdir == None):
         args.outdir = os.getcwd()
