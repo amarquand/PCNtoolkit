@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-12-14T09:45:44.824Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0" etag="PCX_alUJK_IWUMCXtUVk" version="22.1.8" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2023-12-14T13:36:44.891Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0" etag="qeKTMYJ8pIDxO1ZBy61a" version="22.1.8" type="github" pages="2">
   <diagram id="4-HiFznOBndP52qhTeto" name="0.29">
-    <mxGraphModel dx="7602" dy="4288" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="4629" dy="3858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -679,38 +679,200 @@
         <mxCell id="12FiOEISK3NdoC9pGbq8-175" value="&lt;div&gt;+ make_dist(self, dist, params, pb) -&amp;gt; None&lt;/div&gt;&lt;div&gt;+ __getitem__(self, idx) -&amp;gt; pymc.thingy&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="part=1;html=1;resizeHeight=0;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;swimlaneFillColor=#ffffff;strokeOpacity=100;fillOpacity=100;whiteSpace=wrap;fontSize=16.7;fontColor=#3a414a;" parent="12FiOEISK3NdoC9pGbq8-172" vertex="1">
           <mxGeometry y="135" width="310" height="90" as="geometry" />
         </mxCell>
+        <mxCell id="6aXyEzsI4UH9x5-hvr-i-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.51;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=diamondThin;endFill=0;strokeWidth=1;" edge="1" parent="1" source="12FiOEISK3NdoC9pGbq8-86" target="12FiOEISK3NdoC9pGbq8-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="qq85L3UZBrmE3l4PtW7_" name="0.30">
-    <mxGraphModel dx="2334" dy="1160" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1235" dy="1210" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="z6EaP0T0J_oDEyE3zszz-1" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormBase&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ name: str&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ fit(dataset): NormBase&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ predict(dataset): dataset&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="20" y="20" width="190" height="110" as="geometry" />
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-42" value="BLR module" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2530" y="645" width="350" height="495" as="geometry" />
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-6" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;PCNdata&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&amp;nbsp;+ vars: PCNvars&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div&gt;&amp;nbsp;+ (static) from_csv(path, covariates, reponsevars, groups): PCNdata&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ (static) from_fsl(path, covariates, reponsevars, groups): PCNdata&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ (static) from_flsvbm(path, covariates, reponsevars, groups): PCNdata&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ (static) from_freesurfer(path, covariates, reponsevars, groups): PCNdata&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ split(split_ratios, stratify, seed): List[PCNdata]&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="585" y="210" width="410" height="140" as="geometry" />
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-41" value="HBR module" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2110" y="650" width="350" height="490" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.25;entryY=1;entryDx=0;entryDy=0;dashed=1;endArrow=blockThin;endFill=0;exitX=0.186;exitY=-0.021;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-47" target="fUcIlm6X4udEt8HHChlU-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-47" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;MinMaxScaler&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ coef_dict: Map[String, tuple(float, float)]&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ inverse_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="910" y="710" width="310" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-6" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormData&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&amp;nbsp;+ vars: NormVars&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_csv(cls, path, NormVars)&lt;/u&gt;: NormData&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_fsl(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+  &lt;u&gt;from_flsvbm(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt; from_freesurfer(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ split(split_ratios, stratify, seed): List[NormData]&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="930" y="190" width="410" height="140" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-8" value="Extends" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-6" target="fUcIlm6X4udEt8HHChlU-12">
           <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="680" y="190" as="sourcePoint" />
-            <mxPoint x="790" y="140" as="targetPoint" />
+            <mxPoint x="1025" y="170" as="sourcePoint" />
+            <mxPoint x="1135" y="120" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-12" value="&lt;b&gt;Xarray.Dataset&lt;/b&gt;" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="730" y="60" width="120" height="50" as="geometry" />
+          <mxGeometry x="1075" y="70" width="120" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-13" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;PCNvars&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;+ covariates: List[String]&lt;br&gt;+ responsevars: List[String]&lt;br&gt;+ groups: List[String]&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1080" y="235" width="230" height="90" as="geometry" />
+        <mxCell id="fUcIlm6X4udEt8HHChlU-13" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormVars&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ covars: List[String]&lt;br&gt;&amp;nbsp;+ respvars: List[String]&lt;br&gt;&amp;nbsp;+ groupvars: List[String]&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1425" y="190" width="230" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-17" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-13" target="fUcIlm6X4udEt8HHChlU-6">
+        <mxCell id="fUcIlm6X4udEt8HHChlU-17" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=1.004;entryY=0.323;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-13" target="fUcIlm6X4udEt8HHChlU-6">
           <mxGeometry width="160" relative="1" as="geometry">
-            <mxPoint x="1200" y="280" as="sourcePoint" />
-            <mxPoint x="1060" y="390" as="targetPoint" />
+            <mxPoint x="1545" y="260" as="sourcePoint" />
+            <mxPoint x="1405" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-24" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Transformation&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;+ transform(data: NormData, apply_to:NormVars) -&amp;gt; NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="865" y="490" width="350" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=0;dashed=1;entryX=0.221;entryY=1.034;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-25" target="fUcIlm6X4udEt8HHChlU-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1120" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-25" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;InvertibleTransformation&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;+ inverse_transform(NormData, NormVars) -&amp;gt; NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="865" y="600" width="310" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=blockThin;endFill=0;dashed=1;exitX=0.147;exitY=0.015;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-27" target="fUcIlm6X4udEt8HHChlU-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-27" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NonInvertibleTransformation&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="600" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.112;exitY=0.014;exitDx=0;exitDy=0;entryX=0.113;entryY=0.996;entryDx=0;entryDy=0;dashed=1;endArrow=blockThin;endFill=0;entryPerimeter=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-41" target="fUcIlm6X4udEt8HHChlU-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1019.9999999999998" y="670" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-41" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;StandardScaler&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ coef_dict: Map[String, tuple(float, float)]&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ inverse_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="865" y="740" width="310" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=blockThin;endFill=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-43" target="fUcIlm6X4udEt8HHChlU-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-43" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;BSplineBasisExpansion&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ degree: int&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="710" width="300" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-42" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;PolynomialBasisExpansion&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ degree: int&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="750" width="300" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="fUcIlm6X4udEt8HHChlU-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.13;entryY=1.015;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.13;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;endArrow=blockThin;endFill=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-42" target="fUcIlm6X4udEt8HHChlU-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-1" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormBase&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ normative_config: NormConf&lt;br&gt;&amp;nbsp;+ model_config: ModelConf&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ model&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ &lt;u&gt;fit(NormData)&lt;/u&gt; -&amp;gt; NormBase&lt;br&gt;&amp;nbsp;+ predict(NormData) -&amp;gt; NormData&lt;br&gt;&amp;nbsp;+ &lt;u&gt;fit_predict(NormData)&lt;/u&gt; -&amp;gt; NormBase, NormData&lt;br&gt;&amp;nbsp;+ save(path) -&amp;gt; None&lt;br&gt;&amp;nbsp;+ &lt;u&gt;load(cls, path)&lt;/u&gt; -&amp;gt; NormBase&lt;br&gt;&amp;nbsp;+ evaluate(NormData, metrics)&lt;br&gt;&amp;nbsp;+ get_quantiles(NormData)&lt;br&gt;&amp;nbsp;+ get_zscores(NormData)&lt;br&gt;&amp;nbsp;+ ...&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="60" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-9" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormConf&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;*general parameters for normative models*&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ __post_init__(self): checks for parameter incompatibility&lt;br&gt;+ &lt;u&gt;load(cls, path):&lt;/u&gt; NormConf&lt;br&gt;+ save(self, path): None&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2580" y="60" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-12" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;ModelConf&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ __post_init__(self): checks for parameter incompatibility&lt;br&gt;&amp;nbsp;+ &lt;u&gt;load(cls, path)&lt;/u&gt;: ModelConf&lt;br&gt;&amp;nbsp;+ save(self, path): None&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="3000" y="650" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-16" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=1;entryY=0.25;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-9" target="uSW-sqyGPiUXCIfXmXX4-1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2390" y="180" as="sourcePoint" />
+            <mxPoint x="2550" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-18" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormHBR&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ normative_config: NormConf&lt;br&gt;&amp;nbsp;+ model_config: HBRConf&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ model: HBR&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ &lt;u&gt;fit(NormData)&lt;/u&gt; -&amp;gt; NormHBR&lt;br&gt;&amp;nbsp;+ predict(NormData) -&amp;gt; NormData&lt;br&gt;&amp;nbsp;+ &lt;u&gt;fit_predict(NormData)&lt;/u&gt; -&amp;gt; NormHBR, NormData&lt;br&gt;&amp;nbsp;+ save(path) -&amp;gt; None&lt;br&gt;&amp;nbsp;+ &lt;u&gt;load(NormHBR, path)&lt;/u&gt; -&amp;gt; NormHBR&lt;br&gt;&amp;nbsp;+ evaluate(NormData, metrics)&lt;br&gt;&amp;nbsp;+ get_quantiles(NormData)&lt;br&gt;&amp;nbsp;+ get_zscores(NormData)&lt;br&gt;&amp;nbsp;+ ...&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="360" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-20" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-18" target="uSW-sqyGPiUXCIfXmXX4-1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2140" y="320" as="sourcePoint" />
+            <mxPoint x="2310" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-22" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;HBRConf&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;*all config parameters for HBR models*&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ __post_init__(self): checks for parameter incompatibility&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="840" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-23" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;HBR&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ conf: HBRConf&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ *all HBR model methods* &lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="680" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-25" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-23" target="uSW-sqyGPiUXCIfXmXX4-18">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2370" y="680" as="sourcePoint" />
+            <mxPoint x="2530" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-26" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-22" target="uSW-sqyGPiUXCIfXmXX4-23">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2370" y="680" as="sourcePoint" />
+            <mxPoint x="2530" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-27" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormBLR&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ normative_config: NormConf&lt;br&gt;&amp;nbsp;+ model_config: BLRConf&lt;/p&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ model: BLR&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ &lt;u&gt;fit(NormData)&lt;/u&gt; -&amp;gt; NormBLR&lt;br&gt;&amp;nbsp;+ predict(NormData) -&amp;gt; NormData&lt;br&gt;&amp;nbsp;+ &lt;u&gt;fit_predict(NormData)&lt;/u&gt; -&amp;gt; NormBLR, NormData&lt;br&gt;&amp;nbsp;+ save(path) -&amp;gt; None&lt;br&gt;&amp;nbsp;+ &lt;u&gt;load(NormBLR, path)&lt;/u&gt; -&amp;gt; NormBLR&lt;br&gt;&amp;nbsp;+ evaluate(NormData, metrics)&lt;br&gt;&amp;nbsp;+ get_quantiles(NormData)&lt;br&gt;&amp;nbsp;+ get_zscores(NormData)&lt;br&gt;&amp;nbsp;+ ...&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2580" y="360" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-28" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;BLRConf&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;*all config parameters for BLR models*&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ __post_init__(self): checks for parameter incompatibility&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2580" y="840" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-29" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;BLR&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ conf: BLRConf&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;&amp;nbsp;+ *all BLR-specific methods*&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2580" y="680" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-31" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-29" target="uSW-sqyGPiUXCIfXmXX4-27">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2740" y="690" as="sourcePoint" />
+            <mxPoint x="2710" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-32" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-28" target="uSW-sqyGPiUXCIfXmXX4-29">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2680" y="1060" as="sourcePoint" />
+            <mxPoint x="2680" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-38" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-22" target="uSW-sqyGPiUXCIfXmXX4-12">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2700" y="670" as="sourcePoint" />
+            <mxPoint x="2860" y="670" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="1020" y="280" />
+              <mxPoint x="2500" y="890" />
+              <mxPoint x="2500" y="1180" />
+              <mxPoint x="3210" y="1180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-40" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-28" target="uSW-sqyGPiUXCIfXmXX4-12">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2760" y="670" as="sourcePoint" />
+            <mxPoint x="2920" y="670" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="3070" y="890" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-43" target="uSW-sqyGPiUXCIfXmXX4-23">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2140" y="1055" />
+              <mxPoint x="2140" y="725" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-43" value="HBR-specific utils and other HBR dependencies" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2160" y="1010" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-44" target="uSW-sqyGPiUXCIfXmXX4-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-44" value="BLR-specific utils and other BLR dependencies" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2580" y="1010" width="280" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-48" value="" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-12" target="uSW-sqyGPiUXCIfXmXX4-1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2500" y="510" as="sourcePoint" />
+            <mxPoint x="2660" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-49" value="" style="endArrow=block;dashed=1;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.75;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="uSW-sqyGPiUXCIfXmXX4-27" target="uSW-sqyGPiUXCIfXmXX4-1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2500" y="510" as="sourcePoint" />
+            <mxPoint x="2660" y="510" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="2720" y="330" />
+              <mxPoint x="2370" y="330" />
             </Array>
           </mxGeometry>
         </mxCell>
