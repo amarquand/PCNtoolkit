@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-14T15:55:44.686Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0" etag="vCBOCPnnSWkapMXNbfCz" version="22.1.8" type="github" pages="2">
+<mxfile host="app.diagrams.net" modified="2023-12-14T16:05:56.655Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0" etag="qh-D9fEobaS766jsE7BX" version="22.1.8" type="github" pages="2">
   <diagram id="4-HiFznOBndP52qhTeto" name="0.29">
     <mxGraphModel dx="4629" dy="3858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -686,7 +686,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="qq85L3UZBrmE3l4PtW7_" name="0.30">
-    <mxGraphModel dx="158" dy="506" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="-74" dy="434" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -700,10 +700,10 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-47" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;MinMaxScaler&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ coef_dict: Map[String, tuple(float, float)]&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ inverse_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1165" y="700" width="310" height="130" as="geometry" />
+          <mxGeometry x="1175" y="910" width="310" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-6" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormData&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&amp;nbsp;+ vars: NormVars&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_csv(cls, path, NormVars)&lt;/u&gt;: NormData&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_fsl(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+  &lt;u&gt;from_flsvbm(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt; from_freesurfer(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ split(split_ratios, stratify, seed): List[NormData]&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1185" y="180" width="410" height="140" as="geometry" />
+        <mxCell id="fUcIlm6X4udEt8HHChlU-6" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NormData&lt;/b&gt;&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&amp;nbsp;+ vars: NormVars&lt;br&gt;&amp;nbsp;+ applied_transformations: Dict[String, List[String]]&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_csv(cls, path, NormVars)&lt;/u&gt;: NormData&lt;br&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt;from_fsl(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+  &lt;u&gt;from_fslvbm(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ &lt;u&gt; from_freesurfer(cls, path, NormVars)&lt;/u&gt;: NormData&lt;/div&gt;&lt;div&gt;&amp;nbsp;+ split(split_ratios, stratify, seed): List[NormData]&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1185" y="180" width="410" height="170" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-8" value="Extends" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-6" target="fUcIlm6X4udEt8HHChlU-12">
           <mxGeometry width="160" relative="1" as="geometry">
@@ -723,39 +723,42 @@
             <mxPoint x="1660" y="360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-24" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Transformation&lt;br&gt;&amp;lt;abstract&amp;gt;&lt;br&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;+ transform(data: NormData, apply_to:NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="480" width="350" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=0;dashed=1;entryX=0.221;entryY=1.034;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-25" target="fUcIlm6X4udEt8HHChlU-24">
+        <mxCell id="fUcIlm6X4udEt8HHChlU-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=0;dashed=1;entryX=0.206;entryY=1.05;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-25" target="uSW-sqyGPiUXCIfXmXX4-51">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1375" y="510" as="targetPoint" />
+            <mxPoint x="1207.35" y="762.72" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1207" y="780" />
+              <mxPoint x="1200" y="780" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-25" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;InvertibleTransformation&lt;br&gt;&amp;lt;abstract&amp;gt;&lt;br&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;+ inverse_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="590" width="310" height="70" as="geometry" />
+          <mxGeometry x="1130" y="800" width="310" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="fUcIlm6X4udEt8HHChlU-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=blockThin;endFill=0;dashed=1;exitX=0.483;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-27" target="fUcIlm6X4udEt8HHChlU-24">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="fUcIlm6X4udEt8HHChlU-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=blockThin;endFill=0;dashed=1;exitX=0.483;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-27" target="uSW-sqyGPiUXCIfXmXX4-51">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1392.5" y="760" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-27" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;NonInvertibleTransformation&lt;br&gt;&amp;lt;abstract&amp;gt;&lt;br&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="1515" y="590" width="300" height="70" as="geometry" />
+          <mxGeometry x="1525" y="800" width="300" height="70" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.112;exitY=0.014;exitDx=0;exitDy=0;entryX=0.113;entryY=0.996;entryDx=0;entryDy=0;dashed=1;endArrow=blockThin;endFill=0;entryPerimeter=0;exitPerimeter=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-41" target="fUcIlm6X4udEt8HHChlU-25">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1274.9999999999998" y="660" as="sourcePoint" />
+            <mxPoint x="1284.9999999999998" y="870" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-41" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;StandardScaler&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ coef_dict: Map[String, tuple(float, float)]&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ inverse_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="730" width="310" height="130" as="geometry" />
+          <mxGeometry x="1130" y="940" width="310" height="130" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=blockThin;endFill=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-43" target="fUcIlm6X4udEt8HHChlU-27">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-43" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;BSplineBasisExpansion&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ degree: int&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1565" y="700" width="300" height="130" as="geometry" />
+          <mxGeometry x="1575" y="910" width="300" height="130" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-42" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;PolynomialBasisExpansion&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;/div&gt;&amp;nbsp;+ degree: int&lt;br&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ fit(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ transform(NormData, NormVars): NormData&lt;br&gt;&amp;nbsp;+ fit_transform(NormData, NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
-          <mxGeometry x="1515" y="740" width="300" height="130" as="geometry" />
+          <mxGeometry x="1525" y="950" width="300" height="130" as="geometry" />
         </mxCell>
         <mxCell id="fUcIlm6X4udEt8HHChlU-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.13;entryY=1.015;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.13;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;endArrow=blockThin;endFill=0;" edge="1" parent="1" source="fUcIlm6X4udEt8HHChlU-42" target="fUcIlm6X4udEt8HHChlU-27">
           <mxGeometry relative="1" as="geometry" />
@@ -875,6 +878,12 @@
               <mxPoint x="2370" y="330" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-50" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Pipeline&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ steps: List[Transformation]&lt;br&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:4px;&quot;&gt;+ fit(data: NormData, apply_to:NormVars)&lt;br&gt;+ transform(data:NormData, apply_to: NormVars) -&amp;gt; NormData&lt;br&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="440" width="400" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="uSW-sqyGPiUXCIfXmXX4-51" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Transformation&lt;br&gt;&amp;lt;abstract&amp;gt;&lt;br&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div&gt;&amp;nbsp;+ name: String&lt;br&gt;&lt;/div&gt;&lt;hr size=&quot;1&quot;&gt;&lt;div style=&quot;height:2px;&quot;&gt;&amp;nbsp;+ transform(data: NormData: apply_to: NormVars): NormData&lt;br&gt;&lt;/div&gt;" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="645" width="340" height="100" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
