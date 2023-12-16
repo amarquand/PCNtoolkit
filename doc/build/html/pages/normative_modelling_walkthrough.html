@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GPR tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -19,6 +21,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -32,12 +35,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -99,8 +106,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>GPR tutorial</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">GPR tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/normative_modelling_walkthrough.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -111,7 +118,7 @@
            <div itemprop="articleBody">
              
   <section id="gaussian-process-regression">
-<h1>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Permalink to this headline"></a></h1>
+<h1>Gaussian Process Regression<a class="headerlink" href="#gaussian-process-regression" title="Permalink to this heading"></a></h1>
 <p>Created by</p>
 <p>Mariam Zabihi <a class="reference external" href="https://twitter.com/m_zabihi">&#64;m_zabihi</a></p>
 <p>Saige Rutherford <a class="reference external" href="https://twitter.com/being_saige">&#64;being_saige</a></p>
@@ -119,7 +126,7 @@
 _______________________________________________________________________________</p>
 <a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/CPC_2020/normative_modelling_walkthrough.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 <section id="background-story">
-<h2>Background Story<a class="headerlink" href="#background-story" title="Permalink to this headline"></a></h2>
+<h2>Background Story<a class="headerlink" href="#background-story" title="Permalink to this heading"></a></h2>
 <p>Morten and Ingrid are concerned about the health of their father,
 Nordan. He recently turned 65 years. A few months ago he could not find
 his way home. Together, they visit a neurologist/psychiatrist to conduct
@@ -139,9 +146,9 @@ IQ, age as well as the same sex as Nordan.</p>
 bad if you cannot complete everything during the tutorial.</p>
 </section>
 <section id="task-0-load-data-and-install-the-pcntoolkit">
-<h2><strong>Task 0:</strong> Load data and install the pcntoolkit<a class="headerlink" href="#task-0-load-data-and-install-the-pcntoolkit" title="Permalink to this headline"></a></h2>
+<h2><strong>Task 0:</strong> Load data and install the pcntoolkit<a class="headerlink" href="#task-0-load-data-and-install-the-pcntoolkit" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#install normative modeling</span>
-<span class="o">!</span> pip install <span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.26
+<span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">pcntoolkit</span><span class="o">==</span><span class="m">0</span>.26
 </pre></div>
 </div>
 <p><strong>Option 1:</strong> Connect your Google Drive account, and load data from
@@ -163,10 +170,10 @@ and upload the csv files to this folder.</p>
 </div>
 <p><strong>Option 2:</strong> Import the files directly from Github, and skip adding
 them to Google Drive.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_demographics.csv
-<span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_demographics_nordan.csv
-<span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_features.csv
-<span class="o">!</span>wget -nc https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_features_nordan.csv
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>wget<span class="w"> </span>-nc<span class="w"> </span>https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_demographics.csv
+<span class="o">!</span>wget<span class="w"> </span>-nc<span class="w"> </span>https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_demographics_nordan.csv
+<span class="o">!</span>wget<span class="w"> </span>-nc<span class="w"> </span>https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_features.csv
+<span class="o">!</span>wget<span class="w"> </span>-nc<span class="w"> </span>https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/master/tutorials/CPC_2020/data/camcan_features_nordan.csv
 
 <span class="c1"># code by S. Rutherford</span>
 </pre></div>
@@ -218,7 +225,7 @@ camcan_features_nor 100%[===================&gt;]   1.66K  --.-KB/s    in 0s
 </div>
 </section>
 <section id="task-1-format-input-data">
-<h2><strong>TASK 1:</strong> Format input data<a class="headerlink" href="#task-1-format-input-data" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 1:</strong> Format input data<a class="headerlink" href="#task-1-format-input-data" title="Permalink to this heading"></a></h2>
 <p>You have four files. The features and demographics file for the
 normsample and two files of the same name for Nordan your test sample.
 As one of your coworkers has done the preporcessing and quality control
@@ -304,7 +311,7 @@ CC723395   86   FEMALE    0  ...      68.335159   62.081225              2988.00
 </div>
 </section>
 <section id="task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file">
-<h2><strong>TASK 2:</strong> Prepare the covariate_normsample and testresponse_normsample file.<a class="headerlink" href="#task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 2:</strong> Prepare the covariate_normsample and testresponse_normsample file.<a class="headerlink" href="#task-2-prepare-the-covariate-normsample-and-testresponse-normsample-file" title="Permalink to this heading"></a></h2>
 <p>As mentioned in the introductory presentation those files need a
 specific format and the entries need to be seperated by spaces. Use
 whatever method you know to prepare those files based on the data
@@ -352,7 +359,7 @@ algorithm used?</p></li>
 </div>
 </section>
 <section id="task-3-estimate-normative-model">
-<h2><strong>TASK 3:</strong> Estimate normative model<a class="headerlink" href="#task-3-estimate-normative-model" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 3:</strong> Estimate normative model<a class="headerlink" href="#task-3-estimate-normative-model" title="Permalink to this heading"></a></h2>
 <p>Once you have prepared and saved all the necessary files. Look at the
 pcntoolkit for running normative modeling. Select an appropritate method
 set up the toolkit and run your analyses using 2-fold cross validation
@@ -472,7 +479,7 @@ Writing outputs ...
 </div>
 </section>
 <section id="task-4-estimate-the-forward-model-of-the-normative-model">
-<h2><strong>TASK 4:</strong> Estimate the forward model of the normative model<a class="headerlink" href="#task-4-estimate-the-forward-model-of-the-normative-model" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 4:</strong> Estimate the forward model of the normative model<a class="headerlink" href="#task-4-estimate-the-forward-model-of-the-normative-model" title="Permalink to this heading"></a></h2>
 <p>In order to visulize the normative trajectories you first need to run
 the forward model. To this end you need to set up an appropriate
 covariate_forwardmodel file that covers the age range appropriately for
@@ -570,7 +577,7 @@ Writing outputs ...
 </div>
 </section>
 <section id="task-5-visualize-forward-model">
-<h2><strong>TASK 5:</strong> Visualize forward model<a class="headerlink" href="#task-5-visualize-forward-model" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 5:</strong> Visualize forward model<a class="headerlink" href="#task-5-visualize-forward-model" title="Permalink to this heading"></a></h2>
 <p>Visualize the forward model of the normative model similar to the figure
 below.</p>
 <figure class="align-default" id="id1">
@@ -652,7 +659,7 @@ individual participants.</p>
 <img alt="../_images/normative_modelling_walkthrough_22_7.png" src="../_images/normative_modelling_walkthrough_22_7.png" />
 </section>
 <section id="task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients">
-<h2><strong>TASK 6:</strong> Apply the normative model to Nordan’s data and the dementia patients.<a class="headerlink" href="#task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 6:</strong> Apply the normative model to Nordan’s data and the dementia patients.<a class="headerlink" href="#task-6-apply-the-normative-model-to-nordans-data-and-the-dementia-patients" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in Nordan&#39;s as well as the patient&#39;s demographics and features</span>
 <span class="n">demographics_nordan</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;camcan_demographics_nordan.csv&#39;</span><span class="p">,</span>
                                        <span class="n">sep</span><span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
@@ -756,13 +763,13 @@ Writing outputs ...
 </div>
 </section>
 <section id="task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely">
-<h2><strong>TASK 7:</strong> In which hyppocampal subfield(s) does Nordan deviate extremely?<a class="headerlink" href="#task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 7:</strong> In which hyppocampal subfield(s) does Nordan deviate extremely?<a class="headerlink" href="#task-7-in-which-hyppocampal-subfield-s-does-nordan-deviate-extremely" title="Permalink to this heading"></a></h2>
 <p>No coding necessary just create a presentation which includes
 recommendations to Nordan and his family. Use i) |Z| &gt; 3.6 ii) |Z| &gt;
 1.96 as definitions for extreme normative deviations.</p>
 </section>
 <section id="task-8-optional-implement-a-function-that-calculates-percentage-change">
-<h2><strong>TASK 8 (OPTIONAL):</strong> Implement a function that calculates percentage change.<a class="headerlink" href="#task-8-optional-implement-a-function-that-calculates-percentage-change" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 8 (OPTIONAL):</strong> Implement a function that calculates percentage change.<a class="headerlink" href="#task-8-optional-implement-a-function-that-calculates-percentage-change" title="Permalink to this heading"></a></h2>
 <p>Percentage change = <img class="math" src="../_images/math/136499ff23ae31f75bf05de819b869f7cb8675a7.png" alt="\frac{x1 - x2}{|x2|}*100"/></p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># function that calculates percentage change</span>
 <span class="k">def</span> <span class="nf">calculate_percentage_change</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
@@ -774,7 +781,7 @@ recommendations to Nordan and his family. Use i) |Z| &gt; 3.6 ii) |Z| &gt;
 </div>
 </section>
 <section id="task-9-optional-visualize-percent-change">
-<h2><strong>TASK 9 (OPTIONAL):</strong> Visualize percent change<a class="headerlink" href="#task-9-optional-visualize-percent-change" title="Permalink to this headline"></a></h2>
+<h2><strong>TASK 9 (OPTIONAL):</strong> Visualize percent change<a class="headerlink" href="#task-9-optional-visualize-percent-change" title="Permalink to this heading"></a></h2>
 <p>Plot the prercentage change in Yhat of the forward model in reference to
 age 20. Do that for both sexes seperately.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>

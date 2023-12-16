@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BLR tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -19,6 +21,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -32,12 +35,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -110,8 +117,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>BLR tutorial</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">BLR tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/BLR_normativemodel_protocol.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -122,7 +129,7 @@
            <div itemprop="articleBody">
              
   <section id="bayesian-linear-regression">
-<h1>Bayesian Linear Regression<a class="headerlink" href="#bayesian-linear-regression" title="Permalink to this headline"></a></h1>
+<h1>Bayesian Linear Regression<a class="headerlink" href="#bayesian-linear-regression" title="Permalink to this heading"></a></h1>
 <p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://www.nature.com/articles/s41596-022-00696-5">https://www.nature.com/articles/s41596-022-00696-5</a>.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
 <p>Using Multi-Site Cortical Thickness Data</p>
@@ -131,15 +138,15 @@
 <a class="reference internal image-reference" href="../_images/blr_fig2.png"><img alt="../_images/blr_fig2.png" src="../_images/blr_fig2.png" style="height: 400px;" /></a>
 </figure>
 <section id="data-preparation">
-<h2>Data Preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline"></a></h2>
+<h2>Data Preparation<a class="headerlink" href="#data-preparation" title="Permalink to this heading"></a></h2>
 <section id="install-necessary-libraries-grab-data-files">
-<h3>Install necessary libraries &amp; grab data files<a class="headerlink" href="#install-necessary-libraries-grab-data-files" title="Permalink to this headline"></a></h3>
+<h3>Install necessary libraries &amp; grab data files<a class="headerlink" href="#install-necessary-libraries-grab-data-files" title="Permalink to this heading"></a></h3>
 <p>Begin by cloning the GitHub repository using the following commands.
 This repository contains the necessary code and example data. Then
 install the python packages using pip and import them into the python
 environment (either Google Colab or using a local python installation on
 your computer).</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
 </pre></div>
 </div>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Cloning into &#39;PCNtoolkit-demo&#39;...
@@ -158,12 +165,12 @@ Resolving deltas: 100% (278/278), done.
 <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;/content/PCNtoolkit-demo/tutorials/BLR_protocol&#39;</span><span class="p">)</span> <span class="c1"># if running on Google Colab, use this line</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> pip install -r requirements.txt
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </pre></div>
 </div>
 </section>
 <section id="prepare-covariate-data">
-<h3>Prepare covariate data<a class="headerlink" href="#prepare-covariate-data" title="Permalink to this headline"></a></h3>
+<h3>Prepare covariate data<a class="headerlink" href="#prepare-covariate-data" title="Permalink to this heading"></a></h3>
 <p>The data set (downloaded in Step 1) includes a multi-site dataset from
 the <a class="reference external" href="https://www.humanconnectome.org/study/hcp-young-adult">Human Connectome Project Young Adult
 study</a> and
@@ -213,7 +220,7 @@ depending on the research question.</p>
 </div>
 </section>
 <section id="prepare-brain-data">
-<h3>Prepare brain data<a class="headerlink" href="#prepare-brain-data" title="Permalink to this headline"></a></h3>
+<h3>Prepare brain data<a class="headerlink" href="#prepare-brain-data" title="Permalink to this heading"></a></h3>
 <p>Next, format and combine the MRI data using the following commands. The
 example data contains cortical thickness maps estimated by running
 recon-all from Freesurfer (version 6.0). The dimensionality of the data
@@ -440,7 +447,7 @@ Biobanks QC pipeline are also viable options for automated QC.</p>
 </div>
 </section>
 <section id="combine-covariate-cortical-thickness-dataframes">
-<h3>Combine covariate &amp; cortical thickness dataframes<a class="headerlink" href="#combine-covariate-cortical-thickness-dataframes" title="Permalink to this headline"></a></h3>
+<h3>Combine covariate &amp; cortical thickness dataframes<a class="headerlink" href="#combine-covariate-cortical-thickness-dataframes" title="Permalink to this heading"></a></h3>
 <p>The normative modeling function requires the covariate predictors and
 brain features to be in separate text files. However, it is important to
 first (inner) merge them together, using the following commands, to
@@ -480,7 +487,7 @@ frame if you do not wish to run models for the whole brain.</p>
 </div>
 </section>
 <section id="add-variable-to-model-site-scanner-effects">
-<h3>Add variable to model site/scanner effects<a class="headerlink" href="#add-variable-to-model-site-scanner-effects" title="Permalink to this headline"></a></h3>
+<h3>Add variable to model site/scanner effects<a class="headerlink" href="#add-variable-to-model-site-scanner-effects" title="Permalink to this heading"></a></h3>
 <p>Currently, the different sites are coded in a single column (named
 ‘site’) and are represented as a string data type. However, the
 PCNtoolkit requires binary variables. Use the pandas package as follows
@@ -496,7 +503,7 @@ variables (0=not in this site, 1=present in this site).</p>
 </div>
 </section>
 <section id="train-test-split">
-<h3>Train/test split<a class="headerlink" href="#train-test-split" title="Permalink to this headline"></a></h3>
+<h3>Train/test split<a class="headerlink" href="#train-test-split" title="Permalink to this heading"></a></h3>
 <p>In this example, we use 80% of the data for training and 20% for
 testing. Please carefully read the experimental design section on
 train/test split considerations when using your own data in this step.
@@ -564,7 +571,7 @@ which sites to evaluate model performance for, as follows:</p>
 </div>
 </section>
 <section id="setup-output-directories">
-<h3>Setup output directories<a class="headerlink" href="#setup-output-directories" title="Permalink to this headline"></a></h3>
+<h3>Setup output directories<a class="headerlink" href="#setup-output-directories" title="Permalink to this heading"></a></h3>
 <p>Save each brain region to its own text file (organized in separate
 directories) using the following commands, because for each response
 variable, Y (e.g., brain region) we fit a separate normative model.</p>
@@ -588,26 +595,26 @@ variable, Y (e.g., brain region) we fit a separate normative model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_test</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;resp_te.txt&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="k">if</span> <span class="o">[[</span> ! -e ROI_models/ <span class="o">]]</span><span class="p">;</span> <span class="k">then</span> mkdir ROI_models<span class="p">;</span> <span class="k">fi</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>!<span class="w"> </span>-e<span class="w"> </span>ROI_models/<span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>mkdir<span class="w"> </span>ROI_models<span class="p">;</span><span class="w"> </span><span class="k">fi</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="k">for</span> i <span class="k">in</span> <span class="sb">`</span>cat /content/PCNtoolkit-demo/data/roi_dir_names<span class="sb">`</span><span class="p">;</span> <span class="k">do</span> <span class="k">if</span> <span class="o">[[</span> -e resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt <span class="o">]]</span><span class="p">;</span> <span class="k">then</span> <span class="nb">cd</span> ROI_models<span class="p">;</span> mkdir <span class="si">${</span><span class="nv">i</span><span class="si">}</span><span class="p">;</span> <span class="nb">cd</span> ../<span class="p">;</span> cp resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_tr.txt<span class="p">;</span> cp resp_te_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_te.txt<span class="p">;</span> cp cov_tr.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_tr.txt<span class="p">;</span> cp cov_te.txt ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_te.txt<span class="p">;</span> <span class="k">fi</span><span class="p">;</span> <span class="k">done</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up files</span>
-<span class="o">!</span> rm resp_*.txt
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="sb">`</span>cat<span class="w"> </span>/content/PCNtoolkit-demo/data/roi_dir_names<span class="sb">`</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>-e<span class="w"> </span>resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt<span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>ROI_models<span class="p">;</span><span class="w"> </span>mkdir<span class="w"> </span><span class="si">${</span><span class="nv">i</span><span class="si">}</span><span class="p">;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>../<span class="p">;</span><span class="w"> </span>cp<span class="w"> </span>resp_tr_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt<span class="w"> </span>ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_tr.txt<span class="p">;</span><span class="w"> </span>cp<span class="w"> </span>resp_te_<span class="si">${</span><span class="nv">i</span><span class="si">}</span>.txt<span class="w"> </span>ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/resp_te.txt<span class="p">;</span><span class="w"> </span>cp<span class="w"> </span>cov_tr.txt<span class="w"> </span>ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_tr.txt<span class="p">;</span><span class="w"> </span>cp<span class="w"> </span>cov_te.txt<span class="w"> </span>ROI_models/<span class="si">${</span><span class="nv">i</span><span class="si">}</span>/cov_te.txt<span class="p">;</span><span class="w"> </span><span class="k">fi</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up files</span>
-<span class="o">!</span> rm cov_t*.txt
+<span class="o">!</span><span class="w"> </span>rm<span class="w"> </span>resp_*.txt
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up files</span>
+<span class="o">!</span><span class="w"> </span>rm<span class="w"> </span>cov_t*.txt
 </pre></div>
 </div>
 </section>
 </section>
 <section id="algorithm-modeling">
-<h2>Algorithm &amp; Modeling<a class="headerlink" href="#algorithm-modeling" title="Permalink to this headline"></a></h2>
+<h2>Algorithm &amp; Modeling<a class="headerlink" href="#algorithm-modeling" title="Permalink to this heading"></a></h2>
 <section id="basis-expansion-using-b-splines">
-<h3>Basis expansion using B-Splines<a class="headerlink" href="#basis-expansion-using-b-splines" title="Permalink to this headline"></a></h3>
+<h3>Basis expansion using B-Splines<a class="headerlink" href="#basis-expansion-using-b-splines" title="Permalink to this heading"></a></h3>
 <p>Now, set up a B-spline basis set that allows us to perform nonlinear
 regression using a linear model, using the following commands. This
 basis is deliberately chosen to not to be too flexible so that it can
@@ -662,7 +669,7 @@ Creating basis expansion for ROI: rh_superiorfrontal_thickness
 </div>
 </section>
 <section id="estimate-normative-model">
-<h3>Estimate normative model<a class="headerlink" href="#estimate-normative-model" title="Permalink to this headline"></a></h3>
+<h3>Estimate normative model<a class="headerlink" href="#estimate-normative-model" title="Permalink to this heading"></a></h3>
 <p>Set up a variable (<code class="docutils literal notranslate"><span class="pre">data_dir</span></code>) that specifies the path to the ROI
 directories that were created in Step 7. Initiate two empty pandas data
 frames where the evaluation metrics are the column names, as follows;
@@ -837,9 +844,9 @@ Evaluating the model ...
 </section>
 </section>
 <section id="evaluation-interpretation">
-<h2>Evaluation &amp; Interpretation<a class="headerlink" href="#evaluation-interpretation" title="Permalink to this headline"></a></h2>
+<h2>Evaluation &amp; Interpretation<a class="headerlink" href="#evaluation-interpretation" title="Permalink to this heading"></a></h2>
 <section id="describe-the-normative-model-performance">
-<h3>Describe the normative model performance<a class="headerlink" href="#describe-the-normative-model-performance" title="Permalink to this headline"></a></h3>
+<h3>Describe the normative model performance<a class="headerlink" href="#describe-the-normative-model-performance" title="Permalink to this heading"></a></h3>
 <p>In step 11, when we looped over each region of interest in the
 <code class="docutils literal notranslate"><span class="pre">roi_ids</span></code> list (created in step 4) and evaluated the normative model
 on the independent test set, it also computed the evaluation metrics
@@ -902,10 +909,10 @@ can organize them into a single file, and merge the deviation scores
 into the original data file.</p>
 </section>
 <section id="visualize-normative-model-outputs">
-<h3>Visualize normative model outputs<a class="headerlink" href="#visualize-normative-model-outputs" title="Permalink to this headline"></a></h3>
+<h3>Visualize normative model outputs<a class="headerlink" href="#visualize-normative-model-outputs" title="Permalink to this heading"></a></h3>
 </section>
 <section id="figure-4a-viz">
-<h3>Figure 4A viz<a class="headerlink" href="#figure-4a-viz" title="Permalink to this headline"></a></h3>
+<h3>Figure 4A viz<a class="headerlink" href="#figure-4a-viz" title="Permalink to this heading"></a></h3>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
@@ -938,7 +945,7 @@ can be found in this
 <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/visualizations.ipynb">notebook</a>.</p>
 </section>
 <section id="post-hoc-analysis-ideas">
-<h3>Post-Hoc analysis ideas<a class="headerlink" href="#post-hoc-analysis-ideas" title="Permalink to this headline"></a></h3>
+<h3>Post-Hoc analysis ideas<a class="headerlink" href="#post-hoc-analysis-ideas" title="Permalink to this heading"></a></h3>
 <p>The code for running SVM classification and classical case vs. control
 t-testing on the outputs of normative modeling can be found in this
 <a class="reference external" href="https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/post_hoc_analysis.ipynb">notebook</a>.</p>

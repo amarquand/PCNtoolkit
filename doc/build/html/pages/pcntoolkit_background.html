@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Background &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -19,6 +21,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -32,12 +35,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -96,8 +103,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Background</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Background</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/pcntoolkit_background.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -108,15 +115,15 @@
            <div itemprop="articleBody">
              
   <section id="pcntoolkit-background">
-<h1>PCNtoolkit Background<a class="headerlink" href="#pcntoolkit-background" title="Permalink to this headline"></a></h1>
+<h1>PCNtoolkit Background<a class="headerlink" href="#pcntoolkit-background" title="Permalink to this heading"></a></h1>
 <section id="what-is-the-pcntoolkit">
-<h2>What is the PCNtoolkit?<a class="headerlink" href="#what-is-the-pcntoolkit" title="Permalink to this headline"></a></h2>
+<h2>What is the PCNtoolkit?<a class="headerlink" href="#what-is-the-pcntoolkit" title="Permalink to this heading"></a></h2>
 <p>Predictive Clinical Neuroscience (PCN) toolkit (formerly nispat) is a python package designed for multi-purpose tasks in clinical neuroimaging, including normative modelling, trend surface modelling in addition to providing implementations of a number of fundamental machine learning algorithms.</p>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../_images/blr_fig1.png"><img alt="../_images/blr_fig1.png" src="../_images/blr_fig1.png" style="height: 400px;" /></a>
 </figure>
 <section id="intro-to-normative-modelling">
-<h3>Intro to normative modelling<a class="headerlink" href="#intro-to-normative-modelling" title="Permalink to this headline"></a></h3>
+<h3>Intro to normative modelling<a class="headerlink" href="#intro-to-normative-modelling" title="Permalink to this heading"></a></h3>
 <p>Normative modelling essentially aims to predict centiles of variance in a response variable (e.g. a region of interest or other neuroimaging-derived measure) on the basis of a set of covariates (e.g. age, clinical scores, diagnosis) A conceptual overview of the approach can be found in this <a class="reference external" href="https://www.nature.com/articles/s41380-019-0441-1">publication</a>. For example, the image below shows an example of a normative model that aims to predict vertex-wise cortical thickness data, essentially fitting a separate model for each vertex.</p>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../_images/nm_concept.png"><img alt="../_images/nm_concept.png" src="../_images/nm_concept.png" style="height: 300px;" /></a>
@@ -128,14 +135,14 @@
 <p>There are many options for this, but techniques that provide a distributional form for the centiles are appealing, since they help to estimate extreme centiles more efficiently. Bayesian methods are also beneficial in this regard because they also allow separation of modelling uncertainty from variation in the data. Many applications of normative modelling use Gaussian Process Regression, which is the default method in this toolkit. Typically (but not <a class="reference external" href="https://link.springer.com/chapter/10.1007/978-3-030-00931-1_15">always</a>), each response variable is estimated independently.</p>
 </section>
 <section id="data-formats">
-<h3>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this headline"></a></h3>
+<h3>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this heading"></a></h3>
 <p>Generally the covariates are specified in text format, roughly following the FSL convention in that the text file should contain one entry
 (i.e. subject) per line, with columns space or tab separated and no headers. For example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>head cov.txt
-<span class="m">52</span> <span class="m">55</span> <span class="m">94</span> <span class="m">4</span>.6
-<span class="m">49</span> <span class="m">43</span> <span class="m">59</span> <span class="m">4</span>.6
-<span class="m">56</span> <span class="m">80</span> <span class="m">63</span> <span class="m">5</span>.6
-<span class="m">39</span> <span class="m">48</span> <span class="m">42</span> <span class="m">4</span>.3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>head<span class="w"> </span>cov.txt
+<span class="m">52</span><span class="w"> </span><span class="m">55</span><span class="w"> </span><span class="m">94</span><span class="w"> </span><span class="m">4</span>.6
+<span class="m">49</span><span class="w"> </span><span class="m">43</span><span class="w"> </span><span class="m">59</span><span class="w"> </span><span class="m">4</span>.6
+<span class="m">56</span><span class="w"> </span><span class="m">80</span><span class="w"> </span><span class="m">63</span><span class="w"> </span><span class="m">5</span>.6
+<span class="m">39</span><span class="w"> </span><span class="m">48</span><span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="m">4</span>.3
 </pre></div>
 </div>
 <p>For the response variables, the following data formats are supported:</p>
@@ -148,20 +155,15 @@
 <p>For nifti/cifti formats, data should be in timeseries format with subjects along the time dimension and these images will be masked and reshaped into vectors. If no mask is specified, one will be created automatically from the image data.</p>
 </section>
 <section id="basic-usage-command-line">
-<h3>Basic usage (command line)<a class="headerlink" href="#basic-usage-command-line" title="Permalink to this headline"></a></h3>
+<h3>Basic usage (command line)<a class="headerlink" href="#basic-usage-command-line" title="Permalink to this heading"></a></h3>
 <p>The simplest method to estimate a normative model is using the <code class="docutils literal notranslate"><span class="pre">normative.py</span></code> script which can be run from the command line or imported as a python module. For example, the following command will estimate a normative model on the basis of the matrix of covariates and responses specified in cov.txt and resp.txt respectively. These are simply tab or space separated ASCII text files that contain the variables of interest, with one subject per row.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python normative.py -c cov.txt -k <span class="m">5</span> -a blr resp.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>normative.py<span class="w"> </span>-c<span class="w"> </span>cov.txt<span class="w"> </span>-k<span class="w"> </span><span class="m">5</span><span class="w"> </span>-a<span class="w"> </span>blr<span class="w"> </span>resp.txt
 </pre></div>
 </div>
 <p>The argument <code class="docutils literal notranslate"><span class="pre">-a</span> <span class="pre">blr</span></code> tells the script to use Bayesian Linear regression rather than the default Gaussian process regression model and <code class="docutils literal notranslate"><span class="pre">-k</span> <span class="pre">5</span></code> tells the script to run internal 5-fold cross-validation across all subjects in the covariates and responses files. Alternatively, the model can be evaluated on a separate dataset by specifying test covariates (and optionally also test responses).
 The following estimation algorithms are supported</p>
 <p><strong>Table 1: Estimation algorithms</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 23%" />
-<col style="width: 65%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><strong>key value</strong></p></td>
 <td><p><strong>Description</strong></p></td>
@@ -186,17 +188,12 @@ The following estimation algorithms are supported</p>
 </tbody>
 </table>
 <p>Note that keyword arguments can also be specified from the command line to offer additional flexibility. For example, the following command will fit a normative model to the same data, but without standardizing the data first and additionally writing out model coefficients (this is not done by default because they can use a lot of disk space).</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python normative.py -c cov.txt -k <span class="m">5</span> -a blr resp.txt <span class="nv">standardize</span><span class="o">=</span>False <span class="nv">savemodel</span><span class="o">=</span>True
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>normative.py<span class="w"> </span>-c<span class="w"> </span>cov.txt<span class="w"> </span>-k<span class="w"> </span><span class="m">5</span><span class="w"> </span>-a<span class="w"> </span>blr<span class="w"> </span>resp.txt<span class="w"> </span><span class="nv">standardize</span><span class="o">=</span>False<span class="w"> </span><span class="nv">savemodel</span><span class="o">=</span>True
 </pre></div>
 </div>
 <p>A full set of keyword arguments is provided in the table below. At a minimum, a set of responses and covariates must be provided and either the corresponding number of cross-validation folds or a set of test covariates.</p>
 <p><strong>Table 2: Keywords and command line arguments</strong></p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 20%" />
-<col style="width: 71%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><strong>Keyword</strong></p></td>
 <td><p><strong>Command line shortcut</strong></p></td>
@@ -258,7 +255,7 @@ The following estimation algorithms are supported</p>
 </table>
 </section>
 <section id="basic-usage-scripted">
-<h3>Basic usage (scripted)<a class="headerlink" href="#basic-usage-scripted" title="Permalink to this headline"></a></h3>
+<h3>Basic usage (scripted)<a class="headerlink" href="#basic-usage-scripted" title="Permalink to this heading"></a></h3>
 <p>The same can be done by importing the estimate function from <code class="docutils literal notranslate"><span class="pre">normative.py</span></code>. For example, the following code snippet will: (i) mask the nifti data specified in resp_train.nii.gz using the mask specified (which must have the same voxel size as the response variables) (ii) fit a linear normative model to each voxel, (iii) apply this to make predictions using the test covariates and (iv) compute deviation scores and error metrics by comparing against the true test response variables.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pcntoolkit.normative</span> <span class="kn">import</span> <span class="n">estimate</span>
 
@@ -284,7 +281,7 @@ The following estimation algorithms are supported</p>
 <p>For further information, see the <a class="reference external" href="https://amarquand.github.io/PCNtoolkit/doc/build/html/modindex.html#module-normative">developer documentation</a>. The same can be achieved from the command line, using te <code class="docutils literal notranslate"><span class="pre">-f</span></code> argument, for example, by specifying <code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">predict</span></code>.</p>
 </section>
 <section id="paralellising-estimation-to-speed-things-up">
-<h3>Paralellising estimation to speed things up<a class="headerlink" href="#paralellising-estimation-to-speed-things-up" title="Permalink to this headline"></a></h3>
+<h3>Paralellising estimation to speed things up<a class="headerlink" href="#paralellising-estimation-to-speed-things-up" title="Permalink to this heading"></a></h3>
 <p>Normative model estimation is typically quite computationally expensive, especially for large datasets. This is exacerbated by high-resolution data (e.g. voxelwise data). For such cases normative model estimation can be paralellised across multiple compute nodes which can be achieved using the <code class="docutils literal notranslate"><span class="pre">normative_parallel.py</span></code> script. This involves splitting the response matrix into a set of batches, each of a specified size, i.e.:</p>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../_images/nm_parallel.png"><img alt="../_images/nm_parallel.png" src="../_images/nm_parallel.png" style="height: 300px;" /></a>
