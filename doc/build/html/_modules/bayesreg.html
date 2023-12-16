@@ -1,93 +1,53 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>bayesreg &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-  
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
 
   
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-  
-  
-
-  
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/tabs.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html">
           
-
-          
+          <a href="../index.html">
             
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
-          
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
-
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
@@ -118,72 +78,36 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="index.html">Module code</a> &raquo;</li>
-        
-      <li>bayesreg</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bayesreg</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for bayesreg</h1><div class="highlight"><pre>
 <span></span>from __future__ import print_function
 from __future__ import division
 
 import numpy as np
-from scipy import optimize , linalg
+from scipy import optimize, linalg
 from scipy.linalg import LinAlgError
 
 
@@ -236,10 +160,11 @@ from scipy.linalg import LinAlgError
         var_covariates = kwargs.get(&#39;var_covariates&#39;, None)
         warp = kwargs.get(&#39;warp&#39;, None)
         warp_reparam = kwargs.get(&#39;warp_reparam&#39;, False)
-                
+
         if var_groups is not None and var_covariates is not None:
-            raise ValueError(&quot;var_covariates and var_groups cannot both be used&quot;)
-            
+            raise ValueError(
+                &quot;var_covariates and var_groups cannot both be used&quot;)
+
         # basic parameters
         self.hyp = np.nan
         self.nlZ = np.nan
@@ -265,31 +190,39 @@ from scipy.linalg import LinAlgError
             self.warp = warp
             self.n_warp_param = warp.get_n_params()
             self.warp_reparam = warp_reparam
-            
+
         self.gamma = None
-    
+
     def _parse_hyps(self, hyp, X, Xv=None):
+        &quot;&quot;&quot;
+        Parse hyperparameters into noise precision, lengthscale precision and
+        lengthscale parameters.
+
+        :param hyp: hyperparameter vector
+        :param X: covariates
+        :param Xv: covariates for heteroskedastic noise
+        &quot;&quot;&quot;
 
         N = X.shape[0]
-        
+
         # noise precision
         if Xv is not None:
             if len(Xv.shape) == 1:
                 Dv = 1
                 Xv = Xv[:, np.newaxis]
             else:
-                Dv = Xv.shape[1]           
-            w_d = np.asarray(hyp[0:Dv]) 
+                Dv = Xv.shape[1]
+            w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(Xv.dot(w_d))
             n_lik_param = len(w_d)
         elif self.var_groups is not None:
             beta = np.exp(hyp[0:len(self.var_ids)])
             n_lik_param = len(beta)
         else:
-            beta = np.asarray([np.exp(hyp[0])]) 
+            beta = np.asarray([np.exp(hyp[0])])
             n_lik_param = len(beta)
-         
-        # parameters for warping the likelhood function
+
+        # parameters for warping the likelihood function
         if self.warp is not None:
             gamma = hyp[n_lik_param:(n_lik_param + self.n_warp_param)]
             n_lik_param += self.n_warp_param
@@ -306,7 +239,7 @@ from scipy.linalg import LinAlgError
         if self.warp is not None and self.warp_reparam:
             delta = np.exp(gamma[1])
             beta = beta/(delta**2)
-    
+
         # Create precision matrix from noise precision
         if Xv is not None:
             self.lambda_n_vec = beta
@@ -315,18 +248,18 @@ from scipy.linalg import LinAlgError
             for v in range(len(self.var_ids)):
                 beta_all[self.var_groups == self.var_ids[v]] = beta[v]
             self.lambda_n_vec = beta_all
-        else:     
+        else:
             self.lambda_n_vec = np.ones(N)*beta
-    
+
         return beta, alpha, gamma
-        
+
 <div class="viewcode-block" id="BLR.post"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.post">[docs]</a>    def post(self, hyp, X, y, Xv=None):
         &quot;&quot;&quot; Generic function to compute posterior distribution.
 
             This function will save the posterior mean and precision matrix as
             self.m and self.A and will also update internal parameters (e.g.
             N, D and the prior covariance (Sigma_a) and precision (Lambda_a).
-            
+
             :param hyp: hyperparameter vector
             :param X: covariates
             :param y: responses
@@ -342,7 +275,7 @@ from scipy.linalg import LinAlgError
         if (hyp == self.hyp).all() and hasattr(self, &#39;N&#39;):
             print(&quot;hyperparameters have not changed, exiting&quot;)
             return
-        
+
         beta, alpha, gamma = self._parse_hyps(hyp, X, Xv)
 
         if self.verbose:
@@ -356,13 +289,13 @@ from scipy.linalg import LinAlgError
             raise ValueError(&quot;hyperparameter vector has invalid length&quot;)
 
         # compute posterior precision and mean
-        # this is equivalent to the following operation but makes much more 
+        # this is equivalent to the following operation but makes much more
         # efficient use of memory by avoiding the need to store Lambda_n
         #
         # self.A = X.T.dot(self.Lambda_n).dot(X) + self.Lambda_a
-        # self.m = linalg.solve(self.A, X.T, 
+        # self.m = linalg.solve(self.A, X.T,
         #                      check_finite=False).dot(self.Lambda_n).dot(y)
-        
+
         XtLambda_n = X.T*self.lambda_n_vec
         self.A = XtLambda_n.dot(X) + self.Lambda_a
         invAXt = linalg.solve(self.A, X.T, check_finite=False)
@@ -377,7 +310,7 @@ from scipy.linalg import LinAlgError
         &quot;&quot;&quot; Function to compute compute log (marginal) likelihood &quot;&quot;&quot;
 
         # hyperparameters (alpha not needed)
-        beta, alpha, gamma = self._parse_hyps(hyp, X, Xv) 
+        beta, alpha, gamma = self._parse_hyps(hyp, X, Xv)
 
         # warp the likelihood?
         if self.warp is not None:
@@ -385,16 +318,16 @@ from scipy.linalg import LinAlgError
                 print(&#39;warping input...&#39;)
             y_unwarped = y
             y = self.warp.f(y, gamma)
-            
+
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
+        if (hyp != self.hyp).any() or not (hasattr(self, &#39;A&#39;)):
             try:
                 self.post(hyp, X, y, Xv)
             except ValueError:
                 print(&quot;Warning: Estimation of posterior distribution failed&quot;)
                 nlZ = 1/np.finfo(float).eps
                 return nlZ
-                    
+
         try:
             # compute the log determinants in a numerically stable way
             logdetA = 2*sum(np.log(np.diag(np.linalg.cholesky(self.A))))
@@ -403,9 +336,9 @@ from scipy.linalg import LinAlgError
             nlZ = 1/np.finfo(float).eps
             return nlZ
 
-        logdetSigma_a = sum(np.log(np.diag(self.Sigma_a))) # diagonal
+        logdetSigma_a = sum(np.log(np.diag(self.Sigma_a)))  # diagonal
         logdetSigma_n = sum(np.log(1/self.lambda_n_vec))
-        
+
         # compute negative marginal log likelihood
         X_y_t_sLambda_n = (y-X.dot(self.m))*np.sqrt(self.lambda_n_vec)
         nlZ = -0.5 * (-self.N*np.log(2*np.pi) -
@@ -415,10 +348,9 @@ from scipy.linalg import LinAlgError
                       self.m.T.dot(self.Lambda_a).dot(self.m) -
                       logdetA
                       )
-        
-        
+
         if self.warp is not None:
-            # add in the Jacobian 
+            # add in the Jacobian
             nlZ = nlZ - sum(np.log(self.warp.df(y_unwarped, gamma)))
 
         # make sure the output is finite to stop the minimizer getting upset
@@ -430,10 +362,10 @@ from scipy.linalg import LinAlgError
 
         self.nlZ = nlZ
         return nlZ</div>
-    
+
 <div class="viewcode-block" id="BLR.penalized_loglik"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.penalized_loglik">[docs]</a>    def penalized_loglik(self, hyp, X, y, Xv=None, l=0.1, norm=&#39;L1&#39;):
         &quot;&quot;&quot; Function to compute the penalized log (marginal) likelihood 
-             
+
             :param hyp: hyperparameter vector
             :param X: covariates
             :param y: responses
@@ -455,13 +387,13 @@ from scipy.linalg import LinAlgError
 
         # hyperparameters
         beta, alpha, gamma = self._parse_hyps(hyp, X, Xv)
-        
+
         if self.warp is not None:
-            raise ValueError(&#39;optimization with derivatives is not yet &#39; + \
+            raise ValueError(&#39;optimization with derivatives is not yet &#39; +
                              &#39;supported for warped liklihood&#39;)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
+        if (hyp != self.hyp).any() or not (hasattr(self, &#39;A&#39;)):
             try:
                 self.post(hyp, X, y, Xv)
             except ValueError:
@@ -469,49 +401,49 @@ from scipy.linalg import LinAlgError
                 dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
                 return dnlZ
 
-        # precompute re-used quantities to maximise speed 
-        # todo: revise implementation to use Cholesky throughout 
+        # precompute re-used quantities to maximise speed
+        # todo: revise implementation to use Cholesky throughout
         #       that would remove the need to explicitly compute the inverse
         S = np.linalg.inv(self.A)                       # posterior covariance
         SX = S.dot(X.T)
-        XLn = X.T*self.lambda_n_vec # = X.T.dot(self.Lambda_n)
+        XLn = X.T*self.lambda_n_vec  # = X.T.dot(self.Lambda_n)
         XLny = XLn.dot(y)
-        SXLny = S.dot(XLny)       
+        SXLny = S.dot(XLny)
         XLnXm = XLn.dot(X).dot(self.m)
-      
+
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
         dnl2 = np.zeros(hyp.shape)
-        
+
         # noise precision parameter(s)
         for i in range(0, len(beta)):
             # first compute derivative of Lambda_n with respect to beta
             dL_n_vec = np.zeros(self.N)
             if self.var_groups is None:
                 dL_n_vec = np.ones(self.N)
-            else:    
+            else:
                 dL_n_vec[np.where(self.var_groups == self.var_ids[i])[0]] = 1
             dLambda_n = np.diag(dL_n_vec)
-            
+
             # compute quantities used multiple times
             XdLnX = X.T.dot(dLambda_n).dot(X)
             dA = XdLnX
-            
+
             # derivative of posterior parameters with respect to beta
             b = -S.dot(dA).dot(SXLny) + SX.dot(dLambda_n).dot(y)
-            
+
             # compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently
             trSigma_ndLambda_n = sum((1/self.lambda_n_vec)*np.diag(dLambda_n))
 
             # compute  y.T.dot(Lambda_n) efficiently
             ytLn = (y*self.lambda_n_vec).T
-            
+
             # compute derivatives
-            dnlZ[i] = - (0.5 * trSigma_ndLambda_n - 
+            dnlZ[i] = - (0.5 * trSigma_ndLambda_n -
                          0.5 * y.dot(dLambda_n).dot(y) +
                          y.dot(dLambda_n).dot(X).dot(self.m) +
                          ytLn.dot(X).dot(b) -
-                         0.5 * self.m.T.dot(XdLnX).dot(self.m) -    
+                         0.5 * self.m.T.dot(XdLnX).dot(self.m) -
                          b.T.dot(XLnXm) -
                          b.T.dot(self.Lambda_a).dot(self.m) -
                          0.5 * np.trace(S.dot(dA))
@@ -528,11 +460,11 @@ from scipy.linalg import LinAlgError
 
             F = dLambda_a
             c = -S.dot(F).dot(SXLny)
-            
+
             # compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently
             trSigma_adLambda_a = sum(np.diag(self.Sigma_a)*np.diag(dLambda_a))
-            
-            dnlZ[i+len(beta)] = -(0.5* trSigma_adLambda_a +
+
+            dnlZ[i+len(beta)] = -(0.5 * trSigma_adLambda_a +
                                   XLny.T.dot(c) -
                                   c.T.dot(XLnXm) -
                                   c.T.dot(self.Lambda_a).dot(self.m) -
@@ -555,18 +487,18 @@ from scipy.linalg import LinAlgError
     # model estimation (optimization)
 <div class="viewcode-block" id="BLR.estimate"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.estimate">[docs]</a>    def estimate(self, hyp0, X, y, **kwargs):
         &quot;&quot;&quot; Function to estimate the model 
-                 
+
             :param hyp: hyperparameter vector
             :param X: covariates
             :param y: responses
             :param optimizer: optimisation algorithm (&#39;cg&#39;,&#39;powell&#39;,&#39;nelder-mead&#39;,&#39;l0bfgs-b&#39;) 
         &quot;&quot;&quot;
-        
-        optimizer = kwargs.get(&#39;optimizer&#39;,&#39;cg&#39;)
-        
+
+        optimizer = kwargs.get(&#39;optimizer&#39;, &#39;cg&#39;)
+
         # covariates for heteroskedastic noise
         Xv = kwargs.get(&#39;var_covariates&#39;, None)
-        
+
         # options for l-bfgs-b
         l = float(kwargs.get(&#39;l&#39;, 0.1))
         epsilon = float(kwargs.get(&#39;epsilon&#39;, 0.1))
@@ -581,22 +513,26 @@ from scipy.linalg import LinAlgError
                                        full_output=1)
         elif optimizer.lower() == &#39;nelder-mead&#39;:
             out = optimize.fmin(self.loglik, hyp0, (X, y, Xv),
-                                       full_output=1)
+                                full_output=1)
         elif optimizer.lower() == &#39;l-bfgs-b&#39;:
             all_hyp_i = [hyp0]
+
             def store(X):
                 hyp = X
                 all_hyp_i.append(hyp)
             try:
                 out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=hyp0,
-                                          args=(X, y, Xv, l, norm), approx_grad=True,
-                                          epsilon=epsilon, callback=store)
+                                             args=(X, y, Xv, l,
+                                                   norm), approx_grad=True,
+                                             epsilon=epsilon, callback=store)
             # If the matrix becomes singular restart at last found hyp
             except np.linalg.LinAlgError:
-                print(f&#39;Restarting estimation at hyp = {all_hyp_i[-1]}, due to *** numpy.linalg.LinAlgError: Matrix is singular.&#39;)
+                print(
+                    f&#39;Restarting estimation at hyp = {all_hyp_i[-1]}, due to *** numpy.linalg.LinAlgError: Matrix is singular.&#39;)
                 out = optimize.fmin_l_bfgs_b(self.penalized_loglik, x0=all_hyp_i[-1],
-                                          args=(X, y, Xv, l, norm), approx_grad=True,
-                                          epsilon=epsilon)
+                                             args=(X, y, Xv, l,
+                                                   norm), approx_grad=True,
+                                             epsilon=epsilon)
         else:
             raise ValueError(&quot;unknown optimizer&quot;)
 
@@ -606,66 +542,67 @@ from scipy.linalg import LinAlgError
 
         return self.hyp</div>
 
-<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.predict">[docs]</a>    def predict(self, hyp, X, y, Xs, 
-                var_groups_test=None, 
+<div class="viewcode-block" id="BLR.predict"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.predict">[docs]</a>    def predict(self, hyp, X, y, Xs,
+                var_groups_test=None,
                 var_covariates_test=None, **kwargs):
         &quot;&quot;&quot; Function to make predictions from the model
-             
+
             :param hyp: hyperparameter vector
             :param X: covariates for training data
             :param y: responses for training data
             :param Xs: covariates for test data
             :param var_covariates_test: test covariates for heteroskedastic noise 
-            
+
             This always returns Gaussian predictions, i.e. 
-            
+
             :returns: * ys - predictive mean
                       * s2 - predictive variance
         &quot;&quot;&quot;
-        
+
         Xvs = var_covariates_test
         if Xvs is not None and len(Xvs.shape) == 1:
             Xvs = Xvs[:, np.newaxis]
-        
+
         if X is None or y is None:
             # set dummy hyperparameters
-            beta, alpha, gamma = self._parse_hyps(hyp, np.zeros((self.N, self.D)), Xvs)
+            beta, alpha, gamma = self._parse_hyps(
+                hyp, np.zeros((self.N, self.D)), Xvs)
         else:
-            
+
             # set hyperparameters
             beta, alpha, gamma = self._parse_hyps(hyp, X, Xvs)
-            
+
             # do we need to re-estimate the posterior?
-            if (hyp != self.hyp).any() or not(hasattr(self, &#39;A&#39;)):
-                raise(ValueError, &#39;posterior not properly estimated&#39;)
+            if (hyp != self.hyp).any() or not (hasattr(self, &#39;A&#39;)):
+                raise ValueError(&#39;posterior not properly estimated&#39;)
 
         N_test = Xs.shape[0]
 
         ys = Xs.dot(self.m)
-        
+
         if self.var_groups is not None:
             if len(var_groups_test) != N_test:
-                raise(ValueError, &#39;Invalid variance groups for test&#39;)
+                raise ValueError(&#39;Invalid variance groups for test&#39;)
             # separate variance groups
             s2n = np.ones(N_test)
             for v in range(len(self.var_ids)):
                 s2n[var_groups_test == self.var_ids[v]] = 1/beta[v]
         else:
             s2n = 1/beta
-                    
+
         # compute xs.dot(S).dot(xs.T) avoiding computing off-diagonal entries
         s2 = s2n + np.sum(Xs*linalg.solve(self.A, Xs.T).T, axis=1)
-        
-        return ys, s2       </div>
-        
-<div class="viewcode-block" id="BLR.predict_and_adjust"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.predict_and_adjust">[docs]</a>    def predict_and_adjust(self, hyp, X, y, Xs=None, 
-                             ys=None, 
-                             var_groups_test=None,
-                             var_groups_adapt=None, **kwargs):
+
+        return ys, s2</div>
+
+<div class="viewcode-block" id="BLR.predict_and_adjust"><a class="viewcode-back" href="../pages/modindex.html#bayesreg.BLR.predict_and_adjust">[docs]</a>    def predict_and_adjust(self, hyp, X, y, Xs=None,
+                           ys=None,
+                           var_groups_test=None,
+                           var_groups_adapt=None, **kwargs):
         &quot;&quot;&quot; Function to transfer the model to a new site. This is done by
             first making predictions on the adaptation data given by X,
             adjusting by the residuals with respect to y.
-            
+
             :param hyp: hyperparameter vector
             :param X: covariates for adaptation (i.e. calibration) data
             :param y: responses for adaptation data
@@ -673,23 +610,23 @@ from scipy.linalg import LinAlgError
             :param ys: true response variables (to be adjusted)
             :param var_groups_test: variance groups (e.g. sites) for test data
             :param var_groups_adapt: variance groups for adaptation data
-            
+
             There are two possible ways of using this function, depending on
             whether ys or Xs is specified
-                
+
             If ys is specified, this is applied directly to the data, which is
             assumed to be in the input space (i.e. not warped). In this case 
             the adjusted true data points are returned in the same space
-            
+
             Alternatively, Xs is specified, then the predictions are made and 
             adjusted. In this case the predictive variance are returned in the 
             warped (i.e. Gaussian) space.
-            
+
             This function needs to know which sites are associated with which 
             data points, which provided by var_groups_xxx, which is a list or 
             array of scalar ids .
         &quot;&quot;&quot;
-        
+
         if ys is None:
             if Xs is None:
                 raise ValueError(&#39;Either ys or Xs must be specified&#39;)
@@ -699,93 +636,85 @@ from scipy.linalg import LinAlgError
             if len(ys.shape) &lt; 1:
                 raise ValueError(&#39;ys is specified but has insufficent length&#39;)
             N = ys.shape[0]
-        
-        if var_groups_test is None: 
+
+        if var_groups_test is None:
             var_groups_test = np.ones(N)
             var_groups_adapt = np.ones(X.shape[0])
-        
+
         ys_out = np.zeros(N)
         s2_out = np.zeros(N)
         for g in np.unique(var_groups_test):
             idx_s = var_groups_test == g
             idx_a = var_groups_adapt == g
-            
+
             if sum(idx_a) &lt; 2:
-                raise ValueError(&#39;Insufficient adaptation data to estimate variance&#39;)
-            
+                raise ValueError(
+                    &#39;Insufficient adaptation data to estimate variance&#39;)
+
             # Get predictions from old model on new data X
-            ys_ref, s2_ref = self.predict(hyp, None, None, X[idx_a,:])
-        
+            ys_ref, s2_ref = self.predict(hyp, None, None, X[idx_a, :])
+
             # Subtract the predictions from true data to get the residuals
             if self.warp is None:
                 residuals = ys_ref-y[idx_a]
             else:
-                 # Calculate the residuals in warped space
-                 y_ref_ws = self.warp.f(y[idx_a], hyp[1:self.warp.get_n_params()+1])
-                 residuals = ys_ref - y_ref_ws 
-            
+                # Calculate the residuals in warped space
+                y_ref_ws = self.warp.f(
+                    y[idx_a], hyp[1:self.warp.get_n_params()+1])
+                residuals = ys_ref - y_ref_ws
+
             residuals_mu = np.mean(residuals)
             residuals_sd = np.std(residuals)
 
             # Adjust the mean with the mean of the residuals
             if ys is None:
                 # make and adjust predictions
-                ys_out[idx_s], s2_out[idx_s] = self.predict(hyp, None, None, Xs[idx_s,:])
-                ys_out[idx_s] = ys_out[idx_s] - residuals_mu 
-                
+                ys_out[idx_s], s2_out[idx_s] = self.predict(
+                    hyp, None, None, Xs[idx_s, :])
+                ys_out[idx_s] = ys_out[idx_s] - residuals_mu
+
                 # Set the deviation to the devations of the residuals
                 s2_out[idx_s] = np.ones(len(s2_out[idx_s]))*residuals_sd**2
             else:
-                # adjust the data 
+                # adjust the data
                 if self.warp is not None:
-                    y_ws = self.warp.f(ys[idx_s], hyp[1:self.warp.get_n_params()+1])
-                    ys_out[idx_s] = y_ws + residuals_mu 
-                    ys_out[idx_s] = self.warp.invf(ys_out[idx_s], hyp[1:self.warp.get_n_params()+1])
+                    y_ws = self.warp.f(
+                        ys[idx_s], hyp[1:self.warp.get_n_params()+1])
+                    ys_out[idx_s] = y_ws + residuals_mu
+                    ys_out[idx_s] = self.warp.invf(
+                        ys_out[idx_s], hyp[1:self.warp.get_n_params()+1])
                 else:
-                    ys = ys - residuals_mu    
+                    ys = ys - residuals_mu
                 s2_out = None
 
         return ys_out, s2_out</div></div>
-        
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Andre F. Marquand
-
-    </p>
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

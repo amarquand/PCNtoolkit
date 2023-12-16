@@ -1,26 +1,21 @@
 from setuptools import setup, find_packages
 
+
+def parse_requirements(filename):
+    """Load requirements from a pip requirements file."""
+    with open(filename, 'r') as f:
+        lineiter = (line.strip() for line in f)
+        return [line for line in lineiter if line and not line.startswith("#")]
+
+requirements = parse_requirements('requirements.txt')
+
 setup(name='pcntoolkit',
-      version='0.28',
+      version='0.29',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',
       author_email='andre.marquand@donders.ru.nl',
       license='GNU GPLv3',
       packages=find_packages(),
-      install_requires=[
-          'argparse',
-          'nibabel>=2.5.1',
-          'six',
-          'scikit-learn', 
-          'bspline',
-          'matplotlib',
-          'numpy',
-          'scipy>=1.3.2',
-          'pandas>=0.25.3',
-          'torch>=1.1.0', 
-          'sphinx-tabs',
-          'pymc>=5.1.0',
-          'arviz==0.13.0'
-      ],
+      install_requires=requirements,
       zip_safe=False)
