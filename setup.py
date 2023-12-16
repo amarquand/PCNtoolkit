@@ -10,7 +10,7 @@ def parse_requirements(filename):
 requirements = parse_requirements('requirements.txt')
 
 setup(name='pcntoolkit',
-      version='0.29',
+      version='0.29-1',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',
