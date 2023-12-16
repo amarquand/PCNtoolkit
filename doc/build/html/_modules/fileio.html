@@ -1,93 +1,53 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>fileio &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-  
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
 
   
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-  
-  
-
-  
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/tabs.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html">
           
-
-          
+          <a href="../index.html">
             
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
-          
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
-
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../pages/installation.html">Installation</a></li>
@@ -118,66 +78,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/acknowledgements.html">Acknowledgements</a></li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Predictive Clinical Neuroscience Toolkit</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="index.html">Module code</a> &raquo;</li>
-        
-      <li>fileio</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fileio</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for fileio</h1><div class="highlight"><pre>
 <span></span>from __future__ import print_function
 
@@ -195,7 +119,7 @@ except ImportError:
     pass
 
     path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.dirname(path) # parent directory 
+    path = os.path.dirname(path)  # parent directory
     if path not in sys.path:
         sys.path.append(path)
     del path
@@ -213,18 +137,35 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 # general utility routines
 # ------------------------
 
+
 <div class="viewcode-block" id="predictive_interval"><a class="viewcode-back" href="../pages/modindex.html#fileio.predictive_interval">[docs]</a>def predictive_interval(s2_forward,
                         cov_forward,
                         multiplicator):
+    &quot;&quot;&quot;
+    Calculates a predictive interval for the forward model
+    &quot;&quot;&quot;
   # calculates a predictive interval
-  
-    PI=np.zeros(len(cov_forward))
-    for i,xdot in enumerate(cov_forward):
-        s=np.sqrt(s2_forward[i])
-        PI[i]=multiplicator*s
+
+    PI = np.zeros(len(cov_forward))
+    for i, xdot in enumerate(cov_forward):
+        s = np.sqrt(s2_forward[i])
+        PI[i] = multiplicator*s
     return PI</div>
 
+
 <div class="viewcode-block" id="create_mask"><a class="viewcode-back" href="../pages/modindex.html#fileio.create_mask">[docs]</a>def create_mask(data_array, mask, verbose=False):
+    &quot;&quot;&quot;
+    Create a mask from a data array or a nifti file
+
+    Basic usage::
+
+            create_mask(data_array, mask, verbose)
+
+    :param data_array: numpy array containing the data to write out
+    :param mask: nifti image containing a mask for the image
+    :param verbose: verbose output
+    &quot;&quot;&quot;
+
     # create a (volumetric) mask either from an input nifti or the nifti itself
 
     if mask is not None:
@@ -249,14 +190,25 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="vol2vec"><a class="viewcode-back" href="../pages/modindex.html#fileio.vol2vec">[docs]</a>def vol2vec(dat, mask, verbose=False):
+    &quot;&quot;&quot;
+    Vectorise a 3d image
+
+    Basic usage::
+
+                vol2vec(dat, mask, verbose)
+
+    :param dat: numpy array containing the data to write out
+    :param mask: nifti image containing a mask for the image
+    :param verbose: verbose output
+    &quot;&quot;&quot;
     # vectorise a 3d image
 
     if len(dat.shape) &lt; 4:
         dim = dat.shape[0:3] + (1,)
     else:
         dim = dat.shape[0:3] + (dat.shape[3],)
-        
-    #mask = create_mask(dat, mask=mask, verbose=verbose)
+
+    # mask = create_mask(dat, mask=mask, verbose=verbose)
     if mask is None:
         mask = create_mask(dat, mask=mask, verbose=verbose)
 
@@ -273,6 +225,15 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="file_type"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_type">[docs]</a>def file_type(filename):
+    &quot;&quot;&quot;
+    Determine the file type of a file
+
+    Basic usage::
+
+                    file_type(filename)
+
+    :param filename: name of the file to check
+    &quot;&quot;&quot;
     # routine to determine filetype
 
     if filename.endswith((&#39;.dtseries.nii&#39;, &#39;.dscalar.nii&#39;, &#39;.dlabel.nii&#39;)):
@@ -290,6 +251,16 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="file_extension"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_extension">[docs]</a>def file_extension(filename):
+    &quot;&quot;&quot;
+    Determine the file extension of a file (e.g. .nii.gz)
+
+    Basic usage::
+
+                        file_extension(filename)
+
+    :param filename: name of the file to check
+    &quot;&quot;&quot;
+
     # routine to get the full file extension (e.g. .nii.gz, not just .gz)
 
     parts = filename.split(os.extsep)
@@ -312,7 +283,15 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="file_stem"><a class="viewcode-back" href="../pages/modindex.html#fileio.file_stem">[docs]</a>def file_stem(filename):
+    &quot;&quot;&quot;
+    Determine the file stem of a file (e.g. /path/to/file.nii.gz -&gt; file)
 
+    Basic usage::
+
+                                file_stem(filename)
+
+    :param filename: name of the file to check
+    &quot;&quot;&quot;
     idx = filename.find(file_extension(filename))
     stm = filename[0:idx]
 
@@ -324,6 +303,18 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="load_nifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_nifti">[docs]</a>def load_nifti(datafile, mask=None, vol=False, verbose=False):
+    &quot;&quot;&quot;
+    Load a nifti file into a numpy array
+
+    Basic usage::
+
+                    load_nifti(datafile, mask, vol, verbose)
+
+    :param datafile: name of the file to load
+    :param mask: nifti image containing a mask for the image
+    :param vol: whether to load the image as a volume
+    :param verbose: verbose output
+    &quot;&quot;&quot;
 
     if verbose:
         print(&#39;Loading nifti: &#39; + datafile + &#39; ...&#39;)
@@ -331,7 +322,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     dat = img.get_data()
 
     if mask is not None:
-        mask=load_nifti(mask, vol=True)
+        mask = load_nifti(mask, vol=True)
 
     if not vol:
         dat = vol2vec(dat, mask)
@@ -340,15 +331,12 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="save_nifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_nifti">[docs]</a>def save_nifti(data, filename, examplenii, mask, dtype=None):
-    
     &#39;&#39;&#39;
     Write output to nifti
-    
+
     Basic usage::
 
         save_nifti(data, filename mask, dtype)
-
-    where the variables are defined below.
 
     :param data: numpy array containing the data to write out
     :param filename: where to store it
@@ -356,7 +344,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     :mask: nifti image containing a mask for the image
     :param dtype: data type for the output image (if different from the image)
     &#39;&#39;&#39;
-    
 
     # load mask
     if isinstance(mask, str):
@@ -382,7 +369,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
         hdr.set_data_dtype(dtype)
         array_data = array_data.astype(dtype)
     array_img = nib.Nifti1Image(array_data, ex_img.affine, hdr)
-    
+
     nib.save(array_img, filename)</div>
 
 # --------------
@@ -391,7 +378,18 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="load_cifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_cifti">[docs]</a>def load_cifti(filename, vol=False, mask=None, rmtmp=True):
+    &quot;&quot;&quot;
+    Load a cifti file into a numpy array 
 
+    Basic usage::
+
+                        load_cifti(filename, vol, mask, rmtmp)
+
+    :param filename: name of the file to load
+    :param vol: whether to load the image as a volume
+    :param mask: nifti image containing a mask for the image
+    :param rmtmp: whether to remove temporary files
+    &quot;&quot;&quot;
     # parse the name
     dnam, fnam = os.path.split(filename)
     fpref = file_stem(fnam)
@@ -442,7 +440,20 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="save_cifti"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_cifti">[docs]</a>def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
-    &quot;&quot;&quot; Write output to nifti &quot;&quot;&quot;
+    &quot;&quot;&quot;
+    Save a cifti file from a numpy array
+
+    Basic usage::
+
+                            save_cifti(data, filename, example, mask, vol, volatlas)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    :param example: example file to copy the geometry from
+    :param mask: nifti image containing a mask for the image
+    :param vol: whether to load the image as a volume
+    :param volatlas: atlas to use for the volume
+    &quot;&quot;&quot;
 
     # do some sanity checks
     if data.dtype == &#39;float32&#39; or \
@@ -451,7 +462,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
         data = data.astype(&#39;float32&#39;)  # force 32 bit output
         dtype = &#39;NIFTI_TYPE_FLOAT32&#39;
     else:
-        raise(ValueError, &#39;Only float data types currently handled&#39;)
+        raise ValueError(&#39;Only float data types currently handled&#39;)
 
     if len(data.shape) == 1:
         Nimg = 1
@@ -479,7 +490,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     for i in range(0, Nimg):
         garraysl.append(
             nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
     fnamel = fstem + &#39;-left.func.gii&#39;
     nib.save(giil, fnamel)
@@ -491,7 +502,7 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     for i in range(0, Nimg):
         garraysr.append(
             nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-            datatype=dtype))
+                                           datatype=dtype))
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
     fnamer = fstem + &#39;-right.func.gii&#39;
     nib.save(giir, fnamer)
@@ -530,6 +541,16 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="load_pd"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_pd">[docs]</a>def load_pd(filename):
+    &quot;&quot;&quot;
+    Load a csv file into a pandas dataframe
+
+    Basic usage::
+
+                    load_pd(filename)
+
+    :param filename: name of the file to load
+    &quot;&quot;&quot;
+
     # based on pandas
     x = pd.read_csv(filename,
                     sep=&#39; &#39;,
@@ -538,6 +559,16 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="save_pd"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_pd">[docs]</a>def save_pd(data, filename):
+    &quot;&quot;&quot;
+    Save a pandas dataframe to a csv file
+
+    Basic usage::
+
+        save_pd(data, filename)
+
+    :param data: pandas dataframe containing the data to write out
+    :param filename: where to store it
+    &quot;&quot;&quot;
     # based on pandas
     data.to_csv(filename,
                 index=None,
@@ -547,12 +578,32 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="load_ascii"><a class="viewcode-back" href="../pages/modindex.html#fileio.load_ascii">[docs]</a>def load_ascii(filename):
+    &quot;&quot;&quot;
+    Load an ascii file into a numpy array
+
+    Basic usage::
+
+            load_ascii(filename)
+
+    :param filename: name of the file to load
+    &quot;&quot;&quot;
+
     # based on pandas
     x = np.loadtxt(filename)
     return x</div>
 
 
 <div class="viewcode-block" id="save_ascii"><a class="viewcode-back" href="../pages/modindex.html#fileio.save_ascii">[docs]</a>def save_ascii(data, filename):
+    &quot;&quot;&quot;
+    Save a numpy array to an ascii file
+
+    Basic usage::
+
+        save_ascii(data, filename)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    &quot;&quot;&quot;
     # based on pandas
     np.savetxt(filename, data)</div>
 
@@ -562,6 +613,20 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="save"><a class="viewcode-back" href="../pages/modindex.html#fileio.save">[docs]</a>def save(data, filename, example=None, mask=None, text=False, dtype=None):
+    &quot;&quot;&quot;
+    Save a numpy array to a file
+
+    Basic usage::
+
+                save(data, filename, example, mask, text, dtype)
+
+    :param data: numpy array containing the data to write out
+    :param filename: where to store it
+    :param example: example file to copy the geometry from
+    :param mask: nifti image containing a mask for the image
+    :param text: whether to write out a text file
+    :param dtype: data type for the output image (if different from the image)
+    &quot;&quot;&quot;
 
     if file_type(filename) == &#39;cifti&#39;:
         save_cifti(data.T, filename, example, vol=True)
@@ -575,6 +640,18 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="load"><a class="viewcode-back" href="../pages/modindex.html#fileio.load">[docs]</a>def load(filename, mask=None, text=False, vol=True):
+    &quot;&quot;&quot;
+    Load a numpy array from a file
+
+    Basic usage::
+
+                    load(filename, mask, text, vol)
+
+    :param filename: name of the file to load
+    :param mask: nifti image containing a mask for the image
+    :param text: whether to write out a text file
+    :param vol: whether to load the image as a volume
+    &quot;&quot;&quot;
 
     if file_type(filename) == &#39;cifti&#39;:
         x = load_cifti(filename, vol=vol)
@@ -585,7 +662,6 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
     elif file_type(filename) == &#39;binary&#39;:
         x = pd.read_pickle(filename)
         x = x.to_numpy()
-
     return x</div>
 
 # -------------------
@@ -594,6 +670,16 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="tryint"><a class="viewcode-back" href="../pages/modindex.html#fileio.tryint">[docs]</a>def tryint(s):
+    &quot;&quot;&quot;
+    Try to convert a string to an integer
+
+    Basic usage::
+
+                    tryint(s)
+
+    :param s: string to convert
+    &quot;&quot;&quot;
+
     try:
         return int(s)
     except ValueError:
@@ -601,50 +687,57 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 
 <div class="viewcode-block" id="alphanum_key"><a class="viewcode-back" href="../pages/modindex.html#fileio.alphanum_key">[docs]</a>def alphanum_key(s):
+    &quot;&quot;&quot;
+    Turn a string into a list of numbers
+
+    Basic usage::
+
+                    alphanum_key(s) 
+
+    :param s: string to convert
+    &quot;&quot;&quot;
     return [tryint(c) for c in re.split(&#39;([0-9]+)&#39;, s)]</div>
 
 
 <div class="viewcode-block" id="sort_nicely"><a class="viewcode-back" href="../pages/modindex.html#fileio.sort_nicely">[docs]</a>def sort_nicely(l):
+    &quot;&quot;&quot;
+    Sort a list of strings in a natural way
+
+    Basic usage::
+
+        sort_nicely(l)  
+
+    :param l: list of strings to sort
+    &quot;&quot;&quot;
+
     return sorted(l, key=alphanum_key)</div>
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Andre F. Marquand
-
-    </p>
+    <p>&#169; Copyright 2020, Andre F. Marquand.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
