@@ -35,6 +35,13 @@ from pcntoolkit.model.SHASH import *
 
 
 def bspline_fit(X, order, nknots):
+    """
+    Fit a B-spline to the data
+    :param X: [N×P] array of clinical covariates
+    :param order: order of the spline
+    :param nknots: number of knots
+    :return: a list of B-spline basis functions
+    """
     feature_num = X.shape[1]
     bsp_basis = []
 
@@ -53,6 +60,13 @@ def bspline_fit(X, order, nknots):
 
 
 def bspline_transform(X, bsp_basis):
+    """
+    Transform the data using the B-spline basis functions
+    :param X: [N×P] array of clinical covariates
+    :param bsp_basis: a list of B-spline basis functions
+    :return: a [N×(P×nknots)] array of transformed data
+    """
+
     if type(bsp_basis) != list:
         temp = []
         temp.append(bsp_basis)
@@ -68,8 +82,12 @@ def bspline_transform(X, bsp_basis):
 
 
 def create_poly_basis(X, order):
-    """compute a polynomial basis expansion of the specified order"""
-
+    """
+    Create a polynomial basis expansion of the specified order
+    :param X: [N×P] array of clinical covariates
+    :param order: order of the polynomial
+    :return: a [N×(P×order)] array of transformed data
+    """
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
     D = X.shape[1]
@@ -82,6 +100,17 @@ def create_poly_basis(X, order):
 
 
 def from_posterior(param, samples, shape,  distribution=None, half=False, freedom=1):
+    """
+    Create a PyMC distribution from posterior samples
+
+    :param param: name of the parameter
+    :param samples: samples from the posterior
+    :param shape: shape of the parameter
+    :param distribution: distribution to use for the parameter
+    :param half: if true, the distribution is assumed to be defined on the positive real line 
+    :param freedom: freedom parameter for the distribution
+    :return: a PyMC distribution
+    """
     if distribution is None:
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
@@ -91,7 +120,8 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
             x = np.concatenate([x, [x[-1] + 0.1 * width]])
             y = np.concatenate([y, [0]])
         else:
-            x = np.concatenate([[x[0] - 0.1 * width], x, [x[-1] + 0.1 * width]])
+            x = np.concatenate(
+                [[x[0] - 0.1 * width], x, [x[-1] + 0.1 * width]])
             y = np.concatenate([[0], y, [0]])
         if shape is None:
             return pm.distributions.Interpolated(param, x, y)
@@ -169,17 +199,18 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
 
 def hbr(X, y, batch_effects, configs, idata=None):
     """
+    Create a Hierarchical Bayesian Regression model
+
     :param X: [N×P] array of clinical covariates
     :param y: [N×1] array of neuroimaging measures
     :param batch_effects: [N×M] array of batch effects
-    :param batch_effects_size: [b1, b2,...,bM] List of counts of unique values of batch effects
     :param configs:
     :param idata:
     :param return_shared_variables: If true, returns references to the shared variables. The values of the shared variables can be set manually, allowing running the same model on different data without re-compiling it.
     :return:
     """
 
-    # Make a param builder that will make the correct calls
+    # Make a param builder that contains all the data and configs
     pb = ParamBuilder(X, y, batch_effects, idata, configs)
 
     def get_sample_dims(var):
@@ -212,7 +243,6 @@ def hbr(X, y, batch_effects, configs, idata=None):
         )
 
         if configs["likelihood"] == "Normal":
-            
             mu = pm.Deterministic(
                 "mu_samples",
                 pb.make_param(
@@ -248,7 +278,8 @@ def hbr(X, y, batch_effects, configs, idata=None):
             Any mapping that is applied here after sampling should also be applied in util.hbr_utils.forward in order for the functions there to properly work.
             For example, the softplus applied to sigma here is also applied in util.hbr_utils.forward
             """
-            SHASH_map = {"SHASHb": SHASHb, "SHASHo": SHASHo, "SHASHo2": SHASHo2}
+            SHASH_map = {"SHASHb": SHASHb,
+                         "SHASHo": SHASHo, "SHASHo2": SHASHo2}
 
             mu = pm.Deterministic(
                 "mu_samples",
@@ -313,7 +344,6 @@ def hbr(X, y, batch_effects, configs, idata=None):
             )
         return model
 
-  
 
 class HBR:
 
@@ -344,14 +374,26 @@ class HBR:
         self.configs = configs
 
     def get_modeler(self):
+        """
+        This used to return hbr or nnhbr, but now it returns hbr.
+        Can be removed in a future release
+        //TODO remove this in a future release
+        """
         return hbr
 
     def transform_X(self, X):
+        """
+        Transform the covariates according to the model type
+
+        :param X: N-by-P input matrix of P features for N subjects
+        :return: transformed covariates
+        """
         if self.model_type == "polynomial":
             Phi = create_poly_basis(X, self.configs["order"])
         elif self.model_type == "bspline":
             if self.bsp is None:
-                self.bsp = bspline_fit(X, self.configs["order"], self.configs["nknots"])
+                self.bsp = bspline_fit(
+                    X, self.configs["order"], self.configs["nknots"])
             bspline = bspline_transform(X, self.bsp)
             Phi = np.concatenate((X, bspline), axis=1)
         else:
@@ -359,7 +401,19 @@ class HBR:
         return Phi
 
     def find_map(self, X, y, batch_effects, method="L-BFGS-B"):
-        """Function to estimate the model"""
+        """
+        Find the maximum a posteriori (MAP) estimate of the model parameters.
+
+        This function transforms the data according to the model type, 
+        and then uses the modeler to find the MAP estimate of the model parameters. 
+        The results are stored in the instance variable `MAP`.
+
+        :param X: N-by-P input matrix of P features for N subjects. This is the input data for the model.
+        :param y: N-by-1 vector of outputs. This is the target data for the model.
+        :param batch_effects: N-by-B matrix of B batch ids for N subjects. This represents the batch effects to be considered in the model.
+        :param method: String representing the optimization method to use. Default is "L-BFGS-B".
+        :return: A dictionary of MAP estimates.
+        """
         X, y, batch_effects = expand_all(X, y, batch_effects)
         X = self.transform_X(X)
         modeler = self.get_modeler()
@@ -368,7 +422,19 @@ class HBR:
         return self.MAP
 
     def estimate(self, X, y, batch_effects, **kwargs):
-        """Function to estimate the model"""
+        """
+        Estimate the model parameters using the provided data.
+
+        This function transforms the data according to the model type, 
+        and then samples from the posterior using pymc. The results are stored 
+        in the instance variable `idata`.
+
+        :param X: N-by-P input matrix of P features for N subjects. This is the input data for the model.
+        :param y: N-by-1 vector of outputs. This is the target data for the model.
+        :param batch_effects: N-by-B matrix of B batch ids for N subjects. This represents the batch effects to be considered in the model.
+        :param kwargs: Additional keyword arguments to be passed to the modeler.
+        :return: idata. The results are also stored in the instance variable `self.idata`.
+        """
         X, y, batch_effects = expand_all(X, y, batch_effects)
         X = self.transform_X(X)
         modeler = self.get_modeler()
@@ -389,7 +455,8 @@ class HBR:
             draw = self.idata.posterior.coords['draw'].data
             for j in self.idata.posterior.variables.mapping.keys():
                 if j.endswith('_samples'):
-                    dummy_array = xarray.DataArray(data = np.zeros((len(chain), len(draw), 1)), coords = {'chain':chain, 'draw':draw,'empty':np.array([0])}, name=j)
+                    dummy_array = xarray.DataArray(data=np.zeros((len(chain), len(draw), 1)), coords={
+                                                   'chain': chain, 'draw': draw, 'empty': np.array([0])}, name=j)
                     self.idata.posterior[j] = dummy_array
                     self.vars_to_sample.append(j)
 
@@ -404,11 +471,19 @@ class HBR:
     def predict(
         self, X, batch_effects, batch_effects_maps, pred="single", var_names=None, **kwargs
     ):
-        """Function to make predictions from the model
-        Args:
-            X: Covariates
-            batch_effects: batch effects corresponding to X
-            all_batch_effects: combinations of all batch effects that were present the training data
+        """
+        Make predictions from the model.
+
+        This function expands the input data, transforms it according to the model type, 
+        and then uses the modeler to make predictions. The results are stored in the instance variable `idata`.
+
+        :param X: Covariates. This is the input data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :param batch_effects_maps: A map from batch_effect values to indices. This is used to map the batch effects to the indices used by the model.
+        :param pred: String representing the prediction method to use. Default is "single".
+        :param var_names: List of variable names to consider in the prediction. If None or ['y_like'], self.vars_to_sample is used.
+        :param kwargs: Additional keyword arguments to be passed to the modeler.
+        :return: A 2-tuple of xarray datasets with the mean and variance of the posterior predictive distribution. The results are also stored in the instance variable `self.idata`.
         """
         X, batch_effects = expand_all(X, batch_effects)
 
@@ -420,7 +495,8 @@ class HBR:
         # Make an array with occurences of all the values in be_train, but with the same size as be_test
         truncated_batch_effects_train = np.stack(
             [
-                np.resize(np.array(list(batch_effects_maps[i].keys())), X.shape[0])
+                np.resize(
+                    np.array(list(batch_effects_maps[i].keys())), X.shape[0])
                 for i in range(batch_effects.shape[1])
             ],
             axis=1,
@@ -431,6 +507,11 @@ class HBR:
             var_names = self.vars_to_sample
 
         n_samples = X.shape[0]
+
+        # Need to delete self.idata.posterior_predictive, otherwise, if it exists, it will not be overwritten
+        if hasattr(self.idata, 'posterior_predictive'):
+            del self.idata.posterior_predictive
+
         with modeler(X, y, truncated_batch_effects_train, self.configs) as model:
             # For each batch effect dim
             for i in range(batch_effects.shape[1]):
@@ -447,13 +528,25 @@ class HBR:
                 progressbar=True,
                 var_names=var_names,
             )
-        pred_mean = self.idata.posterior_predictive["y_like"].to_numpy().mean(axis=(0, 1))
-        pred_var = self.idata.posterior_predictive["y_like"].to_numpy().var(axis=(0, 1))
+        pred_mean = self.idata.posterior_predictive["y_like"].to_numpy().mean(
+            axis=(0, 1))
+        pred_var = self.idata.posterior_predictive["y_like"].to_numpy().var(
+            axis=(0, 1))
 
         return pred_mean, pred_var
 
     def estimate_on_new_site(self, X, y, batch_effects):
-        """Function to adapt the model"""
+        """
+        Estimate the model parameters using the provided data for a new site.
+
+        This function transforms the input data, then uses the modeler to estimate the model parameters. 
+        The results are stored in the instance variable `idata`.
+
+        :param X: Covariates. This is the input data for the model.
+        :param y: Outputs. This is the target data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :return: An inferencedata object containing samples from the posterior distribution.
+        """
         X, y, batch_effects = expand_all(X, y, batch_effects)
         X = self.transform_X(X)
         modeler = self.get_modeler()
@@ -470,7 +563,16 @@ class HBR:
         return self.idata
 
     def predict_on_new_site(self, X, batch_effects):
-        """Function to make predictions from the model"""
+        """
+        Make predictions from the model for a new site.
+
+        This function transforms the input data, then uses the modeler to make predictions. 
+        The results are stored in the instance variable `idata`.
+
+        :param X: Covariates. This is the input data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :return: A tuple containing the mean and variance of the predictions. The results are also stored in the instance variable `self.idata`.
+        """
         X, batch_effects = expand_all(X, batch_effects)
         samples = self.configs["n_samples"]
         y = np.zeros([X.shape[0], 1])
@@ -486,7 +588,16 @@ class HBR:
         return pred_mean, pred_var
 
     def generate(self, X, batch_effects, samples):
-        """Function to generate samples from posterior predictive distribution"""
+        """
+        Generate samples from the posterior predictive distribution.
+
+        This function expands and transforms the input data, then uses the modeler to generate samples from the posterior predictive distribution. 
+
+        :param X: Covariates. This is the input data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :param samples: Number of samples to generate. This number of samples is generated for each input sample.
+        :return: A tuple containing the expanded and repeated X, batch_effects, and the generated samples.
+        """
         X, batch_effects = expand_all(X, batch_effects)
 
         y = np.zeros([X.shape[0], 1])
@@ -496,7 +607,8 @@ class HBR:
         with modeler(X, y, batch_effects, self.configs):
             ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
         generated_samples = np.reshape(
-            ppc.posterior_predictive["y_like"].squeeze().T, [X.shape[0] * samples, 1]
+            ppc.posterior_predictive["y_like"].squeeze().T, [
+                X.shape[0] * samples, 1]
         )
         X = np.repeat(X, samples)
         if len(X.shape) == 1:
@@ -506,8 +618,19 @@ class HBR:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         return X, batch_effects, generated_samples
 
-    def sample_prior_predictive(self, X, batch_effects, samples, y = None, idata=None):
-        """Function to sample from prior predictive distribution"""
+    def sample_prior_predictive(self, X, batch_effects, samples, y=None, idata=None):
+        """
+        Sample from the prior predictive distribution.
+
+        This function transforms the input data, then uses the modeler to sample from the prior predictive distribution. 
+
+        :param X: Covariates. This is the input data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :param samples: Number of samples to generate. This number of samples is generated for each input sample.
+        :param y: Outputs. If None, a zero array of appropriate shape is created.
+        :param idata: An xarray dataset with the posterior distribution. If None, self.idata is used if it exists.
+        :return: An xarray dataset with the prior predictive distribution. The results are also stored in the instance variable `self.idata`.
+        """
         if y is None:
             y = np.zeros([X.shape[0], 1])
         X, y, batch_effects = expand_all(X, y, batch_effects)
@@ -519,6 +642,16 @@ class HBR:
         return self.idata
 
     def get_model(self, X, y, batch_effects):
+        """
+        Get the model for the given data.
+
+        This function expands and transforms the input data, then creates a pymc model using the hbr method
+
+        :param X: Covariates. This is the input data for the model.
+        :param y: Outputs. This is the target data for the model.
+        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
+        :return: The model for the given data.
+        """
         X, y, batch_effects = expand_all(X, y, batch_effects)
         modeler = self.get_modeler()
         X = self.transform_X(X)
@@ -526,6 +659,15 @@ class HBR:
         return modeler(X, y, batch_effects, self.configs, idata=idata)
 
     def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
+        """
+        Create dummy inputs for the model.
+
+        This function generates a Cartesian product of the provided covariate ranges and repeats it for each batch effect. 
+        It also generates a Cartesian product of the batch effect indices and repeats it for each input sample.
+
+        :param covariate_ranges: List of lists, where each inner list represents the range and step size of a covariate. Default is [[0.1, 0.9, 0.01]].
+        :return: A tuple containing the dummy input data and the dummy batch effects.
+        """
         arrays = []
         for i in range(len(covariate_ranges)):
             arrays.append(
@@ -536,7 +678,8 @@ class HBR:
                 )
             )
         X = cartesian_product(arrays)
-        X_dummy = np.concatenate([X for i in range(np.prod(self.batch_effects_size))])
+        X_dummy = np.concatenate(
+            [X for i in range(np.prod(self.batch_effects_size))])
         arrays = []
         for i in range(self.batch_effects_num):
             arrays.append(np.arange(0, self.batch_effects_size[i]))
@@ -544,23 +687,35 @@ class HBR:
         batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
         return X_dummy, batch_effects_dummy
 
-    def Rhats(self, var_names=None, thin = 1, resolution = 100):
-        """Get Rhat of posterior samples as function of sampling iteration"""
+    def Rhats(self, var_names=None, thin=1, resolution=100):
+        """
+        Get Rhat of posterior samples as function of sampling iteration.
+
+        This function extracts the posterior samples from the instance variable `idata`, computes the Rhat statistic for each variable and sampling iteration, and returns a dictionary of Rhat values.
+
+        :param var_names: List of variable names to consider. If None, all variables in `idata` are used.
+        :param thin: Integer representing the thinning factor for the samples. Default is 1.
+        :param resolution: Integer representing the number of points at which to compute the Rhat statistic. Default is 100.
+        :return: A dictionary where the keys are variable names and the values are arrays of Rhat values.
+        """
         idata = self.idata
-        testvars = az.extract(idata, group='posterior', var_names=var_names, combined=False)
-        testvar_names = [var for var in list(testvars.data_vars.keys()) if not '_samples' in var]
-        rhat_dict={}
+        testvars = az.extract(idata, group='posterior',
+                              var_names=var_names, combined=False)
+        testvar_names = [var for var in list(
+            testvars.data_vars.keys()) if not '_samples' in var]
+        rhat_dict = {}
         for var_name in testvar_names:
-            var = np.stack(testvars[var_name].to_numpy())[:,::thin]     
+            var = np.stack(testvars[var_name].to_numpy())[:, ::thin]
             var = var.reshape((var.shape[0], var.shape[1], -1))
             vardim = var.shape[2]
-            interval_skip=var.shape[1]//resolution
+            interval_skip = var.shape[1]//resolution
             rhats_var = np.zeros((resolution, vardim))
             for v in range(vardim):
                 for j in range(resolution):
-                    rhats_var[j,v] = az.rhat(var[:,:j*interval_skip,v])
+                    rhats_var[j, v] = az.rhat(var[:, :j*interval_skip, v])
             rhat_dict[var_name] = rhats_var
         return rhat_dict
+
 
 class Prior:
     """
@@ -570,6 +725,18 @@ class Prior:
     """
 
     def __init__(self, name, dist, params, pb, has_random_effect=False) -> None:
+        """
+        Initialize the Prior object.
+
+        This function initializes the Prior object with the given name, distribution, parameters, and model. 
+        It also sets a flag indicating whether the prior has a random effect.
+
+        :param name: String representing the name of the prior.
+        :param dist: String representing the type of the distribution.
+        :param params: Dictionary of parameters for the distribution.
+        :param pb: The model object.
+        :param has_random_effect: Boolean indicating whether the prior has a random effect. Default is False.
+        """
         self.dist = None
         self.name = name
         self.has_random_effect = has_random_effect
@@ -586,20 +753,31 @@ class Prior:
         self.make_dist(dist, params, pb)
 
     def make_dist(self, dist, params, pb):
-        """This creates a pymc distribution. If there is a idata, the distribution is fitted to the idata. If there isn't a idata, the prior is parameterized by the values in (params)"""
+        """
+        Create a PyMC distribution.
+
+        This function creates a PyMC distribution. If there is an `idata` present, the distribution is fitted to the `idata`. 
+        If there isn't an `idata`, the prior is parameterized by the values in `params`.
+
+        :param dist: String representing the type of the distribution.
+        :param params: List of parameters for the distribution.
+        :param pb: The model object.
+        """
         with pb.model as m:
             if pb.idata is not None:
                 # Get samples
                 samples = az.extract(pb.idata, var_names=self.name)
                 # Define mapping to new shape
+
                 def get_new_dim_size(tup):
                     oldsize, name = tup
                     if name.startswith('batch_effect_'):
                         ind = pb.batch_effect_dim_names.index(name)
                         return len(np.unique(pb.batch_effect_indices[ind].container.data))
                     return oldsize
-                
-                new_shape = list(map(get_new_dim_size, zip(samples.shape,samples.dims)))
+
+                new_shape = list(
+                    map(get_new_dim_size, zip(samples.shape, samples.dims)))
                 if len(new_shape) == 1:
                     new_shape = None
                 else:
@@ -607,7 +785,7 @@ class Prior:
                 self.dist = from_posterior(
                     param=self.name,
                     samples=samples.to_numpy(),
-                    shape = new_shape,
+                    shape=new_shape,
                     distribution=dist,
                     freedom=pb.configs["freedom"],
                 )
@@ -621,10 +799,19 @@ class Prior:
                 if dims == []:
                     self.dist = self.distmap[dist](self.name, *params)
                 else:
-                    self.dist = self.distmap[dist](self.name, *params, dims=dims)
+                    self.dist = self.distmap[dist](
+                        self.name, *params, dims=dims)
 
     def __getitem__(self, idx):
-        """The idx here is the index of the batch-effect. If the prior does not model batch effects, this should return the same value for each index"""
+        """
+        Retrieve the distribution for a specific batch effect.
+
+        This function retrieves the distribution for a specific batch effect. 
+        If the prior does not model batch effects, this should return the same value for each index.
+
+        :param idx: Index of the batch effect.
+        :return: The distribution for the specified batch effect.
+        """
         assert self.dist is not None, "Distribution not initialized"
         if self.has_random_effect:
             return self.dist[idx]
@@ -641,7 +828,6 @@ class ParamBuilder:
 
     def __init__(self, X, y, batch_effects, idata, configs):
         """
-
         :param model: model to attach all the distributions to
         :param X: Covariates
         :param y: IDPs
@@ -676,10 +862,23 @@ class ParamBuilder:
             self.batch_effect_indices.append(this_be_indices)
 
     def make_param(self, name, **kwargs):
+        """
+        Create a parameterization based on the configuration.
+
+        This function creates a parameterization based on the configuration. 
+        If the configuration specifies a linear parameterization, it creates a slope and intercept and uses those to make a linear parameterization. 
+        If the configuration specifies a random parameterization, it creates a random parameterization, either centered or non-centered. 
+        Otherwise, it creates a fixed parameterization.
+
+        :param name: String representing the name of the parameter.
+        :param kwargs: Additional keyword arguments to be passed to the parameterization.
+        :return: The created parameterization.
+        """
         if self.configs.get(f"linear_{name}", False):
             # First make a slope and intercept, and use those to make a linear parameterization
             slope_parameterization = self.make_param(f"slope_{name}", **kwargs)
-            intercept_parameterization = self.make_param(f"intercept_{name}", **kwargs)
+            intercept_parameterization = self.make_param(
+                f"intercept_{name}", **kwargs)
             return LinearParameterization(
                 name=name,
                 slope_parameterization=slope_parameterization,
@@ -704,36 +903,80 @@ class Parameterization:
     """
 
     def __init__(self, name):
+        """
+        Initialize the Parameterization object.
+
+        This function initializes the Parameterization object with the given name.
+
+        :param name: String representing the name of the parameterization.
+        """
         self.name = name
         # print(name, type(self))
 
     def get_samples(self, pb):
+        """
+        Get samples from the parameterization.
+
+        This function should be overridden by subclasses to provide specific sampling methods.
+
+        :param pb: The ParamBuilder object.
+        :return: None. This method should be overridden by subclasses.
+        """
         pass
 
 
 class FixedParameterization(Parameterization):
     """
-    A parameterization that takes a single value for all input. It does not depend on anything except its hyperparameters
+    A parameterization that takes a single value for all input. 
+
+    It does not depend on anything except its hyperparameters. This class inherits from the Parameterization class.
     """
 
     def __init__(self, name, pb: ParamBuilder, **kwargs):
+        """
+        Initialize the FixedParameterization object.
+
+        This function initializes the FixedParameterization object with the given name, ParamBuilder object, and additional arguments.
+
+        :param name: String representing the name of the parameterization.
+        :param pb: The ParamBuilder object.
+        :param kwargs: Additional keyword arguments to be passed to the parameterization.
+        """
         super().__init__(name)
         dist = kwargs.get(f"{name}_dist", "normal")
         params = kwargs.get(f"{name}_params", (0.0, 1.0))
         self.dist = Prior(name, dist, params, pb)
 
     def get_samples(self, pb):
+        """
+        Get samples from the parameterization.
+
+        This function gets samples from the parameterization using the ParamBuilder object.
+
+        :param pb: The ParamBuilder object.
+        :return: The samples from the parameterization.
+        """
         with pb.model:
             return self.dist[0]
 
 
 class CentralRandomFixedParameterization(Parameterization):
     """
-    A parameterization that is fixed for each batch effect. This is sampled in a central fashion;
-    the values are sampled from normal distribution with a group mean and group variance
+    A parameterization that is fixed for each batch effect. 
+
+    This is sampled in a central fashion; the values are sampled from normal distribution with a group mean and group variance
     """
 
     def __init__(self, name, pb: ParamBuilder, **kwargs):
+        """
+        Initialize the CentralRandomFixedParameterization object.
+
+        This function initializes the CentralRandomFixedParameterization object with the given name, ParamBuilder object, and additional arguments.
+
+        :param name: String representing the name of the parameterization.
+        :param pb: The ParamBuilder object.
+        :param kwargs: Additional keyword arguments to be passed to the parameterization.
+        """
         super().__init__(name)
 
         # Normal distribution is default for mean
@@ -759,6 +1002,14 @@ class CentralRandomFixedParameterization(Parameterization):
         )
 
     def get_samples(self, pb: ParamBuilder):
+        """
+        Get samples from the parameterization.
+
+        This function gets samples from the parameterization using the ParamBuilder object.
+
+        :param pb: The ParamBuilder object.
+        :return: The samples from the parameterization.
+        """
         with pb.model:
             samples = self.dist[pb.batch_effect_indices]
             return samples
@@ -771,6 +1022,15 @@ class NonCentralRandomFixedParameterization(Parameterization):
     """
 
     def __init__(self, name, pb: ParamBuilder, **kwargs):
+        """
+        Initialize the NonCentralRandomFixedParameterization object.
+
+        This function initializes the NonCentralRandomFixedParameterization object with the given name, ParamBuilder object, and additional arguments.
+
+        :param name: String representing the name of the parameterization.
+        :param pb: The ParamBuilder object.
+        :param kwargs: Additional keyword arguments to be passed to the parameterization.
+        """
         super().__init__(name)
 
         # Normal distribution is default for mean
@@ -801,6 +1061,14 @@ class NonCentralRandomFixedParameterization(Parameterization):
         )
 
     def get_samples(self, pb: ParamBuilder):
+        """
+        Get samples from the parameterization.
+
+        This function gets samples from the parameterization using the ParamBuilder object.
+
+        :param pb: The ParamBuilder object.
+        :return: The samples from the parameterization.
+        """
         with pb.model:
             samples = self.dist[pb.batch_effect_indices]
             return samples
@@ -808,17 +1076,36 @@ class NonCentralRandomFixedParameterization(Parameterization):
 
 class LinearParameterization(Parameterization):
     """
-    A parameterization that can model a linear dependence on X.
+    This class inherits from the Parameterization class and represents a parameterization that can model a linear dependence on X.
+
     """
 
     def __init__(
         self, name, slope_parameterization, intercept_parameterization, **kwargs
     ):
+        """
+        Initialize the LinearParameterization object.
+
+        This function initializes the LinearParameterization object with the given name, slope parameterization, intercept parameterization, and additional arguments.
+
+        :param name: String representing the name of the parameterization.
+        :param slope_parameterization: An instance of a Parameterization subclass representing the slope.
+        :param intercept_parameterization: An instance of a Parameterization subclass representing the intercept.
+        :param kwargs: Additional keyword arguments to be passed to the parameterization.
+        """
         super().__init__(name)
         self.slope_parameterization = slope_parameterization
         self.intercept_parameterization = intercept_parameterization
 
     def get_samples(self, pb):
+        """
+        Get samples from the parameterization.
+
+        This function gets samples from the parameterization using the ParamBuilder object. It computes the samples as the sum of the intercept and the product of X and the slope.
+
+        :param pb: The ParamBuilder object.
+        :return: The samples from the parameterization.
+        """
         with pb.model:
             intc = self.intercept_parameterization.get_samples(pb)
             slope_samples = self.slope_parameterization.get_samples(pb)
@@ -833,6 +1120,15 @@ class LinearParameterization(Parameterization):
 
 
 def get_design_matrix(X, nm, basis="linear"):
+    """
+    Get the design matrix for the given data.
+
+    This function gets the design matrix for the given data.
+
+    :param X: Covariates. This is the input data for the model.
+    :param nm: A normative model.
+    :param basis: String representing the basis to use. Default is "linear".
+    """
     if basis == "bspline":
         Phi = bspline_transform(X, nm.hbr.bsp)
     elif basis == "polynomial":
@@ -865,14 +1161,16 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
     init_1_noise = pm.floatX(
         np.random.randn(feature_num, n_hidden) * np.sqrt(1 / feature_num)
     )
-    init_out_noise = pm.floatX(np.random.randn(n_hidden) * np.sqrt(1 / n_hidden))
+    init_out_noise = pm.floatX(np.random.randn(
+        n_hidden) * np.sqrt(1 / n_hidden))
 
     std_init_1_noise = pm.floatX(np.random.rand(feature_num, n_hidden))
     std_init_out_noise = pm.floatX(np.random.rand(n_hidden))
 
     # If there are two hidden layers, then initialize weights for the second layer:
     if n_layers == 2:
-        init_2 = pm.floatX(np.random.randn(n_hidden, n_hidden) * np.sqrt(1 / n_hidden))
+        init_2 = pm.floatX(np.random.randn(
+            n_hidden, n_hidden) * np.sqrt(1 / n_hidden))
         std_init_2 = pm.floatX(np.random.rand(n_hidden, n_hidden))
         init_2_noise = pm.floatX(
             np.random.randn(n_hidden, n_hidden) * np.sqrt(1 / n_hidden)
@@ -973,7 +1271,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
             )
 
             # mu_prior_intercept = pm.Uniform('mu_prior_intercept', lower=-100, upper=100)
-            mu_prior_intercept = pm.Normal("mu_prior_intercept", mu=0.0, sigma=1e3)
+            mu_prior_intercept = pm.Normal(
+                "mu_prior_intercept", mu=0.0, sigma=1e3)
             sigma_prior_intercept = pm.HalfCauchy("sigma_prior_intercept", 5)
 
         # Now create separate weights for each group, by doing
@@ -1012,17 +1311,21 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                 a.append(batch_effects[:, i] == b)
             idx = reduce(np.logical_and, a).nonzero()
             if idx[0].shape[0] != 0:
-                act_1 = pm.math.tanh(pytensor.tensor.dot(X[idx, :], weights_in_1[be]))
+                act_1 = pm.math.tanh(pytensor.tensor.dot(
+                    X[idx, :], weights_in_1[be]))
                 if n_layers == 2:
-                    act_2 = pm.math.tanh(pytensor.tensor.dot(act_1, weights_1_2[be]))
+                    act_2 = pm.math.tanh(
+                        pytensor.tensor.dot(act_1, weights_1_2[be]))
                     y_hat = pytensor.tensor.set_subtensor(
                         y_hat[idx, 0],
-                        intercepts[be] + pytensor.tensor.dot(act_2, weights_2_out[be]),
+                        intercepts[be] +
+                        pytensor.tensor.dot(act_2, weights_2_out[be]),
                     )
                 else:
                     y_hat = pytensor.tensor.set_subtensor(
                         y_hat[idx, 0],
-                        intercepts[be] + pytensor.tensor.dot(act_1, weights_2_out[be]),
+                        intercepts[be] +
+                        pytensor.tensor.dot(act_1, weights_2_out[be]),
                     )
 
         # If we want to estimate varying noise terms across groups:
@@ -1169,11 +1472,13 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                     idx = reduce(np.logical_and, a).nonzero()
                     if idx[0].shape[0] != 0:
                         act_1_noise = pm.math.sigmoid(
-                            pytensor.tensor.dot(X[idx, :], weights_in_1_noise[be])
+                            pytensor.tensor.dot(
+                                X[idx, :], weights_in_1_noise[be])
                         )
                         if n_layers == 2:
                             act_2_noise = pm.math.sigmoid(
-                                pytensor.tensor.dot(act_1_noise, weights_1_2_noise[be])
+                                pytensor.tensor.dot(
+                                    act_1_noise, weights_1_2_noise[be])
                             )
                             temp = (
                                 pm.math.log1pexp(
@@ -1192,7 +1497,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                                 )
                                 + 1e-5
                             )
-                        sigma_y = pytensor.tensor.set_subtensor(sigma_y[idx, 0], temp)
+                        sigma_y = pytensor.tensor.set_subtensor(
+                            sigma_y[idx, 0], temp)
 
             else:  # homoscedastic noise:
                 if idata is not None:  # Used for transferring the priors
@@ -1222,7 +1528,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
         else:  # do not allow for random noise terms across groups:
             if idata is not None:  # Used for transferring the priors
                 upper_bound = np.percentile(idata["sigma_noise"], 95)
-                sigma_noise = pm.Uniform("sigma_noise", lower=0, upper=2 * upper_bound)
+                sigma_noise = pm.Uniform(
+                    "sigma_noise", lower=0, upper=2 * upper_bound)
             else:
                 sigma_noise = pm.Uniform("sigma_noise", lower=0, upper=100)
             sigma_y = pytensor.tensor.zeros(y.shape)
@@ -1247,7 +1554,8 @@ def nn_hbr(X, y, batch_effects, batch_effects_size, configs, idata=None):
                     a.append(batch_effects[:, i] == b)
                 idx = reduce(np.logical_and, a).nonzero()
                 if idx[0].shape[0] != 0:
-                    alpha = pytensor.tensor.set_subtensor(alpha[idx, 0], skewness[be])
+                    alpha = pytensor.tensor.set_subtensor(
+                        alpha[idx, 0], skewness[be])
         else:
             alpha = 0  # symmetrical normal distribution
 

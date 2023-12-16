@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.abspath('../../pcntoolkit/normative_model'))
 sys.path.insert(0, os.path.abspath('../../pcntoolkit/utils'))
 
 
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -36,19 +35,19 @@ sys.path.insert(0, os.path.abspath('../../pcntoolkit/utils'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx_tabs.tabs', 
+extensions = ['sphinx_tabs.tabs',
               'sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               'sphinx.ext.githubpages',
-              'sphinx.ext.autosectionlabel', 
+              'sphinx.ext.autosectionlabel',
               'sphinx.ext.autosummary',
               'sphinx_automodapi.automodapi',
-              #'sphinx.ext.doctest',
-              #'sphinx.ext.intersphinx',
-              #'sphinx.ext.mathjax',
+              # 'sphinx.ext.doctest',
+              # 'sphinx.ext.intersphinx',
+              # 'sphinx.ext.mathjax',
               'sphinx.ext.napoleon',
               'sphinx.ext.viewcode',
-              #'sphinxarg.ext',
+              # 'sphinxarg.ext',
               ]
 
 autosummary_generate = True
@@ -61,7 +60,7 @@ autoclass_content = "class"
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-highlight_language ='none'
+highlight_language = 'none'
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -105,7 +104,7 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_theme_options = { 'style_nav_header_background': '#1E90FF'}
+html_theme_options = {'style_nav_header_background': '#1E90FF'}
 
 
 pygments_style = 'sphinx'
@@ -120,12 +119,15 @@ html_static_path = ['pages/_static']
 
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
-html_css_files = ['pages/css/pcntoolkit.css', 
+html_css_files = ['pages/css/pcntoolkit.css',
                   'pages/css/pcntoolkit_nomaxwidth.css']
 
 # add custom files that are stored in _static
+
+
 def setup(app):
-   app.add_css_file('pages/css/pcntoolkit_tabs.css')
+    app.add_css_file('pages/css/pcntoolkit_tabs.css')
+
 
 # add logo
 html_logo = "pcn-logo.png"

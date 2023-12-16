@@ -40,7 +40,7 @@ class NormBase(with_metaclass(ABCMeta)):
     @abstractmethod
     def n_params(self):
         """ Report the number of parameters required by the model """
-    
+
     def save(self, save_path):
         try:
             with open(save_path, 'wb') as handle:
@@ -49,7 +49,7 @@ class NormBase(with_metaclass(ABCMeta)):
         except Exception as err:
             print('Error:', err)
             raise
-    
+
     def load(self, load_path):
         try:
             with open(load_path, 'rb') as handle:

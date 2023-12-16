@@ -8,8 +8,11 @@ Created on Mon Jun 24 16:54:07 2019
 
 from pcntoolkit.normative_NP import estimate
 
+
 class struct(object):
     pass
+
+
 args = struct()
 args.batchnum = 10
 args.epochs = 100

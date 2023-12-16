@@ -11,10 +11,11 @@ except:
     from norm_hbr import NormHBR
     from norm_np import NormNP
 
+
 def norm_init(X, y=None, theta=None, alg='gpr', **kwargs):
     if alg == 'gpr':
         nm = NormGPR(X=X, y=y, theta=theta, **kwargs)
-    elif alg =='blr':
+    elif alg == 'blr':
         nm = NormBLR(X=X, y=y, theta=theta, **kwargs)
     elif alg == 'rfa':
         nm = NormRFA(X=X, y=y, theta=theta, **kwargs)
@@ -23,6 +24,6 @@ def norm_init(X, y=None, theta=None, alg='gpr', **kwargs):
     elif alg == 'np':
         nm = NormNP(X=X, y=y, **kwargs)
     else:
-        raise(ValueError, "Algorithm " + alg + " not known.")
-        
+        raise ValueError("Algorithm " + alg + " not known.")
+
     return nm

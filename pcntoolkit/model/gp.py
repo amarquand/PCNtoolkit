@@ -11,17 +11,17 @@ from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 
 
-try:  # Run as a package if installed    
+try:  # Run as a package if installed
     from pcntoolkit.util.utils import squared_dist
 except ImportError:
     pass
 
     path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.dirname(path) # parent directory 
+    path = os.path.dirname(path)  # parent directory
     if path not in sys.path:
         sys.path.append(path)
     del path
-    
+
     from util.utils import squared_dist
 
 # --------------------
@@ -201,11 +201,11 @@ class CovSum(CovBase):
     def cov(self, theta, x, z=None):
         theta_offset = 0
         for ci, covfunc in enumerate(self.covfuncs):
-            try: 
+            try:
                 n_params_c = covfunc.get_n_params()
                 theta_c = [theta[c] for c in
                            range(theta_offset, theta_offset + n_params_c)]
-                theta_offset += n_params_c                
+                theta_offset += n_params_c
             except Exception as e:
                 print(e)
 
@@ -283,14 +283,14 @@ class GPR:
         self.n_iter = n_iter
         self.verbose = verbose
 
-         # set up warped likelihood
+        # set up warped likelihood
         if warp is None:
             self.warp = None
             self.n_warp_param = 0
         else:
             self.warp = warp
             self.n_warp_param = warp.get_n_params()
-        
+
         self.gamma = None
 
     def _updatepost(self, hyp, covfunc):
@@ -305,8 +305,8 @@ class GPR:
     def post(self, hyp, covfunc, X, y):
         """ Generic function to compute posterior distribution.
         """
-        
-        if len(hyp.shape) > 1: # force 1d hyperparameter array
+
+        if len(hyp.shape) > 1:  # force 1d hyperparameter array
             hyp = hyp.flatten()
 
         if len(X.shape) == 1:
@@ -315,7 +315,7 @@ class GPR:
 
         # hyperparameters
         sn2 = np.exp(2*hyp[0])         # noise variance
-        if self.warp is not None:      # parameters for warping the likelhood 
+        if self.warp is not None:      # parameters for warping the likelhood
             n_lik_param = self.n_warp_param+1
         else:
             n_lik_param = 1
@@ -337,14 +337,14 @@ class GPR:
         # load or recompute posterior
         if self.verbose:
             print("computing likelihood ... | hyp=", hyp)
-       
+
         # parameters for warping the likelhood function
         if self.warp is not None:
             gamma = hyp[1:(self.n_warp_param+1)]
             y = self.warp.f(y, gamma)
             y_unwarped = y
-            
-        if len(hyp.shape) > 1: # force 1d hyperparameter array
+
+        if len(hyp.shape) > 1:  # force 1d hyperparameter array
             hyp = hyp.flatten()
         if self._updatepost(hyp, covfunc):
             try:
@@ -353,14 +353,14 @@ class GPR:
                 print("Warning: Estimation of posterior distribution failed")
                 self.nlZ = 1/np.finfo(float).eps
                 return self.nlZ
-            
+
         self.nlZ = 0.5*y.T.dot(self.alpha) + sum(np.log(np.diag(self.L))) + \
-                   0.5*self.N*np.log(2*np.pi)
-        
+            0.5*self.N*np.log(2*np.pi)
+
         if self.warp is not None:
-            # add in the Jacobian 
+            # add in the Jacobian
             self.nlZ = self.nlZ - sum(np.log(self.warp.df(y_unwarped, gamma)))
-        
+
         # make sure the output is finite to stop the minimizer getting upset
         if not np.isfinite(self.nlZ):
             self.nlZ = 1/np.finfo(float).eps
@@ -374,13 +374,13 @@ class GPR:
         """ Function to compute derivatives
         """
 
-        if len(hyp.shape) > 1: # force 1d hyperparameter array
+        if len(hyp.shape) > 1:  # force 1d hyperparameter array
             hyp = hyp.flatten()
-        
+
         if self.warp is not None:
-            raise ValueError('optimization with derivatives is not yet ' + \
+            raise ValueError('optimization with derivatives is not yet ' +
                              'supported for warped liklihood')
-            
+
         # hyperparameters
         sn2 = np.exp(2*hyp[0])     # noise variance
         theta = hyp[1:]            # (generic) covariance hyperparameters
@@ -429,7 +429,7 @@ class GPR:
             X = X[:, np.newaxis]
 
         self.hyp0 = hyp0
-        
+
         if optimizer.lower() == 'cg':  # conjugate gradients
             out = optimize.fmin_cg(self.loglik, hyp0, self.dloglik,
                                    (covfunc, X, y), disp=True, gtol=self.tol,
@@ -454,26 +454,27 @@ class GPR:
     def predict(self, hyp, X, y, Xs):
         """ Function to make predictions from the model
         """
-        if len(hyp.shape) > 1: # force 1d hyperparameter array
+        if len(hyp.shape) > 1:  # force 1d hyperparameter array
             hyp = hyp.flatten()
-        
+
         # ensure X and Xs are multi-dimensional arrays
         if len(Xs.shape) == 1:
             Xs = Xs[:, np.newaxis]
         if len(X.shape) == 1:
             X = X[:, np.newaxis]
-         
+
         # parameters for warping the likelhood function
         if self.warp is not None:
             gamma = hyp[1:(self.n_warp_param+1)]
             y = self.warp.f(y, gamma)
-            
+
         # reestimate posterior (avoids numerical problems with optimizer)
         self.post(hyp, self.covfunc, X, y)
-        
+
         # hyperparameters
         sn2 = np.exp(2*hyp[0])     # noise variance
-        theta = hyp[(self.n_warp_param + 1):]            # (generic) covariance hyperparameters
+        # (generic) covariance hyperparameters
+        theta = hyp[(self.n_warp_param + 1):]
 
         Ks = self.covfunc.cov(theta, Xs, X)
         kss = self.covfunc.cov(theta, Xs)

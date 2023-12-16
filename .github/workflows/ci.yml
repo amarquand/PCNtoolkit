@@ -1,0 +1,53 @@
+# This configuration does the following:
+
+#   It triggers the CI pipeline when code is pushed to the master branch.
+#   It sets up a Python environment, installs project dependencies, and runs pytest.
+#   Test results are uploaded as artifacts for later examination.
+
+name: CI
+
+on:
+  push:
+    branches:
+      # - master 
+      - 147_CI-pipeline
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10.13
+
+    - name: Install Dependencies
+      run: | 
+        pip install -r requirements.txt
+        pip install pytest pytest-html pytest-cov
+
+    - name: Run Tests with coverage and save report
+      run: |
+        coverage run -m pytest pytest/ --junitxml=report.xml --html=report.html
+        coverage xml -o coverage.xml
+      continue-on-error: true  # Continue to the next step even if tests fail
+
+    - name: Upload HTML Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report-html
+        path: report.html
+
+    - name: Upload XML Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report-xml
+        path: report.xml
+      
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: coverage.xml

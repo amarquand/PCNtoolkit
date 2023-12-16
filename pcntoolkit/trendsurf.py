@@ -30,9 +30,21 @@ except ImportError:
     from model.bayesreg import BLR
 
 
-
 def load_data(datafile, maskfile=None):
-    """ load 4d nifti data """
+    """
+    Load data from disk
+
+    This will load data from disk, either in nifti or ascii format. If the
+    data are in ascii format, they should be in tab or space delimited format
+    with the number of voxels in rows and the number of subjects in columns.
+    Neuroimaging data will be reshaped into the appropriate format
+
+    :param datafile: 4-d nifti file containing the images to be estimated
+    :param maskfile: nifti mask used to apply to the data
+    :returns: * dat - data in vectorised form
+              * world - voxel coordinates
+              * mask - mask used to apply to the data
+    """
     if datafile.endswith("nii.gz") or datafile.endswith("nii"):
         # we load the data this way rather than fileio.load() because we need
         # access to the volumetric representation (to know the # coordinates)
@@ -63,7 +75,22 @@ def load_data(datafile, maskfile=None):
 
 
 def create_basis(X, basis, mask):
-    """ Create a (polynomial) basis set """
+    """
+    Create a basis set
+
+    This will create a basis set for the trend surface model. This is
+    currently fit using a polynomial model of a specified degree. The models
+    are estimated on the basis of data stored on disk in ascii or
+    neuroimaging data formats (currently nifti only). Ascii data should be in
+    tab or space delimited format with the number of voxels in rows and the
+    number of subjects in columns. Neuroimaging data will be reshaped
+    into the appropriate format
+
+    :param X: covariates
+    :param basis: model order for the interpolating polynomial
+    :param mask: mask used to apply to the data
+    :returns: * Phi - basis set
+    """
 
     # check whether we are using a polynomial basis set
     if type(basis) is int or (type(basis) is str and len(basis) == 1):
@@ -92,8 +119,18 @@ def create_basis(X, basis, mask):
 
 
 def write_nii(data, filename, examplenii, mask):
-    """ Write output to nifti """
+    """
+    Write data to nifti file
 
+    This will write data to a nifti file, using the header information from
+    an example nifti file.
+
+    :param data: data to be written
+    :param filename: name of file to be written
+    :param examplenii: example nifti file
+    :param mask: mask used to apply to the data
+    :returns: * Phi - basis set
+    """
     # load example image
     ex_img = nib.load(examplenii)
     dim = ex_img.shape[0:3]
@@ -110,7 +147,25 @@ def write_nii(data, filename, examplenii, mask):
 
 
 def get_args(*args):
-    # parse arguments
+    """
+    Parse command line arguments
+
+    This will parse the command line arguments for the trend surface model.
+    The arguments are:
+
+    :param filename: 4-d nifti file containing the images to be estimated
+    :param maskfile: nifti mask used to apply to the data
+    :param basis: model order for the interpolating polynomial
+    :param covfile: file containing covariates
+    :param ard: use ARD
+    :param outputall: output all measures
+    :returns: * filename - 4-d nifti file containing the images to be estimated
+              * maskfile - nifti mask used to apply to the data
+              * basis - model order for the interpolating polynomial
+              * covfile - file containing covariates
+              * ard - use ARD
+              * outputall - output all measures
+    """
     parser = argparse.ArgumentParser(description="Trend surface model")
     parser.add_argument("filename")
     parser.add_argument("-b", help="basis set", dest="basis", default=3)
@@ -128,7 +183,7 @@ def get_args(*args):
         maskfile = os.path.join(wdir, args.maskfile)
     basis = args.basis
     if args.covfile is not None:
-        raise(NotImplementedError, "Covariates not implemented yet.")
+        raise NotImplementedError("Covariates not implemented yet.")
 
     return filename, maskfile, basis, args.a, args.o
 
@@ -166,10 +221,10 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
               * explainedvar - explained variance
               * rmse - standardised mean squared error
     """
-    
+
     # parse arguments
     optim = kwargs.get('optimizer', 'powell')
-    
+
     # load data
     print("Processing data in", filename)
     Y, X, mask = load_data(filename, maskfile)
@@ -245,11 +300,13 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
             out.append(bs2)
         return out
 
+
 def main(*args):
     np.seterr(invalid='ignore')
 
     filename, maskfile, basis, ard, outputall = get_args(args)
     estimate(filename, maskfile, basis, ard, outputall)
+
 
 # For running from the command line:
 if __name__ == "__main__":
