@@ -5,7 +5,7 @@ sphinx-automodapi
 argparse
 nibabel>=2.5.1
 six
-sklearn 
+scikit-learn 
 bspline
 matplotlib
 numpy>=1.19.5
