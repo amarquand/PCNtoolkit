@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Predictive modeling tutorial &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -19,6 +21,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -32,12 +35,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pcn-logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -99,8 +106,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Predictive modeling tutorial</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Predictive modeling tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pages/other_predictive_models.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -111,11 +118,11 @@
            <div itemprop="articleBody">
              
   <section id="predictive-modeling-using-deviation-scores">
-<h1>Predictive modeling using deviation scores<a class="headerlink" href="#predictive-modeling-using-deviation-scores" title="Permalink to this headline"></a></h1>
+<h1>Predictive modeling using deviation scores<a class="headerlink" href="#predictive-modeling-using-deviation-scores" title="Permalink to this heading"></a></h1>
 <p>The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. <a class="reference external" href="https://www.nature.com/articles/s41596-022-00696-5">https://www.nature.com/articles/s41596-022-00696-5</a>.</p>
 <p>Created by <a class="reference external" href="https://twitter.com/being_saige">Saige Rutherford</a></p>
 <a class="reference external image-reference" href="https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/other_predictive_models.ipynb"><img alt="https://colab.research.google.com/assets/colab-badge.svg" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -151,7 +158,7 @@
 </pre></div>
 </div>
 <section id="load-data">
-<h2>Load Data<a class="headerlink" href="#load-data" title="Permalink to this headline"></a></h2>
+<h2>Load Data<a class="headerlink" href="#load-data" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hcp_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data/hcpya_z.npy&#39;</span><span class="p">)</span>
 <span class="n">hcp_ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data/hcpya_ct.npy&#39;</span><span class="p">)</span>
 <span class="n">gscores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;data/hcpya_g.npy&#39;</span><span class="p">)</span>
@@ -169,7 +176,7 @@
 </div>
 </section>
 <section id="create-train-test-splits">
-<h2>Create Train/Test Splits<a class="headerlink" href="#create-train-test-splits" title="Permalink to this headline"></a></h2>
+<h2>Create Train/Test Splits<a class="headerlink" href="#create-train-test-splits" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate train/test splits</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">n_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.8</span> <span class="o">*</span> <span class="n">hcp_z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -198,7 +205,7 @@
 </div>
 </section>
 <section id="principal-component-regression-bbs">
-<h2>Principal Component Regression (BBS)<a class="headerlink" href="#principal-component-regression-bbs" title="Permalink to this headline"></a></h2>
+<h2>Principal Component Regression (BBS)<a class="headerlink" href="#principal-component-regression-bbs" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pca_model_z</span> <span class="o">=</span> <span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">)</span>
 <span class="c1"># from pca documentation, &quot;the input data is centered but not scaled for each feature before applying the SVD&quot;</span>
 </pre></div>
@@ -239,7 +246,7 @@
 </div>
 </section>
 <section id="fit-linear-regression-model">
-<h2>Fit Linear Regression Model<a class="headerlink" href="#fit-linear-regression-model" title="Permalink to this headline"></a></h2>
+<h2>Fit Linear Regression Model<a class="headerlink" href="#fit-linear-regression-model" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># fast OLS using matrix math</span>
 <span class="c1"># we will check that this matches sklearn results later</span>
 
@@ -316,7 +323,7 @@
 </div>
 </section>
 <section id="mean-squared-absolute-error-of-predictions">
-<h2>Mean Squared/Absolute Error of Predictions<a class="headerlink" href="#mean-squared-absolute-error-of-predictions" title="Permalink to this headline"></a></h2>
+<h2>Mean Squared/Absolute Error of Predictions<a class="headerlink" href="#mean-squared-absolute-error-of-predictions" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_r2_z</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">r2_score</span><span class="p">(</span><span class="n">train_phen</span><span class="p">,</span> <span class="n">train_pred_phen_lr_model_z</span><span class="p">)</span>
 <span class="n">train_mae_z</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">train_phen</span><span class="p">,</span> <span class="n">train_pred_phen_lr_model_z</span><span class="p">)</span>
 <span class="n">test_mae_z</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">test_phen</span><span class="p">,</span> <span class="n">test_pred_phen_lr_model_z</span><span class="p">)</span>
@@ -357,7 +364,7 @@ Cortical thickness model Test MSE: 0.830
 </div>
 </section>
 <section id="bbs-cross-validation">
-<h2>BBS Cross Validation<a class="headerlink" href="#bbs-cross-validation" title="Permalink to this headline"></a></h2>
+<h2>BBS Cross Validation<a class="headerlink" href="#bbs-cross-validation" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">bbs</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">n_cv_splits</span><span class="p">,</span> <span class="n">pred_summary_function</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -400,7 +407,7 @@ Cortical thickness model Test MSE: 0.830
         <span class="n">fold_accs_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_summary_function</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">test_pred</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">fold_accs_train</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">fold_accs_test</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">fold_accs_train</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">fold_accs_test</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
@@ -459,7 +466,7 @@ CV Fold: 5          Train MAE: 0.614      Test MAE: 0.722
 <img alt="../_images/other_predictive_models_33_3.png" src="../_images/other_predictive_models_33_3.png" />
 </section>
 <section id="connectome-predictive-modelling">
-<h2>Connectome Predictive Modelling<a class="headerlink" href="#connectome-predictive-modelling" title="Permalink to this headline"></a></h2>
+<h2>Connectome Predictive Modelling<a class="headerlink" href="#connectome-predictive-modelling" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># correlation train_brain with train_phenotype</span>
 <span class="n">train_z_pheno_corr_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">train_phen</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">train_data_z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>  <span class="c1"># train_pheno_corr_p: (259200, )</span>
 </pre></div>
@@ -582,7 +589,7 @@ Testing Error (MAE) (Positive/Negative CT Features Model) = 0.701
 </div>
 </section>
 <section id="cpm-cross-validation">
-<h2>CPM Cross Validation<a class="headerlink" href="#cpm-cross-validation" title="Permalink to this headline"></a></h2>
+<h2>CPM Cross Validation<a class="headerlink" href="#cpm-cross-validation" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cpm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p_threshold</span><span class="p">,</span> <span class="n">n_cv_splits</span><span class="p">,</span> <span class="n">pred_summary_function</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -636,8 +643,8 @@ Testing Error (MAE) (Positive/Negative CT Features Model) = 0.701
         <span class="n">fold_accs_test</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">test_pos_error</span><span class="p">,</span> <span class="n">test_neg_error</span><span class="p">,</span> <span class="n">test_posneg_error</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Pos-Edges Model MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_pos_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_neg_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Pos/Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_posneg_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Pos-Edges Model MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_pos_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_neg_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Pos/Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_posneg_error</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Pos-Edges Model MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_pos_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_neg_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Train Pos/Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">train_posneg_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CV Fold: </span><span class="si">{</span><span class="n">fold_i</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Pos-Edges Model MAE: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_pos_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_neg_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1"> Test  Pos/Neg-Edges Model Accuracy: </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">test_posneg_error</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">:</span><span class="s1">&lt;10</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
@@ -704,7 +711,7 @@ CV Fold: 5          Test  Pos-Edges Model MAE: 0.709      Test  Neg-Edges Model 
 <img alt="../_images/other_predictive_models_51_2.png" src="../_images/other_predictive_models_51_2.png" />
 </section>
 <section id="lasso-linear-regression-l1-regularization">
-<h2>Lasso (Linear Regression + L1 Regularization)<a class="headerlink" href="#lasso-linear-regression-l1-regularization" title="Permalink to this headline"></a></h2>
+<h2>Lasso (Linear Regression + L1 Regularization)<a class="headerlink" href="#lasso-linear-regression-l1-regularization" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># LassoCV uses coordinate descent to select hyperparameter alpha</span>
 <span class="n">alpha_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="o">**</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)])</span>
 <span class="n">lassoCV_model_z</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_alphas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha_grid</span><span class="p">),</span> <span class="n">alphas</span><span class="o">=</span><span class="n">alpha_grid</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">,</span> <span class="n">train_phen</span><span class="p">)</span>
@@ -778,7 +785,7 @@ Test MAE CT model: 0.697
 </div>
 </section>
 <section id="ridge-linear-regression-l2-regularization">
-<h2>Ridge (Linear Regression + L2 Regularization)<a class="headerlink" href="#ridge-linear-regression-l2-regularization" title="Permalink to this headline"></a></h2>
+<h2>Ridge (Linear Regression + L2 Regularization)<a class="headerlink" href="#ridge-linear-regression-l2-regularization" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># RidgeCV uses generalized cross validation to select hyperparameter alpha</span>
 <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
     <span class="c1"># ignore matrix decomposition errors</span>
@@ -839,7 +846,7 @@ Test MAE CT model: 0.692
 </div>
 </section>
 <section id="elastic-net-linear-regression-l1-l2-regularization">
-<h2>Elastic Net (Linear Regression + L1/L2 Regularization)<a class="headerlink" href="#elastic-net-linear-regression-l1-l2-regularization" title="Permalink to this headline"></a></h2>
+<h2>Elastic Net (Linear Regression + L1/L2 Regularization)<a class="headerlink" href="#elastic-net-linear-regression-l1-l2-regularization" title="Permalink to this heading"></a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># RidgeCV uses generalized cross validation to select hyperparameter alpha</span>
 <span class="n">elasticnetCV_model_z</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">l1_ratio</span><span class="o">=</span><span class="p">[</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.7</span><span class="p">,</span> <span class="mf">.9</span><span class="p">,</span> <span class="mf">.95</span><span class="p">,</span> <span class="mf">.99</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_alphas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha_grid</span><span class="p">),</span> <span class="n">alphas</span><span class="o">=</span><span class="n">alpha_grid</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data_z</span><span class="p">,</span> <span class="n">train_phen</span><span class="p">)</span>
 </pre></div>
