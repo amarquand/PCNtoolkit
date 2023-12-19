@@ -2,17 +2,18 @@ import warnings
 import numpy as np
 
 from dataio.norm_data import NormData
-from normative_model.norm_base import NormBase
-from normative_model.norm_conf import NormConf
-from regression_model.blr.blr import BLR
-from regression_model.blr.blr_conf import BLRConf
+from .norm_base import NormBase
+from .norm_conf import NormConf
+from ..regression_model.blr.blr import BLR
+from ..regression_model.blr.blr_conf import BLRConf
+
 
 class NormBLR(NormBase):
 
     def __init__(self, name: str, norm_conf: NormConf, reg_conf: BLRConf):
         super().__init__(name, norm_conf)
-        self._reg_conf = reg_conf
-        self._model = BLR(BLRConf)
+        self._reg_conf: BLRConf = reg_conf
+        self._model: BLR = BLR(BLRConf)
 
     def _fit(self, data: NormData):
         """
@@ -50,7 +51,6 @@ class NormBLR(NormBase):
         raise NotImplementedError(
             f"Transfer method not implemented for {self.__class__.__name__}")
 
-
     def _merge(self, other: NormBase):
         """
         Contains all the merge logic that is specific to the regression model.
@@ -77,7 +77,7 @@ class NormBLR(NormBase):
         # ...
         raise NotImplementedError(
             f"Extend method not implemented for {self.__class__.__name__}")
-    
+
     def evaluate_mse(self, data: NormData) -> np.float32:
         """
         Contains all the evaluation logic that is specific to the regression model.
@@ -88,7 +88,7 @@ class NormBLR(NormBase):
             f"MSE not implemented for {self.__class__.__name__}, returning NAN")
         return np.NAN
 
-    def evaluate_mae(self, data: NormData) ->  np.float32:
+    def evaluate_mae(self, data: NormData) -> np.float32:
         """
         Contains all the evaluation logic that is specific to the regression model.
         """
@@ -97,8 +97,8 @@ class NormBLR(NormBase):
         warnings.warn(
             f"MAE not implemented for {self.__class__.__name__}, returning NAN")
         return np.NAN
-    
-    def evaluate_r2(self, data: NormData) ->  np.float32:
+
+    def evaluate_r2(self, data: NormData) -> np.float32:
         """
         Contains all the evaluation logic that is specific to the regression model.
         """
@@ -124,4 +124,4 @@ class NormBLR(NormBase):
         # some saving logic
         # ...
         raise NotImplementedError(
-            f"Save method not implemented for {self.__class__.__name__}")   
+            f"Save method not implemented for {self.__class__.__name__}")

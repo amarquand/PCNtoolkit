@@ -1,5 +1,5 @@
-from regression_model.gpr.gpr import GPR
-from regression_model.reg_conf import RegConf
+from .gpr import GPR
+from ..reg_conf import RegConf
 
 class GPRConf(RegConf):
     # some configuration parameters
