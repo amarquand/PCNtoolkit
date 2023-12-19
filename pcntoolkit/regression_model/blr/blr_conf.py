@@ -1,5 +1,6 @@
-from .blr import BLR
-from ..reg_conf import RegConf
+
+from pcntoolkit.regression_model.reg_conf import RegConf
+
 
 class BLRConf(RegConf):
     # some configuration parameters

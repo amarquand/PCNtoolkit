@@ -1,5 +1,8 @@
+
+
+
 import numpy as np
-from .gpr_conf import GPRConf
+from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
 
 
 class GPR:

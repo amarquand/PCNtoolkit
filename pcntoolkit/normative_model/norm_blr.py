@@ -1,11 +1,13 @@
 import warnings
 import numpy as np
+from pcntoolkit.dataio.norm_data import NormData
 
-from dataio.norm_data import NormData
-from .norm_base import NormBase
-from .norm_conf import NormConf
-from ..regression_model.blr.blr import BLR
-from ..regression_model.blr.blr_conf import BLRConf
+from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_conf import NormConf
+from pcntoolkit.regression_model.blr.blr import BLR
+from pcntoolkit.regression_model.blr.blr_conf import BLRConf
+
+
 
 
 class NormBLR(NormBase):

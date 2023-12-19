@@ -1,5 +1,6 @@
-from .gpr import GPR
-from ..reg_conf import RegConf
+
+from pcntoolkit.regression_model.reg_conf import RegConf
+
 
 class GPRConf(RegConf):
     # some configuration parameters

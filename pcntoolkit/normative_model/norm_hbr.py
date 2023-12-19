@@ -1,11 +1,11 @@
 import warnings
 import numpy as np
+from pcntoolkit.dataio.norm_data import NormData
 
-from dataio.norm_data import NormData
-from .norm_base import NormBase
-from .norm_conf import NormConf
-from ..regression_model.hbr.hbr import HBR
-from ..regression_model.hbr.hbr_conf import HBRConf
+from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_conf import NormConf
+from pcntoolkit.regression_model.hbr.hbr import HBR
+from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
 
 class NormHBR(NormBase):

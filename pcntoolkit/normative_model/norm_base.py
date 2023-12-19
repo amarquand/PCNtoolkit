@@ -1,12 +1,8 @@
 from abc import ABC, abstractmethod
-import warnings
 
-from dataio.norm_data import NormData
-from .norm_blr import NormBLR
+from pcntoolkit.dataio.norm_data import NormData
 from .norm_conf import NormConf
-from .norm_gpr import NormGPR
-from .norm_hbr import NormHBR
-from ..regression_model.reg_conf import RegConf
+
 
 
 class NormBase(ABC):  # newer abstract base class syntax, no more python2
