@@ -8,8 +8,7 @@ class NormConf:
     """
     Configuration for a normative model. Contains parameters for cross-validation, logging and saving output. 
     Performs checks on these configurations.
-    This does not care about the underlying regression model, but rather how it is processed. 
-    This does not contain any functionality, but is used as a placeholder for now.
+    This does not care about the underlying regression model. 
     """
     perform_cv: bool = False
     cv_folds: int = 0
