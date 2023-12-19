@@ -1,13 +1,16 @@
-from .norm_base import NormBase
-from .norm_conf import NormConf
-from .norm_blr import NormBLR
-from .norm_gpr import NormGPR
-from .norm_hbr import NormHBR
-from ..regression_model.reg_conf import RegConf
+
 
 """
 Putting the factory method in the NormBase class would be more elegant, but then we would have to import all the regression models in the NormBase class, which would create a circular dependency. Therefore, we put the factory method in this separate file.
 """
+
+from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_blr import NormBLR
+from pcntoolkit.normative_model.norm_conf import NormConf
+from pcntoolkit.normative_model.norm_gpr import NormGPR
+from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.regression_model.reg_conf import RegConf
+
 
 def create_normative_model(norm_conf: NormConf, reg_conf: RegConf) -> NormBase:
     """

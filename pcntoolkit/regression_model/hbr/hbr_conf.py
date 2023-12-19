@@ -1,5 +1,6 @@
-from .hbr import HBR
-from ..reg_conf import RegConf
+
+from pcntoolkit.regression_model.reg_conf import RegConf
+
 
 class HBRConf(RegConf):
     # some configuration parameters
