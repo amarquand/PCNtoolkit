@@ -1,7 +1,8 @@
 
+from dataclasses import dataclass
 from pcntoolkit.regression_model.reg_conf import RegConf
 
-
+@dataclass(frozen=True)
 class GPRConf(RegConf):
     # some configuration parameters
     # ...

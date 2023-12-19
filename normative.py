@@ -11,7 +11,7 @@ def main():
     save_dir = "/home/stijn/temp/pcntoolkit/save"
     normconf = NormConf(perform_cv = False, cv_folds=0, log_dir=log_dir, save_dir=save_dir)
     normconf.save_as_json("/home/stijn/temp/pcntoolkit/normconf.json")
-    regconf = BLRConf(example_parameter=1)
+    regconf = BLRConf(example_parameter=-1)
 
     normative_model = create_normative_model(normconf, regconf)
     normative_model.fit_predict(None)

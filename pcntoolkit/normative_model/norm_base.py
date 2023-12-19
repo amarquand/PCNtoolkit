@@ -7,8 +7,7 @@ from .norm_conf import NormConf
 
 class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
-    def __init__(self, name: str, norm_conf: NormConf):
-        self._name:str = name
+    def __init__(self, norm_conf: NormConf):
         self._norm_conf:NormConf = norm_conf
 
     def fit(self, data: NormData):

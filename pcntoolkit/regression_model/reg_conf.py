@@ -1,12 +1,10 @@
 import json
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
 
-@dataclass(frozen=True) # frozen=True makes the dataclass immutable. Only use this for configuration.
 class RegConf(ABC):
     """
-    A class containig the configuration of a regression model. The class is immutable, so it should only contain configuration parameters, and not learned coefficients or such. Those are stored in the model itself.
+    A class containig the configuration of a regression model. It should only contain configuration parameters, and not learned coefficients or such. Those are stored in the model itself.
     """
 
     def __post_init__(self):

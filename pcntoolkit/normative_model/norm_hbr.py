@@ -10,8 +10,8 @@ from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
 class NormHBR(NormBase):
 
-    def __init__(self, name: str, norm_conf: NormConf, reg_conf: HBRConf):
-        super().__init__(name, norm_conf)
+    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf):
+        super().__init__( norm_conf)
         self._reg_conf: HBRConf = reg_conf
         self._model: HBR = HBR(HBRConf)
 
@@ -108,7 +108,7 @@ class NormHBR(NormBase):
             f"R2 not implemented for {self.__class__.__name__}, returning NAN")
         return np.NAN
 
-    def _load(self) -> NormBase:
+    def load(self) -> NormBase:
         """
         Contains all the loading logic that is specific to the regression model.
         """
@@ -117,7 +117,7 @@ class NormHBR(NormBase):
         raise NotImplementedError(
             f"Load method not implemented for {self.__class__.__name__}")
 
-    def _save(self):
+    def save(self):
         """
         Contains all the saving logic that is specific to the regression model.
         """

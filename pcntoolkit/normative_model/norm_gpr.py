@@ -11,8 +11,8 @@ from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
 
 class NormGPR(NormBase):
 
-    def __init__(self, name: str, norm_conf: NormConf, reg_conf: GPRConf):
-        super().__init__(name, norm_conf)
+    def __init__(self, norm_conf: NormConf, reg_conf: GPRConf):
+        super().__init__(norm_conf)
         self._reg_conf: GPRConf = reg_conf
         self._model: GPR = GPR(GPRConf)
 
@@ -109,7 +109,7 @@ class NormGPR(NormBase):
             f"R2 not implemented for {self.__class__.__name__}, returning NAN")
         return np.NAN
 
-    def _load(self) -> NormBase:
+    def load(self) -> NormBase:
         """
         Contains all the loading logic that is specific to the regression model.
         """
@@ -118,7 +118,7 @@ class NormGPR(NormBase):
         raise NotImplementedError(
             f"Load method not implemented for {self.__class__.__name__}")
 
-    def _save(self):
+    def save(self):
         """
         Contains all the saving logic that is specific to the regression model.
         """

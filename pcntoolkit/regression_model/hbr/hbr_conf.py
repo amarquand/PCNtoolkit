@@ -1,7 +1,8 @@
-
+from dataclasses import dataclass
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 
+@dataclass(frozen=True)
 class HBRConf(RegConf):
     # some configuration parameters
     # ...
@@ -21,7 +22,6 @@ class HBRConf(RegConf):
             nonlocal configuration_problems
             problem_count += 1
             configuration_problems += f"{problem_count}:\t{problem}\n"
-
 
         # some configuration checks
         # ...
