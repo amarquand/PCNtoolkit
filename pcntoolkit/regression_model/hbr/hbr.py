@@ -1,12 +1,12 @@
 import numpy as np
 
-from regression_model.hbr.hbr_conf import HBRConf
+from .hbr_conf import HBRConf
 
 
 class HBR:
 
     def __init__(self, conf: HBRConf):
-        self._conf = conf
+        self._conf:HBRConf = conf
 
     def fit(self, X:np.ndarray, y:np.ndarray):
         """

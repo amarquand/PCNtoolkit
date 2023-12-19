@@ -1,6 +1,5 @@
-from regression_model.blr.blr import BLR
-from regression_model.reg_conf import RegConf
-
+from .blr import BLR
+from ..reg_conf import RegConf
 
 class BLRConf(RegConf):
     # some configuration parameters

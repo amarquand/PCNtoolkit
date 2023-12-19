@@ -1,5 +1,5 @@
-from regression_model.hbr.hbr import HBR
-from regression_model.reg_conf import RegConf
+from .hbr import HBR
+from ..reg_conf import RegConf
 
 class HBRConf(RegConf):
     # some configuration parameters

@@ -2,15 +2,18 @@ from abc import ABC, abstractmethod
 import warnings
 
 from dataio.norm_data import NormData
-from normative_model.norm_blr import NormBLR
-from normative_model.norm_conf import NormConf
-from normative_model.norm_gpr import NormGPR
-from normative_model.norm_hbr import NormHBR
-from regression_model.reg_conf import RegConf
+from .norm_blr import NormBLR
+from .norm_conf import NormConf
+from .norm_gpr import NormGPR
+from .norm_hbr import NormHBR
+from ..regression_model.reg_conf import RegConf
 
 
 class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
+    def __init__(self, name: str, norm_conf: NormConf):
+        self._name:str = name
+        self._norm_conf:NormConf = norm_conf
 
     def fit(self, data: NormData):
         """
