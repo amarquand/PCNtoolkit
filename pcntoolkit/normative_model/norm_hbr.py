@@ -1,16 +1,19 @@
 import warnings
 import numpy as np
 
-from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_base import NormBase
-from pcntoolkit.normative_model.norm_conf import NormConf
+from dataio.norm_data import NormData
+from normative_model.norm_base import NormBase
+from normative_model.norm_conf import NormConf
+from regression_model.hbr.hbr import HBR
+from regression_model.hbr.hbr_conf import HBRConf
 
 
 class NormHBR(NormBase):
 
-    def __init__(self, name: str, conf: NormConf):
-        super().__init__(name, conf)
-        self._model = None
+    def __init__(self, name: str, norm_conf: NormConf, reg_conf: HBRConf):
+        super().__init__(name, norm_conf)
+        self._reg_conf = reg_conf
+        self._model = HBR(HBRConf)
 
     def _fit(self, data: NormData):
         """

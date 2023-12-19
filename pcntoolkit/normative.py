@@ -1,19 +1,21 @@
-import sys
+import os
+from normative_model.norm_conf import NormConf
+from normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_factory import create_normative_model
 
-def main(*args):
+from regression_model.blr.blr_conf import BLRConf
+from regression_model.hbr.hbr_conf import HBRConf
 
-    # Parse the cv args into object. This contains the following:
-    #   - the number of cv folds
 
-    # Parse normative args into object
-    #   - the type of model to fit (e.g., "ridge", "lasso", "elasticnet")
+def main():
+    log_dir = "/home/stijn/temp/pcntoolkit/log"
+    save_dir = "/home/stijn/temp/pcntoolkit/save"
+    normconf = NormConf(False, 0, log_dir=log_dir, save_dir=save_dir)
+    normconf.save_as_json("/home/stijn/temp/pcntoolkit/normconf.json")
+    regconf = BLRConf()
 
-    # Parse model args into object
-
-    # Make the call to the appropriate function
-
-    pass
-
+    normative_model = create_normative_model(normconf, regconf)
+    normative_model.fit_predict(None)
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
