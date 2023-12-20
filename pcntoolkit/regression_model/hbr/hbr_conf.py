@@ -6,7 +6,12 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 class HBRConf(RegConf):
     # some configuration parameters
     linear_mu: bool=True
+    random_intercept_mu: bool=False
+    random_slope_mu: bool=False
+
     linear_sigma: bool=False
+
+    likelihood: str="Normal"
 
 
     def detect_configuration_problems(self) -> str:
