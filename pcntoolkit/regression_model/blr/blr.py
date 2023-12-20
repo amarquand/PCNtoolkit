@@ -31,7 +31,7 @@ class BLR:
         raise NotImplementedError(
             f"Predict method not implemented for {self.__class__.__name__}")
 
-    def fit_predict(self, X: np.ndarray, y: np.ndarray, X_test) -> np.ndarray:
+    def fit_predict(self, X: np.ndarray, y: np.ndarray, X_test: np.ndarray) -> np.ndarray:
         """
         Fits and predicts the model.
         """
