@@ -14,6 +14,7 @@ class NormConf:
     cv_folds: int = 0
     log_dir: str = "./logs"
     save_dir: str = "./saves"
+    model_type: str = "linear"
 
     def __post_init__(self):
         """

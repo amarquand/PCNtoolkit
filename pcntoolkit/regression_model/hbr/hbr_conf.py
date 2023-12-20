@@ -5,7 +5,8 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 @dataclass(frozen=True)
 class HBRConf(RegConf):
     # some configuration parameters
-    # ...
+    linear_mu: bool=True
+    linear_sigma: bool=False
 
     def detect_configuration_problems(self) -> str:
         """
