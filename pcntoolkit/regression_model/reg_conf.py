@@ -12,16 +12,17 @@ class RegConf(ABC):
         Checks if the configuration is valid.
         """
         configuration_problems = self.detect_configuration_problems()
-        if not configuration_problems == "":
+        if len(configuration_problems) > 0:
+            problem_list = "\n".join([f'{i+1}:\t{v}' for i, v in enumerate(configuration_problems)])
             raise ValueError(
-                f"The following problems have been detected in the regression model configuration:\n{configuration_problems}")
+                f"The following problems have been detected in the regression model configuration:\n{problem_list}")
         else:
             print("Configuration of regression model is valid.")
 
     @abstractmethod
     def detect_configuration_problems(self) -> str:
         """
-        Detects problems in the configuration and returns them as a string.
+        Detects problems in the configuration and returns them as a list of strings.
         """
         pass
 

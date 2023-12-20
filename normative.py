@@ -10,7 +10,7 @@ from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 def main():
     log_dir = "/home/stijn/temp/pcntoolkit/log"
     save_dir = "/home/stijn/temp/pcntoolkit/save"
-    normconf = NormConf(perform_cv = False, cv_folds=0, log_dir=log_dir, save_dir=save_dir)
+    normconf = NormConf(perform_cv = False, cv_folds=0, log_dir=log_dir, save_dir=save_dir, basis_function_type="bspline", nknots=7, order=3)
     normconf.save_as_json("/home/stijn/temp/pcntoolkit/normconf.json")
     regconf = HBRConf(example_parameter=-1)
 

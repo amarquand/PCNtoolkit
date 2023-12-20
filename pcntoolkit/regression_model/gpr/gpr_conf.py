@@ -9,24 +9,22 @@ class GPRConf(RegConf):
 
     example_parameter: int = 0 # example parameter. This is an int and has a default value of 0.
 
+    
     def detect_configuration_problems(self) -> str:
         """
-        Detects problems in the configuration and returns them as a string.
+        Detects problems in the configuration and returns them as a list of strings.
         """
-        configuration_problems = ""
-        problem_count: int = 0
 
+        # DESIGN CHOICE (stijn):
+        # This mutable field need to be local here, because the dataclass is defined as immutable.
+        configuration_problems = []
         def add_problem(problem: str):
-            """
-            Use this to accumulate the problems into a string
-            """
-            nonlocal problem_count
             nonlocal configuration_problems
-            problem_count += 1
-            configuration_problems += f"{problem_count}:\t{problem}\n"
-
+            configuration_problems.append(f"{problem}")
 
         # some configuration checks
         # ...
+        if self.example_parameter < 0:
+            add_problem("Example parameter must be greater than 0.")
 
         return configuration_problems

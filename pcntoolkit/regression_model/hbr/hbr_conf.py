@@ -8,23 +8,17 @@ class HBRConf(RegConf):
     linear_mu: bool=True
     linear_sigma: bool=False
 
+
     def detect_configuration_problems(self) -> str:
         """
-        Detects problems in the configuration and returns them as a string.
+        Detects problems in the configuration and returns them as a list of strings.
         """
-        configuration_problems = ""
-        problem_count: int = 0
 
+        # DESIGN CHOICE (stijn):
+        # This mutable field need to be local here, because the dataclass is defined as immutable.
+        configuration_problems = []
         def add_problem(problem: str):
-            """
-            Use this to accumulate the problems into a string
-            """
-            nonlocal problem_count
             nonlocal configuration_problems
-            problem_count += 1
-            configuration_problems += f"{problem_count}:\t{problem}\n"
-
-        # some configuration checks
-        # ...
+            configuration_problems.append(f"{problem}")
 
         return configuration_problems
