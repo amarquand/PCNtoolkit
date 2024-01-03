@@ -1,8 +1,10 @@
-import numpy as np
+from typing import Tuple
 
 import pymc as pm
-
+import numpy as np
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
+from pcntoolkit.regression_model.hbr.paramconf import ParamConf
+from pcntoolkit.regression_model.hbr.prior import DeterministicNode, LinearNode, Prior, DistWrapper
 from .hbr_conf import HBRConf
 
 
@@ -15,6 +17,7 @@ class HBR:
         Any immutable parameters should be initialized in the configuration.
         """
         self._conf: HBRConf = conf
+        self.current_param_conf: ParamConf = None
         self.is_fitted: bool = False
         self.idata = None
 
@@ -29,9 +32,13 @@ class HBR:
         if not self.is_fitted:
 
             # Create pymc model
-            self.model = self.create_pymc_model(data)
+            self.create_pymc_model(data)
 
             # Sample from pymc model
+            with self.model:
+                self.idata = pm.sample(
+                    self.conf.n_samples, tune=self.conf.n_tune, cores=self.conf.n_cores)
+
             self.is_fitted = True
 
         else:
@@ -41,10 +48,8 @@ class HBR:
         """
         Creates the pymc model.
         """
-        #
-
         if self.conf.likelihood == "Normal":
-            return self.create_pymc_model_normal(data)
+            self.create_pymc_model_normal(data)
         else:
             raise NotImplementedError(
                 f"Likelihood {self.conf.likelihood} not implemented for {self.__class__.__name__}")
@@ -55,76 +60,98 @@ class HBR:
         """
 
         # Create model
-        with pm.Model() as model:
+        self.model = pm.Model(coords=data.coords,
+                              coords_mutable=data.coords_mutable)
 
-            # Add data to pymc model
-            data.add_to_pymc_model(model)
+        # Add data to pymc model
+        data.add_to_pymc_model(self.model)
 
-            # Create priors
-            mu = self.create_prior("mu", data)
-            sigma = self.create_prior("sigma", data)
-
+        # Create likelihood parameters
+        with self.model:
+            mu = self.build_param(self.conf.mu, data)
+            sigma = self.build_param(self.conf.mu, data)
+            mu_samples = pm.Deterministic("mu_samples", mu.get_samples(data))
+            sigma_samples = pm.Deterministic(
+                "sigma_samples", sigma.get_samples(data))
+            print(f"{mu_samples.shape.eval()=}")
+            print(f"{sigma_samples.shape.eval()=}")
             # Create likelihood
             likelihood = pm.Normal(
-                "likelihood", mu=mu, sigma=sigma, observed=data.pm_y)
+                "likelihood", mu=mu_samples, sigma=sigma_samples, observed=data.pm_y, dims=('datapoints', 'response_vars'))
 
-        return model
-
-    def create_prior(self, name: str, data: HBRData):
+    def build_param(self, conf: ParamConf, data: HBRData, dims=()):
         """
-        Creates a prior.
+        Creates a parameter.
+        Always returns either an array with the number of data samples in the 0th dimension, or a scalar.
         """
+        # If the parameter has a linear effect
+        if getattr(self.c, conf.linear, False):
 
-        # If the prior is linear
-        if getattr(self.conf, f"linear_{name.lower()}"):
-            return self.create_linear_prior(name, data)
-        # If the prior is random
-        elif getattr(self.conf, f"random_{name.lower()}"):
-            # If the prior is centered
-            if getattr(self.conf, f"centered_{name.lower()}"):
-                return self.create_centered_prior(name, data)
-            # If the prior is non-centered
+            return self.linear_parameter(name, data, dims)
+
+        # If the parameter has a random effect
+        elif getattr(self.conf, f"random_{name}", False):
+
+            # If the parameter is centered
+            if getattr(self.conf, f"centered_{name}", False):
+                return self.centered_random_parameter(name, data, dims)
+
+            # If the parameter is non-centered
             else:
-                return self.create_non_centered_prior(name, data)            
+                return self.non_centered_random_parameter(name, data, dims)
         # This parameter is fixed, i.e. not linear or random
         else:
-            return self.create_fixed_prior(name, data)
+            return self.fixed_parameter(name, data, dims)
 
-    def make_pymc_dist(self, name: str, data: HBRData):
-        distmap = {'Normal': pm.Normal,
-                   'HalfNormal': pm.HalfNormal, 'Uniform': pm.Uniform}
-        dist = distmap[getattr(self.conf, f"{name.lower()}_dist")]
-        params = getattr(self.conf, f"{name.lower()}_dist_params")
-        prior = dist(name, **params)
+    def fixed_parameter(self, name: str, data: HBRData, dims: Tuple[str] = ()):
+        """
+        Creates a fixed prior.
+        """
+        return Prior(self, name, dims)
 
-    def create_fixed_prior(self, name, data):
-        pass
+    def centered_random_parameter(self, name: str,  data: HBRData, dims: Tuple[str]):
 
-    def create_non_centered_prior(self, name, data):
-        mu_dist = self.make_pymc_dist(f"mu_{name}", data)
-        sigma_dist = self.make_pymc_dist(f"sigma_{name}", data)
-        offset = pm.Normal(f"offset_{name}", mu=0, sigma=1)
-        mu = pm.Deterministic(f"{name}", mu_dist + offset * sigma_dist)
-        return mu
+        mu_prior = Prior(self, f"mu_{name}", dims)
+        sigma_prior = Prior(self, f"sigma_{name}", dims)
+        node_dims = (*data.batch_effect_dims, *dims)
 
-    def create_centered_prior(self, name, data):
-        mu_dist = self.make_pymc_dist(f"mu_{name}", data)
-        sigma_dist = self.make_pymc_dist(f"sigma_{name}", data)
-        mu = pm.Normal(f"{name}", mu=mu_dist, sigma=sigma_dist)
-        return mu
+        with self.model:
+            node = pm.Normal(name, mu=mu_prior.dist,
+                             sigma=sigma_prior.dist, dims=node_dims)
 
-    def create_linear_prior(self, name: str, data: HBRData):
+        distwrapper = DistWrapper(self, dims=node_dims)
+        distwrapper.dist = node
+        return distwrapper
+
+    def non_centered_random_parameter(self, name: str,  data: HBRData, dims: Tuple[str]):
+        mu_prior = Prior(self, f"mu_{name}", dims)
+
+        sigma_prior = Prior(self, f"sigma_{name}", dims)
+
+        offset_dims = (*data.batch_effect_dims, *dims)
+
+        offset_prior = Prior(
+            self, f"offset_{name}", offset_dims)
+
+        node = DeterministicNode(self, name, lambda: mu_prior.dist +
+                                 offset_prior.dist * sigma_prior.dist, dims=offset_dims)
+        return node
+
+    def linear_parameter(self, name: str, data: HBRData, dims: Tuple[str]):
         """
         Creates a linear prior.
         """
         # Create a prior for the slope
-        slope_prior = self.create_prior(f"slope_{name.lower()}", HBRData)
-        # Create a prior for the intercept
-        intercept_prior = self.create_prior(
-            f"intercept_{name.lower()}", HBRData)
+        slope_dims = (*dims, 'covariates')
+        slope_prior = self.build_param(f"slope_{name}", data, slope_dims)
 
-        # Create a linear prior
-        return slope_prior * data.pm_X + intercept_prior
+        # Create a prior for the intercept
+        intercept_prior = self.build_param(f"intercept_{name}", data, dims)
+
+        linear_parameter = LinearNode(self, slope_prior,
+                                      intercept_prior)
+
+        return linear_parameter
 
     def predict(self, data: HBRData) -> HBRData:
         """

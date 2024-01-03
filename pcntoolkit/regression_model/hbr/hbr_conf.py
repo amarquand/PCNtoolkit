@@ -1,17 +1,18 @@
 from dataclasses import dataclass
+from pcntoolkit.regression_model.hbr.paramconf import ParamConf, default_mu_conf, default_sigma_conf
 from pcntoolkit.regression_model.reg_conf import RegConf
-
 
 @dataclass(frozen=True)
 class HBRConf(RegConf):
-    # some configuration parameters
-    linear_mu: bool=True
-    random_intercept_mu: bool=False
-    random_slope_mu: bool=False
+    # sampling config
+    n_samples: int=1000
+    n_tune: int=1000
+    n_cores: int=1
 
-    linear_sigma: bool=False
-
+    # model config
     likelihood: str="Normal"
+    mu:ParamConf = default_mu_conf()
+    sigma:ParamConf = default_sigma_conf()
 
 
     def detect_configuration_problems(self) -> str:
