@@ -1,0 +1,57 @@
+digraph {
+	subgraph "clusterdatapoints (1500) x covariates (2)" {
+		X [label="X
+~
+MutableData" shape=box style="rounded, filled"]
+		label="datapoints (1500) x covariates (2)" labeljust=r labelloc=b style=rounded
+	}
+	subgraph "clusterdatapoints (1500) x response_vars (1)" {
+		y [label="y
+~
+MutableData" shape=box style="rounded, filled"]
+		likelihood [label="likelihood
+~
+Normal" shape=ellipse style=filled]
+		label="datapoints (1500) x response_vars (1)" labeljust=r labelloc=b style=rounded
+	}
+	subgraph "clusterdatapoints (1500)" {
+		batch_effect_0 [label="batch_effect_0
+~
+MutableData" shape=box style="rounded, filled"]
+		batch_effect_1 [label="batch_effect_1
+~
+MutableData" shape=box style="rounded, filled"]
+		label="datapoints (1500)" labeljust=r labelloc=b style=rounded
+	}
+	subgraph "clustercovariates (2)" {
+		slope_mu [label="slope_mu
+~
+Normal" shape=ellipse]
+		label="covariates (2)" labeljust=r labelloc=b style=rounded
+	}
+	subgraph cluster1 {
+		sigma [label="sigma
+~
+HalfNormal" shape=ellipse]
+		intercept_mu [label="intercept_mu
+~
+Normal" shape=ellipse]
+		label=1 labeljust=r labelloc=b style=rounded
+	}
+	subgraph "cluster1000 x 1" {
+		sigma_samples [label="sigma_samples
+~
+Deterministic" shape=box]
+		mu_samples [label="mu_samples
+~
+Deterministic" shape=box]
+		label="1000 x 1" labeljust=r labelloc=b style=rounded
+	}
+	likelihood -> y
+	slope_mu -> mu_samples
+	X -> mu_samples
+	intercept_mu -> mu_samples
+	sigma -> sigma_samples
+	sigma_samples -> likelihood
+	mu_samples -> likelihood
+}
