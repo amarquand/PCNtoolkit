@@ -1,0 +1,136 @@
+from __future__ import annotations
+from dataclasses import dataclass, field
+from typing import Dict, Tuple
+import pymc as pm
+import numpy as np
+
+from pcntoolkit.regression_model.hbr.hbr_data import HBRData
+
+
+@dataclass
+class Param:
+    name: str
+    dims: Tuple[str] = ()
+
+    dist_name: str = "Normal"
+    dist_params: tuple = (0, 1)
+
+    linear: bool = False
+    slope: Param = None
+    intercept: Param = None
+
+    random: bool = False
+    centered: bool = False
+    mu: Param = None
+    sigma: Param = None
+
+    has_covariate_dim: bool = field(init=False, default=False)
+    has_random_effect: bool = field(init=False, default=False)
+    distmap: Dict[str, pm.Distribution] = field(init=False, default=False)
+    dist: pm.Distribution = field(init=False, default=False)
+
+    def __post_init__(self):
+        self.has_covariate_dim = False if not self.dims else "covariates" in self.dims
+        self.distmap = {"Normal": pm.Normal,
+                        'Cauchy': pm.Cauchy, "HalfNormal": pm.HalfNormal}
+
+        if self.linear:
+            self.set_linear_params()
+
+        elif self.random:
+            if self.centered:
+                self.set_centered_random_params()
+            else:
+                self.set_noncentered_random_params()
+
+        else:
+            # If the parameter is really only a single number, we need to add an empty dimension so our outputs are always 2D
+            if self.dims == ():
+                # self.dims = None
+                self.shape = (1,)
+            else:
+                self.shape = None
+                if type(self.dims) is str:
+                    self.dims = (self.dims,)
+
+    def add_to(self, model):
+        self.distmap = {"Normal": pm.Normal,
+                        'Cauchy': pm.Cauchy, "HalfNormal": pm.HalfNormal}
+
+        with model:
+            if self.linear:
+                self.slope.add_to(model)
+                self.intercept.add_to(model)
+            elif self.random:
+                if self.centered:
+                    self.mu.add_to(model)
+                    self.sigma.add_to(model)
+                    self.dist = pm.Normal(self.name, mu=self.mu.dist, sigma=self.sigma.dist, dims=(
+                        *model.custom_batch_effect_dims, *self.dims))
+                else:
+                    self.mu.add_to(model)
+                    self.sigma.add_to(model)
+                    self.offset = pm.Normal(f"offset_" + self.name, mu=0, sigma=1, dims=(
+                        *model.custom_batch_effect_dims, *self.dims))
+                    self.dist = pm.Deterministic(self.name, self.mu.dist + self.offset*
+                                                 self.sigma.dist, dims=(*model.custom_batch_effect_dims, *self.dims))
+
+            else:
+                self.dist = self.distmap[self.dist_name](
+                    self.name, *self.dist_params, shape=self.shape, dims=self.dims)
+
+    @classmethod
+    def from_dict(cls, name: str, param_dict: Dict[str, any], dims=()):
+        if param_dict.get(f'linear_{name}', False):
+            slope = cls.from_dict(
+                f"slope_{name}", param_dict, dims=(*dims, 'covariates'))
+            intercept = cls.from_dict(
+                f"intercept_{name}",  param_dict, dims=dims)
+            return cls(name, dims=dims, linear=True, slope=slope, intercept=intercept)
+        elif param_dict.get(f'random_{name}', False):
+            if param_dict.get(f'centered_{name}', False):
+                mu = cls.from_dict(f"mu_{name}", param_dict, dims=dims)
+                sigma = cls.from_dict(f"sigma_{name}", param_dict, dims=dims)
+                return cls(name,  dims=dims, random=True, centered=True, mu=mu, sigma=sigma)
+            else:
+                mu = cls.from_dict(f"mu_{name}",  param_dict, dims=dims)
+                sigma = cls.from_dict(f"sigma_{name}", param_dict, dims=dims)
+                return cls(name, dims=dims, random=True, centered=False, mu=mu, sigma=sigma)
+        else:
+            (default_dist, default_params) = ("HalfNormal", (1.,)
+                                              ) if name.startswith("sigma") else ("Normal", (0., 1.))
+            return cls(name, dims=dims, dist_name=param_dict.get(f'{name}_dist_name', default_dist), dist_params=param_dict.get(f'{name}_dist_params', default_params))
+
+    def set_noncentered_random_params(self):
+        if not self.mu:
+            self.mu = Param(f"mu_{self.name}", dims=self.dims)
+        if not self.sigma:
+            self.sigma = Param(f"sigma_{self.name}",dims=self.dims, dist_name="HalfNormal", dist_params=(1,))
+
+    def set_centered_random_params(self):
+        if not self.mu:
+            self.mu = Param(f"mu_{self.name}", dims=self.dims)
+        if not self.sigma:
+            self.sigma = Param(
+                f"sigma_{self.name}", dims=self.dims, dist_name="HalfNormal", dist_params=(1.,))
+
+    def set_linear_params(self):
+        if not self.slope:
+            self.slope = Param(f"slope_{self.name}", dims=(
+                *self.dims, "covariates"))
+        if not self.intercept:
+            self.intercept = Param(
+                f"intercept_{self.name}",  dims=self.dims)
+
+    def get_samples(self, data: HBRData):
+        if self.linear:
+            slope_samples = self.slope.get_samples(data)
+            intercept_samples = self.intercept.get_samples(data)
+            return pm.math.sum(pm.math.multiply(slope_samples,data.pm_X), axis=1, keepdims=True) + intercept_samples
+        elif self.random:
+            if self.has_covariate_dim:
+                return self.dist[*data.pm_batch_effect_indices]
+            else:
+                return self.dist[*data.pm_batch_effect_indices, None]
+        else:
+            return np.repeat(self.dist[None, :], data.n_datapoints, axis=0)
