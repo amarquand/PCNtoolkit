@@ -1,25 +1,17 @@
+
 from typing import List
 from collections import OrderedDict
+import warnings
 import pymc as pm
 import numpy as np
 
-
 class HBRData:
 
-    def __init__(self, X: np.ndarray, y: np.ndarray, batch_effects: np.ndarray, covariate_dims: List = None, batch_effect_dims: List = None):
+    def __init__(self, X: np.ndarray, y: np.ndarray=None, batch_effects: np.ndarray=None, response_var_dims: List = None, covariate_dims: List = None, batch_effect_dims: List = None):
 
-        self.X = X
-        self.y = y
-        self.batch_effects = batch_effects
-        self.batch_effect_dims = batch_effect_dims
-        self.covariate_dims = covariate_dims
+        self.check_and_set_data(X, y, batch_effects)
 
-        self.X, self.y, self.batch_effects = self.expand_all(
-            'X', 'y', 'batch_effects')
-
-        assert self.y.shape[1] == 1, "y contains more than one response variable, this is not supported"
-        assert self.X.shape[0] == y.shape[0] == batch_effects.shape[0], "X, y and batch_effects must have the same number of rows"
-
+        # Set the number of covariates, response vars, datapoints and batch effect columns
         self._n_covariates = self.X.shape[1]
         self._n_response_vars = self.y.shape[1]
         self._n_datapoints = self.X.shape[0]
@@ -33,14 +25,25 @@ class HBRData:
         self._coords_mutable['datapoints'] = np.arange(self._n_datapoints)
 
         # Create covariate dims if they are not provided
-        if covariate_dims is None:
+        self.covariate_dims = covariate_dims
+        if self.covariate_dims is None:
             self.covariate_dims = ['covariate_' + str(i)
                                    for i in range(self._n_covariates)]
         assert len(
             self.covariate_dims) == self._n_covariates, "The number of covariate dimensions must match the number of covariates"
         self._coords['covariates'] = self.covariate_dims
 
+        # Create response var dims if they are not provided
+        self.response_var_dims = response_var_dims
+        if self.response_var_dims is None:
+            self.response_var_dims = ['response_var_' + str(i)
+                                      for i in range(self._n_response_vars)]
+        assert len(
+            self.response_var_dims) == self._n_response_vars, "The number of response var dimensions must match the number of response vars"
+        self._coords['response_vars'] = self.response_var_dims
+
         # Create batch_effect dims if they are not provided
+        self.batch_effect_dims = batch_effect_dims
         if self.batch_effect_dims is None:
             self.batch_effect_dims = [
                 'batch_effect_' + str(i) for i in range(self._n_batch_effect_columns)]
@@ -48,22 +51,48 @@ class HBRData:
         self._coords['batch_effects'] = self.batch_effect_dims
 
         # This will be used to index the batch effects in the pymc model
-        # Need to be pm.mutableData
         self._batch_effect_indices = []
+        self._batch_effect_maps = {}
+        for i, v in enumerate(self.batch_effect_dims):
+            be_values = np.unique(self.batch_effects[:, i])
+            self._batch_effect_maps[v] = {w:j for j,w in enumerate(be_values)}
+            self._coords[v] = be_values
+            self.batch_effect_indices.append(
+                np.array([self._batch_effect_maps[v][w] for w in self.batch_effects[:, i]]))
 
-        # Add the batch effect dimensions to the coords
-        # Also accumulate the batch effect indices
-        for batch_effect_column in range(self._n_batch_effect_columns):
-            be_values, be_indices = np.unique(
-                batch_effects[:, batch_effect_column], return_inverse=True)
-            self._coords[self.batch_effect_dims[batch_effect_column]] = be_values
-            self._batch_effect_indices.append(be_indices)
+    def check_and_set_data(self, X, y, batch_effects):
+        """
+        Checks that the data is valid and sets the data attributes.
+        """
 
-    def add_to_pymc_model(self, model: pm.Model) -> None:
+        if X is None:
+            raise ValueError("X must be provided")
+        else:
+            self.X = X
+            
+        if y is None:
+            self.y = np.zeros((X.shape[0], 1))
+        else:
+            self.y = y
+
+        if batch_effects is None:
+            warnings.warn("batch_effects is not provided, setting self.batch_effects to zeros")
+            self.batch_effects = np.zeros((X.shape[0], 1))
+        else:
+            self.batch_effects = batch_effects
+
+        self.X, self.y, self.batch_effects = self.expand_all(
+            'X', 'y', 'batch_effects')
+
+        # Check that the dimensions are correct
+        assert self.y.shape[1] == 1, "y contains more than one response variable, this is not supported"
+        assert self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0], "X, y and batch_effects must have the same number of rows"
+
+
+    def add_to_model(self, model:pm.Model) -> None:
         """
-        Adds the data to the pymc model.
+        Add the data to the pymc model graph using the model context.
         """
-        # TODO set_data if applicable
         with model:
             self.pm_X = pm.MutableData(
                 "X", self.X, dims=('datapoints', 'covariates'))
@@ -71,6 +100,23 @@ class HBRData:
                 "y", self.y, dims=('datapoints', 'response_vars'))
             self.pm_batch_effect_indices = tuple([pm.Data(self.batch_effect_dims[i], self.batch_effect_indices[i], mutable=True, dims=(
                 'datapoints',)) for i in range(self._n_batch_effect_columns)])
+            
+            model.custom_batch_effect_dims = self.batch_effect_dims
+
+    def set_data_in_existing_model(self, model: pm.Model) -> None:
+        """
+        Sets the data in an existing pymc model.
+        """
+        model.set_data('X', self.X,coords={'datapoints':np.arange(self.n_datapoints)})
+        self.pm_X = model['X']
+        model.set_data('y', self.y)
+        self.pm_y = model['y']
+        be_acc = []
+        for i in range(self._n_batch_effect_columns):
+            model.set_data(self.batch_effect_dims[i], self.batch_effect_indices[i])
+            be_acc.append(model[self.batch_effect_dims[i]])
+        self.pm_batch_effect_indices = tuple(be_acc)
+            
 
     def expand_all(self, *args):
         """
