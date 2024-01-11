@@ -12,7 +12,6 @@ from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
 
-
 import pymc as pm
 
 
@@ -76,7 +75,8 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
         hbrdata.set_data_in_existing_model(self.model.model)
         with self.model.model:
-            pm.sample_posterior_predictive(self.model.idata, return_inferencedata=True, extend_inferencedata=True)
+            pm.sample_posterior_predictive(
+                self.model.idata, return_inferencedata=True, extend_inferencedata=True)
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
@@ -118,7 +118,6 @@ class NormHBR(NormBase):
                 new_norm_hbr.model.conf.draws, tune=new_norm_hbr.model.conf.tune, cores=new_norm_hbr.model.conf.cores)
         new_norm_hbr.model.is_fitted = True
         return new_norm_hbr
-
 
     def _merge(self, other: NormBase):
         """
@@ -192,14 +191,15 @@ class NormHBR(NormBase):
                 self.model.idata.to_netcdf(idata_path)
                 model_dict['model']['idata_path'] = idata_path
             else:
-                raise RuntimeError("Model is fitted but does not have idata. This should not happen.")
-            
-        #Save the model_dict as json
-        model_dict_path = os.path.join(self.norm_conf.save_dir, "normative_model_dict.json")
+                raise RuntimeError(
+                    "Model is fitted but does not have idata. This should not happen.")
+
+        # Save the model_dict as json
+        model_dict_path = os.path.join(
+            self.norm_conf.save_dir, "normative_model_dict.json")
 
         with open(model_dict_path, 'w') as f:
             json.dump(model_dict, f)
-
 
     @classmethod
     def load(cls, path):
@@ -208,9 +208,8 @@ class NormHBR(NormBase):
         Path is a string that points to the directory where the model should be loaded from.
         """
         # Load the model dict from the json
-        model_path:str = os.path.join(path, "normative_model_dict.json")
+        model_path: str = os.path.join(path, "normative_model_dict.json")
         model_dict = json.load(open(model_path, 'r'))
-
 
         # Construct the normconf from the dict
         normconf = NormConf.from_dict(model_dict['norm_conf'])
@@ -230,11 +229,3 @@ class NormHBR(NormBase):
             normative_model._model.is_fitted = True
 
         return normative_model
-
-
-
-
-        
-  
-
-
