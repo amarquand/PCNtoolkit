@@ -1,11 +1,17 @@
 from __future__ import annotations
+import json
 import pytest
+from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
 from pcntoolkit.regression_model.hbr.param import Param
 
 import pymc as pm
 import numpy as np
+import arviz as az
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 @pytest.fixture
 def data():
@@ -610,17 +616,123 @@ def test_param_from_dict_linear_with_random_centered_intercept_and_slope(model_a
     assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
 
 
-def test_approximate_marginal_normal(model_and_data, tol=1e-5):
+def test_to_dict(model_and_data):
     model, data = model_and_data
-    param_dict = {"mu_dist_name": "Normal", "mu_dist_params": (0, 1)}
+    param_dict = {"linear_mu": True, "random_intercept_mu": True, "centered_intercept_mu": True, "random_slope_mu": True, "centered_slope_mu": True}
     mu = Param.from_dict("mu", param_dict)
-    mu.add_to(model)
-    samples = mu.get_samples(data)
+    my_dict = mu.to_dict()
+    assert my_dict["name"] == "mu"
+    assert my_dict["dims"] == ()
+    assert my_dict["dist_name"] == "Normal"
+    assert my_dict["dist_params"] == (0,1)
+    assert my_dict["random"] == False
+    assert my_dict["centered"] == False
+    assert my_dict["linear"] == True
+    assert my_dict["intercept"]["name"] == "intercept_mu"
+    assert my_dict["intercept"]["dims"] == ()
+    assert my_dict["intercept"]["dist_name"] == "Normal"
+    assert my_dict["intercept"]["dist_params"] == (0,1)
+    assert my_dict["intercept"]["random"] == True
+    assert my_dict["intercept"]["centered"] == True
+    assert my_dict["intercept"]["linear"] == False
+    assert my_dict["intercept"]["mu"]["name"] == "mu_intercept_mu"
+    assert my_dict["intercept"]["mu"]["dims"] == ()
+    assert my_dict["intercept"]["mu"]["dist_name"] == "Normal"
+    assert my_dict["intercept"]["mu"]["dist_params"] == (0,1)
+    assert my_dict["intercept"]["sigma"]["name"] == "sigma_intercept_mu"
+    assert my_dict["intercept"]["sigma"]["dims"] == ()
+    assert my_dict["intercept"]["sigma"]["dist_name"] == "HalfNormal"
+    assert my_dict["intercept"]["sigma"]["dist_params"] == (1.0,)
+    assert my_dict["slope"]["name"] == "slope_mu"
+    assert my_dict["slope"]["dims"] == ('covariates',)
+    assert my_dict["slope"]["dist_name"] == "Normal"
+    assert my_dict["slope"]["dist_params"] == (0,1)
+    assert my_dict["slope"]["random"] == True
+    assert my_dict["slope"]["centered"] == True
+    assert my_dict["slope"]["linear"] == False
+
+    # Check if json.dumps does not throw an error
+    json.dumps(my_dict)
+
+
+@pytest.mark.parametrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_marginal_normal(mu, sigma):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.Normal.dist(mu=mu, sigma=sigma),draws=10000)
+    param = Param("test", dims=())
+    dist_name = "Normal"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    mu = inputs[3].value.item()
+    sigma = inputs[4].value.item()
+    assert mu == pytest.approx(mu, abs=0.01)
+    assert sigma == pytest.approx(sigma, abs=0.01)
     
 
-    approx_marginal = mu.approximate_marginal(model.model, )
-    assert approx_marginal.name == "mu"
-    assert mu.dist_params == (0,1)
+@pytest.mark.parametrize("sigma", [1,2,3])
+def test_approximate_marginal_halfnormal(sigma):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.HalfNormal.dist(sigma=sigma), draws=10000)
+    param = Param("test", dims=())
+    dist_name = "HalfNormal"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    sigma = inputs[4].value.item()
+    assert sigma == pytest.approx(sigma, abs=0.01)
 
 
-    
+@pytest.mark.parametrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_marginal_lognormal(mu, sigma):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.Lognormal.dist(mu=mu, sigma=sigma), draws=10000)
+    param = Param("test", dims=())
+    dist_name = "LogNormal"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    mu = inputs[3].value.item()
+    sigma = inputs[4].value.item()
+    assert mu == pytest.approx(mu, abs=0.01)
+    assert sigma == pytest.approx(sigma, abs=0.01)
+
+@pytest.mark.parametrize("alpha, beta", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_marginal_cauchy(alpha, beta):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.Cauchy.dist(alpha=alpha, beta=beta), draws=10000)
+    param = Param("test", dims=())
+    dist_name = "Cauchy"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    alpha = inputs[3].value.item()
+    beta = inputs[4].value.item()
+    assert alpha == pytest.approx(alpha, abs=0.01)
+    assert beta == pytest.approx(beta, abs=0.01)
+
+@pytest.mark.parametrize("beta", [1,2,3])
+def test_approximate_marginal_halfcauchy(beta):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.HalfCauchy.dist(beta=beta), draws=10000)
+    param = Param("test", dims=())
+    dist_name = "HalfCauchy"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    beta = inputs[4].value.item()
+    assert beta == pytest.approx(beta, abs=0.01)
+
+@pytest.mark.parametrize("lower, upper", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_marginal_uniform(lower, upper):
+    np.random.seed(42)
+    model = pm.Model()
+    samples = pm.draw(pm.Uniform.dist(lower=lower, upper=upper), draws=10000)
+    param = Param("test", dims=())
+    dist_name = "Uniform"
+    marginal = param.approximate_marginal(model, dist_name, samples)
+    inputs = marginal.owner.inputs
+    lower = inputs[3].value.item()
+    upper = inputs[4].value.item()
+    assert lower == pytest.approx(lower, abs=0.01)
+    assert upper == pytest.approx(upper, abs=0.01)

@@ -20,19 +20,9 @@ class HBR:
         self.is_fitted: bool = False
         self.idata: az.InferenceData = None
         self.is_from_args = False
-        self.args = None
         self.model = None
 
 
-    @classmethod
-    def from_args(cls, args):
-        """
-        Creates a configuration from command line arguments.
-        """
-        conf = HBRConf.from_args(args)
-        self = cls(conf)
-        self.is_from_args = True
-        return self
 
     @property
     def conf(self) -> HBRConf:
@@ -72,18 +62,16 @@ class HBR:
         my_dict['conf'] = self.conf.to_dict()
         my_dict['is_fitted'] = self.is_fitted
         my_dict['is_from_args'] = self.is_from_args
-        my_dict['args'] = self.args
         return my_dict
     
 
     @classmethod
-    def from_dict(cls, dict):
+    def from_dict(cls, args):
         """
-        Converts the configuration to a dictionary.
+        Creates a configuration from command line arguments or a dict
         """
-        conf = HBRConf.from_dict(dict['conf'])
+        conf = HBRConf.from_dict(args)
         self = cls(conf)
-        self.is_fitted = dict['is_fitted']
-        self.is_from_args = dict['is_from_args']
-        self.args = dict['args']
+        self.is_from_args = True
+        self.is_fitted = args.get('is_fitted', False)
         return self

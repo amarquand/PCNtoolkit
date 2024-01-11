@@ -10,7 +10,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def __init__(self, norm_conf: NormConf):
         self._norm_conf:NormConf = norm_conf
-        self._norm_conf.regression_model_name = self.__class__.__name__
+        object.__setattr__(self._norm_conf, 'normative_model_name', self.__class__.__name__)
 
 
     def fit(self, data: NormData):

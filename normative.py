@@ -12,7 +12,7 @@ from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
 def main():
     args = {'n_samples': 1000,'n_tune': 1000,'n_cores': 1,'likelihood': 'Normal', 'linear_mu': True, 'linear_sigma':False}
-    hbr = HBR.from_args(args)
+    hbr = HBR.from_dict(args)
 
     n_datapoints = 1000
     n_covariates = 2    

@@ -35,25 +35,25 @@ class HBRConf(RegConf):
         return configuration_problems
 
     @classmethod
-    def from_args(cls, args):
+    def from_dict(cls, dict):
         """
         Creates a configuration from command line arguments.
         """
         # Filter out the arguments that are not relevant for this configuration
-        args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
+        args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
         self = cls(**args_filt)
         if self.likelihood == "Normal":
-            object.__setattr__(self, "mu", Param.from_dict("mu", args))
+            object.__setattr__(self, "mu", Param.from_dict("mu", dict))
             object.__setattr__(
-                self, "sigma", Param.from_dict("sigma",  args))
+                self, "sigma", Param.from_dict("sigma",  dict))
         elif self.likelihood.startswith("SHASH"):
-            object.__setattr__(self, "mu", Param.from_dict("mu", args))
+            object.__setattr__(self, "mu", Param.from_dict("mu", dict))
             object.__setattr__(
-                self, "sigma", Param.from_dict("sigma",  args))
+                self, "sigma", Param.from_dict("sigma",  dict))
             object.__setattr__(
-                self, "epsilon", Param.from_dict("epsilon", args))
+                self, "epsilon", Param.from_dict("epsilon", dict))
             object.__setattr__(
-                self, "delta", Param.from_dict("delta", args))
+                self, "delta", Param.from_dict("delta", dict))
         return self
 
 
@@ -72,21 +72,21 @@ class HBRConf(RegConf):
             conf_dict["delta"] = self.delta.to_dict()
         return conf_dict
     
-    @classmethod
-    def from_dict(cls, dict):
-        my_dict = {}
-        my_dict['draws'] = dict['draws']
-        my_dict['tune'] = dict['tune']
-        my_dict['cores'] = dict['cores']
-        my_dict['likelihood'] = dict['likelihood'] 
-        if "mu" in my_dict:
-            my_dict["mu"] = Param.from_dict("mu", my_dict)
-        if "sigma" in my_dict:
-            my_dict["sigma"] = Param.from_dict("sigma", my_dict)
-        if "epsilon" in my_dict:
-            my_dict["epsilon"] = Param.from_dict("epsilon", my_dict)
-        if "delta" in my_dict:
-            my_dict["delta"] = Param.from_dict("delta", my_dict)
+    # @classmethod
+    # def from_dict(cls, dict):
+    #     my_dict = {}
+    #     my_dict['draws'] = dict['draws']
+    #     my_dict['tune'] = dict['tune']
+    #     my_dict['cores'] = dict['cores']
+    #     my_dict['likelihood'] = dict['likelihood'] 
+    #     if "mu" in my_dict:
+    #         my_dict["mu"] = Param.from_dict("mu", my_dict)
+    #     if "sigma" in my_dict:
+    #         my_dict["sigma"] = Param.from_dict("sigma", my_dict)
+    #     if "epsilon" in my_dict:
+    #         my_dict["epsilon"] = Param.from_dict("epsilon", my_dict)
+    #     if "delta" in my_dict:
+    #         my_dict["delta"] = Param.from_dict("delta", my_dict)
 
-        self = cls(**my_dict)
-        return self
+    #     self = cls(**my_dict)
+    #     return self
