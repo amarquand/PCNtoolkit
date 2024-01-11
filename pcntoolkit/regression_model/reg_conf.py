@@ -13,7 +13,8 @@ class RegConf(ABC):
         """
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
-            problem_list = "\n".join([f'{i+1}:\t{v}' for i, v in enumerate(configuration_problems)])
+            problem_list = "\n".join(
+                [f'{i+1}:\t{v}' for i, v in enumerate(configuration_problems)])
             raise ValueError(
                 f"The following problems have been detected in the regression model configuration:\n{problem_list}")
         else:
@@ -26,14 +27,12 @@ class RegConf(ABC):
         """
         pass
 
-
     def save_as_json(self, path: str):
         """
         Saves the configuration as a json file.
         """
         with open(path, "w") as f:
             json.dump(self.__dict__, f, indent=4, sort_keys=True)
-            
 
     @classmethod
     def load_from_json(cls, path) -> 'RegConf':

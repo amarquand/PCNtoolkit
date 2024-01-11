@@ -152,13 +152,11 @@ class HBRData:
         self._batch_effects_maps = batch_effects_maps
         self.create_batch_effect_indices()
 
-
     def create_batch_effect_indices(self):
         self.batch_effect_indices = []
         for i, v in enumerate(self.batch_effect_dims):
             self.batch_effect_indices.append(
                 np.array([self._batch_effects_maps[v][w] for w in self.batch_effects[:, i]]))
-
 
     @property
     def n_covariates(self):
@@ -179,8 +177,7 @@ class HBRData:
     @property
     def coords_mutable(self):
         return self._coords_mutable
-    
+
     @property
     def batch_effects_maps(self):
         return self._batch_effects_maps
-

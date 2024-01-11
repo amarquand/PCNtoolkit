@@ -7,6 +7,7 @@ def parse_requirements(filename):
         lineiter = (line.strip() for line in f)
         return [line for line in lineiter if line and not line.startswith("#")]
 
+
 requirements = parse_requirements('requirements.txt')
 
 setup(name='pcntoolkit',

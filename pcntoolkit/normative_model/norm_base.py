@@ -5,13 +5,12 @@ from pcntoolkit.dataio.norm_data import NormData
 from .norm_conf import NormConf
 
 
-
 class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def __init__(self, norm_conf: NormConf):
-        self._norm_conf:NormConf = norm_conf
-        object.__setattr__(self._norm_conf, 'normative_model_name', self.__class__.__name__)
-
+        self._norm_conf: NormConf = norm_conf
+        object.__setattr__(
+            self._norm_conf, 'normative_model_name', self.__class__.__name__)
 
     def fit(self, data: NormData):
         """
@@ -26,7 +25,6 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # some cleanup and postprocessing
         # ...
-            
 
     def predict(self, data: NormData) -> NormData:
         """
@@ -41,11 +39,10 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # some cleanup and postprocessing
         # ...
-            
-        return result
-    
 
-    def fit_predict(self, fit_data: NormData, predict_data:NormData) -> NormData:
+        return result
+
+    def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
         Contains all the general fit_predict logic that is not specific to the regression model.
         This includes cv, logging, saving, etc. Calls the subclass' _fit_predict method.
@@ -58,24 +55,22 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # some cleanup and postprocessing
         # ...
-            
+
         return result
-    
-    
+
     def transfer(self, data: NormData) -> 'NormBase':
         """
         Transfers the normative model to a new dataset. Calls the subclass' _transfer method.
         """
         # some preparations and preprocessing
         # ...
-        
+
         result = self._transfer(data)
 
         # some cleanup and postprocessing
         # ...
-            
-        return result
 
+        return result
 
     def extend(self, data: NormData):
         """
@@ -88,10 +83,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # some cleanup and postprocessing
         # ...
-            
+
         return result
-    
-    
+
     def tune(self, data: NormData):
         """
         Tunes the normative model. Calls the subclass' _tune method.
@@ -100,14 +94,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         # ...
 
         result = self._tune(data)
-        
+
         # some cleanup and postprocessing
         # ...
-            
+
         return result
-    
-    
-    def merge(self, other:'NormBase'):
+
+    def merge(self, other: 'NormBase'):
         """
         Merges the normative model with another normative model. Calls the subclass' _merge method.
         """
@@ -115,15 +108,15 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         # ...
 
         if not self.__class__ == other.__class__:
-            raise ValueError('Attempted to merge two different normative models.')
+            raise ValueError(
+                'Attempted to merge two different normative models.')
 
         result = self._merge(other)
 
         # some cleanup and postprocessing
         # ...
-            
-        return result
 
+        return result
 
     def evaluate(self, data: NormData):
         """
@@ -135,7 +128,6 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         results['R2'] = self.evaluate_r2(data)
         # Add more metrics here, and add the corresponding abstract methods below.
         return results
-    
 
     @abstractmethod
     def _fit_predict(self, data: NormData):
@@ -161,14 +153,12 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         """
         pass
 
-
     @abstractmethod
     def _transfer(self, data: NormData) -> 'NormBase':
         """
         Transfers the normative model to a new dataset.
         """
         pass
-
 
     @abstractmethod
     def _extend(self, data: NormData):
@@ -185,7 +175,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _merge(self, other:'NormBase'):
+    def _merge(self, other: 'NormBase'):
         """
         Merges the normative model with another normative model.
         """
@@ -218,12 +208,12 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         Saves the model to the specified directory.
         """
         pass
-    
+
     @classmethod
     def load(self, path) -> 'NormBase':
         with open(os.path.join(path, 'normative_model_dict.json')) as file:
             normative_model_dict = json.load(file)
-        
+
     @property
     def norm_conf(self):
         return self._norm_conf

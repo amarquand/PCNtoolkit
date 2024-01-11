@@ -19,16 +19,16 @@ def create_normative_model(norm_conf: NormConf, reg_conf: RegConf) -> NormBase:
     # If the subclass of the regconf is HBRConf, then create a NormHBR.
     if reg_conf.__class__.__name__ == 'HBRConf':
         return NormHBR(norm_conf, reg_conf)
-    
+
     # If the subclass of the regconf is BLRConf, then create a NormBLR.
     elif reg_conf.__class__.__name__ == 'BLRConf':
         return NormBLR(norm_conf, reg_conf)
-    
+
     # If the subclass of the regconf is GPRConf, then create a NormGPR.
     elif reg_conf.__class__.__name__ == 'GPRConf':
         return NormGPR(norm_conf, reg_conf)
-    
+
     # If the subclass of the regconf is not HBRConf, BLRConf, or GPRConf, then raise a ValueError.
     else:
-        raise ValueError(f'Unknown regression model configuration: {reg_conf.__class__.__name__}')
-    
+        raise ValueError(
+            f'Unknown regression model configuration: {reg_conf.__class__.__name__}')

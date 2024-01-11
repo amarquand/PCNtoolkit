@@ -11,21 +11,23 @@ from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
 
 def main():
-    args = {'n_samples': 1000,'n_tune': 1000,'n_cores': 1,'likelihood': 'Normal', 'linear_mu': True, 'linear_sigma':False}
+    args = {'n_samples': 1000, 'n_tune': 1000, 'n_cores': 1,
+            'likelihood': 'Normal', 'linear_mu': True, 'linear_sigma': False}
     hbr = HBR.from_dict(args)
 
     n_datapoints = 1000
-    n_covariates = 2    
+    n_covariates = 2
     n_batch_effects = 2
 
     X = np.random.randn(n_datapoints, n_covariates)
     y = np.random.randn(n_datapoints)
-    batch_effects = np.random.choice([0, 1], size=(n_datapoints, n_batch_effects))
-
+    batch_effects = np.random.choice(
+        [0, 1], size=(n_datapoints, n_batch_effects))
 
     data = HBRData(X, y, batch_effects)
 
     hbr.fit(data)
+
 
 if __name__ == "__main__":
     main()

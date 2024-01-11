@@ -34,7 +34,7 @@ class Param:
     def __post_init__(self):
         self.has_covariate_dim = False if not self.dims else "covariates" in self.dims
         self.distmap = {"Normal": pm.Normal,
-                        "Cauchy": pm.Cauchy, 
+                        "Cauchy": pm.Cauchy,
                         "HalfNormal": pm.HalfNormal,
                         "HalfCauchy": pm.HalfCauchy,
                         "Uniform": pm.Uniform}
@@ -60,12 +60,12 @@ class Param:
 
     def add_to(self, model, idata=None):
         self.distmap = {"Normal": pm.Normal,
-                        'Cauchy': pm.Cauchy, 
+                        'Cauchy': pm.Cauchy,
                         "HalfNormal": pm.HalfNormal}
 
         with model:
             if self.linear:
-                self.slope.add_to(model,idata)
+                self.slope.add_to(model, idata)
                 self.intercept.add_to(model, idata)
             elif self.random:
                 if self.centered:
@@ -78,16 +78,17 @@ class Param:
                     self.sigma.add_to(model, idata)
                     self.offset = pm.Normal(f"offset_" + self.name, mu=0, sigma=1, dims=(
                         *model.custom_batch_effect_dims, *self.dims))
-                    self.dist = pm.Deterministic(self.name, self.mu.dist + self.offset*
+                    self.dist = pm.Deterministic(self.name, self.mu.dist + self.offset *
                                                  self.sigma.dist, dims=(*model.custom_batch_effect_dims, *self.dims))
             else:
                 if idata is None:
-                    self.dist = self.distmap[self.dist_name](self.name, *self.dist_params, shape=self.shape, dims=self.dims)                
+                    self.dist = self.distmap[self.dist_name](
+                        self.name, *self.dist_params, shape=self.shape, dims=self.dims)
                 else:
-                    self.dist = self.approximate_marginal(model, self.dist_name, az.extract(idata, var_names = self.name))
+                    self.dist = self.approximate_marginal(
+                        model, self.dist_name, az.extract(idata, var_names=self.name))
 
-  
-    def approximate_marginal(self, model, dist_name:str, samples, freedom=1):
+    def approximate_marginal(self, model, dist_name: str, samples, freedom=1):
         """
         use scipy stats.XXX.fit to get the parameters of the marginal distribution
         """
@@ -113,7 +114,6 @@ class Param:
                 return pm.Uniform(self.name, lower=temp[0], upper=temp[1], shape=self.shape, dims=self.dims)
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
-            
 
     @classmethod
     def from_dict(cls, name: str, param_dict: Dict[str, any], dims=()):
@@ -141,7 +141,8 @@ class Param:
         if not self.mu:
             self.mu = Param(f"mu_{self.name}", dims=self.dims)
         if not self.sigma:
-            self.sigma = Param(f"sigma_{self.name}",dims=self.dims, dist_name="HalfNormal", dist_params=(1,))
+            self.sigma = Param(
+                f"sigma_{self.name}", dims=self.dims, dist_name="HalfNormal", dist_params=(1,))
 
     def set_centered_random_params(self):
         if not self.mu:
@@ -162,7 +163,7 @@ class Param:
         if self.linear:
             slope_samples = self.slope.get_samples(data)
             intercept_samples = self.intercept.get_samples(data)
-            return pm.math.sum(slope_samples *data.pm_X, axis=1, keepdims=True) + intercept_samples
+            return pm.math.sum(slope_samples * data.pm_X, axis=1, keepdims=True) + intercept_samples
         elif self.random:
             if self.has_covariate_dim:
                 return self.dist[*data.pm_batch_effect_indices]
@@ -173,14 +174,14 @@ class Param:
 
     def to_dict(self):
         param_dict = {'name': self.name,
-                    'dims': self.dims,
-                    'dist_name': self.dist_name, 
-                    'dist_params': self.dist_params, 
-                    'linear': self.linear, 
-                    'random': self.random, 
-                    'centered': self.centered,
-                    "has_covariate_dim": self.has_covariate_dim,
-                    "has_random_effect": self.has_random_effect,}
+                      'dims': self.dims,
+                      'dist_name': self.dist_name,
+                      'dist_params': self.dist_params,
+                      'linear': self.linear,
+                      'random': self.random,
+                      'centered': self.centered,
+                      "has_covariate_dim": self.has_covariate_dim,
+                      "has_random_effect": self.has_random_effect, }
         if self.linear:
             param_dict['slope'] = self.slope.to_dict()
             param_dict['intercept'] = self.intercept.to_dict()

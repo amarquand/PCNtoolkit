@@ -8,8 +8,6 @@ from pcntoolkit.regression_model.blr.blr import BLR
 from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 
 
-
-
 class NormBLR(NormBase):
 
     def __init__(self, norm_conf: NormConf, reg_conf: BLRConf):

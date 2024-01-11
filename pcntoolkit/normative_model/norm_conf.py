@@ -28,7 +28,8 @@ class NormConf:
     inscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
     outscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
 
-    normative_model_name: str = None  # The name of the regression model that is used. This is set by the regression model itself.
+    # The name of the regression model that is used. This is set by the regression model itself.
+    normative_model_name: str = None
 
     def __post_init__(self):
         """
@@ -49,7 +50,8 @@ class NormConf:
         Creates a configuration from command line arguments.
         """
         # Filter out the arguments that are not relevant for the normative model
-        norm_args = {k: v for k, v in args.items() if k in cls.__dataclass_fields__.keys()}
+        norm_args = {k: v for k, v in args.items(
+        ) if k in cls.__dataclass_fields__.keys()}
         return cls(**norm_args)
 
     def detect_configuration_problems(self) -> str:
@@ -181,7 +183,7 @@ class NormConf:
         Converts the configuration to a dictionary.
         """
         return self.__dict__
-    
+
     @classmethod
     def from_dict(cls, dict):
         """
