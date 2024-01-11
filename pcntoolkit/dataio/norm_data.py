@@ -1,7 +1,8 @@
 from typing import Tuple, Union
+
+import numpy as np
 import xarray as xr
 from sklearn.model_selection import train_test_split
-import numpy as np
 
 
 class NormData(xr.Dataset):

@@ -1,12 +1,15 @@
 from __future__ import annotations
+
 from typing import Tuple
 
-import pymc as pm
+import arviz as az
 import numpy as np
+import pymc as pm
+
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import Param
+
 from .hbr_conf import HBRConf
-import arviz as az
 
 
 class HBR:

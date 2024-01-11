@@ -1,8 +1,8 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-import pandas as pd
 
 
 @pytest.fixture

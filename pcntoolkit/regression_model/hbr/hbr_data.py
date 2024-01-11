@@ -1,9 +1,10 @@
 
-from typing import Any, List
-from collections import OrderedDict
 import warnings
-import pymc as pm
+from collections import OrderedDict
+from typing import Any, List
+
 import numpy as np
+import pymc as pm
 
 
 class HBRData:
