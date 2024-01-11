@@ -6,9 +6,9 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 @dataclass(frozen=True)
 class HBRConf(RegConf):
     # sampling config
-    n_samples: int = 1000
-    n_tune: int = 1000
-    n_cores: int = 1
+    draws: int = 1000
+    tune: int = 1000
+    cores: int = 1
 
     # model config
     likelihood: str = "Normal"
@@ -54,4 +54,39 @@ class HBRConf(RegConf):
                 self, "epsilon", Param.from_dict("epsilon", args))
             object.__setattr__(
                 self, "delta", Param.from_dict("delta", args))
+        return self
+
+
+    def to_dict(self):
+        conf_dict = {'draws': self.draws,
+                     'tune': self.tune,
+                     'cores': self.cores,
+                     'likelihood': self.likelihood}
+        if self.mu:
+            conf_dict["mu"] = self.mu.to_dict()
+        if self.sigma:
+            conf_dict["sigma"] = self.sigma.to_dict()
+        if self.epsilon:
+            conf_dict["epsilon"] = self.epsilon.to_dict()
+        if self.delta:
+            conf_dict["delta"] = self.delta.to_dict()
+        return conf_dict
+    
+    @classmethod
+    def from_dict(cls, dict):
+        my_dict = {}
+        my_dict['draws'] = dict['draws']
+        my_dict['tune'] = dict['tune']
+        my_dict['cores'] = dict['cores']
+        my_dict['likelihood'] = dict['likelihood'] 
+        if "mu" in my_dict:
+            my_dict["mu"] = Param.from_dict("mu", my_dict)
+        if "sigma" in my_dict:
+            my_dict["sigma"] = Param.from_dict("sigma", my_dict)
+        if "epsilon" in my_dict:
+            my_dict["epsilon"] = Param.from_dict("epsilon", my_dict)
+        if "delta" in my_dict:
+            my_dict["delta"] = Param.from_dict("delta", my_dict)
+
+        self = cls(**my_dict)
         return self

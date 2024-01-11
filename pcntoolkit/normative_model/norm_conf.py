@@ -28,6 +28,8 @@ class NormConf:
     inscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
     outscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
 
+    regression_model_name: str = None  # The name of the regression model that is used. This is set by the regression model itself.
+
     def __post_init__(self):
         """
         Checks if the configuration is valid.
@@ -40,6 +42,15 @@ class NormConf:
                 f"The following problems have been detected in the normative model configuration:\n{problem_list}")
         else:
             print("Configuration of normative model is valid.")
+
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments.
+        """
+        # Filter out the arguments that are not relevant for the normative model
+        norm_args = {k: v for k, v in args.items() if k in cls.__dataclass_fields__.keys()}
+        return cls(**norm_args)
 
     def detect_configuration_problems(self) -> str:
         """
@@ -165,18 +176,15 @@ class NormConf:
         else:
             return "nonexistent"
 
-    def save_as_json(self, path: str):
+    def to_dict(self):
         """
-        Saves the configuration as a json file.
+        Converts the configuration to a dictionary.
         """
-        with open(path, "w") as f:
-            json.dump(self.__dict__, f, indent=4, sort_keys=True)
-
+        return self.__dict__
+    
     @classmethod
-    def load_from_json(cls, path) -> 'NormConf':
+    def from_dict(cls, dict):
         """
-        Loads the configuration from a json file.
+        Converts the configuration to a dictionary.
         """
-        with open(path, "r") as f:
-            conf_dict = json.load(f)
-        return cls(**conf_dict)
+        return cls(**dict)
