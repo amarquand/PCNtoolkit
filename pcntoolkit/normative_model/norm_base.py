@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-
+import os
+import json
 from pcntoolkit.dataio.norm_data import NormData
 from .norm_conf import NormConf
 
@@ -9,6 +10,8 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def __init__(self, norm_conf: NormConf):
         self._norm_conf:NormConf = norm_conf
+        self._norm_conf.regression_model_name = self.__class__.__name__
+
 
     def fit(self, data: NormData):
         """
@@ -42,7 +45,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         return result
     
 
-    def fit_predict(self, data: NormData) -> NormData:
+    def fit_predict(self, fit_data: NormData, predict_data:NormData) -> NormData:
         """
         Contains all the general fit_predict logic that is not specific to the regression model.
         This includes cv, logging, saving, etc. Calls the subclass' _fit_predict method.
@@ -51,7 +54,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         # some preparations and preprocessing
         # ...
 
-        result = self._fit_predict(data)
+        result = self._fit_predict(fit_data, predict_data)
 
         # some cleanup and postprocessing
         # ...
@@ -216,9 +219,11 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         """
         pass
     
-    @abstractmethod
-    def load(self) -> 'NormBase':
-        """
-        Loads the model from the specified directory.
-        """
-        pass
+    @classmethod
+    def load(self, path) -> 'NormBase':
+        with open(os.path.join(path, 'normative_model_dict.json')) as file:
+            normative_model_dict = json.load(file)
+        
+    @property
+    def norm_conf(self):
+        return self._norm_conf

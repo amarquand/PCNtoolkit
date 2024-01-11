@@ -23,7 +23,7 @@ def data():
 
 
 @pytest.fixture
-def model_and_data(data:HBRData):
+def model_and_data(data:HBRData) -> (pm.Model, HBRData):
     model = pm.Model(coords=data.coords, coords_mutable=data.coords_mutable)
     data.add_to_model(model)
     return model, data
@@ -37,7 +37,7 @@ def test_normal_fixed_param(model_and_data):
     assert param.dist_name == "Normal"
     assert param.dist_params == (0,1)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+    assert tuple(samples.shape.eval()) == (1,)
 
 def test_cauchy_fixed_param(model_and_data):
     model, data = model_and_data
@@ -48,7 +48,7 @@ def test_cauchy_fixed_param(model_and_data):
     assert param.dist_name == "Cauchy"
     assert param.dist_params == (0,1)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+    assert tuple(samples.shape.eval()) == (1,)
 
 
 def test_normal_fixed_param_with_covariate_dim(model_and_data):
@@ -60,7 +60,7 @@ def test_normal_fixed_param_with_covariate_dim(model_and_data):
     assert param.dist_name == "Cauchy"
     assert param.dist_params == (0,1)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,data.n_covariates)
+    assert tuple(samples.shape.eval()) == (data.n_covariates,)
 
 def test_random_centered_param(model_and_data):
     model, data = model_and_data
@@ -143,7 +143,7 @@ def test_param_from_dict_single(model_and_data):
     assert mu.slope == None
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+    assert tuple(samples.shape.eval()) == (1,)
     
 
 def test_param_from_dict_single_with_covariate_dim(model_and_data):
@@ -164,7 +164,7 @@ def test_param_from_dict_single_with_covariate_dim(model_and_data):
     assert tuple(mu.dist.shape.eval()) == (data.n_covariates,)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,data.n_covariates)
+    assert tuple(samples.shape.eval()) == (data.n_covariates,)
 
 
 
@@ -185,7 +185,7 @@ def test_param_from_dict_double(model_and_data):
     assert mu.slope == None
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+    assert tuple(samples.shape.eval()) == (1,)
 
     sigma = Param.from_dict("sigma",param_dict)
     sigma.add_to(model)
@@ -200,7 +200,7 @@ def test_param_from_dict_double(model_and_data):
     assert sigma.slope == None
 
     samples = sigma.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+    assert tuple(samples.shape.eval()) == (1,)
 
 def test_param_from_dict_random_centered(model_and_data):
     model, data = model_and_data
@@ -608,3 +608,19 @@ def test_param_from_dict_linear_with_random_centered_intercept_and_slope(model_a
 
     samples = mu.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,1)
+
+
+def test_approximate_marginal_normal(model_and_data, tol=1e-5):
+    model, data = model_and_data
+    param_dict = {"mu_dist_name": "Normal", "mu_dist_params": (0, 1)}
+    mu = Param.from_dict("mu", param_dict)
+    mu.add_to(model)
+    samples = mu.get_samples(data)
+    
+
+    approx_marginal = mu.approximate_marginal(model.model, )
+    assert approx_marginal.name == "mu"
+    assert mu.dist_params == (0,1)
+
+
+    
