@@ -84,7 +84,7 @@ class Param:
                 if idata is None:
                     self.dist = self.distmap[self.dist_name](self.name, *self.dist_params, shape=self.shape, dims=self.dims)                
                 else:
-                    self.dist = self.approximate_marginal(model, az.extract(idata, var_names = self.name))
+                    self.dist = self.approximate_marginal(model, self.dist_name, az.extract(idata, var_names = self.name))
 
   
     def approximate_marginal(self, model, dist_name:str, samples, freedom=1):
@@ -101,13 +101,13 @@ class Param:
                 return pm.HalfNormal(self.name, sigma=freedom*temp[1], shape=self.shape, dims=self.dims)
             elif dist_name == "LogNormal":
                 temp = stats.lognorm.fit(samples)
-                return pm.Lognormal(self.name, mu=temp[0], sigma=freedom*temp[1], shape=self.shape, dims=self.dims)
+                return pm.Lognormal(self.name, mu=temp[1], sigma=freedom*temp[2], shape=self.shape, dims=self.dims)
             elif dist_name == "Cauchy":
                 temp = stats.cauchy.fit(samples)
-                return pm.Cauchy(self.name, loc=temp[0], scale=freedom*temp[1], shape=self.shape, dims=self.dims)
+                return pm.Cauchy(self.name, alpha=temp[0], beta=freedom*temp[1], shape=self.shape, dims=self.dims)
             elif dist_name == "HalfCauchy":
                 temp = stats.halfcauchy.fit(samples)
-                return pm.HalfCauchy(self.name, sigma=freedom*temp[1], shape=self.shape, dims=self.dims)
+                return pm.HalfCauchy(self.name, beta=freedom*temp[1], shape=self.shape, dims=self.dims)
             elif dist_name == "Uniform":
                 temp = stats.uniform.fit(samples)
                 return pm.Uniform(self.name, lower=temp[0], upper=temp[1], shape=self.shape, dims=self.dims)

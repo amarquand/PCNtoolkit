@@ -25,8 +25,16 @@ def sample_args():
     return {'draws': 10,'tune': 10,'cores': 1}
 
 @pytest.fixture
-def norm_args():
-    return {'log_dir':'/home/stijn/temp/pcntoolkit/log', 'save_dir':'/home/stijn/temp/pcntoolkit/save'}
+def log_dir():
+    return 'pytest_tests/resources/log_test'
+
+@pytest.fixture
+def save_dir():
+    return 'pytest_tests/resources/save_load_test'
+
+@pytest.fixture
+def norm_args(log_dir, save_dir):
+    return {'log_dir':log_dir, 'save_dir':save_dir}
 
 @pytest.fixture
 def fit_data():
@@ -98,13 +106,13 @@ def test_predict(norm_args: dict[str, str], fit_data: NormData, predict_data: No
     hbr.fit(fit_data)
     hbr.predict(predict_data)
     assert hbr.model.is_fitted
-    assert hbr.model.idata_pred.observed_data.y_pred.shape == (100,1)
+    assert hbr.model.idata.posterior_predictive.y_pred.datapoints.shape == (100,)
 
 def test_fit_predict(norm_args: dict[str, str], fit_data: NormData,  predict_data: NormData, sample_args: dict[str, int]):
     hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit_predict(fit_data, predict_data)
     assert hbr.model.is_fitted
-    assert hbr.model.idata_pred.observed_data.y_pred.shape == (100,1)
+    assert hbr.model.idata.observed_data.y_pred.shape == (100,1)
 
 def test_transfer(norm_args: dict[str, str],fit_data:NormData,transfer_data:NormData, sample_args:dict[str, int]):
     hbr = NormHBR.from_args(norm_args | sample_args | {'random_mu': True})
@@ -119,5 +127,16 @@ def test_transfer(norm_args: dict[str, str],fit_data:NormData,transfer_data:Norm
 def test_save(norm_args: dict[str, str], fit_data: NormData, sample_args: dict[str, int]):
     hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit(fit_data)
+    os.makedirs(hbr.norm_conf.save_dir,exist_ok=True)
     hbr.save()
-    assert os.path.exists(os.path.join(norm_args['save_dir'],'fit','hbr.nc'))
+    assert os.path.exists(os.path.join(hbr.norm_conf.save_dir,'normative_model_dict.json'))
+    assert os.path.exists(os.path.join(hbr.norm_conf.save_dir,'idata.nc'))
+
+def test_load(save_dir):
+    hbr = NormHBR.load(save_dir)
+    if hbr.model.is_fitted:
+        assert hbr.model.idata.posterior.mu.shape[:2] == (2,10)
+        assert hbr.model.idata.posterior.sigma.shape[:2] == (2,10)
+        assert hasattr(hbr.model.idata, 'posterior')
+    assert hbr.norm_conf.save_dir == save_dir
+

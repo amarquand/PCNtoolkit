@@ -29,7 +29,7 @@ class NormHBR(NormBase):
         Creates a configuration from command line arguments.
         """
         norm_conf = NormConf.from_args(args)
-        hbrconf = HBRConf.from_args(args)
+        hbrconf = HBRConf.from_dict(args)
         self = cls(norm_conf, hbrconf)
         return self
 
@@ -76,7 +76,7 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
         hbrdata.set_data_in_existing_model(self.model.model)
         with self.model.model:
-            pm.sample_posterior_predictive(self.model.idata, return_inferencedata=True)
+            pm.sample_posterior_predictive(self.model.idata, return_inferencedata=True, extend_inferencedata=True)
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
@@ -97,7 +97,7 @@ class NormHBR(NormBase):
             predict_hbrdata = self.normdata_to_hbrdata(predict_data)
             predict_hbrdata.set_data_in_existing_model(self.model.model)
             with self.model.model:
-                self.model.idata_pred = pm.sample_posterior_predictive(
+                self.model.idata = pm.sample_posterior_predictive(
                     self.model.idata)
 
         else:
@@ -177,7 +177,7 @@ class NormHBR(NormBase):
             f"R2 not implemented for {self.__class__.__name__}, returning NAN")
         return np.NAN
 
-    def save(self, path):
+    def save(self):
         """
         Contains all the saving logic that is specific to the regression model.
         Path is a string that points to the directory where the model should be saved.
@@ -188,14 +188,14 @@ class NormHBR(NormBase):
 
         if self.model.is_fitted:
             if hasattr(self.model, 'idata'):
-                idata_path = os.path.join(path, "idata.nc")
+                idata_path = os.path.join(self.norm_conf.save_dir, "idata.nc")
                 self.model.idata.to_netcdf(idata_path)
                 model_dict['model']['idata_path'] = idata_path
             else:
                 raise RuntimeError("Model is fitted but does not have idata. This should not happen.")
             
         #Save the model_dict as json
-        model_dict_path = os.path.join(path, "normative_model_dict.json")
+        model_dict_path = os.path.join(self.norm_conf.save_dir, "normative_model_dict.json")
 
         with open(model_dict_path, 'w') as f:
             json.dump(model_dict, f)
@@ -208,7 +208,9 @@ class NormHBR(NormBase):
         Path is a string that points to the directory where the model should be loaded from.
         """
         # Load the model dict from the json
-        model_dict:dict = os.path.join(path, "normative_model_dict.json")
+        model_path:str = os.path.join(path, "normative_model_dict.json")
+        model_dict = json.load(open(model_path, 'r'))
+
 
         # Construct the normconf from the dict
         normconf = NormConf.from_dict(model_dict['norm_conf'])
@@ -228,7 +230,7 @@ class NormHBR(NormBase):
             normative_model._model.is_fitted = True
 
         return normative_model
-        
+
 
 
 

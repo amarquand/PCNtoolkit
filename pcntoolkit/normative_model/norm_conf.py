@@ -28,7 +28,7 @@ class NormConf:
     inscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
     outscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
 
-    regression_model_name: str = None  # The name of the regression model that is used. This is set by the regression model itself.
+    normative_model_name: str = None  # The name of the regression model that is used. This is set by the regression model itself.
 
     def __post_init__(self):
         """
