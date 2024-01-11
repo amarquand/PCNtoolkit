@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Dict, Tuple
-import pymc as pm
-import numpy as np
-import scipy.stats as stats
+
 import arviz as az
+import numpy as np
+import pymc as pm
+import scipy.stats as stats
+
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
 

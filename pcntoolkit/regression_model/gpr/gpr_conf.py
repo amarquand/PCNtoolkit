@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass
+
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 

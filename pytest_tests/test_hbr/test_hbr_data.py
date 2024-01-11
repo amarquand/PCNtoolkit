@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 

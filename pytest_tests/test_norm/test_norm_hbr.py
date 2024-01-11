@@ -1,9 +1,10 @@
-import pytest
 import os
-import pymc as pm
-import numpy as np
-import xarray
 import pickle
+
+import numpy as np
+import pymc as pm
+import pytest
+import xarray
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_hbr import NormHBR

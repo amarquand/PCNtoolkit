@@ -1,4 +1,5 @@
 import numpy as np
+
 from .blr_conf import BLRConf
 
 

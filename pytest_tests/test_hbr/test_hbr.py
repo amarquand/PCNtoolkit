@@ -1,11 +1,13 @@
-import pytest
 import os
-import pymc as pm
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pymc as pm
+import pytest
+
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
-import matplotlib.pyplot as plt
 
 
 @pytest.fixture

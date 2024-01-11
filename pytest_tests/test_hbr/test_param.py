@@ -1,15 +1,16 @@
 from __future__ import annotations
+
 import json
+import logging
+
+import arviz as az
+import numpy as np
+import pymc as pm
 import pytest
+
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
-
 from pcntoolkit.regression_model.hbr.param import Param
-
-import pymc as pm
-import numpy as np
-import arviz as az
-import logging
 
 logging.basicConfig(level=logging.INFO)
 

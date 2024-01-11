@@ -1,7 +1,8 @@
 import warnings
-import numpy as np
-from pcntoolkit.dataio.norm_data import NormData
 
+import numpy as np
+
+from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.regression_model.blr.blr import BLR

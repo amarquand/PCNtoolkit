@@ -1,7 +1,9 @@
-from abc import ABC, abstractmethod
-import os
 import json
+import os
+from abc import ABC, abstractmethod
+
 from pcntoolkit.dataio.norm_data import NormData
+
 from .norm_conf import NormConf
 
 

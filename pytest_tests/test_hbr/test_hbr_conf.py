@@ -1,6 +1,7 @@
-import pytest
 import json
 import os
+
+import pytest
 
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
