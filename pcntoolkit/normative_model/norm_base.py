@@ -1,48 +1,79 @@
+from __future__ import annotations
+
 import json
 import os
 from abc import ABC, abstractmethod
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.dataio.scaler import scaler
 
 from .norm_conf import NormConf
 
 
 class NormBase(ABC):  # newer abstract base class syntax, no more python2
-
     def __init__(self, norm_conf: NormConf):
         self._norm_conf: NormConf = norm_conf
         object.__setattr__(
-            self._norm_conf, 'normative_model_name', self.__class__.__name__)
+            self._norm_conf, "normative_model_name", self.__class__.__name__
+        )
+        self.response_vars: list = None
+        self.models = {}
+        self.inscalers = {}
+        self.outscalers = {}
 
     def fit(self, data: NormData):
         """
         Contains all the general fitting logic that is not specific to the regression model.
-        This includes cv, logging, saving, etc. Calls the subclass' _fit method.
         """
+        # Preprocess the data
+        self.preprocess(data)
 
-        # some preparations and preprocessing
-        # ...
+        # Set self.response_vars
+        self.response_vars = data.response_vars.to_numpy().copy().tolist()
 
-        self._fit(data)
+        # Fit the model for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_fit_data = data.sel(response_vars=responsevar)
 
-        # some cleanup and postprocessing
-        # ...
+            # Create a new model if it does not exist yet
+            if not responsevar in self.models:
+                self.models[responsevar] = self.model_type(self.reg_conf)
+
+            # Set self.model to the current model
+            self.model = self.models[responsevar]
+
+            # Fit the model
+            self._fit(resp_fit_data)
 
     def predict(self, data: NormData) -> NormData:
         """
         Contains all the general prediction logic that is not specific to the regression model.
         This includes cv, logging, saving, etc. Calls the subclass' _predict method.
         """
+        # Preprocess the data
+        self.preprocess(data)
 
-        # some preparations and preprocessing
-        # ...
+        # Predict for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
 
-        result = self._predict(data)
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to predict model {responsevar}, but it does not exist."
+                )
 
-        # some cleanup and postprocessing
-        # ...
+            # Set self.model to the current model
+            self.model = self.models[responsevar]
 
-        return result
+            # Predict
+            self._predict(resp_predict_data)
+
+        # Return the results
+        results = self.evaluate(data)
+        return results
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
@@ -50,29 +81,67 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         This includes cv, logging, saving, etc. Calls the subclass' _fit_predict method.
         """
 
-        # some preparations and preprocessing
-        # ...
+        # Preprocess the data
+        self.preprocess(fit_data)
+        self.preprocess(predict_data)
 
-        result = self._fit_predict(fit_data, predict_data)
+        # Set self.response_vars
+        self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
 
-        # some cleanup and postprocessing
-        # ...
+        # Fit and predict for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_fit_data = fit_data.sel(response_vars=responsevar)
+            resp_predict_data = predict_data.sel(response_vars=responsevar)
 
-        return result
+            # Create a new model if it does not exist yet
+            if not responsevar in self.models:
+                self.models[responsevar] = self.model_type(self.reg_conf)
 
-    def transfer(self, data: NormData) -> 'NormBase':
+            # Set self.model to the current model
+            self.model = self.models[responsevar]
+
+            # Fit and predict
+            self._fit_predict(resp_fit_data, resp_predict_data)
+
+        # Get the results
+        results = self.evaluate(predict_data)
+        return results
+
+    def transfer(self, data: NormData) -> "NormBase":
         """
         Transfers the normative model to a new dataset. Calls the subclass' _transfer method.
         """
-        # some preparations and preprocessing
-        # ...
+        # Preprocess the data
+        self.preprocess(data)
 
-        result = self._transfer(data)
+        transfered_models = {}
 
-        # some cleanup and postprocessing
-        # ...
+        # Transfer for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_transfer_data = data.sel(response_vars=responsevar)
 
-        return result
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to transfer a model that has not been fitted."
+                )
+
+            # Set self.model to the current model
+            self.model = self.models[responsevar]
+
+            # Transfer
+            transfered_models[responsevar] = self._transfer(resp_transfer_data)
+
+        # Create a new normative model
+        transfered_normative_model = self.__class__(self.norm_conf, self.reg_conf)
+
+        # Set the models
+        transfered_normative_model.models = transfered_models
+
+        # Return the new model
+        return transfered_normative_model
 
     def extend(self, data: NormData):
         """
@@ -102,7 +171,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         return result
 
-    def merge(self, other: 'NormBase'):
+    def merge(self, other: "NormBase"):
         """
         Merges the normative model with another normative model. Calls the subclass' _merge method.
         """
@@ -110,8 +179,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         # ...
 
         if not self.__class__ == other.__class__:
-            raise ValueError(
-                'Attempted to merge two different normative models.')
+            raise ValueError("Attempted to merge two different normative models.")
 
         result = self._merge(other)
 
@@ -125,11 +193,60 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         Contains evaluation logic.
         """
         results = {}
-        results['MSE'] = self.evaluate_mse(data)
-        results['MAE'] = self.evaluate_mae(data)
-        results['R2'] = self.evaluate_r2(data)
-        # Add more metrics here, and add the corresponding abstract methods below.
+
+        results["Yhat"] = self.compute_yhat(data)
+        # results["S2"] = self.compute_s2(data)
+
+        # results["Z"] = self.evaluate_zscores(data)
+        # results["Rho"] = self.evaluate_rho(data)
+        # results["RMSE"] = self.evaluate_rmse(data)
+        # results["SMSE"] = self.evaluate_smse(data)
+        # results["EXPV"] = self.evaluate_expv(data)
+        # results["MSLL"] = self.evaluate_msll(data)
+        # results["NLL"] = self.evaluate_nll(data)
+        # results["BIC"] = self.evaluate_bic(data)
+
         return results
+
+    @abstractmethod
+    def compute_yhat(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def compute_s2(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_rho(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_rmse(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_smse(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_expv(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_msll(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_nll(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_bic(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_zscores(self, data: NormData):
+        pass
 
     @abstractmethod
     def _fit_predict(self, data: NormData):
@@ -156,66 +273,90 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _transfer(self, data: NormData) -> 'NormBase':
-        """
-        Transfers the normative model to a new dataset.
-        """
+    def _transfer(self, data: NormData) -> "NormBase":
         pass
 
     @abstractmethod
     def _extend(self, data: NormData):
-        """
-        Extends the normative model with new data.
-        """
         pass
 
     @abstractmethod
     def _tune(self, data: NormData):
-        """
-        Tunes the normative model.
-        """
         pass
 
     @abstractmethod
-    def _merge(self, other: 'NormBase'):
-        """
-        Merges the normative model with another normative model.
-        """
+    def _merge(self, other: "NormBase"):
         pass
 
     @abstractmethod
-    def evaluate_mse(self, data: NormData) -> float:
-        """
-        Evaluates the model using MSE.
-        """
+    def quantiles(self, data: NormData, quantiles: list[float]):
         pass
 
-    @abstractmethod
-    def evaluate_mae(self, data: NormData) -> float:
-        """
-        Evaluates the model using MAE.
-        """
-        pass
-
-    @abstractmethod
-    def evaluate_r2(self, data: NormData) -> float:
-        """
-        Evaluates the model using R2.
-        """
-        pass
-
-    @abstractmethod
     def save(self):
         """
-        Saves the model to the specified directory.
+        Saves the normative model to a directory.
+        """
+        path = self.norm_conf.save_dir
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+        self._save()
+
+    @abstractmethod
+    def _save(self):
+        """
+        Contains all the saving logic that is specific to the regression model.
+        Path is a string that points to the directory where the model should be saved.
         """
         pass
 
     @classmethod
-    def load(self, path) -> 'NormBase':
-        with open(os.path.join(path, 'normative_model_dict.json')) as file:
-            normative_model_dict = json.load(file)
+    @abstractmethod
+    def load(cls, path) -> "NormBase":
+        """
+        Contains all the loading logic that is specific to the regression model.
+        Path is a string that points to the directory where the model should be loaded from.
+        """
+        pass
 
     @property
     def norm_conf(self):
         return self._norm_conf
+
+    def preprocess(self, data: NormData) -> NormData:
+        """
+        Contains all the general preprocessing logic that is not specific to the regression model.
+        """
+        self.scale_forward(data)
+
+        # data.scale_forward(self.norm_conf.inscaler, self.norm_conf.outscaler)
+        data.expand_basis(self.norm_conf.basis_function)
+
+    def postprocess(self, data: NormData) -> NormData:
+        """
+        Contains all the general postprocessing logic that is not specific to the regression model.
+        """
+        data.scale_backward()
+
+    def scale_forward(self, data: NormData, overwrite=False):
+        """
+        Contains all the general scaling logic that is not specific to the regression model.
+        """
+        for covariate in data.covariates.to_numpy():
+            if (not covariate in self.inscalers) or overwrite:
+                self.inscalers[covariate] = scaler(self.norm_conf.inscaler)
+                self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
+
+        for responsevar in data.response_vars.to_numpy():
+            if (not responsevar in self.outscalers) or overwrite:
+                self.outscalers[responsevar] = scaler(self.norm_conf.outscaler)
+                self.outscalers[responsevar].fit(
+                    data.y.sel(response_vars=responsevar).data
+                )
+
+        data.scale_forward(self.inscalers, self.outscalers)
+
+    def scale_backward(self, data: NormData):
+        """
+        Contains all the general scaling logic that is not specific to the regression model.
+        """
+        data.scale_backward(self.inscalers, self.outscalers)

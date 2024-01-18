@@ -62,7 +62,7 @@ def test_hbr_from_dict(sample_args, args):
             'centered_slope_mu', False)
         assert hbr.conf.mu.intercept.centered == args.get(
             'centered_intercept_mu', False)
-    assert hbr.is_from_args
+    assert hbr.is_from_dict
     assert not hbr.conf.sigma.linear
 
 
@@ -100,5 +100,5 @@ def test_hbr_to_dict(sample_args, args):
             'centered_slope_mu', False)
         assert hbr_dict['conf']['mu']['intercept']['centered'] == args.get(
             'centered_intercept_mu', False)
-    assert hbr.is_from_args
+    assert hbr.is_from_dict
     assert not hbr_dict['conf']['sigma']['linear']

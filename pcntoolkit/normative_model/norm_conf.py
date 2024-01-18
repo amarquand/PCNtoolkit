@@ -6,12 +6,15 @@ from dataclasses import dataclass
 @dataclass(frozen=True)  # Creates an immutable datasclass
 class NormConf:
     """
-    Configuration for a normative model. Contains parameters for cross-validation, basis expansion, logging, and saving output. 
+    Configuration for a normative model. Contains parameters for cross-validation, basis expansion, logging, and saving output.
     Performs checks on these configurations.
-    This does not care about the underlying regression model. 
+    This does not care about the underlying regression model.
     """
+
     perform_cv: bool = False
     cv_folds: int = 0
+    savemodel: bool = False
+    saveresults: bool = False
     log_dir: str = "./logs"
     save_dir: str = "./saves"
 
@@ -21,7 +24,7 @@ class NormConf:
     # With the default value of "linear", applied basis expansion will be an identity function.
     # In this way, we can always apply a basis expansion to the input data, even if the regression model does not support multiplee covariate dimensions.
     # possible model types: "linear", "polynomial", "bspline"
-    basis_function_type: str = "linear"
+    basis_function: str = "linear"
     order: int = 3  # order of the polynomial or bspline basis functions
     nknots: int = 5  # number of knots for the bspline basis functions
 
@@ -38,20 +41,24 @@ class NormConf:
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
             problem_list = "\n".join(
-                [f'{i+1}:\t{v}' for i, v in enumerate(configuration_problems)])
+                [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
+            )
             raise ValueError(
-                f"The following problems have been detected in the normative model configuration:\n{problem_list}")
+                f"The following problems have been detected in the normative model configuration:\n{problem_list}"
+            )
         else:
             print("Configuration of normative model is valid.")
 
     @classmethod
-    def from_args(cls, args):
+    def from_dict(cls, args):
         """
         Creates a configuration from command line arguments.
         """
         # Filter out the arguments that are not relevant for the normative model
-        norm_args = {k: v for k, v in args.items(
-        ) if k in cls.__dataclass_fields__.keys()}
+        norm_args = {
+            k: v for k, v in args.items() if k in cls.__dataclass_fields__.keys()
+        }
+
         return cls(**norm_args)
 
     def detect_configuration_problems(self) -> str:
@@ -80,12 +87,14 @@ class NormConf:
         dir_attr = self.__getattribute__(dir_attr_str)
         if not isinstance(dir_attr, str):
             add_problem(
-                f"{dir_attr_str} is not a string, but {type(dir_attr).__name__}")
+                f"{dir_attr_str} is not a string, but {type(dir_attr).__name__}"
+            )
         else:
             if os.path.exists(dir_attr):
                 if not os.path.isdir(dir_attr):
                     add_problem(
-                        f"{dir_attr_str} is not a directory, but {self.get_type_of_object(dir_attr)}")
+                        f"{dir_attr_str} is not a directory, but {self.get_type_of_object(dir_attr)}"
+                    )
             else:
                 add_problem(f"{dir_attr_str} does not exist")
 
@@ -94,75 +103,75 @@ class NormConf:
         foldsisint = isinstance(self.cv_folds, int)
         if not performisbool:
             add_problem(
-                f"perform_cv is not a boolean, but {type(self.perform_cv).__name__}")
+                f"perform_cv is not a boolean, but {type(self.perform_cv).__name__}"
+            )
         if not foldsisint:
             add_problem(
-                f"cv_folds is not an integer, but {type(self.cv_folds).__name__}")
+                f"cv_folds is not an integer, but {type(self.cv_folds).__name__}"
+            )
         if performisbool and foldsisint:
             if self.perform_cv and self.cv_folds < 2:
-                add_problem(
-                    f"cv_folds must be at least 2, but is {self.cv_folds}")
+                add_problem(f"cv_folds must be at least 2, but is {self.cv_folds}")
 
     def detect_basis_function_problem(self, add_problem):
         acceptable_basis_functions = ["linear", "polynomial", "bspline"]
-        if not isinstance(self.basis_function_type, str):
+        if not isinstance(self.basis_function, str):
             add_problem(
-                f"basis_function_type is not a string, but {type(self.basis_function_type).__name__}")
+                f"basis_function_type is not a string, but {type(self.basis_function).__name__}"
+            )
         else:
-            if self.basis_function_type not in acceptable_basis_functions:
+            if self.basis_function not in acceptable_basis_functions:
                 add_problem(
-                    f"basis_function_type is not one of the possible values: {acceptable_basis_functions}")
+                    f"basis_function_type is not one of the possible values: {acceptable_basis_functions}"
+                )
 
-            if self.basis_function_type == "polynomial":
+            if self.basis_function == "polynomial":
                 self.detect_polynomial_basis_expansion_problem(add_problem)
 
-            if self.basis_function_type == "bspline":
+            if self.basis_function == "bspline":
                 self.detect_bspline_basis_expansion_problem(add_problem)
 
     def detect_bspline_basis_expansion_problem(self, add_problem):
         nknotsisint = isinstance(self.nknots, int)
         orderisint = isinstance(self.order, int)
         if not nknotsisint:
-            add_problem(
-                f"nknots is not an integer, but {type(self.nknots).__name__}")
+            add_problem(f"nknots is not an integer, but {type(self.nknots).__name__}")
         else:
             if self.nknots < 2:
-                add_problem(
-                    f"nknots must be at least 2, but is {self.nknots}")
+                add_problem(f"nknots must be at least 2, but is {self.nknots}")
 
         if not orderisint:
-            add_problem(
-                f"order is not an integer, but {type(self.order).__name__}")
+            add_problem(f"order is not an integer, but {type(self.order).__name__}")
 
         else:
             if self.order < 1:
-                add_problem(
-                    f"order must be at least 1, but is {self.order}")
+                add_problem(f"order must be at least 1, but is {self.order}")
             if nknotsisint:
                 if self.order > self.nknots:
                     add_problem(
-                        f"order must be smaller than nknots, but order is {self.order} and nknots is {self.nknots}")
+                        f"order must be smaller than nknots, but order is {self.order} and nknots is {self.nknots}"
+                    )
 
     def detect_polynomial_basis_expansion_problem(self, add_problem):
         orderisint = isinstance(self.order, int)
         if not orderisint:
-            add_problem(
-                f"order is not an integer, but {type(self.order).__name__}")
+            add_problem(f"order is not an integer, but {type(self.order).__name__}")
         else:
             if self.order < 1:
-                add_problem(
-                    f"order must be at least 1, but is {self.order}")
+                add_problem(f"order must be at least 1, but is {self.order}")
 
     def detect_scaler_problem(self, add_problem, scaler_attr_str):
         acceptable_scalers = ["none", "standardize", "minmax"]
         scaler_attr = self.__getattribute__(scaler_attr_str)
         if not isinstance(scaler_attr, str):
             add_problem(
-                f"{scaler_attr_str} is not a string, but {type(scaler_attr).__name__}")
+                f"{scaler_attr_str} is not a string, but {type(scaler_attr).__name__}"
+            )
         else:
             if scaler_attr not in acceptable_scalers:
                 add_problem(
-                    f"{scaler_attr_str} is not one of the possible values: {acceptable_scalers}")
+                    f"{scaler_attr_str} is not one of the possible values: {acceptable_scalers}"
+                )
 
     def get_type_of_object(self, path: str) -> str:
         """
@@ -184,9 +193,9 @@ class NormConf:
         """
         return self.__dict__
 
-    @classmethod
-    def from_dict(cls, dict):
-        """
-        Converts the configuration to a dictionary.
-        """
-        return cls(**dict)
+    # @classmethod
+    # def from_dict(cls, dict):
+    #     """
+    #     Converts the dictionary to a configuration.
+    #     """
+    #     return cls(**dict)

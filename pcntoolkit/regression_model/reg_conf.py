@@ -27,18 +27,17 @@ class RegConf(ABC):
         """
         pass
 
-    def save_as_json(self, path: str):
-        """
-        Saves the configuration as a json file.
-        """
-        with open(path, "w") as f:
-            json.dump(self.__dict__, f, indent=4, sort_keys=True)
-
     @classmethod
-    def load_from_json(cls, path) -> 'RegConf':
+    @abstractmethod
+    def from_dict(cls, dict):
         """
-        Loads the configuration from a json file.
+        Creates a configuration from command line arguments or a dictionary.
         """
-        with open(path, "r") as f:
-            conf_dict = json.load(f)
-        return cls(**conf_dict)
+        pass
+
+    @abstractmethod
+    def to_dict(self):
+        """
+        Creates a dictionary from the configuration.
+        """
+        pass

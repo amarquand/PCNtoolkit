@@ -9,6 +9,7 @@ class HBRConf(RegConf):
     # sampling config
     draws: int = 1000
     tune: int = 1000
+    chains: int = 1
     cores: int = 1
 
     # model config
@@ -19,6 +20,8 @@ class HBRConf(RegConf):
     sigma: Param = None
     epsilon: Param = None
     delta: Param = None
+
+    # mu = Param(name="mu", linear=True, slope=Param("slope_mu", random=True), intercept=Param("intercept_mu", dist_name="Cauchy", dist_params=(0, 1)))
 
     def detect_configuration_problems(self) -> str:
         """
@@ -41,28 +44,25 @@ class HBRConf(RegConf):
         Creates a configuration from command line arguments.
         """
         # Filter out the arguments that are not relevant for this configuration
-        args_filt = {k: v for k, v in dict.items(
-        ) if k in cls.__dataclass_fields__}
+        args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
         self = cls(**args_filt)
         if self.likelihood == "Normal":
             object.__setattr__(self, "mu", Param.from_dict("mu", dict))
-            object.__setattr__(
-                self, "sigma", Param.from_dict("sigma",  dict))
+            object.__setattr__(self, "sigma", Param.from_dict("sigma", dict))
         elif self.likelihood.startswith("SHASH"):
             object.__setattr__(self, "mu", Param.from_dict("mu", dict))
-            object.__setattr__(
-                self, "sigma", Param.from_dict("sigma",  dict))
-            object.__setattr__(
-                self, "epsilon", Param.from_dict("epsilon", dict))
-            object.__setattr__(
-                self, "delta", Param.from_dict("delta", dict))
+            object.__setattr__(self, "sigma", Param.from_dict("sigma", dict))
+            object.__setattr__(self, "epsilon", Param.from_dict("epsilon", dict))
+            object.__setattr__(self, "delta", Param.from_dict("delta", dict))
         return self
 
     def to_dict(self):
-        conf_dict = {'draws': self.draws,
-                     'tune': self.tune,
-                     'cores': self.cores,
-                     'likelihood': self.likelihood}
+        conf_dict = {
+            "draws": self.draws,
+            "tune": self.tune,
+            "cores": self.cores,
+            "likelihood": self.likelihood,
+        }
         if self.mu:
             conf_dict["mu"] = self.mu.to_dict()
         if self.sigma:
@@ -72,22 +72,3 @@ class HBRConf(RegConf):
         if self.delta:
             conf_dict["delta"] = self.delta.to_dict()
         return conf_dict
-
-    # @classmethod
-    # def from_dict(cls, dict):
-    #     my_dict = {}
-    #     my_dict['draws'] = dict['draws']
-    #     my_dict['tune'] = dict['tune']
-    #     my_dict['cores'] = dict['cores']
-    #     my_dict['likelihood'] = dict['likelihood']
-    #     if "mu" in my_dict:
-    #         my_dict["mu"] = Param.from_dict("mu", my_dict)
-    #     if "sigma" in my_dict:
-    #         my_dict["sigma"] = Param.from_dict("sigma", my_dict)
-    #     if "epsilon" in my_dict:
-    #         my_dict["epsilon"] = Param.from_dict("epsilon", my_dict)
-    #     if "delta" in my_dict:
-    #         my_dict["delta"] = Param.from_dict("delta", my_dict)
-
-    #     self = cls(**my_dict)
-    #     return self
