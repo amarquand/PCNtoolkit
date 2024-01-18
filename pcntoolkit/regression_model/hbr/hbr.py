@@ -23,7 +23,7 @@ class HBR:
         self._conf: HBRConf = conf
         self.is_fitted: bool = False
         self.idata: az.InferenceData = None
-        self.is_from_args = False
+        self.is_from_dict = False
         self.model = None
 
     @property
@@ -64,7 +64,7 @@ class HBR:
         my_dict = {}
         my_dict['conf'] = self.conf.to_dict()
         my_dict['is_fitted'] = self.is_fitted
-        my_dict['is_from_args'] = self.is_from_args
+        my_dict['is_from_dict'] = self.is_from_dict
         return my_dict
 
     @classmethod
@@ -74,6 +74,6 @@ class HBR:
         """
         conf = HBRConf.from_dict(args)
         self = cls(conf)
-        self.is_from_args = True
+        self.is_from_dict = True
         self.is_fitted = args.get('is_fitted', False)
         return self

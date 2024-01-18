@@ -1,4 +1,3 @@
-
 import warnings
 from collections import OrderedDict
 from typing import Any, List
@@ -8,15 +7,15 @@ import pymc as pm
 
 
 class HBRData:
-
-    def __init__(self,
-                 X: np.ndarray,
-                 y: np.ndarray = None,
-                 batch_effects: np.ndarray = None,
-                 response_var_dims: List = None,
-                 covariate_dims: List = None,
-                 batch_effect_dims: List = None):
-
+    def __init__(
+        self,
+        X: np.ndarray,
+        y: np.ndarray = None,
+        batch_effects: np.ndarray = None,
+        response_var_dims: List = None,
+        covariate_dims: List = None,
+        batch_effect_dims: List = None,
+    ):
         self.check_and_set_data(X, y, batch_effects)
 
         # Set the number of covariates, response vars, datapoints and batch effect columns
@@ -30,40 +29,48 @@ class HBRData:
         self._coords_mutable = OrderedDict()
 
         # Create datapoint coordinates
-        self._coords_mutable['datapoints'] = np.arange(self._n_datapoints)
+        self._coords_mutable["datapoints"] = [
+            f"datapoint_{i}" for i in np.arange(self._n_datapoints)
+        ]
 
         # Create covariate dims if they are not provided
         self.covariate_dims = covariate_dims
         if self.covariate_dims is None:
-            self.covariate_dims = ['covariate_' + str(i)
-                                   for i in range(self._n_covariates)]
-        assert len(
-            self.covariate_dims) == self._n_covariates, "The number of covariate dimensions must match the number of covariates"
-        self._coords['covariates'] = self.covariate_dims
+            self.covariate_dims = [
+                "covariate_" + str(i) for i in range(self._n_covariates)
+            ]
+        assert (
+            len(self.covariate_dims) == self._n_covariates
+        ), "The number of covariate dimensions must match the number of covariates"
+        self._coords["covariates"] = self.covariate_dims
 
         # Create response var dims if they are not provided
         self.response_var_dims = response_var_dims
         if self.response_var_dims is None:
-            self.response_var_dims = ['response_var_' + str(i)
-                                      for i in range(self._n_response_vars)]
-        assert len(
-            self.response_var_dims) == self._n_response_vars, "The number of response var dimensions must match the number of response vars"
-        self._coords['response_vars'] = self.response_var_dims
+            self.response_var_dims = [
+                "response_var_" + str(i) for i in range(self._n_response_vars)
+            ]
+        assert (
+            len(self.response_var_dims) == self._n_response_vars
+        ), "The number of response var dimensions must match the number of response vars"
+        self._coords["response_vars"] = self.response_var_dims
 
         # Create batch_effect dims if they are not provided
         self.batch_effect_dims = batch_effect_dims
         if self.batch_effect_dims is None:
             self.batch_effect_dims = [
-                'batch_effect_' + str(i) for i in range(self._n_batch_effect_columns)]
-        assert len(self.batch_effect_dims) == self._n_batch_effect_columns, "The number of batch effect dimensions must match the number of batch effect columns"
-        self._coords['batch_effects'] = self.batch_effect_dims
+                "batch_effect_" + str(i) for i in range(self._n_batch_effect_columns)
+            ]
+        assert (
+            len(self.batch_effect_dims) == self._n_batch_effect_columns
+        ), "The number of batch effect dimensions must match the number of batch effect columns"
+        self._coords["batch_effects"] = self.batch_effect_dims
 
         # This will be used to index the batch effects in the pymc model
         self._batch_effects_maps = {}
         for i, v in enumerate(self.batch_effect_dims):
             be_values = np.unique(self.batch_effects[:, i])
-            self._batch_effects_maps[v] = {
-                w: j for j, w in enumerate(be_values)}
+            self._batch_effects_maps[v] = {w: j for j, w in enumerate(be_values)}
             self._coords[v] = be_values
 
         self.create_batch_effect_indices()
@@ -85,30 +92,39 @@ class HBRData:
 
         if batch_effects is None:
             warnings.warn(
-                "batch_effects is not provided, setting self.batch_effects to zeros")
+                "batch_effects is not provided, setting self.batch_effects to zeros"
+            )
             self.batch_effects = np.zeros((X.shape[0], 1))
         else:
             self.batch_effects = batch_effects
 
-        self.X, self.y, self.batch_effects = self.expand_all(
-            'X', 'y', 'batch_effects')
+        self.X, self.y, self.batch_effects = self.expand_all("X", "y", "batch_effects")
 
         # Check that the dimensions are correct
-        assert self.y.shape[1] == 1, "y contains more than one response variable, this is not supported"
-        assert self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[
-            0], "X, y and batch_effects must have the same number of rows"
+        assert (
+            self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
+        ), "X, y and batch_effects must have the same number of rows"
 
     def add_to_model(self, model: pm.Model) -> None:
         """
         Add the data to the pymc model graph using the model context.
         """
         with model:
-            self.pm_X = pm.MutableData(
-                "X", self.X, dims=('datapoints', 'covariates'))
+            self.pm_X = pm.MutableData("X", self.X, dims=("datapoints", "covariates"))
             self.pm_y = pm.MutableData(
-                "y", self.y, dims=('datapoints', 'response_vars'))
-            self.pm_batch_effect_indices = tuple([pm.Data(str(self.batch_effect_dims[i]), self.batch_effect_indices[i], mutable=True, dims=(
-                'datapoints',)) for i in range(self._n_batch_effect_columns)])
+                "y", self.y, dims=("datapoints", "response_vars")
+            )
+            self.pm_batch_effect_indices = tuple(
+                [
+                    pm.Data(
+                        str(self.batch_effect_dims[i]),
+                        self.batch_effect_indices[i],
+                        mutable=True,
+                        dims=("datapoints",),
+                    )
+                    for i in range(self._n_batch_effect_columns)
+                ]
+            )
 
             model.custom_batch_effect_dims = self.batch_effect_dims
 
@@ -116,15 +132,19 @@ class HBRData:
         """
         Sets the data in an existing pymc model.
         """
-        model.set_data('X', self.X, coords={
-                       'datapoints': np.arange(self.n_datapoints)})
-        self.pm_X = model['X']
-        model.set_data('y', self.y)
-        self.pm_y = model['y']
+        model.set_data(
+            "X",
+            self.X,
+            coords={
+                "datapoints": [f"datapoint_{i}" for i in np.arange(self._n_datapoints)]
+            },
+        )
+        self.pm_X = model["X"]
+        model.set_data("y", self.y)
+        self.pm_y = model["y"]
         be_acc = []
         for i in range(self._n_batch_effect_columns):
-            model.set_data(
-                self.batch_effect_dims[i], self.batch_effect_indices[i])
+            model.set_data(self.batch_effect_dims[i], self.batch_effect_indices[i])
             be_acc.append(model[self.batch_effect_dims[i]])
         self.pm_batch_effect_indices = tuple(be_acc)
 
@@ -142,8 +162,7 @@ class HBRData:
         data_attr: np.ndarray = getattr(self, data_attr_str)
         if len(data_attr.shape) == 1:
             data_attr = data_attr.reshape(-1, 1)
-        assert len(
-            data_attr.shape) == 2, f"{data_attr_str} must be a 1D or 2D array"
+        assert len(data_attr.shape) == 2, f"{data_attr_str} must be a 1D or 2D array"
         return data_attr
 
     def set_batch_effects_maps(self, batch_effects_maps: dict[str, dict[Any, int]]):
@@ -157,7 +176,10 @@ class HBRData:
         self.batch_effect_indices = []
         for i, v in enumerate(self.batch_effect_dims):
             self.batch_effect_indices.append(
-                np.array([self._batch_effects_maps[v][w] for w in self.batch_effects[:, i]]))
+                np.array(
+                    [self._batch_effects_maps[v][w] for w in self.batch_effects[:, i]]
+                )
+            )
 
     @property
     def n_covariates(self):

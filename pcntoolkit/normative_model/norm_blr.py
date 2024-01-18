@@ -10,11 +10,10 @@ from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 
 
 class NormBLR(NormBase):
-
     def __init__(self, norm_conf: NormConf, reg_conf: BLRConf):
         super().__init__(norm_conf)
         self._reg_conf: BLRConf = reg_conf
-        self._model: BLR = BLR(BLRConf)
+        self.model_type = BLR
 
     def _fit(self, data: NormData):
         """
@@ -23,7 +22,8 @@ class NormBLR(NormBase):
         # some fitting logic
         # ...
         raise NotImplementedError(
-            f"Fit method not implemented for {self.__class__.__name__}")
+            f"Fit method not implemented for {self.__class__.__name__}"
+        )
 
     def _predict(self, data: NormData) -> NormData:
         """
@@ -32,7 +32,8 @@ class NormBLR(NormBase):
         # some prediction logic
         # ...
         raise NotImplementedError(
-            f"Predict method not implemented for {self.__class__.__name__}")
+            f"Predict method not implemented for {self.__class__.__name__}"
+        )
 
     def _fit_predict(self, data: NormData) -> NormData:
         """
@@ -41,7 +42,8 @@ class NormBLR(NormBase):
         # some fit_predict logic
         # ...
         raise NotImplementedError(
-            f"Fit-predict method not implemented for {self.__class__.__name__}")
+            f"Fit-predict method not implemented for {self.__class__.__name__}"
+        )
 
     def _transfer(self, data: NormData) -> NormBase:
         """
@@ -50,7 +52,8 @@ class NormBLR(NormBase):
         # some transfer logic
         # ...
         raise NotImplementedError(
-            f"Transfer method not implemented for {self.__class__.__name__}")
+            f"Transfer method not implemented for {self.__class__.__name__}"
+        )
 
     def _merge(self, other: NormBase):
         """
@@ -59,7 +62,8 @@ class NormBLR(NormBase):
         # some merge logic
         # ...
         raise NotImplementedError(
-            f"Merge method not implemented for {self.__class__.__name__}")
+            f"Merge method not implemented for {self.__class__.__name__}"
+        )
 
     def _tune(self, data: NormData):
         """
@@ -68,7 +72,8 @@ class NormBLR(NormBase):
         # some tuning logic
         # ...
         raise NotImplementedError(
-            f"Tune method not implemented for {self.__class__.__name__}")
+            f"Tune method not implemented for {self.__class__.__name__}"
+        )
 
     def _extend(self, data: NormData):
         """
@@ -77,7 +82,8 @@ class NormBLR(NormBase):
         # some extension logic
         # ...
         raise NotImplementedError(
-            f"Extend method not implemented for {self.__class__.__name__}")
+            f"Extend method not implemented for {self.__class__.__name__}"
+        )
 
     def evaluate_mse(self, data: NormData) -> np.float32:
         """
@@ -86,7 +92,8 @@ class NormBLR(NormBase):
         # some evaluation logic
         # ...
         warnings.warn(
-            f"MSE not implemented for {self.__class__.__name__}, returning NAN")
+            f"MSE not implemented for {self.__class__.__name__}, returning NAN"
+        )
         return np.NAN
 
     def evaluate_mae(self, data: NormData) -> np.float32:
@@ -96,7 +103,8 @@ class NormBLR(NormBase):
         # some evaluation logic
         # ...
         warnings.warn(
-            f"MAE not implemented for {self.__class__.__name__}, returning NAN")
+            f"MAE not implemented for {self.__class__.__name__}, returning NAN"
+        )
         return np.NAN
 
     def evaluate_r2(self, data: NormData) -> np.float32:
@@ -106,7 +114,8 @@ class NormBLR(NormBase):
         # some evaluation logic
         # ...
         warnings.warn(
-            f"R2 not implemented for {self.__class__.__name__}, returning NAN")
+            f"R2 not implemented for {self.__class__.__name__}, returning NAN"
+        )
         return np.NAN
 
     def load(self) -> NormBase:
@@ -116,7 +125,8 @@ class NormBLR(NormBase):
         # some loading logic
         # ...
         raise NotImplementedError(
-            f"Load method not implemented for {self.__class__.__name__}")
+            f"Load method not implemented for {self.__class__.__name__}"
+        )
 
     def save(self):
         """
@@ -125,4 +135,5 @@ class NormBLR(NormBase):
         # some saving logic
         # ...
         raise NotImplementedError(
-            f"Save method not implemented for {self.__class__.__name__}")
+            f"Save method not implemented for {self.__class__.__name__}"
+        )
