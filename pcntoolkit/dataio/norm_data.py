@@ -140,8 +140,8 @@ class NormData(xr.Dataset):
         for train_idx, test_idx in stratified_kfold_split.split(
             self.X, batch_effects_added_strings
         ):
-            split1 = self.sel(datapoints=train_idx)
-            split2 = self.sel(datapoints=test_idx)
+            split1 = self.isel(datapoints=train_idx)
+            split2 = self.isel(datapoints=test_idx)
             split1.name = "train"
             split2.name = "test"
 

@@ -81,6 +81,10 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         This includes cv, logging, saving, etc. Calls the subclass' _fit_predict method.
         """
 
+        assert fit_data.is_compatible_with(
+            predict_data
+        ), "Fit data and predict data are not compatible!"
+
         # Preprocess the data
         self.preprocess(fit_data)
         self.preprocess(predict_data)
@@ -195,16 +199,16 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         results = {}
 
         results["Yhat"] = self.compute_yhat(data)
-        # results["S2"] = self.compute_s2(data)
+        results["S2"] = self.compute_s2(data)
+        results["Z"] = self.evaluate_zscores(data)
 
-        # results["Z"] = self.evaluate_zscores(data)
-        # results["Rho"] = self.evaluate_rho(data)
-        # results["RMSE"] = self.evaluate_rmse(data)
-        # results["SMSE"] = self.evaluate_smse(data)
-        # results["EXPV"] = self.evaluate_expv(data)
-        # results["MSLL"] = self.evaluate_msll(data)
-        # results["NLL"] = self.evaluate_nll(data)
-        # results["BIC"] = self.evaluate_bic(data)
+        results["Rho"] = self.evaluate_rho(data)
+        results["RMSE"] = self.evaluate_rmse(data)
+        results["SMSE"] = self.evaluate_smse(data)
+        results["EXPV"] = self.evaluate_expv(data)
+        results["MSLL"] = self.evaluate_msll(data)
+        results["NLL"] = self.evaluate_nll(data)
+        results["BIC"] = self.evaluate_bic(data)
 
         return results
 
@@ -301,11 +305,33 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             os.makedirs(path, exist_ok=True)
         self._save()
 
+    def save(self):
+        model_dict = {}
+        model_dict["response_vars"] = self.response_vars
+        model_dict["norm_conf"] = self.norm_conf.to_dict()
+        model_dict["reg_conf"] = self.reg_conf.to_dict()
+        model_dict["regression_models"] = self.regression_model_dict()
+
+        # Save the model_dict as json
+        model_dict_path = os.path.join(
+            self.norm_conf.save_dir, "normative_model_dict.json"
+        )
+
+        with open(model_dict_path, "w") as f:
+            json.dump(model_dict, f, indent=4)
+
     @abstractmethod
     def _save(self):
         """
         Contains all the saving logic that is specific to the regression model.
         Path is a string that points to the directory where the model should be saved.
+        """
+        pass
+
+    @abstractmethod
+    def regression_model_dict():
+        """
+        Returns a dictionary describing the regression models.
         """
         pass
 

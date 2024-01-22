@@ -207,14 +207,14 @@ def main():
         "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
     }
 
-    Y = np.random.randn(1000, 2)
-    np.savetxt(conf_dict["responses"], Y)
+    # Y = np.random.randn(1000, 2)
+    # np.savetxt(conf_dict["responses"], Y)
 
-    # func = conf_dict.pop("func")
-    # if func == "fit":
-    #     fit(conf_dict)
-    # else:
-    #     raise ValueError(f"Unknown function {func}.")
+    func = conf_dict.pop("func")
+    if func == "fit":
+        fit(conf_dict)
+    else:
+        raise ValueError(f"Unknown function {func}.")
 
 
 if __name__ == "__main__":

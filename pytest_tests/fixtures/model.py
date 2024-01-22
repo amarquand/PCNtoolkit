@@ -1,12 +1,12 @@
 import pytest
-from fixtures.data import *
-from fixtures.paths import *
 
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
+from pytest_tests.fixtures.data import *
+from pytest_tests.fixtures.paths import *
 
 
 @pytest.fixture
