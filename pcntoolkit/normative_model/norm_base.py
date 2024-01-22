@@ -307,33 +307,55 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def save(self):
         model_dict = {}
+        # Store the response variables
         model_dict["response_vars"] = self.response_vars
+        # Store the normative model configuration
         model_dict["norm_conf"] = self.norm_conf.to_dict()
+        # Store the regression model configuration
         model_dict["reg_conf"] = self.reg_conf.to_dict()
+
+        # Store the regression models
         model_dict["regression_models"] = self.models_to_dict()
+
+        # Store the scalers
+        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
+        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
 
         # Save the model_dict as json
         model_dict_path = os.path.join(
             self.norm_conf.save_dir, "normative_model_dict.json"
         )
-
+        print("Saving normative model to", model_dict_path)
         with open(model_dict_path, "w") as f:
             json.dump(model_dict, f, indent=4)
 
     @classmethod
     def load(cls, path):
         # Load the model_dict from json
+        print("Loading normative model from", path)
         model_dict_path = os.path.join(path, "normative_model_dict.json")
-
         with open(model_dict_path, "r") as f:
             model_dict = json.load(f)
 
+        # Create the normative model
         normconf = NormConf.from_args(model_dict["norm_conf"])
         regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
         normative_model = cls(normconf, regconf)
 
+        # Set the response variables
         normative_model.response_vars = model_dict["response_vars"]
+
+        # Set the regression models
         normative_model.dict_to_models(model_dict["regression_models"])
+
+        # Set the scalers
+        normative_model.inscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
+        }
+        normative_model.outscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
+        }
+
         return normative_model
 
     @staticmethod

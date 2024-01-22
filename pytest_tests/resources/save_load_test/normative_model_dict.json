@@ -6,11 +6,11 @@
     "norm_conf": {
         "perform_cv": false,
         "cv_folds": 0,
-        "savemodel": false,
+        "savemodel": true,
         "saveresults": false,
         "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
         "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test",
-        "basis_function": "linear",
+        "basis_function": "bspline",
         "order": 3,
         "nknots": 5,
         "inscaler": "none",
@@ -18,8 +18,8 @@
         "normative_model_name": "NormHBR"
     },
     "reg_conf": {
-        "draws": 10,
-        "tune": 10,
+        "draws": 1000,
+        "tune": 1000,
         "cores": 1,
         "likelihood": "Normal",
         "mu": {
@@ -27,14 +27,71 @@
             "dims": [],
             "dist_name": "Normal",
             "dist_params": [
-                0.0,
-                1.0
+                0,
+                1
             ],
-            "linear": false,
+            "linear": true,
             "random": false,
             "centered": false,
             "has_covariate_dim": false,
-            "has_random_effect": false
+            "has_random_effect": false,
+            "slope": {
+                "name": "slope_mu",
+                "dims": [
+                    "covariates"
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0.0,
+                    1.0
+                ],
+                "linear": false,
+                "random": false,
+                "centered": false,
+                "has_covariate_dim": true,
+                "has_random_effect": false
+            },
+            "intercept": {
+                "name": "intercept_mu",
+                "dims": [],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ],
+                "linear": false,
+                "random": true,
+                "centered": false,
+                "has_covariate_dim": false,
+                "has_random_effect": false,
+                "mu": {
+                    "name": "mu_intercept_mu",
+                    "dims": [],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0.0,
+                        1.0
+                    ],
+                    "linear": false,
+                    "random": false,
+                    "centered": false,
+                    "has_covariate_dim": false,
+                    "has_random_effect": false
+                },
+                "sigma": {
+                    "name": "sigma_intercept_mu",
+                    "dims": [],
+                    "dist_name": "HalfNormal",
+                    "dist_params": [
+                        1.0
+                    ],
+                    "linear": false,
+                    "random": false,
+                    "centered": false,
+                    "has_covariate_dim": false,
+                    "has_random_effect": false
+                }
+            }
         },
         "sigma": {
             "name": "sigma",
@@ -60,6 +117,30 @@
             "is_fitted": true,
             "is_from_dict": false,
             "idata_path": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test/idata_response_var_1.nc"
+        }
+    },
+    "inscalers": {
+        "covariate_0": {
+            "adjust_outliers": true,
+            "scaler_type": "none",
+            "tail": 0.05
+        },
+        "covariate_1": {
+            "adjust_outliers": true,
+            "scaler_type": "none",
+            "tail": 0.05
+        }
+    },
+    "outscalers": {
+        "response_var_0": {
+            "adjust_outliers": true,
+            "scaler_type": "none",
+            "tail": 0.05
+        },
+        "response_var_1": {
+            "adjust_outliers": true,
+            "scaler_type": "none",
+            "tail": 0.05
         }
     }
 }
