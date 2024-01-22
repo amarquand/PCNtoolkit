@@ -199,16 +199,16 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         results = {}
 
         results["Yhat"] = self.compute_yhat(data)
-        results["S2"] = self.compute_s2(data)
-        results["Z"] = self.evaluate_zscores(data)
+        # results["S2"] = self.compute_s2(data)
+        # results["Z"] = self.evaluate_zscores(data)
 
-        results["Rho"] = self.evaluate_rho(data)
-        results["RMSE"] = self.evaluate_rmse(data)
-        results["SMSE"] = self.evaluate_smse(data)
-        results["EXPV"] = self.evaluate_expv(data)
-        results["MSLL"] = self.evaluate_msll(data)
-        results["NLL"] = self.evaluate_nll(data)
-        results["BIC"] = self.evaluate_bic(data)
+        # results["Rho"] = self.evaluate_rho(data)
+        # results["RMSE"] = self.evaluate_rmse(data)
+        # results["SMSE"] = self.evaluate_smse(data)
+        # results["EXPV"] = self.evaluate_expv(data)
+        # results["MSLL"] = self.evaluate_msll(data)
+        # results["NLL"] = self.evaluate_nll(data)
+        # results["BIC"] = self.evaluate_bic(data)
 
         return results
 
@@ -296,21 +296,21 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     def quantiles(self, data: NormData, quantiles: list[float]):
         pass
 
-    def save(self):
-        """
-        Saves the normative model to a directory.
-        """
-        path = self.norm_conf.save_dir
-        if not os.path.exists(path):
-            os.makedirs(path, exist_ok=True)
-        self._save()
+    # def save(self):
+    #     """
+    #     Saves the normative model to a directory.
+    #     """
+    #     path = self.norm_conf.save_dir
+    #     if not os.path.exists(path):
+    #         os.makedirs(path, exist_ok=True)
+    #     self._save()
 
     def save(self):
         model_dict = {}
         model_dict["response_vars"] = self.response_vars
         model_dict["norm_conf"] = self.norm_conf.to_dict()
         model_dict["reg_conf"] = self.reg_conf.to_dict()
-        model_dict["regression_models"] = self.regression_model_dict()
+        model_dict["regression_models"] = self.models_to_dict()
 
         # Save the model_dict as json
         model_dict_path = os.path.join(
@@ -320,29 +320,52 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         with open(model_dict_path, "w") as f:
             json.dump(model_dict, f, indent=4)
 
+    @classmethod
+    def load(cls, path):
+        # Load the model_dict from json
+        model_dict_path = os.path.join(path, "normative_model_dict.json")
+
+        with open(model_dict_path, "r") as f:
+            model_dict = json.load(f)
+
+        normconf = NormConf.from_args(model_dict["norm_conf"])
+        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
+        normative_model = cls(normconf, regconf)
+
+        normative_model.response_vars = model_dict["response_vars"]
+        normative_model.dict_to_models(model_dict["regression_models"])
+        return normative_model
+
+    @staticmethod
     @abstractmethod
-    def _save(self):
+    def reg_conf_from_dict(dict):
         """
-        Contains all the saving logic that is specific to the regression model.
-        Path is a string that points to the directory where the model should be saved.
+        Creates a regression configuration from a dictionary.
         """
         pass
 
     @abstractmethod
-    def regression_model_dict():
+    def models_to_dict():
         """
         Returns a dictionary describing the regression models.
         """
         pass
 
-    @classmethod
     @abstractmethod
-    def load(cls, path) -> "NormBase":
+    def dict_to_models():
         """
-        Contains all the loading logic that is specific to the regression model.
-        Path is a string that points to the directory where the model should be loaded from.
+        Creates the self.models attribute from a dictionary.
         """
         pass
+
+    # @classmethod
+    # @abstractmethod
+    # def load(cls, path) -> "NormBase":
+    #     """
+    #     Contains all the loading logic that is specific to the regression model.
+    #     Path is a string that points to the directory where the model should be loaded from.
+    #     """
+    #     pass
 
     @property
     def norm_conf(self):

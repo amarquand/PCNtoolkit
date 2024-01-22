@@ -7,6 +7,8 @@ import pytest
 import xarray
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pytest_tests.fixtures.data import *
 from pytest_tests.fixtures.model import *
@@ -109,7 +111,7 @@ def transfer_data():
 def test_normhbr_from_dict(
     norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args | args)
+    hbr = NormHBR.from_args(norm_args | sample_args | args)
     assert hbr.reg_conf.draws == 10
     assert hbr.reg_conf.tune == 10
     assert hbr.reg_conf.cores == 1
@@ -143,7 +145,7 @@ def test_normdata_to_hbrdata(fit_data: NormData):
 def test_fit(
     norm_args: dict[str, str], fit_data: NormData, sample_args: dict[str, int]
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args)
+    hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit(fit_data)
     for model in hbr.models.values():
         assert model.is_fitted
@@ -157,7 +159,7 @@ def test_predict(
     predict_data: NormData,
     sample_args: dict[str, int],
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args)
+    hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit(fit_data)
     results = hbr.predict(predict_data)
     for model in hbr.models.values():
@@ -171,7 +173,7 @@ def test_fit_predict(
     predict_data: NormData,
     sample_args: dict[str, int],
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args)
+    hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit_predict(fit_data, predict_data)
     for model in hbr.models.values():
         assert model.is_fitted
@@ -184,7 +186,7 @@ def test_transfer(
     transfer_data: NormData,
     sample_args: dict[str, int],
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args | {"random_mu": True})
+    hbr = NormHBR.from_args(norm_args | sample_args | {"random_mu": True})
     hbr.fit(fit_data)
     assert hbr.model.model.coords["batch_effect_1"] == (0, 1)
     hbr_transfered = hbr.transfer(transfer_data)
@@ -197,7 +199,7 @@ def test_transfer(
 def test_save(
     norm_args: dict[str, str], fit_data: NormData, sample_args: dict[str, int]
 ):
-    hbr = NormHBR.from_dict(norm_args | sample_args)
+    hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit(fit_data)
     os.makedirs(hbr.norm_conf.save_dir, exist_ok=True)
     hbr.save()
@@ -210,7 +212,7 @@ def test_save(
 
 
 def test_load(save_dir):
-    hbr = NormHBR.load(save_dir)
+    hbr = load_normative_model(save_dir)
     for model in hbr.models.values():
         if model.is_fitted:
             assert model.idata.posterior.mu.shape[:2] == (2, 10)

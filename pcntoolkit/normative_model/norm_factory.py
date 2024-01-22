@@ -59,11 +59,11 @@ def create_normative_model_from_dict(args: dict[str, str]) -> NormBase:
     """
     Creates a normative model from command line arguments.
     """
-    norm_conf = NormConf.from_dict(args)
+    norm_conf = NormConf.from_args(args)
     if args["alg"] == "hbr":
-        reg_conf = HBRConf.from_dict(args)
+        reg_conf = HBRConf.from_args(args)
     elif args["alg"] == "blr":
-        reg_conf = BLRConf.from_dict(args)
+        reg_conf = BLRConf.from_args(args)
     elif args["alg"] == "gpr":
-        reg_conf = GPRConf.from_dict(args)
+        reg_conf = GPRConf.from_args(args)
     return create_normative_model(norm_conf, reg_conf)

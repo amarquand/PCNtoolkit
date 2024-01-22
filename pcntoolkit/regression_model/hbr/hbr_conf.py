@@ -21,8 +21,6 @@ class HBRConf(RegConf):
     epsilon: Param = None
     delta: Param = None
 
-    # mu = Param(name="mu", linear=True, slope=Param("slope_mu", random=True), intercept=Param("intercept_mu", dist_name="Cauchy", dist_params=(0, 1)))
-
     def detect_configuration_problems(self) -> str:
         """
         Detects problems in the configuration and returns them as a list of strings.
@@ -39,7 +37,7 @@ class HBRConf(RegConf):
         return configuration_problems
 
     @classmethod
-    def from_dict(cls, dict):
+    def from_args(cls, dict):
         """
         Creates a configuration from command line arguments.
         """
