@@ -22,6 +22,7 @@ def conf_dict():
         "tsbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects_test.csv",
         "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test",
         "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
+        "basis_function": "bspline",
     }
 
 
@@ -41,3 +42,15 @@ def test_predict(conf_dict):
         normative.predict(conf_dict)
     else:
         raise ValueError(f"Unknown function {func}.")
+
+
+def test_estimate(conf_dict):
+    conf_dict["func"] = "estimate"
+    func = conf_dict.pop("func")
+    if func == "estimate":
+        normative.estimate(conf_dict)
+    else:
+        raise ValueError(f"Unknown function {func}.")
+
+
+# bash_command = "python /home/stijn/Projects/PCNtoolkit/pcntoolkit/normative.py /home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv -f estimate -a hbr -c /home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv -t /home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates_test.csv -r /home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses_test.csv trbefile=/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv tsbefile=/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects_test.csv save_dir=/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test log_dir=/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test"

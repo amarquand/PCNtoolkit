@@ -57,7 +57,12 @@ def conf_dict(
 
 @pytest.fixture
 def norm_args(log_dir, save_dir):
-    return {"log_dir": log_dir, "save_dir": save_dir}
+    return {
+        "log_dir": log_dir,
+        "save_dir": save_dir,
+        "inscaler": "standardize",
+        "outscaler": "standardize",
+    }
 
 
 @pytest.fixture

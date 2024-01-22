@@ -57,6 +57,37 @@ def predict(conf_dict: dict):
     # fileio.save(Y_pred, os.path.join(conf_dict["save_dir"], "Y_pred.csv"))
 
 
+def fit_predict(conf_dict: dict):
+    """
+    Fit a normative model and predict response variables.
+
+    :param conf_dict: Dictionary containing configuration options
+    """
+
+    # Load the data
+    fit_data = load_data(conf_dict)
+    predict_data = load_test_data(conf_dict)
+
+    assert fit_data.is_compatible_with(predict_data)
+
+    # Create the normative model
+    normative_model: NormBase = create_normative_model_from_dict(conf_dict)
+
+    # Fit the normative model
+    normative_model.fit(fit_data)
+
+    # Predicts on new data
+    normative_model.predict(predict_data)
+
+    # Save the normative model
+    if normative_model.norm_conf.savemodel:
+        normative_model.save()
+
+
+def estimate(conf_dict: dict):
+    fit_predict(conf_dict)
+
+
 def load_data(conf_dict: dict) -> NormData:
     respfile = conf_dict.pop("responses")
     covfile = conf_dict.pop("covfile")
@@ -83,7 +114,7 @@ def load_data(conf_dict: dict) -> NormData:
 def load_test_data(conf_dict: dict) -> NormData:
     respfile = conf_dict.pop("testresp")
     covfile = conf_dict.pop("testcov")
-    maskfile = conf_dict.pop("tsbefile", None)
+    maskfile = conf_dict.pop("maskfile", None)
 
     # Load the covariates
     X = fileio.load(covfile)
@@ -192,20 +223,22 @@ def get_conf_dict_from_args():
 
 
 def main():
-    # conf_dict = get_conf_dict_from_args()
-    conf_dict = {
-        "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
-        "func": "fit",
-        "maskfile": None,
-        "covfile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv",
-        "cvfolds": None,
-        "testcov": None,
-        "testresp": None,
-        "alg": "hbr",
-        "trbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv",
-        "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test",
-        "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
-    }
+    conf_dict = get_conf_dict_from_args()
+    print(conf_dict)
+    # conf_dict = {
+    #     "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
+    #     "func": "fit",
+    #     "maskfile": None,
+    #     "covfile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv",
+    #     "cvfolds": None,
+    #     "testcov": None,
+    #     "testresp": None,
+    #     "alg": "hbr",
+    #     "trbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv",
+    #     "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test",
+    #     "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
+    #     "basis_function": "bspline",
+    # }
 
     # Y = np.random.randn(1000, 2)
     # np.savetxt(conf_dict["responses"], Y)
@@ -213,6 +246,10 @@ def main():
     func = conf_dict.pop("func")
     if func == "fit":
         fit(conf_dict)
+    elif func == "predict":
+        predict(conf_dict)
+    elif func == "estimate":
+        estimate(conf_dict)
     else:
         raise ValueError(f"Unknown function {func}.")
 

@@ -215,8 +215,8 @@ class NormData(xr.Dataset):
             all_dims.append("intercept")
             all_arrays.append(np.ones((expanded_basis.shape[0], 1)))
 
+        print(f"{all_dims=}")
         Phi = np.concatenate(all_arrays, axis=1)
-        print(all_dims)
         self.Phi = xr.DataArray(
             Phi,
             coords={"basis_functions": all_dims},
