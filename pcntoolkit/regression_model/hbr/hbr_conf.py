@@ -9,7 +9,7 @@ class HBRConf(RegConf):
     # sampling config
     draws: int = 1000
     tune: int = 1000
-    chains: int = 1
+    chains: int = 2
     cores: int = 1
 
     # model config

@@ -5,12 +5,12 @@ import numpy as np
 import pymc as pm
 import pytest
 import xarray
-from fixtures.data import *
-from fixtures.model import *
-from fixtures.paths import *
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pytest_tests.fixtures.data import *
+from pytest_tests.fixtures.model import *
+from pytest_tests.fixtures.paths import *
 
 
 @pytest.fixture

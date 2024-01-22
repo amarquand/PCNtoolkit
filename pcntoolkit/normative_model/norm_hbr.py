@@ -201,6 +201,7 @@ class NormHBR(NormBase):
         model_dict["norm_conf"] = self.norm_conf.to_dict()
         model_dict["reg_conf"] = self.reg_conf.to_dict()
         model_dict["regression_models"] = {}
+
         for k, v in self.models.items():
             model_dict["regression_models"][k] = v.to_dict()
             del model_dict["regression_models"][k]["conf"]
@@ -221,6 +222,23 @@ class NormHBR(NormBase):
 
         with open(model_dict_path, "w") as f:
             json.dump(model_dict, f, indent=4)
+
+    def regression_model_dict(self):
+        regression_model_dict = {}
+
+        for k, v in self.models.items():
+            regression_model_dict[k] = v.to_dict()
+            del regression_model_dict[k]["conf"]
+            if v.is_fitted:
+                if hasattr(v, "idata"):
+                    idata_path = os.path.join(self.norm_conf.save_dir, f"idata_{k}.nc")
+                    self.model.idata.to_netcdf(idata_path)
+                    regression_model_dict[k]["idata_path"] = idata_path
+                else:
+                    raise RuntimeError(
+                        "HBR model is fitted but does not have idata. This should not happen."
+                    )
+        return regression_model_dict
 
     @classmethod
     def load(cls, path):
