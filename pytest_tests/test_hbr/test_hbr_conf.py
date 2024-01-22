@@ -8,9 +8,15 @@ from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
 def test_from_dict():
     my_dict = {"draws": 1000, "tune": 1000, "cores": 1, "likelihood": "Normal"}
-    my_dict = my_dict | {'likelihood': 'Normal', 'linear_mu': True, 'random_slope_mu': True,
-                         'centered_slope_mu': True, 'random_intercept_mu': True, 'centered_intercept_mu': True}
-    conf = HBRConf.from_dict(my_dict)
+    my_dict = my_dict | {
+        "likelihood": "Normal",
+        "linear_mu": True,
+        "random_slope_mu": True,
+        "centered_slope_mu": True,
+        "random_intercept_mu": True,
+        "centered_intercept_mu": True,
+    }
+    conf = HBRConf.from_args(my_dict)
     assert conf.draws == 1000
     assert conf.tune == 1000
     assert conf.cores == 1
@@ -25,9 +31,15 @@ def test_to_dict():
     Tests the to_dict method.
     """
     args = {"draws": 1000, "tune": 1000, "cores": 1, "likelihood": "Normal"}
-    args = args | {'likelihood': 'Normal', 'linear_mu': True, 'random_slope_mu': True,
-                   'centered_slope_mu': True, 'random_intercept_mu': True, 'centered_intercept_mu': True}
-    conf = HBRConf.from_dict(args)
+    args = args | {
+        "likelihood": "Normal",
+        "linear_mu": True,
+        "random_slope_mu": True,
+        "centered_slope_mu": True,
+        "random_intercept_mu": True,
+        "centered_intercept_mu": True,
+    }
+    conf = HBRConf.from_args(args)
 
     conf_dict = conf.to_dict()
 

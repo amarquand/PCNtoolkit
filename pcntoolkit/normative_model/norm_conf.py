@@ -50,7 +50,7 @@ class NormConf:
             print("Configuration of normative model is valid.")
 
     @classmethod
-    def from_dict(cls, args) -> "NormConf":
+    def from_args(cls, args) -> "NormConf":
         """
         Creates a configuration from command line arguments.
         """

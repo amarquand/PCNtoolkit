@@ -22,12 +22,12 @@ class NormHBR(NormBase):
         self.model: HBR = None
 
     @classmethod
-    def from_dict(cls, args):
+    def from_args(cls, args):
         """
         Creates a configuration from command line arguments.
         """
-        norm_conf = NormConf.from_dict(args)
-        hbrconf = HBRConf.from_dict(args)
+        norm_conf = NormConf.from_args(args)
+        hbrconf = HBRConf.from_args(args)
         self = cls(norm_conf, hbrconf)
         return self
 
@@ -191,39 +191,11 @@ class NormHBR(NormBase):
             f"Extend method not implemented for {self.__class__.__name__}"
         )
 
-    def _save(self):
-        """
-        Contains all the saving logic that is specific to the regression model.
-        Path is a string that points to the directory where the model should be saved.
-        """
-        model_dict = {}
-        model_dict["response_vars"] = self.response_vars
-        model_dict["norm_conf"] = self.norm_conf.to_dict()
-        model_dict["reg_conf"] = self.reg_conf.to_dict()
-        model_dict["regression_models"] = {}
+    @staticmethod
+    def reg_conf_from_dict(dict):
+        return HBRConf.from_args(dict)
 
-        for k, v in self.models.items():
-            model_dict["regression_models"][k] = v.to_dict()
-            del model_dict["regression_models"][k]["conf"]
-            if v.is_fitted:
-                if hasattr(v, "idata"):
-                    idata_path = os.path.join(self.norm_conf.save_dir, f"idata_{k}.nc")
-                    self.model.idata.to_netcdf(idata_path)
-                    model_dict["regression_models"][k]["idata_path"] = idata_path
-                else:
-                    raise RuntimeError(
-                        "HBR model is fitted but does not have idata. This should not happen."
-                    )
-
-        # Save the model_dict as json
-        model_dict_path = os.path.join(
-            self.norm_conf.save_dir, "normative_model_dict.json"
-        )
-
-        with open(model_dict_path, "w") as f:
-            json.dump(model_dict, f, indent=4)
-
-    def regression_model_dict(self):
+    def models_to_dict(self):
         regression_model_dict = {}
 
         for k, v in self.models.items():
@@ -240,38 +212,50 @@ class NormHBR(NormBase):
                     )
         return regression_model_dict
 
-    @classmethod
-    def load(cls, path):
-        """
-        Contains all the loading logic that is specific to the regression model.
-        Path is a string that points to the directory where the model should be loaded from.
-        """
-        # Load the model dict from the json
-        model_path: str = os.path.join(path, "normative_model_dict.json")
-        model_dict = json.load(open(model_path, "r"))
+    def dict_to_models(self, dict):
+        for k, v in dict.items():
+            self.models[k] = self.model_type(self.reg_conf)
+            self.models[k].is_from_dict = dict[k]["is_from_dict"]
+            self.models[k].is_fitted = dict[k]["is_fitted"]
+            if "idata_path" in dict[k]:
+                self.models[k].idata = az.from_netcdf(dict[k]["idata_path"])
+            else:
+                raise RuntimeError(
+                    "HBR model is loaded from dict but does not have idata. This should not happen."
+                )
 
-        # Construct the normconf from the dict
-        normconf = NormConf.from_dict(model_dict["norm_conf"])
+    # @classmethod
+    # def load(cls, path):
+    #     """
+    #     Contains all the loading logic that is specific to the regression model.
+    #     Path is a string that points to the directory where the model should be loaded from.
+    #     """
+    #     # Load the model dict from the json
+    #     model_path: str = os.path.join(path, "normative_model_dict.json")
+    #     model_dict = json.load(open(model_path, "r"))
 
-        # Construct the regression conf from the dict
-        regconf = HBRConf.from_dict(model_dict["reg_conf"])
+    #     # Construct the normconf from the dict
+    #     normconf = NormConf.from_dict(model_dict["norm_conf"])
 
-        # Construct the normative model from the normconf and the model
-        normative_model = cls(normconf, regconf)
+    #     # Construct the regression conf from the dict
+    #     regconf = HBRConf.from_dict(model_dict["reg_conf"])
 
-        normative_model.response_vars = []
+    #     # Construct the normative model from the normconf and the model
+    #     normative_model = cls(normconf, regconf)
 
-        # Construct the regression models from the dict
-        for k, v in model_dict["regression_models"].items():
-            model = HBR(regconf)
-            model.is_from_dict = v["is_from_dict"]
-            model.is_fitted = v["is_fitted"]
-            if "idata_path" in v:
-                model.idata = az.from_netcdf(v["idata_path"])
-            normative_model.models[k] = model
-            normative_model.response_vars.append(k)
+    #     normative_model.response_vars = []
 
-        return normative_model
+    #     # Construct the regression models from the dict
+    #     for k, v in model_dict["regression_models"].items():
+    #         model = HBR(regconf)
+    #         model.is_from_dict = v["is_from_dict"]
+    #         model.is_fitted = v["is_fitted"]
+    #         if "idata_path" in v:
+    #             model.idata = az.from_netcdf(v["idata_path"])
+    #         normative_model.models[k] = model
+    #         normative_model.response_vars.append(k)
+
+    #     return normative_model
 
     def evaluate_bic(self, data: NormData) -> float:
         raise NotImplementedError(

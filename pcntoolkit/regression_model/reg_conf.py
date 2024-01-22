@@ -14,9 +14,11 @@ class RegConf(ABC):
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
             problem_list = "\n".join(
-                [f'{i+1}:\t{v}' for i, v in enumerate(configuration_problems)])
+                [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
+            )
             raise ValueError(
-                f"The following problems have been detected in the regression model configuration:\n{problem_list}")
+                f"The following problems have been detected in the regression model configuration:\n{problem_list}"
+            )
         else:
             print("Configuration of regression model is valid.")
 
@@ -29,7 +31,7 @@ class RegConf(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, dict):
+    def from_args(cls, dict):
         """
         Creates a configuration from command line arguments or a dictionary.
         """
