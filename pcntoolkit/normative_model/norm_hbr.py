@@ -5,6 +5,8 @@ import warnings
 import arviz as az
 import numpy as np
 import pymc as pm
+import pytensor.tensor as pt
+import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
@@ -99,7 +101,11 @@ class NormHBR(NormBase):
 
         # Sample from the posterior predictive
         with self.model.model:
-            pm.sample_posterior_predictive(self.model.idata, extend_inferencedata=True)
+            pm.sample_posterior_predictive(
+                self.model.idata,
+                extend_inferencedata=True,
+                var_names=self.get_var_names(),
+            )
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         # Transform the data to hbrdata
@@ -130,7 +136,9 @@ class NormHBR(NormBase):
             # Sample from the posterior predictive
             with self.model.model:
                 pm.sample_posterior_predictive(
-                    self.model.idata, extend_inferencedata=True
+                    self.model.idata,
+                    extend_inferencedata=True,
+                    var_names=self.get_var_names(),
                 )
         else:
             raise RuntimeError("Model is already fitted.")
@@ -224,39 +232,6 @@ class NormHBR(NormBase):
                     "HBR model is loaded from dict but does not have idata. This should not happen."
                 )
 
-    # @classmethod
-    # def load(cls, path):
-    #     """
-    #     Contains all the loading logic that is specific to the regression model.
-    #     Path is a string that points to the directory where the model should be loaded from.
-    #     """
-    #     # Load the model dict from the json
-    #     model_path: str = os.path.join(path, "normative_model_dict.json")
-    #     model_dict = json.load(open(model_path, "r"))
-
-    #     # Construct the normconf from the dict
-    #     normconf = NormConf.from_dict(model_dict["norm_conf"])
-
-    #     # Construct the regression conf from the dict
-    #     regconf = HBRConf.from_dict(model_dict["reg_conf"])
-
-    #     # Construct the normative model from the normconf and the model
-    #     normative_model = cls(normconf, regconf)
-
-    #     normative_model.response_vars = []
-
-    #     # Construct the regression models from the dict
-    #     for k, v in model_dict["regression_models"].items():
-    #         model = HBR(regconf)
-    #         model.is_from_dict = v["is_from_dict"]
-    #         model.is_fitted = v["is_fitted"]
-    #         if "idata_path" in v:
-    #             model.idata = az.from_netcdf(v["idata_path"])
-    #         normative_model.models[k] = model
-    #         normative_model.response_vars.append(k)
-
-    #     return normative_model
-
     def evaluate_bic(self, data: NormData) -> float:
         raise NotImplementedError(
             f"Evaluate bic method not implemented for {self.__class__.__name__}"
@@ -308,7 +283,112 @@ class NormHBR(NormBase):
         #     f"Compute yhat method not implemented for {self.__class__.__name__}"
         # )
 
-    def quantiles(self, data: NormData, quantiles: list):
-        raise NotImplementedError(
-            f"Quantiles method not implemented for {self.__class__.__name__}"
+    def _quantiles(self, data: NormData, z_scores: list):
+        print("Sampling from posterior predictive to estimate quantiles")
+
+        hbrdata = self.normdata_to_hbrdata(data)
+
+        # Create a new pymc model if needed
+        if self.model.model is None:
+            self.model.create_pymc_model(hbrdata, sample_nodes=True)
+
+        # Set the data in the model
+        hbrdata.set_data_in_existing_model(self.model.model)
+
+        var_names = self.get_var_names()
+
+        # Delete the posterior predictive if it exists
+        if "posterior_predictive" in self.model.idata:
+            del self.model.idata.posterior_predictive
+
+        # Sample from the posterior predictive
+        with self.model.model:
+            pm.sample_posterior_predictive(
+                self.model.idata, extend_inferencedata=True, var_names=var_names
+            )
+
+        # Extract the posterior predictive
+        post_pred = az.extract(
+            self.model.idata, "posterior_predictive", var_names=var_names
         )
+
+        # Separate the samples into a list so that they can be unpacked
+        array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+
+        # Create an array to hold the quantiles
+        len_synth_data, _, n_mcmc_samples = post_pred["mu_samples"].shape
+        quantiles = np.zeros((len(z_scores), len_synth_data, n_mcmc_samples))
+
+        # Compute the quantile iteratively for each z-score
+        for i, j in enumerate(z_scores):
+            zs = np.full((len_synth_data, n_mcmc_samples), j, dtype=float)
+            quantiles[i] = xr.apply_ufunc(
+                self.quantile,
+                *array_of_vars,
+                kwargs={"zs": zs, "likelihood": self.reg_conf.likelihood},
+            )
+
+        data[f"quantiles_{self.current_responsevar}"] = xr.DataArray(
+            quantiles, dims=["z_scores", "datapoints", "sample"]
+        )
+
+        return quantiles.mean(axis=-1)
+
+    def get_var_names(self):
+        likelihood = self.reg_conf.likelihood
+        # Determine the variables to predict
+        if likelihood == "Normal":
+            var_names = ["mu_samples", "sigma_samples", "y_pred"]
+        elif likelihood.startswith("SHASH"):
+            var_names = [
+                "mu_samples",
+                "sigma_samples",
+                "epsilon_samples",
+                "delta_samples",
+                "y_pred",
+            ]
+
+        else:
+            exit("Unknown likelihood: " + likelihood)
+        return var_names
+
+    def quantile(self, mu, sigma, epsilon=None, delta=None, zs=0, likelihood="Normal"):
+        """Get the zs'th quantiles given likelihood parameters"""
+        if likelihood.startswith("SHASH"):
+            raise NotImplementedError(
+                "Quantiles for SHASH likelihoods are not implemented yet."
+            )
+            # if likelihood == "SHASHo":
+            #     quantiles = S_inv(zs, epsilon, delta) * sigma + mu
+            # elif likelihood == "SHASHo2":
+            #     sigma_d = sigma / delta
+            #     quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
+            # elif likelihood == "SHASHb":
+            #     true_mu = m(epsilon, delta, 1)
+            #     true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            #     SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
+            #     quantiles = SHASH_c * sigma + mu
+        elif likelihood == "Normal":
+            quantiles = zs * sigma + mu
+        else:
+            exit("Unsupported likelihood")
+        return quantiles
+
+
+# elif self.configs["likelihood"].startswith("SHASH"):
+#     var_names = [
+#         "mu_samples",
+#         "sigma_samples",
+#         "sigma_plus_samples",
+#         "epsilon_samples",
+#         "delta_samples",
+#         "delta_plus_samples",
+#     ]
+# else:
+#     exit("Unknown likelihood: " + self.configs["likelihood"])
+# # Compute the quantile iteratively for each z-score
+# z_scores = xr.apply_ufunc(
+#     self.quantile,
+#     *array_of_vars,
+#     kwargs={"zs": zs, "likelihood": self.configs["likelihood"]},
+# )

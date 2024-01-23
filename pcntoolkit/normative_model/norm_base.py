@@ -41,6 +41,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 self.models[responsevar] = self.model_type(self.reg_conf)
 
             # Set self.model to the current model
+            self.current_responsevar = responsevar
             self.model = self.models[responsevar]
 
             # Fit the model
@@ -66,6 +67,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 )
 
             # Set self.model to the current model
+            self.current_responsevar = responsevar
             self.model = self.models[responsevar]
 
             # Predict
@@ -103,10 +105,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 self.models[responsevar] = self.model_type(self.reg_conf)
 
             # Set self.model to the current model
+            self.current_responsevar = responsevar
             self.model = self.models[responsevar]
 
             # Fit and predict
             self._fit_predict(resp_fit_data, resp_predict_data)
+
+        self.quantiles(predict_data, [-1.0, 0.0, 1.0])
 
         # Get the results
         results = self.evaluate(predict_data)
@@ -212,89 +217,34 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         return results
 
-    @abstractmethod
-    def compute_yhat(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def compute_s2(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_rho(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_rmse(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_smse(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_expv(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_msll(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_nll(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_bic(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_zscores(self, data: NormData):
-        pass
-
-    @abstractmethod
-    def _fit_predict(self, data: NormData):
-        """
-        Acts as the adapter for fit_predict using the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
-        """
-        pass
-
-    @abstractmethod
-    def _fit(self, data: NormData) -> NormData:
-        """
-        Acts as the adapter for fitting the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
-        """
-        pass
-
-    @abstractmethod
-    def _predict(self, data: NormData) -> NormData:
-        """
-        Acts as the adapter for prediction using the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
-        """
-        pass
-
-    @abstractmethod
-    def _transfer(self, data: NormData) -> "NormBase":
-        pass
-
-    @abstractmethod
-    def _extend(self, data: NormData):
-        pass
-
-    @abstractmethod
-    def _tune(self, data: NormData):
-        pass
-
-    @abstractmethod
-    def _merge(self, other: "NormBase"):
-        pass
-
-    @abstractmethod
     def quantiles(self, data: NormData, quantiles: list[float]):
-        pass
+        # Preprocess the data
+        self.preprocess(data)
+
+        # Predict for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to find quantiles for model {responsevar}, but it does not exist."
+                )
+
+            # Set self.model to the current model
+            self.current_responsevar = responsevar
+            self.model = self.models[responsevar]
+
+            # Predict
+            self._quantiles(resp_predict_data, quantiles)
+
+            data[f"quantiles_{responsevar}"] = resp_predict_data[
+                f"quantiles_{responsevar}"
+            ]
+        # Return the results
+        results = self.evaluate(data)
+        return results
 
     # def save(self):
     #     """
@@ -431,3 +381,87 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         Contains all the general scaling logic that is not specific to the regression model.
         """
         data.scale_backward(self.inscalers, self.outscalers)
+
+    @abstractmethod
+    def compute_yhat(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def compute_s2(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_rho(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_rmse(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_smse(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_expv(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_msll(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_nll(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_bic(self, data: NormData) -> float:
+        pass
+
+    @abstractmethod
+    def evaluate_zscores(self, data: NormData):
+        pass
+
+    @abstractmethod
+    def _fit_predict(self, data: NormData):
+        """
+        Acts as the adapter for fit_predict using the specific regression model.
+        Is not responsible for cv, logging, saving, etc.
+        """
+        pass
+
+    @abstractmethod
+    def _fit(self, data: NormData) -> NormData:
+        """
+        Acts as the adapter for fitting the specific regression model.
+        Is not responsible for cv, logging, saving, etc.
+        """
+        pass
+
+    @abstractmethod
+    def _predict(self, data: NormData) -> NormData:
+        """
+        Acts as the adapter for prediction using the specific regression model.
+        Is not responsible for cv, logging, saving, etc.
+        """
+        pass
+
+    @abstractmethod
+    def _transfer(self, data: NormData) -> "NormBase":
+        pass
+
+    @abstractmethod
+    def _extend(self, data: NormData):
+        pass
+
+    @abstractmethod
+    def _tune(self, data: NormData):
+        pass
+
+    @abstractmethod
+    def _merge(self, other: "NormBase"):
+        pass
+
+    @abstractmethod
+    def _quantiles(self, data: NormData, quantiles: list[float]):
+        pass

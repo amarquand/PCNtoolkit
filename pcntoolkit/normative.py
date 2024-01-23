@@ -73,11 +73,8 @@ def fit_predict(conf_dict: dict):
     # Create the normative model
     normative_model: NormBase = create_normative_model_from_dict(conf_dict)
 
-    # Fit the normative model
-    normative_model.fit(fit_data)
-
-    # Predicts on new data
-    normative_model.predict(predict_data)
+    # Fit and predict the normative model
+    normative_model.fit_predict(fit_data, predict_data)
 
     # Save the normative model
     if normative_model.norm_conf.savemodel:
@@ -222,9 +219,33 @@ def get_conf_dict_from_args():
     return conf_dict
 
 
+def make_synthetic_data():
+    np.random.seed(42)
+    X = np.random.randn(1000, 2)
+    Y = np.random.randn(1000, 2)
+    batch_effects = []
+    for i in range(2):
+        batch_effects.append(np.random.choice(list(range(i + 2)), size=1000))
+    batch_effects = np.stack(batch_effects, axis=1)
+    np.savetxt("covariates.csv", X)
+    np.savetxt("responses.csv", Y)
+    np.savetxt("batch_effects.csv", batch_effects)
+
+    X = []
+    X.append(np.linspace(-3, 4, 200))
+    X.append(np.full(200, 0))
+    X = np.stack(X, axis=1)
+    Y = np.random.randn(200, 2)
+    batch_effects = np.zeros((200, 2))
+    np.savetxt("covariates_test.csv", X)
+    np.savetxt("responses_test.csv", Y)
+    np.savetxt("batch_effects_test.csv", batch_effects)
+
+
 def main():
+    make_synthetic_data()
+
     conf_dict = get_conf_dict_from_args()
-    print(conf_dict)
     # conf_dict = {
     #     "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
     #     "func": "fit",
@@ -239,9 +260,6 @@ def main():
     #     "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
     #     "basis_function": "bspline",
     # }
-
-    # Y = np.random.randn(1000, 2)
-    # np.savetxt(conf_dict["responses"], Y)
 
     func = conf_dict.pop("func")
     if func == "fit":
