@@ -206,6 +206,18 @@ class NormConf:
         """
         return self.__dict__
 
+    def set_save_dir(self, path):
+        """
+        Sets the save directory to the given path.
+        """
+        object.__setattr__(self, "save_dir", path)
+
+    def set_log_dir(self, path):
+        """
+        Sets the log directory to the given path.
+        """
+        object.__setattr__(self, "log_dir", path)
+
     # @classmethod
     # def from_dict(cls, dict):
     #     """

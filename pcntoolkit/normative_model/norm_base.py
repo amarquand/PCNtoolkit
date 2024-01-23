@@ -308,6 +308,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         return normative_model
 
+    def set_save_dir(self, save_dir):
+        self.norm_conf.set_save_dir(save_dir)
+
     @staticmethod
     @abstractmethod
     def reg_conf_from_dict(dict):
