@@ -36,8 +36,6 @@ def conf_dict(
     savemodel,
     trbefile,
     tsbefile,
-    save_dir,
-    log_dir,
 ):
     return {
         "responses": responsefile,
@@ -50,29 +48,29 @@ def conf_dict(
         "savemodel": savemodel,
         "trbefile": trbefile,
         "tsbefile": tsbefile,
-        "save_dir": save_dir,
-        "log_dir": log_dir,
+        "save_dir": "nonexistant",
+        "log_dir": "nonexistant",
     }
 
 
 @pytest.fixture
-def norm_args(log_dir, save_dir):
+def norm_args():
     return {
-        "log_dir": log_dir,
-        "save_dir": save_dir,
+        "log_dir": "nonexistant",
+        "save_dir": "nonexistant",
         "inscaler": "standardize",
         "outscaler": "standardize",
     }
 
 
 @pytest.fixture
-def normconf(cvfolds, savemodel, save_dir, log_dir):
+def normconf(cvfolds, savemodel):
     return NormConf(
         perform_cv=False,
         cv_folds=cvfolds,
         savemodel=savemodel,
-        save_dir=save_dir,
-        log_dir=log_dir,
+        save_dir=".",
+        log_dir=".",
         basis_function="bspline",
         order=3,
         n_knots=10,

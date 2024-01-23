@@ -41,10 +41,5 @@ def tsbefile():
 
 
 @pytest.fixture
-def save_dir():
-    return "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test"
-
-
-@pytest.fixture
-def log_dir():
-    return "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test"
+def resource_dir():
+    return "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources"

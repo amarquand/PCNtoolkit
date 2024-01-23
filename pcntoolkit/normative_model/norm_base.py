@@ -265,7 +265,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         model_dict["reg_conf"] = self.reg_conf.to_dict()
 
         # Store the regression models
-        model_dict["regression_models"] = self.models_to_dict()
+        model_dict["regression_models"] = self.models_to_dict(self.norm_conf.save_dir)
 
         # Store the scalers
         model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
@@ -296,7 +296,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         normative_model.response_vars = model_dict["response_vars"]
 
         # Set the regression models
-        normative_model.dict_to_models(model_dict["regression_models"])
+        normative_model.dict_to_models(model_dict["regression_models"], path)
 
         # Set the scalers
         normative_model.inscalers = {
@@ -317,16 +317,18 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def models_to_dict():
+    def models_to_dict(self, path=None):
         """
         Returns a dictionary describing the regression models.
+        Takes an optional path argument, which can be used to save large model components to disk.
         """
         pass
 
     @abstractmethod
-    def dict_to_models():
+    def dict_to_models(self, dict, path=None):
         """
         Creates the self.models attribute from a dictionary.
+        Takes an optional path argument, which can be used to load large model components from disk.
         """
         pass
 
@@ -334,6 +336,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     # @abstractmethod
     # def load(cls, path) -> "NormBase":
     #     """
+
     #     Contains all the loading logic that is specific to the regression model.
     #     Path is a string that points to the directory where the model should be loaded from.
     #     """

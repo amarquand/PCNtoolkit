@@ -197,8 +197,13 @@ def test_transfer(
 
 
 def test_save(
-    norm_args: dict[str, str], fit_data: NormData, sample_args: dict[str, int]
+    norm_args: dict[str, str],
+    fit_data: NormData,
+    sample_args: dict[str, int],
+    resource_dir,
 ):
+    norm_args["save_dir"] = os.path.join(resource_dir, "hbr", "save_load_test")
+    norm_args["log_dir"] = os.path.join(resource_dir, "hbr", "log_test")
     hbr = NormHBR.from_args(norm_args | sample_args)
     hbr.fit(fit_data)
     os.makedirs(hbr.norm_conf.save_dir, exist_ok=True)
@@ -211,10 +216,20 @@ def test_save(
     )
 
 
-def test_load(save_dir):
-    hbr = load_normative_model(save_dir)
+def test_load(resource_dir):
+    load_path_1 = os.path.join(resource_dir, "hbr", "save_load_test_epmty")
+    # Assert the following throws an error
+    with pytest.raises(FileNotFoundError):
+        load_normative_model(load_path_1)
+
+    load_path_2 = os.path.join(resource_dir, "hbr", "save_load_test_without_idata")
+    # Assert the following throws an error
+    with pytest.raises(RuntimeError):
+        load_normative_model(load_path_2)
+
+    load_path3 = os.path.join(resource_dir, "hbr", "save_load_test")
+    hbr = load_normative_model(load_path3)
     for model in hbr.models.values():
         if model.is_fitted:
             assert model.idata.posterior.mu.shape[:2] == (2, 10)
             assert model.idata.posterior.sigma.shape[:2] == (2, 10)
-    assert hbr.norm_conf.save_dir == save_dir

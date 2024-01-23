@@ -203,7 +203,7 @@ class NormHBR(NormBase):
     def reg_conf_from_dict(dict):
         return HBRConf.from_args(dict)
 
-    def models_to_dict(self):
+    def models_to_dict(self, path):
         regression_model_dict = {}
 
         for k, v in self.models.items():
@@ -211,26 +211,25 @@ class NormHBR(NormBase):
             del regression_model_dict[k]["conf"]
             if v.is_fitted:
                 if hasattr(v, "idata"):
-                    idata_path = os.path.join(self.norm_conf.save_dir, f"idata_{k}.nc")
+                    idata_path = os.path.join(path, f"idata_{k}.nc")
                     self.model.idata.to_netcdf(idata_path)
-                    regression_model_dict[k]["idata_path"] = idata_path
                 else:
                     raise RuntimeError(
                         "HBR model is fitted but does not have idata. This should not happen."
                     )
         return regression_model_dict
 
-    def dict_to_models(self, dict):
+    def dict_to_models(self, dict, path):
         for k, v in dict.items():
             self.models[k] = self.model_type(self.reg_conf)
             self.models[k].is_from_dict = dict[k]["is_from_dict"]
             self.models[k].is_fitted = dict[k]["is_fitted"]
-            if "idata_path" in dict[k]:
-                self.models[k].idata = az.from_netcdf(dict[k]["idata_path"])
-            else:
-                raise RuntimeError(
-                    "HBR model is loaded from dict but does not have idata. This should not happen."
-                )
+            if self.models[k].is_fitted:
+                idata_path = os.path.join(path, f"idata_{k}.nc")
+                try:
+                    self.models[k].idata = az.from_netcdf(idata_path)
+                except:
+                    raise RuntimeError(f"Could not load idata from {idata_path}.")
 
     def evaluate_bic(self, data: NormData) -> float:
         raise NotImplementedError(
@@ -373,22 +372,3 @@ class NormHBR(NormBase):
         else:
             exit("Unsupported likelihood")
         return quantiles
-
-
-# elif self.configs["likelihood"].startswith("SHASH"):
-#     var_names = [
-#         "mu_samples",
-#         "sigma_samples",
-#         "sigma_plus_samples",
-#         "epsilon_samples",
-#         "delta_samples",
-#         "delta_plus_samples",
-#     ]
-# else:
-#     exit("Unknown likelihood: " + self.configs["likelihood"])
-# # Compute the quantile iteratively for each z-score
-# z_scores = xr.apply_ufunc(
-#     self.quantile,
-#     *array_of_vars,
-#     kwargs={"zs": zs, "likelihood": self.configs["likelihood"]},
-# )
