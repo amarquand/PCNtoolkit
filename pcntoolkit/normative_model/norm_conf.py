@@ -1,6 +1,8 @@
 import json
 import os
+import warnings
 from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass(frozen=True)  # Creates an immutable datasclass
@@ -96,7 +98,18 @@ class NormConf:
                         f"{dir_attr_str} is not a directory, but {self.get_type_of_object(dir_attr)}"
                     )
             else:
-                add_problem(f"{dir_attr_str} does not exist")
+                home_dir = os.path.expanduser("~")
+                now = datetime.now()
+                now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+                dir = os.path.join(
+                    home_dir, "PCNToolkit_autodirs", f"{dir_attr_str}_{now_str}"
+                )
+                warnings.warn(
+                    f"{dir_attr_str} ({dir_attr}) does not exist, creating one at: "
+                    + dir
+                )
+                os.makedirs(dir, exist_ok=True)
+                object.__setattr__(self, dir_attr_str, dir)
 
     def detect_cv_problem(self, add_problem):
         performisbool = isinstance(self.perform_cv, bool)
