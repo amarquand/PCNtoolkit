@@ -34,6 +34,22 @@ class HBRConf(RegConf):
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
+        # Check positivity of priors
+        if self.sigma:
+            if self.sigma.linear:
+                if self.sigma.mapping == "identity":
+                    add_problem(
+                        "Sigma has to be strictly positive. It is a linear regression, so it can be potentially negative, because no mapping to the positive domain has been specified. Use 'mapping=softplus' or 'mapping=exp'."
+                    )
+        # Same for delta
+        if self.likelihood.startswith("SHASH"):
+            if self.epsilon:
+                if self.epsilon.linear:
+                    if self.epsilon.mapping == "identity":
+                        add_problem(
+                            "Epsilon has to be strictly positive. It is a linear regression, so it can be potentially negative, because no mapping to the positive domain has been specified. Use 'mapping=softplus' or 'mapping=exp'."
+                        )
+
         return configuration_problems
 
     @classmethod
@@ -43,15 +59,16 @@ class HBRConf(RegConf):
         """
         # Filter out the arguments that are not relevant for this configuration
         args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
+        likelihood = args_filt.get("likelihood", "Normal")
+        if likelihood == "Normal":
+            args_filt["mu"] = Param.from_dict("mu", dict)
+            args_filt["sigma"] = Param.from_dict("sigma", dict)
+        elif likelihood.startswith("SHASH"):
+            args_filt["mu"] = Param.from_dict("mu", dict)
+            args_filt["sigma"] = Param.from_dict("sigma", dict)
+            args_filt["epsilon"] = Param.from_dict("epsilon", dict)
+            args_filt["delta"] = Param.from_dict("delta", dict)
         self = cls(**args_filt)
-        if self.likelihood == "Normal":
-            object.__setattr__(self, "mu", Param.from_dict("mu", dict))
-            object.__setattr__(self, "sigma", Param.from_dict("sigma", dict))
-        elif self.likelihood.startswith("SHASH"):
-            object.__setattr__(self, "mu", Param.from_dict("mu", dict))
-            object.__setattr__(self, "sigma", Param.from_dict("sigma", dict))
-            object.__setattr__(self, "epsilon", Param.from_dict("epsilon", dict))
-            object.__setattr__(self, "delta", Param.from_dict("delta", dict))
         return self
 
     def to_dict(self):

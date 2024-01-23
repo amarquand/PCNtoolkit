@@ -53,10 +53,16 @@ class HBR:
         self.conf.mu.add_to(self.model, idata)
         self.conf.sigma.add_to(self.model, idata)
         with self.model:
-            mu_samples = self.conf.mu.get_samples(data)
-            # mu_samples = pm.Deterministic('mu_samples', mu_samples, dims=('datapoints', 'response_vars'))
-            sigma_samples = self.conf.sigma.get_samples(data)
-            # sigma_samples = pm.Deterministic('sigma_samples', sigma_samples, dims=('datapoints', 'response_vars'))
+            mu_samples = pm.Deterministic(
+                "mu_samples",
+                self.conf.mu.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            sigma_samples = pm.Deterministic(
+                "sigma_samples",
+                self.conf.sigma.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
             y_pred = pm.Normal(
                 "y_pred",
                 mu=mu_samples,
