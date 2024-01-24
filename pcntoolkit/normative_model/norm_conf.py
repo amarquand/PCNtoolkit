@@ -27,6 +27,9 @@ class NormConf:
     # In this way, we can always apply a basis expansion to the input data, even if the regression model does not support multiplee covariate dimensions.
     # possible model types: "linear", "polynomial", "bspline"
     basis_function: str = "linear"
+    basis_column: int = (
+        0  # the column of the input data that is used for the basis expansion
+    )
     order: int = 3  # order of the polynomial or bspline basis functions
     nknots: int = 5  # number of knots for the bspline basis functions
 

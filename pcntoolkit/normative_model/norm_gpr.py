@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from xarray.core.dataarray import DataArray
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
@@ -17,125 +18,76 @@ class NormGPR(NormBase):
         self._reg_conf: GPRConf = reg_conf
         self.model = GPR
 
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments.
+        """
+        norm_conf = NormConf.from_args(args)
+        hbrconf = GPRConf.from_args(args)
+        self = cls(norm_conf, hbrconf)
+        return self
+
+    @staticmethod
+    def reg_conf_from_args(dict):
+        return GPRConf.from_args(dict)
+
+    def models_to_dict(self, dict):
+        raise NotImplementedError(
+            f"Models to dict method not implemented for {self.__class__.__name__}"
+        )
+
+    def dict_to_models(self, dict):
+        raise NotImplementedError(
+            f"Dict to models method not implemented for {self.__class__.__name__}"
+        )
+
     def _fit(self, data: NormData):
-        """
-        Contains all the fitting logic that is specific to the regression model.
-        """
-        # some fitting logic
-        # ...
         raise NotImplementedError(
             f"Fit method not implemented for {self.__class__.__name__}"
         )
 
     def _predict(self, data: NormData) -> NormData:
-        """
-        Contains all the prediction logic that is specific to the regression model.
-        """
-        # some prediction logic
-        # ...
         raise NotImplementedError(
             f"Predict method not implemented for {self.__class__.__name__}"
         )
 
     def _fit_predict(self, data: NormData) -> NormData:
-        """
-        Contains all the fit_predict logic that is specific to the regression model.
-        """
-        # some fit_predict logic
-        # ...
         raise NotImplementedError(
             f"Fit-predict method not implemented for {self.__class__.__name__}"
         )
 
     def _transfer(self, data: NormData) -> NormBase:
-        """
-        Contains all the transfer logic that is specific to the regression model.
-        """
-        # some transfer logic
-        # ...
         raise NotImplementedError(
             f"Transfer method not implemented for {self.__class__.__name__}"
         )
 
-    def _merge(self, other: NormBase):
-        """
-        Contains all the merge logic that is specific to the regression model.
-        """
-        # some merge logic
-        # ...
-        raise NotImplementedError(
-            f"Merge method not implemented for {self.__class__.__name__}"
-        )
-
-    def _tune(self, data: NormData):
-        """
-        Contains all the tuning logic that is specific to the regression model.
-        """
-        # some tuning logic
-        # ...
-        raise NotImplementedError(
-            f"Tune method not implemented for {self.__class__.__name__}"
-        )
-
     def _extend(self, data: NormData):
-        """
-        Contains all the extension logic that is specific to the regression model.
-        """
-        # some extension logic
-        # ...
         raise NotImplementedError(
             f"Extend method not implemented for {self.__class__.__name__}"
         )
 
-    def evaluate_mse(self, data: NormData) -> np.float32:
-        """
-        Contains all the evaluation logic that is specific to the regression model.
-        """
-        # some evaluation logic
-        # ...
-        warnings.warn(
-            f"MSE not implemented for {self.__class__.__name__}, returning NAN"
-        )
-        return np.NAN
-
-    def evaluate_mae(self, data: NormData) -> np.float32:
-        """
-        Contains all the evaluation logic that is specific to the regression model.
-        """
-        # some evaluation logic
-        # ...
-        warnings.warn(
-            f"MAE not implemented for {self.__class__.__name__}, returning NAN"
-        )
-        return np.NAN
-
-    def evaluate_r2(self, data: NormData) -> np.float32:
-        """
-        Contains all the evaluation logic that is specific to the regression model.
-        """
-        # some evaluation logic
-        # ...
-        warnings.warn(
-            f"R2 not implemented for {self.__class__.__name__}, returning NAN"
-        )
-        return np.NAN
-
-    def load(self) -> NormBase:
-        """
-        Contains all the loading logic that is specific to the regression model.
-        """
-        # some loading logic
-        # ...
+    def _tune(self, data: NormData):
         raise NotImplementedError(
-            f"Load method not implemented for {self.__class__.__name__}"
+            f"Tune method not implemented for {self.__class__.__name__}"
         )
 
-    def save(self):
-        """
-        Contains all the saving logic that is specific to the regression model.
-        """
-        # some saving logic
-        # ...
+    def _merge(self, other: NormBase):
         raise NotImplementedError(
-            f"Save method not implemented for {self.__class__.__name__}"
+            f"Merge method not implemented for {self.__class__.__name__}"
+        )
+
+    def _quantiles(self, data: NormData, quantiles: list[float]) -> DataArray:
+        raise NotImplementedError(
+            f"Quantiles method not implemented for {self.__class__.__name__}"
+        )
+
+    def _zscores(self, data: NormData) -> DataArray:
+        raise NotImplementedError(
+            f"Zscores method not implemented for {self.__class__.__name__}"
+        )
+
+    def n_params(self) -> DataArray:
+        raise NotImplementedError(
+            f"n_params method not implemented for {self.__class__.__name__}"
         )
