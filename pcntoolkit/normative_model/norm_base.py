@@ -4,6 +4,11 @@ import json
 import os
 from abc import ABC, abstractmethod
 
+import numpy as np
+import xarray as xr
+from scipy import stats
+from sklearn.metrics import explained_variance_score
+
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
 
@@ -20,6 +25,63 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.models = {}
         self.inscalers = {}
         self.outscalers = {}
+
+    @property
+    def norm_conf(self):
+        return self._norm_conf
+
+    def save(self):
+        model_dict = {}
+        # Store the response variables
+        model_dict["response_vars"] = self.response_vars
+        # Store the normative model configuration
+        model_dict["norm_conf"] = self.norm_conf.to_dict()
+        # Store the regression model configuration
+        model_dict["reg_conf"] = self.reg_conf.to_dict()
+
+        # Store the regression models
+        model_dict["regression_models"] = self.models_to_dict(self.norm_conf.save_dir)
+
+        # Store the scalers
+        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
+        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
+
+        # Save the model_dict as json
+        model_dict_path = os.path.join(
+            self.norm_conf.save_dir, "normative_model_dict.json"
+        )
+        print("Saving normative model to", model_dict_path)
+        with open(model_dict_path, "w") as f:
+            json.dump(model_dict, f, indent=4)
+
+    @classmethod
+    def load(cls, path):
+        # Load the model_dict from json
+        print("Loading normative model from", path)
+        model_dict_path = os.path.join(path, "normative_model_dict.json")
+        with open(model_dict_path, "r") as f:
+            model_dict = json.load(f)
+
+        # Create the normative model
+        normconf = NormConf.from_args(model_dict["norm_conf"])
+        regconf = cls.reg_conf_from_args(model_dict["reg_conf"])
+        normative_model = cls(normconf, regconf)
+
+        # Set the response variables
+        normative_model.response_vars = model_dict["response_vars"]
+
+        # Set the regression models
+        normative_model.dict_to_models(model_dict["regression_models"], path)
+
+        # Set the scalers
+        normative_model.inscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
+        }
+        normative_model.outscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
+        }
+
+        return normative_model
 
     def fit(self, data: NormData):
         """
@@ -111,8 +173,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             # Fit and predict
             self._fit_predict(resp_fit_data, resp_predict_data)
 
-        self.quantiles(predict_data, [-1.0, 0.0, 1.0])
-
+        # predict_data.plot_quantiles()
         # Get the results
         results = self.evaluate(predict_data)
         return results
@@ -201,28 +262,36 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         """
         Contains evaluation logic.
         """
+        self.compute_zscores(data)
+        self.compute_quantiles(data, [-1.0, 0.0, 1.0])
+
         results = {}
+        data["Yhat"] = data.quantiles(0.0)
+        data["S2"] = data.quantiles(1.0)
 
-        results["Yhat"] = self.compute_yhat(data)
-        # results["S2"] = self.compute_s2(data)
-        # results["Z"] = self.evaluate_zscores(data)
-
-        # results["Rho"] = self.evaluate_rho(data)
-        # results["RMSE"] = self.evaluate_rmse(data)
-        # results["SMSE"] = self.evaluate_smse(data)
-        # results["EXPV"] = self.evaluate_expv(data)
+        results["Rho"] = self.evaluate_rho(data)
+        results["RMSE"] = self.evaluate_rmse(data)
+        results["SMSE"] = self.evaluate_smse(data)
+        results["EXPV"] = self.evaluate_expv(data)
         # results["MSLL"] = self.evaluate_msll(data)
         # results["NLL"] = self.evaluate_nll(data)
-        # results["BIC"] = self.evaluate_bic(data)
+        results["BIC"] = self.evaluate_bic(data)
 
         return results
 
-    def quantiles(self, data: NormData, quantiles: list[float]):
+    def compute_quantiles(self, data: NormData, z_scores: list[float]):
         # Preprocess the data
         self.preprocess(data)
 
+        # Create an empty array to store the scaledquantiles
+        data["scaled_quantiles"] = xr.DataArray(
+            np.zeros((len(z_scores), len(self.response_vars), data.X.shape[0])),
+            dims=("quantile_zscores", "response_vars", "datapoints"),
+            coords={"quantile_zscores": z_scores},
+        )
+
         # Predict for each response variable
-        for responsevar in self.response_vars:
+        for i, responsevar in enumerate(self.response_vars):
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
 
@@ -236,118 +305,125 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             self.current_responsevar = responsevar
             self.model = self.models[responsevar]
 
-            # Predict
-            self._quantiles(resp_predict_data, quantiles)
+            # Overwrite quantiles
+            data.scaled_quantiles.loc[{"response_vars": responsevar}] = self._quantiles(
+                resp_predict_data, z_scores
+            )
 
-            data[f"quantiles_{responsevar}"] = resp_predict_data[
-                f"quantiles_{responsevar}"
-            ]
-        # Return the results
-        results = self.evaluate(data)
-        return results
+        self.postprocess(data)
 
-    # def save(self):
-    #     """
-    #     Saves the normative model to a directory.
-    #     """
-    #     path = self.norm_conf.save_dir
-    #     if not os.path.exists(path):
-    #         os.makedirs(path, exist_ok=True)
-    #     self._save()
+    def compute_zscores(self, data: NormData):
+        # Preprocess the data
+        self.preprocess(data)
 
-    def save(self):
-        model_dict = {}
-        # Store the response variables
-        model_dict["response_vars"] = self.response_vars
-        # Store the normative model configuration
-        model_dict["norm_conf"] = self.norm_conf.to_dict()
-        # Store the regression model configuration
-        model_dict["reg_conf"] = self.reg_conf.to_dict()
-
-        # Store the regression models
-        model_dict["regression_models"] = self.models_to_dict(self.norm_conf.save_dir)
-
-        # Store the scalers
-        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
-        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
-
-        # Save the model_dict as json
-        model_dict_path = os.path.join(
-            self.norm_conf.save_dir, "normative_model_dict.json"
+        # Create an empty array to store the zscores
+        data["zscores"] = xr.DataArray(
+            np.zeros((len(self.response_vars), data.X.shape[0])),
+            dims=("response_vars", "datapoints"),
         )
-        print("Saving normative model to", model_dict_path)
-        with open(model_dict_path, "w") as f:
-            json.dump(model_dict, f, indent=4)
 
-    @classmethod
-    def load(cls, path):
-        # Load the model_dict from json
-        print("Loading normative model from", path)
-        model_dict_path = os.path.join(path, "normative_model_dict.json")
-        with open(model_dict_path, "r") as f:
-            model_dict = json.load(f)
+        # Predict for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
 
-        # Create the normative model
-        normconf = NormConf.from_args(model_dict["norm_conf"])
-        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
-        normative_model = cls(normconf, regconf)
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to find zscores for model {responsevar}, but it does not exist."
+                )
 
-        # Set the response variables
-        normative_model.response_vars = model_dict["response_vars"]
+            # Set self.model to the current model
+            self.current_responsevar = responsevar
+            self.model = self.models[responsevar]
 
-        # Set the regression models
-        normative_model.dict_to_models(model_dict["regression_models"], path)
+            # Overwrite zscores
+            data.zscores.loc[{"response_vars": responsevar}] = self._zscores(
+                resp_predict_data
+            )
 
-        # Set the scalers
-        normative_model.inscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
-        }
-        normative_model.outscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
-        }
+        self.postprocess(data)
 
-        return normative_model
+    def evaluate_rho(self, data: NormData) -> float:
+        y = data["Y"].values
+        yhat = data["Yhat"].values
 
-    def set_save_dir(self, save_dir):
-        self.norm_conf.set_save_dir(save_dir)
+        rho, _ = stats.spearmanr(y, yhat)
+        return rho
 
-    @staticmethod
-    @abstractmethod
-    def reg_conf_from_dict(dict):
-        """
-        Creates a regression configuration from a dictionary.
-        """
-        pass
+    def evaluate_rmse(self, data: NormData):
+        y = data["Y"].values
+        yhat = data["Yhat"].values
 
-    @abstractmethod
-    def models_to_dict(self, path=None):
-        """
-        Returns a dictionary describing the regression models.
-        Takes an optional path argument, which can be used to save large model components to disk.
-        """
-        pass
+        rmse = np.sqrt(np.mean((y - yhat) ** 2))
+        return rmse
 
-    @abstractmethod
-    def dict_to_models(self, dict, path=None):
-        """
-        Creates the self.models attribute from a dictionary.
-        Takes an optional path argument, which can be used to load large model components from disk.
-        """
-        pass
+    def evaluate_smse(self, data: NormData):
+        y = data["Y"].values
+        yhat = data["Yhat"].values
 
-    # @classmethod
-    # @abstractmethod
-    # def load(cls, path) -> "NormBase":
-    #     """
+        mse = np.mean((y - yhat) ** 2)
+        variance = np.var(y)
+        smse = mse / variance if variance != 0 else 0
 
-    #     Contains all the loading logic that is specific to the regression model.
-    #     Path is a string that points to the directory where the model should be loaded from.
-    #     """
-    #     pass
+        return smse
 
-    @property
-    def norm_conf(self):
-        return self._norm_conf
+    def evaluate_expv(self, data: NormData) -> float:
+        y = data["Y"].values
+        yhat = data["Yhat"].values
+
+        expv = explained_variance_score(y, yhat)
+        return expv
+
+    def evaluate_msll(self, data: NormData) -> float:
+        # TODO check if this is correct
+
+        y = data["Y"].values
+        yhat = data["Yhat"].values
+        yhat_std = data["Yhat_std"]
+
+        # Calculate the log loss of the model's predictions
+        log_loss = np.mean((y - yhat) ** 2 / (2 * yhat_std**2) + np.log(yhat_std))
+
+        # Calculate the log loss of the naive model
+        naive_std = np.std(y)
+        naive_log_loss = np.mean(
+            (y - np.mean(y)) ** 2 / (2 * naive_std**2) + np.log(naive_std)
+        )
+
+        # Calculate MSLL
+        msll = log_loss - naive_log_loss
+
+        return msll
+
+    def evaluate_nll(self, data: NormData) -> float:
+        # TODO check if this is correct
+
+        # assume 'Y' is binary (0 or 1)
+        y = data["Y"].values
+        yhat = data["Yhat"].values
+
+        # Calculate the NLL
+        nll = -np.mean(y * np.log(yhat) + (1 - y) * np.log(1 - yhat))
+        return nll
+
+    def evaluate_bic(self, data: NormData) -> float:
+        n_params = self.n_params()
+
+        # Assuming 'data' is a NormData object with 'Y' and 'Yhat' DataArrays
+        y = data["Y"].values
+        yhat = data["Yhat"].values
+
+        # Calculate the residual sum of squares
+        rss = np.sum((y - yhat) ** 2)
+
+        # Calculate the number of observations
+        n = len(y)
+
+        # Calculate the BIC
+        bic = n * np.log(rss / n) + n_params * np.log(n)
+
+        return bic
 
     def preprocess(self, data: NormData) -> NormData:
         """
@@ -356,13 +432,15 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.scale_forward(data)
 
         # data.scale_forward(self.norm_conf.inscaler, self.norm_conf.outscaler)
-        data.expand_basis(self.norm_conf.basis_function)
+        data.expand_basis(
+            self.norm_conf.basis_function, basis_column=self.norm_conf.basis_column
+        )
 
     def postprocess(self, data: NormData) -> NormData:
         """
         Contains all the general postprocessing logic that is not specific to the regression model.
         """
-        data.scale_backward()
+        self.scale_backward(data)
 
     def scale_forward(self, data: NormData, overwrite=False):
         """
@@ -388,51 +466,49 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
-    @abstractmethod
-    def compute_yhat(self, data: NormData) -> float:
-        pass
+    def set_save_dir(self, save_dir):
+        self.norm_conf.set_save_dir(save_dir)
 
-    @abstractmethod
-    def compute_s2(self, data: NormData) -> float:
-        pass
+    def set_log_dir(self, log_dir):
+        self.norm_conf.set_log_dir(log_dir)
 
-    @abstractmethod
-    def evaluate_rho(self, data: NormData) -> float:
-        pass
+    #######################################################################################################
 
-    @abstractmethod
-    def evaluate_rmse(self, data: NormData) -> float:
-        pass
+    # all the methods below are abstract methods, which means they have to be implemented in the subclass
 
-    @abstractmethod
-    def evaluate_smse(self, data: NormData) -> float:
-        pass
+    #######################################################################################################
 
+    @classmethod
     @abstractmethod
-    def evaluate_expv(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_msll(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_nll(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_bic(self, data: NormData) -> float:
-        pass
-
-    @abstractmethod
-    def evaluate_zscores(self, data: NormData):
-        pass
-
-    @abstractmethod
-    def _fit_predict(self, data: NormData):
+    def from_args(cls, args):
         """
-        Acts as the adapter for fit_predict using the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
+        Creates a normative model from command line arguments.
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def reg_conf_from_args(dict):
+        """
+        Creates a regression configuration from a dictionary.
+        """
+        pass
+
+    @abstractmethod
+    def models_to_dict(self, path=None):
+        """
+        Returns a dictionary describing the regression models.
+        This dictionary is used to save the normative model to disk.
+        Takes an optional path argument, which can be used to save large model components to disk.
+        """
+        pass
+
+    @abstractmethod
+    def dict_to_models(self, dict, path=None):
+        """
+        Creates the self.models attribute from a dictionary.
+        This dictionary is loaded from disk, and is used to restore the normative model.
+        Takes an optional path argument, which can be used to load large model components from disk.
         """
         pass
 
@@ -448,6 +524,14 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     def _predict(self, data: NormData) -> NormData:
         """
         Acts as the adapter for prediction using the specific regression model.
+        Is not responsible for cv, logging, saving, etc.
+        """
+        pass
+
+    @abstractmethod
+    def _fit_predict(self, data: NormData):
+        """
+        Acts as the adapter for fit_predict using the specific regression model.
         Is not responsible for cv, logging, saving, etc.
         """
         pass
@@ -469,5 +553,21 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _quantiles(self, data: NormData, quantiles: list[float]):
+    def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
+        """Takes a list of quantiles and returns the corresponding quantiles of the model.
+        The return type is an xr.datarray with dimensions (quantile_zscores, datapoints).
+        """
+        pass
+
+    @abstractmethod
+    def _zscores(self, data: NormData) -> xr.DataArray:
+        """Returns the zscores of the model.
+        The return type is an xr.datarray with dimensions (datapoints)."""
+        pass
+
+    @abstractmethod
+    def n_params(self):
+        """
+        Returns the number of parameters of the model.
+        """
         pass

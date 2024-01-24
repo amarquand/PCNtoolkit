@@ -1,5 +1,6 @@
 from typing import Tuple, Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 from sklearn.model_selection import StratifiedKFold, train_test_split
@@ -9,21 +10,21 @@ from pcntoolkit.dataio.scaler import scaler
 
 
 class NormData(xr.Dataset):
-    """This class is only here as a placeholder for now. It will be used to store the data for fitting normative models."""
 
     """Should keep track of the dimensions and coordinates of the data, and provide consistency between splits of the data."""
 
     __slots__ = (
         "scaled_X",
         "scaled_y",
-        "inscaler",
-        "outscaler",
         "bspline_basis",
         "Phi",
         "batch_effects_maps",
         "name",
         "covariates",
         "basis_functions",
+        "scaled_quantiles",
+        "quantiles",
+        "zscores",
     )
 
     def __init__(self, name, data_vars, coords, attrs) -> None:
@@ -70,9 +71,14 @@ class NormData(xr.Dataset):
         pass
 
     @classmethod
-    def from_xarray(cls, xarray_dataset) -> "NormData":
+    def from_xarray(cls, name, xarray_dataset) -> "NormData":
         """Load a normative dataset from an xarray dataset."""
-        pass
+        return cls(
+            name,
+            xarray_dataset.data_vars,
+            xarray_dataset.coords,
+            xarray_dataset.attrs,
+        )
 
     @classmethod
     def from_dataframe(
@@ -169,6 +175,73 @@ class NormData(xr.Dataset):
         for response_var in self.response_vars:
             yield self.sel(response_vars=response_var)
 
+    def scale_forward(self, inscalers: dict[str, scaler], outscaler: dict[str, scaler]):
+        # Scale X column-wise using the inscalers
+        self.scaled_X = xr.DataArray(
+            np.zeros(self.X.shape),
+            coords=self.X.coords,
+            dims=self.X.dims,
+            attrs=self.X.attrs,
+        )
+        for covariate in self.covariates.to_numpy():
+            self.scaled_X.loc[:, covariate] = inscalers[covariate].transform(
+                self.X.sel(covariates=covariate).data
+            )
+
+        # Scale y column-wise using the outscalers
+        self.scaled_y = xr.DataArray(
+            np.zeros(self.y.shape),
+            coords=self.y.coords,
+            dims=self.y.dims,
+            attrs=self.y.attrs,
+        )
+        for responsevar in self.response_vars.to_numpy():
+            self.scaled_y.loc[:, responsevar] = outscaler[responsevar].transform(
+                self.y.sel(response_vars=responsevar).data
+            )
+
+    def scale_backward(
+        self, inscalers: dict[str, scaler], outscalers: dict[str, scaler]
+    ):
+        # Scale X column-wise using the inscalers
+        self["X"] = xr.DataArray(
+            np.zeros(self.scaled_X.shape),
+            coords=self.scaled_X.coords,
+            dims=self.scaled_X.dims,
+            attrs=self.scaled_X.attrs,
+        )
+        for covariate in self.covariates.to_numpy():
+            self.X.loc[:, covariate] = inscalers[covariate].inverse_transform(
+                self.scaled_X.sel(covariates=covariate).data
+            )
+
+        # Scale y column-wise using the outscalers
+        self["y"] = xr.DataArray(
+            np.zeros(self.scaled_y.shape),
+            coords=self.scaled_y.coords,
+            dims=self.scaled_y.dims,
+            attrs=self.scaled_y.attrs,
+        )
+        for responsevar in self.response_vars.to_numpy():
+            self.y.loc[:, responsevar] = outscalers[responsevar].inverse_transform(
+                self.scaled_y.sel(response_vars=responsevar).data
+            )
+
+        # Unscale the quantiles, if they exist
+        if "scaled_quantiles" in self.data_vars:
+            self["quantiles"] = xr.DataArray(
+                np.zeros(self.scaled_quantiles.shape),
+                coords=self.scaled_quantiles.coords,
+                dims=self.scaled_quantiles.dims,
+                attrs=self.scaled_quantiles.attrs,
+            )
+            for responsevar in self.response_vars.to_numpy():
+                self.quantiles.loc[:, responsevar] = outscalers[
+                    responsevar
+                ].inverse_transform(
+                    self.scaled_quantiles.sel(response_vars=responsevar).data
+                )
+
     def expand_basis(
         self,
         basis_expansion,
@@ -222,57 +295,45 @@ class NormData(xr.Dataset):
             dims=["datapoints", "basis_functions"],
         )
 
-    def scale_forward(self, inscalers: dict[str, scaler], outscaler: dict[str, scaler]):
-        # Scale X column-wise using the inscalers
-        self.scaled_X = xr.DataArray(
-            np.zeros(self.X.shape),
-            coords=self.X.coords,
-            dims=self.X.dims,
-            attrs=self.X.attrs,
-        )
-        for covariate in self.covariates.to_numpy():
-            self.scaled_X.loc[:, covariate] = inscalers[covariate].transform(
-                self.X.sel(covariates=covariate).data
-            )
-
-        # Scale y column-wise using the outscalers
-        self.scaled_y = xr.DataArray(
-            np.zeros(self.y.shape),
-            coords=self.y.coords,
-            dims=self.y.dims,
-            attrs=self.y.attrs,
-        )
-        for responsevar in self.response_vars.to_numpy():
-            self.scaled_y.loc[:, responsevar] = outscaler[responsevar].transform(
-                self.y.sel(response_vars=responsevar).data
-            )
-
-    def scale_backward(
-        self, inscalers: dict[str, scaler], outscalers: dict[str, scaler]
+    def plot_quantiles(
+        self, covariate: str = None, batch_effects: Union[str, list[str]] = None
     ):
-        # Scale X column-wise using the inscalers
-        self["X"] = xr.DataArray(
-            np.zeros(self.scaled_X.shape),
-            coords=self.scaled_X.coords,
-            dims=self.scaled_X.dims,
-            attrs=self.scaled_X.attrs,
-        )
-        for covariate in self.covariates.to_numpy():
-            self.X.loc[:, covariate] = inscalers[covariate].inverse_transform(
-                self.scaled_X.sel(covariates=covariate).data
-            )
+        """Plot the quantiles for all response variables."""
+        for response_var in self.coords["response_vars"].to_numpy():
+            self._plot_quantiles(response_var, covariate, batch_effects)
 
-        # Scale y column-wise using the outscalers
-        self["y"] = xr.DataArray(
-            np.zeros(self.scaled_y.shape),
-            coords=self.scaled_y.coords,
-            dims=self.scaled_y.dims,
-            attrs=self.scaled_y.attrs,
-        )
-        for responsevar in self.response_vars.to_numpy():
-            self.y.loc[:, responsevar] = outscalers[responsevar].inverse_transform(
-                self.scaled_y.sel(response_vars=responsevar).data
+    def _plot_quantiles(
+        self,
+        response_var: str,
+        covariate: str = None,
+        batch_effects: Union[str, list[str]] = None,
+    ):
+        """Plot the quantiles for a single response variable."""
+        # Use the first covariate, if not specified
+        if covariate is None:
+            covariate = self.covariates[0]
+
+        # Set all batch effects to 0 if not specified
+        if batch_effects is None:
+            batch_effects = [0] * len(self.coords["batch_effect_dims"])
+
+        # Filter the covariate and responsevar that are to be plotted
+        filter_dict = {
+            "covariates": covariate,
+            "response_vars": response_var,
+        }
+        filtered = self.sel(filter_dict)
+
+        # Filter out the correct batch effects
+        filtered: xr.Dataset = filtered.where(filtered.batch_effects == batch_effects)
+
+        plt.figure()
+        for zscore in self.coords["z_scores"]:
+            plt.plot(
+                filtered.X, filtered.quantiles.sel(z_scores=zscore), label=f"z={zscore}"
             )
+        plt.title(f"Quantiles for {response_var}")
+        plt.show()
 
     def sel(self, *args, **kwargs):
         result = super().sel(*args, **kwargs)
@@ -287,3 +348,9 @@ class NormData(xr.Dataset):
         result.batch_effects_maps = self.batch_effects_maps
         result.name = self.name
         return result
+
+    def where(self, *args, **kwargs):
+        result = super().where(*args, **kwargs)
+        norm_data = NormData.from_xarray(self.name, result)
+        norm_data.batch_effects_maps = self.batch_effects_maps
+        return norm_data
