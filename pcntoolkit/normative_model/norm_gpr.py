@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-from xarray.core.dataarray import DataArray
+import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
@@ -16,7 +16,8 @@ class NormGPR(NormBase):
     def __init__(self, norm_conf: NormConf, reg_conf: GPRConf):
         super().__init__(norm_conf)
         self._reg_conf: GPRConf = reg_conf
-        self.model = GPR
+        self.model_type = GPR
+        self.model: GPR = None
 
     @classmethod
     def from_args(cls, args):
@@ -77,17 +78,17 @@ class NormGPR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _quantiles(self, data: NormData, quantiles: list[float]) -> DataArray:
+    def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
         raise NotImplementedError(
             f"Quantiles method not implemented for {self.__class__.__name__}"
         )
 
-    def _zscores(self, data: NormData) -> DataArray:
+    def _zscores(self, data: NormData) -> xr.DataArray:
         raise NotImplementedError(
             f"Zscores method not implemented for {self.__class__.__name__}"
         )
 
-    def n_params(self) -> DataArray:
+    def n_params(self) -> xr.DataArray:
         raise NotImplementedError(
             f"n_params method not implemented for {self.__class__.__name__}"
         )
