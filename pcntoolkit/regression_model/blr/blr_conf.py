@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 
 from pcntoolkit.regression_model.reg_conf import RegConf
@@ -7,9 +6,8 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 @dataclass(frozen=True)
 class BLRConf(RegConf):
     # some configuration parameters
-    # ...
-    # example parameter. This is an int and has a default value of 0.
-    example_parameter: int = 0
+    n_iter: int = 100
+    tol: float = 1e-3
 
     def detect_configuration_problems(self) -> str:
         """
