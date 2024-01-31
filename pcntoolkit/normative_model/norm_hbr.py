@@ -89,33 +89,28 @@ class NormHBR(NormBase):
             covariate_dims=this_covariate_dims,
             batch_effect_dims=data.batch_effect_dims.to_numpy(),
         )
-        hbrdata.set_batch_effects_maps(data.batch_effects_maps)
+        hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return hbrdata
 
     def _fit(self, data: NormData, make_new_model=False):
         # Transform the data to hbrdata
         hbrdata = self.normdata_to_hbrdata(data)
 
-        # Assert that the model is not already fitted
-        if not self.model.is_fitted:
-            # Make a new model if needed
-            if make_new_model or (not self.model.model):
-                self.model.create_pymc_model(hbrdata)
+        # Make a new model if needed
+        if make_new_model or (not self.model.model):
+            self.model.create_pymc_model(hbrdata)
 
-            # Sample from pymc model
-            with self.model.model:
-                self.model.idata = pm.sample(
-                    self.reg_conf.draws,
-                    tune=self.reg_conf.tune,
-                    cores=self.reg_conf.cores,
-                    chains=self.reg_conf.chains,
-                )
+        # Sample from pymc model
+        with self.model.model:
+            self.model.idata = pm.sample(
+                self.reg_conf.draws,
+                tune=self.reg_conf.tune,
+                cores=self.reg_conf.cores,
+                chains=self.reg_conf.chains,
+            )
 
-            # Set the is_fitted flag to True
-            self.model.is_fitted = True
-
-        else:
-            raise RuntimeError("Model is already fitted.")
+        # Set the is_fitted flag to True
+        self.model.is_fitted = True
 
     def _predict(self, data: NormData) -> NormData:
         # Assert that the model is fitted
@@ -144,36 +139,32 @@ class NormHBR(NormBase):
         fit_hbrdata = self.normdata_to_hbrdata(fit_data)
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
 
-        # Assert that the model is not already fitted
-        if not self.model.is_fitted:
-            # Make a new model if needed
-            if not self.model.model:
-                self.model.create_pymc_model(fit_hbrdata)
+        # Make a new model if needed
+        if not self.model.model:
+            self.model.create_pymc_model(fit_hbrdata)
 
-            # Sample from pymc model
-            with self.model.model:
-                self.model.idata = pm.sample(
-                    self.reg_conf.draws,
-                    tune=self.reg_conf.tune,
-                    cores=self.reg_conf.cores,
-                    chains=self.reg_conf.chains,
-                )
+        # Sample from pymc model
+        with self.model.model:
+            self.model.idata = pm.sample(
+                self.reg_conf.draws,
+                tune=self.reg_conf.tune,
+                cores=self.reg_conf.cores,
+                chains=self.reg_conf.chains,
+            )
 
-            # Set the is_fitted flag to True
-            self.model.is_fitted = True
+        # Set the is_fitted flag to True
+        self.model.is_fitted = True
 
-            # Set the data in the model
-            predict_hbrdata.set_data_in_existing_model(self.model.model)
+        # Set the data in the model
+        predict_hbrdata.set_data_in_existing_model(self.model.model)
 
-            # Sample from the posterior predictive
-            with self.model.model:
-                pm.sample_posterior_predictive(
-                    self.model.idata,
-                    extend_inferencedata=True,
-                    var_names=self.get_var_names(),
-                )
-        else:
-            raise RuntimeError("Model is already fitted.")
+        # Sample from the posterior predictive
+        with self.model.model:
+            pm.sample_posterior_predictive(
+                self.model.idata,
+                extend_inferencedata=True,
+                var_names=self.get_var_names(),
+            )
 
     def _transfer(self, data: NormData) -> "HBR":
         # Transform the data to hbrdata
@@ -221,7 +212,7 @@ class NormHBR(NormBase):
 
         # Create a new pymc model if needed
         if self.model.model is None:
-            self.model.create_pymc_model(hbrdata, sample_nodes=True)
+            self.model.create_pymc_model(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.model.model)
@@ -271,7 +262,7 @@ class NormHBR(NormBase):
 
         # Create a new pymc model if needed
         if self.model.model is None:
-            self.model.create_pymc_model(hbrdata, sample_nodes=True)
+            self.model.create_pymc_model(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.model.model)
@@ -372,3 +363,6 @@ class NormHBR(NormBase):
         else:
             exit("Unsupported likelihood")
         return Z
+
+    def n_params(self):
+        return 1

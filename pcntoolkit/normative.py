@@ -243,23 +243,23 @@ def make_synthetic_data():
 
 
 def main():
-    make_synthetic_data()
+    # make_synthetic_data()
 
-    conf_dict = get_conf_dict_from_args()
-    # conf_dict = {
-    #     "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
-    #     "func": "fit",
-    #     "maskfile": None,
-    #     "covfile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv",
-    #     "cvfolds": None,
-    #     "testcov": None,
-    #     "testresp": None,
-    #     "alg": "hbr",
-    #     "trbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv",
-    #     "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/save_load_test",
-    #     "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/log_test",
-    #     "basis_function": "bspline",
-    # }
+    # conf_dict = get_conf_dict_from_args()
+    conf_dict = {
+        "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
+        "func": "predict",
+        "maskfile": None,
+        "covfile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv",
+        "cvfolds": None,
+        "testcov": None,
+        "testresp": None,
+        "alg": "hbr",
+        "trbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv",
+        "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/hbr/save_load_test",
+        "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/hbr/log_test",
+        "basis_function": "bspline",
+    }
 
     func = conf_dict.pop("func")
     if func == "fit":

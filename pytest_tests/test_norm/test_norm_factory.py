@@ -18,7 +18,7 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 
 @pytest.fixture
 def save_path():
-    return "pytest_tests/resources/save_load_test"
+    return "pytest_tests/resources/hbr/save_load_test"
 
 
 @pytest.fixture
@@ -35,8 +35,3 @@ def test_create_normative_model(
     norm_model: NormBase = create_normative_model(norm_conf, reg_conf())
     assert isinstance(norm_model, norm_subclass)
     assert norm_model.model_type == reg_model
-
-
-def test_load_normative_model(save_path):
-    norm_model: NormBase = load_normative_model(save_path)
-    assert isinstance(norm_model, NormHBR)

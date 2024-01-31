@@ -97,3 +97,4 @@ pytest_tests/resources/hbr/save_load_test/idata_response_var_0.nc
 pytest_tests/resources/hbr/save_load_test/idata_response_var_1.nc
 pytest_tests/resources/hbr/save_load_test_without_idata/normative_model_dict.json
 pytest_tests/resources/hbr/save_load_test/normative_model_dict.json
+prof/*
