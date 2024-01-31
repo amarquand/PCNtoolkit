@@ -61,13 +61,32 @@ class HBRConf(RegConf):
         args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
         likelihood = args_filt.get("likelihood", "Normal")
         if likelihood == "Normal":
-            args_filt["mu"] = Param.from_dict("mu", dict)
-            args_filt["sigma"] = Param.from_dict("sigma", dict)
+            args_filt["mu"] = Param.from_args("mu", dict)
+            args_filt["sigma"] = Param.from_args("sigma", dict)
         elif likelihood.startswith("SHASH"):
-            args_filt["mu"] = Param.from_dict("mu", dict)
-            args_filt["sigma"] = Param.from_dict("sigma", dict)
-            args_filt["epsilon"] = Param.from_dict("epsilon", dict)
-            args_filt["delta"] = Param.from_dict("delta", dict)
+            args_filt["mu"] = Param.from_args("mu", dict)
+            args_filt["sigma"] = Param.from_args("sigma", dict)
+            args_filt["epsilon"] = Param.from_args("epsilon", dict)
+            args_filt["delta"] = Param.from_args("delta", dict)
+        self = cls(**args_filt)
+        return self
+
+    @classmethod
+    def from_dict(cls, dict):
+        """
+        Creates a configuration from a dictionary.
+        """
+        # Filter out the arguments that are not relevant for this configuration
+        args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
+        likelihood = args_filt.get("likelihood", "Normal")
+        if likelihood == "Normal":
+            args_filt["mu"] = Param.from_dict(dict["mu"])
+            args_filt["sigma"] = Param.from_dict(dict["sigma"])
+        elif likelihood.startswith("SHASH"):
+            args_filt["mu"] = Param.from_dict(dict["mu"])
+            args_filt["sigma"] = Param.from_dict(dict["sigma"])
+            args_filt["epsilon"] = Param.from_dict(dict["epsilon"])
+            args_filt["delta"] = Param.from_dict(dict["delta"])
         self = cls(**args_filt)
         return self
 

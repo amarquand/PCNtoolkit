@@ -64,7 +64,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # Create the normative model
         normconf = NormConf.from_args(model_dict["norm_conf"])
-        regconf = cls.reg_conf_from_args(model_dict["reg_conf"])
+        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
         normative_model = cls(normconf, regconf)
 
         # Set the response variables
@@ -94,6 +94,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
 
         # Fit the model for each response variable
+        print(f"Going to fit {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_fit_data = data.sel(response_vars=responsevar)
@@ -103,11 +104,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 self.models[responsevar] = self.model_type(self.reg_conf)
 
             # Set self.model to the current model
-            self.current_responsevar = responsevar
-            self.model = self.models[responsevar]
+            self.prepare(responsevar)
 
             # Fit the model
+            print(f"Fitting model for {responsevar}")
             self._fit(resp_fit_data)
+
+            self.reset()
 
     def predict(self, data: NormData) -> NormData:
         """
@@ -118,6 +121,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.preprocess(data)
 
         # Predict for each response variable
+        print(f"Going to predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -129,11 +133,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 )
 
             # Set self.model to the current model
-            self.current_responsevar = responsevar
-            self.model = self.models[responsevar]
+            self.prepare(responsevar)
 
             # Predict
+            print(f"Predicting model for {responsevar}")
             self._predict(resp_predict_data)
+
+            self.reset()
 
         # Return the results
         results = self.evaluate(data)
@@ -157,6 +163,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
 
         # Fit and predict for each response variable
+        print(f"Going to fit and predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_fit_data = fit_data.sel(response_vars=responsevar)
@@ -167,11 +174,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 self.models[responsevar] = self.model_type(self.reg_conf)
 
             # Set self.model to the current model
-            self.current_responsevar = responsevar
-            self.model = self.models[responsevar]
+            self.prepare(responsevar)
 
             # Fit and predict
+            print(f"Fitting and predicting model for {responsevar}")
             self._fit_predict(resp_fit_data, resp_predict_data)
+
+            self.reset()
 
         # predict_data.plot_quantiles()
         # Get the results
@@ -188,6 +197,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         transfered_models = {}
 
         # Transfer for each response variable
+        print(f"Going to transfer {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_transfer_data = data.sel(response_vars=responsevar)
@@ -199,15 +209,22 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 )
 
             # Set self.model to the current model
-            self.model = self.models[responsevar]
+            self.prepare(responsevar)
 
             # Transfer
+            print(f"Transferring model for {responsevar}")
             transfered_models[responsevar] = self._transfer(resp_transfer_data)
 
+            self.reset()
+
         # Create a new normative model
+        # Change the reg_conf save_dir and log_dir
         transfered_normative_model = self.__class__(self.norm_conf, self.reg_conf)
 
         # Set the models
+        transfered_normative_model.response_vars = (
+            data.response_vars.to_numpy().copy().tolist()
+        )
         transfered_normative_model.models = transfered_models
 
         # Return the new model
@@ -263,102 +280,138 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         Contains evaluation logic.
         """
         self.compute_zscores(data)
-        self.compute_quantiles(data, [-1.0, 0.0, 1.0])
+        self.compute_quantiles(data)
+        self.compute_measures(data)
 
-        results = {}
-        data["Yhat"] = data.quantiles.sel(quantile_zscores=0.0)
-        data["S2"] = data.quantiles.sel(quantile_zscores=1.0)
-
-        results["Rho"] = self.evaluate_rho(data)
-        results["RMSE"] = self.evaluate_rmse(data)
-        results["SMSE"] = self.evaluate_smse(data)
-        results["EXPV"] = self.evaluate_expv(data)
-        # results["MSLL"] = self.evaluate_msll(data)
-        # results["NLL"] = self.evaluate_nll(data)
-        results["BIC"] = self.evaluate_bic(data)
-
-        return results
-
-    def compute_quantiles(self, data: NormData, z_scores: list[float]):
-        # Preprocess the data
-        self.preprocess(data)
-
-        # Create an empty array to store the scaledquantiles
-        data["scaled_quantiles"] = xr.DataArray(
-            np.zeros((len(z_scores), data.X.shape[0], len(self.response_vars))),
-            dims=("quantile_zscores", "datapoints", "response_vars"),
-            coords={"quantile_zscores": z_scores},
+    def compute_measures(self, data: NormData):
+        data["Yhat"] = data.quantiles.sel(quantile_zscores=0, method="nearest")
+        data["S2"] = data.quantiles.sel(quantile_zscores=1, method="nearest")
+        data["measures"] = xr.DataArray(
+            np.nan * np.ones((len(self.response_vars), 6)),
+            dims=("response_vars", "statistics"),
+            coords={
+                "response_vars": self.response_vars,
+                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "MSLL", "BIC"],
+            },
         )
 
-        # Predict for each response variable
-        for i, responsevar in enumerate(self.response_vars):
-            # Select the data for the current response variable
-            resp_predict_data = data.sel(response_vars=responsevar)
+        self.evaluate_rho(data)
+        self.evaluate_rmse(data)
+        self.evaluate_smse(data)
+        self.evaluate_expv(data)
+        # self.evaluate_msll(data)
+        # self.evaluate_nll(data)
+        self.evaluate_bic(data)
 
-            # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
-                raise ValueError(
-                    f"Attempted to find quantiles for model {responsevar}, but it does not exist."
-                )
-
-            # Set self.model to the current model
-            self.current_responsevar = responsevar
-            self.model = self.models[responsevar]
-
-            # Overwrite quantiles
-            data["scaled_quantiles"].loc[
-                {"response_vars": responsevar}
-            ] = self._quantiles(resp_predict_data, z_scores)
-
-        self.postprocess(data)
-
-    def compute_zscores(self, data: NormData):
-        # Preprocess the data
-        self.preprocess(data)
-
-        # Create an empty array to store the zscores
-        data["zscores"] = xr.DataArray(
-            np.zeros((data.X.shape[0], len(self.response_vars))),
-            dims=("datapoints", "response_vars"),
-        )
-
-        # Predict for each response variable
+    def evaluate_rho(self, data: NormData):
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
 
-            # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
-                raise ValueError(
-                    f"Attempted to find zscores for model {responsevar}, but it does not exist."
-                )
+            # Compute the measure
+            rho = self._evaluate_rho(resp_predict_data)
 
-            # Set self.model to the current model
-            self.current_responsevar = responsevar
-            self.model = self.models[responsevar]
+            # Store the measure
+            data.measures.loc[{"response_vars": responsevar, "statistics": "Rho"}] = rho
 
-            # Overwrite zscores
-            data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
-                resp_predict_data
-            )
+    def evaluate_rmse(self, data: NormData):
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
 
-        self.postprocess(data)
+            # Compute the measure
+            rmse = self._evaluate_rmse(resp_predict_data)
 
-    def evaluate_rho(self, data: NormData) -> float:
+            # Store the measure
+            data.measures.loc[
+                {"response_vars": responsevar, "statistics": "RMSE"}
+            ] = rmse
+
+    def evaluate_smse(self, data: NormData):
+        data["SMSE"] = self.empty_measure()
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            smse = self._evaluate_smse(resp_predict_data)
+
+            # Store the measure
+            data.measures.loc[
+                {"response_vars": responsevar, "statistics": "SMSE"}
+            ] = smse
+
+    def evaluate_expv(self, data: NormData):
+        data["ExpV"] = self.empty_measure()
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            expv = self._evaluate_expv(resp_predict_data)
+
+            # Store the measure
+            data.measures.loc[
+                {"response_vars": responsevar, "statistics": "ExpV"}
+            ] = expv
+
+    def evaluate_msll(self, data: NormData):
+        data["MSLL"] = self.empty_measure()
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            msll = self._evaluate_msll(resp_predict_data)
+
+            # Store the measure
+            data.measures.loc[
+                {"response_vars": responsevar, "statistics": "MSLL"}
+            ] = msll
+
+    def evaluate_nll(self, data: NormData):
+        data["NLL"] = self.empty_measure()
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            nll = self._evaluate_nll(resp_predict_data)
+
+            # Store the measure
+            data.measures.loc[{"response_vars": responsevar, "statistics": "NLL"}] = nll
+
+    def evaluate_bic(self, data: NormData):
+        data["BIC"] = self.empty_measure()
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            bic = self._evaluate_bic(resp_predict_data)
+
+            self.prepare(responsevar)
+
+            # Store the measure
+            data.measures.loc[{"response_vars": responsevar, "statistics": "BIC"}] = bic
+
+            self.reset()
+
+    def _evaluate_rho(self, data: NormData) -> float:
         y = data["y"].values
         yhat = data["Yhat"].values
 
         rho, _ = stats.spearmanr(y, yhat)
         return rho
 
-    def evaluate_rmse(self, data: NormData):
+    def _evaluate_rmse(self, data: NormData):
         y = data["y"].values
         yhat = data["Yhat"].values
 
         rmse = np.sqrt(np.mean((y - yhat) ** 2))
         return rmse
 
-    def evaluate_smse(self, data: NormData):
+    def _evaluate_smse(self, data: NormData):
         y = data["y"].values
         yhat = data["Yhat"].values
 
@@ -368,14 +421,14 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         return smse
 
-    def evaluate_expv(self, data: NormData) -> float:
+    def _evaluate_expv(self, data: NormData) -> float:
         y = data["y"].values
         yhat = data["Yhat"].values
 
         expv = explained_variance_score(y, yhat)
         return expv
 
-    def evaluate_msll(self, data: NormData) -> float:
+    def _evaluate_msll(self, data: NormData) -> float:
         # TODO check if this is correct
 
         y = data["y"].values
@@ -396,7 +449,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         return msll
 
-    def evaluate_nll(self, data: NormData) -> float:
+    def _evaluate_nll(self, data: NormData) -> float:
         # TODO check if this is correct
 
         # assume 'Y' is binary (0 or 1)
@@ -407,7 +460,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         nll = -np.mean(y * np.log(yhat) + (1 - y) * np.log(1 - yhat))
         return nll
 
-    def evaluate_bic(self, data: NormData) -> float:
+    def _evaluate_bic(self, data: NormData) -> float:
         n_params = self.n_params()
 
         # Assuming 'data' is a NormData object with 'Y' and 'Yhat' DataArrays
@@ -424,6 +477,86 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         bic = n * np.log(rss / n) + n_params * np.log(n)
 
         return bic
+
+    def empty_measure(self):
+        return xr.DataArray(
+            np.zeros(len(self.response_vars)),
+            dims=("response_vars"),
+            coords={"response_vars": self.response_vars},
+        )
+
+    def compute_quantiles(self, data: NormData, *args, **kwargs):
+        # Preprocess the data
+        self.preprocess(data)
+
+        quantiles_zscores = np.arange(-4, 4.1, 1.0)
+        # Create an empty array to store the scaledquantiles
+        data["scaled_quantiles"] = xr.DataArray(
+            np.zeros(
+                (len(quantiles_zscores), data.X.shape[0], len(self.response_vars))
+            ),
+            dims=("quantile_zscores", "datapoints", "response_vars"),
+            coords={"quantile_zscores": quantiles_zscores},
+        )
+
+        # Predict for each response variable
+        for i, responsevar in enumerate(self.response_vars):
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to find quantiles for model {responsevar}, but it does not exist."
+                )
+
+            # Set self.model to the current model
+            self.prepare(responsevar)
+
+            # Overwrite quantiles
+            print("Computing quantiles for", responsevar)
+            data["scaled_quantiles"].loc[
+                {"response_vars": responsevar}
+            ] = self._quantiles(resp_predict_data, quantiles_zscores, *args, **kwargs)
+
+            self.reset()
+
+        self.postprocess(data)
+
+    def compute_zscores(self, data: NormData, *args, **kwargs):
+        # Preprocess the data
+        self.preprocess(data)
+
+        # Create an empty array to store the zscores
+        data["zscores"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(self.response_vars))),
+            dims=("datapoints", "response_vars"),
+            coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
+        )
+
+        # Predict for each response variable
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # raise an error if the model has not been fitted yet
+            if not responsevar in self.models:
+                raise ValueError(
+                    f"Attempted to find zscores for model {responsevar}, but it does not exist."
+                )
+
+            # Set self.model to the current model
+            self.prepare(responsevar)
+
+            # Overwrite zscores
+            print("Computing zscores for", responsevar)
+            data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
+                resp_predict_data, *args, **kwargs
+            )
+
+            self.reset()
+
+        self.postprocess(data)
 
     def preprocess(self, data: NormData) -> NormData:
         """
@@ -471,6 +604,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def set_log_dir(self, log_dir):
         self.norm_conf.set_log_dir(log_dir)
+
+    def prepare(self, responsevar):
+        self.current_response_var = responsevar
+        self.model = self.models[responsevar]
+
+    def reset(self):
+        pass
 
     #######################################################################################################
 
@@ -553,14 +693,16 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
+    def _quantiles(
+        self, data: NormData, quantiles: list[float], *args, **kwargs
+    ) -> xr.DataArray:
         """Takes a list of quantiles and returns the corresponding quantiles of the model.
         The return type is an xr.datarray with dimensions (quantile_zscores, datapoints).
         """
         pass
 
     @abstractmethod
-    def _zscores(self, data: NormData) -> xr.DataArray:
+    def _zscores(self, data: NormData, *args, **kwargs) -> xr.DataArray:
         """Returns the zscores of the model.
         The return type is an xr.datarray with dimensions (datapoints)."""
         pass

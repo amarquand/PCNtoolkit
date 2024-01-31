@@ -57,7 +57,7 @@ class Param:
 
         else:
             # If the parameter is really only a single number, we need to add an empty dimension so our outputs are always 2D
-            if self.dims == ():
+            if (self.dims == ()) or (self.dims == []):
                 # self.dims = None
                 self.shape = (1,)
             else:
@@ -166,30 +166,28 @@ class Param:
                 raise ValueError(f"Unknown distribution name {dist_name}")
 
     @classmethod
-    def from_dict(cls, name: str, param_dict: Dict[str, any], dims=()):
-        if param_dict.get(f"linear_{name}", False):
-            slope = cls.from_dict(
-                f"slope_{name}", param_dict, dims=(*dims, "covariates")
-            )
-            intercept = cls.from_dict(f"intercept_{name}", param_dict, dims=dims)
+    def from_args(cls, name: str, args: Dict[str, any], dims=()):
+        if args.get(f"linear_{name}", False):
+            slope = cls.from_dict(f"slope_{name}", args, dims=(*dims, "covariates"))
+            intercept = cls.from_args(f"intercept_{name}", args, dims=dims)
             return cls(
                 name,
                 dims=dims,
                 linear=True,
                 slope=slope,
                 intercept=intercept,
-                mapping=param_dict.get(f"mapping_{name}", "identity"),
+                mapping=args.get(f"mapping_{name}", "identity"),
             )
-        elif param_dict.get(f"random_{name}", False):
-            if param_dict.get(f"centered_{name}", False):
-                mu = cls.from_dict(f"mu_{name}", param_dict, dims=dims)
-                sigma = cls.from_dict(f"sigma_{name}", param_dict, dims=dims)
+        elif args.get(f"random_{name}", False):
+            if args.get(f"centered_{name}", False):
+                mu = cls.from_args(f"mu_{name}", args, dims=dims)
+                sigma = cls.from_args(f"sigma_{name}", args, dims=dims)
                 return cls(
                     name, dims=dims, random=True, centered=True, mu=mu, sigma=sigma
                 )
             else:
-                mu = cls.from_dict(f"mu_{name}", param_dict, dims=dims)
-                sigma = cls.from_dict(f"sigma_{name}", param_dict, dims=dims)
+                mu = cls.from_args(f"mu_{name}", args, dims=dims)
+                sigma = cls.from_args(f"sigma_{name}", args, dims=dims)
                 return cls(
                     name, dims=dims, random=True, centered=False, mu=mu, sigma=sigma
                 )
@@ -202,8 +200,54 @@ class Param:
             return cls(
                 name,
                 dims=dims,
-                dist_name=param_dict.get(f"{name}_dist_name", default_dist),
-                dist_params=param_dict.get(f"{name}_dist_params", default_params),
+                dist_name=args.get(f"{name}_dist_name", default_dist),
+                dist_params=args.get(f"{name}_dist_params", default_params),
+            )
+
+    @classmethod
+    def from_dict(cls, dict):
+        if dict.get("linear", False):
+            slope = cls.from_dict(dict["slope"])
+            intercept = cls.from_dict(dict["intercept"])
+            return cls(
+                dict["name"],
+                dims=dict["dims"],
+                linear=True,
+                slope=slope,
+                intercept=intercept,
+                mapping=dict.get("mapping", "identity"),
+            )
+        elif dict.get("random", False):
+            if dict.get("centered", False):
+                mu = cls.from_dict(dict["mu"])
+                sigma = cls.from_dict(dict["sigma"])
+                return cls(
+                    dict["name"],
+                    dims=dict["dims"],
+                    random=True,
+                    centered=True,
+                    mu=mu,
+                    sigma=sigma,
+                )
+            else:
+                mu = cls.from_dict(dict["mu"])
+                sigma = cls.from_dict(dict["sigma"])
+                return cls(
+                    dict["name"],
+                    dims=dict["dims"],
+                    random=True,
+                    centered=False,
+                    mu=mu,
+                    sigma=sigma,
+                )
+        else:
+            return cls(
+                dict["name"],
+                dims=dict["dims"],
+                dist_name=dict.get("dist_name", "Normal"),
+                dist_params=dict.get("dist_params", (0.0, 1.0)),
+                mapping=dict.get("mapping", "identity"),
+                mapping_params=dict.get("mapping_params", (0.0, 1.0)),
             )
 
     def set_noncentered_random_params(self):
@@ -273,6 +317,8 @@ class Param:
             "centered": self.centered,
             "has_covariate_dim": self.has_covariate_dim,
             "has_random_effect": self.has_random_effect,
+            "mapping": self.mapping,
+            "mapping_params": self.mapping_params,
         }
         if self.linear:
             param_dict["slope"] = self.slope.to_dict()

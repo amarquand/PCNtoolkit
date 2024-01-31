@@ -15,6 +15,7 @@ class HBRData:
         response_var_dims: List = None,
         covariate_dims: List = None,
         batch_effect_dims: List = None,
+        datapoint_coords: List = None,
     ):
         self.check_and_set_data(X, y, batch_effects)
 
@@ -29,9 +30,12 @@ class HBRData:
         self._coords_mutable = OrderedDict()
 
         # Create datapoint coordinates
-        self._coords_mutable["datapoints"] = [
-            f"datapoint_{i}" for i in np.arange(self._n_datapoints)
-        ]
+        if datapoint_coords is None:
+            self._coords_mutable["datapoints"] = [
+                f"datapoint_{i}" for i in np.arange(self._n_datapoints)
+            ]
+        else:
+            self._coords_mutable["datapoints"] = datapoint_coords
 
         # Create covariate dims if they are not provided
         self.covariate_dims = covariate_dims
@@ -135,16 +139,14 @@ class HBRData:
         model.set_data(
             "X",
             self.X,
-            coords={
-                "datapoints": [f"datapoint_{i}" for i in np.arange(self._n_datapoints)]
-            },
+            coords={"datapoints": self._coords_mutable["datapoints"]},
         )
         self.pm_X = model["X"]
         model.set_data("y", self.y)
         self.pm_y = model["y"]
         be_acc = []
         for i in range(self._n_batch_effect_columns):
-            model.set_data(self.batch_effect_dims[i], self.batch_effect_indices[i])
+            model.set_data(str(self.batch_effect_dims[i]), self.batch_effect_indices[i])
             be_acc.append(model[self.batch_effect_dims[i]])
         self.pm_batch_effect_indices = tuple(be_acc)
 
