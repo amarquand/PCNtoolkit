@@ -14,23 +14,22 @@ class NormData(xr.Dataset):
     """Should keep track of the dimensions and coordinates of the data, and provide consistency between splits of the data."""
 
     __slots__ = (
+        "X",
+        "y",
         "scaled_X",
         "scaled_y",
-        "bspline_basis",
         "Phi",
-        "batch_effects_maps",
-        "name",
-        "covariates",
-        "basis_functions",
         "scaled_quantiles",
         "quantiles",
         "zscores",
     )
 
-    def __init__(self, name, data_vars, coords, attrs) -> None:
+    def __init__(self, name, data_vars, coords, attrs=None) -> None:
+        if attrs is None:
+            attrs = {}
+        attrs["name"] = name
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
         self.create_batch_effects_maps()
-        self.name = name
 
     @classmethod
     def from_ndarrays(cls, name, X, y, batch_effects, attrs=None):
@@ -113,8 +112,7 @@ class NormData(xr.Dataset):
         self, splits: Tuple[float, ...], split_names: Tuple[str, ...] = None
     ) -> Tuple["NormData", ...]:
         """Split the data into 2 datasets."""
-
-        batch_effects_added_strings = np.core.defchararray.add(
+        batch_effects_stringified = np.core.defchararray.add(
             *[
                 self.batch_effects[:, i].astype(str)
                 for i in range(self.batch_effects.shape[1])
@@ -124,12 +122,18 @@ class NormData(xr.Dataset):
             np.arange(self.X.shape[0]),
             test_size=splits[1],
             random_state=42,
-            stratify=batch_effects_added_strings,
+            stratify=batch_effects_stringified,
         )
         split1 = self.isel(datapoints=train_idx)
+        split1.attrs = self.attrs.copy()
         split2 = self.isel(datapoints=test_idx)
-        split1.name = split_names[0]
-        split2.name = split_names[1]
+        split2.attrs = self.attrs.copy()
+        if split_names is not None:
+            split1.attrs["name"] = split_names[0]
+            split2.attrs["name"] = split_names[1]
+        else:
+            split1.attrs["name"] = f"{self.attrs['name']}_train"
+            split2.attrs["name"] = f"{self.attrs['name']}_test"
         return split1, split2
 
     def kfold_split(self, k: int):
@@ -148,18 +152,16 @@ class NormData(xr.Dataset):
         ):
             split1 = self.isel(datapoints=train_idx)
             split2 = self.isel(datapoints=test_idx)
-            split1.name = "train"
-            split2.name = "test"
-
             yield split1, split2
 
     def create_batch_effects_maps(self):
         # create a dictionary with for each column in the batch effects, a dict from value to int
-        self.batch_effects_maps = {}
+        batch_effects_maps = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-            self.batch_effects_maps[dim] = {
+            batch_effects_maps[dim] = {
                 value: j for j, value in enumerate(np.unique(self.batch_effects[:, i]))
             }
+        self.attrs["batch_effects_maps"] = batch_effects_maps
 
     def is_compatible_with(self, other: "NormData"):
         """Check if the data is compatible with another dataset."""
@@ -167,17 +169,19 @@ class NormData(xr.Dataset):
         same_batch_effect_dims = np.all(
             self.batch_effect_dims == other.batch_effect_dims
         )
-        same_batch_effects_maps = self.batch_effects_maps == other.batch_effects_maps
+        same_batch_effects_maps = (
+            self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
+        )
         return same_covariates and same_batch_effect_dims and same_batch_effects_maps
 
-    def responsevar_iter(self):
-        # Returns an iterator over NormData objects, each containing only one response variable
-        for response_var in self.response_vars:
-            yield self.sel(response_vars=response_var)
+    # def responsevar_iter(self):
+    #     # Returns an iterator over NormData objects, each containing only one response variable
+    #     for response_var in self.response_vars:
+    #         yield self.sel(response_vars=response_var)
 
     def scale_forward(self, inscalers: dict[str, scaler], outscaler: dict[str, scaler]):
         # Scale X column-wise using the inscalers
-        self.scaled_X = xr.DataArray(
+        self["scaled_X"] = xr.DataArray(
             np.zeros(self.X.shape),
             coords=self.X.coords,
             dims=self.X.dims,
@@ -189,7 +193,7 @@ class NormData(xr.Dataset):
             )
 
         # Scale y column-wise using the outscalers
-        self.scaled_y = xr.DataArray(
+        self["scaled_y"] = xr.DataArray(
             np.zeros(self.y.shape),
             coords=self.y.coords,
             dims=self.y.dims,
@@ -236,7 +240,7 @@ class NormData(xr.Dataset):
                 attrs=self.scaled_quantiles.attrs,
             )
             for responsevar in self.response_vars.to_numpy():
-                self.quantiles.loc[:, responsevar] = outscalers[
+                self.quantiles.loc[{"response_vars": responsevar}] = outscalers[
                     responsevar
                 ].inverse_transform(
                     self.scaled_quantiles.sel(response_vars=responsevar).data
@@ -270,14 +274,17 @@ class NormData(xr.Dataset):
                 [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
             )
         elif basis_expansion == "bspline":
-            self.bspline_basis = create_bspline_basis(
+            self.attrs["bspline_basis"] = create_bspline_basis(
                 np.min(source_array[:, basis_column]),
                 np.max(source_array.data[:, basis_column]),
                 order,
                 nknots,
             )
             expanded_basis = np.array(
-                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
+                [
+                    self.attrs["bspline_basis"](c)
+                    for c in source_array.data[:, basis_column]
+                ]
             )
             all_arrays.append(expanded_basis)
             all_dims.extend(
@@ -334,23 +341,3 @@ class NormData(xr.Dataset):
             )
         plt.title(f"Quantiles for {response_var}")
         plt.show()
-
-    def sel(self, *args, **kwargs):
-        result = super().sel(*args, **kwargs)
-        result.__class__ = NormData
-        result.batch_effects_maps = self.batch_effects_maps
-        result.name = self.name
-        return result
-
-    def isel(self, *args, **kwargs):
-        result = super().isel(*args, **kwargs)
-        result.__class__ = NormData
-        result.batch_effects_maps = self.batch_effects_maps
-        result.name = self.name
-        return result
-
-    def where(self, *args, **kwargs):
-        result = super().where(*args, **kwargs)
-        norm_data = NormData.from_xarray(self.name, result)
-        norm_data.batch_effects_maps = self.batch_effects_maps
-        return norm_data

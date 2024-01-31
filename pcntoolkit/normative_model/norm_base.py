@@ -266,8 +266,8 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.compute_quantiles(data, [-1.0, 0.0, 1.0])
 
         results = {}
-        data["Yhat"] = data.quantiles(0.0)
-        data["S2"] = data.quantiles(1.0)
+        data["Yhat"] = data.quantiles.sel(quantile_zscores=0.0)
+        data["S2"] = data.quantiles.sel(quantile_zscores=1.0)
 
         results["Rho"] = self.evaluate_rho(data)
         results["RMSE"] = self.evaluate_rmse(data)
@@ -285,8 +285,8 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # Create an empty array to store the scaledquantiles
         data["scaled_quantiles"] = xr.DataArray(
-            np.zeros((len(z_scores), len(self.response_vars), data.X.shape[0])),
-            dims=("quantile_zscores", "response_vars", "datapoints"),
+            np.zeros((len(z_scores), data.X.shape[0], len(self.response_vars))),
+            dims=("quantile_zscores", "datapoints", "response_vars"),
             coords={"quantile_zscores": z_scores},
         )
 
@@ -306,9 +306,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             self.model = self.models[responsevar]
 
             # Overwrite quantiles
-            data.scaled_quantiles.loc[{"response_vars": responsevar}] = self._quantiles(
-                resp_predict_data, z_scores
-            )
+            data["scaled_quantiles"].loc[
+                {"response_vars": responsevar}
+            ] = self._quantiles(resp_predict_data, z_scores)
 
         self.postprocess(data)
 
@@ -318,8 +318,8 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # Create an empty array to store the zscores
         data["zscores"] = xr.DataArray(
-            np.zeros((len(self.response_vars), data.X.shape[0])),
-            dims=("response_vars", "datapoints"),
+            np.zeros((data.X.shape[0], len(self.response_vars))),
+            dims=("datapoints", "response_vars"),
         )
 
         # Predict for each response variable
@@ -338,28 +338,28 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             self.model = self.models[responsevar]
 
             # Overwrite zscores
-            data.zscores.loc[{"response_vars": responsevar}] = self._zscores(
+            data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
                 resp_predict_data
             )
 
         self.postprocess(data)
 
     def evaluate_rho(self, data: NormData) -> float:
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         rho, _ = stats.spearmanr(y, yhat)
         return rho
 
     def evaluate_rmse(self, data: NormData):
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         rmse = np.sqrt(np.mean((y - yhat) ** 2))
         return rmse
 
     def evaluate_smse(self, data: NormData):
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         mse = np.mean((y - yhat) ** 2)
@@ -369,7 +369,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         return smse
 
     def evaluate_expv(self, data: NormData) -> float:
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         expv = explained_variance_score(y, yhat)
@@ -378,7 +378,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     def evaluate_msll(self, data: NormData) -> float:
         # TODO check if this is correct
 
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
         yhat_std = data["Yhat_std"]
 
@@ -400,7 +400,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         # TODO check if this is correct
 
         # assume 'Y' is binary (0 or 1)
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         # Calculate the NLL
@@ -411,7 +411,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         n_params = self.n_params()
 
         # Assuming 'data' is a NormData object with 'Y' and 'Yhat' DataArrays
-        y = data["Y"].values
+        y = data["y"].values
         yhat = data["Yhat"].values
 
         # Calculate the residual sum of squares
