@@ -1,0 +1,265 @@
+{
+    "response_vars": [
+        "WM-hypointensities",
+        "Left-Lateral-Ventricle",
+        "rh_MeanThickness_thickness"
+    ],
+    "norm_conf": {
+        "perform_cv": false,
+        "cv_folds": 0,
+        "savemodel": true,
+        "saveresults": false,
+        "log_dir": "resources/log_dir",
+        "save_dir": "resources/save_dir",
+        "basis_function": "bspline",
+        "basis_column": 0,
+        "order": 3,
+        "nknots": 5,
+        "inscaler": "standardize",
+        "outscaler": "standardize",
+        "normative_model_name": "NormHBR"
+    },
+    "reg_conf": {
+        "draws": 1500,
+        "tune": 500,
+        "cores": 4,
+        "likelihood": "SHASHb",
+        "mu": {
+            "name": "mu",
+            "dims": [],
+            "dist_name": "Normal",
+            "dist_params": [
+                0,
+                1
+            ],
+            "linear": true,
+            "random": false,
+            "centered": false,
+            "has_covariate_dim": false,
+            "has_random_effect": false,
+            "mapping": "identity",
+            "mapping_params": [
+                0,
+                1
+            ],
+            "slope": {
+                "name": "slope_mu",
+                "dims": [
+                    "covariates"
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ],
+                "linear": false,
+                "random": false,
+                "centered": false,
+                "has_covariate_dim": true,
+                "has_random_effect": false,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ]
+            },
+            "intercept": {
+                "name": "intercept_mu",
+                "dims": [],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ],
+                "linear": false,
+                "random": true,
+                "centered": false,
+                "has_covariate_dim": false,
+                "has_random_effect": false,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ],
+                "mu": {
+                    "name": "mu_intercept_mu",
+                    "dims": [],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0,
+                        1
+                    ],
+                    "linear": false,
+                    "random": false,
+                    "centered": false,
+                    "has_covariate_dim": false,
+                    "has_random_effect": false,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ]
+                },
+                "sigma": {
+                    "name": "sigma_intercept_mu",
+                    "dims": [],
+                    "dist_name": "HalfNormal",
+                    "dist_params": [
+                        1
+                    ],
+                    "linear": false,
+                    "random": false,
+                    "centered": false,
+                    "has_covariate_dim": false,
+                    "has_random_effect": false,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ]
+                }
+            }
+        },
+        "sigma": {
+            "name": "sigma",
+            "dims": [],
+            "dist_name": "Normal",
+            "dist_params": [
+                0,
+                1
+            ],
+            "linear": true,
+            "random": false,
+            "centered": false,
+            "has_covariate_dim": false,
+            "has_random_effect": false,
+            "mapping": "softplus",
+            "mapping_params": [
+                0,
+                1
+            ],
+            "slope": {
+                "name": "slope_sigma",
+                "dims": [
+                    "covariates"
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ],
+                "linear": false,
+                "random": false,
+                "centered": false,
+                "has_covariate_dim": true,
+                "has_random_effect": false,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ]
+            },
+            "intercept": {
+                "name": "intercept_sigma",
+                "dims": [],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ],
+                "linear": false,
+                "random": false,
+                "centered": false,
+                "has_covariate_dim": false,
+                "has_random_effect": false,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ]
+            }
+        },
+        "epsilon": {
+            "name": "epsilon",
+            "dims": [],
+            "dist_name": "Normal",
+            "dist_params": [
+                1
+            ],
+            "linear": false,
+            "random": false,
+            "centered": false,
+            "has_covariate_dim": false,
+            "has_random_effect": false,
+            "mapping": "identity",
+            "mapping_params": [
+                0,
+                1
+            ]
+        },
+        "delta": {
+            "name": "delta",
+            "dims": [],
+            "dist_name": "HalfNormal",
+            "dist_params": [
+                1
+            ],
+            "linear": false,
+            "random": false,
+            "centered": false,
+            "has_covariate_dim": false,
+            "has_random_effect": false,
+            "mapping": "identity",
+            "mapping_params": [
+                0,
+                1
+            ]
+        }
+    },
+    "regression_models": {
+        "WM-hypointensities": {
+            "is_fitted": true,
+            "is_from_dict": false
+        },
+        "Left-Lateral-Ventricle": {
+            "is_fitted": true,
+            "is_from_dict": false
+        },
+        "rh_MeanThickness_thickness": {
+            "is_fitted": true,
+            "is_from_dict": false
+        }
+    },
+    "inscalers": {
+        "age": {
+            "adjust_outliers": true,
+            "scaler_type": "standardize",
+            "tail": 0.05,
+            "m": 24.60048872180451,
+            "s": 10.91510902484757
+        }
+    },
+    "outscalers": {
+        "WM-hypointensities": {
+            "adjust_outliers": true,
+            "scaler_type": "standardize",
+            "tail": 0.05,
+            "m": 1228.3575187969923,
+            "s": 749.3370294109823
+        },
+        "Left-Lateral-Ventricle": {
+            "adjust_outliers": true,
+            "scaler_type": "standardize",
+            "tail": 0.05,
+            "m": 7418.808270676692,
+            "s": 3845.4070075224836
+        },
+        "rh_MeanThickness_thickness": {
+            "adjust_outliers": true,
+            "scaler_type": "standardize",
+            "tail": 0.05,
+            "m": 2.5046324812030076,
+            "s": 0.08624602374320108
+        }
+    }
+}

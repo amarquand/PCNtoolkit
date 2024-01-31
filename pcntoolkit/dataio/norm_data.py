@@ -2,6 +2,7 @@ from typing import Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import xarray as xr
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -33,8 +34,12 @@ class NormData(xr.Dataset):
 
     @classmethod
     def from_ndarrays(cls, name, X, y, batch_effects, attrs=None):
+        if X.ndim == 1:
+            X = X[:, None]
         if y.ndim == 1:
             y = y[:, None]
+        if batch_effects.ndim == 1:
+            batch_effects = batch_effects[:, None]
         return cls(
             name,
             {
@@ -107,6 +112,71 @@ class NormData(xr.Dataset):
             },
             attrs=attrs,
         )
+
+    def create_synthetic_data(
+        self,
+        n_datapoints: int = 100,
+        range_dim: Union[int, str] = 0,
+        batch_effects_to_sample: list[list[str]] = None,
+    ):
+        ## Creates a synthetic dataset with the same dimensions as the original dataset
+
+        # The range_dim specifies for which covariate a range of values will be generated
+        if isinstance(range_dim, int):
+            range_dim = self.covariates[range_dim].to_numpy().item()
+
+        min_range = np.min(self.X.sel(covariates=range_dim))
+        max_range = np.max(self.X.sel(covariates=range_dim))
+        X = np.linspace(min_range, max_range, n_datapoints)
+
+        df = pd.DataFrame(X, columns=[range_dim])
+
+        # For all the other covariates:
+        for covariate in self.covariates.to_numpy():
+            if covariate != range_dim:
+                # Use the mean of the original dataset
+                df[covariate] = np.mean(self.X.sel(covariates=covariate))
+
+        # The batch effects specifies from which batch_effects can be sampled
+        if batch_effects_to_sample is None:
+            batch_effects_to_sample = [
+                [list(map.keys())[0]] for map in self.batch_effects_maps.values()
+            ]
+        else:
+            # Assert that the batch effects to sample are in the batch effects maps
+            for i, bes in enumerate(batch_effects_to_sample):
+                for be in bes:
+                    assert (
+                        be
+                        in self.attrs["batch_effects_maps"][
+                            self.batch_effect_dims[i].to_numpy().item()
+                        ].keys()
+                    )
+
+        for i, bes in enumerate(batch_effects_to_sample):
+            df[self.batch_effect_dims[i].to_numpy().item()] = np.random.choice(
+                bes, n_datapoints
+            )
+
+        # For each response variable, sample from a normal distribution with the mean and std of the original dataset
+        for response_var in self.response_vars.to_numpy():
+            df[response_var] = np.random.normal(
+                self.y.sel(response_vars=response_var).mean(),
+                self.y.sel(response_vars=response_var).std(),
+                n_datapoints,
+            )
+
+        to_return = NormData.from_dataframe(
+            f"{self.attrs['name']}_synthetic",
+            df,
+            self.covariates.to_numpy(),
+            self.batch_effect_dims.to_numpy(),
+            self.response_vars.to_numpy(),
+        )
+        # set the batch effects maps
+        to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"]
+
+        return to_return
 
     def train_test_split(
         self, splits: Tuple[float, ...], split_names: Tuple[str, ...] = None
@@ -296,33 +366,44 @@ class NormData(xr.Dataset):
             all_arrays.append(np.ones((expanded_basis.shape[0], 1)))
 
         Phi = np.concatenate(all_arrays, axis=1)
-        self.Phi = xr.DataArray(
+        self["Phi"] = xr.DataArray(
             Phi,
             coords={"basis_functions": all_dims},
             dims=["datapoints", "basis_functions"],
         )
 
     def plot_quantiles(
-        self, covariate: str = None, batch_effects: Union[str, list[str]] = None
+        self,
+        covariate: str = None,
+        batch_effects: Union[str, list[str]] = None,
+        show_data=False,
+        scatter_data: "NormData" = None,
     ):
         """Plot the quantiles for all response variables."""
         for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_quantiles(response_var, covariate, batch_effects)
+            self._plot_quantiles(
+                response_var, covariate, batch_effects, show_data, scatter_data
+            )
 
     def _plot_quantiles(
         self,
         response_var: str,
         covariate: str = None,
         batch_effects: Union[str, list[str]] = None,
+        show_data=False,
+        scatter_data: "NormData" = None,
     ):
         """Plot the quantiles for a single response variable."""
         # Use the first covariate, if not specified
         if covariate is None:
-            covariate = self.covariates[0]
+            covariate = self.covariates[0].to_numpy().item()
 
         # Set all batch effects to 0 if not specified
         if batch_effects is None:
             batch_effects = [0] * len(self.coords["batch_effect_dims"])
+
+        if show_data and (scatter_data is None):
+            scatter_data = self
 
         # Filter the covariate and responsevar that are to be plotted
         filter_dict = {
@@ -330,14 +411,87 @@ class NormData(xr.Dataset):
             "response_vars": response_var,
         }
         filtered = self.sel(filter_dict)
+        filtered_scatter = scatter_data.sel(filter_dict)
 
         # Filter out the correct batch effects
         filtered: xr.Dataset = filtered.where(filtered.batch_effects == batch_effects)
+        filtered_scatter: xr.Dataset = filtered_scatter.where(
+            filtered_scatter.batch_effects == batch_effects
+        )
+        plt.figure()
+        for zscore in self.coords["quantile_zscores"]:
+            # Make the mean line thicker
+            if zscore == 0:
+                linewidth = 3
+            else:
+                linewidth = 1
+
+            # Make the outer quantiles dashed
+            if zscore <= -2 or zscore >= 2:
+                linestyle = "--"
+            else:
+                linestyle = "-"
+            plt.plot(
+                filtered.X,
+                filtered.quantiles.sel(quantile_zscores=zscore),
+                color="black",
+                linewidth=linewidth,
+                linestyle=linestyle,
+            )
+
+        if show_data:
+            plt.scatter(
+                filtered_scatter.X, filtered_scatter.y, color="red", label="data"
+            )
+
+        plt.title(f"Quantiles for {response_var}")
+        plt.xlabel(covariate)
+        plt.ylabel(response_var)
+        plt.show()
+
+    def plot_qq(self):
+        """Create a QQ-plot for all response variables."""
+        for response_var in self.coords["response_vars"].to_numpy():
+            self._plot_qq(response_var)
+
+    def _plot_qq(
+        self,
+        response_var: str,
+    ):
+        """Create a QQ-plot for a single response variable."""
+
+        # Filter the responsevar that is to be plotted
+        filter_dict = {
+            "response_vars": response_var,
+        }
+
+        filt = self.sel(filter_dict)
+
+        ran = np.random.randn(filt.X.shape[0])
+        ran.sort()
+
+        z_scores = filt.zscores.data
+        z_scores.sort()
 
         plt.figure()
-        for zscore in self.coords["z_scores"]:
-            plt.plot(
-                filtered.X, filtered.quantiles.sel(z_scores=zscore), label=f"z={zscore}"
-            )
-        plt.title(f"Quantiles for {response_var}")
+        plt.scatter(ran, z_scores)
+        plt.title(f"QQ-plot for {response_var}")
+        plt.xlabel("Theoretical quantiles")
+        plt.ylabel("Predicted quantiles")
         plt.show()
+
+    def select_batch_effects(self, batch_effects: dict[str, list[str]]):
+        """Select only the batch_effects specified."""
+        mask = np.zeros(self.batch_effects.shape[0], dtype=bool)
+        for key, values in batch_effects.items():
+            this_batch_effect = self.batch_effects.sel(batch_effect_dims=key)
+            for value in values:
+                mask = np.logical_or(mask, this_batch_effect == value)
+
+        to_return = self.where(mask).dropna(dim="datapoints", how="all")
+        if type(to_return) == xr.Dataset:
+            to_return = NormData.from_xarray(
+                f"{self.attrs['name']}_selected", to_return
+            )
+        to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
+        return to_return

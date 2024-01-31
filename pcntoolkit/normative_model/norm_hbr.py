@@ -1,3 +1,4 @@
+import gc
 import json
 import os
 import warnings
@@ -14,6 +15,7 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
+from pcntoolkit.regression_model.hbr.hbr_util import S_inv, m
 
 
 class NormHBR(NormBase):
@@ -37,16 +39,20 @@ class NormHBR(NormBase):
     def reg_conf_from_args(args):
         return HBRConf.from_args(args)
 
+    @staticmethod
+    def reg_conf_from_dict(args):
+        return HBRConf.from_dict(args)
+
     def models_to_dict(self, path):
         regression_model_dict = {}
 
-        for k, v in self.models.items():
-            regression_model_dict[k] = v.to_dict()
+        for k, model in self.models.items():
+            regression_model_dict[k] = model.to_dict()
             del regression_model_dict[k]["conf"]
-            if v.is_fitted:
-                if hasattr(v, "idata"):
+            if model.is_fitted:
+                if hasattr(model, "idata"):
                     idata_path = os.path.join(path, f"idata_{k}.nc")
-                    self.model.idata.to_netcdf(idata_path)
+                    model.idata.to_netcdf(idata_path)
                 else:
                     raise RuntimeError(
                         "HBR model is fitted but does not have idata. This should not happen."
@@ -64,6 +70,30 @@ class NormHBR(NormBase):
                     self.models[k].idata = az.from_netcdf(idata_path)
                 except:
                     raise RuntimeError(f"Could not load idata from {idata_path}.")
+
+    # def prepare(self, response_var):
+    #     self.current_response_var = response_var
+    #     self.model = self.models[self.current_response_var]
+    #     self.load_idata()
+
+    # def reset(self):
+    #     # save the idata
+    #     self.save_idata()
+    #     del self.model.idata
+    #     xr.backends.file_manager.FILE_CACHE.clear()
+    #     gc.collect()
+
+    def load_idata(self):
+        idata_path = os.path.join(
+            self.norm_conf.save_dir, f"idata_{self.current_response_var}.nc"
+        )
+        self.model.idata = az.from_netcdf(idata_path)
+
+    def save_idata(self):
+        idata_path = os.path.join(
+            self.norm_conf.save_dir, f"idata_{self.current_response_var}.nc"
+        )
+        self.model.idata.to_netcdf(idata_path)
 
     @staticmethod
     def normdata_to_hbrdata(data: NormData) -> hbr_data.HBRData:
@@ -88,6 +118,7 @@ class NormHBR(NormBase):
             batch_effects=data.batch_effects.to_numpy(),
             covariate_dims=this_covariate_dims,
             batch_effect_dims=data.batch_effect_dims.to_numpy(),
+            datapoint_coords=data.datapoints.to_numpy(),
         )
         hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return hbrdata
@@ -120,18 +151,21 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
 
         # Create a new pymc model if needed
-        if self.model.model is None:
+        if not self.model.model:
             self.model.create_pymc_model(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.model.model)
+
+        if "posterior_predictive" in self.model.idata:
+            del self.model.idata.posterior_predictive
 
         # Sample from the posterior predictive
         with self.model.model:
             pm.sample_posterior_predictive(
                 self.model.idata,
                 extend_inferencedata=True,
-                var_names=self.get_var_names(),
+                var_names=self.get_var_names() + ["y_pred"],
             )
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
@@ -163,7 +197,7 @@ class NormHBR(NormBase):
             pm.sample_posterior_predictive(
                 self.model.idata,
                 extend_inferencedata=True,
-                var_names=self.get_var_names(),
+                var_names=self.get_var_names() + ["y_pred"],
             )
 
     def _transfer(self, data: NormData) -> "HBR":
@@ -173,7 +207,7 @@ class NormHBR(NormBase):
         # Assert that the model is fitted
         if not self.model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
-
+        
         new_hbr_model = HBR(self.reg_conf)
 
         # Create a new model, using the idata from the original model to inform the priors
@@ -207,27 +241,29 @@ class NormHBR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _quantiles(self, data: NormData, z_scores: list) -> xr.DataArray:
-        hbrdata = self.normdata_to_hbrdata(data)
-
-        # Create a new pymc model if needed
-        if self.model.model is None:
-            self.model.create_pymc_model(hbrdata)
-
-        # Set the data in the model
-        hbrdata.set_data_in_existing_model(self.model.model)
-
+    def _quantiles(self, data: NormData, zscores: list, resample=False) -> xr.DataArray:
         var_names = self.get_var_names()
+        if resample:
+            hbrdata = self.normdata_to_hbrdata(data)
 
-        # Delete the posterior predictive if it exists
-        if "posterior_predictive" in self.model.idata:
-            del self.model.idata.posterior_predictive
+            # Create a new pymc model if needed
+            if not self.model.model:
+                self.model.create_pymc_model(hbrdata)
 
-        # Sample from the posterior predictive
-        with self.model.model:
-            pm.sample_posterior_predictive(
-                self.model.idata, extend_inferencedata=True, var_names=var_names
-            )
+            # Set the data in the model
+            hbrdata.set_data_in_existing_model(self.model.model)
+
+            # Delete the posterior predictive if it exists
+            if "posterior_predictive" in self.model.idata:
+                del self.model.idata.posterior_predictive
+
+            # Sample from the posterior predictive
+            with self.model.model:
+                pm.sample_posterior_predictive(
+                    self.model.idata,
+                    extend_inferencedata=True,
+                    var_names=var_names + ["y_pred"],
+                )
 
         # Extract the posterior predictive
         post_pred = az.extract(
@@ -239,10 +275,10 @@ class NormHBR(NormBase):
 
         # Create an array to hold the quantiles
         n_datapoints, _, n_mcmc_samples = post_pred["mu_samples"].shape
-        quantiles = np.zeros((len(z_scores), n_datapoints, n_mcmc_samples))
+        quantiles = np.zeros((len(zscores), n_datapoints, n_mcmc_samples))
 
         # Compute the quantile iteratively for each z-score
-        for i, j in enumerate(z_scores):
+        for i, j in enumerate(zscores):
             zs = np.full((n_datapoints, n_mcmc_samples), j, dtype=float)
             quantiles[i] = xr.apply_ufunc(
                 self.quantile,
@@ -254,30 +290,32 @@ class NormHBR(NormBase):
         return xr.DataArray(
             quantiles,
             dims=["quantile_zscores", "datapoints", "sample"],
-            coords={"quantile_zscores": z_scores},
+            coords={"quantile_zscores": zscores},
         ).mean(dim="sample")
 
-    def _zscores(self, data: NormData) -> xr.DataArray:
+    def _zscores(self, data: NormData, resample=False) -> xr.DataArray:
+        var_names = self.get_var_names()
         hbrdata = self.normdata_to_hbrdata(data)
 
-        # Create a new pymc model if needed
-        if self.model.model is None:
-            self.model.create_pymc_model(hbrdata)
+        if resample:
+            # Create a new pymc model if needed
+            if self.model.model is None:
+                self.model.create_pymc_model(hbrdata)
 
-        # Set the data in the model
-        hbrdata.set_data_in_existing_model(self.model.model)
+            # Set the data in the model
+            hbrdata.set_data_in_existing_model(self.model.model)
 
-        var_names = self.get_var_names()
+            # Delete the posterior predictive if it exists
+            if "posterior_predictive" in self.model.idata:
+                del self.model.idata.posterior_predictive
 
-        # Delete the posterior predictive if it exists
-        if "posterior_predictive" in self.model.idata:
-            del self.model.idata.posterior_predictive
-
-        # Sample from the posterior predictive
-        with self.model.model:
-            pm.sample_posterior_predictive(
-                self.model.idata, extend_inferencedata=True, var_names=var_names
-            )
+            # Sample from the posterior predictive
+            with self.model.model:
+                pm.sample_posterior_predictive(
+                    self.model.idata,
+                    extend_inferencedata=True,
+                    var_names=var_names + ["y_pred"],
+                )
 
         # Extract the posterior predictive
         post_pred = az.extract(
@@ -287,26 +325,25 @@ class NormHBR(NormBase):
         # Separate the samples into a list so that they can be unpacked
         array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
-        z_scores = xr.apply_ufunc(
-            self.z_score,
+        zscores = xr.apply_ufunc(
+            self.zscore,
             *array_of_vars,
             kwargs={"y": hbrdata.y},
         ).mean(dim="sample")
 
-        return z_scores
+        return zscores
 
     def get_var_names(self):
         likelihood = self.reg_conf.likelihood
         # Determine the variables to predict
         if likelihood == "Normal":
-            var_names = ["mu_samples", "sigma_samples", "y_pred"]
+            var_names = ["mu_samples", "sigma_samples"]
         elif likelihood.startswith("SHASH"):
             var_names = [
                 "mu_samples",
                 "sigma_samples",
                 "epsilon_samples",
                 "delta_samples",
-                "y_pred",
             ]
 
         else:
@@ -317,47 +354,39 @@ class NormHBR(NormBase):
         """Auxiliary function for computing quantiles"""
         """Get the zs'th quantiles given likelihood parameters"""
         likelihood = self.reg_conf.likelihood
-        if likelihood.startswith("SHASH"):
-            raise NotImplementedError(
-                "Quantiles for SHASH likelihoods are not implemented yet."
-            )
-            # if likelihood == "SHASHo":
-            #     quantiles = S_inv(zs, epsilon, delta) * sigma + mu
-            # elif likelihood == "SHASHo2":
-            #     sigma_d = sigma / delta
-            #     quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
-            # elif likelihood == "SHASHb":
-            #     true_mu = m(epsilon, delta, 1)
-            #     true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
-            #     SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
-            #     quantiles = SHASH_c * sigma + mu
+        if likelihood == "SHASHo":
+            quantiles = S_inv(zs, epsilon, delta) * sigma + mu
+        elif likelihood == "SHASHo2":
+            sigma_d = sigma / delta
+            quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
+        elif likelihood == "SHASHb":
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
+            quantiles = SHASH_c * sigma + mu
         elif likelihood == "Normal":
             quantiles = zs * sigma + mu
         else:
             exit("Unsupported likelihood")
         return quantiles
 
-    def z_score(self, mu, sigma, epsilon=None, delta=None, y=None):
+    def zscore(self, mu, sigma, epsilon=None, delta=None, y=None):
         """Auxiliary function for computing z-scores"""
         """Get the z-scores of Y, given likelihood parameters"""
         likelihood = self.reg_conf.likelihood
-        if likelihood.startswith("SHASH"):
-            raise NotImplementedError(
-                "Z-scores for SHASH likelihoods are not implemented yet."
-            )
-        #     if likelihood == "SHASHo":
-        #         SHASH = (y - mu) / sigma
-        #         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-        #     elif likelihood == "SHASHo2":
-        #         sigma_d = sigma / delta
-        #         SHASH = (y - mu) / sigma_d
-        #         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-        #     elif likelihood == "SHASHb":
-        #         true_mu = m(epsilon, delta, 1)
-        #         true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
-        #         SHASH_c = (y - mu) / sigma
-        #         SHASH = SHASH_c * true_sigma + true_mu
-        #         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        if likelihood == "SHASHo":
+            SHASH = (y - mu) / sigma
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        elif likelihood == "SHASHo2":
+            sigma_d = sigma / delta
+            SHASH = (y - mu) / sigma_d
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        elif likelihood == "SHASHb":
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (y - mu) / sigma
+            SHASH = SHASH_c * true_sigma + true_mu
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
         elif likelihood == "Normal":
             Z = (y - mu) / sigma
         else:
@@ -365,4 +394,4 @@ class NormHBR(NormBase):
         return Z
 
     def n_params(self):
-        return 1
+        return sum([i.size.eval() for i in self.model.model.free_RVs])

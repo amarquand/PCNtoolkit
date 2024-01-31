@@ -68,7 +68,7 @@ class scaler:
                 X[X > 1] = 1
 
         elif self.scaler_type in ["id", "none"]:
-            pass
+            X = X + 0
 
         return X
 
@@ -86,7 +86,8 @@ class scaler:
                 X = X * (self.max[index] - self.min[index]) + self.min[index]
 
         elif self.scaler_type in ["id", "none"]:
-            pass
+            X = X + 0
+
         return X
 
     def fit_transform(self, X):
@@ -127,7 +128,7 @@ class scaler:
                 X = X.reshape(-1)
 
         elif self.scaler_type in ["id", "none"]:
-            pass
+            X = X + 0
 
         return X
 

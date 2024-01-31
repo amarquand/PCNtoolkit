@@ -8,6 +8,7 @@ import pymc as pm
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import Param
+from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 
 from .hbr_conf import HBRConf
 
@@ -39,6 +40,10 @@ class HBR:
         data.add_to_model(self.model)
         if self.conf.likelihood == "Normal":
             self.create_normal_pymc_model(data, idata)
+        elif self.conf.likelihood == "SHASHb":
+            self.create_SHASHb_pymc_model(data, idata)
+        elif self.conf.likelihood == "SHASHo":
+            self.create_SHASHo_pymc_model(data, idata)
         else:
             raise NotImplementedError(
                 f"Likelihood {self.conf.likelihood} not implemented for {self.__class__.__name__}"
@@ -67,6 +72,88 @@ class HBR:
                 "y_pred",
                 mu=mu_samples,
                 sigma=sigma_samples,
+                dims=("datapoints", "response_vars"),
+                observed=data.pm_y,
+            )
+
+    def create_SHASHb_pymc_model(
+        self, data: HBRData, idata: az.InferenceData = None
+    ) -> HBRData:
+        """
+        Creates the pymc model.
+        """
+        self.conf.mu.add_to(self.model, idata)
+        self.conf.sigma.add_to(self.model, idata)
+        self.conf.epsilon.add_to(self.model, idata)
+        self.conf.delta.add_to(self.model, idata)
+        with self.model:
+            mu_samples = pm.Deterministic(
+                "mu_samples",
+                self.conf.mu.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            sigma_samples = pm.Deterministic(
+                "sigma_samples",
+                self.conf.sigma.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            epsilon_samples = pm.Deterministic(
+                "epsilon_samples",
+                self.conf.epsilon.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            delta_samples = pm.Deterministic(
+                "delta_samples",
+                self.conf.delta.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            y_pred = SHASHb(
+                "y_pred",
+                mu=mu_samples,
+                sigma=sigma_samples,
+                epsilon=epsilon_samples,
+                delta=delta_samples,
+                dims=("datapoints", "response_vars"),
+                observed=data.pm_y,
+            )
+
+    def create_SHASHo_pymc_model(
+        self, data: HBRData, idata: az.InferenceData = None
+    ) -> HBRData:
+        """
+        Creates the pymc model.
+        """
+        self.conf.mu.add_to(self.model, idata)
+        self.conf.sigma.add_to(self.model, idata)
+        self.conf.epsilon.add_to(self.model, idata)
+        self.conf.delta.add_to(self.model, idata)
+        with self.model:
+            mu_samples = pm.Deterministic(
+                "mu_samples",
+                self.conf.mu.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            sigma_samples = pm.Deterministic(
+                "sigma_samples",
+                self.conf.sigma.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            epsilon_samples = pm.Deterministic(
+                "epsilon_samples",
+                self.conf.epsilon.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            delta_samples = pm.Deterministic(
+                "delta_samples",
+                self.conf.delta.get_samples(data),
+                dims=("datapoints", "response_vars"),
+            )
+            y_pred = SHASHo(
+                "y_pred",
+                mu=mu_samples,
+                sigma=sigma_samples,
+                epsilon=epsilon_samples,
+                delta=delta_samples,
                 dims=("datapoints", "response_vars"),
                 observed=data.pm_y,
             )
