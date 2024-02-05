@@ -1,5 +1,7 @@
 {
-    "response_vars": null,
+    "response_vars": [
+        "rh_MeanThickness_thickness"
+    ],
     "norm_conf": {
         "perform_cv": false,
         "cv_folds": 0,
@@ -7,7 +9,7 @@
         "saveresults": false,
         "log_dir": "resources/log_dir",
         "save_dir": "resources/transfer_save_dir",
-        "basis_function": "bspline",
+        "basis_function": "linear",
         "basis_column": 0,
         "order": 3,
         "nknots": 5,
@@ -23,11 +25,6 @@
         "mu": {
             "name": "mu",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                0,
-                1
-            ],
             "linear": true,
             "random": false,
             "centered": false,
@@ -43,11 +40,6 @@
                 "dims": [
                     "covariates"
                 ],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -57,18 +49,18 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    -0.30682440953453266,
+                    0.08937126076344122
                 ]
             },
             "intercept": {
                 "name": "intercept_mu",
                 "dims": [],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
-                "random": true,
+                "random": false,
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
@@ -77,53 +69,16 @@
                     0,
                     1
                 ],
-                "mu": {
-                    "name": "mu_intercept_mu",
-                    "dims": [],
-                    "dist_name": "Normal",
-                    "dist_params": [
-                        0,
-                        1
-                    ],
-                    "linear": false,
-                    "random": false,
-                    "centered": false,
-                    "has_covariate_dim": false,
-                    "has_random_effect": false,
-                    "mapping": "identity",
-                    "mapping_params": [
-                        0,
-                        1
-                    ]
-                },
-                "sigma": {
-                    "name": "sigma_intercept_mu",
-                    "dims": [],
-                    "dist_name": "HalfNormal",
-                    "dist_params": [
-                        1
-                    ],
-                    "linear": false,
-                    "random": false,
-                    "centered": false,
-                    "has_covariate_dim": false,
-                    "has_random_effect": false,
-                    "mapping": "identity",
-                    "mapping_params": [
-                        0,
-                        1
-                    ]
-                }
+                "dist_name": "Normal",
+                "dist_params": [
+                    0.007604635165853529,
+                    0.08315419971677157
+                ]
             }
         },
         "sigma": {
             "name": "sigma",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                0,
-                1
-            ],
             "linear": true,
             "random": false,
             "centered": false,
@@ -139,11 +94,6 @@
                 "dims": [
                     "covariates"
                 ],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -153,16 +103,16 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    -0.053655074944272824,
+                    0.12003727562853544
                 ]
             },
             "intercept": {
                 "name": "intercept_sigma",
                 "dims": [],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -172,16 +122,17 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0.4182859079482549,
+                    0.12089623960999762
                 ]
             }
         },
         "epsilon": {
             "name": "epsilon",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                1
-            ],
             "linear": false,
             "random": false,
             "centered": false,
@@ -191,15 +142,16 @@
             "mapping_params": [
                 0,
                 1
+            ],
+            "dist_name": "Normal",
+            "dist_params": [
+                0.009645141912656736,
+                0.09149341579826906
             ]
         },
         "delta": {
             "name": "delta",
             "dims": [],
-            "dist_name": "HalfNormal",
-            "dist_params": [
-                1
-            ],
             "linear": false,
             "random": false,
             "centered": false,
@@ -209,18 +161,14 @@
             "mapping_params": [
                 0,
                 1
+            ],
+            "dist_name": "HalfNormal",
+            "dist_params": [
+                0.32775809154556723
             ]
         }
     },
     "regression_models": {
-        "WM-hypointensities": {
-            "is_fitted": true,
-            "is_from_dict": false
-        },
-        "Left-Lateral-Ventricle": {
-            "is_fitted": true,
-            "is_from_dict": false
-        },
         "rh_MeanThickness_thickness": {
             "is_fitted": true,
             "is_from_dict": false
@@ -236,20 +184,6 @@
         }
     },
     "outscalers": {
-        "WM-hypointensities": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 1103.3875,
-            "s": 590.4340086696819
-        },
-        "Left-Lateral-Ventricle": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 10464.20625,
-            "s": 7100.680063510532
-        },
         "rh_MeanThickness_thickness": {
             "adjust_outliers": true,
             "scaler_type": "standardize",

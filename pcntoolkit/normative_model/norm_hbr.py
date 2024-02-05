@@ -43,6 +43,31 @@ class NormHBR(NormBase):
     def reg_conf_from_dict(args):
         return HBRConf.from_dict(args)
 
+    @staticmethod
+    def remove_samples_from_idata_posterior(idata):
+        for name in idata.posterior.variables.mapping.keys():
+            if name.endswith("_samples"):
+                idata.posterior.drop_vars(name)
+                if "removed_samples" not in idata.attrs:
+                    idata.attrs["removed_samples"] = []
+                idata.attrs["removed_samples"].append(name)
+
+    @staticmethod
+    def replace_samples_in_idata_posterior(idata):
+        for name in idata.attrs["removed_samples"]:
+            samples = np.zeros(
+                (
+                    idata.posterior.chain.size,
+                    idata.posterior.draw.size,
+                    idata.posterior.datapoints.size,
+                    idata.posterior.response_vars.size,
+                )
+            )
+            idata.posterior[name] = xr.DataArray(
+                samples,
+                dims=["chain", "draw", "datapoints", "response_vars"],
+            )
+
     def models_to_dict(self, path):
         regression_model_dict = {}
 
@@ -51,8 +76,9 @@ class NormHBR(NormBase):
             del regression_model_dict[k]["conf"]
             if model.is_fitted:
                 if hasattr(model, "idata"):
+                    self.remove_samples_from_idata_posterior(model.idata)
                     idata_path = os.path.join(path, f"idata_{k}.nc")
-                    model.idata.to_netcdf(idata_path)
+                    model.idata.to_netcdf(idata_path, groups="posterior")
                 else:
                     raise RuntimeError(
                         "HBR model is fitted but does not have idata. This should not happen."
@@ -68,6 +94,7 @@ class NormHBR(NormBase):
                 idata_path = os.path.join(path, f"idata_{k}.nc")
                 try:
                     self.models[k].idata = az.from_netcdf(idata_path)
+                    self.replace_samples_in_idata_posterior(self.models[k].idata)
                 except:
                     raise RuntimeError(f"Could not load idata from {idata_path}.")
 
@@ -207,7 +234,7 @@ class NormHBR(NormBase):
         # Assert that the model is fitted
         if not self.model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
-        
+
         new_hbr_model = HBR(self.reg_conf)
 
         # Create a new model, using the idata from the original model to inform the priors

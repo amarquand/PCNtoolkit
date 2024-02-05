@@ -284,8 +284,11 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         self.compute_measures(data)
 
     def compute_measures(self, data: NormData):
+        # TODO fix this
         data["Yhat"] = data.quantiles.sel(quantile_zscores=0, method="nearest")
-        data["S2"] = data.quantiles.sel(quantile_zscores=1, method="nearest")
+        data["S2"] = (
+            data.quantiles.sel(quantile_zscores=1, method="nearest") - data["Yhat"]
+        ) ** 2
         data["measures"] = xr.DataArray(
             np.nan * np.ones((len(self.response_vars), 6)),
             dims=("response_vars", "statistics"),
@@ -294,7 +297,6 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
                 "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "MSLL", "BIC"],
             },
         )
-
         self.evaluate_rho(data)
         self.evaluate_rmse(data)
         self.evaluate_smse(data)

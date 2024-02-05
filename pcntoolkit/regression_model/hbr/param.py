@@ -101,14 +101,13 @@ class Param:
                         dims=(*model.custom_batch_effect_dims, *self.dims),
                     )
             else:
-                if idata is None:
-                    self.dist = self.distmap[self.dist_name](
-                        self.name, *self.dist_params, shape=self.shape, dims=self.dims
-                    )
-                else:
-                    self.dist = self.approximate_marginal(
+                if idata is not None:
+                    self.approximate_marginal(
                         model, self.dist_name, az.extract(idata, var_names=self.name)
                     )
+                self.dist = self.distmap[self.dist_name](
+                    self.name, *self.dist_params, shape=self.shape, dims=self.dims
+                )
 
     def approximate_marginal(self, model, dist_name: str, samples, freedom=1):
         """
@@ -118,50 +117,22 @@ class Param:
         with model:
             if dist_name == "Normal":
                 temp = stats.norm.fit(samples)
-                return pm.Normal(
-                    self.name,
-                    mu=temp[0],
-                    sigma=freedom * temp[1],
-                    shape=self.shape,
-                    dims=self.dims,
-                )
+                self.dist_params = (temp[0], freedom * temp[1])
             elif dist_name == "HalfNormal":
                 temp = stats.halfnorm.fit(samples)
-                return pm.HalfNormal(
-                    self.name, sigma=freedom * temp[1], shape=self.shape, dims=self.dims
-                )
+                self.dist_params = (freedom * temp[1],)
             elif dist_name == "LogNormal":
                 temp = stats.lognorm.fit(samples)
-                return pm.Lognormal(
-                    self.name,
-                    mu=temp[1],
-                    sigma=freedom * temp[2],
-                    shape=self.shape,
-                    dims=self.dims,
-                )
+                self.dist_params = (temp[0], freedom * temp[1])
             elif dist_name == "Cauchy":
                 temp = stats.cauchy.fit(samples)
-                return pm.Cauchy(
-                    self.name,
-                    alpha=temp[0],
-                    beta=freedom * temp[1],
-                    shape=self.shape,
-                    dims=self.dims,
-                )
+                self.dist_params = (temp[0], freedom * temp[1])
             elif dist_name == "HalfCauchy":
                 temp = stats.halfcauchy.fit(samples)
-                return pm.HalfCauchy(
-                    self.name, beta=freedom * temp[1], shape=self.shape, dims=self.dims
-                )
+                self.dist_params = (freedom * temp[1],)
             elif dist_name == "Uniform":
                 temp = stats.uniform.fit(samples)
-                return pm.Uniform(
-                    self.name,
-                    lower=temp[0],
-                    upper=temp[1],
-                    shape=self.shape,
-                    dims=self.dims,
-                )
+                self.dist_params = (temp[0], temp[1])
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
 
@@ -310,8 +281,6 @@ class Param:
         param_dict = {
             "name": self.name,
             "dims": self.dims,
-            "dist_name": self.dist_name,
-            "dist_params": self.dist_params,
             "linear": self.linear,
             "random": self.random,
             "centered": self.centered,
@@ -326,4 +295,7 @@ class Param:
         elif self.random:
             param_dict["mu"] = self.mu.to_dict()
             param_dict["sigma"] = self.sigma.to_dict()
+        else:
+            param_dict["dist_name"] = self.dist_name
+            param_dict["dist_params"] = self.dist_params
         return param_dict
