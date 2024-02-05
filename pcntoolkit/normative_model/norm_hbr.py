@@ -125,7 +125,6 @@ class NormHBR(NormBase):
         idata_path = os.path.join(
             self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
         )
-
         self.model.idata.to_netcdf(idata_path)
 
     @staticmethod

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
+from typing import Any, Union
 
 import numpy as np
 import xarray as xr
@@ -11,6 +12,9 @@ from sklearn.metrics import explained_variance_score
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
+from pcntoolkit.regression_model.blr.blr import BLR
+from pcntoolkit.regression_model.gpr.gpr import GPR
+from pcntoolkit.regression_model.hbr.hbr import HBR
 
 from .norm_conf import NormConf
 
@@ -22,7 +26,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             self._norm_conf, "normative_model_name", self.__class__.__name__
         )
         self.response_vars: list = None
-        self.models = {}
+        self.models: dict[str, Any] = (
+            {}
+        )  # self.models contains the regression models, indexed by response variable
         self.inscalers = {}
         self.outscalers = {}
 
@@ -213,7 +219,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
             # Transfer
             print(f"Transferring model for {responsevar}")
-            transfered_models[responsevar] = self._transfer(resp_transfer_data, *args, **kwargs)
+            transfered_models[responsevar] = self._transfer(
+                resp_transfer_data, *args, **kwargs
+            )
 
             self.reset()
 
@@ -226,7 +234,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         object.__setattr__(
             transfered_norm_conf, "log_dir", self.norm_conf.log_dir + "_transfer"
         )
-        transfered_normative_model = self.__class__(self.norm_conf, self.reg_conf)
+        transfered_normative_model = self.__class__(transfered_norm_conf, self.reg_conf)
 
         # Set the models
         transfered_normative_model.response_vars = (
