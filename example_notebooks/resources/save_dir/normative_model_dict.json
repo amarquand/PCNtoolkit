@@ -1,7 +1,5 @@
 {
     "response_vars": [
-        "WM-hypointensities",
-        "Left-Lateral-Ventricle",
         "rh_MeanThickness_thickness"
     ],
     "norm_conf": {
@@ -11,7 +9,7 @@
         "saveresults": false,
         "log_dir": "resources/log_dir",
         "save_dir": "resources/save_dir",
-        "basis_function": "bspline",
+        "basis_function": "linear",
         "basis_column": 0,
         "order": 3,
         "nknots": 5,
@@ -27,11 +25,6 @@
         "mu": {
             "name": "mu",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                0,
-                1
-            ],
             "linear": true,
             "random": false,
             "centered": false,
@@ -47,11 +40,6 @@
                 "dims": [
                     "covariates"
                 ],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -61,18 +49,18 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
                 ]
             },
             "intercept": {
                 "name": "intercept_mu",
                 "dims": [],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
-                "random": true,
+                "random": false,
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
@@ -81,53 +69,16 @@
                     0,
                     1
                 ],
-                "mu": {
-                    "name": "mu_intercept_mu",
-                    "dims": [],
-                    "dist_name": "Normal",
-                    "dist_params": [
-                        0,
-                        1
-                    ],
-                    "linear": false,
-                    "random": false,
-                    "centered": false,
-                    "has_covariate_dim": false,
-                    "has_random_effect": false,
-                    "mapping": "identity",
-                    "mapping_params": [
-                        0,
-                        1
-                    ]
-                },
-                "sigma": {
-                    "name": "sigma_intercept_mu",
-                    "dims": [],
-                    "dist_name": "HalfNormal",
-                    "dist_params": [
-                        1
-                    ],
-                    "linear": false,
-                    "random": false,
-                    "centered": false,
-                    "has_covariate_dim": false,
-                    "has_random_effect": false,
-                    "mapping": "identity",
-                    "mapping_params": [
-                        0,
-                        1
-                    ]
-                }
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
+                ]
             }
         },
         "sigma": {
             "name": "sigma",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                0,
-                1
-            ],
             "linear": true,
             "random": false,
             "centered": false,
@@ -143,11 +94,6 @@
                 "dims": [
                     "covariates"
                 ],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -157,16 +103,16 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
                 ]
             },
             "intercept": {
                 "name": "intercept_sigma",
                 "dims": [],
-                "dist_name": "Normal",
-                "dist_params": [
-                    0,
-                    1
-                ],
                 "linear": false,
                 "random": false,
                 "centered": false,
@@ -176,16 +122,17 @@
                 "mapping_params": [
                     0,
                     1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0,
+                    1
                 ]
             }
         },
         "epsilon": {
             "name": "epsilon",
             "dims": [],
-            "dist_name": "Normal",
-            "dist_params": [
-                1
-            ],
             "linear": false,
             "random": false,
             "centered": false,
@@ -194,16 +141,16 @@
             "mapping": "identity",
             "mapping_params": [
                 0,
+                1
+            ],
+            "dist_name": "Normal",
+            "dist_params": [
                 1
             ]
         },
         "delta": {
             "name": "delta",
             "dims": [],
-            "dist_name": "HalfNormal",
-            "dist_params": [
-                1
-            ],
             "linear": false,
             "random": false,
             "centered": false,
@@ -213,18 +160,14 @@
             "mapping_params": [
                 0,
                 1
+            ],
+            "dist_name": "HalfNormal",
+            "dist_params": [
+                1
             ]
         }
     },
     "regression_models": {
-        "WM-hypointensities": {
-            "is_fitted": true,
-            "is_from_dict": false
-        },
-        "Left-Lateral-Ventricle": {
-            "is_fitted": true,
-            "is_from_dict": false
-        },
         "rh_MeanThickness_thickness": {
             "is_fitted": true,
             "is_from_dict": false
@@ -240,20 +183,6 @@
         }
     },
     "outscalers": {
-        "WM-hypointensities": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 1228.3575187969923,
-            "s": 749.3370294109823
-        },
-        "Left-Lateral-Ventricle": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 7418.808270676692,
-            "s": 3845.4070075224836
-        },
         "rh_MeanThickness_thickness": {
             "adjust_outliers": true,
             "scaler_type": "standardize",
