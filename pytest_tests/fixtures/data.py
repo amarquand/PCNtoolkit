@@ -5,27 +5,27 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def n_train_datapoints():
     return 1500
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def n_test_datapoints():
     return 1000
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def n_transfer_datapoints():
     return 500
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def n_covariates():
     return 2
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def n_response_vars():
     return 2
 
@@ -65,7 +65,7 @@ def norm_data(name, n_datapoints, n_covariates, n_response_vars):
     return norm_data
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def train_arrays(n_train_datapoints, n_covariates, n_response_vars):
     X_train, y_train, batch_effects_train = np_arrays(
         n_train_datapoints, n_covariates, n_response_vars
@@ -73,7 +73,7 @@ def train_arrays(n_train_datapoints, n_covariates, n_response_vars):
     return X_train, y_train, batch_effects_train
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def test_arrays(n_test_datapoints, n_covariates, n_response_vars):
     X_test, y_test, batch_effects_test = np_arrays(
         n_test_datapoints, n_covariates, n_response_vars
@@ -81,19 +81,19 @@ def test_arrays(n_test_datapoints, n_covariates, n_response_vars):
     return X_test, y_test, batch_effects_test
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def train_dataframe(n_train_datapoints, n_covariates, n_response_vars):
     dataframe_train = dataframe(n_train_datapoints, n_covariates, n_response_vars)
     return dataframe_train
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def test_dataframe(n_test_datapoints, n_covariates, n_response_vars):
     dataframe_test = dataframe(n_test_datapoints, n_covariates, n_response_vars)
     return dataframe_test
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def train_norm_data(n_train_datapoints, n_covariates, n_response_vars):
     norm_data_train = norm_data(
         "train", n_train_datapoints, n_covariates, n_response_vars
@@ -101,13 +101,13 @@ def train_norm_data(n_train_datapoints, n_covariates, n_response_vars):
     return norm_data_train
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def test_norm_data(n_test_datapoints, n_covariates, n_response_vars):
     norm_data_test = norm_data("test", n_test_datapoints, n_covariates, n_response_vars)
     return norm_data_test
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def transfer_norm_data(n_transfer_datapoints, n_covariates, n_response_vars):
     df = dataframe(n_transfer_datapoints, n_covariates, n_response_vars)
     df["batch1"] += 3

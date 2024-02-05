@@ -78,39 +78,55 @@ def test_standardize(
 
 
 def test_minmax(
-    train_norm_data, new_norm_hbr_model: NormBase, n_covariates, n_response_vars
+    train_dataframe, new_norm_hbr_model: NormBase, n_covariates, n_response_vars
 ):
+
+    norm_data = NormData.from_dataframe(
+        "train_norm_data",
+        train_dataframe,
+        covariates=["X1", "X2"],
+        batch_effects=["batch1", "batch2"],
+        response_vars=[f"Y{i+1}" for i in range(n_response_vars)],
+    )
     object.__setattr__(new_norm_hbr_model._norm_conf, "inscaler", "minmax")
     object.__setattr__(new_norm_hbr_model._norm_conf, "outscaler", "minmax")
-    X_bak = train_norm_data.X.data.copy()
-    y_bak = train_norm_data.y.data.copy()
-    new_norm_hbr_model.scale_forward(train_norm_data)
-    new_norm_hbr_model.scale_backward(train_norm_data)
+    X_bak = norm_data.X.data.copy()
+    y_bak = norm_data.y.data.copy()
+    new_norm_hbr_model.scale_forward(norm_data)
+    new_norm_hbr_model.scale_backward(norm_data)
 
-    assert np.allclose(train_norm_data.scaled_X.min(axis=0), 0)
-    assert np.allclose(train_norm_data.scaled_X.max(axis=0), 1)
-    assert np.allclose(train_norm_data.scaled_y.min(axis=0), 0)
-    assert np.allclose(train_norm_data.scaled_y.max(axis=0), 1)
-    assert np.allclose(train_norm_data.X.data, X_bak)
-    assert np.allclose(train_norm_data.y.data, y_bak)
+    assert np.allclose(norm_data.scaled_X.min(axis=0), 0)
+    assert np.allclose(norm_data.scaled_X.max(axis=0), 1)
+    assert np.allclose(norm_data.scaled_y.min(axis=0), 0)
+    assert np.allclose(norm_data.scaled_y.max(axis=0), 1)
+    assert np.allclose(norm_data.X.data, X_bak)
+    assert np.allclose(norm_data.y.data, y_bak)
 
 
 @pytest.mark.parametrize(
     "degree,intercept", [(2, False), (3, False), (2, True), (3, True)]
 )
 def test_polynomial(
-    train_norm_data,
+    train_dataframe,
     new_norm_hbr_model,
     n_train_datapoints,
+    n_response_vars,
     n_covariates,
     degree,
     intercept,
 ):
+    norm_data = NormData.from_dataframe(
+        "train_norm_data",
+        train_dataframe,
+        covariates=["X1", "X2"],
+        batch_effects=["batch1", "batch2"],
+        response_vars=[f"Y{i+1}" for i in range(n_response_vars)],
+    )
     object.__setattr__(new_norm_hbr_model._norm_conf, "inscaler", "standardize")
     object.__setattr__(new_norm_hbr_model._norm_conf, "outscaler", "standardize")
-    new_norm_hbr_model.scale_forward(train_norm_data)
-    train_norm_data.expand_basis("polynomial", order=degree, intercept=intercept)
-    assert train_norm_data.Phi.shape == (
+    new_norm_hbr_model.scale_forward(norm_data)
+    norm_data.expand_basis("polynomial", order=degree, intercept=intercept)
+    assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + degree + 1 * intercept,
     )
@@ -121,7 +137,8 @@ def test_polynomial(
     [(5, 3, False), (5, 3, True), (5, 2, False), (5, 2, True)],
 )
 def test_bspline(
-    train_norm_data,
+    train_dataframe,
+    n_response_vars,
     new_norm_hbr_model,
     n_train_datapoints,
     n_covariates,
@@ -129,13 +146,18 @@ def test_bspline(
     order,
     intercept,
 ):
+    norm_data = NormData.from_dataframe(
+        "train_norm_data",
+        train_dataframe,
+        covariates=["X1", "X2"],
+        batch_effects=["batch1", "batch2"],
+        response_vars=[f"Y{i+1}" for i in range(n_response_vars)],
+    )
     object.__setattr__(new_norm_hbr_model._norm_conf, "inscaler", "standardize")
     object.__setattr__(new_norm_hbr_model._norm_conf, "outscaler", "standardize")
-    new_norm_hbr_model.scale_forward(train_norm_data)
-    train_norm_data.expand_basis(
-        "bspline", nknots=nknots, order=order, intercept=intercept
-    )
-    assert train_norm_data.Phi.shape == (
+    new_norm_hbr_model.scale_forward(norm_data)
+    norm_data.expand_basis("bspline", nknots=nknots, order=order, intercept=intercept)
+    assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + nknots + order - 1 + 1 * intercept,
     )

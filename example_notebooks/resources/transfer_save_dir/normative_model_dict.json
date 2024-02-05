@@ -30,11 +30,6 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "slope": {
                 "name": "slope_mu",
                 "dims": [
@@ -45,15 +40,10 @@
                 "centered": false,
                 "has_covariate_dim": true,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    -0.30682440953453266,
-                    0.08937126076344122
+                    -0.3113481760023383,
+                    0.05658318717813943
                 ]
             },
             "intercept": {
@@ -64,17 +54,17 @@
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0.007604635165853529,
-                    0.08315419971677157
+                    0.0017253184658058008,
+                    0.04108906409491708
                 ]
-            }
+            },
+            "mapping": "identity",
+            "mapping_params": [
+                0,
+                1
+            ]
         },
         "sigma": {
             "name": "sigma",
@@ -84,11 +74,6 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "softplus",
-            "mapping_params": [
-                0,
-                1
-            ],
             "slope": {
                 "name": "slope_sigma",
                 "dims": [
@@ -99,15 +84,10 @@
                 "centered": false,
                 "has_covariate_dim": true,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    -0.053655074944272824,
-                    0.12003727562853544
+                    0.11656138752741207,
+                    0.050003298696444286
                 ]
             },
             "intercept": {
@@ -118,17 +98,17 @@
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0.4182859079482549,
-                    0.12089623960999762
+                    0.46316207888384003,
+                    0.05573403750706192
                 ]
-            }
+            },
+            "mapping": "softplus",
+            "mapping_params": [
+                0,
+                1
+            ]
         },
         "epsilon": {
             "name": "epsilon",
@@ -138,15 +118,10 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "dist_name": "Normal",
             "dist_params": [
-                0.009645141912656736,
-                0.09149341579826906
+                0.09932942897057198,
+                0.04927408446819379
             ]
         },
         "delta": {
@@ -157,14 +132,9 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "dist_name": "HalfNormal",
             "dist_params": [
-                0.32775809154556723
+                0.19052654093712762
             ]
         }
     },
@@ -174,22 +144,6 @@
             "is_from_dict": false
         }
     },
-    "inscalers": {
-        "age": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 42.25,
-            "s": 15.833114033569013
-        }
-    },
-    "outscalers": {
-        "rh_MeanThickness_thickness": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 2.45332625,
-            "s": 0.08212249629935453
-        }
-    }
+    "inscalers": {},
+    "outscalers": {}
 }

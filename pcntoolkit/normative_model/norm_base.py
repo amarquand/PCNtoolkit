@@ -187,7 +187,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         results = self.evaluate(predict_data)
         return results
 
-    def transfer(self, data: NormData) -> "NormBase":
+    def transfer(self, data: NormData, *args, **kwargs) -> "NormBase":
         """
         Transfers the normative model to a new dataset. Calls the subclass' _transfer method.
         """
@@ -213,12 +213,19 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
             # Transfer
             print(f"Transferring model for {responsevar}")
-            transfered_models[responsevar] = self._transfer(resp_transfer_data)
+            transfered_models[responsevar] = self._transfer(resp_transfer_data, *args, **kwargs)
 
             self.reset()
 
         # Create a new normative model
         # Change the reg_conf save_dir and log_dir
+        transfered_norm_conf = self.norm_conf.copy()
+        object.__setattr__(
+            transfered_norm_conf, "save_dir", self.norm_conf.save_dir + "_transfer"
+        )
+        object.__setattr__(
+            transfered_norm_conf, "log_dir", self.norm_conf.log_dir + "_transfer"
+        )
         transfered_normative_model = self.__class__(self.norm_conf, self.reg_conf)
 
         # Set the models
@@ -325,9 +332,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             rmse = self._evaluate_rmse(resp_predict_data)
 
             # Store the measure
-            data.measures.loc[
-                {"response_vars": responsevar, "statistics": "RMSE"}
-            ] = rmse
+            data.measures.loc[{"response_vars": responsevar, "statistics": "RMSE"}] = (
+                rmse
+            )
 
     def evaluate_smse(self, data: NormData):
         data["SMSE"] = self.empty_measure()
@@ -339,9 +346,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             smse = self._evaluate_smse(resp_predict_data)
 
             # Store the measure
-            data.measures.loc[
-                {"response_vars": responsevar, "statistics": "SMSE"}
-            ] = smse
+            data.measures.loc[{"response_vars": responsevar, "statistics": "SMSE"}] = (
+                smse
+            )
 
     def evaluate_expv(self, data: NormData):
         data["ExpV"] = self.empty_measure()
@@ -353,9 +360,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             expv = self._evaluate_expv(resp_predict_data)
 
             # Store the measure
-            data.measures.loc[
-                {"response_vars": responsevar, "statistics": "ExpV"}
-            ] = expv
+            data.measures.loc[{"response_vars": responsevar, "statistics": "ExpV"}] = (
+                expv
+            )
 
     def evaluate_msll(self, data: NormData):
         data["MSLL"] = self.empty_measure()
@@ -367,9 +374,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             msll = self._evaluate_msll(resp_predict_data)
 
             # Store the measure
-            data.measures.loc[
-                {"response_vars": responsevar, "statistics": "MSLL"}
-            ] = msll
+            data.measures.loc[{"response_vars": responsevar, "statistics": "MSLL"}] = (
+                msll
+            )
 
     def evaluate_nll(self, data: NormData):
         data["NLL"] = self.empty_measure()
@@ -517,9 +524,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
             # Overwrite quantiles
             print("Computing quantiles for", responsevar)
-            data["scaled_quantiles"].loc[
-                {"response_vars": responsevar}
-            ] = self._quantiles(resp_predict_data, quantiles_zscores, *args, **kwargs)
+            data["scaled_quantiles"].loc[{"response_vars": responsevar}] = (
+                self._quantiles(resp_predict_data, quantiles_zscores, *args, **kwargs)
+            )
 
             self.reset()
 
@@ -671,7 +678,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _fit_predict(self, data: NormData):
+    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
         Acts as the adapter for fit_predict using the specific regression model.
         Is not responsible for cv, logging, saving, etc.
@@ -679,7 +686,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         pass
 
     @abstractmethod
-    def _transfer(self, data: NormData) -> "NormBase":
+    def _transfer(self, data: NormData, *args, **kwargs) -> "NormBase":
         pass
 
     @abstractmethod
