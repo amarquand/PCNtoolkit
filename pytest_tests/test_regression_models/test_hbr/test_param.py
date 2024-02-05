@@ -147,7 +147,7 @@ def test_linear_param_with_random_intercept_and_slope(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_single(model_and_data):
+def test_params_from_args_single(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -158,7 +158,7 @@ def test_param_from_dict_single(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -174,7 +174,7 @@ def test_param_from_dict_single(model_and_data):
     assert tuple(samples.shape.eval()) == (100, 1)
 
 
-def test_param_from_dict_single_with_covariate_dim(model_and_data):
+def test_param_from_args_single_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -185,7 +185,7 @@ def test_param_from_dict_single_with_covariate_dim(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict, dims=("covariates"))
+    mu = Param.from_args("mu", param_dict, dims=("covariates"))
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
@@ -206,7 +206,7 @@ def test_param_from_dict_single_with_covariate_dim(model_and_data):
     )
 
 
-def test_param_from_dict_double(model_and_data):
+def test_param_from_args_double(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -222,7 +222,7 @@ def test_param_from_dict_double(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
 
     assert mu.name == "mu"
@@ -238,7 +238,7 @@ def test_param_from_dict_double(model_and_data):
     samples = mu.get_samples(data)
     assert tuple(samples.shape.eval()) == (100, 1)
 
-    sigma = Param.from_dict("sigma", param_dict)
+    sigma = Param.from_args("sigma", param_dict)
     sigma.add_to(model)
     assert sigma.name == "sigma"
     assert sigma.dims == ()
@@ -254,7 +254,7 @@ def test_param_from_dict_double(model_and_data):
     assert tuple(samples.shape.eval()) == (100, 1)
 
 
-def test_param_from_dict_random_centered(model_and_data):
+def test_param_from_args_random_centered(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -265,7 +265,7 @@ def test_param_from_dict_random_centered(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
 
     assert mu.name == "mu"
@@ -292,7 +292,7 @@ def test_param_from_dict_random_centered(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_random_centered_with_covariate_dim(model_and_data):
+def test_param_from_args_random_centered_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -303,7 +303,7 @@ def test_param_from_dict_random_centered_with_covariate_dim(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict, dims=("covariates",))
+    mu = Param.from_args("mu", param_dict, dims=("covariates",))
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
@@ -329,7 +329,7 @@ def test_param_from_dict_random_centered_with_covariate_dim(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
 
 
-def test_param_from_dict_random_noncentered(model_and_data):
+def test_param_from_args_random_noncentered(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -340,7 +340,7 @@ def test_param_from_dict_random_noncentered(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -366,7 +366,7 @@ def test_param_from_dict_random_noncentered(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_random_noncentered_with_covariate_dim(model_and_data):
+def test_param_from_args_random_noncentered_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param_dict = {
         "mu_dist_name": "Normal",
@@ -377,7 +377,7 @@ def test_param_from_dict_random_noncentered_with_covariate_dim(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu = Param.from_dict("mu", param_dict, dims=("covariates",))
+    mu = Param.from_args("mu", param_dict, dims=("covariates",))
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
@@ -403,10 +403,10 @@ def test_param_from_dict_random_noncentered_with_covariate_dim(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
 
 
-def test_param_from_dict_linear(model_and_data):
+def test_param_from_args_linear(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True}
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -428,10 +428,10 @@ def test_param_from_dict_linear(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_slope(model_and_data):
+def test_param_from_args_linear_with_random_slope(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_slope_mu": True}
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -467,10 +467,10 @@ def test_param_from_dict_linear_with_random_slope(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_intercept(model_and_data):
+def test_param_from_args_linear_with_random_intercept(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_intercept_mu": True}
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -506,14 +506,14 @@ def test_param_from_dict_linear_with_random_intercept(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_intercept_and_slope(model_and_data):
+def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
     model, data = model_and_data
     param_dict = {
         "linear_mu": True,
         "random_intercept_mu": True,
         "random_slope_mu": True,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -563,10 +563,10 @@ def test_param_from_dict_linear_with_random_intercept_and_slope(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_centered_slope(model_and_data):
+def test_param_from_args_linear_with_random_centered_slope(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_slope_mu": True, "centered_slope_mu": True}
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -603,14 +603,14 @@ def test_param_from_dict_linear_with_random_centered_slope(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_centered_intercept(model_and_data):
+def test_param_from_args_linear_with_random_centered_intercept(model_and_data):
     model, data = model_and_data
     param_dict = {
         "linear_mu": True,
         "random_intercept_mu": True,
         "centered_intercept_mu": True,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
 
     assert mu.name == "mu"
@@ -643,7 +643,7 @@ def test_param_from_dict_linear_with_random_centered_intercept(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
 
-def test_param_from_dict_linear_with_random_centered_intercept_and_slope(
+def test_param_from_args_linear_with_random_centered_intercept_and_slope(
     model_and_data,
 ):
     model, data = model_and_data
@@ -654,7 +654,7 @@ def test_param_from_dict_linear_with_random_centered_intercept_and_slope(
         "random_slope_mu": True,
         "centered_slope_mu": True,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     mu.add_to(model)
 
     assert mu.name == "mu"
@@ -715,19 +715,15 @@ def test_to_dict(model_and_data):
         "random_slope_mu": True,
         "centered_slope_mu": True,
     }
-    mu = Param.from_dict("mu", param_dict)
+    mu = Param.from_args("mu", param_dict)
     my_dict = mu.to_dict()
     assert my_dict["name"] == "mu"
     assert my_dict["dims"] == ()
-    assert my_dict["dist_name"] == "Normal"
-    assert my_dict["dist_params"] == (0, 1)
     assert my_dict["random"] == False
     assert my_dict["centered"] == False
     assert my_dict["linear"] == True
     assert my_dict["intercept"]["name"] == "intercept_mu"
     assert my_dict["intercept"]["dims"] == ()
-    assert my_dict["intercept"]["dist_name"] == "Normal"
-    assert my_dict["intercept"]["dist_params"] == (0, 1)
     assert my_dict["intercept"]["random"] == True
     assert my_dict["intercept"]["centered"] == True
     assert my_dict["intercept"]["linear"] == False
@@ -741,8 +737,6 @@ def test_to_dict(model_and_data):
     assert my_dict["intercept"]["sigma"]["dist_params"] == (1.0,)
     assert my_dict["slope"]["name"] == "slope_mu"
     assert my_dict["slope"]["dims"] == ("covariates",)
-    assert my_dict["slope"]["dist_name"] == "Normal"
-    assert my_dict["slope"]["dist_params"] == (0, 1)
     assert my_dict["slope"]["random"] == True
     assert my_dict["slope"]["centered"] == True
     assert my_dict["slope"]["linear"] == False
@@ -758,10 +752,10 @@ def test_approximate_marginal_normal(mu, sigma):
     samples = pm.draw(pm.Normal.dist(mu=mu, sigma=sigma), draws=10000)
     param = Param("test", dims=())
     dist_name = "Normal"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    mu = inputs[3].value.item()
-    sigma = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    mu = params[0]
+    sigma = params[1]
     assert mu == pytest.approx(mu, abs=0.01)
     assert sigma == pytest.approx(sigma, abs=0.01)
 
@@ -773,9 +767,9 @@ def test_approximate_marginal_halfnormal(sigma):
     samples = pm.draw(pm.HalfNormal.dist(sigma=sigma), draws=10000)
     param = Param("test", dims=())
     dist_name = "HalfNormal"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    sigma = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    sigma = params[0]
     assert sigma == pytest.approx(sigma, abs=0.01)
 
 
@@ -786,10 +780,10 @@ def test_approximate_marginal_lognormal(mu, sigma):
     samples = pm.draw(pm.Lognormal.dist(mu=mu, sigma=sigma), draws=10000)
     param = Param("test", dims=())
     dist_name = "LogNormal"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    mu = inputs[3].value.item()
-    sigma = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    mu = params[0]
+    sigma = params[1]
     assert mu == pytest.approx(mu, abs=0.01)
     assert sigma == pytest.approx(sigma, abs=0.01)
 
@@ -801,10 +795,10 @@ def test_approximate_marginal_cauchy(alpha, beta):
     samples = pm.draw(pm.Cauchy.dist(alpha=alpha, beta=beta), draws=10000)
     param = Param("test", dims=())
     dist_name = "Cauchy"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    alpha = inputs[3].value.item()
-    beta = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    alpha = params[0]
+    beta = params[1]
     assert alpha == pytest.approx(alpha, abs=0.01)
     assert beta == pytest.approx(beta, abs=0.01)
 
@@ -816,9 +810,9 @@ def test_approximate_marginal_halfcauchy(beta):
     samples = pm.draw(pm.HalfCauchy.dist(beta=beta), draws=10000)
     param = Param("test", dims=())
     dist_name = "HalfCauchy"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    beta = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    beta = params[0]
     assert beta == pytest.approx(beta, abs=0.01)
 
 
@@ -829,9 +823,9 @@ def test_approximate_marginal_uniform(lower, upper):
     samples = pm.draw(pm.Uniform.dist(lower=lower, upper=upper), draws=10000)
     param = Param("test", dims=())
     dist_name = "Uniform"
-    marginal = param.approximate_marginal(model, dist_name, samples)
-    inputs = marginal.owner.inputs
-    lower = inputs[3].value.item()
-    upper = inputs[4].value.item()
+    param.approximate_marginal(model, dist_name, samples)
+    params = param.dist_params
+    lower = params[0]
+    upper = params[1]
     assert lower == pytest.approx(lower, abs=0.01)
     assert upper == pytest.approx(upper, abs=0.01)

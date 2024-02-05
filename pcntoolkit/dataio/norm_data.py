@@ -11,7 +11,6 @@ from pcntoolkit.dataio.scaler import scaler
 
 
 class NormData(xr.Dataset):
-
     """Should keep track of the dimensions and coordinates of the data, and provide consistency between splits of the data."""
 
     __slots__ = (
@@ -54,7 +53,6 @@ class NormData(xr.Dataset):
                 "batch_effect_dims": [
                     f"batch_effect_{i}" for i in range(batch_effects.shape[1])
                 ],
-                "basis_functions": np.arange(X.shape[1]),
             },
             attrs=attrs,
         )
@@ -345,10 +343,10 @@ class NormData(xr.Dataset):
             )
         elif basis_expansion == "bspline":
             self.attrs["bspline_basis"] = create_bspline_basis(
-                np.min(source_array[:, basis_column]),
-                np.max(source_array.data[:, basis_column]),
-                order,
-                nknots,
+                xmin=np.min(source_array[:, basis_column]),
+                xmax=np.max(source_array.data[:, basis_column]),
+                p=order,
+                nknots=nknots,
             )
             expanded_basis = np.array(
                 [
@@ -371,6 +369,7 @@ class NormData(xr.Dataset):
             coords={"basis_functions": all_dims},
             dims=["datapoints", "basis_functions"],
         )
+        pass
 
     def plot_quantiles(
         self,

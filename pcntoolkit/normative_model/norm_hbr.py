@@ -72,6 +72,7 @@ class NormHBR(NormBase):
         regression_model_dict = {}
 
         for k, model in self.models.items():
+            self.prepare(k)
             regression_model_dict[k] = model.to_dict()
             del regression_model_dict[k]["conf"]
             if model.is_fitted:
@@ -83,6 +84,7 @@ class NormHBR(NormBase):
                     raise RuntimeError(
                         "HBR model is fitted but does not have idata. This should not happen."
                     )
+            self.reset()
         return regression_model_dict
 
     def dict_to_models(self, dict, path):
@@ -101,25 +103,29 @@ class NormHBR(NormBase):
     # def prepare(self, response_var):
     #     self.current_response_var = response_var
     #     self.model = self.models[self.current_response_var]
-    #     self.load_idata()
+    #     if self.model.is_fitted:
+    #         self.load_idata_from_cache()
+    #         self.replace_samples_in_idata_posterior(self.model.idata)
 
     # def reset(self):
-    #     # save the idata
-    #     self.save_idata()
-    #     del self.model.idata
-    #     xr.backends.file_manager.FILE_CACHE.clear()
-    #     gc.collect()
+    #     if self.model.is_fitted:
+    #         self.remove_samples_from_idata_posterior(self.model.idata)
+    #         self.save_idata_to_cache()
+    #         del self.model.idata
+    #         gc.collect()
 
-    def load_idata(self):
+    def load_idata_from_cache(self):
         idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_{self.current_response_var}.nc"
+            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
         )
-        self.model.idata = az.from_netcdf(idata_path)
+        with az.from_netcdf(idata_path) as idata:
+            self.model.idata = idata
 
-    def save_idata(self):
+    def save_idata_to_cache(self):
         idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_{self.current_response_var}.nc"
+            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
         )
+
         self.model.idata.to_netcdf(idata_path)
 
     @staticmethod
@@ -227,7 +233,9 @@ class NormHBR(NormBase):
                 var_names=self.get_var_names() + ["y_pred"],
             )
 
-    def _transfer(self, data: NormData) -> "HBR":
+    def _transfer(self, data: NormData, *args, **kwargs) -> "HBR":
+
+        freedom = kwargs.get("freedom", 1)
         # Transform the data to hbrdata
         transferdata = self.normdata_to_hbrdata(data)
 
@@ -238,7 +246,7 @@ class NormHBR(NormBase):
         new_hbr_model = HBR(self.reg_conf)
 
         # Create a new model, using the idata from the original model to inform the priors
-        new_hbr_model.create_pymc_model(transferdata, self.model.idata)
+        new_hbr_model.create_pymc_model(transferdata, self.model.idata, freedom)
 
         # Sample using the new model
         with new_hbr_model.model:

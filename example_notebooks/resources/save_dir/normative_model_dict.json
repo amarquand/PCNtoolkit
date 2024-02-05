@@ -30,11 +30,6 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "slope": {
                 "name": "slope_mu",
                 "dims": [
@@ -45,15 +40,10 @@
                 "centered": false,
                 "has_covariate_dim": true,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0,
-                    1
+                    -0.3103506375304667,
+                    0.05550633504598772
                 ]
             },
             "intercept": {
@@ -64,17 +54,17 @@
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0,
-                    1
+                    0.003243442177308177,
+                    0.040916866866314607
                 ]
-            }
+            },
+            "mapping": "identity",
+            "mapping_params": [
+                0,
+                1
+            ]
         },
         "sigma": {
             "name": "sigma",
@@ -84,11 +74,6 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "softplus",
-            "mapping_params": [
-                0,
-                1
-            ],
             "slope": {
                 "name": "slope_sigma",
                 "dims": [
@@ -99,15 +84,10 @@
                 "centered": false,
                 "has_covariate_dim": true,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0,
-                    1
+                    0.11629005232396078,
+                    0.0501626976936972
                 ]
             },
             "intercept": {
@@ -118,17 +98,17 @@
                 "centered": false,
                 "has_covariate_dim": false,
                 "has_random_effect": false,
-                "mapping": "identity",
-                "mapping_params": [
-                    0,
-                    1
-                ],
                 "dist_name": "Normal",
                 "dist_params": [
-                    0,
-                    1
+                    0.46313273244968634,
+                    0.05665038400429298
                 ]
-            }
+            },
+            "mapping": "softplus",
+            "mapping_params": [
+                0,
+                1
+            ]
         },
         "epsilon": {
             "name": "epsilon",
@@ -138,14 +118,10 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "dist_name": "Normal",
             "dist_params": [
-                1
+                0.10071667133482826,
+                0.2510950491439878
             ]
         },
         "delta": {
@@ -156,14 +132,9 @@
             "centered": false,
             "has_covariate_dim": false,
             "has_random_effect": false,
-            "mapping": "identity",
-            "mapping_params": [
-                0,
-                1
-            ],
             "dist_name": "HalfNormal",
             "dist_params": [
-                1
+                0.9749671887828468
             ]
         }
     },
@@ -173,22 +144,6 @@
             "is_from_dict": false
         }
     },
-    "inscalers": {
-        "age": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 24.60048872180451,
-            "s": 10.91510902484757
-        }
-    },
-    "outscalers": {
-        "rh_MeanThickness_thickness": {
-            "adjust_outliers": true,
-            "scaler_type": "standardize",
-            "tail": 0.05,
-            "m": 2.5046324812030076,
-            "s": 0.08624602374320108
-        }
-    }
+    "inscalers": {},
+    "outscalers": {}
 }

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.reg_conf import RegConf
@@ -15,11 +15,11 @@ class HBRConf(RegConf):
     # model config
     likelihood: str = "Normal"
 
-    # prior config
-    mu: Param = None
-    sigma: Param = None
-    epsilon: Param = None
-    delta: Param = None
+    # prior config with defaults
+    mu: Param = field(default_factory=Param.default_mu())
+    sigma: Param = field(default_factory=Param.default_sigma())
+    epsilon: Param = field(default_factory=Param.default_epsilon())
+    delta: Param = field(default_factory=Param.default_delta())
 
     def detect_configuration_problems(self) -> str:
         """

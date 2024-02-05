@@ -31,7 +31,7 @@ class HBR:
         return self._conf
 
     def create_pymc_model(
-        self, data: HBRData, idata: az.InferenceData = None
+        self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
         Creates the pymc model.
@@ -39,24 +39,24 @@ class HBR:
         self.model = pm.Model(coords=data.coords, coords_mutable=data.coords_mutable)
         data.add_to_model(self.model)
         if self.conf.likelihood == "Normal":
-            self.create_normal_pymc_model(data, idata)
+            self.create_normal_pymc_model(data, idata, freedom)
         elif self.conf.likelihood == "SHASHb":
-            self.create_SHASHb_pymc_model(data, idata)
+            self.create_SHASHb_pymc_model(data, idata, freedom)
         elif self.conf.likelihood == "SHASHo":
-            self.create_SHASHo_pymc_model(data, idata)
+            self.create_SHASHo_pymc_model(data, idata, freedom)
         else:
             raise NotImplementedError(
                 f"Likelihood {self.conf.likelihood} not implemented for {self.__class__.__name__}"
             )
 
     def create_normal_pymc_model(
-        self, data: HBRData, idata: az.InferenceData = None
+        self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata)
-        self.conf.sigma.add_to(self.model, idata)
+        self.conf.mu.add_to(self.model, idata, freedom)
+        self.conf.sigma.add_to(self.model, idata, freedom)
         with self.model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
@@ -77,15 +77,15 @@ class HBR:
             )
 
     def create_SHASHb_pymc_model(
-        self, data: HBRData, idata: az.InferenceData = None
+        self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata)
-        self.conf.sigma.add_to(self.model, idata)
-        self.conf.epsilon.add_to(self.model, idata)
-        self.conf.delta.add_to(self.model, idata)
+        self.conf.mu.add_to(self.model, idata, freedom)
+        self.conf.sigma.add_to(self.model, idata, freedom)
+        self.conf.epsilon.add_to(self.model, idata, freedom)
+        self.conf.delta.add_to(self.model, idata, freedom)
         with self.model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
@@ -118,15 +118,15 @@ class HBR:
             )
 
     def create_SHASHo_pymc_model(
-        self, data: HBRData, idata: az.InferenceData = None
+        self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata)
-        self.conf.sigma.add_to(self.model, idata)
-        self.conf.epsilon.add_to(self.model, idata)
-        self.conf.delta.add_to(self.model, idata)
+        self.conf.mu.add_to(self.model, idata, freedom)
+        self.conf.sigma.add_to(self.model, idata, freedom)
+        self.conf.epsilon.add_to(self.model, idata, freedom)
+        self.conf.delta.add_to(self.model, idata, freedom)
         with self.model:
             mu_samples = pm.Deterministic(
                 "mu_samples",

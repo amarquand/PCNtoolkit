@@ -183,4 +183,4 @@ def test_transfer(
 
 
 def test_quantiles(fitted_norm_hbr_model, test_norm_data):
-    fitted_norm_hbr_model.compute_quantiles(test_norm_data, zscores=[-1, 0, 1])
+    fitted_norm_hbr_model.compute_quantiles(test_norm_data)

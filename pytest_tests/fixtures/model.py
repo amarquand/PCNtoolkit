@@ -9,22 +9,22 @@ from pytest_tests.fixtures.data import *
 from pytest_tests.fixtures.paths import *
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def cvfolds():
     return 4
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def alg():
     return "hbr"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def savemodel():
     return True
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def hbr_norm_conf_dict(
     cvfolds,
     alg,
@@ -54,7 +54,7 @@ def hbr_norm_conf_dict(
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def norm_args():
     return {
         "log_dir": "nonexistant",
@@ -64,7 +64,7 @@ def norm_args():
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def normconf_for_hbr(cvfolds, savemodel, resource_dir):
     return NormConf(
         perform_cv=False,
@@ -81,7 +81,7 @@ def normconf_for_hbr(cvfolds, savemodel, resource_dir):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def mu():
     return Param(
         name="mu",
@@ -91,7 +91,7 @@ def mu():
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def sigma():
     return Param(
         name="sigma",
@@ -101,22 +101,22 @@ def sigma():
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def hbrconf(mu, sigma):
     return HBRConf(draws=1000, tune=1000, chains=2, cores=1, mu=mu, sigma=sigma)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def hbr(hbrconf):
     return HBR(hbrconf)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def new_norm_hbr_model(normconf_for_hbr, hbrconf):
     return NormHBR(normconf_for_hbr, hbrconf)
 
 
-@pytest.fixture(scope="session")
-def fitted_norm_hbr_model(new_norm_hbr_model: NormHBR, train_norm_data: NormData):
+@pytest.fixture
+def fitted_norm_hbr_model(new_norm_hbr_model: NormHBR, train_norm_data: pd.DataFrame):
     new_norm_hbr_model.fit(train_norm_data)
     return new_norm_hbr_model

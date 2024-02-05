@@ -36,6 +36,8 @@ class Param:
     distmap: Dict[str, pm.Distribution] = field(init=False, default=False)
     dist: pm.Distribution = field(init=False, default=False)
 
+    freedom: float = 1.0
+
     def __post_init__(self):
         self.has_covariate_dim = False if not self.dims else "covariates" in self.dims
         self.distmap = {
@@ -65,13 +67,13 @@ class Param:
                 if type(self.dims) is str:
                     self.dims = (self.dims,)
 
-    def add_to(self, model, idata=None):
+    def add_to(self, model, idata=None, freedom=1):
+        self.freedom = freedom
         self.distmap = {
             "Normal": pm.Normal,
             "Cauchy": pm.Cauchy,
             "HalfNormal": pm.HalfNormal,
         }
-
         with model:
             if self.linear:
                 self.slope.add_to(model, idata)
@@ -103,33 +105,38 @@ class Param:
             else:
                 if idata is not None:
                     self.approximate_marginal(
-                        model, self.dist_name, az.extract(idata, var_names=self.name)
+                        model,
+                        self.dist_name,
+                        az.extract(idata, var_names=self.name),
                     )
                 self.dist = self.distmap[self.dist_name](
                     self.name, *self.dist_params, shape=self.shape, dims=self.dims
                 )
 
-    def approximate_marginal(self, model, dist_name: str, samples, freedom=1):
+    def approximate_marginal(self, model, dist_name: str, samples):
         """
         use scipy stats.XXX.fit to get the parameters of the marginal distribution
         """
         """At some point, we want to average over all dimensions except the covariate dimension."""
+        print(
+            f"Approximating marginal distribution for {self.name} with {dist_name} and freedom {self.freedom}"
+        )
         with model:
             if dist_name == "Normal":
                 temp = stats.norm.fit(samples)
-                self.dist_params = (temp[0], freedom * temp[1])
+                self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "HalfNormal":
                 temp = stats.halfnorm.fit(samples)
-                self.dist_params = (freedom * temp[1],)
+                self.dist_params = (self.freedom * temp[1],)
             elif dist_name == "LogNormal":
                 temp = stats.lognorm.fit(samples)
-                self.dist_params = (temp[0], freedom * temp[1])
+                self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "Cauchy":
                 temp = stats.cauchy.fit(samples)
-                self.dist_params = (temp[0], freedom * temp[1])
+                self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "HalfCauchy":
                 temp = stats.halfcauchy.fit(samples)
-                self.dist_params = (freedom * temp[1],)
+                self.dist_params = (self.freedom * temp[1],)
             elif dist_name == "Uniform":
                 temp = stats.uniform.fit(samples)
                 self.dist_params = (temp[0], temp[1])
@@ -139,7 +146,7 @@ class Param:
     @classmethod
     def from_args(cls, name: str, args: Dict[str, any], dims=()):
         if args.get(f"linear_{name}", False):
-            slope = cls.from_dict(f"slope_{name}", args, dims=(*dims, "covariates"))
+            slope = cls.from_args(f"slope_{name}", args, dims=(*dims, "covariates"))
             intercept = cls.from_args(f"intercept_{name}", args, dims=dims)
             return cls(
                 name,
@@ -286,12 +293,12 @@ class Param:
             "centered": self.centered,
             "has_covariate_dim": self.has_covariate_dim,
             "has_random_effect": self.has_random_effect,
-            "mapping": self.mapping,
-            "mapping_params": self.mapping_params,
         }
         if self.linear:
             param_dict["slope"] = self.slope.to_dict()
             param_dict["intercept"] = self.intercept.to_dict()
+            param_dict["mapping"] = self.mapping
+            param_dict["mapping_params"] = self.mapping_params
         elif self.random:
             param_dict["mu"] = self.mu.to_dict()
             param_dict["sigma"] = self.sigma.to_dict()
@@ -299,3 +306,34 @@ class Param:
             param_dict["dist_name"] = self.dist_name
             param_dict["dist_params"] = self.dist_params
         return param_dict
+
+    @classmethod
+    def default_mu(cls):
+        return cls(
+            "mu",
+            linear=True,
+            slope=cls("slope_mu", random=False),
+            intercept=cls("intercept_mu", random=True, centered=False),
+        )
+
+    @classmethod
+    def default_sigma(cls):
+        return cls(
+            "sigma",
+            linear=True,
+            slope=cls("slope_sigma", random=False),
+            intercept=cls("intercept_sigma", random=True, centered=True),
+            mapping="softplus",
+        )
+
+    @classmethod
+    def default_epsilon(cls):
+        return cls(
+            "epsilon",
+            linear=False,
+            random=False,
+        )
+
+    @classmethod
+    def default_delta(cls):
+        return cls("delta", linear=False, random=False, dist_name="HalfNormal")
