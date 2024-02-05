@@ -33,8 +33,8 @@ class NormBLR(NormBase):
 
     def models_to_dict(self, path=None):
         """
-        Converts the models to a dictionary.
-        This dictionary is used to save the model to disk.
+        Converts the models to a dictionary with serializable components.
+        This dictionary is used to save the model to disk as json.
         Must contain all the information needed to recreate the model.
         Takes an optional path argument to save any large model components to disk.
         """
@@ -44,7 +44,7 @@ class NormBLR(NormBase):
 
     def dict_to_models(self, dict):
         """
-        Converts the dictionary to models.
+        Converts the dictionary to self.models.
         """
         raise NotImplementedError(
             f"Dict to models method not implemented for {self.__class__.__name__}"
