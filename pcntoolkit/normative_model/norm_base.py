@@ -227,13 +227,11 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # Create a new normative model
         # Change the reg_conf save_dir and log_dir
-        transfered_norm_conf = self.norm_conf.copy()
-        object.__setattr__(
-            transfered_norm_conf, "save_dir", self.norm_conf.save_dir + "_transfer"
-        )
-        object.__setattr__(
-            transfered_norm_conf, "log_dir", self.norm_conf.log_dir + "_transfer"
-        )
+        transfered_norm_conf = self.norm_conf.to_dict()
+        transfered_norm_conf["save_dir"] = self.norm_conf.save_dir + "_transfer"
+        transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
+        transfered_norm_conf = NormConf.from_args(transfered_norm_conf)
+
         transfered_normative_model = self.__class__(transfered_norm_conf, self.reg_conf)
 
         # Set the models
