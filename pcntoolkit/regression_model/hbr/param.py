@@ -76,12 +76,12 @@ class Param:
         }
         with model:
             if self.linear:
-                self.slope.add_to(model, idata)
-                self.intercept.add_to(model, idata)
+                self.slope.add_to(model, idata, freedom)
+                self.intercept.add_to(model, idata, freedom)
             elif self.random:
                 if self.centered:
-                    self.mu.add_to(model, idata)
-                    self.sigma.add_to(model, idata)
+                    self.mu.add_to(model, idata, freedom)
+                    self.sigma.add_to(model, idata, freedom)
                     self.dist = pm.Normal(
                         self.name,
                         mu=self.mu.dist,
@@ -89,8 +89,8 @@ class Param:
                         dims=(*model.custom_batch_effect_dims, *self.dims),
                     )
                 else:
-                    self.mu.add_to(model, idata)
-                    self.sigma.add_to(model, idata)
+                    self.mu.add_to(model, idata, freedom)
+                    self.sigma.add_to(model, idata, freedom)
                     self.offset = pm.Normal(
                         f"offset_" + self.name,
                         mu=0,

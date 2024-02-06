@@ -69,6 +69,9 @@ class NormHBR(NormBase):
             )
 
     def models_to_dict(self, path):
+        # TODO split this into two methods
+        # One contains the for loop and is general for all normative models
+        # The other contains the specific code for the HBR model
         regression_model_dict = {}
 
         for k, model in self.models.items():
@@ -88,6 +91,9 @@ class NormHBR(NormBase):
         return regression_model_dict
 
     def dict_to_models(self, dict, path):
+        # TODO split this into two methods
+        # One contains the for loop and is general for all normative models
+        # The other contains the specific code for the HBR model
         for k, v in dict.items():
             self.models[k] = self.model_type(self.reg_conf)
             self.models[k].is_from_dict = dict[k]["is_from_dict"]
