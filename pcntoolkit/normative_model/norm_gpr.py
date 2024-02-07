@@ -10,10 +10,11 @@ from pcntoolkit.regression_model.gpr.gpr import GPR
 from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
 
 
+#
 class NormGPR(NormBase):
     def __init__(self, norm_conf: NormConf, reg_conf: GPRConf):
         super().__init__(norm_conf)
-        self.reg_conf: GPRConf = reg_conf
+        self._reg_conf: GPRConf = reg_conf
         self.regression_model_type = GPR
         self.current_regression_model: GPR = None
 
@@ -23,8 +24,8 @@ class NormGPR(NormBase):
         Creates a configuration from command line arguments.
         """
         norm_conf = NormConf.from_args(args)
-        hbrconf = GPRConf.from_args(args)
-        self = cls(norm_conf, hbrconf)
+        gprconf = GPRConf.from_args(args)
+        self = cls(norm_conf, gprconf)
         return self
 
     @staticmethod
@@ -33,11 +34,11 @@ class NormGPR(NormBase):
 
     @staticmethod
     def reg_conf_from_dict(dict):
-        return GPRConf.from_dict(dict)
+        return GPRConf.from_args(dict)
 
-    def _regression_model_to_dict(self, path=None):
+    def models_to_dict(self, path=None):
         """
-        Converts the current regression model to a dictionary with serializable components.
+        Converts the models to a dictionary with serializable components.
         This dictionary is used to save the model to disk as json.
         Must contain all the information needed to recreate the model.
         Takes an optional path argument to save any large model components to disk.
@@ -46,9 +47,9 @@ class NormGPR(NormBase):
             f"Models to dict method not implemented for {self.__class__.__name__}"
         )
 
-    def _dict_to_regression_model(self, dict):
+    def dict_to_models(self, dict):
         """
-        Converts the dictionary to an instance of self.regression_model_type
+        Converts the dictionary to self.models.
         """
         raise NotImplementedError(
             f"Dict to models method not implemented for {self.__class__.__name__}"
@@ -57,7 +58,7 @@ class NormGPR(NormBase):
     def _fit(self, data: NormData):
         """
         Fit self.model on data.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -67,7 +68,7 @@ class NormGPR(NormBase):
     def _predict(self, data: NormData) -> NormData:
         """
         Make predictions on data using self.model.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -77,7 +78,7 @@ class NormGPR(NormBase):
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
         Fit and predict on data using self.model.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -87,7 +88,7 @@ class NormGPR(NormBase):
     def _transfer(self, data: NormData) -> NormBase:
         """
         Transfer the model to a new dataset.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -97,7 +98,7 @@ class NormGPR(NormBase):
     def _extend(self, data: NormData):
         """
         Extend the model to a new dataset.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -117,7 +118,7 @@ class NormGPR(NormBase):
     def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
         """
         Compute quantiles for the model at the given data points.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
         - quantile_zscores
@@ -142,7 +143,7 @@ class NormGPR(NormBase):
     def _zscores(self, data: NormData) -> xr.DataArray:
         """
         Compute zscores for the model at the given data points.
-        Will be called for each model in self.regression_models from the super class.
+        Will be called for each model in self.models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
         - datapoints
@@ -159,6 +160,9 @@ class NormGPR(NormBase):
         )
 
     def n_params(self) -> xr.DataArray:
+        """
+        compute the number of parameters for the model.
+        """
         """
         compute the number of parameters for the model.
         """
