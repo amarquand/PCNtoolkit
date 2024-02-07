@@ -622,17 +622,11 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         model_dict["response_vars"] = self.response_vars
         # Store the normative model configuration
         model_dict["norm_conf"] = self.norm_conf.to_dict()
-        # Store the regression model configuration
-        model_dict["reg_conf"] = self.reg_conf.to_dict()
 
         # Store the regression models
         model_dict["regression_models"] = self.regression_models_to_dict(
             self.norm_conf.save_dir
         )
-
-        # Remove the conf from the regression models to save space
-        for k in model_dict["regression_models"].keys():
-            model_dict["regression_models"][k].pop("conf", None)
 
         # Store the scalers
         model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
