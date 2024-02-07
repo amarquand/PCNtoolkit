@@ -13,9 +13,9 @@ from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 class NormBLR(NormBase):
     def __init__(self, norm_conf: NormConf, reg_conf: BLRConf):
         super().__init__(norm_conf)
-        self._reg_conf: BLRConf = reg_conf
-        self.model_type = BLR
-        self.model: BLR = None
+        self.reg_conf: BLRConf = reg_conf
+        self.regression_model_type = BLR
+        self.current_regression_model: BLR = None
 
     @classmethod
     def from_args(cls, args):
@@ -28,12 +28,16 @@ class NormBLR(NormBase):
         return self
 
     @staticmethod
-    def reg_conf_from_args(dict):
-        return BLRConf.from_args(dict)
+    def reg_conf_from_args(args):
+        return BLRConf.from_args(args)
 
-    def models_to_dict(self, path=None):
+    @staticmethod
+    def reg_conf_from_dict(dict):
+        return BLRConf.from_dict(dict)
+
+    def _regression_model_to_dict(self, path=None):
         """
-        Converts the models to a dictionary with serializable components.
+        Converts the current regression model to a dictionary with serializable components.
         This dictionary is used to save the model to disk as json.
         Must contain all the information needed to recreate the model.
         Takes an optional path argument to save any large model components to disk.
@@ -42,9 +46,9 @@ class NormBLR(NormBase):
             f"Models to dict method not implemented for {self.__class__.__name__}"
         )
 
-    def dict_to_models(self, dict):
+    def _dict_to_regression_model(self, dict):
         """
-        Converts the dictionary to self.models.
+        Converts the dictionary to an instance of self.regression_model_type
         """
         raise NotImplementedError(
             f"Dict to models method not implemented for {self.__class__.__name__}"
@@ -53,7 +57,7 @@ class NormBLR(NormBase):
     def _fit(self, data: NormData):
         """
         Fit self.model on data.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -63,7 +67,7 @@ class NormBLR(NormBase):
     def _predict(self, data: NormData) -> NormData:
         """
         Make predictions on data using self.model.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -73,7 +77,7 @@ class NormBLR(NormBase):
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
         Fit and predict on data using self.model.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -83,7 +87,7 @@ class NormBLR(NormBase):
     def _transfer(self, data: NormData) -> NormBase:
         """
         Transfer the model to a new dataset.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -93,7 +97,7 @@ class NormBLR(NormBase):
     def _extend(self, data: NormData):
         """
         Extend the model to a new dataset.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
         raise NotImplementedError(
@@ -113,7 +117,7 @@ class NormBLR(NormBase):
     def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
         """
         Compute quantiles for the model at the given data points.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
         - quantile_zscores
@@ -138,7 +142,7 @@ class NormBLR(NormBase):
     def _zscores(self, data: NormData) -> xr.DataArray:
         """
         Compute zscores for the model at the given data points.
-        Will be called for each model in self.models from the super class.
+        Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
         - datapoints

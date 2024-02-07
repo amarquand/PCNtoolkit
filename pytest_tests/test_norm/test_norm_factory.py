@@ -34,4 +34,4 @@ def test_create_normative_model(
 ):
     norm_model: NormBase = create_normative_model(norm_conf, reg_conf())
     assert isinstance(norm_model, norm_subclass)
-    assert norm_model.model_type == reg_model
+    assert norm_model.regression_model_type == reg_model
