@@ -25,6 +25,11 @@ def savemodel():
 
 
 @pytest.fixture
+def n_mcmc_samples():
+    return 10
+
+
+@pytest.fixture
 def hbr_norm_conf_dict(
     cvfolds,
     alg,
@@ -102,8 +107,8 @@ def sigma():
 
 
 @pytest.fixture
-def hbrconf(mu, sigma):
-    return HBRConf(draws=1000, tune=1000, chains=2, cores=1, mu=mu, sigma=sigma)
+def hbrconf(mu, sigma, n_mcmc_samples):
+    return HBRConf(draws=n_mcmc_samples, tune=10, chains=2, cores=2, mu=mu, sigma=sigma)
 
 
 @pytest.fixture

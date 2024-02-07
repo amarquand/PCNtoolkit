@@ -96,14 +96,14 @@ def test_normdata_to_hbrdata(train_norm_data: NormData, n_train_datapoints):
     }
 
 
-def test_fit(fitted_norm_hbr_model):
-    for model in fitted_norm_hbr_model.models.values():
+def test_fit(fitted_norm_hbr_model, n_mcmc_samples):
+    for model in fitted_norm_hbr_model.regression_models.values():
         assert model.is_fitted
-        assert model.idata.posterior.mu_samples.shape[:2] == (2, 1000)
-        assert model.idata.posterior.sigma_samples.shape[:2] == (2, 1000)
+        assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)
+        assert model.idata.posterior.sigma_samples.shape[:2] == (2, n_mcmc_samples)
 
 
-def test_save_load(fitted_norm_hbr_model: NormHBR):
+def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     fitted_norm_hbr_model.save()
     for i in fitted_norm_hbr_model.response_vars:
         assert os.path.exists(
@@ -119,10 +119,13 @@ def test_save_load(fitted_norm_hbr_model: NormHBR):
     # Load the model normally
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
     hbr = load_normative_model(load_path)
-    for model in hbr.models.values():
+    for model in hbr.regression_models.values():
         if model.is_fitted:
-            assert model.idata.posterior.mu_samples.shape[:2] == (2, 1000)
-            assert model.idata.posterior.sigma_samples.shape[:2] == (2, 1000)
+            assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)
+            assert model.idata.posterior.sigma_samples.shape[:2] == (
+                2,
+                n_mcmc_samples,
+            )
 
     # remove the files
     for i in fitted_norm_hbr_model.response_vars:
@@ -150,7 +153,7 @@ def test_predict(
     n_test_datapoints,
 ):
     fitted_norm_hbr_model.predict(test_norm_data)
-    for model in fitted_norm_hbr_model.models.values():
+    for model in fitted_norm_hbr_model.regression_models.values():
         assert model.is_fitted
         assert model.idata.posterior_predictive.y_pred.datapoints.shape == (
             n_test_datapoints,
@@ -164,7 +167,7 @@ def test_fit_predict(
     n_test_datapoints,
 ):
     new_norm_hbr_model.fit_predict(train_norm_data, test_norm_data)
-    for model in new_norm_hbr_model.models.values():
+    for model in new_norm_hbr_model.regression_models.values():
         assert model.is_fitted
         assert model.idata.posterior_predictive.y_pred.datapoints.shape == (
             n_test_datapoints,
@@ -176,8 +179,8 @@ def test_transfer(
     transfer_norm_data: NormData,
 ):
     hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data)
-    for model in hbr_transfered.models.values():
-        assert model.model.coords["batch2"] == (0, 1, 2)
+    for model in hbr_transfered.regression_models.values():
+        assert model.pymc_model.coords["batch2"] == (0, 1, 2)
         assert model.is_fitted
         assert model.idata.posterior.mu_samples.shape[:2] == (2, 1000)
 

@@ -67,7 +67,7 @@ class Param:
                 if type(self.dims) is str:
                     self.dims = (self.dims,)
 
-    def add_to(self, model, idata=None, freedom=1):
+    def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
         self.distmap = {
             "Normal": pm.Normal,
@@ -76,12 +76,12 @@ class Param:
         }
         with model:
             if self.linear:
-                self.slope.add_to(model, idata, freedom)
-                self.intercept.add_to(model, idata, freedom)
+                self.slope.create_graph(model, idata)
+                self.intercept.create_graph(model, idata)
             elif self.random:
                 if self.centered:
-                    self.mu.add_to(model, idata, freedom)
-                    self.sigma.add_to(model, idata, freedom)
+                    self.mu.create_graph(model, idata)
+                    self.sigma.create_graph(model, idata)
                     self.dist = pm.Normal(
                         self.name,
                         mu=self.mu.dist,
@@ -89,8 +89,8 @@ class Param:
                         dims=(*model.custom_batch_effect_dims, *self.dims),
                     )
                 else:
-                    self.mu.add_to(model, idata, freedom)
-                    self.sigma.add_to(model, idata, freedom)
+                    self.mu.create_graph(model, idata)
+                    self.sigma.create_graph(model, idata)
                     self.offset = pm.Normal(
                         f"offset_" + self.name,
                         mu=0,
@@ -142,6 +142,85 @@ class Param:
                 self.dist_params = (temp[0], temp[1])
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
+
+    def set_noncentered_random_params(self):
+        if not self.mu:
+            self.mu = Param(f"mu_{self.name}", dims=self.dims)
+        if not self.sigma:
+            self.sigma = Param(
+                f"sigma_{self.name}",
+                dims=self.dims,
+                dist_name="HalfNormal",
+                dist_params=(1,),
+            )
+
+    def set_centered_random_params(self):
+        if not self.mu:
+            self.mu = Param(f"mu_{self.name}", dims=self.dims)
+        if not self.sigma:
+            self.sigma = Param(
+                f"sigma_{self.name}",
+                dims=self.dims,
+                dist_name="HalfNormal",
+                dist_params=(1.0,),
+            )
+
+    def set_linear_params(self):
+        if not self.slope:
+            self.slope = Param(f"slope_{self.name}", dims=(*self.dims, "covariates"))
+        if not self.intercept:
+            self.intercept = Param(f"intercept_{self.name}", dims=self.dims)
+
+    def get_samples(self, data: HBRData):
+        if self.linear:
+            slope_samples = self.slope.get_samples(data)
+            intercept_samples = self.intercept.get_samples(data)
+            result = (
+                pm.math.sum(slope_samples * data.pm_X, axis=1, keepdims=True)
+                + intercept_samples
+            )
+            return self.apply_mapping(result)
+
+        elif self.random:
+            if self.has_covariate_dim:
+                return self.dist[*data.pm_batch_effect_indices]
+            else:
+                return self.dist[*data.pm_batch_effect_indices, None]
+        else:
+            return repeat(self.dist[None, :], data.pm_X.shape[0], axis=0)
+
+    def apply_mapping(self, x):
+        if self.mapping == "identity":
+            return x
+        elif self.mapping == "exp":
+            return pm.math.exp(x)
+        elif self.mapping == "softplus":
+            return pm.math.log1pexp(x)
+        else:
+            raise ValueError(f"Unknown mapping {self.mapping}")
+
+    def to_dict(self):
+        param_dict = {
+            "name": self.name,
+            "dims": self.dims,
+            "linear": self.linear,
+            "random": self.random,
+            "centered": self.centered,
+            "has_covariate_dim": self.has_covariate_dim,
+            "has_random_effect": self.has_random_effect,
+        }
+        if self.linear:
+            param_dict["slope"] = self.slope.to_dict()
+            param_dict["intercept"] = self.intercept.to_dict()
+            param_dict["mapping"] = self.mapping
+            param_dict["mapping_params"] = self.mapping_params
+        elif self.random:
+            param_dict["mu"] = self.mu.to_dict()
+            param_dict["sigma"] = self.sigma.to_dict()
+        else:
+            param_dict["dist_name"] = self.dist_name
+            param_dict["dist_params"] = self.dist_params
+        return param_dict
 
     @classmethod
     def from_args(cls, name: str, args: Dict[str, any], dims=()):
@@ -227,85 +306,6 @@ class Param:
                 mapping=dict.get("mapping", "identity"),
                 mapping_params=dict.get("mapping_params", (0.0, 1.0)),
             )
-
-    def set_noncentered_random_params(self):
-        if not self.mu:
-            self.mu = Param(f"mu_{self.name}", dims=self.dims)
-        if not self.sigma:
-            self.sigma = Param(
-                f"sigma_{self.name}",
-                dims=self.dims,
-                dist_name="HalfNormal",
-                dist_params=(1,),
-            )
-
-    def set_centered_random_params(self):
-        if not self.mu:
-            self.mu = Param(f"mu_{self.name}", dims=self.dims)
-        if not self.sigma:
-            self.sigma = Param(
-                f"sigma_{self.name}",
-                dims=self.dims,
-                dist_name="HalfNormal",
-                dist_params=(1.0,),
-            )
-
-    def set_linear_params(self):
-        if not self.slope:
-            self.slope = Param(f"slope_{self.name}", dims=(*self.dims, "covariates"))
-        if not self.intercept:
-            self.intercept = Param(f"intercept_{self.name}", dims=self.dims)
-
-    def get_samples(self, data: HBRData):
-        if self.linear:
-            slope_samples = self.slope.get_samples(data)
-            intercept_samples = self.intercept.get_samples(data)
-            result = (
-                pm.math.sum(slope_samples * data.pm_X, axis=1, keepdims=True)
-                + intercept_samples
-            )
-            return self.apply_mapping(result)
-
-        elif self.random:
-            if self.has_covariate_dim:
-                return self.dist[*data.pm_batch_effect_indices]
-            else:
-                return self.dist[*data.pm_batch_effect_indices, None]
-        else:
-            return repeat(self.dist[None, :], data.pm_X.shape[0], axis=0)
-
-    def apply_mapping(self, x):
-        if self.mapping == "identity":
-            return x
-        elif self.mapping == "exp":
-            return pm.math.exp(x)
-        elif self.mapping == "softplus":
-            return pm.math.log1pexp(x)
-        else:
-            raise ValueError(f"Unknown mapping {self.mapping}")
-
-    def to_dict(self):
-        param_dict = {
-            "name": self.name,
-            "dims": self.dims,
-            "linear": self.linear,
-            "random": self.random,
-            "centered": self.centered,
-            "has_covariate_dim": self.has_covariate_dim,
-            "has_random_effect": self.has_random_effect,
-        }
-        if self.linear:
-            param_dict["slope"] = self.slope.to_dict()
-            param_dict["intercept"] = self.intercept.to_dict()
-            param_dict["mapping"] = self.mapping
-            param_dict["mapping_params"] = self.mapping_params
-        elif self.random:
-            param_dict["mu"] = self.mu.to_dict()
-            param_dict["sigma"] = self.sigma.to_dict()
-        else:
-            param_dict["dist_name"] = self.dist_name
-            param_dict["dist_params"] = self.dist_params
-        return param_dict
 
     @classmethod
     def default_mu(cls):
