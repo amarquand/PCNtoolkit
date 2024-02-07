@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 
 from pcntoolkit.regression_model.reg_conf import RegConf
@@ -31,3 +30,23 @@ class GPRConf(RegConf):
             add_problem("Example parameter must be greater than 0.")
 
         return configuration_problems
+
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments.
+        """
+        pass
+
+    @classmethod
+    def from_dict(cls, dict):
+        """
+        Creates a configuration from a dictionary.
+        """
+        pass
+
+    def to_dict(self):
+        """
+        Creates a dictionary from the configuration.
+        """
+        pass

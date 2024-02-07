@@ -72,8 +72,8 @@ def sample_args():
         },
     ],
 )
-def test_hbr_from_dict(sample_args, args):
-    hbr = HBR.from_dict(sample_args | args)
+def test_hbr_from_args(sample_args, args):
+    hbr = HBR.from_args(sample_args | args)
     assert hbr.conf.draws == 10
     assert hbr.conf.tune == 10
     assert hbr.conf.cores == 1
@@ -137,7 +137,7 @@ def test_hbr_from_dict(sample_args, args):
     ],
 )
 def test_hbr_to_dict(sample_args, args):
-    hbr = HBR.from_dict(sample_args | args)
+    hbr = HBR.from_args(sample_args | args)
     hbr_dict = hbr.to_dict()
     assert hbr_dict["conf"]["draws"] == 10
     assert hbr_dict["conf"]["tune"] == 10
