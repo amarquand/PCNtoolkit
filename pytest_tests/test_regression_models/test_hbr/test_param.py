@@ -42,7 +42,7 @@ def model_and_data(data: HBRData) -> (pm.Model, HBRData):
 def test_normal_fixed_param(model_and_data):
     model, data = model_and_data
     param = Param("fixed")
-    param.add_to(model)
+    param.create_graph(model)
     assert param.name == "fixed"
     assert param.dims == ()
     assert param.dist_name == "Normal"
@@ -54,7 +54,7 @@ def test_normal_fixed_param(model_and_data):
 def test_cauchy_fixed_param(model_and_data):
     model, data = model_and_data
     param = Param("fixed2", dist_name="Cauchy")
-    param.add_to(model)
+    param.create_graph(model)
     assert param.name == "fixed2"
     assert param.dims == ()
     assert param.dist_name == "Cauchy"
@@ -66,7 +66,7 @@ def test_cauchy_fixed_param(model_and_data):
 def test_normal_fixed_param_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param = Param("fixed3", dist_name="Cauchy", dims=("covariates",))
-    param.add_to(model)
+    param.create_graph(model)
     assert param.name == "fixed3"
     assert param.dims == ("covariates",)
     assert param.dist_name == "Cauchy"
@@ -78,7 +78,7 @@ def test_normal_fixed_param_with_covariate_dim(model_and_data):
 def test_random_centered_param(model_and_data):
     model, data = model_and_data
     param = Param("mu", random=True, centered=True)
-    param.add_to(model)
+    param.create_graph(model)
     assert param.name == "mu"
     assert param.dims == ()
     samples = param.get_samples(data)
@@ -88,7 +88,7 @@ def test_random_centered_param(model_and_data):
 def test_random_noncentered_param(model_and_data):
     model, data = model_and_data
     param = Param("test_random2", random=True, centered=False)
-    param.add_to(model)
+    param.create_graph(model)
     assert param.name == "test_random2"
     assert param.dims == ()
     samples = param.get_samples(data)
@@ -98,7 +98,7 @@ def test_random_noncentered_param(model_and_data):
 def test_random_centered_param_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param = Param("test_random3", random=True, centered=True, dims=("covariates",))
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
 
@@ -106,7 +106,7 @@ def test_random_centered_param_with_covariate_dim(model_and_data):
 def test_random_noncentered_param_with_covariate_dim(model_and_data):
     model, data = model_and_data
     param = Param("test_random4", random=True, centered=False, dims=("covariates",))
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
 
@@ -114,7 +114,7 @@ def test_random_noncentered_param_with_covariate_dim(model_and_data):
 def test_linear_param(model_and_data):
     model, data = model_and_data
     param = Param("test_linear1", linear=True)
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
@@ -123,7 +123,7 @@ def test_linear_param_with_random_slope(model_and_data):
     model, data = model_and_data
     slope = Param("test_slope", random=True)
     param = Param("test_linear2", linear=True, slope=slope)
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
@@ -132,7 +132,7 @@ def test_linear_param_with_random_intercept(model_and_data):
     model, data = model_and_data
     intercept = Param("test_intercept", random=True)
     param = Param("test_linear3", linear=True, intercept=intercept)
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
@@ -142,7 +142,7 @@ def test_linear_param_with_random_intercept_and_slope(model_and_data):
     intercept = Param("test_intercept", random=True)
     slope = Param("test_slope", random=True)
     param = Param("test_linear4", linear=True, intercept=intercept, slope=slope)
-    param.add_to(model)
+    param.create_graph(model)
     samples = param.get_samples(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
 
@@ -159,7 +159,7 @@ def test_params_from_args_single(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -186,7 +186,7 @@ def test_param_from_args_single_with_covariate_dim(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict, dims=("covariates"))
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
     assert mu.dist_name == "Normal"
@@ -223,7 +223,7 @@ def test_param_from_args_double(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
 
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -239,7 +239,7 @@ def test_param_from_args_double(model_and_data):
     assert tuple(samples.shape.eval()) == (100, 1)
 
     sigma = Param.from_args("sigma", param_dict)
-    sigma.add_to(model)
+    sigma.create_graph(model)
     assert sigma.name == "sigma"
     assert sigma.dims == ()
     assert sigma.dist_name == "HalfNormal"
@@ -266,7 +266,7 @@ def test_param_from_args_random_centered(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
 
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -304,7 +304,7 @@ def test_param_from_args_random_centered_with_covariate_dim(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict, dims=("covariates",))
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
     assert mu.dist_name == "Normal"
@@ -341,7 +341,7 @@ def test_param_from_args_random_noncentered(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -378,7 +378,7 @@ def test_param_from_args_random_noncentered_with_covariate_dim(model_and_data):
         "slope": None,
     }
     mu = Param.from_args("mu", param_dict, dims=("covariates",))
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
     assert mu.dist_name == "Normal"
@@ -407,7 +407,7 @@ def test_param_from_args_linear(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True}
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -432,7 +432,7 @@ def test_param_from_args_linear_with_random_slope(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_slope_mu": True}
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -471,7 +471,7 @@ def test_param_from_args_linear_with_random_intercept(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_intercept_mu": True}
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -514,7 +514,7 @@ def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
         "random_slope_mu": True,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -567,7 +567,7 @@ def test_param_from_args_linear_with_random_centered_slope(model_and_data):
     model, data = model_and_data
     param_dict = {"linear_mu": True, "random_slope_mu": True, "centered_slope_mu": True}
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
     assert mu.name == "mu"
     assert mu.dims == ()
     assert mu.dist_name == "Normal"
@@ -611,7 +611,7 @@ def test_param_from_args_linear_with_random_centered_intercept(model_and_data):
         "centered_intercept_mu": True,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
 
     assert mu.name == "mu"
     assert mu.dims == ()
@@ -655,7 +655,7 @@ def test_param_from_args_linear_with_random_centered_intercept_and_slope(
         "centered_slope_mu": True,
     }
     mu = Param.from_args("mu", param_dict)
-    mu.add_to(model)
+    mu.create_graph(model)
 
     assert mu.name == "mu"
     assert mu.dims == ()

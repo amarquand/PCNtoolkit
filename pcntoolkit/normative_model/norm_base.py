@@ -5,6 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Union
 
+import arviz as az
 import numpy as np
 import xarray as xr
 from scipy import stats
@@ -26,7 +27,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             self._norm_conf, "normative_model_name", self.__class__.__name__
         )
         self.response_vars: list = None
-        self.models: dict[str, Any] = (
+        self.regression_models: dict[str, Any] = (
             {}
         )  # self.models contains the regression models, indexed by response variable
         self.inscalers = {}
@@ -35,59 +36,6 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     @property
     def norm_conf(self):
         return self._norm_conf
-
-    def save(self):
-        model_dict = {}
-        # Store the response variables
-        model_dict["response_vars"] = self.response_vars
-        # Store the normative model configuration
-        model_dict["norm_conf"] = self.norm_conf.to_dict()
-        # Store the regression model configuration
-        model_dict["reg_conf"] = self.reg_conf.to_dict()
-
-        # Store the regression models
-        model_dict["regression_models"] = self.models_to_dict(self.norm_conf.save_dir)
-
-        # Store the scalers
-        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
-        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
-
-        # Save the model_dict as json
-        model_dict_path = os.path.join(
-            self.norm_conf.save_dir, "normative_model_dict.json"
-        )
-        print("Saving normative model to", model_dict_path)
-        with open(model_dict_path, "w") as f:
-            json.dump(model_dict, f, indent=4)
-
-    @classmethod
-    def load(cls, path):
-        # Load the model_dict from json
-        print("Loading normative model from", path)
-        model_dict_path = os.path.join(path, "normative_model_dict.json")
-        with open(model_dict_path, "r") as f:
-            model_dict = json.load(f)
-
-        # Create the normative model
-        normconf = NormConf.from_args(model_dict["norm_conf"])
-        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
-        normative_model = cls(normconf, regconf)
-
-        # Set the response variables
-        normative_model.response_vars = model_dict["response_vars"]
-
-        # Set the regression models
-        normative_model.dict_to_models(model_dict["regression_models"], path)
-
-        # Set the scalers
-        normative_model.inscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
-        }
-        normative_model.outscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
-        }
-
-        return normative_model
 
     def fit(self, data: NormData):
         """
@@ -106,8 +54,10 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_fit_data = data.sel(response_vars=responsevar)
 
             # Create a new model if it does not exist yet
-            if not responsevar in self.models:
-                self.models[responsevar] = self.model_type(self.reg_conf)
+            if not responsevar in self.regression_models:
+                self.regression_models[responsevar] = self.regression_model_type(
+                    self.reg_conf
+                )
 
             # Set self.model to the current model
             self.prepare(responsevar)
@@ -133,7 +83,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
+            if not responsevar in self.regression_models:
                 raise ValueError(
                     f"Attempted to predict model {responsevar}, but it does not exist."
                 )
@@ -176,8 +126,10 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_predict_data = predict_data.sel(response_vars=responsevar)
 
             # Create a new model if it does not exist yet
-            if not responsevar in self.models:
-                self.models[responsevar] = self.model_type(self.reg_conf)
+            if not responsevar in self.regression_models:
+                self.regression_models[responsevar] = self.regression_model_type(
+                    self.reg_conf
+                )
 
             # Set self.model to the current model
             self.prepare(responsevar)
@@ -209,7 +161,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_transfer_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
+            if not responsevar in self.regression_models:
                 raise ValueError(
                     f"Attempted to transfer a model that has not been fitted."
                 )
@@ -227,20 +179,18 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
         # Create a new normative model
         # Change the reg_conf save_dir and log_dir
-        transfered_norm_conf = self.norm_conf.copy()
-        object.__setattr__(
-            transfered_norm_conf, "save_dir", self.norm_conf.save_dir + "_transfer"
-        )
-        object.__setattr__(
-            transfered_norm_conf, "log_dir", self.norm_conf.log_dir + "_transfer"
-        )
+        transfered_norm_conf = self.norm_conf.to_dict()
+        transfered_norm_conf["save_dir"] = self.norm_conf.save_dir + "_transfer"
+        transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
+        transfered_norm_conf = NormConf.from_args(transfered_norm_conf)
+
         transfered_normative_model = self.__class__(transfered_norm_conf, self.reg_conf)
 
         # Set the models
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
         )
-        transfered_normative_model.models = transfered_models
+        transfered_normative_model.regression_models = transfered_models
 
         # Return the new model
         return transfered_normative_model
@@ -522,7 +472,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
+            if not responsevar in self.regression_models:
                 raise ValueError(
                     f"Attempted to find quantiles for model {responsevar}, but it does not exist."
                 )
@@ -557,7 +507,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.models:
+            if not responsevar in self.regression_models:
                 raise ValueError(
                     f"Attempted to find zscores for model {responsevar}, but it does not exist."
                 )
@@ -616,6 +566,95 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
+    def save(self):
+        model_dict = self.to_dict()
+
+        # Save the model_dict as json
+        model_dict_path = os.path.join(
+            self.norm_conf.save_dir, "normative_model_dict.json"
+        )
+        print("Saving normative model to", model_dict_path)
+        with open(model_dict_path, "w") as f:
+            json.dump(model_dict, f, indent=4)
+
+    @classmethod
+    def load(cls, path):
+        """
+        Load a normative model from disk.
+        """
+
+        # Load the model_dict from json
+        print("Loading normative model from", path)
+        model_dict_path = os.path.join(path, "normative_model_dict.json")
+        with open(model_dict_path, "r") as f:
+            model_dict = json.load(f)
+
+        normative_model = cls.from_dict(model_dict, path)
+
+        return normative_model
+
+    @classmethod
+    def from_dict(cls, model_dict, path=None):
+        # Create the normative model
+        normconf = NormConf.from_dict(model_dict["norm_conf"])
+        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
+        normative_model = cls(normconf, regconf)
+
+        # Set the response variables
+        normative_model.response_vars = model_dict["response_vars"]
+
+        # Set the regression models
+        normative_model.dict_to_regression_models(model_dict["regression_models"], path)
+
+        # Set the scalers
+        normative_model.inscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
+        }
+        normative_model.outscalers = {
+            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
+        }
+
+        return normative_model
+
+    def to_dict(self):
+        model_dict = {}
+        # Store the response variables
+        model_dict["response_vars"] = self.response_vars
+        # Store the normative model configuration
+        model_dict["norm_conf"] = self.norm_conf.to_dict()
+        # Store the regression model configuration
+        model_dict["reg_conf"] = self.reg_conf.to_dict()
+
+        # Store the regression models
+        model_dict["regression_models"] = self.regression_models_to_dict(
+            self.norm_conf.save_dir
+        )
+
+        # Remove the conf from the regression models to save space
+        for k in model_dict["regression_models"].keys():
+            model_dict["regression_models"][k].pop("conf", None)
+
+        # Store the scalers
+        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
+        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
+        return model_dict
+
+    def regression_models_to_dict(self, path):
+        regression_model_dict = {}
+        for k in self.regression_models.keys():
+            self.prepare(k)
+            regression_model_dict[k] = self._regression_model_to_dict(path)
+            self.reset()
+        return regression_model_dict
+
+    def dict_to_regression_models(self, model_dict, path):
+        for k in model_dict.keys():
+            self.prepare(k)
+            self.regression_models[k] = self._dict_to_regression_model(
+                model_dict[k], path
+            )
+            self.reset()
+
     def set_save_dir(self, save_dir):
         self.norm_conf.set_save_dir(save_dir)
 
@@ -624,7 +663,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def prepare(self, responsevar):
         self.current_response_var = responsevar
-        self.model = self.models[responsevar]
+        self.current_regression_model = self.regression_models.get(responsevar, None)
 
     def reset(self):
         pass
@@ -645,25 +684,32 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     @staticmethod
     @abstractmethod
-    def reg_conf_from_args(dict):
+    def reg_conf_from_args(args):
+        """
+        Creates a regression configuration from command line arguments.
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def reg_conf_from_dict(dict):
         """
         Creates a regression configuration from a dictionary.
         """
         pass
 
     @abstractmethod
-    def models_to_dict(self, path=None):
+    def _regression_model_to_dict(self, path=None):
         """
-        Returns a dictionary describing the regression models.
+        Returns a dictionary describing the current regression model.
         This dictionary is used to save the normative model to disk.
         Takes an optional path argument, which can be used to save large model components to disk.
         """
         pass
 
     @abstractmethod
-    def dict_to_models(self, dict, path=None):
+    def _dict_to_regression_model(self, dict, path=None):
         """
-        Creates the self.models attribute from a dictionary.
         This dictionary is loaded from disk, and is used to restore the normative model.
         Takes an optional path argument, which can be used to load large model components from disk.
         """

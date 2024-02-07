@@ -22,110 +22,8 @@ class NormHBR(NormBase):
     def __init__(self, norm_conf: NormConf, reg_conf: HBRConf):
         super().__init__(norm_conf)
         self.reg_conf: HBRConf = reg_conf
-        self.model_type = HBR
-        self.model: HBR = None
-
-    @classmethod
-    def from_args(cls, args):
-        """
-        Creates a configuration from command line arguments.
-        """
-        norm_conf = NormConf.from_args(args)
-        hbrconf = HBRConf.from_args(args)
-        self = cls(norm_conf, hbrconf)
-        return self
-
-    @staticmethod
-    def reg_conf_from_args(args):
-        return HBRConf.from_args(args)
-
-    @staticmethod
-    def reg_conf_from_dict(args):
-        return HBRConf.from_dict(args)
-
-    @staticmethod
-    def remove_samples_from_idata_posterior(idata):
-        for name in idata.posterior.variables.mapping.keys():
-            if name.endswith("_samples"):
-                idata.posterior.drop_vars(name)
-                if "removed_samples" not in idata.attrs:
-                    idata.attrs["removed_samples"] = []
-                idata.attrs["removed_samples"].append(name)
-
-    @staticmethod
-    def replace_samples_in_idata_posterior(idata):
-        for name in idata.attrs["removed_samples"]:
-            samples = np.zeros(
-                (
-                    idata.posterior.chain.size,
-                    idata.posterior.draw.size,
-                    idata.posterior.datapoints.size,
-                    idata.posterior.response_vars.size,
-                )
-            )
-            idata.posterior[name] = xr.DataArray(
-                samples,
-                dims=["chain", "draw", "datapoints", "response_vars"],
-            )
-
-    def models_to_dict(self, path):
-        regression_model_dict = {}
-
-        for k, model in self.models.items():
-            self.prepare(k)
-            regression_model_dict[k] = model.to_dict()
-            del regression_model_dict[k]["conf"]
-            if model.is_fitted:
-                if hasattr(model, "idata"):
-                    self.remove_samples_from_idata_posterior(model.idata)
-                    idata_path = os.path.join(path, f"idata_{k}.nc")
-                    model.idata.to_netcdf(idata_path, groups="posterior")
-                else:
-                    raise RuntimeError(
-                        "HBR model is fitted but does not have idata. This should not happen."
-                    )
-            self.reset()
-        return regression_model_dict
-
-    def dict_to_models(self, dict, path):
-        for k, v in dict.items():
-            self.models[k] = self.model_type(self.reg_conf)
-            self.models[k].is_from_dict = dict[k]["is_from_dict"]
-            self.models[k].is_fitted = dict[k]["is_fitted"]
-            if self.models[k].is_fitted:
-                idata_path = os.path.join(path, f"idata_{k}.nc")
-                try:
-                    self.models[k].idata = az.from_netcdf(idata_path)
-                    self.replace_samples_in_idata_posterior(self.models[k].idata)
-                except:
-                    raise RuntimeError(f"Could not load idata from {idata_path}.")
-
-    # def prepare(self, response_var):
-    #     self.current_response_var = response_var
-    #     self.model = self.models[self.current_response_var]
-    #     if self.model.is_fitted:
-    #         self.load_idata_from_cache()
-    #         self.replace_samples_in_idata_posterior(self.model.idata)
-
-    # def reset(self):
-    #     if self.model.is_fitted:
-    #         self.remove_samples_from_idata_posterior(self.model.idata)
-    #         self.save_idata_to_cache()
-    #         del self.model.idata
-    #         gc.collect()
-
-    def load_idata_from_cache(self):
-        idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
-        )
-        with az.from_netcdf(idata_path) as idata:
-            self.model.idata = idata
-
-    def save_idata_to_cache(self):
-        idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
-        )
-        self.model.idata.to_netcdf(idata_path)
+        self.regression_model_type = HBR
+        self.current_regression_model: HBR = None
 
     @staticmethod
     def normdata_to_hbrdata(data: NormData) -> hbr_data.HBRData:
@@ -160,12 +58,12 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
 
         # Make a new model if needed
-        if make_new_model or (not self.model.model):
-            self.model.create_pymc_model(hbrdata)
+        if make_new_model or (not self.current_regression_model.pymc_model):
+            self.current_regression_model.create_pymc_model(hbrdata)
 
         # Sample from pymc model
-        with self.model.model:
-            self.model.idata = pm.sample(
+        with self.current_regression_model.pymc_model:
+            self.current_regression_model.idata = pm.sample(
                 self.reg_conf.draws,
                 tune=self.reg_conf.tune,
                 cores=self.reg_conf.cores,
@@ -173,29 +71,31 @@ class NormHBR(NormBase):
             )
 
         # Set the is_fitted flag to True
-        self.model.is_fitted = True
+        self.current_regression_model.is_fitted = True
 
     def _predict(self, data: NormData) -> NormData:
         # Assert that the model is fitted
-        assert self.model.is_fitted, "Model must be fitted before predicting."
+        assert (
+            self.current_regression_model.is_fitted
+        ), "Model must be fitted before predicting."
 
         # Transform the data to hbrdata
         hbrdata = self.normdata_to_hbrdata(data)
 
         # Create a new pymc model if needed
-        if not self.model.model:
-            self.model.create_pymc_model(hbrdata)
+        if not self.current_regression_model.pymc_model:
+            self.current_regression_model.create_pymc_model(hbrdata)
 
         # Set the data in the model
-        hbrdata.set_data_in_existing_model(self.model.model)
+        hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
 
-        if "posterior_predictive" in self.model.idata:
-            del self.model.idata.posterior_predictive
+        if "posterior_predictive" in self.current_regression_model.idata:
+            del self.current_regression_model.idata.posterior_predictive
 
         # Sample from the posterior predictive
-        with self.model.model:
+        with self.current_regression_model.pymc_model:
             pm.sample_posterior_predictive(
-                self.model.idata,
+                self.current_regression_model.idata,
                 extend_inferencedata=True,
                 var_names=self.get_var_names() + ["y_pred"],
             )
@@ -206,12 +106,12 @@ class NormHBR(NormBase):
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
 
         # Make a new model if needed
-        if not self.model.model:
-            self.model.create_pymc_model(fit_hbrdata)
+        if not self.current_regression_model.pymc_model:
+            self.current_regression_model.create_pymc_model(fit_hbrdata)
 
         # Sample from pymc model
-        with self.model.model:
-            self.model.idata = pm.sample(
+        with self.current_regression_model.pymc_model:
+            self.current_regression_model.idata = pm.sample(
                 self.reg_conf.draws,
                 tune=self.reg_conf.tune,
                 cores=self.reg_conf.cores,
@@ -219,15 +119,17 @@ class NormHBR(NormBase):
             )
 
         # Set the is_fitted flag to True
-        self.model.is_fitted = True
+        self.current_regression_model.is_fitted = True
 
         # Set the data in the model
-        predict_hbrdata.set_data_in_existing_model(self.model.model)
+        predict_hbrdata.set_data_in_existing_model(
+            self.current_regression_model.pymc_model
+        )
 
         # Sample from the posterior predictive
-        with self.model.model:
+        with self.current_regression_model.pymc_model:
             pm.sample_posterior_predictive(
-                self.model.idata,
+                self.current_regression_model.idata,
                 extend_inferencedata=True,
                 var_names=self.get_var_names() + ["y_pred"],
             )
@@ -239,16 +141,18 @@ class NormHBR(NormBase):
         transferdata = self.normdata_to_hbrdata(data)
 
         # Assert that the model is fitted
-        if not self.model.is_fitted:
+        if not self.current_regression_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
 
         new_hbr_model = HBR(self.reg_conf)
 
         # Create a new model, using the idata from the original model to inform the priors
-        new_hbr_model.create_pymc_model(transferdata, self.model.idata, freedom)
+        new_hbr_model.create_pymc_model(
+            transferdata, self.current_regression_model.idata, freedom
+        )
 
         # Sample using the new model
-        with new_hbr_model.model:
+        with new_hbr_model.pymc_model:
             new_hbr_model.idata = pm.sample(
                 draws=self.reg_conf.draws,
                 tune=self.reg_conf.tune,
@@ -275,33 +179,35 @@ class NormHBR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _quantiles(self, data: NormData, zscores: list, resample=False) -> xr.DataArray:
+    def _quantiles(self, data: NormData, zscores: list, resample=True) -> xr.DataArray:
         var_names = self.get_var_names()
-        if resample:
-            hbrdata = self.normdata_to_hbrdata(data)
 
-            # Create a new pymc model if needed
-            if not self.model.model:
-                self.model.create_pymc_model(hbrdata)
+        hbrdata = self.normdata_to_hbrdata(data)
 
-            # Set the data in the model
-            hbrdata.set_data_in_existing_model(self.model.model)
+        # Create a new pymc model if needed
+        if not self.current_regression_model.pymc_model:
+            self.current_regression_model.create_pymc_model(hbrdata)
 
-            # Delete the posterior predictive if it exists
-            if "posterior_predictive" in self.model.idata:
-                del self.model.idata.posterior_predictive
+        # Set the data in the model
+        hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
 
-            # Sample from the posterior predictive
-            with self.model.model:
-                pm.sample_posterior_predictive(
-                    self.model.idata,
-                    extend_inferencedata=True,
-                    var_names=var_names + ["y_pred"],
-                )
+        # Delete the posterior predictive if it exists
+        if "posterior_predictive" in self.current_regression_model.idata:
+            del self.current_regression_model.idata.posterior_predictive
+
+        # Sample from the posterior predictive
+        with self.current_regression_model.pymc_model:
+            pm.sample_posterior_predictive(
+                self.current_regression_model.idata,
+                extend_inferencedata=True,
+                var_names=var_names + ["y_pred"],
+            )
 
         # Extract the posterior predictive
         post_pred = az.extract(
-            self.model.idata, "posterior_predictive", var_names=var_names
+            self.current_regression_model.idata,
+            "posterior_predictive",
+            var_names=var_names,
         )
 
         # Separate the samples into a list so that they can be unpacked
@@ -333,27 +239,29 @@ class NormHBR(NormBase):
 
         if resample:
             # Create a new pymc model if needed
-            if self.model.model is None:
-                self.model.create_pymc_model(hbrdata)
+            if self.current_regression_model.pymc_model is None:
+                self.current_regression_model.create_pymc_model(hbrdata)
 
             # Set the data in the model
-            hbrdata.set_data_in_existing_model(self.model.model)
+            hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
 
             # Delete the posterior predictive if it exists
-            if "posterior_predictive" in self.model.idata:
-                del self.model.idata.posterior_predictive
+            if "posterior_predictive" in self.current_regression_model.idata:
+                del self.current_regression_model.idata.posterior_predictive
 
             # Sample from the posterior predictive
-            with self.model.model:
+            with self.current_regression_model.pymc_model:
                 pm.sample_posterior_predictive(
-                    self.model.idata,
+                    self.current_regression_model.idata,
                     extend_inferencedata=True,
                     var_names=var_names + ["y_pred"],
                 )
 
         # Extract the posterior predictive
         post_pred = az.extract(
-            self.model.idata, "posterior_predictive", var_names=var_names
+            self.current_regression_model.idata,
+            "posterior_predictive",
+            var_names=var_names,
         )
 
         # Separate the samples into a list so that they can be unpacked
@@ -428,4 +336,64 @@ class NormHBR(NormBase):
         return Z
 
     def n_params(self):
-        return sum([i.size.eval() for i in self.model.model.free_RVs])
+        return sum(
+            [i.size.eval() for i in self.current_regression_model.pymc_model.free_RVs]
+        )
+
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments.
+        """
+        norm_conf = NormConf.from_args(args)
+        hbrconf = HBRConf.from_args(args)
+        self = cls(norm_conf, hbrconf)
+        return self
+
+    @staticmethod
+    def reg_conf_from_args(args):
+        return HBRConf.from_args(args)
+
+    @staticmethod
+    def reg_conf_from_dict(dict):
+        return HBRConf.from_dict(dict)
+
+    def _regression_model_to_dict(self, path):
+        idata_path = os.path.join(path, f"idata_{self.current_response_var}.nc")
+        self.current_regression_model.save_idata(idata_path)
+        return self.current_regression_model.to_dict()
+
+    def _dict_to_regression_model(self, dict, path):
+        regression_model = HBR(self.reg_conf)
+        regression_model.is_from_dict = dict["is_from_dict"]
+        regression_model.is_fitted = dict["is_fitted"]
+        idata_path = os.path.join(path, f"idata_{self.current_response_var}.nc")
+        regression_model.load_idata(idata_path)
+        return regression_model
+
+    def load_idata_from_cache(self):
+        idata_path = os.path.join(
+            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
+        )
+        with az.from_netcdf(idata_path) as idata:
+            self.current_regression_model.idata = idata
+
+    def save_idata_to_cache(self):
+        idata_path = os.path.join(
+            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
+        )
+        self.current_regression_model.idata.to_netcdf(idata_path)
+
+    # def prepare(self, response_var):
+    #     self.current_response_var = response_var
+    #     self.model = self.models[self.current_response_var]
+    #     if self.model.is_fitted:
+    #         self.load_idata_from_cache()
+    #         self.replace_samples_in_idata_posterior(self.model.idata)
+
+    # def reset(self):
+    #     if self.model.is_fitted:
+    #         self.remove_samples_from_idata_posterior(self.model.idata)
+    #         self.save_idata_to_cache()
+    #         del self.model.idata
+    #         gc.collect()

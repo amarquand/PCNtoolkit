@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 from typing import Tuple
 
 import arviz as az
 import numpy as np
 import pymc as pm
+import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import Param
@@ -24,7 +26,7 @@ class HBR:
         self.is_fitted: bool = False
         self.idata: az.InferenceData = None
         self.is_from_dict = False
-        self.model = None
+        self.pymc_model = None
 
     @property
     def conf(self) -> HBRConf:
@@ -36,8 +38,10 @@ class HBR:
         """
         Creates the pymc model.
         """
-        self.model = pm.Model(coords=data.coords, coords_mutable=data.coords_mutable)
-        data.add_to_model(self.model)
+        self.pymc_model = pm.Model(
+            coords=data.coords, coords_mutable=data.coords_mutable
+        )
+        data.add_to_model(self.pymc_model)
         if self.conf.likelihood == "Normal":
             self.create_normal_pymc_model(data, idata, freedom)
         elif self.conf.likelihood == "SHASHb":
@@ -55,9 +59,9 @@ class HBR:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata, freedom)
-        self.conf.sigma.add_to(self.model, idata, freedom)
-        with self.model:
+        self.conf.mu.create_graph(self.pymc_model, idata, freedom)
+        self.conf.sigma.create_graph(self.pymc_model, idata, freedom)
+        with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.conf.mu.get_samples(data),
@@ -82,11 +86,11 @@ class HBR:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata, freedom)
-        self.conf.sigma.add_to(self.model, idata, freedom)
-        self.conf.epsilon.add_to(self.model, idata, freedom)
-        self.conf.delta.add_to(self.model, idata, freedom)
-        with self.model:
+        self.conf.mu.create_graph(self.pymc_model, idata, freedom)
+        self.conf.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.conf.epsilon.create_graph(self.pymc_model, idata, freedom)
+        self.conf.delta.create_graph(self.pymc_model, idata, freedom)
+        with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.conf.mu.get_samples(data),
@@ -123,11 +127,11 @@ class HBR:
         """
         Creates the pymc model.
         """
-        self.conf.mu.add_to(self.model, idata, freedom)
-        self.conf.sigma.add_to(self.model, idata, freedom)
-        self.conf.epsilon.add_to(self.model, idata, freedom)
-        self.conf.delta.add_to(self.model, idata, freedom)
-        with self.model:
+        self.conf.mu.create_graph(self.pymc_model, idata, freedom)
+        self.conf.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.conf.epsilon.create_graph(self.pymc_model, idata, freedom)
+        self.conf.delta.create_graph(self.pymc_model, idata, freedom)
+        with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.conf.mu.get_samples(data),
@@ -158,6 +162,47 @@ class HBR:
                 observed=data.pm_y,
             )
 
+    def save_idata(self, path):
+        if self.is_fitted:
+            if hasattr(self, "idata"):
+                self.remove_samples_from_idata_posterior()
+                self.idata.to_netcdf(path, groups="posterior")
+            else:
+                raise RuntimeError(
+                    "HBR model is fitted but does not have idata. This should not happen."
+                )
+
+    def load_idata(self, path):
+        if self.is_fitted:
+            try:
+                self.idata = az.from_netcdf(path)
+                self.replace_samples_in_idata_posterior()
+            except:
+                raise RuntimeError(f"Could not load idata from {path}.")
+
+    def remove_samples_from_idata_posterior(self):
+        for name in self.idata.posterior.variables.mapping.keys():
+            if name.endswith("_samples"):
+                self.idata.posterior.drop_vars(name)
+                if "removed_samples" not in self.idata.attrs:
+                    self.idata.attrs["removed_samples"] = []
+                self.idata.attrs["removed_samples"].append(name)
+
+    def replace_samples_in_idata_posterior(self):
+        for name in self.idata.attrs["removed_samples"]:
+            samples = np.zeros(
+                (
+                    self.idata.posterior.chain.size,
+                    self.idata.posterior.draw.size,
+                    self.idata.posterior.datapoints.size,
+                    self.idata.posterior.response_vars.size,
+                )
+            )
+            self.idata.posterior[name] = xr.DataArray(
+                samples,
+                dims=["chain", "draw", "datapoints", "response_vars"],
+            )
+
     def to_dict(self):
         """
         Converts the configuration to a dictionary.
@@ -169,12 +214,43 @@ class HBR:
         return my_dict
 
     @classmethod
-    def from_dict(cls, args):
+    def from_dict(cls, dict):
         """
-        Creates a configuration from command line arguments or a dict
+        Creates a configuration from a dictionary.
+        """
+        conf = HBRConf.from_dict(dict["conf"])
+        self = cls(conf)
+        self.is_fitted = dict["is_fitted"]
+        self.is_from_dict = True
+        return self
+
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments
         """
         conf = HBRConf.from_args(args)
         self = cls(conf)
         self.is_from_dict = True
         self.is_fitted = args.get("is_fitted", False)
         return self
+
+    @property
+    def mu(self) -> Param:
+        return self.conf.mu
+
+    @property
+    def sigma(self) -> Param:
+        return self.conf.sigma
+
+    @property
+    def epsilon(self) -> Param:
+        return self.conf.epsilon
+
+    @property
+    def delta(self) -> Param:
+        return self.conf.delta
+
+    @property
+    def likelihood(self) -> str:
+        return self.conf.likelihood

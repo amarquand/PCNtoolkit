@@ -16,10 +16,10 @@ class HBRConf(RegConf):
     likelihood: str = "Normal"
 
     # prior config with defaults
-    mu: Param = field(default_factory=Param.default_mu())
-    sigma: Param = field(default_factory=Param.default_sigma())
-    epsilon: Param = field(default_factory=Param.default_epsilon())
-    delta: Param = field(default_factory=Param.default_delta())
+    mu: Param = field(default_factory=Param.default_mu)
+    sigma: Param = field(default_factory=Param.default_sigma)
+    epsilon: Param = field(default_factory=Param.default_epsilon)
+    delta: Param = field(default_factory=Param.default_delta)
 
     def detect_configuration_problems(self) -> str:
         """
@@ -53,21 +53,23 @@ class HBRConf(RegConf):
         return configuration_problems
 
     @classmethod
-    def from_args(cls, dict):
+    def from_args(cls, args):
         """
         Creates a configuration from command line arguments.
         """
         # Filter out the arguments that are not relevant for this configuration
-        args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
+        args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
         likelihood = args_filt.get("likelihood", "Normal")
         if likelihood == "Normal":
-            args_filt["mu"] = Param.from_args("mu", dict)
-            args_filt["sigma"] = Param.from_args("sigma", dict)
+            args_filt["mu"] = Param.from_args("mu", args)
+            args_filt["sigma"] = Param.from_args("sigma", args)
         elif likelihood.startswith("SHASH"):
-            args_filt["mu"] = Param.from_args("mu", dict)
-            args_filt["sigma"] = Param.from_args("sigma", dict)
-            args_filt["epsilon"] = Param.from_args("epsilon", dict)
-            args_filt["delta"] = Param.from_args("delta", dict)
+            args_filt["mu"] = Param.from_args("mu", args)
+            args_filt["sigma"] = Param.from_args("sigma", args)
+            args_filt["epsilon"] = Param.from_args("epsilon", args)
+            args_filt["delta"] = Param.from_args("delta", args)
+
+        pass
         self = cls(**args_filt)
         return self
 

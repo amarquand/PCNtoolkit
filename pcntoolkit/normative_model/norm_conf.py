@@ -66,6 +66,13 @@ class NormConf:
 
         return cls(**norm_args)
 
+    @classmethod
+    def from_dict(cls, dict) -> "NormConf":
+        """
+        Creates a configuration from a dictionary.
+        """
+        return cls.from_args(dict)
+
     def detect_configuration_problems(self) -> str:
         """
         Detects problems in the configuration and returns them as a list.
