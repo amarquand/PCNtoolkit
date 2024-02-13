@@ -9,7 +9,9 @@ class GPRConf(RegConf):
     # ...
 
     # example parameter. This is an int and has a default value of 0.
-    example_parameter: int = 0
+    n_iter: int = 100
+    tol: float = 1e-3
+    verbose: bool = False
 
     def detect_configuration_problems(self) -> str:
         """
