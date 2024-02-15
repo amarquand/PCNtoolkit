@@ -68,8 +68,6 @@ class HBRConf(RegConf):
             args_filt["sigma"] = Param.from_args("sigma", args)
             args_filt["epsilon"] = Param.from_args("epsilon", args)
             args_filt["delta"] = Param.from_args("delta", args)
-
-        pass
         self = cls(**args_filt)
         return self
 

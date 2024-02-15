@@ -26,6 +26,10 @@ def conf_dict():
         "linear_mu": True,
         "linear_sigma": True,
         "mapping_sigma": "softplus",
+        "cores": 2,
+        "draws": 10,
+        "tune": 10,
+        "chains": 2,
     }
 
 

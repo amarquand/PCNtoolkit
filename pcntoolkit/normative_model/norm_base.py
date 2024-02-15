@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
+from ast import List
+from dataclasses import field
 from typing import Any, Union
 
 import arviz as az
@@ -16,21 +18,51 @@ from pcntoolkit.dataio.scaler import scaler
 from pcntoolkit.regression_model.blr.blr import BLR
 from pcntoolkit.regression_model.gpr.gpr import GPR
 from pcntoolkit.regression_model.hbr.hbr import HBR
+from pcntoolkit.regression_model.reg_conf import RegConf
+from pcntoolkit.regression_model.regression_model import RegressionModel
 
 from .norm_conf import NormConf
 
 
-class NormBase(ABC):  # newer abstract base class syntax, no more python2
+class NormBase(ABC):
+    """
+    The NormBase class is the base class for all normative models.
+    This class holds a number of regression models, one for each response variable.
+    The class contains methods for fitting, predicting, transferring, extending, tuning, merging, and evaluating the normative model.
+    This class contains the general logic that is not specific to the regression model. The subclasses implement the actual logic for fitting, predicting, etc.
+    All the bookkeeping is done in this class, such as keeping track of the regression models, the scalers, the response variables, etc.
+    """
+
     def __init__(self, norm_conf: NormConf):
         self._norm_conf: NormConf = norm_conf
         object.__setattr__(
             self._norm_conf, "normative_model_name", self.__class__.__name__
         )
-        self.response_vars: list = None
-        self.regression_models: dict[str, Any] = (
-            {}
-        )  # self.models contains the regression models, indexed by response variable
+
+        # Response variables is a list of names of the response variables for which the model is fitted
+        self.response_vars: list[str] = None
+
+        # the regression_model_type attribute is used to store the type of regression model
+        # should be set by the subclass
+        self.regression_model_type = None
+
+        # the self.defult_reg_conf attribute is used whenever a new regression model is created, and no reg_conf is provided
+        # should be set by the subclass
+        self.default_reg_conf: RegConf = None
+
+        # Regression models is a dictionary that contains the regression models
+        # - the keys are the response variables
+        # - the values are the regression models
+        self.regression_models: dict[str, RegressionModel] = {}
+
+        # the self.current_regression_model attribute is used to store the current regression model
+        # this model is used internally by the _fit and _predict methods of the subclass
+        self.current_regression_model: RegressionModel = None
+
+        # Inscalers contains a scaler for each covariate
         self.inscalers = {}
+
+        # Outscalers contains a scaler for each response variable
         self.outscalers = {}
 
     @property
@@ -53,13 +85,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             # Select the data for the current response variable
             resp_fit_data = data.sel(response_vars=responsevar)
 
-            # Create a new model if it does not exist yet
-            if not responsevar in self.regression_models:
-                self.regression_models[responsevar] = self.regression_model_type(
-                    self.reg_conf
-                )
-
-            # Set self.model to the current model
+            # Set self.current_regression_model to the current model
             self.prepare(responsevar)
 
             # Fit the model
@@ -128,7 +154,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
             # Create a new model if it does not exist yet
             if not responsevar in self.regression_models:
                 self.regression_models[responsevar] = self.regression_model_type(
-                    self.reg_conf
+                    responsevar, self.default_reg_conf
                 )
 
             # Set self.model to the current model
@@ -184,7 +210,9 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
         transfered_norm_conf = NormConf.from_args(transfered_norm_conf)
 
-        transfered_normative_model = self.__class__(transfered_norm_conf, self.reg_conf)
+        transfered_normative_model = self.__class__(
+            transfered_norm_conf, self.default_reg_conf
+        )
 
         # Set the models
         transfered_normative_model.response_vars = (
@@ -567,7 +595,7 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         data.scale_backward(self.inscalers, self.outscalers)
 
     def save(self):
-        model_dict = self.to_dict()
+        model_dict = self.to_dict(self.norm_conf.save_dir)
 
         # Save the model_dict as json
         model_dict_path = os.path.join(
@@ -595,28 +623,35 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     @classmethod
     def from_dict(cls, model_dict, path=None):
-        # Create the normative model
+        # Create the normative model configuration
         normconf = NormConf.from_dict(model_dict["norm_conf"])
-        regconf = cls.reg_conf_from_dict(model_dict["reg_conf"])
-        normative_model = cls(normconf, regconf)
+
+        # Create a normative model
+        self = cls(normconf)
 
         # Set the response variables
-        normative_model.response_vars = model_dict["response_vars"]
+        self.response_vars = model_dict["response_vars"]
 
         # Set the regression models
-        normative_model.dict_to_regression_models(model_dict["regression_models"], path)
+        self.regression_models = self.dict_to_regression_models(
+            model_dict["regression_models"], path
+        )
 
         # Set the scalers
-        normative_model.inscalers = {
+        self.inscalers = {
             k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
         }
-        normative_model.outscalers = {
+        self.outscalers = {
             k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
         }
 
-        return normative_model
+        return self
 
-    def to_dict(self):
+    def to_dict(self, path=None):
+        """
+        Converts the normative model to a dictionary.
+        Takes an optional path argument to save large model components
+        """
         model_dict = {}
         # Store the response variables
         model_dict["response_vars"] = self.response_vars
@@ -624,30 +659,22 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
         model_dict["norm_conf"] = self.norm_conf.to_dict()
 
         # Store the regression models
-        model_dict["regression_models"] = self.regression_models_to_dict(
-            self.norm_conf.save_dir
-        )
+        model_dict["regression_models"] = self.regression_models_to_dict(path)
 
         # Store the scalers
         model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
         model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
+
         return model_dict
 
-    def regression_models_to_dict(self, path):
-        regression_model_dict = {}
-        for k in self.regression_models.keys():
-            self.prepare(k)
-            regression_model_dict[k] = self._regression_model_to_dict(path)
-            self.reset()
-        return regression_model_dict
+    def regression_models_to_dict(self, path) -> dict[str, dict[str, Any]]:
+        return {k: v.to_dict(path) for k, v in self.regression_models.items()}
 
-    def dict_to_regression_models(self, model_dict, path):
-        for k in model_dict.keys():
-            self.prepare(k)
-            self.regression_models[k] = self._dict_to_regression_model(
-                model_dict[k], path
-            )
-            self.reset()
+    def dict_to_regression_models(self, model_dict, path) -> dict[str, RegressionModel]:
+        return {
+            k: self.regression_model_type.from_dict(v, path)
+            for k, v in model_dict.items()
+        }
 
     def set_save_dir(self, save_dir):
         self.norm_conf.set_save_dir(save_dir)
@@ -657,7 +684,18 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
 
     def prepare(self, responsevar):
         self.current_response_var = responsevar
+        # Create a new model if it does not exist yet
+        if not responsevar in self.regression_models:
+            self.regression_models[responsevar] = self.regression_model_type(
+                responsevar, self.get_reg_conf(responsevar)
+            )
         self.current_regression_model = self.regression_models.get(responsevar, None)
+
+    def get_reg_conf(self, responsevar):
+        if responsevar in self.regression_models:
+            return self.regression_models[responsevar].reg_conf
+        else:
+            return self.default_reg_conf
 
     def reset(self):
         pass
@@ -667,47 +705,6 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     # all the methods below are abstract methods, which means they have to be implemented in the subclass
 
     #######################################################################################################
-
-    @classmethod
-    @abstractmethod
-    def from_args(cls, args):
-        """
-        Creates a normative model from command line arguments.
-        """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def reg_conf_from_args(args):
-        """
-        Creates a regression configuration from command line arguments.
-        """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def reg_conf_from_dict(dict):
-        """
-        Creates a regression configuration from a dictionary.
-        """
-        pass
-
-    @abstractmethod
-    def _regression_model_to_dict(self, path=None):
-        """
-        Returns a dictionary describing the current regression model.
-        This dictionary is used to save the normative model to disk.
-        Takes an optional path argument, which can be used to save large model components to disk.
-        """
-        pass
-
-    @abstractmethod
-    def _dict_to_regression_model(self, dict, path=None):
-        """
-        This dictionary is loaded from disk, and is used to restore the normative model.
-        Takes an optional path argument, which can be used to load large model components from disk.
-        """
-        pass
 
     @abstractmethod
     def _fit(self, data: NormData) -> NormData:
@@ -768,5 +765,13 @@ class NormBase(ABC):  # newer abstract base class syntax, no more python2
     def n_params(self):
         """
         Returns the number of parameters of the model.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_args(cls, args):
+        """
+        Creates a normative model from command line arguments.
         """
         pass

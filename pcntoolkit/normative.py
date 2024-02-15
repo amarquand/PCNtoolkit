@@ -11,7 +11,7 @@ from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_factory import (
     create_normative_model,
-    create_normative_model_from_dict,
+    create_normative_model_from_args,
     load_normative_model,
 )
 
@@ -27,7 +27,7 @@ def fit(conf_dict: dict):
     fit_data = load_data(conf_dict)
 
     # Create the normative model
-    normative_model: NormBase = create_normative_model_from_dict(conf_dict)
+    normative_model: NormBase = create_normative_model_from_args(conf_dict)
 
     # Fit the normative model
     normative_model.fit(fit_data)
@@ -71,7 +71,7 @@ def fit_predict(conf_dict: dict):
     assert fit_data.is_compatible_with(predict_data)
 
     # Create the normative model
-    normative_model: NormBase = create_normative_model_from_dict(conf_dict)
+    normative_model: NormBase = create_normative_model_from_args(conf_dict)
 
     # Fit and predict the normative model
     normative_model.fit_predict(fit_data, predict_data)

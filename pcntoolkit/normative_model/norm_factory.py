@@ -55,7 +55,7 @@ def load_normative_model(path) -> NormBase:
         raise ValueError(f"Model name {model_name} not recognized.")
 
 
-def create_normative_model_from_dict(args: dict[str, str]) -> NormBase:
+def create_normative_model_from_args(args: dict[str, str]) -> NormBase:
     """
     Creates a normative model from command line arguments.
     """
