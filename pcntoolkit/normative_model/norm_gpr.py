@@ -28,33 +28,6 @@ class NormGPR(NormBase):
         self = cls(norm_conf, gprconf)
         return self
 
-    @staticmethod
-    def reg_conf_from_args(dict):
-        return GPRConf.from_args(dict)
-
-    @staticmethod
-    def reg_conf_from_dict(dict):
-        return GPRConf.from_args(dict)
-
-    def models_to_dict(self, path=None):
-        """
-        Converts the models to a dictionary with serializable components.
-        This dictionary is used to save the model to disk as json.
-        Must contain all the information needed to recreate the model.
-        Takes an optional path argument to save any large model components to disk.
-        """
-        raise NotImplementedError(
-            f"Models to dict method not implemented for {self.__class__.__name__}"
-        )
-
-    def dict_to_models(self, dict):
-        """
-        Converts the dictionary to self.models.
-        """
-        raise NotImplementedError(
-            f"Dict to models method not implemented for {self.__class__.__name__}"
-        )
-
     def _fit(self, data: NormData):
         """
         Fit self.model on data.
