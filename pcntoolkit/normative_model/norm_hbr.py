@@ -2,6 +2,7 @@ import gc
 import json
 import os
 import warnings
+from typing import Union
 
 import arviz as az
 import numpy as np
@@ -16,42 +17,17 @@ from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.hbr_util import S_inv, m
+from pcntoolkit.regression_model.reg_conf import RegConf
 
 
 class NormHBR(NormBase):
-    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf):
+    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf = None):
         super().__init__(norm_conf)
-        self.reg_conf: HBRConf = reg_conf
+        if reg_conf is None:
+            reg_conf = HBRConf
+        self.default_reg_conf: HBRConf = reg_conf
         self.regression_model_type = HBR
         self.current_regression_model: HBR = None
-
-    @staticmethod
-    def normdata_to_hbrdata(data: NormData) -> hbr_data.HBRData:
-        if hasattr(data, "Phi") and data.Phi is not None:
-            this_X = data.Phi.to_numpy()
-            this_covariate_dims = data.basis_functions.to_numpy()
-        elif hasattr(data, "scaled_X") and data.scaled_X is not None:
-            this_X = data.scaled_X.to_numpy()
-            this_covariate_dims = data.covariates.to_numpy()
-        else:
-            this_X = data.X.to_numpy()
-            this_covariate_dims = data.covariates.to_numpy()
-
-        if hasattr(data, "scaled_y") and data.scaled_y is not None:
-            this_y = data.scaled_y.to_numpy()
-        else:
-            this_y = data.y.to_numpy()
-
-        hbrdata = hbr_data.HBRData(
-            X=this_X,
-            y=this_y,
-            batch_effects=data.batch_effects.to_numpy(),
-            covariate_dims=this_covariate_dims,
-            batch_effect_dims=data.batch_effect_dims.to_numpy(),
-            datapoint_coords=data.datapoints.to_numpy(),
-        )
-        hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
-        return hbrdata
 
     def _fit(self, data: NormData, make_new_model=False):
         # Transform the data to hbrdata
@@ -59,15 +35,15 @@ class NormHBR(NormBase):
 
         # Make a new model if needed
         if make_new_model or (not self.current_regression_model.pymc_model):
-            self.current_regression_model.create_pymc_model(hbrdata)
+            self.current_regression_model.create_pymc_graph(hbrdata)
 
         # Sample from pymc model
         with self.current_regression_model.pymc_model:
             self.current_regression_model.idata = pm.sample(
-                self.reg_conf.draws,
-                tune=self.reg_conf.tune,
-                cores=self.reg_conf.cores,
-                chains=self.reg_conf.chains,
+                self.current_regression_model.reg_conf.draws,
+                tune=self.current_regression_model.reg_conf.tune,
+                cores=self.current_regression_model.reg_conf.cores,
+                chains=self.current_regression_model.reg_conf.chains,
             )
 
         # Set the is_fitted flag to True
@@ -84,7 +60,7 @@ class NormHBR(NormBase):
 
         # Create a new pymc model if needed
         if not self.current_regression_model.pymc_model:
-            self.current_regression_model.create_pymc_model(hbrdata)
+            self.current_regression_model.create_pymc_graph(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
@@ -107,15 +83,15 @@ class NormHBR(NormBase):
 
         # Make a new model if needed
         if not self.current_regression_model.pymc_model:
-            self.current_regression_model.create_pymc_model(fit_hbrdata)
+            self.current_regression_model.create_pymc_graph(fit_hbrdata)
 
         # Sample from pymc model
         with self.current_regression_model.pymc_model:
             self.current_regression_model.idata = pm.sample(
-                self.reg_conf.draws,
-                tune=self.reg_conf.tune,
-                cores=self.reg_conf.cores,
-                chains=self.reg_conf.chains,
+                self.current_regression_model.reg_conf.draws,
+                tune=self.current_regression_model.reg_conf.tune,
+                cores=self.current_regression_model.reg_conf.cores,
+                chains=self.current_regression_model.reg_conf.chains,
             )
 
         # Set the is_fitted flag to True
@@ -144,20 +120,20 @@ class NormHBR(NormBase):
         if not self.current_regression_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
 
-        new_hbr_model = HBR(self.reg_conf)
+        new_hbr_model = HBR(self.current_regression_model.name, self.default_reg_conf)
 
         # Create a new model, using the idata from the original model to inform the priors
-        new_hbr_model.create_pymc_model(
+        new_hbr_model.create_pymc_graph(
             transferdata, self.current_regression_model.idata, freedom
         )
 
         # Sample using the new model
         with new_hbr_model.pymc_model:
             new_hbr_model.idata = pm.sample(
-                draws=self.reg_conf.draws,
-                tune=self.reg_conf.tune,
-                cores=self.reg_conf.cores,
-                chains=self.reg_conf.chains,
+                self.current_regression_model.reg_conf.draws,
+                tune=self.current_regression_model.reg_conf.tune,
+                cores=self.current_regression_model.reg_conf.cores,
+                chains=self.current_regression_model.reg_conf.chains,
             )
             new_hbr_model.is_fitted = True
 
@@ -186,7 +162,7 @@ class NormHBR(NormBase):
 
         # Create a new pymc model if needed
         if not self.current_regression_model.pymc_model:
-            self.current_regression_model.create_pymc_model(hbrdata)
+            self.current_regression_model.create_pymc_graph(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
@@ -240,7 +216,7 @@ class NormHBR(NormBase):
         if resample:
             # Create a new pymc model if needed
             if self.current_regression_model.pymc_model is None:
-                self.current_regression_model.create_pymc_model(hbrdata)
+                self.current_regression_model.create_pymc_graph(hbrdata)
 
             # Set the data in the model
             hbrdata.set_data_in_existing_model(self.current_regression_model.pymc_model)
@@ -275,8 +251,51 @@ class NormHBR(NormBase):
 
         return zscores
 
+    def n_params(self):
+        return sum(
+            [i.size.eval() for i in self.current_regression_model.pymc_model.free_RVs]
+        )
+
+    @classmethod
+    def from_args(cls, args):
+        """
+        Creates a configuration from command line arguments.
+        """
+        norm_conf = NormConf.from_args(args)
+        hbrconf = HBRConf.from_args(args)
+        self = cls(norm_conf, hbrconf)
+        return self
+
+    @staticmethod
+    def normdata_to_hbrdata(data: NormData) -> hbr_data.HBRData:
+        if hasattr(data, "Phi") and data.Phi is not None:
+            this_X = data.Phi.to_numpy()
+            this_covariate_dims = data.basis_functions.to_numpy()
+        elif hasattr(data, "scaled_X") and data.scaled_X is not None:
+            this_X = data.scaled_X.to_numpy()
+            this_covariate_dims = data.covariates.to_numpy()
+        else:
+            this_X = data.X.to_numpy()
+            this_covariate_dims = data.covariates.to_numpy()
+
+        if hasattr(data, "scaled_y") and data.scaled_y is not None:
+            this_y = data.scaled_y.to_numpy()
+        else:
+            this_y = data.y.to_numpy()
+
+        hbrdata = hbr_data.HBRData(
+            X=this_X,
+            y=this_y,
+            batch_effects=data.batch_effects.to_numpy(),
+            covariate_dims=this_covariate_dims,
+            batch_effect_dims=data.batch_effect_dims.to_numpy(),
+            datapoint_coords=data.datapoints.to_numpy(),
+        )
+        hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
+        return hbrdata
+
     def get_var_names(self):
-        likelihood = self.reg_conf.likelihood
+        likelihood = self.current_regression_model.reg_conf.likelihood
         # Determine the variables to predict
         if likelihood == "Normal":
             var_names = ["mu_samples", "sigma_samples"]
@@ -295,7 +314,7 @@ class NormHBR(NormBase):
     def quantile(self, mu, sigma, epsilon=None, delta=None, zs=0):
         """Auxiliary function for computing quantiles"""
         """Get the zs'th quantiles given likelihood parameters"""
-        likelihood = self.reg_conf.likelihood
+        likelihood = self.current_regression_model.reg_conf.likelihood
         if likelihood == "SHASHo":
             quantiles = S_inv(zs, epsilon, delta) * sigma + mu
         elif likelihood == "SHASHo2":
@@ -315,7 +334,7 @@ class NormHBR(NormBase):
     def zscore(self, mu, sigma, epsilon=None, delta=None, y=None):
         """Auxiliary function for computing z-scores"""
         """Get the z-scores of Y, given likelihood parameters"""
-        likelihood = self.reg_conf.likelihood
+        likelihood = self.current_regression_model.reg_conf.likelihood
         if likelihood == "SHASHo":
             SHASH = (y - mu) / sigma
             Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
@@ -334,66 +353,3 @@ class NormHBR(NormBase):
         else:
             exit("Unsupported likelihood")
         return Z
-
-    def n_params(self):
-        return sum(
-            [i.size.eval() for i in self.current_regression_model.pymc_model.free_RVs]
-        )
-
-    @classmethod
-    def from_args(cls, args):
-        """
-        Creates a configuration from command line arguments.
-        """
-        norm_conf = NormConf.from_args(args)
-        hbrconf = HBRConf.from_args(args)
-        self = cls(norm_conf, hbrconf)
-        return self
-
-    @staticmethod
-    def reg_conf_from_args(args):
-        return HBRConf.from_args(args)
-
-    @staticmethod
-    def reg_conf_from_dict(dict):
-        return HBRConf.from_dict(dict)
-
-    def _regression_model_to_dict(self, path):
-        idata_path = os.path.join(path, f"idata_{self.current_response_var}.nc")
-        self.current_regression_model.save_idata(idata_path)
-        return self.current_regression_model.to_dict()
-
-    def _dict_to_regression_model(self, dict, path):
-        regression_model = HBR(self.reg_conf)
-        regression_model.is_from_dict = dict["is_from_dict"]
-        regression_model.is_fitted = dict["is_fitted"]
-        idata_path = os.path.join(path, f"idata_{self.current_response_var}.nc")
-        regression_model.load_idata(idata_path)
-        return regression_model
-
-    def load_idata_from_cache(self):
-        idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
-        )
-        with az.from_netcdf(idata_path) as idata:
-            self.current_regression_model.idata = idata
-
-    def save_idata_to_cache(self):
-        idata_path = os.path.join(
-            self.norm_conf.save_dir, f"idata_cache_{self.current_response_var}.nc"
-        )
-        self.current_regression_model.idata.to_netcdf(idata_path)
-
-    # def prepare(self, response_var):
-    #     self.current_response_var = response_var
-    #     self.model = self.models[self.current_response_var]
-    #     if self.model.is_fitted:
-    #         self.load_idata_from_cache()
-    #         self.replace_samples_in_idata_posterior(self.model.idata)
-
-    # def reset(self):
-    #     if self.model.is_fitted:
-    #         self.remove_samples_from_idata_posterior(self.model.idata)
-    #         self.save_idata_to_cache()
-    #         del self.model.idata
-    #         gc.collect()

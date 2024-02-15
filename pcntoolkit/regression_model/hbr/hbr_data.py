@@ -109,7 +109,7 @@ class HBRData:
             self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
         ), "X, y and batch_effects must have the same number of rows"
 
-    def add_to_model(self, model: pm.Model) -> None:
+    def add_to_graph(self, model: pm.Model) -> None:
         """
         Add the data to the pymc model graph using the model context.
         """

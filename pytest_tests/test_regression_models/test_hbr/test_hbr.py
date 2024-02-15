@@ -72,90 +72,64 @@ def sample_args():
         },
     ],
 )
-def test_hbr_from_args(sample_args, args):
-    hbr = HBR.from_args(sample_args | args)
-    assert hbr.conf.draws == 10
-    assert hbr.conf.tune == 10
-    assert hbr.conf.cores == 1
-    assert hbr.conf.likelihood == "Normal"
-    assert hbr.conf.mu.linear == args.get("linear_mu", False)
+def test_hbr_to_and_from_dict_and_args(sample_args, args):
+    # Testing from args first
+    hbr = HBR.from_args("test_name", sample_args | args)
+    assert hbr.reg_conf.draws == 10
+    assert hbr.reg_conf.tune == 10
+    assert hbr.reg_conf.cores == 1
+    assert hbr.reg_conf.likelihood == "Normal"
+    assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
-        assert hbr.conf.mu.slope.random == args.get("random_slope_mu", False)
-        assert hbr.conf.mu.intercept.random == args.get("random_intercept_mu", False)
-        assert hbr.conf.mu.slope.centered == args.get("centered_slope_mu", False)
-        assert hbr.conf.mu.intercept.centered == args.get(
-            "centered_intercept_mu", False
-        )
-    assert hbr.is_from_dict
-    assert not hbr.conf.sigma.linear
-
-
-@pytest.mark.parametrize(
-    "args",
-    [
-        {"likelihood": "Normal", "linear_mu": False, "random_mu": False},
-        {"likelihood": "Normal", "linear_mu": False, "random_mu": True},
-        {
-            "likelihood": "Normal",
-            "linear_mu": False,
-            "random_mu": True,
-            "centered_mu": True,
-        },
-        {
-            "likelihood": "Normal",
-            "linear_mu": True,
-            "random_slope_mu": False,
-            "random_intercept_mu": False,
-        },
-        {
-            "likelihood": "Normal",
-            "linear_mu": True,
-            "random_slope_mu": True,
-            "random_intercept_mu": False,
-        },
-        {
-            "likelihood": "Normal",
-            "linear_mu": True,
-            "random_slope_mu": True,
-            "centered_slope_mu": True,
-            "random_intercept_mu": False,
-        },
-        {
-            "likelihood": "Normal",
-            "linear_mu": True,
-            "random_slope_mu": True,
-            "random_intercept_mu": True,
-        },
-        {
-            "likelihood": "Normal",
-            "linear_mu": True,
-            "random_slope_mu": True,
-            "centered_slope_mu": True,
-            "random_intercept_mu": True,
-            "centered_intercept_mu": True,
-        },
-    ],
-)
-def test_hbr_to_dict(sample_args, args):
-    hbr = HBR.from_args(sample_args | args)
-    hbr_dict = hbr.to_dict()
-    assert hbr_dict["conf"]["draws"] == 10
-    assert hbr_dict["conf"]["tune"] == 10
-    assert hbr_dict["conf"]["cores"] == 1
-    assert hbr_dict["conf"]["likelihood"] == "Normal"
-    assert hbr_dict["conf"]["mu"]["linear"] == args.get("linear_mu", False)
-    if args.get("linear_mu", False):
-        assert hbr_dict["conf"]["mu"]["slope"]["random"] == args.get(
-            "random_slope_mu", False
-        )
-        assert hbr_dict["conf"]["mu"]["intercept"]["random"] == args.get(
+        assert hbr.reg_conf.mu.slope.random == args.get("random_slope_mu", False)
+        assert hbr.reg_conf.mu.intercept.random == args.get(
             "random_intercept_mu", False
         )
-        assert hbr_dict["conf"]["mu"]["slope"]["centered"] == args.get(
-            "centered_slope_mu", False
-        )
-        assert hbr_dict["conf"]["mu"]["intercept"]["centered"] == args.get(
+        assert hbr.reg_conf.mu.slope.centered == args.get("centered_slope_mu", False)
+        assert hbr.reg_conf.mu.intercept.centered == args.get(
             "centered_intercept_mu", False
         )
     assert hbr.is_from_dict
-    assert not hbr_dict["conf"]["sigma"]["linear"]
+    assert not hbr.reg_conf.sigma.linear
+
+    # Testing to_dict
+    hbr_dict = hbr.to_dict()
+    assert hbr_dict["reg_conf"]["draws"] == 10
+    assert hbr_dict["reg_conf"]["tune"] == 10
+    assert hbr_dict["reg_conf"]["cores"] == 1
+    assert hbr_dict["reg_conf"]["likelihood"] == "Normal"
+    assert hbr_dict["reg_conf"]["mu"]["linear"] == args.get("linear_mu", False)
+    if args.get("linear_mu", False):
+        assert hbr_dict["reg_conf"]["mu"]["slope"]["random"] == args.get(
+            "random_slope_mu", False
+        )
+        assert hbr_dict["reg_conf"]["mu"]["intercept"]["random"] == args.get(
+            "random_intercept_mu", False
+        )
+        assert hbr_dict["reg_conf"]["mu"]["slope"]["centered"] == args.get(
+            "centered_slope_mu", False
+        )
+        assert hbr_dict["reg_conf"]["mu"]["intercept"]["centered"] == args.get(
+            "centered_intercept_mu", False
+        )
+    assert hbr.is_from_dict
+    assert not hbr_dict["reg_conf"]["sigma"]["linear"]
+
+    # Testing from_dict
+    del hbr
+    hbr = HBR.from_dict(hbr_dict)
+    assert hbr.reg_conf.draws == 10
+    assert hbr.reg_conf.tune == 10
+    assert hbr.reg_conf.cores == 1
+    assert hbr.reg_conf.likelihood == "Normal"
+    assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
+    if args.get("linear_mu", False):
+        assert hbr.reg_conf.mu.slope.random == args.get("random_slope_mu", False)
+        assert hbr.reg_conf.mu.intercept.random == args.get(
+            "random_intercept_mu", False
+        )
+        assert hbr.reg_conf.mu.slope.centered == args.get("centered_slope_mu", False)
+        assert hbr.reg_conf.mu.intercept.centered == args.get(
+            "centered_intercept_mu", False
+        )
+    assert hbr.is_from_dict

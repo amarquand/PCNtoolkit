@@ -13,8 +13,6 @@ class NormConf:
     This does not care about the underlying regression model.
     """
 
-    perform_cv: bool = False
-    cv_folds: int = 0
     savemodel: bool = False
     saveresults: bool = False
     log_dir: str = "./logs"
@@ -35,6 +33,10 @@ class NormConf:
 
     inscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
     outscaler: str = "none"  # possible scalers: "none", "standardize", "minmax"
+
+    # Cross-validation parameters
+    perform_cv: bool = False
+    cv_folds: int = 0
 
     # The name of the regression model that is used. This is set by the regression model itself.
     normative_model_name: str = None
@@ -73,6 +75,12 @@ class NormConf:
         """
         return cls.from_args(dict)
 
+    def to_dict(self):
+        """
+        Converts the configuration to a dictionary.
+        """
+        return self.__dict__
+
     def detect_configuration_problems(self) -> str:
         """
         Detects problems in the configuration and returns them as a list.
@@ -108,18 +116,10 @@ class NormConf:
                         f"{dir_attr_str} is not a directory, but {self.get_type_of_object(dir_attr)}"
                     )
             else:
-                home_dir = os.path.expanduser("~")
-                now = datetime.now()
-                now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
-                dir = os.path.join(
-                    home_dir, "PCNToolkit_autodirs", f"{dir_attr_str}_{now_str}"
-                )
                 warnings.warn(
-                    f"{dir_attr_str} ({dir_attr}) does not exist, creating one at: "
-                    + dir
+                    f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you"
                 )
-                os.makedirs(dir, exist_ok=True)
-                object.__setattr__(self, dir_attr_str, dir)
+                os.makedirs(dir_attr)
 
     def detect_cv_problem(self, add_problem):
         performisbool = isinstance(self.perform_cv, bool)
@@ -209,12 +209,6 @@ class NormConf:
                 return "other"
         else:
             return "nonexistent"
-
-    def to_dict(self):
-        """
-        Converts the configuration to a dictionary.
-        """
-        return self.__dict__
 
     def set_save_dir(self, path):
         """
