@@ -33,7 +33,15 @@ class RegConf(ABC):
     @abstractmethod
     def from_args(cls, dict):
         """
-        Creates a configuration from command line arguments or a dictionary.
+        Creates a configuration from command line arguments.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, dict):
+        """
+        Creates a configuration from a dictionary.
         """
         pass
 

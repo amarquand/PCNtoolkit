@@ -62,25 +62,29 @@ def sample_args():
         },
     ],
 )
-def test_normhbr_from_dict(
+def test_normhbr_from_args(
     norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]
 ):
     hbr = NormHBR.from_args(norm_args | sample_args | args)
-    assert hbr.reg_conf.draws == 10
-    assert hbr.reg_conf.tune == 10
-    assert hbr.reg_conf.cores == 1
-    assert hbr.reg_conf.likelihood == "Normal"
-    assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
+    assert hbr.default_reg_conf.draws == 10
+    assert hbr.default_reg_conf.tune == 10
+    assert hbr.default_reg_conf.cores == 1
+    assert hbr.default_reg_conf.likelihood == "Normal"
+    assert hbr.default_reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
-        assert hbr.reg_conf.mu.slope.random == args.get("random_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.random == args.get(
+        assert hbr.default_reg_conf.mu.slope.random == args.get(
+            "random_slope_mu", False
+        )
+        assert hbr.default_reg_conf.mu.intercept.random == args.get(
             "random_intercept_mu", False
         )
-        assert hbr.reg_conf.mu.slope.centered == args.get("centered_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.centered == args.get(
+        assert hbr.default_reg_conf.mu.slope.centered == args.get(
+            "centered_slope_mu", False
+        )
+        assert hbr.default_reg_conf.mu.intercept.centered == args.get(
             "centered_intercept_mu", False
         )
-    assert not hbr.reg_conf.sigma.linear
+    assert not hbr.default_reg_conf.sigma.linear
 
 
 def test_normdata_to_hbrdata(train_norm_data: NormData, n_train_datapoints):
@@ -116,7 +120,6 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
         )
     )
 
-    # Load the model normally
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
     hbr = load_normative_model(load_path)
     for model in hbr.regression_models.values():
@@ -128,21 +131,15 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
             )
 
     # remove the files
-    for i in fitted_norm_hbr_model.response_vars:
-        os.remove(
-            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"idata_{i}.nc")
-        )
+    for i in hbr.response_vars:
+        os.remove(os.path.join(load_path, f"idata_{i}.nc"))
 
     # Assert the following throws an error
     with pytest.raises(RuntimeError):
         load_normative_model(load_path)
 
     # Remove the normative_model_dict.json file
-    os.remove(
-        os.path.join(
-            fitted_norm_hbr_model.norm_conf.save_dir, "normative_model_dict.json"
-        )
-    )
+    os.remove(os.path.join(hbr.norm_conf.save_dir, "normative_model_dict.json"))
     with pytest.raises(FileNotFoundError):
         load_normative_model(load_path)
 
@@ -177,12 +174,13 @@ def test_fit_predict(
 def test_transfer(
     fitted_norm_hbr_model: NormHBR,
     transfer_norm_data: NormData,
+    n_mcmc_samples,
 ):
     hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data)
     for model in hbr_transfered.regression_models.values():
         assert model.pymc_model.coords["batch2"] == (0, 1, 2)
         assert model.is_fitted
-        assert model.idata.posterior.mu_samples.shape[:2] == (2, 1000)
+        assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)
 
 
 def test_quantiles(fitted_norm_hbr_model, test_norm_data):

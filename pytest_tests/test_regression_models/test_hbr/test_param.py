@@ -35,7 +35,7 @@ def data():
 @pytest.fixture
 def model_and_data(data: HBRData) -> (pm.Model, HBRData):
     model = pm.Model(coords=data.coords, coords_mutable=data.coords_mutable)
-    data.add_to_model(model)
+    data.add_to_graph(model)
     return model, data
 
 

@@ -27,33 +27,6 @@ class NormBLR(NormBase):
         self = cls(norm_conf, hbrconf)
         return self
 
-    @staticmethod
-    def reg_conf_from_args(args):
-        return BLRConf.from_args(args)
-
-    @staticmethod
-    def reg_conf_from_dict(dict):
-        return BLRConf.from_dict(dict)
-
-    def _regression_model_to_dict(self, path=None):
-        """
-        Converts the current regression model to a dictionary with serializable components.
-        This dictionary is used to save the model to disk as json.
-        Must contain all the information needed to recreate the model.
-        Takes an optional path argument to save any large model components to disk.
-        """
-        raise NotImplementedError(
-            f"Models to dict method not implemented for {self.__class__.__name__}"
-        )
-
-    def _dict_to_regression_model(self, dict):
-        """
-        Converts the dictionary to an instance of self.regression_model_type
-        """
-        raise NotImplementedError(
-            f"Dict to models method not implemented for {self.__class__.__name__}"
-        )
-
     def _fit(self, data: NormData):
         """
         Fit self.model on data.
