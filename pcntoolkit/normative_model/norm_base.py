@@ -208,7 +208,7 @@ class NormBase(ABC):
         transfered_norm_conf = self.norm_conf.to_dict()
         transfered_norm_conf["save_dir"] = self.norm_conf.save_dir + "_transfer"
         transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
-        transfered_norm_conf = NormConf.from_args(transfered_norm_conf)
+        transfered_norm_conf = NormConf.from_dict(transfered_norm_conf)
 
         transfered_normative_model = self.__class__(
             transfered_norm_conf, self.default_reg_conf
@@ -282,6 +282,16 @@ class NormBase(ABC):
         data["S2"] = (
             data.quantiles.sel(quantile_zscores=1, method="nearest") - data["Yhat"]
         ) ** 2
+        self.create_measures_group(data)
+        self.evaluate_bic(data)
+        self.evaluate_rho(data)
+        self.evaluate_rmse(data)
+        self.evaluate_smse(data)
+        self.evaluate_expv(data)
+        # self.evaluate_msll(data)
+        self.evaluate_nll(data)
+
+    def create_measures_group(self, data):
         data["measures"] = xr.DataArray(
             np.nan * np.ones((len(self.response_vars), 6)),
             dims=("response_vars", "statistics"),
@@ -290,13 +300,6 @@ class NormBase(ABC):
                 "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "MSLL", "BIC"],
             },
         )
-        self.evaluate_rho(data)
-        self.evaluate_rmse(data)
-        self.evaluate_smse(data)
-        self.evaluate_expv(data)
-        # self.evaluate_msll(data)
-        # self.evaluate_nll(data)
-        self.evaluate_bic(data)
 
     def evaluate_rho(self, data: NormData):
         for responsevar in self.response_vars:

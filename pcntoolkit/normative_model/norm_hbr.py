@@ -251,6 +251,29 @@ class NormHBR(NormBase):
 
         return zscores
 
+    def _evaluate_nll(self, data: NormData) -> float:
+        hbrdata = self.normdata_to_hbrdata(data)
+
+        # Make a new model if needed
+        if not self.current_regression_model.pymc_model:
+            self.current_regression_model.create_pymc_graph(hbrdata)
+
+        # Sample from pymc model
+        with self.current_regression_model.pymc_model:
+            pm.compute_log_likelihood(
+                self.current_regression_model.idata,
+                var_names=["y_pred"],
+                extend_inferencedata=True,
+            )
+
+        # Extract the log likelihood
+        log_likelihood = az.extract(
+            self.current_regression_model.idata,
+            group="log_likelihood",
+            var_names="y_pred",
+        ).mean(dim="sample")
+        return log_likelihood
+
     def n_params(self):
         return sum(
             [i.size.eval() for i in self.current_regression_model.pymc_model.free_RVs]

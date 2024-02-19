@@ -1,8 +1,9 @@
 import numpy as np
-from cov import CovBase
 
 from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
+
+# from cov import CovBase
 
 
 class GPR(RegressionModel):
@@ -68,7 +69,8 @@ class GPR(RegressionModel):
         ymu = Ks.dot(self.alpha)
 
         # predictive variance (for a noisy test input)
-        v = solve(self.L, Ks.T)
+        # v = solve(self.L, Ks.T)
+        v = 1
         ys2 = kss - v.T.dot(v) + sn2
 
         return ymu, ys2

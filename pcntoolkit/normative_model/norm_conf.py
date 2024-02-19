@@ -227,10 +227,3 @@ class NormConf:
         Returns a copy of the configuration.
         """
         return NormConf.from_args(self.to_dict())
-
-    # @classmethod
-    # def from_dict(cls, dict):
-    #     """
-    #     Converts the dictionary to a configuration.
-    #     """
-    #     return cls(**dict)
