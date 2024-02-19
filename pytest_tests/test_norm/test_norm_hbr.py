@@ -185,3 +185,8 @@ def test_transfer(
 
 def test_quantiles(fitted_norm_hbr_model, test_norm_data):
     fitted_norm_hbr_model.compute_quantiles(test_norm_data)
+
+
+def test_compute_nll(fitted_norm_hbr_model, test_norm_data):
+    fitted_norm_hbr_model.create_measures_group(test_norm_data)
+    fitted_norm_hbr_model.evaluate_nll(test_norm_data)
