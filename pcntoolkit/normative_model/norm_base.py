@@ -166,7 +166,6 @@ class NormBase(ABC):
 
             self.reset()
 
-        # predict_data.plot_quantiles()
         # Get the results
         results = self.evaluate(predict_data)
         return results
@@ -272,15 +271,16 @@ class NormBase(ABC):
         """
         Contains evaluation logic.
         """
-        self.compute_zscores(data)
-        self.compute_quantiles(data)
-        self.compute_measures(data)
+        data = self.compute_zscores(data)
+        data = self.compute_centiles(data)
+        data = self.compute_measures(data)
 
-    def compute_measures(self, data: NormData):
+    def compute_measures(self, data: NormData) -> NormData:
         # TODO fix this
-        data["Yhat"] = data.quantiles.sel(quantile_zscores=0, method="nearest")
+        data["Yhat"] = data.centiles.sel(cummulative_densities=0.5, method="nearest")
         data["S2"] = (
-            data.quantiles.sel(quantile_zscores=1, method="nearest") - data["Yhat"]
+            data.centiles.sel(cummulative_densities=0.1587, method="nearest")
+            - data["Yhat"]
         ) ** 2
         self.create_measures_group(data)
         self.evaluate_bic(data)
@@ -290,6 +290,7 @@ class NormBase(ABC):
         self.evaluate_expv(data)
         # self.evaluate_msll(data)
         self.evaluate_nll(data)
+        return data
 
     def create_measures_group(self, data):
         data["measures"] = xr.DataArray(
@@ -297,7 +298,7 @@ class NormBase(ABC):
             dims=("response_vars", "statistics"),
             coords={
                 "response_vars": self.response_vars,
-                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "MSLL", "BIC"],
+                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "BIC"],
             },
         )
 
@@ -326,7 +327,7 @@ class NormBase(ABC):
             )
 
     def evaluate_smse(self, data: NormData):
-        data["SMSE"] = self.empty_measure()
+        # data["SMSE"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -340,7 +341,7 @@ class NormBase(ABC):
             )
 
     def evaluate_expv(self, data: NormData):
-        data["ExpV"] = self.empty_measure()
+        # data["ExpV"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -354,7 +355,7 @@ class NormBase(ABC):
             )
 
     def evaluate_msll(self, data: NormData):
-        data["MSLL"] = self.empty_measure()
+        # data["MSLL"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -368,7 +369,7 @@ class NormBase(ABC):
             )
 
     def evaluate_nll(self, data: NormData):
-        data["NLL"] = self.empty_measure()
+        # data["NLL"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -380,7 +381,7 @@ class NormBase(ABC):
             data.measures.loc[{"response_vars": responsevar, "statistics": "NLL"}] = nll
 
     def evaluate_bic(self, data: NormData):
-        data["BIC"] = self.empty_measure()
+        # data["BIC"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -402,14 +403,14 @@ class NormBase(ABC):
         rho, _ = stats.spearmanr(y, yhat)
         return rho
 
-    def _evaluate_rmse(self, data: NormData):
+    def _evaluate_rmse(self, data: NormData) -> float:
         y = data["y"].values
         yhat = data["Yhat"].values
 
         rmse = np.sqrt(np.mean((y - yhat) ** 2))
         return rmse
 
-    def _evaluate_smse(self, data: NormData):
+    def _evaluate_smse(self, data: NormData) -> float:
         y = data["y"].values
         yhat = data["Yhat"].values
 
@@ -431,7 +432,7 @@ class NormBase(ABC):
 
         y = data["y"].values
         yhat = data["Yhat"].values
-        yhat_std = data["Yhat_std"]
+        yhat_std = data["Yhat"]
 
         # Calculate the log loss of the model's predictions
         log_loss = np.mean((y - yhat) ** 2 / (2 * yhat_std**2) + np.log(yhat_std))
@@ -476,25 +477,41 @@ class NormBase(ABC):
 
         return bic
 
-    def empty_measure(self):
+    def empty_measure(self) -> xr.DataArray:
         return xr.DataArray(
             np.zeros(len(self.response_vars)),
             dims=("response_vars"),
             coords={"response_vars": self.response_vars},
         )
 
-    def compute_quantiles(self, data: NormData, *args, **kwargs):
+    def compute_centiles(
+        self, data: NormData, cummulative_densities=None, *args, **kwargs
+    ) -> NormData:
         # Preprocess the data
         self.preprocess(data)
 
-        quantiles_zscores = np.arange(-4, 4.1, 1.0)
-        # Create an empty array to store the scaledquantiles
-        data["scaled_quantiles"] = xr.DataArray(
+        if cummulative_densities is None:
+            cummulative_densities = np.array(
+                [0.05, 0.1587, 0.25, 0.5, 0.75, 0.8413, 0.95]
+            )
+
+        # If centiles are already computed, remove them
+        centiles_already_computed = (
+            "scaled_centiles" in data
+            or "centiles" in data
+            or "cummulative_densities" in data.coords
+        )
+        if centiles_already_computed:
+            data = data.drop_vars(["scaled_centiles", "centiles"])
+            data = data.drop_dims(["cummulative_densities"])
+
+        # Create an empty array to store the scaled centiles
+        data["scaled_centiles"] = xr.DataArray(
             np.zeros(
-                (len(quantiles_zscores), data.X.shape[0], len(self.response_vars))
+                (len(cummulative_densities), data.X.shape[0], len(self.response_vars))
             ),
-            dims=("quantile_zscores", "datapoints", "response_vars"),
-            coords={"quantile_zscores": quantiles_zscores},
+            dims=("cummulative_densities", "datapoints", "response_vars"),
+            coords={"cummulative_densities": cummulative_densities},
         )
 
         # Predict for each response variable
@@ -511,17 +528,21 @@ class NormBase(ABC):
             # Set self.model to the current model
             self.prepare(responsevar)
 
-            # Overwrite quantiles
-            print("Computing quantiles for", responsevar)
-            data["scaled_quantiles"].loc[{"response_vars": responsevar}] = (
-                self._quantiles(resp_predict_data, quantiles_zscores, *args, **kwargs)
+            # Overwrite centiles
+            print("Computing centiles for", responsevar)
+            data["scaled_centiles"].loc[{"response_vars": responsevar}] = (
+                self._centiles(
+                    resp_predict_data, cummulative_densities, *args, **kwargs
+                )
             )
 
             self.reset()
 
         self.postprocess(data)
 
-    def compute_zscores(self, data: NormData, *args, **kwargs):
+        return data
+
+    def compute_zscores(self, data: NormData, *args, **kwargs) -> NormData:
         # Preprocess the data
         self.preprocess(data)
 
@@ -555,6 +576,7 @@ class NormBase(ABC):
             self.reset()
 
         self.postprocess(data)
+        return data
 
     def preprocess(self, data: NormData) -> NormData:
         """
@@ -750,11 +772,11 @@ class NormBase(ABC):
         pass
 
     @abstractmethod
-    def _quantiles(
-        self, data: NormData, quantiles: list[float], *args, **kwargs
+    def _centiles(
+        self, data: NormData, centiles: list[float], *args, **kwargs
     ) -> xr.DataArray:
-        """Takes a list of quantiles and returns the corresponding quantiles of the model.
-        The return type is an xr.datarray with dimensions (quantile_zscores, datapoints).
+        """Takes a list of cummulative densities and returns the corresponding centiles of the model.
+        The return type is an xr.datarray with dimensions (cummulative_densities, datapoints).
         """
         pass
 

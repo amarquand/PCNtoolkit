@@ -87,29 +87,31 @@ class NormGPR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _quantiles(self, data: NormData, quantiles: list[float]) -> xr.DataArray:
+    def _centiles(
+        self, data: NormData, cummulative_densities: list[float], *args, **kwargs
+    ) -> xr.DataArray:
         """
-        Compute quantiles for the model at the given data points.
+        Compute centiles for the model at the given data points.
         Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
-        - quantile_zscores
+        - cummulative_densities
         - datapoints
 
         ```
-        quantiles = np.zeros((len(zscores), data.X.shape[0])))
-        for i, zscore in enumerate(zscores):
-            quantiles[i, :] = *compute quantiles for zscore*
+        centiles = np.zeros((len(cummulative_densities), data.X.shape[0])))
+        for i, zscore in enumerate(cummulative_densities):
+            centiles[i, :] = *compute centiles for cummulative_density*
 
         return xr.DataArray(
-            quantiles,
-            dims=["quantile_zscores", "datapoints"],
-            coords={"quantile_zscores": zscores},
+            centiles,
+            dims=["cummulative_densities", "datapoints"],
+            coords={"cummulative_densities": cummulative_densities},
         )```
         """
 
         raise NotImplementedError(
-            f"Quantiles method not implemented for {self.__class__.__name__}"
+            f"Centiles method not implemented for {self.__class__.__name__}"
         )
 
     def _zscores(self, data: NormData) -> xr.DataArray:
