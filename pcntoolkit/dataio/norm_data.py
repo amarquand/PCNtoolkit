@@ -19,8 +19,8 @@ class NormData(xr.Dataset):
         "scaled_X",
         "scaled_y",
         "Phi",
-        "scaled_quantiles",
-        "quantiles",
+        "scaled_centiles",
+        "centiles",
         "zscores",
     )
 
@@ -299,19 +299,19 @@ class NormData(xr.Dataset):
                 self.scaled_y.sel(response_vars=responsevar).data
             )
 
-        # Unscale the quantiles, if they exist
-        if "scaled_quantiles" in self.data_vars:
-            self["quantiles"] = xr.DataArray(
-                np.zeros(self.scaled_quantiles.shape),
-                coords=self.scaled_quantiles.coords,
-                dims=self.scaled_quantiles.dims,
-                attrs=self.scaled_quantiles.attrs,
+        # Unscale the centiles, if they exist
+        if "scaled_centiles" in self.data_vars:
+            self["centiles"] = xr.DataArray(
+                np.zeros(self.scaled_centiles.shape),
+                coords=self.scaled_centiles.coords,
+                dims=self.scaled_centiles.dims,
+                attrs=self.scaled_centiles.attrs,
             )
             for responsevar in self.response_vars.to_numpy():
-                self.quantiles.loc[{"response_vars": responsevar}] = outscalers[
+                self.centiles.loc[{"response_vars": responsevar}] = outscalers[
                     responsevar
                 ].inverse_transform(
-                    self.scaled_quantiles.sel(response_vars=responsevar).data
+                    self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
     def expand_basis(
@@ -371,20 +371,20 @@ class NormData(xr.Dataset):
         )
         pass
 
-    def plot_quantiles(
+    def plot_centiles(
         self,
         covariate: str = None,
         batch_effects: Union[str, list[str]] = None,
         show_data=False,
         scatter_data: "NormData" = None,
     ):
-        """Plot the quantiles for all response variables."""
+        """Plot the centiles for all response variables."""
         for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_quantiles(
+            self._plot_centiles(
                 response_var, covariate, batch_effects, show_data, scatter_data
             )
 
-    def _plot_quantiles(
+    def _plot_centiles(
         self,
         response_var: str,
         covariate: str = None,
@@ -392,7 +392,7 @@ class NormData(xr.Dataset):
         show_data=False,
         scatter_data: "NormData" = None,
     ):
-        """Plot the quantiles for a single response variable."""
+        """Plot the centiles for a single response variable."""
         # Use the first covariate, if not specified
         if covariate is None:
             covariate = self.covariates[0].to_numpy().item()
@@ -410,35 +410,36 @@ class NormData(xr.Dataset):
             "response_vars": response_var,
         }
         filtered = self.sel(filter_dict)
-        filtered_scatter = scatter_data.sel(filter_dict)
 
         # Filter out the correct batch effects
         filtered: xr.Dataset = filtered.where(filtered.batch_effects == batch_effects)
-        filtered_scatter: xr.Dataset = filtered_scatter.where(
-            filtered_scatter.batch_effects == batch_effects
-        )
+
         plt.figure()
-        for zscore in self.coords["quantile_zscores"]:
+        for zscore in self.coords["cummulative_densities"]:
             # Make the mean line thicker
             if zscore == 0:
                 linewidth = 3
             else:
                 linewidth = 1
 
-            # Make the outer quantiles dashed
+            # Make the outer centiles dashed
             if zscore <= -2 or zscore >= 2:
                 linestyle = "--"
             else:
                 linestyle = "-"
             plt.plot(
                 filtered.X,
-                filtered.quantiles.sel(quantile_zscores=zscore),
+                filtered.centiles.sel(cummulative_densities=zscore),
                 color="black",
                 linewidth=linewidth,
                 linestyle=linestyle,
             )
 
         if show_data:
+            filtered_scatter = scatter_data.sel(filter_dict)
+            filtered_scatter: xr.Dataset = filtered_scatter.where(
+                filtered_scatter.batch_effects == batch_effects
+            )
             plt.scatter(
                 filtered_scatter.X, filtered_scatter.y, color="red", label="data"
             )

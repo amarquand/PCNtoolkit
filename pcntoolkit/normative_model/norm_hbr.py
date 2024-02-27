@@ -8,6 +8,7 @@ import arviz as az
 import numpy as np
 import pymc as pm
 import pytensor.tensor as pt
+import scipy.stats as stats
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -155,7 +156,9 @@ class NormHBR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _quantiles(self, data: NormData, zscores: list, resample=True) -> xr.DataArray:
+    def _centiles(
+        self, data: NormData, cummulative_densities: list[float], resample=True
+    ) -> xr.DataArray:
         var_names = self.get_var_names()
 
         hbrdata = self.normdata_to_hbrdata(data)
@@ -189,24 +192,26 @@ class NormHBR(NormBase):
         # Separate the samples into a list so that they can be unpacked
         array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
-        # Create an array to hold the quantiles
+        # Create an array to hold the centiles
         n_datapoints, _, n_mcmc_samples = post_pred["mu_samples"].shape
-        quantiles = np.zeros((len(zscores), n_datapoints, n_mcmc_samples))
+        centiles = np.zeros((len(cummulative_densities), n_datapoints, n_mcmc_samples))
 
-        # Compute the quantile iteratively for each z-score
-        for i, j in enumerate(zscores):
-            zs = np.full((n_datapoints, n_mcmc_samples), j, dtype=float)
-            quantiles[i] = xr.apply_ufunc(
-                self.quantile,
+        # Compute the centiles iteratively for each cummulative density
+        for i, cdf in enumerate(cummulative_densities):
+            zs = np.full(
+                (n_datapoints, n_mcmc_samples), stats.norm.ppf(cdf), dtype=float
+            )
+            centiles[i] = xr.apply_ufunc(
+                self.centile,
                 *array_of_vars,
                 kwargs={"zs": zs},
             )
         pass
 
         return xr.DataArray(
-            quantiles,
-            dims=["quantile_zscores", "datapoints", "sample"],
-            coords={"quantile_zscores": zscores},
+            centiles,
+            dims=["cummulative_densities", "datapoints", "sample"],
+            coords={"cummulative_densities": cummulative_densities},
         ).mean(dim="sample")
 
     def _zscores(self, data: NormData, resample=False) -> xr.DataArray:
@@ -251,28 +256,28 @@ class NormHBR(NormBase):
 
         return zscores
 
-    def _evaluate_nll(self, data: NormData) -> float:
-        hbrdata = self.normdata_to_hbrdata(data)
+    # def _evaluate_nll(self, data: NormData) -> float:
+    #     hbrdata = self.normdata_to_hbrdata(data)
 
-        # Make a new model if needed
-        if not self.current_regression_model.pymc_model:
-            self.current_regression_model.create_pymc_graph(hbrdata)
+    #     # Make a new model if needed
+    #     if not self.current_regression_model.pymc_model:
+    #         self.current_regression_model.create_pymc_graph(hbrdata)
 
-        # Sample from pymc model
-        with self.current_regression_model.pymc_model:
-            pm.compute_log_likelihood(
-                self.current_regression_model.idata,
-                var_names=["y_pred"],
-                extend_inferencedata=True,
-            )
+    #     # Sample from pymc model
+    #     with self.current_regression_model.pymc_model:
+    #         pm.compute_log_likelihood(
+    #             self.current_regression_model.idata,
+    #             var_names=["y_pred"],
+    #             extend_inferencedata=True,
+    #         )
 
-        # Extract the log likelihood
-        log_likelihood = az.extract(
-            self.current_regression_model.idata,
-            group="log_likelihood",
-            var_names="y_pred",
-        ).mean(dim="sample")
-        return log_likelihood
+    #     # Extract the log likelihood
+    #     log_likelihood = az.extract(
+    #         self.current_regression_model.idata,
+    #         group="log_likelihood",
+    #         var_names="y_pred",
+    #     ).mean(dim="sample")
+    #     return log_likelihood
 
     def n_params(self):
         return sum(
@@ -310,9 +315,10 @@ class NormHBR(NormBase):
             X=this_X,
             y=this_y,
             batch_effects=data.batch_effects.to_numpy(),
+            response_var_dims=data.response_vars.to_numpy().tolist(),
             covariate_dims=this_covariate_dims,
-            batch_effect_dims=data.batch_effect_dims.to_numpy(),
-            datapoint_coords=data.datapoints.to_numpy(),
+            batch_effect_dims=data.batch_effect_dims.to_numpy().tolist(),
+            datapoint_coords=data.datapoints.to_numpy().tolist(),
         )
         hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return hbrdata
@@ -334,9 +340,8 @@ class NormHBR(NormBase):
             raise RuntimeError("Unsupported likelihood " + likelihood)
         return var_names
 
-    def quantile(self, mu, sigma, epsilon=None, delta=None, zs=0):
-        """Auxiliary function for computing quantiles"""
-        """Get the zs'th quantiles given likelihood parameters"""
+    def centile(self, mu, sigma, epsilon=None, delta=None, zs=0):
+        """Auxiliary function for computing centile"""
         likelihood = self.current_regression_model.reg_conf.likelihood
         if likelihood == "SHASHo":
             quantiles = S_inv(zs, epsilon, delta) * sigma + mu

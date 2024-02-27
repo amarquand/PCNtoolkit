@@ -54,6 +54,8 @@ class HBRData:
             self.response_var_dims = [
                 "response_var_" + str(i) for i in range(self._n_response_vars)
             ]
+        elif type(self.response_var_dims) != list:
+            self.response_var_dims = [self.response_var_dims]
         assert (
             len(self.response_var_dims) == self._n_response_vars
         ), "The number of response var dimensions must match the number of response vars"

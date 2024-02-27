@@ -91,6 +91,7 @@ def test_normdata_to_hbrdata(train_norm_data: NormData, n_train_datapoints):
     hbrdata = NormHBR.normdata_to_hbrdata(train_norm_data)
     assert hbrdata.X.shape == (n_train_datapoints, 2)
     assert hbrdata.y.shape == (n_train_datapoints, 2)
+    assert hbrdata.response_var_dims == train_norm_data.response_vars.values.tolist()
     assert hbrdata.batch_effects.shape == (n_train_datapoints, 2)
     assert tuple(hbrdata.covariate_dims) == ("X1", "X2")
     assert tuple(hbrdata.batch_effect_dims) == ("batch1", "batch2")
@@ -183,10 +184,20 @@ def test_transfer(
         assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)
 
 
-def test_quantiles(fitted_norm_hbr_model, test_norm_data):
-    fitted_norm_hbr_model.compute_quantiles(test_norm_data)
+def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data: NormData):
+    synth_test_norm_data = test_norm_data.create_synthetic_data(200)
+
+    synth_test_norm_data_with_centiles = fitted_norm_hbr_model.compute_centiles(
+        synth_test_norm_data
+    )
+    synth_test_norm_data_with_centiles.plot_centiles()
+    synth_test_norm_data_with_centiles_2 = fitted_norm_hbr_model.compute_centiles(
+        synth_test_norm_data_with_centiles,
+        cummulative_densities=np.linspace(0, 1, 10),
+    )
+    synth_test_norm_data_with_centiles_2.plot_centiles()
 
 
-def test_compute_nll(fitted_norm_hbr_model, test_norm_data):
-    fitted_norm_hbr_model.create_measures_group(test_norm_data)
-    fitted_norm_hbr_model.evaluate_nll(test_norm_data)
+# def test_compute_nll(fitted_norm_hbr_model, test_norm_data):
+#     fitted_norm_hbr_model.create_measures_group(test_norm_data)
+#     fitted_norm_hbr_model.evaluate_nll(test_norm_data)
