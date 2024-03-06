@@ -819,7 +819,6 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = X
 
     # estimate the models for all variabels
-    # TODO Z-scores adaptation for SHASH HBR
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)
         nm = norm_init(Xz)
@@ -842,6 +841,19 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
+        if respfile is not None:
+            Y, maskvol = load_response_vars(respfile, maskfile)
+            Y = Y[:, i:i+1]
+            if alg == 'hbr':
+                if outscaler in ['standardize', 'minmax', 'robminmax']:
+                    Yz = scaler_resp[fold].transform(Y)
+                else:
+                    Yz = Y
+                Z[:,i] = nm.get_mcmc_zscores(Xz, Yz, **kwargs)
+            else:
+                Z[:,i] = (Y - Yhat[:, i]) / np.sqrt(S2[:, i])
+
+            
 
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
@@ -880,8 +892,6 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Y = Yw
         else:
             warp = False
-
-        Z = (Y - Yhat) / np.sqrt(S2)
 
         print("Evaluating the model ...")
         if meta_data and not warp:
