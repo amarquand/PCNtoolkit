@@ -3,16 +3,14 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from ast import List
-from dataclasses import field
-from typing import Any, Union
+from typing import Any
 
-import arviz as az
 import numpy as np
 import xarray as xr
 from scipy import stats
 from sklearn.metrics import explained_variance_score
 
+from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
 from pcntoolkit.regression_model.blr.blr import BLR
@@ -283,7 +281,8 @@ class NormBase(ABC):
             - data["Yhat"]
         ) ** 2
         self.create_measures_group(data)
-        self.evaluate_bic(data)
+        self.evaluate_shapiro_w(data)
+        # self.evaluate_bic(data)
         self.evaluate_rho(data)
         self.evaluate_rmse(data)
         self.evaluate_smse(data)
@@ -298,7 +297,7 @@ class NormBase(ABC):
             dims=("response_vars", "statistics"),
             coords={
                 "response_vars": self.response_vars,
-                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "BIC"],
+                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "ShapiroW"],
             },
         )
 
@@ -327,7 +326,6 @@ class NormBase(ABC):
             )
 
     def evaluate_smse(self, data: NormData):
-        # data["SMSE"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -341,7 +339,6 @@ class NormBase(ABC):
             )
 
     def evaluate_expv(self, data: NormData):
-        # data["ExpV"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -355,7 +352,6 @@ class NormBase(ABC):
             )
 
     def evaluate_msll(self, data: NormData):
-        # data["MSLL"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -369,7 +365,6 @@ class NormBase(ABC):
             )
 
     def evaluate_nll(self, data: NormData):
-        # data["NLL"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -381,7 +376,6 @@ class NormBase(ABC):
             data.measures.loc[{"response_vars": responsevar, "statistics": "NLL"}] = nll
 
     def evaluate_bic(self, data: NormData):
-        # data["BIC"] = self.empty_measure()
         for responsevar in self.response_vars:
             # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -395,6 +389,19 @@ class NormBase(ABC):
             data.measures.loc[{"response_vars": responsevar, "statistics": "BIC"}] = bic
 
             self.reset()
+
+    def evaluate_shapiro_w(self, data: NormData):
+        for responsevar in self.response_vars:
+            # Select the data for the current response variable
+            resp_predict_data = data.sel(response_vars=responsevar)
+
+            # Compute the measure
+            shapiro_w = self._evaluate_shapiro_w(resp_predict_data)
+
+            # Store the measure
+            data.measures.loc[
+                {"response_vars": responsevar, "statistics": "ShapiroW"}
+            ] = shapiro_w
 
     def _evaluate_rho(self, data: NormData) -> float:
         y = data["y"].values
@@ -476,6 +483,11 @@ class NormBase(ABC):
         bic = n * np.log(rss / n) + n_params * np.log(n)
 
         return bic
+
+    def _evaluate_shapiro_w(self, data: NormData) -> float:
+        y = data["zscores"].values
+        shapiro_w, _ = stats.shapiro(y)
+        return shapiro_w
 
     def empty_measure(self) -> xr.DataArray:
         return xr.DataArray(
@@ -585,9 +597,70 @@ class NormBase(ABC):
         self.scale_forward(data)
 
         # data.scale_forward(self.norm_conf.inscaler, self.norm_conf.outscaler)
-        data.expand_basis(
-            self.norm_conf.basis_function, basis_column=self.norm_conf.basis_column
+        self.expand_basis_new(data, source_array="scaled_X")
+
+    def expand_basis_new(
+        self, data: NormData, source_array: str, intercept: bool = False
+    ):
+        # Expand the basis of the source array
+        if source_array == "scaled_X":
+            if "scaled_X" not in data.data_vars:
+                raise ValueError(
+                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
+                )
+            source_array = data.scaled_X
+        elif source_array == "X":
+            source_array = data.X
+
+        all_arrays = [source_array.data]
+        all_dims = list(data.covariates.to_numpy())
+
+        # Create a new array with the expanded basis
+        basis_expansion = self.norm_conf.basis_function
+        basis_column = self.norm_conf.basis_column
+        if basis_expansion == "polynomial":
+            order = self.norm_conf.order
+            expanded_basis = create_poly_basis(
+                source_array.data[:, basis_column], order
+            )
+            all_arrays.append(expanded_basis)
+            all_dims.extend(
+                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
+            )
+        elif basis_expansion == "bspline":
+            if not hasattr(self, "bspline_basis"):
+                order = self.norm_conf.order
+                nknots = self.norm_conf.nknots
+                xmin = np.min(source_array.data[:, basis_column])
+                xmax = np.max(source_array.data[:, basis_column])
+                diff = xmax - xmin
+                xmin = xmin - 0.2 * diff
+                xmax = xmax + 0.2 * diff
+                self.bspline_basis = create_bspline_basis(
+                    xmin=xmin,
+                    xmax=xmax,
+                    p=order,
+                    nknots=nknots,
+                )
+            expanded_basis = np.array(
+                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
+            )
+            all_arrays.append(expanded_basis)
+            all_dims.extend(
+                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
+            )
+
+        if intercept:
+            all_dims.append("intercept")
+            all_arrays.append(np.ones((expanded_basis.shape[0], 1)))
+
+        Phi = np.concatenate(all_arrays, axis=1)
+        data["Phi"] = xr.DataArray(
+            Phi,
+            coords={"basis_functions": all_dims},
+            dims=["datapoints", "basis_functions"],
         )
+        pass
 
     def postprocess(self, data: NormData) -> NormData:
         """
@@ -657,10 +730,28 @@ class NormBase(ABC):
         # Set the response variables
         self.response_vars = model_dict["response_vars"]
 
+        # Set the regression model type
+        self.regression_model_type = globals()[model_dict["regression_model_type"]]
+
         # Set the regression models
         self.regression_models = self.dict_to_regression_models(
             model_dict["regression_models"], path
         )
+
+        # Load the default regression model configuration
+        # Get the first regression model
+        first_regression_model = next(iter(self.regression_models.values()))
+
+        # Get the class of the reg_conf object
+        reg_conf_class = first_regression_model.reg_conf.__class__
+
+        # Create a new instance of the reg_conf class from the dictionary
+        self.default_reg_conf = reg_conf_class.from_dict(model_dict["default_reg_conf"])
+
+        # Load the bspline basis expansion
+        if normconf.basis_function == "bspline":
+            if "bspline_basis" in model_dict:
+                self.bspline_basis = create_bspline_basis(**model_dict["bspline_basis"])
 
         # Set the scalers
         self.inscalers = {
@@ -685,6 +776,21 @@ class NormBase(ABC):
 
         # Store the regression models
         model_dict["regression_models"] = self.regression_models_to_dict(path)
+        # store the regression model type
+        model_dict["regression_model_type"] = self.regression_model_type.__name__
+        # store the default regression model configuration
+        model_dict["default_reg_conf"] = self.default_reg_conf.to_dict()
+
+        # Store the bspline_basis expansion if it exists
+        if self.norm_conf.basis_function == "bspline":
+            if hasattr(self, "bspline_basis"):
+                knots = self.bspline_basis.knot_vector
+                model_dict["bspline_basis"] = {
+                    "xmin": knots[0],
+                    "xmax": knots[-1],
+                    "nknots": self.norm_conf.nknots,
+                    "p": self.norm_conf.order,
+                }
 
         # Store the scalers
         model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}

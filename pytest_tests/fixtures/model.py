@@ -92,7 +92,7 @@ def mu():
         name="mu",
         linear=True,
         intercept=Param(name="intercept_mu", random=True, centered=False),
-        slope=Param(name="slope_mu", random=False),
+        slope=Param(name="slope_mu", dims=("covariates,"), random=False),
     )
 
 
