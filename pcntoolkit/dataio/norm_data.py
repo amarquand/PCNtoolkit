@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -314,69 +314,12 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def expand_basis(
-        self,
-        basis_expansion,
-        order=3,
-        nknots=5,
-        basis_column: int = 0,
-        source_array: str = "scaled_X",
-        intercept: bool = False,
-    ):
-        # Expand the basis of the source array
-        if source_array == "scaled_X":
-            source_array = self.scaled_X
-        elif source_array == "X":
-            source_array = self.X
-
-        all_arrays = [source_array.data]
-        all_dims = list(self.covariates.to_numpy())
-
-        # Create a new array with the expanded basis
-        if basis_expansion == "polynomial":
-            expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], order
-            )
-            all_arrays.append(expanded_basis)
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion == "bspline":
-            self.attrs["bspline_basis"] = create_bspline_basis(
-                xmin=np.min(source_array[:, basis_column]),
-                xmax=np.max(source_array.data[:, basis_column]),
-                p=order,
-                nknots=nknots,
-            )
-            expanded_basis = np.array(
-                [
-                    self.attrs["bspline_basis"](c)
-                    for c in source_array.data[:, basis_column]
-                ]
-            )
-            all_arrays.append(expanded_basis)
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-
-        if intercept:
-            all_dims.append("intercept")
-            all_arrays.append(np.ones((expanded_basis.shape[0], 1)))
-
-        Phi = np.concatenate(all_arrays, axis=1)
-        self["Phi"] = xr.DataArray(
-            Phi,
-            coords={"basis_functions": all_dims},
-            dims=["datapoints", "basis_functions"],
-        )
-        pass
-
     def plot_centiles(
         self,
         covariate: str = None,
         batch_effects: Union[str, list[str]] = None,
         show_data=False,
-        scatter_data: "NormData" = None,
+        scatter_data: Union["NormData", List["NormData"]] = None,
     ):
         """Plot the centiles for all response variables."""
         for response_var in self.coords["response_vars"].to_numpy():
@@ -436,15 +379,22 @@ class NormData(xr.Dataset):
             )
 
         if show_data:
-            filtered_scatter = scatter_data.sel(filter_dict)
-            filtered_scatter: xr.Dataset = filtered_scatter.where(
-                filtered_scatter.batch_effects == batch_effects
-            )
-            plt.scatter(
-                filtered_scatter.X, filtered_scatter.y, color="red", label="data"
-            )
+            if type(scatter_data) != list:
+                scatter_data = [scatter_data]
+            for scatter_data_i in scatter_data:
+
+                filtered_scatter = scatter_data_i.sel(filter_dict)
+                filtered_scatter: xr.Dataset = filtered_scatter.where(
+                    filtered_scatter.batch_effects == batch_effects
+                )
+                plt.scatter(
+                    filtered_scatter.X,
+                    filtered_scatter.y,
+                    label=scatter_data_i.attrs["name"],
+                )
 
         plt.title(f"Quantiles for {response_var}")
+        plt.legend(loc="upper left")
         plt.xlabel(covariate)
         plt.ylabel(response_var)
         plt.show()

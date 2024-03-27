@@ -40,12 +40,20 @@ class Param:
 
     def __post_init__(self):
         self.has_covariate_dim = False if not self.dims else "covariates" in self.dims
+        if self.name.startswith("slope") and not self.has_covariate_dim:
+            raise ValueError(
+                f"""Parameter {self.name} must have a covariate dimension, but none was provided.
+                             Please provide a covariate dimension in the dims argument: dims=("covariates",)"""
+            )
         self.distmap = {
             "Normal": pm.Normal,
             "Cauchy": pm.Cauchy,
             "HalfNormal": pm.HalfNormal,
             "HalfCauchy": pm.HalfCauchy,
             "Uniform": pm.Uniform,
+            "Gamma": pm.Gamma,
+            "InvGamma": pm.InverseGamma,
+            "LogNormal": pm.LogNormal,
         }
 
         if self.linear:
@@ -69,11 +77,6 @@ class Param:
 
     def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
-        self.distmap = {
-            "Normal": pm.Normal,
-            "Cauchy": pm.Cauchy,
-            "HalfNormal": pm.HalfNormal,
-        }
         with model:
             if self.linear:
                 self.slope.create_graph(model, idata, freedom)
@@ -140,6 +143,12 @@ class Param:
             elif dist_name == "Uniform":
                 temp = stats.uniform.fit(samples)
                 self.dist_params = (temp[0], temp[1])
+            elif dist_name == "Gamma":
+                temp = stats.gamma.fit(samples)
+                self.dist_params = (temp[0], temp[1], self.freedom * temp[2])
+            elif dist_name == "InvGamma":
+                temp = stats.invgamma.fit(samples)
+                self.dist_params = (temp[0], temp[1], self.freedom * temp[2])
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
 
@@ -150,7 +159,7 @@ class Param:
             self.sigma = Param(
                 f"sigma_{self.name}",
                 dims=self.dims,
-                dist_name="HalfNormal",
+                dist_name="LogNormal",
                 dist_params=(1,),
             )
 
@@ -161,7 +170,7 @@ class Param:
             self.sigma = Param(
                 f"sigma_{self.name}",
                 dims=self.dims,
-                dist_name="HalfNormal",
+                dist_name="LogNormal",
                 dist_params=(1.0,),
             )
 
@@ -250,8 +259,8 @@ class Param:
                 )
         else:
             (default_dist, default_params) = (
-                ("HalfNormal", (1.0,))
-                if name.startswith("sigma")
+                ("LogNormal", (1.0,))
+                if (name.startswith("sigma") or (name == delta))
                 else ("Normal", (0.0, 1.0))
             )
             return cls(
@@ -298,11 +307,18 @@ class Param:
                     sigma=sigma,
                 )
         else:
+            name = dict["name"]
+            if name.startswith("sigma") or name == "delta":
+                default_dist = "LogNormal"
+                default_params = (1.0,)
+            else:
+                default_dist = "Normal"
+                default_params = (0.0, 1.0)
             return cls(
                 dict["name"],
                 dims=dict["dims"],
-                dist_name=dict.get("dist_name", "Normal"),
-                dist_params=dict.get("dist_params", (0.0, 1.0)),
+                dist_name=default_dist,
+                dist_params=default_params,
                 mapping=dict.get("mapping", "identity"),
                 mapping_params=dict.get("mapping_params", (0.0, 1.0)),
             )
@@ -336,4 +352,10 @@ class Param:
 
     @classmethod
     def default_delta(cls):
-        return cls("delta", linear=False, random=False, dist_name="HalfNormal")
+        return cls(
+            "delta",
+            linear=False,
+            random=False,
+            dist_name="HalfNormal",
+            dist_params=(1.0,),
+        )

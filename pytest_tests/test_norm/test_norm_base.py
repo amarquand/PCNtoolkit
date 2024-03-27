@@ -124,8 +124,12 @@ def test_polynomial(
     )
     object.__setattr__(new_norm_hbr_model._norm_conf, "inscaler", "standardize")
     object.__setattr__(new_norm_hbr_model._norm_conf, "outscaler", "standardize")
+    object.__setattr__(new_norm_hbr_model._norm_conf, "basis_function", "polynomial")
+    object.__setattr__(new_norm_hbr_model._norm_conf, "order", degree)
+
     new_norm_hbr_model.scale_forward(norm_data)
-    norm_data.expand_basis("polynomial", order=degree, intercept=intercept)
+    new_norm_hbr_model.expand_basis_new(norm_data, "scaled_X", intercept=intercept)
+    # norm_data.expand_basis("polynomial", order=degree, intercept=intercept)
     assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + degree + 1 * intercept,
@@ -155,8 +159,12 @@ def test_bspline(
     )
     object.__setattr__(new_norm_hbr_model._norm_conf, "inscaler", "standardize")
     object.__setattr__(new_norm_hbr_model._norm_conf, "outscaler", "standardize")
+    object.__setattr__(new_norm_hbr_model._norm_conf, "basis_function", "bspline")
+    object.__setattr__(new_norm_hbr_model._norm_conf, "nknots", nknots)
+    object.__setattr__(new_norm_hbr_model._norm_conf, "order", order)
+
     new_norm_hbr_model.scale_forward(norm_data)
-    norm_data.expand_basis("bspline", nknots=nknots, order=order, intercept=intercept)
+    new_norm_hbr_model.expand_basis_new(norm_data, "scaled_X", intercept=intercept)
     assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + nknots + order - 1 + 1 * intercept,
