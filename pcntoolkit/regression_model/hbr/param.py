@@ -7,6 +7,7 @@ import arviz as az
 import numpy as np
 import pymc as pm
 import scipy.stats as stats
+import xarray as xr
 from pytensor.tensor.extra_ops import repeat
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
@@ -18,7 +19,7 @@ class Param:
     dims: Tuple[str] = ()
 
     dist_name: str = "Normal"
-    dist_params: tuple = (0, 1)
+    dist_params: tuple = (0, 10)
 
     linear: bool = False
     slope: Param = None
@@ -116,38 +117,39 @@ class Param:
                     self.name, *self.dist_params, shape=self.shape, dims=self.dims
                 )
 
-    def approximate_marginal(self, model, dist_name: str, samples):
+    def approximate_marginal(self, model, dist_name: str, samples: xr.DataArray):
         """
         use scipy stats.XXX.fit to get the parameters of the marginal distribution
         """
-        """At some point, we want to average over all dimensions except the covariate dimension."""
+        """#TODO At some point, we want to flatten over all dimensions except the covariate dimension."""
         print(
             f"Approximating marginal distribution for {self.name} with {dist_name} and freedom {self.freedom}"
         )
+        samples_flat = samples.to_numpy().flatten()
         with model:
             if dist_name == "Normal":
-                temp = stats.norm.fit(samples)
+                temp = stats.norm.fit(samples_flat)
                 self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "HalfNormal":
-                temp = stats.halfnorm.fit(samples)
+                temp = stats.halfnorm.fit(samples_flat)
                 self.dist_params = (self.freedom * temp[1],)
             elif dist_name == "LogNormal":
-                temp = stats.lognorm.fit(samples)
+                temp = stats.lognorm.fit(samples_flat)
                 self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "Cauchy":
-                temp = stats.cauchy.fit(samples)
+                temp = stats.cauchy.fit(samples_flat)
                 self.dist_params = (temp[0], self.freedom * temp[1])
             elif dist_name == "HalfCauchy":
-                temp = stats.halfcauchy.fit(samples)
+                temp = stats.halfcauchy.fit(samples_flat)
                 self.dist_params = (self.freedom * temp[1],)
             elif dist_name == "Uniform":
-                temp = stats.uniform.fit(samples)
+                temp = stats.uniform.fit(samples_flat)
                 self.dist_params = (temp[0], temp[1])
             elif dist_name == "Gamma":
-                temp = stats.gamma.fit(samples)
+                temp = stats.gamma.fit(samples_flat)
                 self.dist_params = (temp[0], temp[1], self.freedom * temp[2])
             elif dist_name == "InvGamma":
-                temp = stats.invgamma.fit(samples)
+                temp = stats.invgamma.fit(samples_flat)
                 self.dist_params = (temp[0], temp[1], self.freedom * temp[2])
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
@@ -160,7 +162,7 @@ class Param:
                 f"sigma_{self.name}",
                 dims=self.dims,
                 dist_name="LogNormal",
-                dist_params=(1,),
+                dist_params=(2.0,),
             )
 
     def set_centered_random_params(self):
@@ -171,7 +173,7 @@ class Param:
                 f"sigma_{self.name}",
                 dims=self.dims,
                 dist_name="LogNormal",
-                dist_params=(1.0,),
+                dist_params=(2.0,),
             )
 
     def set_linear_params(self):
@@ -192,9 +194,9 @@ class Param:
 
         elif self.random:
             if self.has_covariate_dim:
-                return self.dist[*data.pm_batch_effect_indices]
+                return self.dist[data.pm_batch_effect_indices]
             else:
-                return self.dist[*data.pm_batch_effect_indices, None]
+                return self.dist[data.pm_batch_effect_indices, None]
         else:
             return repeat(self.dist[None, :], data.pm_X.shape[0], axis=0)
 
@@ -259,9 +261,9 @@ class Param:
                 )
         else:
             (default_dist, default_params) = (
-                ("LogNormal", (1.0,))
-                if (name.startswith("sigma") or (name == delta))
-                else ("Normal", (0.0, 1.0))
+                ("LogNormal", (2.0,))
+                if (name.startswith("sigma") or (name == "delta"))
+                else ("Normal", (0.0, 10.0))
             )
             return cls(
                 name,
@@ -310,10 +312,10 @@ class Param:
             name = dict["name"]
             if name.startswith("sigma") or name == "delta":
                 default_dist = "LogNormal"
-                default_params = (1.0,)
+                default_params = (2.0,)
             else:
                 default_dist = "Normal"
-                default_params = (0.0, 1.0)
+                default_params = (0.0, 10.0)
             return cls(
                 dict["name"],
                 dims=dict["dims"],
@@ -356,6 +358,6 @@ class Param:
             "delta",
             linear=False,
             random=False,
-            dist_name="HalfNormal",
-            dist_params=(1.0,),
+            dist_name="LogNormal",
+            dist_params=(2.0,),
         )
