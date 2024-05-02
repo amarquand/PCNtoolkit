@@ -123,7 +123,7 @@ class Param:
         """
         """#TODO At some point, we want to flatten over all dimensions except the covariate dimension."""
         print(
-            f"Approximating marginal distribution for {self.name} with {dist_name} and freedom {self.freedom}"
+            f"Approximating factorized posterior for {self.name} with {dist_name} and freedom {self.freedom}"
         )
         samples_flat = samples.to_numpy().flatten()
         with model:
@@ -196,7 +196,7 @@ class Param:
             if self.has_covariate_dim:
                 return self.dist[data.pm_batch_effect_indices]
             else:
-                return self.dist[data.pm_batch_effect_indices, None]
+                return self.dist[data.pm_batch_effect_indices + (None,)]
         else:
             return repeat(self.dist[None, :], data.pm_X.shape[0], axis=0)
 

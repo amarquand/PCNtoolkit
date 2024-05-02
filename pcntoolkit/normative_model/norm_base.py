@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Tuple, Union
 
 import numpy as np
 import xarray as xr
+from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn.metrics import explained_variance_score
 
@@ -553,6 +554,149 @@ class NormBase(ABC):
         self.postprocess(data)
 
         return data
+
+    # def plot_centiles(self, data:NormData):
+
+    def plot_centiles(
+        self,
+        data: NormData,
+        covariate: str = None,
+        batch_effects: Union[str, list[str]] = None,
+        cummul_densities=None,
+        show_data: bool = False,
+        plt_kwargs={},
+    ):
+        """Plot the centiles for all response variables."""
+        synth_data = data.create_synthetic_data(
+            n_datapoints=150,
+            range_dim=covariate,
+            batch_effects_to_sample=batch_effects,
+        )
+        self.compute_centiles(synth_data, cummulative_densities=cummul_densities)
+        for response_var in data.coords["response_vars"].to_numpy():
+            self._plot_centiles(
+                data,
+                synth_data,
+                response_var,
+                covariate,
+                batch_effects,
+                show_data,
+                plt_kwargs,
+            )
+
+    def _plot_centiles(
+        _self,
+        data: NormData,
+        synth_data: NormData,
+        response_var: str,
+        covariate: str = None,
+        batch_effects: Tuple[str] = None,
+        show_data: bool = False,
+        plt_kwargs={},
+    ):
+        """Plot the centiles for a single response variable."""
+        # Use the first covariate, if not specified
+        if covariate is None:
+            covariate = data.covariates[0].to_numpy().item()
+
+        if batch_effects is None:
+            batch_effects = data.get_single_batch_effect()
+
+        new_batch_effects = []
+
+        for be in batch_effects:
+            if isinstance(be, str):
+                new_batch_effects.append(be)
+            elif isinstance(be, list):
+                new_batch_effects.append(be[0])
+            else:
+                try:
+                    new_batch_effects.append(be.item())
+                except AttributeError:
+                    new_batch_effects.append(be)
+        batch_effects = new_batch_effects
+
+        # Filter the covariate and responsevar that are to be plotted
+        filter_dict = {
+            "covariates": covariate,
+            "response_vars": response_var,
+        }
+        filtered = synth_data.sel(filter_dict)
+
+        plt.figure(**plt_kwargs)
+        lines = []
+        for cdf in synth_data.coords["cummulative_densities"][::-1]:
+            d_mean = abs(cdf - 0.5)
+            thickness = 3 - 4 * d_mean
+
+            if d_mean < 0.25:
+                style = "-"
+            elif d_mean < 0.475:
+                style = "--"
+            else:
+                style = ":"
+
+            cmap = plt.get_cmap("viridis")
+            color = cmap(cdf)
+
+            lines.extend(
+                plt.plot(
+                    filtered.X,
+                    filtered.centiles.sel(cummulative_densities=cdf),
+                    color=color,
+                    linewidth=thickness,
+                    linestyle=style,
+                )
+            )
+        line_legend = plt.legend(
+            lines,
+            synth_data.coords["cummulative_densities"].values,
+            loc="upper right",
+            title="Centiles",
+        )
+        plt.gca().add_artist(line_legend)
+
+        if show_data:
+            filtered_scatter = data.sel(filter_dict)
+            idx = np.all(
+                np.stack(
+                    [
+                        filtered_scatter.batch_effects[:, i] == batch_effects[i]
+                        for i in range(filtered_scatter.batch_effects.shape[1])
+                    ],
+                    axis=1,
+                ),
+                axis=1,
+            )
+            idx = xr.DataArray(idx)
+            filt1: xr.Dataset = filtered_scatter.isel(datapoints=list(np.where(idx)[0]))
+            be_string = ",".join(
+                [
+                    f"{data.coords['batch_effect_dims'][i].item()}:{batch_effects[i]}"
+                    for i in range(len(batch_effects))
+                ]
+            )
+            plt.scatter(
+                filt1.X,
+                filt1.y,
+                label=f"{{{be_string}}})",
+            )
+            filt2: xr.Dataset = filtered_scatter.isel(
+                datapoints=list(np.where(~idx)[0])
+            )
+            plt.scatter(
+                filt2.X,
+                filt2.y,
+                label=f"other batches",
+            )
+        if show_data:
+            plt.title(f"Centiles of {response_var} with {data.attrs['name']} scatter")
+            plt.legend(loc="upper left", title="Batch effect")
+        else:
+            plt.title(f"Centiles of {response_var}")
+        plt.xlabel(covariate)
+        plt.ylabel(response_var)
+        plt.show()
 
     def compute_zscores(self, data: NormData, *args, **kwargs) -> NormData:
         # Preprocess the data

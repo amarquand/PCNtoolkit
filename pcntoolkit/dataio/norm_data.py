@@ -137,21 +137,21 @@ class NormData(xr.Dataset):
 
         # The batch effects specifies from which batch_effects can be sampled
         if batch_effects_to_sample is None:
-            batch_effects_to_sample = [
-                [list(map.keys())[0]] for map in self.batch_effects_maps.values()
-            ]
-        else:
-            # Assert that the batch effects to sample are in the batch effects maps
-            for i, bes in enumerate(batch_effects_to_sample):
-                for be in bes:
-                    assert (
-                        be
-                        in self.attrs["batch_effects_maps"][
-                            self.batch_effect_dims[i].to_numpy().item()
-                        ].keys()
-                    )
+            batch_effects_to_sample = self.get_single_batch_effect()
+
+        # Assert that the batch effects to sample are in the batch effects maps
+        for i, bes in enumerate(batch_effects_to_sample):
+            bes = [bes] if isinstance(bes, (str, int, float)) else bes
+            for be in bes:
+                assert (
+                    be
+                    in self.attrs["batch_effects_maps"][
+                        self.batch_effect_dims[i].to_numpy().item()
+                    ].keys()
+                ), f"{be} not in batch effects maps"
 
         for i, bes in enumerate(batch_effects_to_sample):
+            bes = [bes] if isinstance(bes, (str, int, float)) else bes
             df[self.batch_effect_dims[i].to_numpy().item()] = np.random.choice(
                 bes, n_datapoints
             )
@@ -175,6 +175,13 @@ class NormData(xr.Dataset):
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"]
 
         return to_return
+
+    def get_single_batch_effect(self):
+        batch_effects_to_sample = [
+            [list(map.keys())[0]] for map in self.batch_effects_maps.values()
+        ]
+
+        return batch_effects_to_sample
 
     def train_test_split(
         self, splits: Tuple[float, ...], split_names: Tuple[str, ...] = None
@@ -314,90 +321,84 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def plot_centiles(
-        self,
-        covariate: str = None,
-        batch_effects: Union[str, list[str]] = None,
-        show_data=False,
-        scatter_data: Union["NormData", List["NormData"]] = None,
-    ):
-        """Plot the centiles for all response variables."""
-        for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_centiles(
-                response_var, covariate, batch_effects, show_data, scatter_data
-            )
+    # def plot_centiles(
+    #     self,
+    #     covariate: str = None,
+    #     batch_effects: Union[str, list[str]] = None,
+    # ):
+    #     """Plot the centiles for all response variables."""
+    #     for response_var in self.coords["response_vars"].to_numpy():
+    #         self._plot_centiles(response_var, covariate, batch_effects)
 
-    def _plot_centiles(
-        self,
-        response_var: str,
-        covariate: str = None,
-        batch_effects: Union[str, list[str]] = None,
-        show_data=False,
-        scatter_data: "NormData" = None,
-    ):
-        """Plot the centiles for a single response variable."""
-        # Use the first covariate, if not specified
-        if covariate is None:
-            covariate = self.covariates[0].to_numpy().item()
+    # def _plot_centiles(
+    #     self,
+    #     response_var: str,
+    #     covariate: str = None,
+    #     batch_effects: Tuple[str] = None,
+    # ):
+    #     """Plot the centiles for a single response variable."""
+    #     # Use the first covariate, if not specified
+    #     if covariate is None:
+    #         covariate = self.covariates[0].to_numpy().item()
 
-        # Set all batch effects to 0 if not specified
-        if batch_effects is None:
-            batch_effects = [0] * len(self.coords["batch_effect_dims"])
+    #     if batch_effects is None:
+    #         batch_effects = self.get_single_batch_effect()
 
-        if show_data and (scatter_data is None):
-            scatter_data = self
+    #     # Create synthetic data
+    #     synthetic_data = self.create_synthetic_data(
+    #         n_datapoints=1000,
+    #         range_dim=covariate,
+    #         batch_effects_to_sample=batch_effects,
+    #     )
 
-        # Filter the covariate and responsevar that are to be plotted
-        filter_dict = {
-            "covariates": covariate,
-            "response_vars": response_var,
-        }
-        filtered = self.sel(filter_dict)
+    #     # Filter the covariate and responsevar that are to be plotted
+    #     filter_dict = {
+    #         "covariates": covariate,
+    #         "response_vars": response_var,
+    #     }
+    #     filtered = synthetic_data.sel(filter_dict)
 
-        # Filter out the correct batch effects
-        filtered: xr.Dataset = filtered.where(filtered.batch_effects == batch_effects)
+    #     plt.figure()
+    #     for zscore in self.coords["cummulative_densities"]:
+    #         # Make the mean line thicker
+    #         if zscore == 0:
+    #             linewidth = 3
+    #         else:
+    #             linewidth = 1
 
-        plt.figure()
-        for zscore in self.coords["cummulative_densities"]:
-            # Make the mean line thicker
-            if zscore == 0:
-                linewidth = 3
-            else:
-                linewidth = 1
+    #         # Make the outer centiles dashed
+    #         if zscore <= -2 or zscore >= 2:
+    #             linestyle = "--"
+    #         else:
+    #             linestyle = "-"
+    #         plt.plot(
+    #             filtered.X,
+    #             filtered.centiles.sel(cummulative_densities=zscore),
+    #             color="black",
+    #             linewidth=linewidth,
+    #             linestyle=linestyle,
+    #         )
 
-            # Make the outer centiles dashed
-            if zscore <= -2 or zscore >= 2:
-                linestyle = "--"
-            else:
-                linestyle = "-"
-            plt.plot(
-                filtered.X,
-                filtered.centiles.sel(cummulative_densities=zscore),
-                color="black",
-                linewidth=linewidth,
-                linestyle=linestyle,
-            )
+    #     # if show_data:
+    #     #     if type(scatter_data) != list:
+    #     #         scatter_data = [scatter_data]
+    #     #     for scatter_data_i in scatter_data:
 
-        if show_data:
-            if type(scatter_data) != list:
-                scatter_data = [scatter_data]
-            for scatter_data_i in scatter_data:
+    #     #         filtered_scatter = scatter_data_i.sel(filter_dict)
+    #     #         filtered_scatter: xr.Dataset = filtered_scatter.where(
+    #     #             filtered_scatter.batch_effects == batch_effects
+    #     #         )
+    #     #         plt.scatter(
+    #     #             filtered_scatter.X,
+    #     #             filtered_scatter.y,
+    #     #             label=scatter_data_i.attrs["name"],
+    #     #         )
 
-                filtered_scatter = scatter_data_i.sel(filter_dict)
-                filtered_scatter: xr.Dataset = filtered_scatter.where(
-                    filtered_scatter.batch_effects == batch_effects
-                )
-                plt.scatter(
-                    filtered_scatter.X,
-                    filtered_scatter.y,
-                    label=scatter_data_i.attrs["name"],
-                )
-
-        plt.title(f"Quantiles for {response_var}")
-        plt.legend(loc="upper left")
-        plt.xlabel(covariate)
-        plt.ylabel(response_var)
-        plt.show()
+    #     plt.title(f"Quantiles for {response_var}")
+    #     plt.legend(loc="upper left")
+    #     plt.xlabel(covariate)
+    #     plt.ylabel(response_var)
+    #     plt.show()
 
     def plot_qq(self):
         """Create a QQ-plot for all response variables."""
