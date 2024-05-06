@@ -4,32 +4,46 @@ Created on Wed Jan 18 14:34:06 2017
 
 @author: andmar
 """
-# import pcntoolkit
+
 import os
-import time
-from pcntoolkit.normative_parallel import execute_nm, collect_nm, delete_nm
+import numpy as np
+import pandas as pd
+from pcntoolkit.normative_parallel import execute_nm
 
-data_dir = '/home/preclineu/andmar/py.sandbox/normative_oslo/'
-respfile = os.path.join(data_dir, 'ICA100_oslo15_v2_spaces.txt')
-covfile = os.path.join(data_dir, 'cov_oslo15_spaces.txt')
+# configs
+# specify your python path. Make sure you are using the Python in the right environement.
+python_path = ''  
 
-cvfolds = 2
+# specify the working directory to sacve the results.
+processing_dir = ''
+sample_num = 50
+resp_num = 10
+cov_num = 1
 
-python_path = '/home/preclineu/andmar/sfw/anaconda3/envs/py36/bin/python'
-normative_path = '/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit/normative.py'
-processing_dir = '/home/preclineu/andmar/py.sandbox/demo/'
+# simulating data
+pd.DataFrame(np.random.random([sample_num, resp_num])).to_pickle(os.path.join(processing_dir,'train_resp.pkl'))
+pd.DataFrame(np.random.random([sample_num, cov_num])).to_pickle(os.path.join(processing_dir,'train_cov.pkl'))
+pd.DataFrame(np.random.random([sample_num, resp_num])).to_pickle(os.path.join(processing_dir,'test_resp.pkl'))
+pd.DataFrame(np.random.random([sample_num, cov_num])).to_pickle(os.path.join(processing_dir,'test_cov.pkl'))
+
+
+respfile = os.path.join(processing_dir,'train_resp.pkl')
+covfile = os.path.join(processing_dir,'train_cov.pkl')
+
+testresp = os.path.join(processing_dir,'test_resp.pkl')
+testcov = os.path.join(processing_dir,'test_cov.pkl')
+
 job_name = 'nmp_test'
-batch_size = 10
+batch_size = 1
 memory = '4gb'
 duration = '01:00:00'
-cluster = 'torque'
+cluster = 'slurm'
+binary='True'
 
-execute_nm(processing_dir, python_path, normative_path, job_name, covfile,  respfile,
-           batch_size, memory, duration, cluster_spec=cluster,
-           cv_folds=cvfolds, log_path=processing_dir)  # , alg='rfa')#, configparam=4)
+execute_nm(processing_dir, python_path, job_name, covfile, respfile,
+           testcovfile_path=testcov, testrespfile_path=testresp, batch_size=batch_size, 
+           memory=memory, duration=duration, cluster_spec=cluster,
+           log_path=processing_dir, interactive='auto', binary=binary,
+           savemodel='True', saveoutput='True')
 
-print("waiting for jobs to finish ...")
-time.sleep(60)
 
-collect_nm(processing_dir, job_name, collect=True)
-# delete_nm(procedssing_dir)
