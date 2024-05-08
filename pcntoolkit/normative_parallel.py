@@ -320,12 +320,12 @@ def execute_nm(processing_dir,
                                 duration=duration, binary=binary,
                                 interactive=interactive)
                     elif cluster_spec == 'slurm':
-                            sbatchrerun_nm(processing_dir,
-                                            memory=memory,
-                                            duration=duration,
-                                            binary=binary,
-                                            log_path=log_path,
-                                            interactive=interactive)
+                        sbatchrerun_nm(processing_dir,
+                                        memory=memory,
+                                        duration=duration,
+                                        binary=binary,
+                                        log_path=log_path,
+                                        interactive=interactive)
 
         if interactive == 'query':
             response = yes_or_no('Collect the results?')
@@ -1241,7 +1241,8 @@ def sbatchrerun_nm(processing_dir,
 
      written by (primarily) T Wolfers, (adapted) S Rutherford.
     '''
-    log_path = kwargs.pop('log_path', None)
+    
+    #log_path = kwargs.pop('log_path', None)
     
     job_ids = []
     
@@ -1259,12 +1260,12 @@ def sbatchrerun_nm(processing_dir,
                 with fileinput.FileInput(jobpath, inplace=True) as file:
                     for line in file:
                         print(line.replace(duration, new_duration), end='')
-                if new_memory != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(memory, new_memory), end='')
-                job_id = sbatch_nm(jobpath)
-                job_ids.append(job_id)
+            if new_memory != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(memory, new_memory), end='')
+            job_id = sbatch_nm(jobpath)
+            job_ids.append(job_id)
 
     else:
         file_extentions = '.txt'
@@ -1278,12 +1279,12 @@ def sbatchrerun_nm(processing_dir,
                 with fileinput.FileInput(jobpath, inplace=True) as file:
                     for line in file:
                         print(line.replace(duration, new_duration), end='')
-                if new_memory != False:
-                    with fileinput.FileInput(jobpath, inplace=True) as file:
-                        for line in file:
-                            print(line.replace(memory, new_memory), end='')
-                job_id = sbatch_nm(jobpath)
-                job_ids.append(job_id)
+            if new_memory != False:
+                with fileinput.FileInput(jobpath, inplace=True) as file:
+                    for line in file:
+                        print(line.replace(memory, new_memory), end='')
+            job_id = sbatch_nm(jobpath)
+            job_ids.append(job_id)
                 
     if interactive:
         check_jobs(job_ids, cluster_spec='slurm', start_time=start_time, delay=60)
