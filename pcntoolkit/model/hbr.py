@@ -580,7 +580,7 @@ class HBR:
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.configs, idata=self.idata):
             self.idata = pm.sample_posterior_predictive(
-                self.idata, extend_inferencedata=True, progressbar=True
+                self.idata, extend_inferencedata=True, progressbar=True, var_names=self.vars_to_sample
             )
         pred_mean = self.idata.posterior_predictive["y_like"].mean(axis=(0, 1))
         pred_var = self.idata.posterior_predictive["y_like"].var(axis=(0, 1))
