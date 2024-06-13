@@ -545,14 +545,21 @@ class NormHBR(NormBase):
         if 'posterior_predictive' in self.hbr.idata.groups():
             del self.hbr.idata.posterior_predictive
 
+        if self.configs["transferred"] == True:
+            self.predict_on_new_sites(
+                X=X, 
+                batch_effects=batch_effects     
+            )
+            #var_names = ["y_like"]       
+        else: 
+            self.hbr.predict(
         # Do a forward to get the posterior predictive in the idata
-        self.hbr.predict(
-            X=X,
-            batch_effects=batch_effects,
-            batch_effects_maps=self.batch_effects_maps,
-            pred="single",
-            var_names=var_names+["y_like"],
-        )
+                X=X,
+                batch_effects=batch_effects,
+                batch_effects_maps=self.batch_effects_maps,
+                pred="single",
+                var_names=var_names+["y_like"],
+             )
 
         # Extract the relevant samples from the idata
         post_pred = az.extract(
