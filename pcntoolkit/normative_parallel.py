@@ -511,8 +511,7 @@ def collect_nm(processing_dir,
         if len(files)>0:
             file_example = fileio.load(files[0])
         else:
-            raise ValueError(f"Missing output files (yhats at: {processing_dir + 'batch_*/' 
-                             + 'yhat' + outputsuffix + file_extentions}")            
+            raise ValueError(f"Missing output files (yhats at: {processing_dir + 'batch_*/' + 'yhat' + outputsuffix + file_extentions}")            
         
         numsubjects = file_example.shape[0]
         try:

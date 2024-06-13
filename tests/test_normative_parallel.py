@@ -12,10 +12,10 @@ from pcntoolkit.normative_parallel import execute_nm
 
 # configs
 # specify your python path. Make sure you are using the Python in the right environement.
-python_path = ''  
+python_path = '/path/to/my/python'  
 
 # specify the working directory to sacve the results.
-processing_dir = ''
+processing_dir = '/path/to/my/test/directory/'
 sample_num = 50
 resp_num = 10
 cov_num = 1
