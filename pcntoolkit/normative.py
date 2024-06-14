@@ -827,7 +827,6 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         else:
             Yz = Y
 
-
     # estimate the models for all variabels
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)
@@ -855,8 +854,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             if alg == 'hbr':
                 Z[:,i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
             else:
-                Z[:,i] = (Y[:, i] - Yhat[:, i]) / np.sqrt(S2[:, i])
-            
+                Z[:,i] = (Y[:, i] - Yhat[:, i]) / np.sqrt(S2[:, i])    
 
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
