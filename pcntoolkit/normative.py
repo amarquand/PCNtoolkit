@@ -852,17 +852,15 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             S2[:, i] = s2.squeeze()
         if respfile is not None:
             if alg == 'hbr':
+                # Z scores for HBR must be computed independently for each model
                 Z[:,i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
-            else:
-                Z[:,i] = (Y[:, i] - Yhat[:, i]) / np.sqrt(S2[:, i])    
-
+            
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
 
         return (Yhat, S2)
-
+    
     else:
-        Y, maskvol = load_response_vars(respfile, maskfile)
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
@@ -893,6 +891,10 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Y = Yw
         else:
             warp = False
+        
+        if alg != 'hbr':
+            # For HBR the Z scores are already computed 
+            Z = (Y - Yhat) / np.sqrt(S2)
 
         print("Evaluating the model ...")
         if meta_data and not warp:
