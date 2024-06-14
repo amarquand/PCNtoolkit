@@ -14,7 +14,7 @@ requirements = parse_requirements('requirements.txt')
 #       version = '0.29-1'
 
 setup(name='pcntoolkit',
-      version='0.30-1',
+      version='0.30-2',
       description='Predictive Clinical Neuroscience toolkit',
       url='http://github.com/amarquand/PCNtoolkit',
       author='Andre Marquand',
