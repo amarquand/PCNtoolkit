@@ -800,7 +800,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     X = fileio.load(covfile)
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
-
+    if respfile is not None:
+        Y, maskvol = load_response_vars(respfile, maskfile)
+        if len(Y.shape) == 1:
+            Y = Y[:, np.newaxis]
+            
     sample_num = X.shape[0]
     if models is not None:
         feature_num = len(models)
@@ -817,6 +821,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Xz = scaler_cov[fold].transform(X)
     else:
         Xz = X
+    if respfile is not None:
+        if outscaler in ['standardize', 'minmax', 'robminmax']:
+            Yz = scaler_resp[fold].transform(Y)
+        else:
+            Yz = Y
+
 
     # estimate the models for all variabels
     for i, m in enumerate(models):
@@ -842,17 +852,10 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
         if respfile is not None:
-            Y, maskvol = load_response_vars(respfile, maskfile)
-            Y = Y[:, i:i+1]
             if alg == 'hbr':
-                if outscaler in ['standardize', 'minmax', 'robminmax']:
-                    Yz = scaler_resp[fold].transform(Y)
-                else:
-                    Yz = Y
-                Z[:,i] = nm.get_mcmc_zscores(Xz, Yz, **kwargs)
+                Z[:,i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
             else:
-                Z[:,i] = (Y - Yhat[:, i]) / np.sqrt(S2[:, i])
-
+                Z[:,i] = (Y[:, i] - Yhat[:, i]) / np.sqrt(S2[:, i])
             
 
     if respfile is None:
