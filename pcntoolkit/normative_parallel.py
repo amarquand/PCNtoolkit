@@ -1123,13 +1123,13 @@ def sbatchwrap_nm(processing_dir,
     output_changedir = ['cd ' + processing_dir + '\n']
 
     sbatch_init = '#!/bin/bash\n'
-    sbatch_jobname = '#SBATCH --job-name=' + processing_dir + '\n'
+    sbatch_jobname = '#SBATCH --job-name=' + job_name + '\n'
     sbatch_nodes = '#SBATCH --nodes=1\n'
     sbatch_tasks = '#SBATCH --ntasks=1\n'
     sbatch_time = '#SBATCH --time=' + str(duration) + '\n'
     sbatch_memory = '#SBATCH --mem-per-cpu=' + str(memory) + '\n'
-    sbatch_log_out = '#SBATCH -o ' + log_path + '%j.out' + '\n'
-    sbatch_log_error =  '#SBATCH -e ' + log_path + '%j.err' + '\n'
+    sbatch_log_out = '#SBATCH -o ' + log_path + '%x_%j.out' + '\n'
+    sbatch_log_error =  '#SBATCH -e ' + log_path + '%x_%j.err' + '\n'
     #sbatch_module = 'module purge\n'
     #sbatch_anaconda = 'module load anaconda3\n'
     sbatch_exit = 'set -o errexit\n'
