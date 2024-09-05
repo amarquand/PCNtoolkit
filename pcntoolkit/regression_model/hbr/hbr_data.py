@@ -116,16 +116,13 @@ class HBRData:
         Add the data to the pymc model graph using the model context.
         """
         with model:
-            self.pm_X = pm.MutableData("X", self.X, dims=("datapoints", "covariates"))
-            self.pm_y = pm.MutableData(
-                "y", self.y, dims=("datapoints", "response_vars")
-            )
+            self.pm_X = pm.Data("X", self.X, dims=("datapoints", "covariates"))
+            self.pm_y = pm.Data("y", self.y, dims=("datapoints", "response_vars"))
             self.pm_batch_effect_indices = tuple(
                 [
                     pm.Data(
                         str(self.batch_effect_dims[i]),
                         self.batch_effect_indices[i],
-                        mutable=True,
                         dims=("datapoints",),
                     )
                     for i in range(self._n_batch_effect_columns)
