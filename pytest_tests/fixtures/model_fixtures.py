@@ -5,8 +5,26 @@ from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
-from pytest_tests.fixtures.data import *
-from pytest_tests.fixtures.paths import *
+from pytest_tests.fixtures.data_fixtures import *
+from pytest_tests.fixtures.path_fixtures import *
+
+
+"""
+This file contains pytest fixtures used for model generation and testing in the PCNtoolkit.
+
+The fixtures defined here include:
+1. Configuration parameters for normative modeling (e.g., cvfolds, alg, savemodel)
+2. MCMC sampling parameters (n_mcmc_samples, sample_args)
+3. Normative model configuration (norm_args, norm_conf_dict_for_generic_model, norm_conf_for_generic_model)
+4. Specific configuration for HBR (Hierarchical Bayesian Regression) models
+5. File paths for various resources (imported from pytest_tests.fixtures.paths)
+6. Data-related fixtures (imported from pytest_tests.fixtures.data)
+
+These fixtures are used to set up consistent testing environments and configurations
+across different test files in the PCNtoolkit testing suite. They provide reusable
+components for creating and configuring normative models, particularly focusing on
+the Hierarchical Bayesian Regression (HBR) approach.
+"""
 
 
 @pytest.fixture
@@ -30,7 +48,27 @@ def n_mcmc_samples():
 
 
 @pytest.fixture
-def hbr_norm_conf_dict(
+def sample_args():
+    return {"draws": 10, "tune": 10, "cores": 1}
+
+
+@pytest.fixture
+def norm_args(log_dir, save_dir):
+    return {"log_dir": log_dir, "save_dir": save_dir}
+
+
+@pytest.fixture
+def norm_conf_dict_for_generic_model(log_dir, save_dir):
+    return {"log_dir": log_dir, "save_dir": save_dir}
+
+
+@pytest.fixture
+def norm_conf_for_generic_model(log_dir, save_dir):
+    return NormConf(log_dir=log_dir, save_dir=save_dir)
+
+
+@pytest.fixture
+def norm_conf_dict_for_hbr_test_model(
     cvfolds,
     alg,
     responsefile,
@@ -41,7 +79,8 @@ def hbr_norm_conf_dict(
     savemodel,
     trbefile,
     tsbefile,
-    resource_dir,
+    save_dir,
+    log_dir,
 ):
     return {
         "responses": responsefile,
@@ -54,29 +93,19 @@ def hbr_norm_conf_dict(
         "savemodel": savemodel,
         "trbefile": trbefile,
         "tsbefile": tsbefile,
-        "save_dir": resource_dir + "/hbr/save_load_test",
-        "log_dir": resource_dir + "/hbr/log_test",
+        "save_dir": save_dir + "/hbr",
+        "log_dir": log_dir + "/hbr",
     }
 
 
 @pytest.fixture
-def norm_args():
-    return {
-        "log_dir": "nonexistant",
-        "save_dir": "nonexistant",
-        "inscaler": "standardize",
-        "outscaler": "standardize",
-    }
-
-
-@pytest.fixture
-def normconf_for_hbr(cvfolds, savemodel, resource_dir):
+def norm_conf_for_hbr_test_model(cvfolds, savemodel, save_dir, log_dir):
     return NormConf(
         perform_cv=False,
         cv_folds=cvfolds,
         savemodel=savemodel,
-        save_dir=resource_dir + "/hbr/save_load_test",
-        log_dir=resource_dir + "/hbr/log_test",
+        save_dir=save_dir + "/hbr",
+        log_dir=log_dir + "/hbr",
         basis_function="bspline",
         order=3,
         nknots=10,
@@ -117,8 +146,8 @@ def hbr(hbrconf):
 
 
 @pytest.fixture
-def new_norm_hbr_model(normconf_for_hbr, hbrconf):
-    return NormHBR(normconf_for_hbr, hbrconf)
+def new_norm_hbr_model(norm_conf_for_hbr_test_model, hbrconf):
+    return NormHBR(norm_conf_for_hbr_test_model, hbrconf)
 
 
 @pytest.fixture
