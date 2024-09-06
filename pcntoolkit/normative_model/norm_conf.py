@@ -208,7 +208,7 @@ class NormConf:
             else:
                 return "other"
         else:
-            return "nonexistent"
+            return "nonexistant"
 
     def set_save_dir(self, path):
         """

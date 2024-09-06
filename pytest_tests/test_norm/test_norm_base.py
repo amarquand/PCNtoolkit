@@ -5,50 +5,30 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pytest_tests.fixtures.data import *
-from pytest_tests.fixtures.model import *
-from pytest_tests.fixtures.paths import *
+from pytest_tests.fixtures.data_fixtures import *
+from pytest_tests.fixtures.model_fixtures import *
+from pytest_tests.fixtures.path_fixtures import *
 
 
-@pytest.fixture
-def sample_args():
-    return {"draws": 10, "tune": 10, "cores": 1}
+def test_norm_base_fit(new_norm_hbr_model: NormBase, train_norm_data: NormData):
+    new_norm_hbr_model.fit(train_norm_data)
+
+    assert new_norm_hbr_model.response_vars is not None
+    assert len(new_norm_hbr_model.regression_models) == len(
+        new_norm_hbr_model.response_vars
+    )
+
+    for responsevar in new_norm_hbr_model.response_vars:
+        assert responsevar in new_norm_hbr_model.regression_models
+        assert new_norm_hbr_model.regression_models[responsevar].is_fitted
 
 
-@pytest.fixture
-def log_dir():
-    return "pytest_tests/resources/log_test"
+def test_norm_base_fit_invalid_data(new_norm_hbr_model: NormBase):
+    with pytest.raises(ValueError):
+        new_norm_hbr_model.fit(None)
 
-
-@pytest.fixture
-def save_dir():
-    return "pytest_tests/resources/save_load_test"
-
-
-@pytest.fixture
-def norm_args(log_dir, save_dir):
-    return {"log_dir": log_dir, "save_dir": save_dir}
-
-
-@pytest.fixture
-def fit_data():
-    X = np.random.randn(10000, 2)
-    y = np.random.randn(10000)
-    batch_effects = np.random.choice([0, 1], (1000, 2))
-    return NormData.from_ndarrays("fit", X, y, batch_effects)
-
-
-@pytest.fixture
-def predict_data():
-    X = np.random.randn(100, 2)
-    y = np.random.randn(100)
-    batch_effects = np.random.choice([0, 1], (100, 2))
-    return NormData.from_ndarrays("predict", X, y, batch_effects)
-
-
-@pytest.fixture
-def save_dir():
-    return "pytest_tests/resources/hbr/save_load_test"
+    with pytest.raises(AttributeError):
+        new_norm_hbr_model.fit("invalid_data")
 
 
 def test_standardize(

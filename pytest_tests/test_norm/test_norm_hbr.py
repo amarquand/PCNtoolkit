@@ -6,9 +6,9 @@ from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pytest_tests.fixtures.data import *
-from pytest_tests.fixtures.model import *
-from pytest_tests.fixtures.paths import *
+from pytest_tests.fixtures.data_fixtures import *
+from pytest_tests.fixtures.model_fixtures import *
+from pytest_tests.fixtures.path_fixtures import *
 
 
 @pytest.fixture
@@ -196,8 +196,3 @@ def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data: NormData):
         cummulative_densities=np.linspace(0, 1, 10),
     )
     synth_test_norm_data_with_centiles_2.plot_centiles()
-
-
-# def test_compute_nll(fitted_norm_hbr_model, test_norm_data):
-#     fitted_norm_hbr_model.create_measures_group(test_norm_data)
-#     fitted_norm_hbr_model.evaluate_nll(test_norm_data)
