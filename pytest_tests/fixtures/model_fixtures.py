@@ -2,6 +2,7 @@ import pytest
 
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
@@ -99,6 +100,32 @@ def norm_conf_dict_for_hbr_test_model(
 
 
 @pytest.fixture
+def hbr_conf_dict():
+    return {
+        "responses": "pytest_tests/resources/data/responses.csv",
+        "maskfile": None,
+        "covfile": "pytest_tests/resources/data/covariates.csv",
+        "cvfolds": None,
+        "testcov": "pytest_tests/resources/data/covariates_test.csv",
+        "testresp": "pytest_tests/resources/data/responses_test.csv",
+        "alg": "hbr",
+        "savemodel": True,
+        "trbefile": "pytest_tests/resources/data/batch_effects.csv",
+        "tsbefile": "pytest_tests/resources/data/batch_effects_test.csv",
+        "save_dir": "pytest_tests/resources/hbr/save_load_test",
+        "log_dir": "pytest_tests/resources/hbr/log_test",
+        "basis_function": "bspline",
+        "linear_mu": True,
+        "linear_sigma": True,
+        "mapping_sigma": "softplus",
+        "cores": 2,
+        "draws": 10,
+        "tune": 10,
+        "chains": 2,
+    }
+
+
+@pytest.fixture
 def norm_conf_for_hbr_test_model(cvfolds, savemodel, save_dir, log_dir):
     return NormConf(
         perform_cv=False,
@@ -121,7 +148,7 @@ def mu():
         name="mu",
         linear=True,
         intercept=Param(name="intercept_mu", random=True, centered=False),
-        slope=Param(name="slope_mu", dims=("covariates,"), random=False),
+        slope=Param(name="slope_mu", dims=("covariates",), random=False),
     )
 
 
@@ -137,7 +164,15 @@ def sigma():
 
 @pytest.fixture
 def hbrconf(mu, sigma, n_mcmc_samples):
-    return HBRConf(draws=n_mcmc_samples, tune=10, chains=2, cores=2, mu=mu, sigma=sigma)
+    return HBRConf(
+        draws=n_mcmc_samples,
+        tune=10,
+        chains=2,
+        cores=2,
+        likelihood="Normal",
+        mu=mu,
+        sigma=sigma,
+    )
 
 
 @pytest.fixture
@@ -151,6 +186,6 @@ def new_norm_hbr_model(norm_conf_for_hbr_test_model, hbrconf):
 
 
 @pytest.fixture
-def fitted_norm_hbr_model(new_norm_hbr_model: NormHBR, train_norm_data: pd.DataFrame):
-    new_norm_hbr_model.fit(train_norm_data)
+def fitted_norm_hbr_model(new_norm_hbr_model: NormHBR, norm_data_from_arrays: NormData):
+    new_norm_hbr_model.fit(norm_data_from_arrays)
     return new_norm_hbr_model

@@ -3,10 +3,32 @@ import pytest
 from pytest_tests.fixtures.data_fixtures import *
 from pcntoolkit.dataio.norm_data import NormData
 
+"""
+This file contains pytest fixtures for generating NormData objects in the PCNtoolkit.
+
+The fixtures defined here include:
+1. NormData objects from numpy arrays
+2. NormData objects from pandas DataFrames
+
+These fixtures are used to create consistent and controlled datasets for testing
+"""
+
 
 @pytest.fixture
 def norm_data_from_arrays(train_arrays):
     X, y, batch_effects = train_arrays
+    return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
+
+
+@pytest.fixture
+def test_norm_data_from_arrays(test_arrays):
+    X, y, batch_effects = test_arrays
+    return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
+
+
+@pytest.fixture
+def transfer_norm_data_from_arrays(transfer_arrays):
+    X, y, batch_effects = transfer_arrays
     return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
 
 

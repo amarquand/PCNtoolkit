@@ -2,6 +2,15 @@ import pytest
 
 from pcntoolkit.normative_model.norm_conf import NormConf
 
+"""
+This file contains tests for the NormConf class in the PCNtoolkit.
+
+The tests cover the following aspects:
+1. Creating NormConf objects from arguments
+2. Converting NormConf objects to dictionaries
+3. Creating NormConf objects from dictionaries
+"""
+
 
 def test_norm_conf_to_dict():
 

@@ -5,25 +5,13 @@ from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.model_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
 
-
-@pytest.fixture
-def n_fit_datapoints():
-    return 1000
-
-
-@pytest.fixture
-def n_predict_datapoints():
-    return 100
-
-
-@pytest.fixture
-def n_covariates():
-    return 2
-
-
-@pytest.fixture
-def sample_args():
-    return {"draws": 10, "tune": 10, "cores": 1}
+"""
+This file contains tests for the HBR class in the PCNtoolkit.
+The tests cover:
+1. Creating HBR objects from arguments
+2. Converting HBR objects to dictionaries
+3. Creating HBR objects from dictionaries
+"""
 
 
 @pytest.mark.parametrize(

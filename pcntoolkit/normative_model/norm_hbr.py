@@ -45,7 +45,7 @@ class NormHBR(NormBase):
                 tune=self.current_regression_model.reg_conf.tune,
                 cores=self.current_regression_model.reg_conf.cores,
                 chains=self.current_regression_model.reg_conf.chains,
-                var_names=["y_pred"],
+                # var_names=["y_pred"],
             )
 
         # Set the is_fitted flag to True
