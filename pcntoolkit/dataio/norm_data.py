@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -115,8 +115,20 @@ class NormData(xr.Dataset):
         self,
         n_datapoints: int = 100,
         range_dim: Union[int, str] = 0,
-        batch_effects_to_sample: list[list[str]] = None,
+        batch_effects_to_sample: Dict[str, List[Any]] = None,
     ):
+        """
+        Create a synthetic dataset with the same dimensions as the original dataset.
+
+        Inputs:
+            n_datapoints: int = 100
+                The number of datapoints to create.
+            range_dim: Union[int, str] = 0
+                The covariate to use for the range of values. np.linspace will be used to generate values between the min and max of this covariate.
+            batch_effects_to_sample: list[Any] = None
+                The batch effects to sample. For every batch effect, this list should contain the values to sample from.
+                If None, the batch effects to sample are the first values in the batch effects maps.
+        """
         ## Creates a synthetic dataset with the same dimensions as the original dataset
 
         # The range_dim specifies for which covariate a range of values will be generated
@@ -135,26 +147,30 @@ class NormData(xr.Dataset):
                 # Use the mean of the original dataset
                 df[covariate] = np.mean(self.X.sel(covariates=covariate))
 
-        # The batch effects specifies from which batch_effects can be sampled
-        if batch_effects_to_sample is None:
-            batch_effects_to_sample = self.get_single_batch_effect()
+        batch_effects_to_sample = batch_effects_to_sample or {}
 
-        # Assert that the batch effects to sample are in the batch effects maps
-        for i, bes in enumerate(batch_effects_to_sample):
-            bes = [bes] if isinstance(bes, (str, int, float)) else bes
-            for be in bes:
+        # For each batch_effect dimension that is not specified, sample from the first value in the batch effects map
+        for dim in self.batch_effect_dims.to_numpy():
+            if dim not in batch_effects_to_sample:
+                batch_effects_to_sample[dim] = [
+                    list(self.attrs["batch_effects_maps"][dim].keys())[0]
+                ]
+
+        # # Assert that the batch effects to sample are in the batch effects maps
+        for dim, values in batch_effects_to_sample.items():
+            assert (
+                dim in self.attrs["batch_effects_maps"]
+            ), f"{dim} is not a known batch effect dimension"
+            assert (
+                len(values) > 0
+            ), f"No values provided for batch effect dimension {dim}"
+            for value in values:
                 assert (
-                    be
-                    in self.attrs["batch_effects_maps"][
-                        self.batch_effect_dims[i].to_numpy().item()
-                    ].keys()
-                ), f"{be} not in batch effects maps"
+                    value in self.attrs["batch_effects_maps"][dim]
+                ), f"{value} is not a known value for batch effect dimension {dim}"
 
-        for i, bes in enumerate(batch_effects_to_sample):
-            bes = [bes] if isinstance(bes, (str, int, float)) else bes
-            df[self.batch_effect_dims[i].to_numpy().item()] = np.random.choice(
-                bes, n_datapoints
-            )
+        for batch_effect_dim, values_to_sample in batch_effects_to_sample.items():
+            df[batch_effect_dim] = np.random.choice(values_to_sample, n_datapoints)
 
         # For each response variable, sample from a normal distribution with the mean and std of the original dataset
         for response_var in self.response_vars.to_numpy():
@@ -171,6 +187,7 @@ class NormData(xr.Dataset):
             self.batch_effect_dims.to_numpy(),
             self.response_vars.to_numpy(),
         )
+
         # set the batch effects maps
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"]
 
@@ -248,7 +265,6 @@ class NormData(xr.Dataset):
             self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
         )
         return same_covariates and same_batch_effect_dims and same_batch_effects_maps
-
 
     def scale_forward(self, inscalers: dict[str, scaler], outscaler: dict[str, scaler]):
         # Scale X column-wise using the inscalers

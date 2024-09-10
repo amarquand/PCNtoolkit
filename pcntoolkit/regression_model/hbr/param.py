@@ -113,6 +113,8 @@ class Param:
                         self.dist_name,
                         az.extract(idata, var_names=self.name),
                     )
+                if "covariates," in self.dims:
+                    print("This is the error")
                 self.dist = self.distmap[self.dist_name](
                     self.name, *self.dist_params, shape=self.shape, dims=self.dims
                 )
@@ -166,15 +168,16 @@ class Param:
             )
 
     def set_centered_random_params(self):
-        if not self.mu:
-            self.mu = Param(f"mu_{self.name}", dims=self.dims)
-        if not self.sigma:
-            self.sigma = Param(
-                f"sigma_{self.name}",
-                dims=self.dims,
-                dist_name="LogNormal",
-                dist_params=(2.0,),
-            )
+        self.set_noncentered_random_params()
+        # if not self.mu:
+        #     self.mu = Param(f"mu_{self.name}", dims=self.dims)
+        # if not self.sigma:
+        #     self.sigma = Param(
+        #         f"sigma_{self.name}",
+        #         dims=self.dims,
+        #         dist_name="LogNormal",
+        #         dist_params=(2.0,),
+        #     )
 
     def set_linear_params(self):
         if not self.slope:
@@ -330,7 +333,7 @@ class Param:
         return cls(
             "mu",
             linear=True,
-            slope=cls("slope_mu", random=False),
+            slope=cls("slope_mu", dims=("covariates",), random=False),
             intercept=cls("intercept_mu", random=True, centered=False),
         )
 
@@ -339,7 +342,7 @@ class Param:
         return cls(
             "sigma",
             linear=True,
-            slope=cls("slope_sigma", random=False),
+            slope=cls("slope_sigma", dims=("covariates",), random=False),
             intercept=cls("intercept_sigma", random=True, centered=True),
             mapping="softplus",
         )

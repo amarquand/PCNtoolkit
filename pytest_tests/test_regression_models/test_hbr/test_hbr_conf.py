@@ -5,8 +5,18 @@ import pytest
 
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 
+"""
+This file contains tests for the HBRConf class in the PCNtoolkit.
+
+The tests cover the following aspects:
+1. Creating HBRConf objects from arguments
+2. Converting HBRConf objects to dictionaries
+3. Creating HBRConf objects from dictionaries
+"""
+
 
 def test_hbrconf_from_args_to_dict_from_dict():
+
     dict_1 = {"draws": 1000, "tune": 1000, "cores": 1, "likelihood": "Normal"}
     dict_1 = dict_1 | {
         "likelihood": "Normal",

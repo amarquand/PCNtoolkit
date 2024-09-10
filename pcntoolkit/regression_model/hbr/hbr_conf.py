@@ -39,7 +39,7 @@ class HBRConf(RegConf):
             if self.sigma.linear:
                 if self.sigma.mapping == "identity":
                     add_problem(
-                        "Sigma has to be strictly positive. It is a linear regression, so it can be potentially negative, because no mapping to the positive domain has been specified. Use 'mapping=softplus' or 'mapping=exp'."
+                        "Sigma must be strictly positive. As it's derived from a linear regression, it could potentially be negative without a proper mapping to the positive domain. To ensure positivity, use 'mapping=softplus' or 'mapping=exp'."
                     )
         # Same for delta
         if self.likelihood.startswith("SHASH"):
@@ -47,7 +47,7 @@ class HBRConf(RegConf):
                 if self.delta.linear:
                     if self.delta.mapping == "identity":
                         add_problem(
-                            "Delta has to be strictly positive. It is a linear regression, so it can be potentially negative, because no mapping to the positive domain has been specified. Use 'mapping=softplus' or 'mapping=exp'."
+                            "Delta must be strictly positive. As it's derived from a linear regression, it could potentially be negative without a proper mapping to the positive domain. To ensure positivity, use 'mapping=softplus' or 'mapping=exp'."
                         )
 
         return configuration_problems

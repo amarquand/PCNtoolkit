@@ -3,9 +3,27 @@ import pytest
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
+"""
+This file contains tests for the HBRData class in the PCNtoolkit.
+"""
 
-@pytest.mark.parametrize('n_datapoints,n_covariates,n_batch_effects,n_values_per_batch_effect,has_y', [(1000, 2, 0, (0,), True), (1000, 2, 2, (2, 3), True), (1000, 3, 1, (3,), True), (1000, 4, 3, (2, 3, 4), True),                                                                                              (1000, 2, 0, (0,), False), (1000, 2, 2, (2, 3), False), (1000, 3, 1, (3,), False), (1000, 4, 3, (2, 3, 4), False)])
-def test_create_data(n_datapoints, n_covariates, n_batch_effects, n_values_per_batch_effect, has_y):
+
+@pytest.mark.parametrize(
+    "n_datapoints,n_covariates,n_batch_effects,n_values_per_batch_effect,has_y",
+    [
+        (1000, 2, 0, (0,), True),
+        (1000, 2, 2, (2, 3), True),
+        (1000, 3, 1, (3,), True),
+        (1000, 4, 3, (2, 3, 4), True),
+        (1000, 2, 0, (0,), False),
+        (1000, 2, 2, (2, 3), False),
+        (1000, 3, 1, (3,), False),
+        (1000, 4, 3, (2, 3, 4), False),
+    ],
+)
+def test_create_data(
+    n_datapoints, n_covariates, n_batch_effects, n_values_per_batch_effect, has_y
+):
     X = np.random.randn(n_datapoints, n_covariates)
     if has_y:
         y = np.random.randn(n_datapoints)
@@ -17,8 +35,9 @@ def test_create_data(n_datapoints, n_covariates, n_batch_effects, n_values_per_b
     else:
         batch_effects_list = []
         for i in range(n_batch_effects):
-            batch_effects_list.append(np.random.choice(
-                n_values_per_batch_effect[i], size=(n_datapoints, 1)))
+            batch_effects_list.append(
+                np.random.choice(n_values_per_batch_effect[i], size=(n_datapoints, 1))
+            )
         batch_effects = np.concatenate(batch_effects_list, axis=1)
 
     data = HBRData(X, y, batch_effects)

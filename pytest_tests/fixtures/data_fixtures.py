@@ -14,6 +14,29 @@ These fixtures are used to create consistent and controlled datasets for testing
 """
 
 
+def np_arrays(n_datapoints, n_covariates, n_response_vars):
+    X = np.random.randn(n_datapoints, n_covariates)
+    y = np.random.randn(n_datapoints, n_response_vars)
+    batch_effects = []
+    batch_effects.append(np.random.choice([0, 1], (n_datapoints, 1)))
+    batch_effects.append(np.random.choice([0, 1, 2], (n_datapoints, 1)))
+    batch_effects = np.concatenate(batch_effects, axis=1)
+    return X, y, batch_effects
+
+
+def dataframe(n_datapoints, n_covariates, n_response_vars):
+    X, y, batch_effects = np_arrays(n_datapoints, n_covariates, n_response_vars)
+    X_columns = [f"covariate_{i}" for i in range(X.shape[1])]
+    y_columns = [f"response_var_{i}" for i in range(y.shape[1])]
+    batch_effect_columns = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+    all_columns = X_columns + y_columns + batch_effect_columns
+    if len(y.shape) == 1:
+        y = y[:, None]
+    return pd.DataFrame(
+        np.concatenate([X, y, batch_effects], axis=1), columns=all_columns
+    )
+
+
 @pytest.fixture
 def n_train_datapoints():
     return 1500
@@ -39,29 +62,6 @@ def n_response_vars():
     return 2
 
 
-def np_arrays(n_datapoints, n_covariates, n_response_vars):
-    X = np.random.randn(n_datapoints, n_covariates)
-    y = np.random.randn(n_datapoints, n_response_vars)
-    batch_effects = []
-    batch_effects.append(np.random.choice([0, 1], (n_datapoints, 1)))
-    batch_effects.append(np.random.choice([0, 1, 2], (n_datapoints, 1)))
-    batch_effects = np.concatenate(batch_effects, axis=1)
-    return X, y, batch_effects
-
-
-def dataframe(n_datapoints, n_covariates, n_response_vars):
-    X, y, batch_effects = np_arrays(n_datapoints, n_covariates, n_response_vars)
-    X_columns = [f"covariate_{i}" for i in range(X.shape[1])]
-    y_columns = [f"response_var_{i}" for i in range(y.shape[1])]
-    batch_effect_columns = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
-    all_columns = X_columns + y_columns + batch_effect_columns
-    if len(y.shape) == 1:
-        y = y[:, None]
-    return pd.DataFrame(
-        np.concatenate([X, y, batch_effects], axis=1), columns=all_columns
-    )
-
-
 @pytest.fixture
 def train_arrays(n_train_datapoints, n_covariates, n_response_vars):
     X_train, y_train, batch_effects_train = np_arrays(
@@ -76,6 +76,16 @@ def test_arrays(n_test_datapoints, n_covariates, n_response_vars):
         n_test_datapoints, n_covariates, n_response_vars
     )
     return X_test, y_test, batch_effects_test
+
+
+@pytest.fixture
+def transfer_arrays(n_transfer_datapoints, n_covariates, n_response_vars):
+    X_transfer, y_transfer, batch_effects_transfer = np_arrays(
+        n_transfer_datapoints, n_covariates, n_response_vars
+    )
+    # Re-set the second batch effects column to be different from the training and test data
+    batch_effects_transfer[:, 1] = 3
+    return X_transfer, y_transfer, batch_effects_transfer
 
 
 @pytest.fixture

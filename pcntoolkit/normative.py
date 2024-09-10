@@ -68,7 +68,9 @@ def fit_predict(conf_dict: dict):
     fit_data = load_data(conf_dict)
     predict_data = load_test_data(conf_dict)
 
-    assert fit_data.is_compatible_with(predict_data)
+    assert fit_data.is_compatible_with(
+        predict_data
+    ), "Fit and predict data are not compatible."
 
     # Create the normative model
     normative_model: NormBase = create_normative_model_from_args(conf_dict)

@@ -12,7 +12,6 @@ The tests cover the following aspects:
 2. Verifying the structure and properties of created NormData objects
 3. Splitting NormData into training and validation sets
 4. Checking the stratification of splits
-5. Ensuring consistency of data across different representations
 
 These tests ensure that the NormData class correctly handles data input,
 maintains data integrity, and performs proper data splitting and stratification.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import xarray as xr
@@ -561,10 +561,10 @@ class NormBase(ABC):
         self,
         data: NormData,
         covariate: str = None,
-        batch_effects: Union[str, list[str]] = None,
+        batch_effects: Dict[str, List[str]] = None,
         cummul_densities=None,
         show_data: bool = False,
-        plt_kwargs={},
+        plt_kwargs=None,
     ):
         """Plot the centiles for all response variables."""
         synth_data = data.create_synthetic_data(
@@ -590,9 +590,9 @@ class NormBase(ABC):
         synth_data: NormData,
         response_var: str,
         covariate: str = None,
-        batch_effects: Tuple[str] = None,
+        batch_effects: Dict[str, List[str]] = None,
         show_data: bool = False,
-        plt_kwargs={},
+        plt_kwargs=None,
     ):
         """Plot the centiles for a single response variable."""
         # Use the first covariate, if not specified
@@ -602,8 +602,13 @@ class NormBase(ABC):
         if batch_effects is None:
             batch_effects = data.get_single_batch_effect()
 
+        # Set the plt kwargs to an empty dictionary if they are not provided
+        if plt_kwargs is None:
+            plt_kwargs = {}
+
         new_batch_effects = []
 
+        # Create a list of batch effects
         for be in batch_effects:
             if isinstance(be, str):
                 new_batch_effects.append(be)
@@ -614,7 +619,7 @@ class NormBase(ABC):
                     new_batch_effects.append(be.item())
                 except AttributeError:
                     new_batch_effects.append(be)
-        batch_effects = new_batch_effects
+        batch_effects_list = new_batch_effects
 
         # Filter the covariate and responsevar that are to be plotted
         filter_dict = {
@@ -661,7 +666,7 @@ class NormBase(ABC):
             idx = np.all(
                 np.stack(
                     [
-                        filtered_scatter.batch_effects[:, i] == batch_effects[i]
+                        filtered_scatter.batch_effects[:, i] == batch_effects_list[i]
                         for i in range(filtered_scatter.batch_effects.shape[1])
                     ],
                     axis=1,
@@ -670,12 +675,7 @@ class NormBase(ABC):
             )
             idx = xr.DataArray(idx)
             filt1: xr.Dataset = filtered_scatter.isel(datapoints=list(np.where(idx)[0]))
-            be_string = ",".join(
-                [
-                    f"{data.coords['batch_effect_dims'][i].item()}:{batch_effects[i]}"
-                    for i in range(len(batch_effects))
-                ]
-            )
+            be_string = ", ".join([f"{k}={v}" for k, v in batch_effects.items()])
             plt.scatter(
                 filt1.X,
                 filt1.y,
