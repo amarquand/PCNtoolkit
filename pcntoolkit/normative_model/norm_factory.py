@@ -45,12 +45,21 @@ def load_normative_model(path) -> NormBase:
     """
     Loads the normative model from a directory.
     """
-    model_dict = json.load(open(os.path.join(path, "normative_model_dict.json"), "r"))
-    model_name = model_dict["norm_conf"]["normative_model_name"]
+    try:
+        with open(os.path.join(path, "metadata.json"), "r") as f:
+            metadata = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Path {path} does not exist.")
+
+    norm_conf = NormConf.from_dict(metadata["norm_conf"])
+    model_name = norm_conf.normative_model_name
+
     if model_name == "NormHBR":
         return NormHBR.load(path)
     elif model_name == "NormBLR":
         return NormBLR.load(path)
+    elif model_name == "NormGPR":
+        return NormGPR.load(path)
     else:
         raise ValueError(f"Model name {model_name} not recognized.")
 
