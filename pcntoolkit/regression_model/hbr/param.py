@@ -169,15 +169,6 @@ class Param:
 
     def set_centered_random_params(self):
         self.set_noncentered_random_params()
-        # if not self.mu:
-        #     self.mu = Param(f"mu_{self.name}", dims=self.dims)
-        # if not self.sigma:
-        #     self.sigma = Param(
-        #         f"sigma_{self.name}",
-        #         dims=self.dims,
-        #         dist_name="LogNormal",
-        #         dist_params=(2.0,),
-        #     )
 
     def set_linear_params(self):
         if not self.slope:
@@ -211,7 +202,8 @@ class Param:
         elif self.mapping == "softplus":
             return pm.math.log1pexp(x)
         else:
-            raise ValueError(f"Unknown mapping {self.mapping}")
+            # raise ValueError(f"Unknown mapping {self.mapping}")
+            return x
 
     def to_dict(self):
         param_dict = {
@@ -248,6 +240,7 @@ class Param:
                 slope=slope,
                 intercept=intercept,
                 mapping=args.get(f"mapping_{name}", "identity"),
+                mapping_params=args.get(f"mapping_params_{name}", (0.0, 1.0)),
             )
         elif args.get(f"random_{name}", False):
             if args.get(f"centered_{name}", False):
@@ -287,6 +280,7 @@ class Param:
                 slope=slope,
                 intercept=intercept,
                 mapping=dict.get("mapping", "identity"),
+                mapping_params=dict.get("mapping_params", (0.0, 1.0)),
             )
         elif dict.get("random", False):
             if dict.get("centered", False):
@@ -324,8 +318,6 @@ class Param:
                 dims=dict["dims"],
                 dist_name=default_dist,
                 dist_params=default_params,
-                mapping=dict.get("mapping", "identity"),
-                mapping_params=dict.get("mapping_params", (0.0, 1.0)),
             )
 
     @classmethod

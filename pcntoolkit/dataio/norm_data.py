@@ -11,7 +11,37 @@ from pcntoolkit.dataio.scaler import scaler
 
 
 class NormData(xr.Dataset):
-    """Should keep track of the dimensions and coordinates of the data, and provide consistency between splits of the data."""
+    """
+    A class for handling normative modeling data, extending xarray.Dataset.
+
+    NormData provides functionality for loading, preprocessing, and managing
+    data for normative modeling. It supports various data formats and includes
+    methods for data scaling, splitting, and visualization.
+
+    Attributes:
+        X (xr.DataArray): Covariate data.
+        y (xr.DataArray): Response variable data.
+        scaled_X (xr.DataArray): Scaled version of covariate data.
+        scaled_y (xr.DataArray): Scaled version of response variable data.
+        batch_effects (xr.DataArray): Batch effect data.
+        Phi (xr.DataArray): Design matrix.
+        scaled_centiles (xr.DataArray): Scaled centile data (if applicable).
+        centiles (xr.DataArray): Unscaled centile data (if applicable).
+        zscores (xr.DataArray): Z-score data (if applicable).
+
+    Note:
+        This class stores both original and scaled versions of X and y data.
+        While this approach offers convenience and transparency, it may
+        increase memory usage. Consider memory constraints when working with
+        large datasets.
+
+    Example:
+        >>> data = NormData.from_dataframe("my_data", df, covariates, 
+        ...                                batch_effects, response_vars)
+        >>> data.scale_forward(inscalers, outscalers)
+        >>> train_data, test_data = data.train_test_split([0.8, 0.2])
+    """
+
 
     __slots__ = (
         "X",

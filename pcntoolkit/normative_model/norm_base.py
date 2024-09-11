@@ -150,6 +150,7 @@ class NormBase(ABC):
         # Fit and predict for each response variable
         print(f"Going to fit and predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
+
             # Select the data for the current response variable
             resp_fit_data = fit_data.sel(response_vars=responsevar)
             resp_predict_data = predict_data.sel(response_vars=responsevar)
@@ -337,6 +338,18 @@ class NormBase(ABC):
         return data
 
     # def plot_centiles(self, data:NormData):
+    def plot_qq(self, data: NormData):
+        """
+        Plot QQ plots for all response variables in the data.
+
+        This function calls the plot_qq method of the NormData object.
+
+        Parameters:
+        -----------
+        data : NormData
+            The NormData object containing the data to be plotted.
+        """
+        data.plot_qq()
 
     def plot_centiles(
         self,
@@ -618,119 +631,76 @@ class NormBase(ABC):
         data.scale_backward(self.inscalers, self.outscalers)
 
     def save(self):
-        model_dict = self.to_dict(self.norm_conf.save_dir)
+        # Save metadata and small components in JSON
+        metadata = {
+            "norm_conf": self.norm_conf.to_dict(),
+            "response_vars": self.response_vars,
+            "regression_model_type": self.regression_model_type.__name__,
+            "default_reg_conf": self.default_reg_conf.to_dict(),
+        }
 
-        # Save the model_dict as json
-        model_dict_path = os.path.join(
-            self.norm_conf.save_dir, "normative_model_dict.json"
-        )
-        print("Saving normative model to", model_dict_path)
-        with open(model_dict_path, "w") as f:
-            json.dump(model_dict, f, indent=4)
+        # Include bspline basis expansion if it exists
+        if self.norm_conf.basis_function == "bspline" and hasattr(
+            self, "bspline_basis"
+        ):
+            knots = self.bspline_basis.knot_vector
+            metadata["bspline_basis"] = {
+                "xmin": knots[0],
+                "xmax": knots[-1],
+                "nknots": self.norm_conf.nknots,
+                "p": self.norm_conf.order,
+            }
+
+        # Save inscalers and outscalers
+        metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
+        metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
+
+        with open(os.path.join(self.norm_conf.save_dir, "metadata.json"), "w") as f:
+            json.dump(metadata, f, indent=4)
+
+        # Save regression models as JSON -> use the to_dict method of the regression model
+        for responsevar, model in self.regression_models.items():
+            model_dict = model.to_dict(self.norm_conf.save_dir)
+            with open(
+                os.path.join(self.norm_conf.save_dir, f"model_{responsevar}.json"), "w"
+            ) as f:
+                json.dump(model_dict, f, indent=4)
 
     @classmethod
     def load(cls, path):
-        """
-        Load a normative model from disk.
-        """
+        with open(os.path.join(path, "metadata.json"), "r") as f:
+            metadata = json.load(f)
 
-        # Load the model_dict from json
-        print("Loading normative model from", path)
-        model_dict_path = os.path.join(path, "normative_model_dict.json")
-        with open(model_dict_path, "r") as f:
-            model_dict = json.load(f)
+        self = cls(NormConf.from_dict(metadata["norm_conf"]))
+        self.response_vars = metadata["response_vars"]
+        self.regression_model_type = globals()[metadata["regression_model_type"]]
 
-        normative_model = cls.from_dict(model_dict, path)
+        # Load bspline basis if it exists
+        if "bspline_basis" in metadata:
+            self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
 
-        return normative_model
-
-    @classmethod
-    def from_dict(cls, model_dict, path=None):
-        # Create the normative model configuration
-        normconf = NormConf.from_dict(model_dict["norm_conf"])
-
-        # Create a normative model
-        self = cls(normconf)
-
-        # Set the response variables
-        self.response_vars = model_dict["response_vars"]
-
-        # Set the regression model type
-        self.regression_model_type = globals()[model_dict["regression_model_type"]]
-
-        # Set the regression models
-        self.regression_models = self.dict_to_regression_models(
-            model_dict["regression_models"], path
-        )
-
-        # Load the default regression model configuration
-        # Get the first regression model
-        first_regression_model = next(iter(self.regression_models.values()))
-
-        # Get the class of the reg_conf object
-        reg_conf_class = first_regression_model.reg_conf.__class__
-
-        # Create a new instance of the reg_conf class from the dictionary
-        self.default_reg_conf = reg_conf_class.from_dict(model_dict["default_reg_conf"])
-
-        # Load the bspline basis expansion
-        if normconf.basis_function == "bspline":
-            if "bspline_basis" in model_dict:
-                self.bspline_basis = create_bspline_basis(**model_dict["bspline_basis"])
-
-        # Set the scalers
+        # Load inscalers and outscalers
         self.inscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["inscalers"].items()
+            k: scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }
         self.outscalers = {
-            k: scaler.from_dict(v) for k, v in model_dict["outscalers"].items()
+            k: scaler.from_dict(v) for k, v in metadata["outscalers"].items()
         }
 
+        # Load regression models
+        self.regression_models = {}
+        for responsevar in self.response_vars:
+            model_path = os.path.join(path, f"model_{responsevar}.json")
+            with open(model_path, "r") as f:
+                model_dict = json.load(f)
+            self.regression_models[responsevar] = self.regression_model_type.from_dict(
+                model_dict, path
+            )
+
+        self.default_reg_conf = type(
+            self.regression_models[responsevar].reg_conf
+        ).from_dict(metadata["default_reg_conf"])
         return self
-
-    def to_dict(self, path=None):
-        """
-        Converts the normative model to a dictionary.
-        Takes an optional path argument to save large model components
-        """
-        model_dict = {}
-        # Store the response variables
-        model_dict["response_vars"] = self.response_vars
-        # Store the normative model configuration
-        model_dict["norm_conf"] = self.norm_conf.to_dict()
-
-        # Store the regression models
-        model_dict["regression_models"] = self.regression_models_to_dict(path)
-        # store the regression model type
-        model_dict["regression_model_type"] = self.regression_model_type.__name__
-        # store the default regression model configuration
-        model_dict["default_reg_conf"] = self.default_reg_conf.to_dict()
-
-        # Store the bspline_basis expansion if it exists
-        if self.norm_conf.basis_function == "bspline":
-            if hasattr(self, "bspline_basis"):
-                knots = self.bspline_basis.knot_vector
-                model_dict["bspline_basis"] = {
-                    "xmin": knots[0],
-                    "xmax": knots[-1],
-                    "nknots": self.norm_conf.nknots,
-                    "p": self.norm_conf.order,
-                }
-
-        # Store the scalers
-        model_dict["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
-        model_dict["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
-
-        return model_dict
-
-    def regression_models_to_dict(self, path) -> dict[str, dict[str, Any]]:
-        return {k: v.to_dict(path) for k, v in self.regression_models.items()}
-
-    def dict_to_regression_models(self, model_dict, path) -> dict[str, RegressionModel]:
-        return {
-            k: self.regression_model_type.from_dict(v, path)
-            for k, v in model_dict.items()
-        }
 
     def set_save_dir(self, save_dir):
         self.norm_conf.set_save_dir(save_dir)

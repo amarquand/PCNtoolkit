@@ -34,14 +34,14 @@ class HBRConf(RegConf):
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
-        # Check positivity of priors
+        # Check positivity of sigma
         if self.sigma:
             if self.sigma.linear:
                 if self.sigma.mapping == "identity":
                     add_problem(
                         "Sigma must be strictly positive. As it's derived from a linear regression, it could potentially be negative without a proper mapping to the positive domain. To ensure positivity, use 'mapping=softplus' or 'mapping=exp'."
                     )
-        # Same for delta
+        # Check positivity of delta
         if self.likelihood.startswith("SHASH"):
             if self.delta:
                 if self.delta.linear:
@@ -49,6 +49,16 @@ class HBRConf(RegConf):
                         add_problem(
                             "Delta must be strictly positive. As it's derived from a linear regression, it could potentially be negative without a proper mapping to the positive domain. To ensure positivity, use 'mapping=softplus' or 'mapping=exp'."
                         )
+        # Check if epsilon and delta are provided for SHASH likelihoods
+        if self.likelihood.startswith("SHASH"):
+            if not self.epsilon:
+                add_problem(
+                    "Epsilon must be provided for SHASH likelihoods. Please specify epsilon."
+                )
+            if not self.delta:
+                add_problem(
+                    "Delta must be provided for SHASH likelihoods. Please specify delta."
+                )
 
         return configuration_problems
 

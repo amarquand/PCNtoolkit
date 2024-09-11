@@ -10,7 +10,7 @@ class Evaluator:
     def __init__(self):
         pass
 
-    def compute_measures(self, data: NormData) -> NormData:
+    def evaluate(self, data: NormData) -> NormData:
         data["Yhat"] = data.centiles.sel(cummulative_densities=0.5, method="nearest")
         data["S2"] = (
             data.centiles.sel(cummulative_densities=0.1587, method="nearest")

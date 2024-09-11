@@ -125,11 +125,11 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
         assert os.path.exists(
             os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"idata_{i}.nc")
         )
-
-    assert os.path.exists(
-        os.path.join(
-            fitted_norm_hbr_model.norm_conf.save_dir, "normative_model_dict.json"
+        assert os.path.exists(
+            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"model_{i}.json")
         )
+    assert os.path.exists(
+        os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "metadata.json")
     )
 
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
@@ -145,13 +145,10 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     # remove the files
     for i in hbr.response_vars:
         os.remove(os.path.join(load_path, f"idata_{i}.nc"))
+        os.remove(os.path.join(load_path, f"model_{i}.json"))
+    os.remove(os.path.join(load_path, "metadata.json"))
 
     # Assert the following throws an error
-    with pytest.raises(RuntimeError):
-        load_normative_model(load_path)
-
-    # Remove the normative_model_dict.json file
-    os.remove(os.path.join(hbr.norm_conf.save_dir, "normative_model_dict.json"))
     with pytest.raises(FileNotFoundError):
         load_normative_model(load_path)
 
