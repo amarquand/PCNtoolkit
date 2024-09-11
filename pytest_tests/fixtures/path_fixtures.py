@@ -1,9 +1,10 @@
 import os
+from turtle import pd
+import numpy as np
 import pytest
 from tempfile import gettempdir
+from pytest_tests.fixtures.data_fixtures import *
 
-# Get the project root directory
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 """This file contains pytest fixtures for file paths in the PCNtoolkit.
 
 The fixtures defined here include:
@@ -28,10 +29,25 @@ def save_dir():
 
 
 @pytest.fixture
-def responsefile():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "responses.csv"
+def responsefile(n_train_datapoints, n_response_vars):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "responses.csv"
     )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(file_path, generate_response_vars(n_train_datapoints, n_response_vars))
+    yield file_path
+    os.remove(file_path)
+
+
+@pytest.fixture
+def responsefile_test(n_test_datapoints, n_response_vars):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "responses_test.csv"
+    )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(file_path, generate_response_vars(n_test_datapoints, n_response_vars))
+    yield file_path
+    os.remove(file_path)
 
 
 @pytest.fixture
@@ -40,40 +56,59 @@ def maskfile():
 
 
 @pytest.fixture
-def covfile():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "covariates.csv"
+def covfile(n_train_datapoints, n_covariates):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates.csv"
     )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(file_path, generate_covariates(n_train_datapoints, n_covariates))
+    yield file_path
+    os.remove(file_path)
 
 
 @pytest.fixture
-def testcov():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "covariates_test.csv"
+def testcov(n_test_datapoints, n_covariates):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates_test.csv"
     )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(file_path, generate_covariates(n_test_datapoints, n_covariates))
+    yield file_path
+    os.remove(file_path)
 
 
 @pytest.fixture
-def testresp():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "responses_test.csv"
+def testresp(n_test_datapoints, n_response_vars):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "responses_test.csv"
     )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(file_path, generate_response_vars(n_test_datapoints, n_response_vars))
+    yield file_path
+    os.remove(file_path)
 
 
 @pytest.fixture
-def trbefile():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "batch_effects.csv"
+def trbefile(n_train_datapoints, batch_effect_values):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects.csv"
     )
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(
+        file_path, generate_batch_effects(n_train_datapoints, batch_effect_values)
+    )
+    yield file_path
+    os.remove(file_path)
 
 
 @pytest.fixture
-def tsbefile():
-    return os.path.join(
-        PROJECT_ROOT, "pytest_tests", "resources", "data", "batch_effects_test.csv"
+def tsbefile(n_test_datapoints, batch_effect_values):
+    file_path = os.path.join(
+        gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects_test.csv"
     )
-
-
-@pytest.fixture
-def resource_dir():
-    return os.path.join(PROJECT_ROOT, "pytest_tests", "resources")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    np.savetxt(
+        file_path, generate_batch_effects(n_test_datapoints, batch_effect_values)
+    )
+    yield file_path
+    os.remove(file_path)

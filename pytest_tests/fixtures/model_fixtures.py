@@ -6,8 +6,8 @@ from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
-from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
+from pytest_tests.fixtures.data_fixtures import *
 
 
 """
@@ -100,20 +100,30 @@ def norm_conf_dict_for_hbr_test_model(
 
 
 @pytest.fixture
-def hbr_conf_dict():
+def hbr_conf_dict(
+    save_dir,
+    log_dir,
+    responsefile,
+    maskfile,
+    covfile,
+    testcov,
+    testresp,
+    trbefile,
+    tsbefile,
+):
     return {
-        "responses": "pytest_tests/resources/data/responses.csv",
-        "maskfile": None,
-        "covfile": "pytest_tests/resources/data/covariates.csv",
+        "responses": responsefile,
+        "maskfile": maskfile,
+        "covfile": covfile,
         "cvfolds": None,
-        "testcov": "pytest_tests/resources/data/covariates_test.csv",
-        "testresp": "pytest_tests/resources/data/responses_test.csv",
+        "testcov": testcov,
+        "testresp": testresp,
         "alg": "hbr",
         "savemodel": True,
-        "trbefile": "pytest_tests/resources/data/batch_effects.csv",
-        "tsbefile": "pytest_tests/resources/data/batch_effects_test.csv",
-        "save_dir": "pytest_tests/resources/hbr/save_load_test",
-        "log_dir": "pytest_tests/resources/hbr/log_test",
+        "trbefile": trbefile,
+        "tsbefile": tsbefile,
+        "save_dir": save_dir + "/hbr",
+        "log_dir": log_dir + "/hbr",
         "basis_function": "bspline",
         "linear_mu": True,
         "linear_sigma": True,
