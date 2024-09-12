@@ -233,7 +233,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
         pb.batch_effect_indices = tuple(
             [
                 pm.Data(
-                    pb.batch_effect_dim_names[i],
+                    pb.batch_effect_dim_names[i]+"_data",
                     pb.batch_effect_indices[i],
                     mutable=True,
                     dims="datapoints",
@@ -520,7 +520,7 @@ class HBR:
                 # Compute those indices for the test data
                 indices = list(map(lambda x: valmap[x], batch_effects[:, i]))
                 # Those indices need to be used by the model
-                pm.set_data({f"batch_effect_{i}": indices})
+                pm.set_data({f"batch_effect_{i}_data": indices})
 
             self.idata = pm.sample_posterior_predictive(
                 trace=self.idata,
