@@ -36,7 +36,7 @@ class HBR(RegressionModel):
         Creates the pymc model.
         """
         self.pymc_model = pm.Model(
-            coords=data.coords, coords_mutable=data.coords_mutable
+            coords=data.coords
         )
         data.add_to_graph(self.pymc_model)
         if self.reg_conf.likelihood == "Normal":
