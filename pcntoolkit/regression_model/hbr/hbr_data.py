@@ -27,15 +27,14 @@ class HBRData:
 
         # The coords will be passed to the pymc model
         self._coords = OrderedDict()  # This preserves the order of the keys
-        self._coords_mutable = OrderedDict()
 
         # Create datapoint coordinates
         if datapoint_coords is None:
-            self._coords_mutable["datapoints"] = [
+            self._coords["datapoints"] = [
                 f"datapoint_{i}" for i in np.arange(self._n_datapoints)
             ]
         else:
-            self._coords_mutable["datapoints"] = datapoint_coords
+            self._coords["datapoints"] = datapoint_coords
 
         # Create covariate dims if they are not provided
         self.covariate_dims = covariate_dims
@@ -204,10 +203,6 @@ class HBRData:
     @property
     def coords(self):
         return self._coords
-
-    @property
-    def coords_mutable(self):
-        return self._coords_mutable
 
     @property
     def batch_effects_maps(self):
