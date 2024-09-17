@@ -152,8 +152,7 @@ def m(epsilon, delta, r):
 
 class SHASH(RandomVariable):
     name = "shash"
-    ndim_supp = 0
-    ndims_params = [0, 0]
+    signature = "(),()->()"
     dtype = "floatX"
     _print_name = ("SHASH", "\\operatorname{SHASH}")
 
@@ -194,8 +193,7 @@ class SHASH(Continuous):
 
 class SHASHoRV(RandomVariable):
     name = "shasho"
-    ndim_supp = 0
-    ndims_params = [0, 0, 0, 0]
+    signature = "(),(),(),()->()"
     dtype = "floatX"
     _print_name = ("SHASHo", "\\operatorname{SHASHo}")
 
@@ -239,8 +237,7 @@ class SHASHo(Continuous):
 
 class SHASHo2RV(RandomVariable):
     name = "shasho2"
-    ndim_supp = 0
-    ndims_params = [0, 0, 0, 0]
+    signature = "(),(),(),()->()"
     dtype = "floatX"
     _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
 
@@ -286,8 +283,7 @@ class SHASHo2(Continuous):
 
 class SHASHbRV(RandomVariable):
     name = "shashb"
-    ndim_supp = 0
-    ndims_params = [0, 0, 0, 0]
+    signature = "(),(),(),()->()"
     dtype = "floatX"
     _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
 
