@@ -30,7 +30,8 @@ The tests cover:
 
 @pytest.fixture
 def data(norm_data_from_arrays):
-    data = NormHBR.normdata_to_hbrdata(norm_data_from_arrays)
+    single_respvar = norm_data_from_arrays.sel(response_vars="response_var_1")
+    data = NormHBR.normdata_to_hbrdata(single_respvar)
     return data
 
 

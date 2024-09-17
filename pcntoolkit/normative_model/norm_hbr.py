@@ -312,11 +312,13 @@ class NormHBR(NormBase):
         else:
             this_y = data.y.to_numpy()
 
+        assert (len(data.y.shape)==1) or (data.y.shape[1] == 1), "Only one response variable is supported for HBRdata"
+
         hbrdata = hbr_data.HBRData(
             X=this_X,
             y=this_y,
             batch_effects=data.batch_effects.to_numpy(),
-            response_var_dims=data.response_vars.to_numpy().tolist(),
+            response_var=data.response_vars.to_numpy().item(),
             covariate_dims=this_covariate_dims,
             batch_effect_dims=data.batch_effect_dims.to_numpy().tolist(),
             datapoint_coords=data.datapoints.to_numpy().tolist(),

@@ -44,5 +44,5 @@ def test_create_data(
     assert data.n_datapoints == n_datapoints
     assert data.n_covariates == n_covariates
     assert data.X.shape == (n_datapoints, n_covariates)
-    assert data.y.shape == (n_datapoints, 1)
+    assert data.y.shape == (n_datapoints,)
     assert data.batch_effects.shape == (n_datapoints, max(1, n_batch_effects))
