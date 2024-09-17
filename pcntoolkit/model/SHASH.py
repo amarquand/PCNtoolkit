@@ -285,7 +285,7 @@ class SHASHbRV(RandomVariable):
     name = "shashb"
     signature = "(),(),(),()->()"
     dtype = "floatX"
-    _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
+    _print_name = ("SHASHb", "\\operatorname{SHASHb}")
 
     @classmethod
     def rng_fn(
