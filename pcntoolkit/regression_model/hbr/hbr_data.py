@@ -12,16 +12,18 @@ class HBRData:
         X: np.ndarray,
         y: np.ndarray = None,
         batch_effects: np.ndarray = None,
-        response_var_dims: List = None,
+        response_var: str = None,
         covariate_dims: List = None,
         batch_effect_dims: List = None,
         datapoint_coords: List = None,
     ):
         self.check_and_set_data(X, y, batch_effects)
 
-        # Set the number of covariates, response vars, datapoints and batch effect columns
+        # Set the response var
+        self.response_var = response_var
+
+        # Set the number of covariates, datapoints and batch effect columns
         self._n_covariates = self.X.shape[1]
-        self._n_response_vars = 1
         self._n_datapoints = self.X.shape[0]
         self._n_batch_effect_columns = self.batch_effects.shape[1]
 
@@ -46,19 +48,6 @@ class HBRData:
             len(self.covariate_dims) == self._n_covariates
         ), "The number of covariate dimensions must match the number of covariates"
         self._coords["covariates"] = self.covariate_dims
-
-        # Create response var dims if they are not provided
-        self.response_var_dims = response_var_dims
-        if self.response_var_dims is None:
-            self.response_var_dims = [
-                "response_var_" + str(i) for i in range(self._n_response_vars)
-            ]
-        elif type(self.response_var_dims) != list:
-            self.response_var_dims = [self.response_var_dims]
-        assert (
-            len(self.response_var_dims) == self._n_response_vars
-        ), "The number of response var dimensions must match the number of response vars"
-        self._coords["response_vars"] = self.response_var_dims
 
         # Create batch_effect dims if they are not provided
         self.batch_effect_dims = batch_effect_dims
@@ -91,7 +80,7 @@ class HBRData:
             self.X = X
 
         if y is None:
-            self.y = np.zeros(X.shape[0])
+            self.y = np.zeros((X.shape[0],1) )
         else:
             self.y = y
 
