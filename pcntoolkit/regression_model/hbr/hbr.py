@@ -62,19 +62,19 @@ class HBR(RegressionModel):
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.reg_conf.mu.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims=self.reg_conf.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
                 self.reg_conf.sigma.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims=self.reg_conf.sigma.sample_dims,
             )
             y_pred = pm.Normal(
                 "y_pred",
                 mu=mu_samples,
                 sigma=sigma_samples,
-                dims=("datapoints", "response_vars"),
                 observed=data.pm_y,
+                dims=('datapoints',)
             )
 
     def create_SHASHb_pymc_graph(
@@ -91,22 +91,22 @@ class HBR(RegressionModel):
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.reg_conf.mu.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims = self.reg_conf.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
                 self.reg_conf.sigma.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims = self.reg_conf.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
                 self.reg_conf.epsilon.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims = self.reg_conf.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
                 self.reg_conf.delta.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims = self.reg_conf.delta.sample_dims,
             )
             y_pred = SHASHb(
                 "y_pred",
@@ -114,8 +114,8 @@ class HBR(RegressionModel):
                 sigma=sigma_samples,
                 epsilon=epsilon_samples,
                 delta=delta_samples,
-                dims=("datapoints", "response_vars"),
                 observed=data.pm_y,
+                dims = ('datapoints',)
             )
 
     def create_SHASHo_pymc_graph(
@@ -132,12 +132,12 @@ class HBR(RegressionModel):
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.reg_conf.mu.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                self.reg_conf.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
                 self.reg_conf.sigma.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                self.reg_conf.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
@@ -147,7 +147,7 @@ class HBR(RegressionModel):
             delta_samples = pm.Deterministic(
                 "delta_samples",
                 self.reg_conf.delta.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                self.reg_conf.delta.sample_dims,
             )
             y_pred = SHASHo(
                 "y_pred",
@@ -155,8 +155,8 @@ class HBR(RegressionModel):
                 sigma=sigma_samples,
                 epsilon=epsilon_samples,
                 delta=delta_samples,
-                dims=("datapoints", "response_vars"),
                 observed=data.pm_y,
+                dims=('datapoints',)
             )
 
     def to_dict(self, path=None):
@@ -210,9 +210,9 @@ class HBR(RegressionModel):
         if self.is_fitted:
             try:
                 self.idata = az.from_netcdf(path)
-                self.replace_samples_in_idata_posterior()
             except:
                 raise RuntimeError(f"Could not load idata from {path}.")
+            self.replace_samples_in_idata_posterior()
 
     def remove_samples_from_idata_posterior(self):
         for name in self.idata.posterior.variables.mapping.keys():
@@ -225,16 +225,11 @@ class HBR(RegressionModel):
     def replace_samples_in_idata_posterior(self):
         for name in self.idata.attrs["removed_samples"]:
             samples = np.zeros(
-                (
-                    self.idata.posterior.chain.size,
-                    self.idata.posterior.draw.size,
-                    self.idata.posterior.datapoints.size,
-                    self.idata.posterior.response_vars.size,
-                )
+                self.idata.posterior[name].shape
             )
             self.idata.posterior[name] = xr.DataArray(
                 samples,
-                dims=["chain", "draw", "datapoints", "response_vars"],
+                dims=self.idata.posterior[name].dims,
             )
 
     @property

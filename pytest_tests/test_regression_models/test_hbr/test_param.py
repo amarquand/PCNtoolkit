@@ -35,8 +35,8 @@ def data(norm_data_from_arrays):
 
 
 @pytest.fixture
-def model_and_data(data: HBRData) -> (pm.Model, HBRData):
-    model = pm.Model(coords=data.coords, coords_mutable=data.coords_mutable)
+def model_and_data(data: HBRData) ->  tuple[pm.Model ,HBRData]:
+    model = pm.Model(coords=data.coords)
     data.add_to_graph(model)
     return model, data
 
@@ -46,11 +46,11 @@ def test_normal_fixed_param(model_and_data):
     param = Param("fixed")
     param.create_graph(model)
     assert param.name == "fixed"
-    assert param.dims == ()
+    assert param.dims is None
     assert param.dist_name == "Normal"
     assert param.dist_params == (0, 10)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == ()
 
 
 def test_cauchy_fixed_param(model_and_data):
@@ -58,11 +58,11 @@ def test_cauchy_fixed_param(model_and_data):
     param = Param("fixed2", dist_name="Cauchy")
     param.create_graph(model)
     assert param.name == "fixed2"
-    assert param.dims == ()
+    assert param.dims is None
     assert param.dist_name == "Cauchy"
     assert param.dist_params == (0, 10)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == ()
 
 
 def test_normal_fixed_param_with_covariate_dim(model_and_data):
@@ -74,7 +74,7 @@ def test_normal_fixed_param_with_covariate_dim(model_and_data):
     assert param.dist_name == "Cauchy"
     assert param.dist_params == (0, 10)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
+    assert tuple(samples.shape.eval()) == (data.n_covariates,)
 
 
 def test_random_centered_param(model_and_data):
@@ -82,9 +82,9 @@ def test_random_centered_param(model_and_data):
     param = Param("mu", random=True, centered=True)
     param.create_graph(model)
     assert param.name == "mu"
-    assert param.dims == ()
+    assert param.dims is None
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_random_noncentered_param(model_and_data):
@@ -92,9 +92,9 @@ def test_random_noncentered_param(model_and_data):
     param = Param("test_random2", random=True, centered=False)
     param.create_graph(model)
     assert param.name == "test_random2"
-    assert param.dims == ()
+    assert param.dims is None
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_random_centered_param_with_covariate_dim(model_and_data):
@@ -118,7 +118,7 @@ def test_linear_param(model_and_data):
     param = Param("test_linear1", linear=True)
     param.create_graph(model)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_linear_param_with_random_slope(model_and_data):
@@ -127,7 +127,7 @@ def test_linear_param_with_random_slope(model_and_data):
     param = Param("test_linear2", linear=True, slope=slope)
     param.create_graph(model)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_linear_param_with_random_intercept(model_and_data):
@@ -136,7 +136,7 @@ def test_linear_param_with_random_intercept(model_and_data):
     param = Param("test_linear3", linear=True, intercept=intercept)
     param.create_graph(model)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_linear_param_with_random_intercept_and_slope(model_and_data):
@@ -146,7 +146,7 @@ def test_linear_param_with_random_intercept_and_slope(model_and_data):
     param = Param("test_linear4", linear=True, intercept=intercept, slope=slope)
     param.create_graph(model)
     samples = param.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_params_from_args_single(model_and_data):
@@ -163,7 +163,7 @@ def test_params_from_args_single(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 1)
     assert mu.random == False
@@ -173,7 +173,7 @@ def test_params_from_args_single(model_and_data):
     assert mu.slope == None
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == ()
 
 
 def test_param_from_args_single_with_covariate_dim(model_and_data):
@@ -203,7 +203,6 @@ def test_param_from_args_single_with_covariate_dim(model_and_data):
 
     samples = mu.get_samples(data)
     assert tuple(samples.shape.eval()) == (
-        data.n_datapoints,
         data.n_covariates,
     )
 
@@ -228,7 +227,7 @@ def test_two_params_from_args(model_and_data):
     mu.create_graph(model)
 
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 1)
     assert mu.random == False
@@ -238,12 +237,12 @@ def test_two_params_from_args(model_and_data):
     assert mu.slope == None
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == ()
 
     sigma = Param.from_args("sigma", param_dict)
     sigma.create_graph(model)
     assert sigma.name == "sigma"
-    assert sigma.dims == ()
+    assert sigma.dims is None
     assert sigma.dist_name == "LogNormal"
     assert sigma.dist_params == (2.0,)
     assert sigma.random == False
@@ -253,7 +252,7 @@ def test_two_params_from_args(model_and_data):
     assert sigma.slope == None
 
     samples = sigma.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == ()
 
 
 def test_param_from_args_random_centered(model_and_data):
@@ -271,7 +270,7 @@ def test_param_from_args_random_centered(model_and_data):
     mu.create_graph(model)
 
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == True
@@ -280,18 +279,18 @@ def test_param_from_args_random_centered(model_and_data):
     assert mu.intercept == None
     assert mu.slope == None
     assert mu.mu.name == "mu_mu"
-    assert mu.mu.dims == ()
+    assert mu.mu.dims is None
     assert mu.mu.dist_name == "Normal"
     assert mu.mu.dist_params == (0, 10)
     assert mu.sigma.name == "sigma_mu"
-    assert mu.sigma.dims == ()
+    assert mu.sigma.dims is None
     assert mu.sigma.dist_name == "LogNormal"
     assert mu.sigma.dist_params == (2.0,)
     assert mu.dist.name == "mu"
 
     assert tuple(mu.dist.shape.eval()) == (2, 3)
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_random_centered_with_covariate_dim(model_and_data):
@@ -345,7 +344,7 @@ def test_param_from_args_random_noncentered(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == True
@@ -355,17 +354,17 @@ def test_param_from_args_random_noncentered(model_and_data):
     assert mu.slope == None
     assert mu.offset.name == "offset_mu"
     assert mu.mu.name == "mu_mu"
-    assert mu.mu.dims == ()
+    assert mu.mu.dims is None
     assert mu.mu.dist_name == "Normal"
     assert mu.mu.dist_params == (0, 10)
     assert mu.sigma.name == "sigma_mu"
-    assert mu.sigma.dims == ()
+    assert mu.sigma.dims is None
     assert mu.sigma.dist_name == "LogNormal"
     assert mu.sigma.dist_params == (2.0,)
 
     assert tuple(mu.dist.shape.eval()) == (2, 3)
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_random_noncentered_with_covariate_dim(model_and_data):
@@ -411,14 +410,14 @@ def test_param_from_args_linear(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.slope.name == "slope_mu"
@@ -427,7 +426,7 @@ def test_param_from_args_linear(model_and_data):
     assert mu.slope.dist_params == (0, 10)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_linear_with_random_slope(model_and_data):
@@ -436,14 +435,14 @@ def test_param_from_args_linear_with_random_slope(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.slope.name == "slope_mu"
@@ -466,7 +465,7 @@ def test_param_from_args_linear_with_random_slope(model_and_data):
     assert mu.slope.offset.name == "offset_slope_mu"
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_linear_with_random_intercept(model_and_data):
@@ -475,14 +474,14 @@ def test_param_from_args_linear_with_random_intercept(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.intercept.random == True
@@ -491,11 +490,11 @@ def test_param_from_args_linear_with_random_intercept(model_and_data):
     assert mu.intercept.intercept == None
     assert mu.intercept.slope == None
     assert mu.intercept.mu.name == "mu_intercept_mu"
-    assert mu.intercept.mu.dims == ()
+    assert mu.intercept.mu.dims is None
     assert mu.intercept.mu.dist_name == "Normal"
     assert mu.intercept.mu.dist_params == (0, 10)
     assert mu.intercept.sigma.name == "sigma_intercept_mu"
-    assert mu.intercept.sigma.dims == ()
+    assert mu.intercept.sigma.dims is None
     assert mu.intercept.sigma.dist_name == "LogNormal"
     assert mu.intercept.sigma.dist_params == (2.0,)
     assert mu.intercept.offset.name == "offset_intercept_mu"
@@ -505,7 +504,7 @@ def test_param_from_args_linear_with_random_intercept(model_and_data):
     assert mu.slope.dist_params == (0, 10)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
@@ -518,14 +517,14 @@ def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.intercept.random == True
@@ -534,11 +533,11 @@ def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
     assert mu.intercept.intercept == None
     assert mu.intercept.slope == None
     assert mu.intercept.mu.name == "mu_intercept_mu"
-    assert mu.intercept.mu.dims == ()
+    assert mu.intercept.mu.dims is None
     assert mu.intercept.mu.dist_name == "Normal"
     assert mu.intercept.mu.dist_params == (0, 10)
     assert mu.intercept.sigma.name == "sigma_intercept_mu"
-    assert mu.intercept.sigma.dims == ()
+    assert mu.intercept.sigma.dims is None
     assert mu.intercept.sigma.dist_name == "LogNormal"
     assert mu.intercept.sigma.dist_params == (2.0,)
     assert mu.intercept.offset.name == "offset_intercept_mu"
@@ -562,7 +561,7 @@ def test_param_from_args_linear_with_random_intercept_and_slope(model_and_data):
     assert mu.slope.offset.name == "offset_slope_mu"
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_linear_with_random_centered_slope(model_and_data):
@@ -571,14 +570,14 @@ def test_param_from_args_linear_with_random_centered_slope(model_and_data):
     mu = Param.from_args("mu", param_dict)
     mu.create_graph(model)
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.slope.name == "slope_mu"
@@ -602,7 +601,7 @@ def test_param_from_args_linear_with_random_centered_slope(model_and_data):
     assert tuple(mu.slope.dist.shape.eval()) == (2, 3, data.n_covariates)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_param_from_args_linear_with_random_centered_intercept(model_and_data):
@@ -616,14 +615,14 @@ def test_param_from_args_linear_with_random_centered_intercept(model_and_data):
     mu.create_graph(model)
 
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.intercept.random == True
@@ -632,17 +631,17 @@ def test_param_from_args_linear_with_random_centered_intercept(model_and_data):
     assert mu.intercept.intercept == None
     assert mu.intercept.slope == None
     assert mu.intercept.mu.name == "mu_intercept_mu"
-    assert mu.intercept.mu.dims == ()
+    assert mu.intercept.mu.dims is None
     assert mu.intercept.mu.dist_name == "Normal"
     assert mu.intercept.mu.dist_params == (0, 10)
     assert mu.intercept.sigma.name == "sigma_intercept_mu"
-    assert mu.intercept.sigma.dims == ()
+    assert mu.intercept.sigma.dims is None
     assert mu.intercept.sigma.dist_name == "LogNormal"
     assert mu.intercept.sigma.dist_params == (2.0,)
     assert tuple(mu.intercept.dist.shape.eval()) == (2, 3)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints, )
 
 
 def test_param_from_args_linear_with_random_centered_intercept_and_slope(
@@ -660,14 +659,14 @@ def test_param_from_args_linear_with_random_centered_intercept_and_slope(
     mu.create_graph(model)
 
     assert mu.name == "mu"
-    assert mu.dims == ()
+    assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 10)
     assert mu.random == False
     assert mu.centered == False
     assert mu.linear == True
     assert mu.intercept.name == "intercept_mu"
-    assert mu.intercept.dims == ()
+    assert mu.intercept.dims is None
     assert mu.intercept.dist_name == "Normal"
     assert mu.intercept.dist_params == (0, 10)
     assert mu.intercept.random == True
@@ -676,11 +675,11 @@ def test_param_from_args_linear_with_random_centered_intercept_and_slope(
     assert mu.intercept.intercept == None
     assert mu.intercept.slope == None
     assert mu.intercept.mu.name == "mu_intercept_mu"
-    assert mu.intercept.mu.dims == ()
+    assert mu.intercept.mu.dims is None
     assert mu.intercept.mu.dist_name == "Normal"
     assert mu.intercept.mu.dist_params == (0, 10)
     assert mu.intercept.sigma.name == "sigma_intercept_mu"
-    assert mu.intercept.sigma.dims == ()
+    assert mu.intercept.sigma.dims is None
     assert mu.intercept.sigma.dist_name == "LogNormal"
     assert mu.intercept.sigma.dist_params == (2.0,)
     assert tuple(mu.intercept.dist.shape.eval()) == (2, 3)
@@ -705,7 +704,7 @@ def test_param_from_args_linear_with_random_centered_intercept_and_slope(
     assert tuple(mu.slope.dist.shape.eval()) == (2, 3, data.n_covariates)
 
     samples = mu.get_samples(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, 1)
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_to_dict(model_and_data):
@@ -720,21 +719,21 @@ def test_to_dict(model_and_data):
     mu = Param.from_args("mu", param_dict)
     my_dict = mu.to_dict()
     assert my_dict["name"] == "mu"
-    assert my_dict["dims"] == ()
+    assert my_dict["dims"] is None
     assert my_dict["random"] == False
     assert my_dict["centered"] == False
     assert my_dict["linear"] == True
     assert my_dict["intercept"]["name"] == "intercept_mu"
-    assert my_dict["intercept"]["dims"] == ()
+    assert my_dict["intercept"]["dims"] is None
     assert my_dict["intercept"]["random"] == True
     assert my_dict["intercept"]["centered"] == True
     assert my_dict["intercept"]["linear"] == False
     assert my_dict["intercept"]["mu"]["name"] == "mu_intercept_mu"
-    assert my_dict["intercept"]["mu"]["dims"] == ()
+    assert my_dict["intercept"]["mu"]["dims"] is None
     assert my_dict["intercept"]["mu"]["dist_name"] == "Normal"
     assert my_dict["intercept"]["mu"]["dist_params"] == (0, 10)
     assert my_dict["intercept"]["sigma"]["name"] == "sigma_intercept_mu"
-    assert my_dict["intercept"]["sigma"]["dims"] == ()
+    assert my_dict["intercept"]["sigma"]["dims"] is None
     assert my_dict["intercept"]["sigma"]["dist_name"] == "LogNormal"
     assert my_dict["intercept"]["sigma"]["dist_params"] == (2.0,)
     assert my_dict["slope"]["name"] == "slope_mu"
