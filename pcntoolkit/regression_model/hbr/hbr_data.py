@@ -21,7 +21,7 @@ class HBRData:
 
         # Set the number of covariates, response vars, datapoints and batch effect columns
         self._n_covariates = self.X.shape[1]
-        self._n_response_vars = self.y.shape[1]
+        self._n_response_vars = 1
         self._n_datapoints = self.X.shape[0]
         self._n_batch_effect_columns = self.batch_effects.shape[1]
 
@@ -92,7 +92,7 @@ class HBRData:
             self.X = X
 
         if y is None:
-            self.y = np.zeros((X.shape[0], 1))
+            self.y = np.zeros(X.shape[0])
         else:
             self.y = y
 
@@ -104,24 +104,28 @@ class HBRData:
         else:
             self.batch_effects = batch_effects
 
-        self.X, self.y, self.batch_effects = self.expand_all("X", "y", "batch_effects")
+        self.X, self.batch_effects = self.expand_all("X", "batch_effects")
 
         # Check that the dimensions are correct
         assert (
             self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
         ), "X, y and batch_effects must have the same number of rows"
-
+        if len(self.y.shape)> 1 :
+            assert self.y.shape[1] == 1, "y can only have one column, or it must be a 1D array"
+            self.y = np.squeeze(self.y)
+        
+        
     def add_to_graph(self, model: pm.Model) -> None:
         """
         Add the data to the pymc model graph using the model context.
         """
         with model:
             self.pm_X = pm.Data("X", self.X, dims=("datapoints", "covariates"))
-            self.pm_y = pm.Data("y", self.y, dims=("datapoints", "response_vars"))
+            self.pm_y = pm.Data("y", self.y, dims=("datapoints",))
             self.pm_batch_effect_indices = tuple(
                 [
                     pm.Data(
-                        str(self.batch_effect_dims[i]),
+                        str(self.batch_effect_dims[i])+"_data",
                         self.batch_effect_indices[i],
                         dims=("datapoints",),
                     )
@@ -138,15 +142,15 @@ class HBRData:
         model.set_data(
             "X",
             self.X,
-            coords={"datapoints": self._coords_mutable["datapoints"]},
+            coords={"datapoints": self._coords["datapoints"]},
         )
         self.pm_X = model["X"]
         model.set_data("y", self.y)
         self.pm_y = model["y"]
         be_acc = []
         for i in range(self._n_batch_effect_columns):
-            model.set_data(str(self.batch_effect_dims[i]), self.batch_effect_indices[i])
-            be_acc.append(model[self.batch_effect_dims[i]])
+            model.set_data(str(self.batch_effect_dims[i])+"_data", self.batch_effect_indices[i])
+            be_acc.append(model[self.batch_effect_dims[i]+"_data"])
         self.pm_batch_effect_indices = tuple(be_acc)
 
     def expand_all(self, *args):
@@ -174,6 +178,9 @@ class HBRData:
         self.create_batch_effect_indices()
 
     def create_batch_effect_indices(self):
+        """
+        Create a list of indices of the batch effects. Allows for indexing the batch effects in the pymc model.
+        """
         self.batch_effect_indices = []
         for i, v in enumerate(self.batch_effect_dims):
             self.batch_effect_indices.append(

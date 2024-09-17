@@ -194,7 +194,7 @@ class NormHBR(NormBase):
         array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
         # Create an array to hold the centiles
-        n_datapoints, _, n_mcmc_samples = post_pred["mu_samples"].shape
+        n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
         centiles = np.zeros((len(cummulative_densities), n_datapoints, n_mcmc_samples))
 
         # Compute the centiles iteratively for each cummulative density
@@ -252,7 +252,7 @@ class NormHBR(NormBase):
         zscores = xr.apply_ufunc(
             self.zscore,
             *array_of_vars,
-            kwargs={"y": hbrdata.y},
+            kwargs={"y": hbrdata.y[:,None]},
         ).mean(dim="sample")
 
         return zscores

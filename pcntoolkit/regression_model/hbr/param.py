@@ -16,7 +16,7 @@ from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 @dataclass
 class Param:
     name: str
-    dims: Tuple[str] = ()
+    dims: Tuple[str] = None
 
     dist_name: str = "Normal"
     dist_params: tuple = (0, 10)
@@ -59,22 +59,26 @@ class Param:
 
         if self.linear:
             self.set_linear_params()
+            self.sample_dims = ('datapoints',)
 
         elif self.random:
             if self.centered:
                 self.set_centered_random_params()
             else:
                 self.set_noncentered_random_params()
+            self.sample_dims = ('datapoints',)
 
         else:
             # If the parameter is really only a single number, we need to add an empty dimension so our outputs are always 2D
             if (self.dims == ()) or (self.dims == []):
-                # self.dims = None
-                self.shape = (1,)
+                self.dims = None
+                self.shape = None
             else:
                 self.shape = None
                 if type(self.dims) is str:
                     self.dims = (self.dims,)
+            self.sample_dims = ()
+
 
     def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
@@ -90,7 +94,7 @@ class Param:
                         self.name,
                         mu=self.mu.dist,
                         sigma=self.sigma.dist,
-                        dims=(*model.custom_batch_effect_dims, *self.dims),
+                        dims=(*model.custom_batch_effect_dims, *self._dims),
                     )
                 else:
                     self.mu.create_graph(model, idata, freedom)
@@ -99,12 +103,12 @@ class Param:
                         f"offset_" + self.name,
                         mu=0,
                         sigma=1,
-                        dims=(*model.custom_batch_effect_dims, *self.dims),
+                        dims=(*model.custom_batch_effect_dims, *self._dims),
                     )
                     self.dist = pm.Deterministic(
                         self.name,
                         self.mu.dist + self.offset * self.sigma.dist,
-                        dims=(*model.custom_batch_effect_dims, *self.dims),
+                        dims=(*model.custom_batch_effect_dims, *self._dims),
                     )
             else:
                 if idata is not None:
@@ -113,8 +117,6 @@ class Param:
                         self.dist_name,
                         az.extract(idata, var_names=self.name),
                     )
-                if "covariates," in self.dims:
-                    print("This is the error")
                 self.dist = self.distmap[self.dist_name](
                     self.name, *self.dist_params, shape=self.shape, dims=self.dims
                 )
@@ -172,27 +174,25 @@ class Param:
 
     def set_linear_params(self):
         if not self.slope:
-            self.slope = Param(f"slope_{self.name}", dims=(*self.dims, "covariates"))
+            self.slope = Param(f"slope_{self.name}", dims=(*self._dims, "covariates"))
         if not self.intercept:
             self.intercept = Param(f"intercept_{self.name}", dims=self.dims)
+
 
     def get_samples(self, data: HBRData):
         if self.linear:
             slope_samples = self.slope.get_samples(data)
             intercept_samples = self.intercept.get_samples(data)
             result = (
-                pm.math.sum(slope_samples * data.pm_X, axis=1, keepdims=True)
+                pm.math.sum(slope_samples * data.pm_X, axis=1)
                 + intercept_samples
             )
             return self.apply_mapping(result)
 
         elif self.random:
-            if self.has_covariate_dim:
-                return self.dist[data.pm_batch_effect_indices]
-            else:
-                return self.dist[data.pm_batch_effect_indices + (None,)]
+            return self.dist[data.pm_batch_effect_indices]
         else:
-            return repeat(self.dist[None, :], data.pm_X.shape[0], axis=0)
+            return self.dist
 
     def apply_mapping(self, x):
         if self.mapping == "identity":
@@ -228,10 +228,15 @@ class Param:
             param_dict["dist_params"] = self.dist_params
         return param_dict
 
+    @property
+    def _dims(self):
+        return self.dims if self.dims else ()
+
     @classmethod
-    def from_args(cls, name: str, args: Dict[str, any], dims=()):
+    def from_args(cls, name: str, args: Dict[str, any], dims=None):
+        tupdims = dims if dims else ()
         if args.get(f"linear_{name}", False):
-            slope = cls.from_args(f"slope_{name}", args, dims=(*dims, "covariates"))
+            slope = cls.from_args(f"slope_{name}", args, dims=(*tupdims, "covariates"))
             intercept = cls.from_args(f"intercept_{name}", args, dims=dims)
             return cls(
                 name,
