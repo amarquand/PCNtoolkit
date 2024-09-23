@@ -97,12 +97,12 @@ def test_normhbr_from_args(
 
 
 def test_normdata_to_hbrdata(norm_data_from_arrays: NormData, n_train_datapoints):
-    single_response_var = norm_data_from_arrays.sel(response_vars = 'response_var_0')
+    single_response_var = norm_data_from_arrays.sel(response_vars="response_var_0")
     hbrdata = NormHBR.normdata_to_hbrdata(single_response_var)
 
     assert hbrdata.X.shape == (n_train_datapoints, 2)
     assert hbrdata.y.shape == (n_train_datapoints,)
-    assert hbrdata.response_var == 'response_var_0'
+    assert hbrdata.response_var == "response_var_0"
 
     assert hbrdata.batch_effects.shape == (n_train_datapoints, 2)
     assert tuple(hbrdata.covariate_dims) == ("covariate_0", "covariate_1")

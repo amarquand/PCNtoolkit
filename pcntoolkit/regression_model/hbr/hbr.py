@@ -31,8 +31,8 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None
         self.pymc_model = None
 
-    def fit(self, hbrdata:HBRData, make_new_model:bool=True):
-                # Make a new model if needed
+    def fit(self, hbrdata: HBRData, make_new_model: bool = True):
+        # Make a new model if needed
         if make_new_model or (not self.pymc_model):
             self.create_pymc_graph(hbrdata)
 
@@ -49,7 +49,7 @@ class HBR(RegressionModel):
         # Set the is_fitted flag to True
         self.is_fitted = True
 
-    def predict(self, hbrdata:HBRData):
+    def predict(self, hbrdata: HBRData):
         # Create a new pymc model if needed
         if not self.pymc_model:
             self.create_pymc_graph(hbrdata)
@@ -68,7 +68,7 @@ class HBR(RegressionModel):
                 var_names=self.get_var_names() + ["y_pred"],
             )
 
-    def fit_predict(self, fit_hbrdata:HBRData, predict_hbrdata:HBRData):
+    def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData):
 
         # Make a new model if needed
         if not self.pymc_model:
@@ -87,9 +87,7 @@ class HBR(RegressionModel):
         self.is_fitted = True
 
         # Set the data in the model
-        predict_hbrdata.set_data_in_existing_model(
-            self.pymc_model
-        )
+        predict_hbrdata.set_data_in_existing_model(self.pymc_model)
 
         # Sample from the posterior predictive
         with self.pymc_model:
@@ -106,9 +104,7 @@ class HBR(RegressionModel):
         # new_hbr_model.transfer(transferdata, freedom)
 
         # Create a new model, using the idata from the original model to inform the priors
-        new_hbr_model.create_pymc_graph(
-            transferdata, self.idata, freedom
-        )
+        new_hbr_model.create_pymc_graph(transferdata, self.idata, freedom)
 
         # Sample using the new model
         with new_hbr_model.pymc_model:
@@ -122,7 +118,9 @@ class HBR(RegressionModel):
 
         return new_hbr_model
 
-    def centiles(self, hbrdata:HBRData, cummulative_densities: list[float], resample=True) -> xr.DataArray:
+    def centiles(
+        self, hbrdata: HBRData, cummulative_densities: list[float], resample=True
+    ) -> xr.DataArray:
         var_names = self.get_var_names()
 
         # Create a new pymc model if needed
@@ -152,7 +150,9 @@ class HBR(RegressionModel):
         )
 
         # Separate the samples into a list so that they can be unpacked
-        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+        array_of_vars = [self.likelihood] + list(
+            map(lambda x: np.squeeze(post_pred[x]), var_names)
+        )
 
         # Create an array to hold the centiles
         n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
@@ -175,9 +175,8 @@ class HBR(RegressionModel):
             dims=["cummulative_densities", "datapoints", "sample"],
             coords={"cummulative_densities": cummulative_densities},
         ).mean(dim="sample")
-    
 
-    def zscores(self, hbrdata:HBRData, resample=False) -> xr.DataArray:
+    def zscores(self, hbrdata: HBRData, resample=False) -> xr.DataArray:
 
         var_names = self.get_var_names()
         if resample:
@@ -208,12 +207,14 @@ class HBR(RegressionModel):
         )
 
         # Separate the samples into a list so that they can be unpacked
-        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+        array_of_vars = [self.likelihood] + list(
+            map(lambda x: np.squeeze(post_pred[x]), var_names)
+        )
 
         zscores = xr.apply_ufunc(
             zscore,
             *array_of_vars,
-            kwargs={"y": hbrdata.y[:,None]},
+            kwargs={"y": hbrdata.y[:, None]},
         ).mean(dim="sample")
 
         return zscores
@@ -241,9 +242,7 @@ class HBR(RegressionModel):
         """
         Creates the pymc model.
         """
-        self.pymc_model = pm.Model(
-            coords=data.coords
-        )
+        self.pymc_model = pm.Model(coords=data.coords)
         data.add_to_graph(self.pymc_model)
         if self.reg_conf.likelihood == "Normal":
             self.create_normal_pymc_graph(data, idata, freedom)
@@ -280,7 +279,7 @@ class HBR(RegressionModel):
                 mu=mu_samples,
                 sigma=sigma_samples,
                 observed=data.pm_y,
-                dims=('datapoints',)
+                dims=("datapoints",),
             )
 
     def create_SHASHb_pymc_graph(
@@ -297,22 +296,22 @@ class HBR(RegressionModel):
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.reg_conf.mu.get_samples(data),
-                dims = self.reg_conf.mu.sample_dims,
+                dims=self.reg_conf.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
                 self.reg_conf.sigma.get_samples(data),
-                dims = self.reg_conf.sigma.sample_dims,
+                dims=self.reg_conf.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
                 self.reg_conf.epsilon.get_samples(data),
-                dims = self.reg_conf.epsilon.sample_dims,
+                dims=self.reg_conf.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
                 self.reg_conf.delta.get_samples(data),
-                dims = self.reg_conf.delta.sample_dims,
+                dims=self.reg_conf.delta.sample_dims,
             )
             y_pred = SHASHb(
                 "y_pred",
@@ -321,7 +320,7 @@ class HBR(RegressionModel):
                 epsilon=epsilon_samples,
                 delta=delta_samples,
                 observed=data.pm_y,
-                dims = ('datapoints',)
+                dims=("datapoints",),
             )
 
     def create_SHASHo_pymc_graph(
@@ -362,7 +361,7 @@ class HBR(RegressionModel):
                 epsilon=epsilon_samples,
                 delta=delta_samples,
                 observed=data.pm_y,
-                dims=('datapoints',)
+                dims=("datapoints",),
             )
 
     def to_dict(self, path=None):
@@ -430,9 +429,7 @@ class HBR(RegressionModel):
 
     def replace_samples_in_idata_posterior(self):
         for name in self.idata.attrs["removed_samples"]:
-            samples = np.zeros(
-                self.idata.posterior[name].shape
-            )
+            samples = np.zeros(self.idata.posterior[name].shape)
             self.idata.posterior[name] = xr.DataArray(
                 samples,
                 dims=self.idata.posterior[name].dims,

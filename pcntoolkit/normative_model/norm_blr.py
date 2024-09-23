@@ -142,4 +142,3 @@ class NormBLR(NormBase):
         raise NotImplementedError(
             f"n_params method not implemented for {self.__class__.__name__}"
         )
-

@@ -10,7 +10,7 @@ def test_detect_configuration_problems():
     # Test with invalid configurations
     with pytest.raises(ValueError):
         conf = BLRConf(n_iter=0, tol=1e-3, optimizer="l-bfgs-b")
-    
+
     with pytest.raises(ValueError):
         conf = BLRConf(n_iter=100, tol=0, optimizer="l-bfgs-b")
 
@@ -18,10 +18,9 @@ def test_detect_configuration_problems():
         conf = BLRConf(n_iter=100, tol=1e-3, optimizer="invalid_optimizer")
 
 
-
-@pytest.mark.parametrize("n_iter,tol,ard",[(100,1e-3,False),(1,1e-6,True)])
-def test_from_args_to_dict_from_dict(n_iter,tol,ard):
-    args = {"n_iter":n_iter,"tol":tol,"ard":ard}
+@pytest.mark.parametrize("n_iter,tol,ard", [(100, 1e-3, False), (1, 1e-6, True)])
+def test_from_args_to_dict_from_dict(n_iter, tol, ard):
+    args = {"n_iter": n_iter, "tol": tol, "ard": ard}
     conf1 = BLRConf.from_args(args)
     assert conf1.n_iter == n_iter
     assert conf1.tol == tol
@@ -48,5 +47,3 @@ def test_from_args_to_dict_from_dict(n_iter,tol,ard):
     assert conf2.l_bfgs_b_l == 0.1
     assert conf2.l_bfgs_b_epsilon == 0.1
     assert conf2.l_bfgs_b_norm == "l2"
-
-            
