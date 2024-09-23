@@ -550,22 +550,28 @@ class NormBase(ABC):
         elif source_array == "X":
             source_array = data.X
 
+        # Every basis expansion has a linear component, so we always include the original data
         all_arrays = [source_array.data]
+
+        # Get the original named dimensions of the data
         all_dims = list(data.covariates.to_numpy())
 
         # Create a new array with the expanded basis
         basis_expansion = self.norm_conf.basis_function
         basis_column = self.norm_conf.basis_column
         if basis_expansion == "polynomial":
-            order = self.norm_conf.order
+            # Expand the basis with polynomial basis functions
             expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], order
+                source_array.data[:, basis_column], self.norm_conf.order
             )
+            # Add the expanded basis to the list of arrays
             all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
             all_dims.extend(
                 [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
             )
         elif basis_expansion == "bspline":
+            # Expand the basis with bspline basis functions
             if not hasattr(self, "bspline_basis"):
                 order = self.norm_conf.order
                 nknots = self.norm_conf.nknots
@@ -583,10 +589,15 @@ class NormBase(ABC):
             expanded_basis = np.array(
                 [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
             )
+            # Add the expanded basis to the list of arrays
             all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
             all_dims.extend(
                 [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
             )
+        elif basis_expansion in ["none", "linear"]:
+            # Do not expand the basis
+            pass
 
         if intercept:
             all_dims.append("intercept")

@@ -15,7 +15,7 @@ from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pytest_tests.fixtures.path_fixtures import *
-from pytest_tests.fixtures.model_fixtures import *
+from pytest_tests.fixtures.hbr_model_fixtures import *
 
 
 """This file contains tests for the NormFactory class in the PCNtoolkit.

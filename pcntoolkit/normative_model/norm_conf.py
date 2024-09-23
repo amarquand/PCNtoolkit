@@ -137,7 +137,7 @@ class NormConf:
                 add_problem(f"cv_folds must be at least 2, but is {self.cv_folds}")
 
     def detect_basis_function_problem(self, add_problem):
-        acceptable_basis_functions = ["linear", "polynomial", "bspline"]
+        acceptable_basis_functions = ["linear", "polynomial", "bspline", "none"]
         if not isinstance(self.basis_function, str):
             add_problem(
                 f"basis_function_type is not a string, but {type(self.basis_function).__name__}"
