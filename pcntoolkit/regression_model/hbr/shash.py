@@ -35,6 +35,7 @@ def numpy_P(q):
 
 def numpy_K(p, x):
     """
+    Assumes x is a scalar
     Computes the values of spp.kv(p,x) for only the unique values of p
     """
 
@@ -204,7 +205,7 @@ shasho = SHASHoRV()
 class SHASHo(Continuous):
     rv_op = shasho
     """
-    This is the transformation where the location and scale parameters have simply been applied as an linear transformation directly on the original distribution.
+    Here the location and scale parameters have simply been applied as an linear transformation directly on the SHASH distribution.
     """
 
     @classmethod
@@ -249,7 +250,7 @@ shasho2 = SHASHo2RV()
 class SHASHo2(Continuous):
     rv_op = shasho2
     """
-    This is the reparameterization where we apply the transformation provided in section 4.3 in Jones et al.
+    Here the reparameterization from section 4.3 in Jones et al. has been applied.
     """
 
     @classmethod
@@ -307,7 +308,7 @@ shashb = SHASHbRV()
 class SHASHb(Continuous):
     rv_op = shashb
     """
-    This is the reparameterization where the location and scale parameters been applied as an linear transformation on the shash distribution which was corrected for mean and variance.
+    Here the location and scale parameters have been applied as a linear transformation on a standardized SHASH distribution.
     """
 
     @classmethod
