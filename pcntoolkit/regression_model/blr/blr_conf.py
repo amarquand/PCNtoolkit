@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 
-from pcntoolkit.regression_model.blr.warp import WarpBase, WarpAffine, WarpCompose, WarpLog, WarpSinArcsinh, WarpBoxCox
+from pcntoolkit.regression_model.blr.warp import (
+    WarpBase,
+    WarpAffine,
+    WarpCompose,
+    WarpLog,
+    WarpSinArcsinh,
+    WarpBoxCox,
+)
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 # Default configuration values
@@ -12,6 +19,7 @@ L_BFGS_B_L = 0.1
 L_BFGS_B_EPSILON = 0.1
 L_BFGS_B_NORM = "l2"
 
+
 @dataclass(frozen=True)
 class BLRConf(RegConf):
     # some configuration parameters
@@ -22,7 +30,7 @@ class BLRConf(RegConf):
     ard: bool = ARD
 
     # optimization parameters
-    optimizer:str = OPTIMIZER # options: "l-bfgs-b", "cg", "powell", " nelder-mead"
+    optimizer: str = OPTIMIZER  # options: "l-bfgs-b", "cg", "powell", " nelder-mead"
     l_bfgs_b_l: float = L_BFGS_B_L
     l_bfgs_b_epsilon: float = L_BFGS_B_EPSILON
     l_bfgs_b_norm: str = L_BFGS_B_NORM
