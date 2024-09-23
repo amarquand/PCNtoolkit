@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from scipy import optimize
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -27,15 +28,16 @@ class NormBLR(NormBase):
         self = cls(norm_conf, hbrconf)
         return self
 
-    def _fit(self, data: NormData):
+    def _fit(self, data: NormData, hyp0=None):
         """
         Fit self.model on data.
         Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         """
-        raise NotImplementedError(
-            f"Fit method not implemented for {self.__class__.__name__}"
-        )
+        self.current_regression_model.fit(data.Phi, data.y, hyp0)
+
+        # assert the model is fitted
+        assert self.current_regression_model.is_fitted == True
 
     def _predict(self, data: NormData) -> NormData:
         """
@@ -140,3 +142,4 @@ class NormBLR(NormBase):
         raise NotImplementedError(
             f"n_params method not implemented for {self.__class__.__name__}"
         )
+

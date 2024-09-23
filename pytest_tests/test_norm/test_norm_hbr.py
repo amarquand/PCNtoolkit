@@ -7,7 +7,7 @@ from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pytest_tests.fixtures.data_fixtures import *
-from pytest_tests.fixtures.model_fixtures import *
+from pytest_tests.fixtures.hbr_model_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.norm_data_fixtures import *
 

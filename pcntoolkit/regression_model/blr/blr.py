@@ -27,6 +27,61 @@ class BLR(RegressionModel):
         self.Lambda_a = None # prior precision
         # self.gamma = None # Not used if warp is not used
 
+    def fit(self, X, y, hyp0=None):
+        if hyp0 is None:
+            if self.ard:
+                hyp0 = np.zeros(X.shape[1] + 1)
+            else:
+                hyp0 = np.zeros(2)
+
+        match self.reg_conf.optimizer.lower():
+            case "cg":
+                out = optimize.fmin_cg(f=self.loglik, 
+                                        x0=hyp0,
+                                        fprime=self.dloglik,
+                                        args=(X, y),
+                                        gtol=self.tol,
+                                        maxiter=self.n_iter,
+                                        full_output=1)
+            case "powell":
+                out = optimize.fmin_powell(func=self.loglik,
+                                           x0=hyp0,
+                                           args=(X, y),
+                                           full_output=1)
+            case "nelder-mead":
+                out = optimize.fmin(func=self.loglik,
+                                    x0=hyp0,
+                                    args=(X, y),
+                                    full_output=1)
+            case "l-bfgs-b":
+                all_hyp_i = [hyp0]
+
+                def store(X):
+                    hyp = X
+                    all_hyp_i.append(hyp)
+
+                try:
+                    out = optimize.fmin_l_bfgs_b(func=self.penalized_loglik,
+                                                 x0=hyp0,
+                                                 args=(X, y, self.l, self.norm),
+                                                 approx_grad = True,
+                                                 epsilon=self.epsilon,
+                                                 callback=store)
+                except np.linalg.LinAlgError as e:
+                    print(f'Restarting estimation at hyp = {all_hyp_i[-1]}, due to *** numpy.linalg.LinAlgError: Matrix is singular.\n{e}')
+                    out = optimize.fmin_l_bfgs_b(func=self.penalized_loglik,
+                                                 x0=all_hyp_i[-1],
+                                                 args=(X, y, self.l, self.norm),
+                                                 approx_grad = True,
+                                                 epsilon=self.epsilon,
+                                                 callback=store)
+
+            case _:
+                raise ValueError(f"Optimizer {self.reg_conf.optimizer} not recognized.")
+        self.hyp = out[0]
+        self.nlZ = out[1]
+        self.is_fitted=True
+
     def parse_hyps(self, hyp, X):
 
         N = X.shape[0]
@@ -290,3 +345,30 @@ class BLR(RegressionModel):
         self.Lambda_a =  np.array(args.get("Lambda_a", None))
         return self
     
+    @property
+    def tol(self):
+        return self.reg_conf.tol
+    
+    @property
+    def n_iter(self):
+        return self.reg_conf.n_iter
+    
+    @property
+    def optimizer(self):
+        return self.reg_conf.optimizer
+    
+    @property
+    def ard(self):
+        return self.reg_conf.ard
+    
+    @property
+    def l(self):
+        return self.reg_conf.l_bfgs_b_l
+
+    @property
+    def epsilon(self):
+        return self.reg_conf.l_bfgs_b_epsilon
+
+    @property
+    def norm(self):
+        return self.reg_conf.l_bfgs_b_norm

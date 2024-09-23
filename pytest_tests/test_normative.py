@@ -6,7 +6,7 @@ import pytest
 
 import pcntoolkit.normative as normative
 
-from pytest_tests.fixtures.model_fixtures import *
+from pytest_tests.fixtures.hbr_model_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.data_fixtures import *
 
