@@ -7,11 +7,13 @@ import arviz as az
 import numpy as np
 import pymc as pm
 import xarray as xr
+import scipy.stats as stats
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
 
 from .hbr_conf import HBRConf
 
@@ -28,6 +30,210 @@ class HBR(RegressionModel):
         super().__init__(name, reg_conf, is_fitted, is_from_dict)
         self.idata: az.InferenceData = None
         self.pymc_model = None
+
+    def fit(self, hbrdata:HBRData, make_new_model:bool=True):
+                # Make a new model if needed
+        if make_new_model or (not self.pymc_model):
+            self.create_pymc_graph(hbrdata)
+
+        # Sample from pymc model
+        with self.pymc_model:
+            self.idata = pm.sample(
+                self.reg_conf.draws,
+                tune=self.reg_conf.tune,
+                cores=self.reg_conf.cores,
+                chains=self.reg_conf.chains,
+                # var_names=["y_pred"],
+            )
+
+        # Set the is_fitted flag to True
+        self.is_fitted = True
+
+    def predict(self, hbrdata:HBRData):
+        # Create a new pymc model if needed
+        if not self.pymc_model:
+            self.create_pymc_graph(hbrdata)
+
+        # Set the data in the model
+        hbrdata.set_data_in_existing_model(self.pymc_model)
+
+        if "posterior_predictive" in self.idata:
+            del self.idata.posterior_predictive
+
+        # Sample from the posterior predictive
+        with self.pymc_model:
+            pm.sample_posterior_predictive(
+                self.idata,
+                extend_inferencedata=True,
+                var_names=self.get_var_names() + ["y_pred"],
+            )
+
+    def fit_predict(self, fit_hbrdata:HBRData, predict_hbrdata:HBRData):
+
+        # Make a new model if needed
+        if not self.pymc_model:
+            self.create_pymc_graph(fit_hbrdata)
+
+        # Sample from pymc model
+        with self.pymc_model:
+            self.idata = pm.sample(
+                self.reg_conf.draws,
+                tune=self.reg_conf.tune,
+                cores=self.reg_conf.cores,
+                chains=self.reg_conf.chains,
+            )
+
+        # Set the is_fitted flag to True
+        self.is_fitted = True
+
+        # Set the data in the model
+        predict_hbrdata.set_data_in_existing_model(
+            self.pymc_model
+        )
+
+        # Sample from the posterior predictive
+        with self.pymc_model:
+            pm.sample_posterior_predictive(
+                self.idata,
+                extend_inferencedata=True,
+                var_names=self.get_var_names() + ["y_pred"],
+            )
+
+    def transfer(self, hbrconf, transferdata, freedom):
+
+        new_hbr_model = HBR(self.name, hbrconf)
+
+        # new_hbr_model.transfer(transferdata, freedom)
+
+        # Create a new model, using the idata from the original model to inform the priors
+        new_hbr_model.create_pymc_graph(
+            transferdata, self.idata, freedom
+        )
+
+        # Sample using the new model
+        with new_hbr_model.pymc_model:
+            new_hbr_model.idata = pm.sample(
+                hbrconf.draws,
+                tune=hbrconf.tune,
+                cores=hbrconf.cores,
+                chains=hbrconf.chains,
+            )
+            new_hbr_model.is_fitted = True
+
+        return new_hbr_model
+
+    def centiles(self, hbrdata:HBRData, cummulative_densities: list[float], resample=True) -> xr.DataArray:
+        var_names = self.get_var_names()
+
+        # Create a new pymc model if needed
+        if not self.pymc_model:
+            self.create_pymc_graph(hbrdata)
+
+        # Set the data in the model
+        hbrdata.set_data_in_existing_model(self.pymc_model)
+
+        # Delete the posterior predictive if it exists
+        if "posterior_predictive" in self.idata:
+            del self.idata.posterior_predictive
+
+        # Sample from the posterior predictive
+        with self.pymc_model:
+            pm.sample_posterior_predictive(
+                self.idata,
+                extend_inferencedata=True,
+                var_names=var_names + ["y_pred"],
+            )
+
+        # Extract the posterior predictive
+        post_pred = az.extract(
+            self.idata,
+            "posterior_predictive",
+            var_names=var_names,
+        )
+
+        # Separate the samples into a list so that they can be unpacked
+        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+
+        # Create an array to hold the centiles
+        n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
+        centiles = np.zeros((len(cummulative_densities), n_datapoints, n_mcmc_samples))
+
+        # Compute the centiles iteratively for each cummulative density
+        for i, cdf in enumerate(cummulative_densities):
+            zs = np.full(
+                (n_datapoints, n_mcmc_samples), stats.norm.ppf(cdf), dtype=float
+            )
+            centiles[i] = xr.apply_ufunc(
+                centile,
+                *array_of_vars,
+                kwargs={"zs": zs},
+            )
+        pass
+
+        return xr.DataArray(
+            centiles,
+            dims=["cummulative_densities", "datapoints", "sample"],
+            coords={"cummulative_densities": cummulative_densities},
+        ).mean(dim="sample")
+    
+
+    def zscores(self, hbrdata:HBRData, resample=False) -> xr.DataArray:
+
+        var_names = self.get_var_names()
+        if resample:
+            # Create a new pymc model if needed
+            if self.pymc_model is None:
+                self.create_pymc_graph(hbrdata)
+
+            # Set the data in the model
+            hbrdata.set_data_in_existing_model(self.pymc_model)
+
+            # Delete the posterior predictive if it exists
+            if "posterior_predictive" in self.idata:
+                del self.idata.posterior_predictive
+
+            # Sample from the posterior predictive
+            with self.pymc_model:
+                pm.sample_posterior_predictive(
+                    self.idata,
+                    extend_inferencedata=True,
+                    var_names=var_names + ["y_pred"],
+                )
+
+        # Extract the posterior predictive
+        post_pred = az.extract(
+            self.idata,
+            "posterior_predictive",
+            var_names=var_names,
+        )
+
+        # Separate the samples into a list so that they can be unpacked
+        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+
+        zscores = xr.apply_ufunc(
+            zscore,
+            *array_of_vars,
+            kwargs={"y": hbrdata.y[:,None]},
+        ).mean(dim="sample")
+
+        return zscores
+
+    def get_var_names(self):
+        likelihood = self.reg_conf.likelihood
+        # Determine the variables to predict
+        if likelihood == "Normal":
+            var_names = ["mu_samples", "sigma_samples"]
+        elif likelihood.startswith("SHASH"):
+            var_names = [
+                "mu_samples",
+                "sigma_samples",
+                "epsilon_samples",
+                "delta_samples",
+            ]
+
+        else:
+            raise RuntimeError("Unsupported likelihood " + likelihood)
+        return var_names
 
     def create_pymc_graph(
         self, data: HBRData, idata: az.InferenceData = None, freedom=1
