@@ -4,16 +4,23 @@ from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 
+# Default configuration values
+DRAWS = 1000
+TUNE = 1000
+CHAINS = 2
+CORES = 1
+LIKELIHOOD = "Normal"
+
 @dataclass(frozen=True)
 class HBRConf(RegConf):
     # sampling config
-    draws: int = 1000
-    tune: int = 1000
-    chains: int = 2
-    cores: int = 1
+    draws: int = DRAWS
+    tune: int = TUNE
+    chains: int = CHAINS
+    cores: int = CORES
 
     # model config
-    likelihood: str = "Normal"
+    likelihood: str = LIKELIHOOD
 
     # prior config with defaults
     mu: Param = field(default_factory=Param.default_mu)
