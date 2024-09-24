@@ -12,9 +12,11 @@ from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 
 
 class NormBLR(NormBase):
-    def __init__(self, norm_conf: NormConf, reg_conf: BLRConf):
+    def __init__(self, norm_conf: NormConf, reg_conf: BLRConf = None):
         super().__init__(norm_conf)
-        self.reg_conf: BLRConf = reg_conf
+        if reg_conf is None:
+            reg_conf = BLRConf
+        self.default_reg_conf: BLRConf = reg_conf
         self.regression_model_type = BLR
         self.current_regression_model: BLR = None
 
@@ -30,24 +32,21 @@ class NormBLR(NormBase):
 
     def _fit(self, data: NormData, hyp0=None):
         """
-        Fit self.model on data.
-        Will be called for each model in self.regression_models from the super class.
-        Data contains only the response variable for the current model.
+        Fit model on data.
         """
         self.current_regression_model.fit(data.Phi, data.y, hyp0)
 
         # assert the model is fitted
         assert self.current_regression_model.is_fitted == True
 
-    def _predict(self, data: NormData) -> NormData:
+    def _predict(
+        self,
+        data: NormData,
+    ) -> NormData:
         """
-        Make predictions on data using self.model.
-        Will be called for each model in self.regression_models from the super class.
-        Data contains only the response variable for the current model.
+        Make predictions on data using model.
         """
-        raise NotImplementedError(
-            f"Predict method not implemented for {self.__class__.__name__}"
-        )
+        self.current_regression_model.predict(data.Phi)
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
