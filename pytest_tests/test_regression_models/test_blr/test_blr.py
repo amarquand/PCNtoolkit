@@ -49,28 +49,44 @@ def test_parse_hyps(blr, norm_data_from_arrays):
 
 def test_post(blr, norm_data_from_arrays: NormData):
     X = norm_data_from_arrays.X
-    y = norm_data_from_arrays.y
-    hyp = np.zeros(X.shape[1] + 1)
-
-    blr.post(hyp, X.to_numpy(), y.to_numpy())
-
-    assert (blr.hyp == hyp).all()
-
-
-def test_loglik():
-    pass
+    for response_var in norm_data_from_arrays.response_vars:
+        y = norm_data_from_arrays.sel(response_vars=response_var).y
+        hyp = np.zeros(X.shape[1] + 1)
+        blr.post(hyp, X.to_numpy(), y.to_numpy())
+        assert (blr.hyp == hyp).all()
 
 
-def test_penalized_loglik():
-    pass
+def test_loglik(blr, norm_data_from_arrays: NormData):
+    X = norm_data_from_arrays.X
+    for response_var in norm_data_from_arrays.response_vars:
+        y = norm_data_from_arrays.sel(response_vars=response_var).y
+        hyp = np.zeros(X.shape[1] + 1)
+        blr.loglik(hyp, X.to_numpy(), y.to_numpy())
+        assert (blr.hyp == hyp).all()
 
 
-def test_dloglik():
-    pass
+def test_penalized_loglik(blr, norm_data_from_arrays: NormData, l=0.1, norm="L1"):
+    X = norm_data_from_arrays.X
+    for response_var in norm_data_from_arrays.response_vars:
+        y = norm_data_from_arrays.sel(response_vars=response_var).y
+        hyp = np.zeros(X.shape[1] + 1)
+        blr.penalized_loglik(hyp, X.to_numpy(), y.to_numpy(), l=l, norm=norm)
+        assert (blr.hyp == hyp).all()
+
+
+def test_dloglik(blr, norm_data_from_arrays: NormData):
+    X = norm_data_from_arrays.X
+    for response_var in norm_data_from_arrays.response_vars:
+        y = norm_data_from_arrays.sel(response_vars=response_var).y
+        hyp = np.zeros(X.shape[1] + 1)
+        dloglik = blr.dloglik(hyp, X.to_numpy(), y.to_numpy())
+        assert dloglik.shape == hyp.shape
 
 
 def test_fit(blr, norm_data_from_arrays: NormData):
     X = norm_data_from_arrays.X
-    y = norm_data_from_arrays.y
-    blr.fit(X, y)
-    assert blr.is_fitted
+    for response_var in norm_data_from_arrays.response_vars:
+        y = norm_data_from_arrays.sel(response_vars=response_var).y
+        blr.fit(X.to_numpy(), y.to_numpy())
+        assert blr.is_fitted
+        break

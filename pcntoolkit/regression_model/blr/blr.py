@@ -26,6 +26,7 @@ class BLR(RegressionModel):
         self.lambda_n_vec = None  # precision matrix
         self.Sigma_a = None  # prior covariance
         self.Lambda_a = None  # prior precision
+        self.warp = None
         # self.gamma = None # Not used if warp is not used
 
     def fit(self, X, y, hyp0=None):
@@ -60,6 +61,7 @@ class BLR(RegressionModel):
                 def store(X):
                     hyp = X
                     all_hyp_i.append(hyp)
+
                 try:
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
@@ -79,14 +81,19 @@ class BLR(RegressionModel):
                         args=(X, y, self.l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
-                        callback=store,
                     )
 
             case _:
                 raise ValueError(f"Optimizer {self.reg_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
+        self.beta, _, _ = self.parse_hyps(self.hyp, X)
         self.is_fitted = True
+
+    def predict(self, X):
+        raise NotImplementedError("Predict method not implemented for BLR.")
+        # TODO Find out why we need the train data to predict, and see if we can remove this dependency by saving the quantities needed for prediction in the model.
+        # Note: verify that the privacy of the training data is not compromised by saving those quantities.
 
     def parse_hyps(self, hyp, X):
 
@@ -204,13 +211,7 @@ class BLR(RegressionModel):
         """Function to compute derivatives"""
 
         # hyperparameters
-        beta, alpha = self._parse_hyps(hyp, X)
-
-        if self.warp is not None:
-            raise ValueError(
-                "optimization with derivatives is not yet "
-                + "supported for warped liklihood"
-            )
+        beta, alpha = self.parse_hyps(hyp, X)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not (hasattr(self, "A")):
@@ -238,11 +239,7 @@ class BLR(RegressionModel):
         # noise precision parameter(s)
         for i in range(0, len(beta)):
             # first compute derivative of Lambda_n with respect to beta
-            dL_n_vec = np.zeros(self.N)
-            if self.var_groups is None:
-                dL_n_vec = np.ones(self.N)
-            else:
-                dL_n_vec[np.where(self.var_groups == self.var_ids[i])[0]] = 1
+            dL_n_vec = np.ones(self.N)
             dLambda_n = np.diag(dL_n_vec)
 
             # compute quantities used multiple times
@@ -305,10 +302,6 @@ class BLR(RegressionModel):
             bad = np.where(np.logical_not(np.isfinite(dnlZ)))
             for b in bad:
                 dnlZ[b] = np.sign(self.dnlZ[b]) / np.finfo(float).eps
-
-        if self.verbose:
-
-            print("dnlZ= ", dnlZ, " | hyp=", hyp)
 
         self.dnlZ = dnlZ
         return dnlZ
