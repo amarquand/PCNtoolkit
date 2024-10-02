@@ -135,13 +135,14 @@ class NormHBR(NormBase):
             "random_noise", "True") == "True"
         self.configs["likelihood"] = kwargs.get("likelihood", "Normal")
         # sampler settings
+        self.configs["nuts_sampler"] = kwargs.get("nuts_sampler", "pymc")
         self.configs["n_samples"] = int(kwargs.get("n_samples", "1000"))
         self.configs["n_tuning"] = int(kwargs.get("n_tuning", "500"))
         self.configs["n_chains"] = int(kwargs.get("n_chains", "1"))
         self.configs["sampler"] = kwargs.get("sampler", "NUTS")
         self.configs["target_accept"] = float(
             kwargs.get("target_accept", "0.8"))
-        self.configs["init"] = kwargs.get("init", "jitter+adapt_diag")
+        self.configs["init"] = kwargs.get("init", "jitter+adapt_diag_grad")
         self.configs["cores"] = int(kwargs.get("cores", "1"))
         self.configs["remove_datapoints_from_posterior"] = kwargs.get(
             "remove_datapoints_from_posterior", "True") == "True"

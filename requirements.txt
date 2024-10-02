@@ -10,4 +10,6 @@ pandas>=0.25.3
 torch>=1.1.0
 sphinx-tabs
 pymc>=5.1.0
-arviz==0.13.0
+arviz
+numba
+nutpie

@@ -7,10 +7,11 @@ def parse_requirements(filename):
         lineiter = (line.strip() for line in f)
         return [line for line in lineiter if line and not line.startswith("#")]
 
+
 requirements = parse_requirements('requirements.txt')
 
 # Note: to force PyPI to overwrite a version without bumping the version number
-#       use e.g.: 
+#       use e.g.:
 #       version = '0.29-1'
 
 setup(name='pcntoolkit',
