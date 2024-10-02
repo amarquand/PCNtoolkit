@@ -448,6 +448,7 @@ class HBR:
                 init=self.configs["init"],
                 n_init=500000,
                 cores=self.configs["cores"],
+                nuts_sampler=self.configs["nuts_sampler"],
             )
         self.vars_to_sample = ['y_like']
         if self.configs['remove_datapoints_from_posterior']:
@@ -559,6 +560,7 @@ class HBR:
                 init=self.configs["init"],
                 n_init=50000,
                 cores=self.configs["cores"],
+                nuts_sampler=self.configs["nuts_sampler"],
             )
         return self.idata
 
