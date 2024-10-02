@@ -40,7 +40,6 @@ except ImportError:
 
 
 class NormHBR(NormBase):
-
     """HBR multi-batch normative modelling class. By default, this function
     estimates a linear model with random intercept, random slope, and random
     homoscedastic noise.
@@ -144,8 +143,9 @@ class NormHBR(NormBase):
             kwargs.get("target_accept", "0.8"))
         self.configs["init"] = kwargs.get("init", "jitter+adapt_diag_grad")
         self.configs["cores"] = int(kwargs.get("cores", "1"))
-        self.configs["remove_datapoints_from_posterior"] = kwargs.get(
-            "remove_datapoints_from_posterior", "True") == "True"
+        self.configs["remove_datapoints_from_posterior"] = (
+            kwargs.get("remove_datapoints_from_posterior", "True") == "True"
+        )
         # model transfer setting
         self.configs["freedom"] = int(kwargs.get("freedom", "1"))
         self.configs["transferred"] = False
@@ -261,8 +261,8 @@ class NormHBR(NormBase):
         """
         Sample from the posterior of the Hierarchical Bayesian Regression model.
 
-        This function samples from the posterior distribution of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'. 
-        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data. 
+        This function samples from the posterior distribution of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'.
+        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data.
         Otherwise, the batch effects are initialized as zeros.
 
         :param X: Data matrix.
@@ -291,9 +291,9 @@ class NormHBR(NormBase):
         """
         Predict the target values for the given test data.
 
-        This function predicts the target values for the given test data 'Xs' using the Hierarchical Bayesian Regression (HBR) model. 
-        If 'X' and 'Y' are provided, they are used to update the model before prediction. 
-        If 'tsbefile' is provided in kwargs, it is used to as batch effects for the test data. 
+        This function predicts the target values for the given test data 'Xs' using the Hierarchical Bayesian Regression (HBR) model.
+        If 'X' and 'Y' are provided, they are used to update the model before prediction.
+        If 'tsbefile' is provided in kwargs, it is used to as batch effects for the test data.
         Otherwise, the batch effects are initialized as zeros.
 
         :param Xs: Test data matrix.
@@ -332,8 +332,8 @@ class NormHBR(NormBase):
         """
         Samples from the posterior of the Hierarchical Bayesian Regression model.
 
-        This function samples from the posterior of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'. The posterior samples from the previous iteration are used to construct the priors for this one.  
-        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data. 
+        This function samples from the posterior of the Hierarchical Bayesian Regression (HBR) model given the data matrix 'X' and target 'y'. The posterior samples from the previous iteration are used to construct the priors for this one.
+        If 'trbefile' is provided in kwargs, it is used as batch effects for the training data.
         Otherwise, the batch effects are initialized as zeros.
 
         :param X: Data matrix.
@@ -350,7 +350,7 @@ class NormHBR(NormBase):
         """
         Predict the target values for the given test data on new sites.
 
-        This function predicts the target values for the given test data 'X' on new sites using the Hierarchical Bayesian Regression (HBR) model. 
+        This function predicts the target values for the given test data 'X' on new sites using the Hierarchical Bayesian Regression (HBR) model.
         The batch effects for the new sites must be provided.
 
         :param X: Test data matrix for the new sites.
@@ -373,8 +373,8 @@ class NormHBR(NormBase):
         """
         Extend the Hierarchical Bayesian Regression model using data sampled from the posterior predictive distribution.
 
-        This function extends the Hierarchical Bayesian Regression (HBR) model, given the data matrix 'X' and target 'y'. 
-        It also generates data from the posterior predictive distribution and merges it with the new data before estimation. 
+        This function extends the Hierarchical Bayesian Regression (HBR) model, given the data matrix 'X' and target 'y'.
+        It also generates data from the posterior predictive distribution and merges it with the new data before estimation.
         If 'informative_prior' is True, it uses the adapt method for estimation. Otherwise, it uses the estimate method.
 
         :param X: Data matrix for the new sites.
@@ -427,11 +427,13 @@ class NormHBR(NormBase):
         """
         This function tunes the Hierarchical Bayesian Regression model using data sampled from the posterior predictive distribution. Its behavior is not tested, and it is unclear if the desired behavior is achieved.
         """
-        
-        #TODO need to check if this is correct
 
-        print("The 'tune' function is being called, but it is currently in development and its behavior is not tested. It is unclear if the desired behavior is achieved. Any output following this should be treated as unreliable.")
-        
+        # TODO need to check if this is correct
+
+        print(
+            "The 'tune' function is being called, but it is currently in development and its behavior is not tested. It is unclear if the desired behavior is achieved. Any output following this should be treated as unreliable."
+        )
+
         tune_ids = list(np.unique(batch_effects[:, merge_batch_dim]))
 
         X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(
@@ -516,7 +518,7 @@ class NormHBR(NormBase):
         Args:
             X ([N*p]ndarray): covariates for which the quantiles are computed (must be scaled if scaler is set)
             batch_effects (ndarray): the batch effects corresponding to X
-            z_scores (ndarray): Use this to determine which quantiles will be computed. The resulting quantiles will have the z-scores given in this list. 
+            z_scores (ndarray): Use this to determine which quantiles will be computed. The resulting quantiles will have the z-scores given in this list.
         """
         # Set batch effects to zero if none are provided
         if batch_effects is None:
@@ -525,9 +527,9 @@ class NormHBR(NormBase):
         # Set the z_scores for which the quantiles are computed
         if z_scores is None:
             z_scores = np.arange(-3, 4)
-        likelihood = self.configs['likelihood']
+        likelihood = self.configs["likelihood"]
 
-       # Determine the variables to predict
+        # Determine the variables to predict
         if self.configs["likelihood"] == "Normal":
             var_names = ["mu_samples", "sigma_samples", "sigma_plus_samples"]
         elif self.configs["likelihood"].startswith("SHASH"):
@@ -543,24 +545,21 @@ class NormHBR(NormBase):
             exit("Unknown likelihood: " + self.configs["likelihood"])
 
         # Delete the posterior predictive if it already exists
-        if 'posterior_predictive' in self.hbr.idata.groups():
+        if "posterior_predictive" in self.hbr.idata.groups():
             del self.hbr.idata.posterior_predictive
 
         if self.configs["transferred"] == True:
-            self.predict_on_new_sites(
-                X=X, 
-                batch_effects=batch_effects     
-            )
-            #var_names = ["y_like"]       
-        else: 
+            self.predict_on_new_sites(X=X, batch_effects=batch_effects)
+            # var_names = ["y_like"]
+        else:
             self.hbr.predict(
-        # Do a forward to get the posterior predictive in the idata
+                # Do a forward to get the posterior predictive in the idata
                 X=X,
                 batch_effects=batch_effects,
                 batch_effects_maps=self.batch_effects_maps,
                 pred="single",
-                var_names=var_names+["y_like"],
-             )
+                var_names=var_names + ["y_like"],
+            )
 
         # Extract the relevant samples from the idata
         post_pred = az.extract(
@@ -568,9 +567,9 @@ class NormHBR(NormBase):
         )
 
         # Remove superfluous var_nammes
-        var_names.remove('sigma_samples')
-        if 'delta_samples' in var_names:
-            var_names.remove('delta_samples')
+        var_names.remove("sigma_samples")
+        if "delta_samples" in var_names:
+            var_names.remove("delta_samples")
 
         # Separate the samples into a list so that they can be unpacked
         array_of_vars = list(map(lambda x: post_pred[x], var_names))
@@ -586,7 +585,7 @@ class NormHBR(NormBase):
             quantiles[i] = xarray.apply_ufunc(
                 quantile,
                 *array_of_vars,
-                kwargs={"zs": zs, "likelihood":  self.configs['likelihood']},
+                kwargs={"zs": zs, "likelihood": self.configs["likelihood"]},
             )
         return quantiles.mean(axis=-1)
 
@@ -599,12 +598,12 @@ class NormHBR(NormBase):
             y ([N*1]ndarray): response variables
         """
 
-        print(self.configs['likelihood'])
+        print(self.configs["likelihood"])
 
         tsbefile = kwargs.get("tsbefile", None)
         if tsbefile is not None:
             batch_effects_test = fileio.load(tsbefile)
-        else:         # Set batch effects to zero if none are provided
+        else:  # Set batch effects to zero if none are provided
             print("Could not find batch-effects file! Initializing all as zeros ...")
             batch_effects_test = np.zeros([X.shape[0], 1])
 
@@ -624,7 +623,7 @@ class NormHBR(NormBase):
             exit("Unknown likelihood: " + self.configs["likelihood"])
 
         # Delete the posterior predictive if it already exists
-        if 'posterior_predictive' in self.hbr.idata.groups():
+        if "posterior_predictive" in self.hbr.idata.groups():
             del self.hbr.idata.posterior_predictive
 
         # Do a forward to get the posterior predictive in the idata
@@ -633,7 +632,7 @@ class NormHBR(NormBase):
             batch_effects=batch_effects_test,
             batch_effects_maps=self.batch_effects_maps,
             pred="single",
-            var_names=var_names+["y_like"],
+            var_names=var_names + ["y_like"],
         )
 
         # Extract the relevant samples from the idata
@@ -642,9 +641,9 @@ class NormHBR(NormBase):
         )
 
         # Remove superfluous var_names
-        var_names.remove('sigma_samples')
-        if 'delta_samples' in var_names:
-            var_names.remove('delta_samples')
+        var_names.remove("sigma_samples")
+        if "delta_samples" in var_names:
+            var_names.remove("delta_samples")
 
         # Separate the samples into a list so that they can be unpacked
         array_of_vars = list(map(lambda x: post_pred[x], var_names))
@@ -656,7 +655,7 @@ class NormHBR(NormBase):
         z_scores = xarray.apply_ufunc(
             z_score,
             *array_of_vars,
-            kwargs={"y": y, "likelihood": self.configs['likelihood']},
+            kwargs={"y": y, "likelihood": self.configs["likelihood"]},
         )
         return z_scores.mean(axis=-1).values
 
@@ -704,19 +703,19 @@ def m(epsilon, delta, r):
 
 def quantile(mu, sigma, epsilon=None, delta=None, zs=0, likelihood="Normal"):
     """Get the zs'th quantiles given likelihood parameters"""
-    if likelihood.startswith('SHASH'):
+    if likelihood.startswith("SHASH"):
         if likelihood == "SHASHo":
-            quantiles = S_inv(zs, epsilon, delta)*sigma + mu
+            quantiles = S_inv(zs, epsilon, delta) * sigma + mu
         elif likelihood == "SHASHo2":
-            sigma_d = sigma/delta
-            quantiles = S_inv(zs, epsilon, delta)*sigma_d + mu
+            sigma_d = sigma / delta
+            quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
         elif likelihood == "SHASHb":
             true_mu = m(epsilon, delta, 1)
-            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-            SHASH_c = ((S_inv(zs, epsilon, delta)-true_mu)/true_sigma)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
             quantiles = SHASH_c * sigma + mu
-    elif likelihood == 'Normal':
-        quantiles = zs*sigma + mu
+    elif likelihood == "Normal":
+        quantiles = zs * sigma + mu
     else:
         exit("Unsupported likelihood")
     return quantiles
@@ -724,22 +723,22 @@ def quantile(mu, sigma, epsilon=None, delta=None, zs=0, likelihood="Normal"):
 
 def z_score(mu, sigma, epsilon=None, delta=None, y=None, likelihood="Normal"):
     """Get the z-scores of Y, given likelihood parameters"""
-    if likelihood.startswith('SHASH'):
+    if likelihood.startswith("SHASH"):
         if likelihood == "SHASHo":
-            SHASH = (y-mu)/sigma
-            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+            SHASH = (y - mu) / sigma
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
         elif likelihood == "SHASHo2":
-            sigma_d = sigma/delta
-            SHASH = (y-mu)/sigma_d
-            Z = np.sinh(np.arcsinh(SHASH)*delta - epsilon)
+            sigma_d = sigma / delta
+            SHASH = (y - mu) / sigma_d
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
         elif likelihood == "SHASHb":
             true_mu = m(epsilon, delta, 1)
-            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu ** 2))
-            SHASH_c = ((y-mu)/sigma)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (y - mu) / sigma
             SHASH = SHASH_c * true_sigma + true_mu
             Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == 'Normal':
-        Z = (y-mu)/sigma
+    elif likelihood == "Normal":
+        Z = (y - mu) / sigma
     else:
         exit("Unsupported likelihood")
     return Z
