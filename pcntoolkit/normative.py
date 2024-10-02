@@ -522,7 +522,8 @@ def estimate(covfile, respfile, **kwargs):
                     if warp is not None:
                         # TODO: Warping for scaled data
                         if outscaler is not None and outscaler != 'None':
-                            raise ValueError("outscaler not yet supported warping")
+                            raise ValueError(
+                                "outscaler not yet supported warping")
                         warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1]
                         Ywarp[ts, nz[i]] = nm.blr.warp.f(
                             Y[ts, nz[i]], warp_param)
@@ -804,7 +805,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         Y, maskvol = load_response_vars(respfile, maskfile)
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
-            
+
     sample_num = X.shape[0]
     if models is not None:
         feature_num = len(models)
@@ -853,13 +854,13 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if respfile is not None:
             if alg == 'hbr':
                 # Z scores for HBR must be computed independently for each model
-                Z[:,i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
-            
+                Z[:, i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
+
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
 
         return (Yhat, S2)
-    
+
     else:
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
@@ -891,9 +892,9 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Y = Yw
         else:
             warp = False
-        
+
         if alg != 'hbr':
-            # For HBR the Z scores are already computed 
+            # For HBR the Z scores are already computed
             Z = (Y - Yhat) / np.sqrt(S2)
 
         print("Evaluating the model ...")

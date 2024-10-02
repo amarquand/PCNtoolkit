@@ -24,7 +24,7 @@ filterwarnings('ignore')
 
 random_state = 29
 
-working_dir = '/'  # Specify a working directory to save data and results.
+working_dir = '/home/guus/tmp/'  # Specify a working directory to save data and results.
 
 simulation_method = 'linear'
 n_features = 1      # The number of input features of X
@@ -32,8 +32,7 @@ n_grps = 2          # Number of batches in data
 n_samples = 500     # Number of samples in each group (use a list for different
 # sample numbers across different batches)
 
-model_type = 'linear' #  modelto try 'linear, ''polynomial', 'bspline'   
-
+model_type = 'linear'  # modelto try 'linear, ''polynomial', 'bspline'
 
 
 ############################## Data Simulation ################################
@@ -41,13 +40,13 @@ model_type = 'linear' #  modelto try 'linear, ''polynomial', 'bspline'
 
 X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     simulate_data(simulation_method, n_samples, n_features, n_grps,
-                  working_dir=working_dir, plot=True, noise='heteroscedastic_nongaussian', 
+                  working_dir=working_dir, plot=True, noise='heteroscedastic_nongaussian',
                   random_state=random_state)
 
 ################################# Fittig and Predicting ###############################
 
-nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHb', 
-               linear_sigma='True', random_slope_mu='True', linear_epsilon='True', linear_delta='True')
+nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHo',
+               linear_sigma='True', random_intercept_mu='True', random_slope_mu='False', linear_epsilon='False', linear_delta='False', nuts_sampler='nutpie')
 
 nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
 yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')

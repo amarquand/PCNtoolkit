@@ -8,64 +8,92 @@ Methods for normative modelling, spatial statistics and pattern recognition. Doc
 
 ## Basic installation (on a local machine)
 
-i) install anaconda3 ii) create enviornment with "conda create --name <env_name>" iii) activate environment by "source activate <env_name>" iv) install required conda packages
+#### Install anaconda3 
+
+using the download here: https://www.anaconda.com/download
+
+#### Create environment 
+```
+conda create <env_name>
+```
+
+#### Activate environment
 
 ```
-conda install pip pandas scipy
+source activate <env_name>
 ```
 
-v) install PCNtoolkit (plus dependencies)
+#### Install torch 
+
+Use the command that you get from the command builder here: https://pytorch.org/get-started/locally/. This will ensure you do not install the CUDA version of torch if your pc does not have a GPU. We also recommend that you use the `conda` option. 
+
+#### Install other required conda packages
+
+```
+conda install pip pandas scipy pymc
+```
+
+#### Install PCNtoolkit
 
 ```
 pip install pcntoolkit
 ```
 
 ## Alternative installation (on a shared resource)
-Make sure conda is available on the system.
+
+#### Make sure conda is available on the system.
 Otherwise install it first from https://www.anaconda.com/ 
 
 ```
 conda --version
 ```
 
-Create a conda environment in a shared location
+#### Create a conda environment in a shared location
 
 ```
-conda create -y python==3.8.3 numpy mkl blas --prefix=/shared/conda/<env_name>
+conda create -y python==3.10 numpy mkl blas --prefix=/shared/conda/<env_name>
 ```
 
-Activate the conda environment 
+#### Activate the conda environment 
 
 ```
 conda activate /shared/conda/<env_name>
 ```
+#### install torch 
 
-Install other dependencies
+Using the command that you get from the command builder here:
 
 ```
-conda install -y pandas scipy 
+https://pytorch.org/get-started/locally/
 ```
 
-Install pip dependencies
+If your shared resource has no GPU, make sure you select the 'CPU' field in the 'Compute Platform' row. Here we also prefer conda over pip.
+
+#### Install other dependencies
+
+```
+conda install -y pandas scipy pymc
+```
+
+#### Install pip dependencies
 
 ```
 pip --no-cache-dir install nibabel scikit-learn torch glob3 
 ```
 
-Clone the repo
+#### Clone the repo
 
 ```
 git clone https://github.com/amarquand/PCNtoolkit.git
 ```
 
-install in the conda environment
+### Install in the conda environment
 
 ```
 cd PCNtoolkit/
 python3 setup.py install
 ```
-
-Test 
+### Test 
 ```
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```

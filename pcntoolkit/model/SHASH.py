@@ -23,26 +23,42 @@ See: Jones et al. (2009), Sinh-Arcsinh distributions.
 """
 
 
-def numpy_P(q):
+def K(q, x):
+    """
+    The K function as given in Jones et al.
+    :param q:
+    :param x:
+    :return:
+    """
+    return spp.kv(q, x)
+
+
+def unique_K(q, x):
+    """
+    This is the K function, but it only calculates the unique values of q.
+    :param q:
+    :param x:
+    :return:
+    """
+    unique_q, inverse_indices = np.unique(q, return_inverse=True)
+    unique_outputs = spp.kv(unique_q, x)
+    outputs = unique_outputs[inverse_indices].reshape(q.shape)
+    return outputs
+
+
+CONST = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
+
+
+def P(q):
     """
     The P function as given in Jones et al.
     :param q:
     :return:
     """
-    frac = np.exp(1.0 / 4.0) / np.power(8.0 * np.pi, 1.0 / 2.0)
-    K1 = numpy_K((q + 1) / 2, 1.0 / 4.0)
-    K2 = numpy_K((q - 1) / 2, 1.0 / 4.0)
-    a = (K1 + K2) * frac
+    K1 = K()((q + 1) / 2, 0.25)
+    K2 = K()((q - 1) / 2, 0.25)
+    a = (K1 + K2) * CONST
     return a
-
-
-def numpy_K(p, x):
-    """
-    Computes the values of spp.kv(p,x) for only the unique values of p
-    """
-
-    ps, idxs = np.unique(p, return_inverse=True)
-    return spp.kv(ps, x)[idxs].reshape(p.shape)
 
 
 class K(Op):
@@ -58,23 +74,19 @@ class K(Op):
         return Apply(self, [p, x], [p.type()])
 
     def perform(self, node, inputs_storage, output_storage):
-        # Doing this on the unique values avoids doing A LOT OF double work, apparently scipy doesn't do this by itself
-
-        unique_inputs, inverse_indices = np.unique(
-            inputs_storage[0], return_inverse=True
-        )
-        unique_outputs = spp.kv(unique_inputs, inputs_storage[1])
-        outputs = unique_outputs[inverse_indices].reshape(
-            inputs_storage[0].shape)
-        output_storage[0][0] = outputs
+        output_storage[0][0] = unique_K(inputs_storage[0], inputs_storage[1])
 
     def grad(self, inputs, output_grads):
         # Approximation of the derivative. This should suffice for using NUTS
-        dp = 1e-10
+        dp = 1e-16
         p = inputs[0]
         x = inputs[1]
-        grad = (self(p + dp, x) - self(p, x)) / dp
-        return [output_grads[0] * grad, grad_not_implemented(0, 1, 2, 3)]
+        grad = (self(p + dp, x) - self(p - dp, x)) / dp
+        return [
+            output_grads[0] * grad,
+            grad_not_implemented(
+                "K", 1, "x", "Gradient not implemented for x"),
+        ]
 
 
 def S(x, epsilon, delta):
@@ -100,19 +112,6 @@ def C(x, epsilon, delta):
     Be aware that this is sqrt(1+S(x)^2), so you may save some compute if you can re-use the result from S.
     """
     return np.cosh(np.arcsinh(x) * delta - epsilon)
-
-
-def P(q):
-    """
-    The P function as given in Jones et al.
-    :param q:
-    :return:
-    """
-    frac = np.exp(1.0 / 4.0) / np.power(8.0 * np.pi, 1.0 / 2.0)
-    K1 = K()((q + 1) / 2, 1.0 / 4.0)
-    K2 = K()((q - 1) / 2, 1.0 / 4.0)
-    a = (K1 + K2) * frac
-    return a
 
 
 def m(epsilon, delta, r):
@@ -298,9 +297,8 @@ class SHASHbRV(RandomVariable):
         size: Optional[Union[List[int], int]],
     ) -> np.ndarray:
         s = rng.normal(size=size)
-        mean = np.sinh(epsilon / delta) * numpy_P(1 / delta)
-        var = ((np.cosh(2 * epsilon / delta) *
-               numpy_P(2 / delta) - 1) / 2) - mean**2
+        mean = np.sinh(epsilon / delta) * P(1 / delta)
+        var = ((np.cosh(2 * epsilon / delta) * P(2 / delta) - 1) / 2) - mean**2
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
         ) * sigma + mu
