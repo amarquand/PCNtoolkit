@@ -1013,8 +1013,8 @@ class CentralRandomFixedParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            samples = self.dist[pb.batch_effect_indices]
-            return samples
+            return self.dist[pb.batch_effect_indices]
+
 
 
 class NonCentralRandomFixedParameterization(Parameterization):
@@ -1072,8 +1072,7 @@ class NonCentralRandomFixedParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            samples = self.dist[pb.batch_effect_indices]
-            return samples
+            return self.dist[pb.batch_effect_indices]
 
 
 class LinearParameterization(Parameterization):
@@ -1109,15 +1108,19 @@ class LinearParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            intc = self.intercept_parameterization.get_samples(pb)
+            intercept_samples = self.intercept_parameterization.get_samples(pb)
             slope_samples = self.slope_parameterization.get_samples(pb)
-            if pb.configs[f"random_slope_{self.name}"]:
-                slope = pb.X * slope_samples
-                slope = slope.sum(axis=-1)
-            else:
-                slope = pb.X @ self.slope_parameterization.get_samples(pb)
 
-            samples = pm.math.flatten(intc) + pm.math.flatten(slope)
+            if pb.configs[f"random_slope_{self.name}"]:
+                if slope_samples.shape.eval()[1] > 1:
+                    slope = pm.math.sum(
+                        pb.X * slope_samples, axis=1)
+                else:
+                    slope = pb.X *slope_samples
+            else:
+                slope = pb.X @ slope_samples
+
+            samples = pm.math.flatten(intercept_samples) + pm.math.flatten(slope)
             return samples
 
 
