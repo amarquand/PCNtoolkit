@@ -81,7 +81,7 @@ class K(Op):
         dp = 1e-16
         p = inputs[0]
         x = inputs[1]
-        grad = (self(p + dp, x) - self(p - dp, x)) / dp
+        grad = (self(p + dp, x) - self(p - dp, x)) / (2*dp)
         return [
             output_grads[0] * grad,
             grad_not_implemented(
