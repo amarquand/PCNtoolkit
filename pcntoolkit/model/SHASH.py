@@ -1,4 +1,12 @@
+"""
+@author: Stijn de Boer (AuguB)
+See: Jones et al. (2009), Sinh-Arcsinh distributions.
+"""
+
+# Standard library imports
 from typing import Union, List, Optional
+
+# Third-party imports
 import pymc as pm
 from pymc import floatX
 from pymc.distributions import Continuous
@@ -11,61 +19,17 @@ from pytensor.gradient import grad_not_implemented
 from pytensor.tensor.random.basic import normal
 from pytensor.tensor.random.op import RandomVariable
 
-
 import numpy as np
 import scipy.special as spp
 import matplotlib.pyplot as plt
 
+CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
+CONST2 = -np.log(2 * np.pi) / 2
 
-"""
-@author: Stijn de Boer (AuguB)
-See: Jones et al. (2009), Sinh-Arcsinh distributions.
-"""
-
-
-def K(q, x):
+class KOp(Op):
     """
-    The K function as given in Jones et al.
-    :param q:
-    :param x:
-    :return:
+    Modified Bessel function of the second kind, pytensor wrapper for scipy.special.kv
     """
-    return spp.kv(q, x)
-
-
-def unique_K(q, x):
-    """
-    This is the K function, but it only calculates the unique values of q.
-    :param q:
-    :param x:
-    :return:
-    """
-    unique_q, inverse_indices = np.unique(q, return_inverse=True)
-    unique_outputs = spp.kv(unique_q, x)
-    outputs = unique_outputs[inverse_indices].reshape(q.shape)
-    return outputs
-
-
-CONST = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
-
-
-def P(q):
-    """
-    The P function as given in Jones et al.
-    :param q:
-    :return:
-    """
-    K1 = K()((q + 1) / 2, 0.25)
-    K2 = K()((q - 1) / 2, 0.25)
-    a = (K1 + K2) * CONST
-    return a
-
-
-class K(Op):
-    """
-    Modified Bessel function of the second kind, pytensor implementation
-    """
-
     __props__ = ()
 
     def make_node(self, p, x):
@@ -74,7 +38,7 @@ class K(Op):
         return Apply(self, [p, x], [p.type()])
 
     def perform(self, node, inputs_storage, output_storage):
-        output_storage[0][0] = unique_K(inputs_storage[0], inputs_storage[1])
+        output_storage[0][0] = spp.kv(inputs_storage[0], inputs_storage[1])
 
     def grad(self, inputs, output_grads):
         # Approximation of the derivative. This should suffice for using NUTS
@@ -84,10 +48,9 @@ class K(Op):
         grad = (self(p + dp, x) - self(p - dp, x)) / (2*dp)
         return [
             output_grads[0] * grad,
-            grad_not_implemented(
-                "K", 1, "x", "Gradient not implemented for x"),
-        ]
+            grad_not_implemented("KOp", 2, "x", "")
 
+        ]
 
 def S(x, epsilon, delta):
     """
@@ -137,17 +100,47 @@ def m(epsilon, delta, r):
             - 4 * np.cosh(2 * epsilon / delta) * P(2 / delta)
             + 3
         ) / 8
-    # else:
-    #     frac1 = ptt.as_tensor_variable(1 / pm.power(2, r))
-    #     acc = ptt.as_tensor_variable(0)
-    #     for i in range(r + 1):
-    #         combs = spp.comb(r, i)
-    #         flip = pm.power(-1, i)
-    #         ex = np.exp((r - 2 * i) * epsilon / delta)
-    #         p = P((r - 2 * i) / delta)
-    #         acc += combs * flip * ex * p
-    #     return frac1 * acc
 
+def m1(epsilon, delta):
+    return np.sinh(epsilon / delta) * P(1 / delta)
+
+def m2(epsilon, delta):
+    return (np.cosh(2 * epsilon / delta) * P(2 / delta) - 1) / 2
+
+def m3(epsilon, delta):
+    return (
+        np.sinh(3 * epsilon / delta) * P(3 / delta)
+        - 3 * np.sinh(epsilon / delta) * P(1 / delta)
+    ) / 4
+
+def numpy_P(q):
+    """
+    The P function as given in Jones et al.
+    :param q:
+    :return:
+    """
+    frac = CONST1
+    K1 = spp.kv((q + 1) / 2, 0.25)
+    K2 = spp.kv((q - 1) / 2, 0.25)
+    a = (K1 + K2) * frac
+    return a
+
+# Instance of the KOp
+my_K = KOp()
+
+def P(q):
+    """
+    The P function as given in Jones et al.
+    :param q:
+    :return:
+    """
+    K1 = my_K((q + 1) / 2, 0.25)
+    K2 = my_K((q - 1) / 2, 0.25)
+    a = (K1 + K2) * CONST1
+    return a
+
+
+##### SHASH Distributions #####
 
 class SHASH(RandomVariable):
     name = "shash"
@@ -181,13 +174,12 @@ class SHASH(Continuous):
         this_S = S(value, epsilon, delta)
         this_S_sqr = ptt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
             ptt.log(delta) + ptt.log(this_C_sqr) /
             2 - ptt.log(1 + ptt.sqr(value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp
+        return CONST2 + frac2 + exp
 
 
 class SHASHoRV(RandomVariable):
@@ -224,14 +216,13 @@ class SHASHo(Continuous):
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = ptt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
             ptt.log(delta)
             + ptt.log(this_C_sqr) / 2
             - ptt.log(1 + ptt.sqr(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp - ptt.log(sigma)
+        return CONST2 + frac2 + exp - ptt.log(sigma)
 
 
 class SHASHo2RV(RandomVariable):
@@ -270,14 +261,15 @@ class SHASHo2(Continuous):
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = ptt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
             ptt.log(delta)
             + ptt.log(this_C_sqr) / 2
             - ptt.log(1 + ptt.sqr(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp - ptt.log(sigma_d)
+        return CONST2 + frac2 + exp - ptt.log(sigma_d)
+
+
 
 
 class SHASHbRV(RandomVariable):
@@ -297,8 +289,8 @@ class SHASHbRV(RandomVariable):
         size: Optional[Union[List[int], int]],
     ) -> np.ndarray:
         s = rng.normal(size=size)
-        mean = np.sinh(epsilon / delta) * P(1 / delta)
-        var = ((np.cosh(2 * epsilon / delta) * P(2 / delta) - 1) / 2) - mean**2
+        mean = np.sinh(epsilon / delta) * numpy_P(1 / delta)
+        var = ((np.cosh(2 * epsilon / delta) * numpy_P(2 / delta) - 1) / 2) - mean**2
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
         ) * sigma + mu
@@ -323,17 +315,16 @@ class SHASHb(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
-        mean = m(epsilon, delta, 1)
-        var = m(epsilon, delta, 2) - mean**2
+        mean = m1(epsilon, delta)
+        var = m2(epsilon, delta) - mean**2
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -np.log(2 * np.pi) / 2
         frac2 = (
             np.log(delta)
             + np.log(this_C_sqr) / 2
             - np.log(1 + np.square(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
+        return CONST2 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
