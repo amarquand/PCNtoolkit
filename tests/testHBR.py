@@ -24,7 +24,7 @@ filterwarnings('ignore')
 
 random_state = 29
 
-working_dir = '/home/guus/tmp/'  # Specify a working directory to save data and results.
+working_dir = '/Users/stijndeboer/temp/'  # Specify a working directory to save data and results.
 
 simulation_method = 'linear'
 n_features = 1      # The number of input features of X
