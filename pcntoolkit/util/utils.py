@@ -1457,7 +1457,7 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
             p_values[i] = (np.sum(auc_perm > aucs[i]) + 1) / \
                 (n_permutation + 1)
             print('Feature %d of %d is done: p_value=%f' %
-                  (i, n_permutation, p_values[i]))
+                  (i, p, p_values[i]))
 
     return aucs, p_values
 
