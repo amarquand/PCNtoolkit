@@ -246,6 +246,8 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
+                    intercept_mu_params=(0.0, 10.0),
+                    slope_mu_params=(0.0, 10.0),
                     mu_slope_mu_params=(0.0, 10.0),
                     sigma_slope_mu_params=(10.0,),
                     mu_intercept_mu_params=(0.0, 10.0),
@@ -256,17 +258,16 @@ def hbr(X, y, batch_effects, configs, idata=None):
             sigma = pm.Deterministic(
                 "sigma_samples",
                 pb.make_param(
-                    "sigma", sigma_params = (0, 2),
-                    mu_sigma_params=(0.0, 2.0),
-                    sigma_sigma_params=(2.0,)
+                    "sigma",
+                    sigma_params=(10., 10.0),
+                    sigma_dist="normal",
+                    slope_sigma_params=(0.0, 10.0),
+                    intercept_sigma_params=(10.0, 10.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.exp(sigma), dims=get_sample_dims('sigma')
-            )
-            y_like = pm.Normal(
-                "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
 
         elif configs["likelihood"] in ["SHASHb", "SHASHo", "SHASHo2"]:
@@ -286,6 +287,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
+                    intercept_mu_params=(0.0, 10.0),
                     slope_mu_params=(0.0, 10.0),
                     mu_slope_mu_params=(0.0, 10.0),
                     sigma_slope_mu_params=(10.0,),
@@ -298,23 +300,23 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "sigma_samples",
                 pb.make_param(
                     "sigma",
-                    sigma_params=(0., 2.0),
+                    sigma_params=(10., 10.0),
                     sigma_dist="normal",
-                    slope_sigma_params=(0.0, 2.0),
-                    intercept_sigma_params=(0.0, 2.0),
+                    slope_sigma_params=(0.0, 10.0),
+                    intercept_sigma_params=(10.0, 10.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.exp(sigma), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
             epsilon = pm.Deterministic(
                 "epsilon_samples",
                 pb.make_param(
                     "epsilon",
-                    epsilon_params=(0.0, 10.0),
-                    slope_epsilon_params=(0.0, 10.0),
-                    intercept_epsilon_params=(0.0, 10.0),
+                    epsilon_params=(0.0, 2.0),
+                    slope_epsilon_params=(0.0, 3.0),
+                    intercept_epsilon_params=(0.0, 3.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('epsilon'),
             )
@@ -324,14 +326,14 @@ def hbr(X, y, batch_effects, configs, idata=None):
                     "delta",
                     delta_params=(0., 2.0),
                     delta_dist="normal",
-                    slope_delta_params=(0.0, 2.0),
-                    intercept_delta_params=(0.0, 2.0),
+                    slope_delta_params=(0.0, 1.0),
+                    intercept_delta_params=(0.0, 1.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('delta'),
             )
             delta_plus = pm.Deterministic(
                 "delta_plus_samples",
-                np.exp(delta) + 0.3,
+                np.log(1+np.exp(delta/3))*3 + 0.3,
                 dims=get_sample_dims('delta'),
             )
             y_like = SHASH_map[configs["likelihood"]](
