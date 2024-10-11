@@ -22,11 +22,11 @@ filterwarnings('ignore')
 ########################### Experiment Settings ###############################
 
 
-random_state = 29
+random_state = 34
 
 working_dir = '/Users/stijndeboer/temp/'  # Specify a working directory to save data and results.
 
-simulation_method = 'linear'
+simulation_method = 'non-linear'
 n_features = 1      # The number of input features of X
 n_grps = 2          # Number of batches in data
 n_samples = 500     # Number of samples in each group (use a list for different
@@ -45,8 +45,8 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
 
 ################################# Fittig and Predicting ###############################
 
-nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='Normal',
-               linear_sigma='True', random_intercept_mu='True', random_slope_mu='False', linear_epsilon='False', linear_delta='False', nuts_sampler='pymc')
+nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHb',
+               linear_sigma='True', random_intercept_mu='True', random_slope_mu='True', linear_epsilon='True', linear_delta='False', nuts_sampler='nutpie')
 
 nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
 yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
