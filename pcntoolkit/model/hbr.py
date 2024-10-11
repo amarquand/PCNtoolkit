@@ -266,7 +266,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.log(1+np.exp(sigma)), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
             y_like = pm.Normal(
                 "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
@@ -289,11 +289,12 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
-                    slope_mu_params=(0.0, 3.0),
-                    mu_slope_mu_params=(0.0, 3.0),
-                    sigma_slope_mu_params=(3.0,),
-                    mu_intercept_mu_params=(0.0, 2.0),
-                    sigma_intercept_mu_params=(2.0,),
+                    intercept_mu_params=(0.0, 10.0),
+                    slope_mu_params=(0.0, 10.0),
+                    mu_slope_mu_params=(0.0, 10.0),
+                    sigma_slope_mu_params=(10.0,),
+                    mu_intercept_mu_params=(0.0, 10.0),
+                    sigma_intercept_mu_params=(10.0,),
                 ).get_samples(pb),
                 dims=get_sample_dims('mu'),
             )
@@ -301,15 +302,15 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "sigma_samples",
                 pb.make_param(
                     "sigma",
-                    sigma_params=(0., 2.0),
+                    sigma_params=(10., 10.0),
                     sigma_dist="normal",
-                    slope_sigma_params=(0.0, 2.0),
-                    intercept_sigma_params=(0.0, 2.0),
+                    slope_sigma_params=(0.0, 10.0),
+                    intercept_sigma_params=(10.0, 10.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.log(1+np.exp(sigma)), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
             epsilon = pm.Deterministic(
                 "epsilon_samples",
@@ -334,7 +335,7 @@ def hbr(X, y, batch_effects, configs, idata=None):
             )
             delta_plus = pm.Deterministic(
                 "delta_plus_samples",
-                np.log(1+np.exp(delta*5))/5 + 0.3,
+                np.log(1+np.exp(delta/3))*3 + 0.3,
                 dims=get_sample_dims('delta'),
             )
             y_like = SHASH_map[configs["likelihood"]](

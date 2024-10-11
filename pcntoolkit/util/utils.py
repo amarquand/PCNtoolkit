@@ -898,7 +898,7 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
     :returns: Tuple of (X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef)
     """
 
-    # np.random.seed(random_state)
+    np.random.seed(random_state)
 
     if isinstance(n_samples, int):
         n_samples = [n_samples for _ in range(n_grps)]
