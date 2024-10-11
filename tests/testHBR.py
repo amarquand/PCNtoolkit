@@ -8,7 +8,7 @@ Created on Mon Jul 29 13:26:35 2019
 This script tests HBR models with default configs on toy data.
 
 """
-
+# %%
 import os
 import numpy as np
 from pcntoolkit.normative_model.norm_utils import norm_init
@@ -22,13 +22,12 @@ filterwarnings('ignore')
 ########################### Experiment Settings ###############################
 
 
-random_state = 34
-
+random_state = 40
 working_dir = '/Users/stijndeboer/temp/'  # Specify a working directory to save data and results.
 
 simulation_method = 'non-linear'
 n_features = 1      # The number of input features of X
-n_grps = 2          # Number of batches in data
+n_grps = 10     # Number of batches in data
 n_samples = 500     # Number of samples in each group (use a list for different
 # sample numbers across different batches)
 
@@ -46,15 +45,13 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
 ################################# Fittig and Predicting ###############################
 
 nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHb',
-               linear_sigma='True', random_intercept_mu='True', random_slope_mu='True', linear_epsilon='True', linear_delta='False', nuts_sampler='nutpie')
+               linear_sigma='True', random_intercept_mu='True', random_slope_mu='True', linear_epsilon='False', linear_delta='False', nuts_sampler='nutpie')
 
 nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
 yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
 
 
 ################################# Plotting Quantiles ###############################
-
-
 for i in range(n_features):
     sorted_idx = X_test[:, i].argsort(axis=0).squeeze()
     temp_X = X_test[sorted_idx, i]
@@ -62,14 +59,14 @@ for i in range(n_features):
     temp_be = grp_id_test[sorted_idx, :].squeeze()
     temp_yhat = yhat[sorted_idx,]
     temp_s2 = ys2[sorted_idx,]
-
+    
     plt.figure()
     for j in range(n_grps):
         scat1 = plt.scatter(temp_X[temp_be == j,], temp_Y[temp_be == j,],
                             label='Group' + str(j))
         # Showing the quantiles
         resolution = 200
-        synth_X = np.linspace(-3, 3, resolution)
+        synth_X = np.linspace(np.min(X_train), np.max(X_train), resolution)
         q = nm.get_mcmc_quantiles(
             synth_X, batch_effects=j*np.ones(resolution))
         col = scat1.get_facecolors()[0]
@@ -77,7 +74,20 @@ for i in range(n_features):
 
     plt.title('Model %s, Feature %d' % (model_type, i))
     plt.legend()
-    plt.show()
+    plt.show(block=False)
+    plt.savefig(working_dir + 'quantiles_' + model_type + '_feature_' + str(i) + '.png')
+
+    for j in range(n_grps):
+        plt.figure()
+        plt.scatter(temp_X[temp_be == j,], temp_Y[temp_be == j,])
+        plt.plot(temp_X[temp_be == j,], temp_yhat[temp_be == j,], color='red')
+        plt.fill_between(temp_X[temp_be == j,].squeeze(),
+                         (temp_yhat[temp_be == j,] - 2 * np.sqrt(temp_s2[temp_be == j,])).squeeze(),
+                         (temp_yhat[temp_be == j,] + 2 * np.sqrt(temp_s2[temp_be == j,])).squeeze(),
+                         color='red', alpha=0.2)
+        plt.title('Model %s, Group %d, Feature %d' % (model_type, j, i))
+        plt.show(block=False)
+        plt.savefig(working_dir + 'pred_' + model_type + '_group_' + str(j) + '_feature_' + str(i) + '.png')
 
 
 ############################## Normative Modelling Test #######################
@@ -98,3 +108,18 @@ for i in range(n_features):
 
 
 ###############################################################################
+# %%
+
+for j in range(n_grps):
+    # Showing the quantiles
+    resolution = 200
+    synth_X = np.linspace(np.min(X_train), np.max(X_train), resolution)
+    q = nm.get_mcmc_quantiles(
+        synth_X, batch_effects=j*np.ones(resolution))
+    plt.figure()
+    plt.scatter(temp_X[temp_be == j,], temp_Y[temp_be == j,])
+    plt.plot(synth_X, q.T, color='black')
+    plt.title('Model %s, Group %d, Feature %d' % (model_type, j, i))
+    plt.show(block=False)
+    plt.savefig(working_dir + 'pred_' + model_type + '_group_' + str(j) + '_feature_' + str(i) + '.png')
+# %%
