@@ -269,6 +269,13 @@ def hbr(X, y, batch_effects, configs, idata=None):
             sigma_plus = pm.Deterministic(
                 "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
+            y_like = pm.Normal(
+                "y_like",
+                mu=mu,
+                sigma=sigma_plus,
+                observed=y,
+                dims="datapoints",
+            )
 
         elif configs["likelihood"] in ["SHASHb", "SHASHo", "SHASHo2"]:
             """
