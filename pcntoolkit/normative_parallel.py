@@ -112,6 +112,7 @@ def execute_nm(processing_dir,
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
+    cores = kwargs.pop('cores')
 
     split_nm(processing_dir,
              respfile_path,
@@ -165,7 +166,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration,
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     # update the response file
@@ -211,7 +213,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration, 
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     sbatchwrap_nm(batch_processing_dir,
@@ -254,7 +257,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration,
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     sbatchwrap_nm(batch_processing_dir,
@@ -300,7 +304,7 @@ def execute_nm(processing_dir,
                         if cluster_spec == 'torque':
                             rerun_nm(processing_dir, log_path=log_path, memory=memory,
                                      duration=duration, binary=binary,
-                                     interactive=interactive)
+                                     interactive=interactive, cores=cores)
                         elif cluster_spec == 'slurm':
                             sbatchrerun_nm(processing_dir,
                                            memory=memory,
@@ -316,7 +320,7 @@ def execute_nm(processing_dir,
                     if cluster_spec == 'torque':
                         rerun_nm(processing_dir, log_path=log_path, memory=memory,
                                  duration=duration, binary=binary,
-                                 interactive=interactive)
+                                 interactive=interactive, cores=cores)
                     elif cluster_spec == 'slurm':
                         sbatchrerun_nm(processing_dir,
                                        memory=memory,
@@ -985,7 +989,8 @@ def bashwrap_nm(processing_dir,
 def qsub_nm(job_path,
             log_path,
             memory,
-            duration):
+            duration,
+            cores):
     '''This function submits a job.sh scipt to the torque custer using the qsub command.
 
     Basic usage::
@@ -1005,10 +1010,10 @@ def qsub_nm(job_path,
     # created qsub command
     if log_path is None:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                     'procs=1' + ',mem=' + memory + ',walltime=' + duration]
+                     'nodes=1:ppn='+ cores + ',mem=' + memory + ',walltime=' + duration]
     else:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path +
-                     ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' +
+                     ' -l ' + 'nodes=1:ppn='+ cores + ',mem=' + memory + ',walltime=' +
                      duration + ' -o ' + log_path + ' -e ' + log_path]
 
     # submits job to cluster
@@ -1024,6 +1029,7 @@ def rerun_nm(processing_dir,
              memory,
              duration,
              cluster_spec,
+             cores,
              binary=False,
              interactive=False):
     '''This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
@@ -1051,7 +1057,8 @@ def rerun_nm(processing_dir,
             job_id = qsub_nm(job_path=jobpath,
                              log_path=log_path,
                              memory=memory,
-                             duration=duration)
+                             duration=duration,
+                             cores=cores)
             job_ids.append(job_id)
     else:
         file_extentions = '.txt'
@@ -1064,7 +1071,8 @@ def rerun_nm(processing_dir,
             job_id = qsub_nm(job_path=jobpath,
                              log_path=log_path,
                              memory=memory,
-                             duration=duration)
+                             duration=duration,
+                             cores=cores)
             job_ids.append(job_id)
 
     if interactive:
