@@ -112,7 +112,7 @@ def execute_nm(processing_dir,
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
-    cores = kwargs.pop('cores')
+    cores = kwargs.pop('n_cores_per_batch')
 
     split_nm(processing_dir,
              respfile_path,
