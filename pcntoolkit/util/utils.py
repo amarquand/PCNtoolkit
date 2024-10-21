@@ -469,7 +469,8 @@ class WarpAffine(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise ValueError('number of parameters must be ' + str(self.n_params))
+            raise ValueError(
+                'number of parameters must be ' + str(self.n_params))
         return param[0], np.exp(param[1])
 
     def f(self, x, params):
@@ -570,7 +571,8 @@ class WarpSinArcsinh(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise ValueError('number of parameters must be ' + str(self.n_params))
+            raise ValueError(
+                'number of parameters must be ' + str(self.n_params))
 
         epsilon = param[0]
         b = np.exp(param[1])
@@ -896,8 +898,8 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
     :returns: Tuple of (X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef)
     """
 
-    #np.random.seed(random_state)
-    
+    np.random.seed(random_state)
+
     if isinstance(n_samples, int):
         n_samples = [n_samples for _ in range(n_grps)]
 
@@ -927,7 +929,8 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
                 + np.random.randint(10, 100)
             coef_temp = 0
         else:
-            raise ValueError("Unknown method. Please specify 'linear', 'non-linear', or 'combined'.")
+            raise ValueError(
+                "Unknown method. Please specify 'linear', 'non-linear', or 'combined'.")
 
         coef.append(coef_temp / 100)
         X_train.append(X_temp[:n_samples[i]])
@@ -938,23 +941,31 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
         grp_id_train.append(grp_id[:n_samples[i]])
         grp_id_test.append(grp_id[n_samples[i]:])
 
-        t = np.random.randint(1,5)
+        t = np.random.randint(1, 5)
         # Add noise to the data
         if noise == 'homoscedastic_gaussian':
-            Y_train[i] += np.random.normal(loc=0, scale=0.2, size=Y_train[i].shape[0]) / t
-            Y_test[i] += np.random.normal(loc=0, scale=0.2, size=Y_test[i].shape[0]) / t
+            Y_train[i] += np.random.normal(loc=0,
+                                           scale=0.2, size=Y_train[i].shape[0]) / t
+            Y_test[i] += np.random.normal(loc=0,
+                                          scale=0.2, size=Y_test[i].shape[0]) / t
 
         elif noise == 'heteroscedastic_gaussian':
-            Y_train[i] += np.random.normal(loc=0, scale=np.log(1 + np.exp(X_train[i][:, 0])), size=Y_train[i].shape[0])
-            Y_test[i] += np.random.normal(loc=0, scale=np.log(1 + np.exp(X_test[i][:, 0])), size=Y_test[i].shape[0])
+            Y_train[i] += np.random.normal(loc=0, scale=np.log(
+                1 + np.exp(X_train[i][:, 0])), size=Y_train[i].shape[0])
+            Y_test[i] += np.random.normal(loc=0, scale=np.log(
+                1 + np.exp(X_test[i][:, 0])), size=Y_test[i].shape[0])
 
         elif noise == 'homoscedastic_nongaussian':
-            Y_train[i] += skewnorm.rvs(a=10, loc=0, scale=0.2, size=Y_train[i].shape[0]) / t
-            Y_test[i] += skewnorm.rvs(a=10, loc=0, scale=0.2, size=Y_test[i].shape[0]) / t
+            Y_train[i] += skewnorm.rvs(a=10, loc=0,
+                                       scale=0.2, size=Y_train[i].shape[0]) / t
+            Y_test[i] += skewnorm.rvs(a=10, loc=0,
+                                      scale=0.2, size=Y_test[i].shape[0]) / t
 
         elif noise == 'heteroscedastic_nongaussian':
-            Y_train[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(1 + np.exp(0.3 * X_train[i][:, 0])), size=Y_train[i].shape[0])
-            Y_test[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(1 + np.exp(0.3 * X_test[i][:, 0])), size=Y_test[i].shape[0])
+            Y_train[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(
+                1 + np.exp(0.3 * X_train[i][:, 0])), size=Y_train[i].shape[0])
+            Y_test[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(1 +
+                                      np.exp(0.3 * X_test[i][:, 0])), size=Y_test[i].shape[0])
 
     X_train = np.vstack(X_train)
     X_test = np.vstack(X_test)
@@ -967,7 +978,8 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
         for i in range(n_features):
             plt.figure()
             for j in range(n_grps):
-                plt.scatter(X_train[grp_id_train[:, 0] == j, i], Y_train[grp_id_train[:, 0] == j], label='Group ' + str(j))
+                plt.scatter(X_train[grp_id_train[:, 0] == j, i],
+                            Y_train[grp_id_train[:, 0] == j], label='Group ' + str(j))
             plt.xlabel(f'X{i}')
             plt.ylabel('Y')
             plt.legend()
@@ -976,19 +988,25 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
     if working_dir:
         if not os.path.isdir(working_dir):
             os.mkdir(working_dir)
-        
+
         with open(os.path.join(working_dir, 'trbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_train), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(grp_id_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'tsbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_test), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(grp_id_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'X_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_train), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(X_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'X_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_test), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(X_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'Y_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_train), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(Y_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'Y_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_test), file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pd.DataFrame(Y_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
     return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
 
