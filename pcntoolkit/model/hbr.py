@@ -225,10 +225,11 @@ def hbr(X, y, batch_effects, configs, idata=None):
         return None
 
     with pm.Model(coords=pb.coords) as model:
-        model.add_coord("datapoints", np.arange(X.shape[0]), mutable=True)
+        model.add_coord("datapoints", np.arange(X.shape[0]))
         X = pm.Data("X", X, dims=("datapoints", "basis_functions"))
         pb.X = X
         y = pm.Data("y", np.squeeze(y), dims="datapoints")
+        pb.y = y
         pb.model = model
         pb.batch_effect_indices = tuple(
             [
@@ -246,25 +247,35 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
-                    mu_slope_mu_params=(0.0, 3.0),
-                    sigma_slope_mu_params=(3.0,),
-                    mu_intercept_mu_params=(0.0, 3.0),
-                    sigma_intercept_mu_params=(3.0,),
+                    intercept_mu_params=(0.0, 10.0),
+                    slope_mu_params=(0.0, 10.0),
+                    mu_slope_mu_params=(0.0, 10.0),
+                    sigma_slope_mu_params=(10.0,),
+                    mu_intercept_mu_params=(0.0, 10.0),
+                    sigma_intercept_mu_params=(10.0,),
                 ).get_samples(pb),
                 dims=get_sample_dims('mu'),
             )
             sigma = pm.Deterministic(
                 "sigma_samples",
                 pb.make_param(
-                    "sigma", mu_sigma_params=(0.0, 2.0), sigma_sigma_params=(2.0,)
+                    "sigma",
+                    sigma_params=(10., 10.0),
+                    sigma_dist="normal",
+                    slope_sigma_params=(0.0, 10.0),
+                    intercept_sigma_params=(10.0, 10.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", pm.math.log(1 + pm.math.exp(sigma/3))*3, dims=get_sample_dims('sigma')
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
             y_like = pm.Normal(
-                "y_like", mu, sigma=sigma_plus, observed=y, dims="datapoints"
+                "y_like",
+                mu=mu,
+                sigma=sigma_plus,
+                observed=y,
+                dims="datapoints",
             )
 
         elif configs["likelihood"] in ["SHASHb", "SHASHo", "SHASHo2"]:
@@ -284,11 +295,12 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "mu_samples",
                 pb.make_param(
                     "mu",
-                    slope_mu_params=(0.0, 2.0),
-                    mu_slope_mu_params=(0.0, 2.0),
-                    sigma_slope_mu_params=(2.0,),
-                    mu_intercept_mu_params=(0.0, 2.0),
-                    sigma_intercept_mu_params=(2.0,),
+                    intercept_mu_params=(0.0, 10.0),
+                    slope_mu_params=(0.0, 10.0),
+                    mu_slope_mu_params=(0.0, 10.0),
+                    sigma_slope_mu_params=(10.0,),
+                    mu_intercept_mu_params=(0.0, 10.0),
+                    sigma_intercept_mu_params=(10.0,),
                 ).get_samples(pb),
                 dims=get_sample_dims('mu'),
             )
@@ -296,23 +308,23 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "sigma_samples",
                 pb.make_param(
                     "sigma",
-                    sigma_params=(1.0, 1.0),
+                    sigma_params=(10., 10.0),
                     sigma_dist="normal",
-                    slope_sigma_params=(0.0, 1.0),
-                    intercept_sigma_params=(1.0, 1.0),
+                    slope_sigma_params=(0.0, 10.0),
+                    intercept_sigma_params=(10.0, 10.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('sigma'),
             )
             sigma_plus = pm.Deterministic(
-                "sigma_plus_samples", np.log(1 + np.exp(sigma)), dims=get_sample_dims('sigma')
+                "sigma_plus_samples", np.log(1+np.exp(sigma/10))*10, dims=get_sample_dims('sigma')
             )
             epsilon = pm.Deterministic(
                 "epsilon_samples",
                 pb.make_param(
                     "epsilon",
-                    epsilon_params=(0.0, 1.0),
-                    slope_epsilon_params=(0.0, 0.2),
-                    intercept_epsilon_params=(0.0, 0.2),
+                    epsilon_params=(0.0, 2.0),
+                    slope_epsilon_params=(0.0, 3.0),
+                    intercept_epsilon_params=(0.0, 3.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('epsilon'),
             )
@@ -320,16 +332,16 @@ def hbr(X, y, batch_effects, configs, idata=None):
                 "delta_samples",
                 pb.make_param(
                     "delta",
-                    delta_params=(1.0, 1.0),
+                    delta_params=(0., 2.0),
                     delta_dist="normal",
-                    slope_delta_params=(0.0, 0.2),
-                    intercept_delta_params=(1.0, 0.3),
+                    slope_delta_params=(0.0, 1.0),
+                    intercept_delta_params=(0.0, 1.0),
                 ).get_samples(pb),
                 dims=get_sample_dims('delta'),
             )
             delta_plus = pm.Deterministic(
                 "delta_plus_samples",
-                np.log(1 + np.exp(delta * 10)) / 10 + 0.3,
+                np.log(1+np.exp(delta/3))*3 + 0.3,
                 dims=get_sample_dims('delta'),
             )
             y_like = SHASH_map[configs["likelihood"]](
@@ -447,6 +459,7 @@ class HBR:
                 init=self.configs["init"],
                 n_init=500000,
                 cores=self.configs["cores"],
+                nuts_sampler=self.configs["nuts_sampler"],
             )
         self.vars_to_sample = ['y_like']
         if self.configs['remove_datapoints_from_posterior']:
@@ -556,8 +569,9 @@ class HBR:
                 chains=self.configs["n_chains"],
                 target_accept=self.configs["target_accept"],
                 init=self.configs["init"],
-                n_init=50000,
+                n_init=500000,
                 cores=self.configs["cores"],
+                nuts_sampler=self.configs["nuts_sampler"],
             )
         return self.idata
 
@@ -748,6 +762,7 @@ class Prior:
             "hcauchy": pm.HalfCauchy,
             "hstudt": pm.HalfStudentT,
             "studt": pm.StudentT,
+            "lognormal": pm.LogNormal,
         }
         self.make_dist(dist, params, pb)
 
@@ -1010,8 +1025,8 @@ class CentralRandomFixedParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            samples = self.dist[pb.batch_effect_indices]
-            return samples
+            return self.dist[pb.batch_effect_indices]
+
 
 
 class NonCentralRandomFixedParameterization(Parameterization):
@@ -1069,8 +1084,7 @@ class NonCentralRandomFixedParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            samples = self.dist[pb.batch_effect_indices]
-            return samples
+            return self.dist[pb.batch_effect_indices]
 
 
 class LinearParameterization(Parameterization):
@@ -1106,15 +1120,19 @@ class LinearParameterization(Parameterization):
         :return: The samples from the parameterization.
         """
         with pb.model:
-            intc = self.intercept_parameterization.get_samples(pb)
+            intercept_samples = self.intercept_parameterization.get_samples(pb)
             slope_samples = self.slope_parameterization.get_samples(pb)
-            if pb.configs[f"random_slope_{self.name}"]:
-                slope = pb.X * slope_samples
-                slope = slope.sum(axis=-1)
-            else:
-                slope = pb.X @ self.slope_parameterization.get_samples(pb)
 
-            samples = pm.math.flatten(intc) + pm.math.flatten(slope)
+            if pb.configs[f"random_slope_{self.name}"]:
+                if slope_samples.shape.eval()[1] > 1:
+                    slope = pm.math.sum(
+                        pb.X * slope_samples, axis=1)
+                else:
+                    slope = pb.X *slope_samples
+            else:
+                slope = pb.X @ slope_samples
+
+            samples = pm.math.flatten(intercept_samples) + pm.math.flatten(slope)
             return samples
 
 
