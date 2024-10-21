@@ -26,7 +26,7 @@ np.random.seed(10)
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/stijn/temp/'  # Specifyexit() a working directory
+working_dir = '/Users/stijndeboer/temp/'  # Specifyexit() a working directory
 # to save data and results.
 
 simulation_method = 'linear'
@@ -86,7 +86,7 @@ for model_type in model_types:
     print("Now Estimating on transfer train data ==============================================")
     nm.estimate_on_new_sites(
         X_train_transfer, Y_train_transfer, grp_id_train_transfer)
-    print("Now Estimating on transfer test data ==============================================")
+    print("Now Predicting on transfer test data ==============================================")
     yhat, s2 = nm.predict_on_new_sites(X_test_transfer, grp_id_test_transfer)
 
     for i in range(n_features):
