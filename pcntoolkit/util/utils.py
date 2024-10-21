@@ -350,7 +350,7 @@ def calibration_descriptives(x):
     s1 = np.std(x, axis=0)
     skew = n*m3/(n-1)/(n-2)/s1**3
     sdskew = np.sqrt(6*n*(n-1) / ((n-2)*(n+1)*(n+3)))
-    kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
+    kurtosis = (n * (n+1) * m4) / ((n-1) * (n-2) * (n-3) * s1**4) - (3 * (n-1)**2) / ((n-2) * (n-3))
     sdkurtosis = np.sqrt(4*(n**2-1) * sdskew**2 / ((n-3)*(n+5)))
     semean = np.sqrt(np.var(x)/n)
     sesd = s1/np.sqrt(2*(n-1))
@@ -1475,7 +1475,7 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
             p_values[i] = (np.sum(auc_perm > aucs[i]) + 1) / \
                 (n_permutation + 1)
             print('Feature %d of %d is done: p_value=%f' %
-                  (i, n_permutation, p_values[i]))
+                  (i, p, p_values[i]))
 
     return aucs, p_values
 
