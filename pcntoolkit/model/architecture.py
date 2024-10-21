@@ -46,7 +46,8 @@ class Encoder(nn.Module):
         # Conv 1
         self.encoder_y_layer_1_conv = nn.Conv3d(in_channels=self.factor, out_channels=self.factor,
                                                 kernel_size=5, stride=2, padding=0,
-                                                dilation=1, groups=self.factor, bias=True)  # in:(90,108,90) out:(43,52,43)
+                                                # in:(90,108,90) out:(43,52,43)
+                                                dilation=1, groups=self.factor, bias=True)
         self.encoder_y_layer_1_bn = nn.BatchNorm3d(self.factor)
         d_out_1, h_out_1, w_out_1 = compute_conv_out_size(y.shape[2], y.shape[3],
                                                           y.shape[4], padding=[
@@ -57,7 +58,8 @@ class Encoder(nn.Module):
         # Conv 2
         self.encoder_y_layer_2_conv = nn.Conv3d(in_channels=self.factor, out_channels=self.factor,
                                                 kernel_size=3, stride=2, padding=0,
-                                                dilation=1, groups=self.factor, bias=True)  # out: (21,25,21)
+                                                # out: (21,25,21)
+                                                dilation=1, groups=self.factor, bias=True)
         self.encoder_y_layer_2_bn = nn.BatchNorm3d(self.factor)
         d_out_2, h_out_2, w_out_2 = compute_conv_out_size(d_out_1, h_out_1,
                                                           w_out_1, padding=[
@@ -68,7 +70,8 @@ class Encoder(nn.Module):
         # Conv 3
         self.encoder_y_layer_3_conv = nn.Conv3d(in_channels=self.factor, out_channels=self.factor,
                                                 kernel_size=3, stride=2, padding=0,
-                                                dilation=1, groups=self.factor, bias=True)  # out: (10,12,10)
+                                                # out: (10,12,10)
+                                                dilation=1, groups=self.factor, bias=True)
         self.encoder_y_layer_3_bn = nn.BatchNorm3d(self.factor)
         d_out_3, h_out_3, w_out_3 = compute_conv_out_size(d_out_2, h_out_2,
                                                           w_out_2, padding=[
@@ -79,7 +82,8 @@ class Encoder(nn.Module):
         # Conv 4
         self.encoder_y_layer_4_conv = nn.Conv3d(in_channels=self.factor, out_channels=1,
                                                 kernel_size=3, stride=2, padding=0,
-                                                dilation=1, groups=1, bias=True)  # out: (4,5,4)
+                                                # out: (4,5,4)
+                                                dilation=1, groups=1, bias=True)
         self.encoder_y_layer_4_bn = nn.BatchNorm3d(1)
         d_out_4, h_out_4, w_out_4 = compute_conv_out_size(d_out_3, h_out_3,
                                                           w_out_3, padding=[
