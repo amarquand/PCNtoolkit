@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# %%
 """
 Created on Mon Jul 29 13:26:35 2019
 
@@ -24,7 +26,7 @@ filterwarnings('ignore')
 
 random_state = 29
 
-working_dir = '/'  # Specify a working directory to save data and results.
+working_dir = '/Users/stijndeboer/temp/'  # Specify a working directory to save data and results.
 
 simulation_method = 'linear'
 n_features = 1      # The number of input features of X
@@ -47,7 +49,7 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
 ################################# Fittig and Predicting ###############################
 
 nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHb', 
-               linear_sigma='True', random_slope_mu='True', linear_epsilon='True', linear_delta='True')
+               linear_sigma='True', random_slope_mu='True', linear_epsilon='True', linear_delta='True', nuts_sampler='nutpie')
 
 nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
 yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
