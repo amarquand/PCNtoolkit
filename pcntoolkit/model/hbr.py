@@ -227,7 +227,10 @@ def hbr(X, y, batch_effects, configs, idata=None):
     with pm.Model(coords=pb.coords) as model:
         model.add_coord("datapoints", np.arange(X.shape[0]))
         X = pm.Data("X", X, dims=("datapoints", "basis_functions"))
+        model.add_coord("datapoints", np.arange(X.shape[0]), mutable=True)
+        X = pm.Data("X", X, dims=("datapoints", "basis_functions"))
         pb.X = X
+        y = pm.Data("y", np.squeeze(y), dims="datapoints")
         y = pm.Data("y", np.squeeze(y), dims="datapoints")
         pb.model = model
         pb.batch_effect_indices = tuple(

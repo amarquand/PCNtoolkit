@@ -83,3 +83,10 @@ dist/pcntoolkit-0.27-py3.11.egg
 # Basic test functions for SHASH
 tests/test_SHASH.ipynb
 
+dist/pcntoolkit-0.30.post2-py3.12.egg
+
+dist/*
+
+dist
+
+build/*
