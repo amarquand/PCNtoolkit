@@ -27,6 +27,12 @@ source activate <env_name>
 
 Use the command that you get from the command builder here: https://pytorch.org/get-started/locally/. This will ensure you do not install the CUDA version of torch if your pc does not have a GPU. We also recommend that you use the `conda` option. 
 
+### Install nutpie using conda 
+
+```
+conda install nutpie
+```
+
 #### Install PCNtoolkit
 
 Using pip:
@@ -68,6 +74,13 @@ https://pytorch.org/get-started/locally/
 ```
 
 If your shared resource has no GPU, make sure you select the 'CPU' field in the 'Compute Platform' row. Here we also prefer conda over pip.
+
+
+### Install nutpie using conda 
+
+```
+conda install nutpie
+```
 
 #### Clone the repo
 
