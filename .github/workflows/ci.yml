@@ -30,7 +30,7 @@ jobs:
 
     - name: Run Tests with coverage and save report
       run: |
-        coverage run -m pytest pytest/ --junitxml=report.xml --html=report.html
+        coverage run -m pytest tests/ --junitxml=report.xml --html=report.html
         coverage xml -o coverage.xml
       continue-on-error: true  # Continue to the next step even if tests fail
 

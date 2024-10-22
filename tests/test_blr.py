@@ -10,8 +10,9 @@ from bspline import splinelab
 from pcntoolkit.model.bayesreg import BLR
 from pcntoolkit.model.gp import GPR
 from pcntoolkit.util.utils import WarpBoxCox, WarpAffine, WarpCompose, WarpSinArcsinh
+import os
 
-
+workingdir = '/Users/stijndeboer/temp/BLR/'
 def create_noise(type_noise, N, parameters=None):
     """Function to create different noise distributions"""
     if type_noise == 'exp':
@@ -112,6 +113,7 @@ plt.figure()
 plt.fill_between(Xs, yhat-1.96*np.sqrt(s2), yhat+1.96*np.sqrt(s2), alpha=0.2)
 plt.scatter(X, y)
 plt.plot(Xs, yhat)
+plt.savefig(os.path.join(workingdir, 'linear_regression.png'))
 plt.show()
 
 print(B.nlZ)
@@ -151,11 +153,15 @@ if len(warp_param == 1):
     mod = (0.5*(1+lam*yhat + np.sqrt((1+lam*yhat)**2 + 4*s2*lam*(lam-1))))**(1/lam)
     plt.plot(Xs, mod, 'b--')
     plt.legend(('median', 'mode'))
+plt.savefig(os.path.join(workingdir, 'warp1.png'))
+
 plt.show()
 
 xx = np.linspace(-5, 5, 100)
 plt.plot(xx, W.invf(xx, warp_param))
 plt.title('estimated warping function')
+plt.savefig(os.path.join(workingdir, 'warp2.png'))
+
 plt.show()
 
 # estimate a model with heteroskedastic noise
@@ -181,6 +187,8 @@ yhat, s2 = Bh.predict(hyp, Phi, y, Phis, var_covariates_test=Phis)
 
 print(hyp)
 plt.fill_between(Xs, yhat-1.96*np.sqrt(s2), yhat+1.96*np.sqrt(s2), alpha=0.2)
+plt.savefig(os.path.join(workingdir, 'linear_regression2.png'))
+
 plt.show()
 
 print("Estimate a model with site-specific noise ...")
@@ -232,6 +240,8 @@ hyp = Bh.estimate(hyp0, Phi, y)
 
 yhat, s2 = Bh.predict(hyp, Phi, y, Phis, var_groups_test=sids_te)
 
+
+
 for s in range(n_site):
     plt.scatter(X[idx[s]], y[idx[s]])
     plt.plot(Xs[idx_te[s]], yhat[idx_te[s]], color=cols[s])
@@ -239,4 +249,5 @@ for s in range(n_site):
                      yhat[idx_te[s]] - 1.96 * np.sqrt(s2[idx_te[s]]),
                      yhat[idx_te[s]] + 1.96 * np.sqrt(s2[idx_te[s]]),
                      alpha=0.2, color=cols[s])
+plt.savefig(os.path.join(workingdir, 'linear_regression3.png'))
 plt.show()

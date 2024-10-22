@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# %%
 """
 Created on Mon Jul 29 13:26:35 2019
 
@@ -26,7 +28,7 @@ np.random.seed(10)
 ########################### Experiment Settings ###############################
 
 
-working_dir = '/home/stijn/temp/'  # Specifyexit() a working directory
+working_dir = '/Users/stijndeboer/temp/HBR_transfer/'  # Specifyexit() a working directory
 # to save data and results.
 
 simulation_method = 'linear'
@@ -54,7 +56,7 @@ X_train_transfer, Y_train_transfer, grp_id_train_transfer, X_test_transfer, Y_te
 
 for model_type in model_types:
     nm = norm_init(X_train, Y_train, alg='hbr', likelihood='Normal', model_type=model_type,
-                   n_chains=4, cores=4, n_samples=100, n_tuning=50, freedom=5, nknots=8, target_accept="0.99")
+                   n_chains=4, cores=4, n_samples=100, n_tuning=50, freedom=5, nknots=8, target_accept="0.99", nuts_sampler='nutpie')
 
     print("Now Estimating on original train data ==============================================")
     nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
@@ -86,7 +88,7 @@ for model_type in model_types:
     print("Now Estimating on transfer train data ==============================================")
     nm.estimate_on_new_sites(
         X_train_transfer, Y_train_transfer, grp_id_train_transfer)
-    print("Now Estimating on transfer test data ==============================================")
+    print("Now Predicting on transfer test data ==============================================")
     yhat, s2 = nm.predict_on_new_sites(X_test_transfer, grp_id_test_transfer)
 
     for i in range(n_features):
@@ -108,6 +110,7 @@ for model_type in model_types:
                              color='gray', alpha=0.2)
         plt.title('Transfer model %s, Feature %d' % (model_type, i))
         plt.legend()
+        plt.savefig(os.path.join(working_dir, 'transfer_model_' + model_type + '_feature_' + str(i) + '.png'))
         plt.show()
 
 

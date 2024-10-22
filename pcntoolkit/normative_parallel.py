@@ -112,6 +112,7 @@ def execute_nm(processing_dir,
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
+    cores = kwargs.pop('n_cores_per_batch','1')
 
     split_nm(processing_dir,
              respfile_path,
@@ -132,7 +133,7 @@ def execute_nm(processing_dir,
     kwargs.update({'batch_size': str(batch_size)})
     job_ids = []
     start_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    
+
     for n in range(1, number_of_batches+1):
         kwargs.update({'job_id': str(n)})
         if testrespfile_path is not None:
@@ -165,7 +166,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration,
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     # update the response file
@@ -181,11 +183,10 @@ def execute_nm(processing_dir,
                                   memory=memory,
                                   duration=duration,
                                   **kwargs)
-                                        
+
                     job_id = sbatch_nm(job_path=batch_job_path)
                     job_ids.append(job_id)
-                    
-                    
+
                 elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     sbatchwrap_nm(processing_dir=batch_processing_dir,
@@ -212,7 +213,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration, 
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     sbatchwrap_nm(batch_processing_dir,
@@ -225,7 +227,7 @@ def execute_nm(processing_dir,
                                   memory=memory,
                                   duration=duration,
                                   **kwargs)
-                                        
+
                     job_id = sbatch_nm(job_path=batch_job_path)
                     job_ids.append(job_id)
                 elif cluster_spec == 'new':
@@ -255,7 +257,8 @@ def execute_nm(processing_dir,
                     job_id = qsub_nm(job_path=batch_job_path,
                                      log_path=log_path,
                                      memory=memory,
-                                     duration=duration)
+                                     duration=duration,
+                                     cores=cores)
                     job_ids.append(job_id)
                 elif cluster_spec == 'slurm':
                     sbatchwrap_nm(batch_processing_dir,
@@ -268,11 +271,10 @@ def execute_nm(processing_dir,
                                   memory=memory,
                                   duration=duration,
                                   **kwargs)
-                    
-                    
+
                     job_id = sbatch_nm(job_path=batch_job_path)
                     job_ids.append(job_id)
-                    
+
                 elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
                     bashwrap_nm(processing_dir=batch_processing_dir, func=func,
@@ -301,31 +303,31 @@ def execute_nm(processing_dir,
                     if response:
                         if cluster_spec == 'torque':
                             rerun_nm(processing_dir, log_path=log_path, memory=memory,
-                                 duration=duration, binary=binary,
-                                 interactive=interactive)
+                                     duration=duration, binary=binary,
+                                     interactive=interactive, cores=cores)
                         elif cluster_spec == 'slurm':
                             sbatchrerun_nm(processing_dir,
-                                            memory=memory,
-                                            duration=duration,
-                                            binary=binary,
-                                            log_path=log_path,
-                                            interactive=interactive)
-                            
+                                           memory=memory,
+                                           duration=duration,
+                                           binary=binary,
+                                           log_path=log_path,
+                                           interactive=interactive)
+
                     else:
                         success = True
                 else:
                     print('Reruning the failed jobs ...')
                     if cluster_spec == 'torque':
                         rerun_nm(processing_dir, log_path=log_path, memory=memory,
-                                duration=duration, binary=binary,
-                                interactive=interactive)
+                                 duration=duration, binary=binary,
+                                 interactive=interactive, cores=cores)
                     elif cluster_spec == 'slurm':
                         sbatchrerun_nm(processing_dir,
-                                        memory=memory,
-                                        duration=duration,
-                                        binary=binary,
-                                        log_path=log_path,
-                                        interactive=interactive)
+                                       memory=memory,
+                                       duration=duration,
+                                       binary=binary,
+                                       log_path=log_path,
+                                       interactive=interactive)
 
         if interactive == 'query':
             response = yes_or_no('Collect the results?')
@@ -508,11 +510,11 @@ def collect_nm(processing_dir,
         # prediction is made (when test cov is not specified).
         files = glob.glob(processing_dir + 'batch_*/' + 'yhat' + outputsuffix
                                          + file_extentions)
-        if len(files)>0:
+        if len(files) > 0:
             file_example = fileio.load(files[0])
         else:
-            raise ValueError(f"Missing output files (yhats at: {processing_dir + 'batch_*/' + 'yhat' + outputsuffix + file_extentions}")            
-        
+            raise ValueError(f"Missing output files (yhats at: {processing_dir + 'batch_*/' + 'yhat' + outputsuffix + file_extentions}")
+
         numsubjects = file_example.shape[0]
         try:
             # doesn't exist if size=1, and txt file
@@ -987,7 +989,8 @@ def bashwrap_nm(processing_dir,
 def qsub_nm(job_path,
             log_path,
             memory,
-            duration):
+            duration,
+            cores):
     '''This function submits a job.sh scipt to the torque custer using the qsub command.
 
     Basic usage::
@@ -1007,10 +1010,10 @@ def qsub_nm(job_path,
     # created qsub command
     if log_path is None:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path + ' -l ' +
-                     'procs=1' + ',mem=' + memory + ',walltime=' + duration]
+                     'nodes=1:ppn='+ cores + ',mem=' + memory + ',walltime=' + duration]
     else:
         qsub_call = ['echo ' + job_path + ' | qsub -N ' + job_path +
-                     ' -l ' + 'procs=1' + ',mem=' + memory + ',walltime=' +
+                     ' -l ' + 'nodes=1:ppn='+ cores + ',mem=' + memory + ',walltime=' +
                      duration + ' -o ' + log_path + ' -e ' + log_path]
 
     # submits job to cluster
@@ -1026,6 +1029,7 @@ def rerun_nm(processing_dir,
              memory,
              duration,
              cluster_spec,
+             cores,
              binary=False,
              interactive=False):
     '''This function reruns all failed batched in processing_dir after collect_nm has identified the failed batches.
@@ -1053,7 +1057,8 @@ def rerun_nm(processing_dir,
             job_id = qsub_nm(job_path=jobpath,
                              log_path=log_path,
                              memory=memory,
-                             duration=duration)
+                             duration=duration,
+                             cores=cores)
             job_ids.append(job_id)
     else:
         file_extentions = '.txt'
@@ -1066,7 +1071,8 @@ def rerun_nm(processing_dir,
             job_id = qsub_nm(job_path=jobpath,
                              log_path=log_path,
                              memory=memory,
-                             duration=duration)
+                             duration=duration,
+                             cores=cores)
             job_ids.append(job_id)
 
     if interactive:
@@ -1123,15 +1129,15 @@ def sbatchwrap_nm(processing_dir,
     output_changedir = ['cd ' + processing_dir + '\n']
 
     sbatch_init = '#!/bin/bash\n'
-    sbatch_jobname = '#SBATCH --job-name=' + processing_dir + '\n'
+    sbatch_jobname = '#SBATCH --job-name=' + job_name + '\n'
     sbatch_nodes = '#SBATCH --nodes=1\n'
     sbatch_tasks = '#SBATCH --ntasks=1\n'
     sbatch_time = '#SBATCH --time=' + str(duration) + '\n'
     sbatch_memory = '#SBATCH --mem-per-cpu=' + str(memory) + '\n'
-    sbatch_log_out = '#SBATCH -o ' + log_path + '%j.out' + '\n'
-    sbatch_log_error =  '#SBATCH -e ' + log_path + '%j.err' + '\n'
-    #sbatch_module = 'module purge\n'
-    #sbatch_anaconda = 'module load anaconda3\n'
+    sbatch_log_out = '#SBATCH -o ' + log_path + '%x_%j.out' + '\n'
+    sbatch_log_error = '#SBATCH -e ' + log_path + '%x_%j.err' + '\n'
+    # sbatch_module = 'module purge\n'
+    # sbatch_anaconda = 'module load anaconda3\n'
     sbatch_exit = 'set -o errexit\n'
 
     # echo -n "This script is running on "
@@ -1142,8 +1148,8 @@ def sbatchwrap_nm(processing_dir,
                         sbatch_nodes +
                         sbatch_tasks +
                         sbatch_time +
-                        sbatch_memory+
-                        sbatch_log_out+
+                        sbatch_memory +
+                        sbatch_log_out +
                         sbatch_log_error
                         ]
 
@@ -1212,7 +1218,7 @@ def sbatch_nm(job_path):
     # submits job to cluster
     job_id = check_output(sbatch_call, shell=True).decode(
         sys.stdout.encoding).replace("\n", "")
-    
+
     return job_id
 
 
@@ -1240,11 +1246,11 @@ def sbatchrerun_nm(processing_dir,
 
      written by (primarily) T Wolfers, (adapted) S Rutherford.
     '''
-    
-    #log_path = kwargs.pop('log_path', None)
-    
+
+    # log_path = kwargs.pop('log_path', None)
+
     job_ids = []
-    
+
     start_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     if binary:
@@ -1284,15 +1290,16 @@ def sbatchrerun_nm(processing_dir,
                         print(line.replace(memory, new_memory), end='')
             job_id = sbatch_nm(jobpath)
             job_ids.append(job_id)
-                
+
     if interactive:
-        check_jobs(job_ids, cluster_spec='slurm', start_time=start_time, delay=60)
+        check_jobs(job_ids, cluster_spec='slurm',
+                   start_time=start_time, delay=60)
 
 
 def retrieve_jobs(cluster_spec, start_time=None):
     """
     A utility function to retrieve task status from the outputs of qstat.
-    
+
     :param cluster_spec: type of cluster, either 'torque' or 'slurm'.
 
     :return: a dictionary of jobs.
@@ -1300,7 +1307,7 @@ def retrieve_jobs(cluster_spec, start_time=None):
     """
 
     if cluster_spec == 'torque':
-        
+
         output = check_output('qstat', shell=True).decode(sys.stdout.encoding)
         output = output.split('\n')
         jobs = dict()
@@ -1310,9 +1317,9 @@ def retrieve_jobs(cluster_spec, start_time=None):
             jobs[Job_ID]['name'] = Job_Name
             jobs[Job_ID]['walltime'] = Wall_Time
             jobs[Job_ID]['status'] = Status
-            
+
     elif cluster_spec == 'slurm':
-        
+
         end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         cmd = ['sacct', '-n', '-X', '--parsable2', '--noheader',
                '-S', start_time, '-E', end_time, '--format=JobName,State']
@@ -1336,9 +1343,9 @@ def check_job_status(jobs, cluster_spec, start_time=None):
     c = 0
     q = 0
     u = 0
-    
+
     if cluster_spec == 'torque':
-        
+
         for job in jobs:
             try:
                 if running_jobs[job]['status'] == 'C':
@@ -1352,14 +1359,14 @@ def check_job_status(jobs, cluster_spec, start_time=None):
             except:  # probably meanwhile the job is finished.
                 c += 1
                 continue
-            
+
         print('Total Jobs:%d, Queued:%d, Running:%d, Completed:%d, Unknown:%d'
-          % (len(jobs), q, r, c, u))
-            
+              % (len(jobs), q, r, c, u))
+
     elif cluster_spec == 'slurm':
-        
+
         lines = running_jobs.stdout.strip().split('\n')
-        
+
         for line in lines:
             if line:
                 parts = line.split('|')
@@ -1373,10 +1380,10 @@ def check_job_status(jobs, cluster_spec, start_time=None):
                         c += 1
                     elif state == 'FAILED':
                         u += 1
-    
+
         print('Total Jobs:%d, Pending:%d, Running:%d, Completed:%d, Failed:%d'
-            % (len(jobs), q, r, c, u))
-    
+              % (len(jobs), q, r, c, u))
+
     return q, r, c, u
 
 
