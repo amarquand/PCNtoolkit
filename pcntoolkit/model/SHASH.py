@@ -7,50 +7,23 @@ See: Jones et al. (2009), Sinh-Arcsinh distributions.
 from typing import Union, List, Optional
 
 # Third-party imports
-import pymc as pm
 from pymc import floatX
 from pymc.distributions import Continuous
 
-import pytensor as pt
 import pytensor.tensor as ptt
-from pytensor.graph.op import Op
-from pytensor.graph import Apply
-from pytensor.gradient import grad_not_implemented
-from pytensor.tensor.random.basic import normal
 from pytensor.tensor.random.op import RandomVariable
 
 import numpy as np
 import scipy.special as spp
 import matplotlib.pyplot as plt
 
+from pcntoolkit.model.KOp import KnuOp, knuop
+
+from pytensor.tensor.elemwise import Elemwise
+
 CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
 CONST2 = -np.log(2 * np.pi) / 2
 
-class KOp(Op):
-    """
-    Modified Bessel function of the second kind, pytensor wrapper for scipy.special.kv
-    """
-    __props__ = ()
-
-    def make_node(self, p, x):
-        p = pt.tensor.as_tensor_variable(p)
-        x = pt.tensor.as_tensor_variable(x)
-        return Apply(self, [p, x], [p.type()])
-
-    def perform(self, node, inputs_storage, output_storage):
-        output_storage[0][0] = spp.kv(inputs_storage[0], inputs_storage[1])
-
-    def grad(self, inputs, output_grads):
-        # Approximation of the derivative. This should suffice for using NUTS
-        dp = 1e-16
-        p = inputs[0]
-        x = inputs[1]
-        grad = (self(p + dp, x) - self(p - dp, x)) / (2*dp)
-        return [
-            output_grads[0] * grad,
-            grad_not_implemented("KOp", 2, "x", "")
-
-        ]
 
 def S(x, epsilon, delta):
     """
@@ -126,7 +99,7 @@ def numpy_P(q):
     return a
 
 # Instance of the KOp
-my_K = KOp()
+my_K = Elemwise(knuop)
 
 def P(q):
     """

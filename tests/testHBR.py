@@ -47,7 +47,7 @@ X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
 ################################# Fittig and Predicting ###############################
 
 nm = norm_init(X_train, Y_train, alg='hbr', model_type=model_type, likelihood='SHASHb', 
-               linear_sigma='True', random_slope_mu='True', linear_epsilon='False', linear_delta='Fals', nuts_sampler='nutpie')
+               linear_sigma='True', random_slope_mu='True', linear_epsilon='False', linear_delta='True', nuts_sampler='nutpie')
 
 nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
 yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
