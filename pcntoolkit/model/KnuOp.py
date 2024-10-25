@@ -1,5 +1,6 @@
 # Third-party imports
 import scipy.special as spp
+from pytensor.gradient import grad_not_implemented
 from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
 
 
@@ -40,12 +41,7 @@ class KnuPrimeOp(BinaryScalarOp):
         return KnuPrimeOp.st_impl(p, x)
 
     def grad(self, inputs, grads):
-        dp = 1e-16
-        (p, x) = inputs
-        (gz,) = grads
-        dfdp = (knupop(p + dp, x) - knupop(p - dp, x)) / (2 * dp)
-        dfdx = -knuop(p, x) - knupop(p, x) / x
-        return [gz * dfdp, gz * dfdx]
+        return [grad_not_implemented(self, 0, "p"), grad_not_implemented(self, 1, "x")]
 
 
 knuop = KnuOp(upgrade_to_float, name="knuop")
