@@ -9,8 +9,10 @@ import numpy as np
 import pytensor as pt
 from pymc import floatX
 from pymc.distributions import Continuous
+from pytensor.tensor import as_tensor_variable
 from pytensor.tensor.elemwise import Elemwise
 from pytensor.tensor.random.op import RandomVariable
+from scipy.special import kv
 
 from pcntoolkit.model.KnuOp import knuop
 
@@ -190,8 +192,8 @@ class SHASH(Continuous):
         Returns:
             A SHASH distribution
         """
-        epsilon = pt.as_tensor_variable(floatX(epsilon))
-        delta = pt.as_tensor_variable(floatX(delta))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
     def logp(value, epsilon, delta):
@@ -265,10 +267,10 @@ class SHASHo(Continuous):
         Returns:
             A SHASHo distribution
         """
-        mu = pt.as_tensor_variable(floatX(mu))
-        sigma = pt.as_tensor_variable(floatX(sigma))
-        epsilon = pt.as_tensor_variable(floatX(epsilon))
-        delta = pt.as_tensor_variable(floatX(delta))
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
@@ -357,10 +359,10 @@ class SHASHo2(Continuous):
         Returns:
             A SHASHo2 distribution
         """
-        mu = pt.as_tensor_variable(floatX(mu))
-        sigma = pt.as_tensor_variable(floatX(sigma))
-        epsilon = pt.as_tensor_variable(floatX(epsilon))
-        delta = pt.as_tensor_variable(floatX(delta))
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
@@ -420,11 +422,31 @@ class SHASHbRV(RandomVariable):
             Random samples from SHASHb distribution
         """
         s = rng.normal(size=size)
-        mean, var = SHASH.m1m2(epsilon, delta)
+
+        def P(q):
+            K1 = kv((q + 1) / 2, 0.25)
+            K2 = kv((q - 1) / 2, 0.25)
+            a = (K1 + K2) * CONST1
+            return a
+
+        def m1m2(epsilon, delta):
+            inv_delta = 1.0 / delta
+            two_inv_delta = 2.0 * inv_delta
+            p1 = P(inv_delta)
+            p2 = P(two_inv_delta)
+            eps_delta = epsilon / delta
+            sinh_eps_delta = np.sinh(eps_delta)
+            cosh_2eps_delta = np.cosh(2 * eps_delta)
+            mean = sinh_eps_delta * p1
+            raw_second = (cosh_2eps_delta * p2 - 1) / 2
+            var = raw_second - mean**2
+            return mean, var
+
+        mean, var = m1m2(epsilon, delta)
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
         ) * sigma + mu
-        return out.eval()
+        return out
 
 
 shashb = SHASHbRV()
@@ -455,10 +477,10 @@ class SHASHb(Continuous):
         Returns:
             A SHASHb distribution
         """
-        mu = pt.as_tensor_variable(floatX(mu))
-        sigma = pt.as_tensor_variable(floatX(sigma))
-        epsilon = pt.as_tensor_variable(floatX(epsilon))
-        delta = pt.as_tensor_variable(floatX(delta))
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
