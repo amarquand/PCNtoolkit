@@ -6,7 +6,6 @@ import pandas as pd
 import xarray as xr
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.scaler import scaler
 
 
@@ -36,12 +35,11 @@ class NormData(xr.Dataset):
         large datasets.
 
     Example:
-        >>> data = NormData.from_dataframe("my_data", df, covariates, 
+        >>> data = NormData.from_dataframe("my_data", df, covariates,
         ...                                batch_effects, response_vars)
         >>> data.scale_forward(inscalers, outscalers)
         >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
-
 
     __slots__ = (
         "X",
@@ -363,15 +361,14 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def plot_qq(self):
+    def plot_qq(self, plt_kwargs=None, bound=0):
         """Create a QQ-plot for all response variables."""
+        if not plt_kwargs:
+            plt_kwargs = {}
         for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_qq(response_var)
+            self._plot_qq(response_var, plt_kwargs, bound)
 
-    def _plot_qq(
-        self,
-        response_var: str,
-    ):
+    def _plot_qq(self, response_var: str, plt_kwargs, bound=0):
         """Create a QQ-plot for a single response variable."""
 
         # Filter the responsevar that is to be plotted
@@ -388,7 +385,9 @@ class NormData(xr.Dataset):
         z_scores.sort()
 
         plt.figure()
-        plt.scatter(ran, z_scores)
+        plt.scatter(ran, z_scores, **plt_kwargs)
+        if bound != 0:
+            plt.axis([-bound, bound, -bound, bound])
         plt.title(f"QQ-plot for {response_var}")
         plt.xlabel("Theoretical quantiles")
         plt.ylabel("Predicted quantiles")

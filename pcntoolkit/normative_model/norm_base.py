@@ -3,20 +3,18 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List
 
 import numpy as np
 import xarray as xr
 from matplotlib import pyplot as plt
-from scipy import stats
-from sklearn.metrics import explained_variance_score
 
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
-from pcntoolkit.regression_model.blr.blr import BLR
-from pcntoolkit.regression_model.gpr.gpr import GPR
-from pcntoolkit.regression_model.hbr.hbr import HBR
+from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401
+from pcntoolkit.regression_model.gpr.gpr import GPR  # noqa: F401
+from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
@@ -112,7 +110,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to predict model {responsevar}, but it does not exist."
                 )
@@ -150,13 +148,12 @@ class NormBase(ABC):
         # Fit and predict for each response variable
         print(f"Going to fit and predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-
             # Select the data for the current response variable
             resp_fit_data = fit_data.sel(response_vars=responsevar)
             resp_predict_data = predict_data.sel(response_vars=responsevar)
 
             # Create a new model if it does not exist yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 self.regression_models[responsevar] = self.regression_model_type(
                     responsevar, self.default_reg_conf
                 )
@@ -190,9 +187,9 @@ class NormBase(ABC):
             resp_transfer_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
-                    f"Attempted to transfer a model that has not been fitted."
+                    "Attempted to transfer a model that has not been fitted."
                 )
 
             # Set self.model to the current model
@@ -315,7 +312,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find quantiles for model {responsevar}, but it does not exist."
                 )
@@ -481,7 +478,7 @@ class NormBase(ABC):
             plt.scatter(
                 filt2.X,
                 filt2.y,
-                label=f"other batches",
+                label="other batches",
             )
         if show_data:
             plt.title(f"Centiles of {response_var} with {data.attrs['name']} scatter")
@@ -509,7 +506,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find zscores for model {responsevar}, but it does not exist."
                 )
@@ -622,12 +619,12 @@ class NormBase(ABC):
         Contains all the general scaling logic that is not specific to the regression model.
         """
         for covariate in data.covariates.to_numpy():
-            if (not covariate in self.inscalers) or overwrite:
+            if (covariate not in self.inscalers) or overwrite:
                 self.inscalers[covariate] = scaler(self.norm_conf.inscaler)
                 self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
 
         for responsevar in data.response_vars.to_numpy():
-            if (not responsevar in self.outscalers) or overwrite:
+            if (responsevar not in self.outscalers) or overwrite:
                 self.outscalers[responsevar] = scaler(self.norm_conf.outscaler)
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
@@ -666,7 +663,9 @@ class NormBase(ABC):
         metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
         metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
 
-        with open(os.path.join(self.norm_conf.save_dir, "metadata.json"), "w") as f:
+        with open(
+            os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"), "w"
+        ) as f:
             json.dump(metadata, f, indent=4)
 
         # Save regression models as JSON -> use the to_dict method of the regression model
@@ -679,7 +678,7 @@ class NormBase(ABC):
 
     @classmethod
     def load(cls, path):
-        with open(os.path.join(path, "metadata.json"), "r") as f:
+        with open(os.path.join(path, "normative_model_dict.json"), "r") as f:
             metadata = json.load(f)
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
@@ -722,7 +721,7 @@ class NormBase(ABC):
     def prepare(self, responsevar):
         self.current_response_var = responsevar
         # Create a new model if it does not exist yet
-        if not responsevar in self.regression_models:
+        if responsevar not in self.regression_models:
             self.regression_models[responsevar] = self.regression_model_type(
                 responsevar, self.get_reg_conf(responsevar)
             )

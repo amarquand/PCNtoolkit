@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple
 
 import arviz as az
 import numpy as np
 import pymc as pm
-import xarray as xr
 import scipy.stats as stats
+import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
+from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
-from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
 
 from .hbr_conf import HBRConf
 
@@ -69,7 +68,6 @@ class HBR(RegressionModel):
             )
 
     def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData):
-
         # Make a new model if needed
         if not self.pymc_model:
             self.create_pymc_graph(fit_hbrdata)
@@ -98,7 +96,6 @@ class HBR(RegressionModel):
             )
 
     def transfer(self, hbrconf, transferdata, freedom):
-
         new_hbr_model = HBR(self.name, hbrconf)
 
         # new_hbr_model.transfer(transferdata, freedom)
@@ -123,24 +120,8 @@ class HBR(RegressionModel):
     ) -> xr.DataArray:
         var_names = self.get_var_names()
 
-        # Create a new pymc model if needed
-        if not self.pymc_model:
-            self.create_pymc_graph(hbrdata)
-
-        # Set the data in the model
-        hbrdata.set_data_in_existing_model(self.pymc_model)
-
-        # Delete the posterior predictive if it exists
-        if "posterior_predictive" in self.idata:
-            del self.idata.posterior_predictive
-
-        # Sample from the posterior predictive
-        with self.pymc_model:
-            pm.sample_posterior_predictive(
-                self.idata,
-                extend_inferencedata=True,
-                var_names=var_names + ["y_pred"],
-            )
+        if resample:
+            self.predict(hbrdata)
 
         # Extract the posterior predictive
         post_pred = az.extract(
@@ -177,7 +158,6 @@ class HBR(RegressionModel):
         ).mean(dim="sample")
 
     def zscores(self, hbrdata: HBRData, resample=False) -> xr.DataArray:
-
         var_names = self.get_var_names()
         if resample:
             # Create a new pymc model if needed
