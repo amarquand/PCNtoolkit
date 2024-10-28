@@ -150,8 +150,7 @@ class NormBLR(NormBase):
             f"n_params method not implemented for {self.__class__.__name__}"
         )
 
-    @staticmethod
-    def normdata_to_blrdata(data: NormData) -> BLRData:
+    def normdata_to_blrdata(self, data: NormData, intercept=True) -> BLRData:
         if hasattr(data, "Phi") and data.Phi is not None:
             this_X = data.Phi.to_numpy()
         elif hasattr(data, "scaled_X") and data.scaled_X is not None:
@@ -165,7 +164,8 @@ class NormBLR(NormBase):
             this_y = data.y.to_numpy()
 
         # Create intercept
-        this_X = np.hstack((this_X, np.ones((this_X.shape[0], 1))))
+        if self.current_regression_model.reg_conf.intercept:
+            this_X = np.hstack((this_X, np.ones((this_X.shape[0], 1))))
 
         # # For each of the columns in the batch_effects, create a one-hot encoding
         # for i in data.batch_effects.columns:

@@ -10,6 +10,8 @@ OPTIMIZER = "l-bfgs-b"
 L_BFGS_B_L = 0.1
 L_BFGS_B_EPSILON = 0.1
 L_BFGS_B_NORM = "l2"
+INTERCEPT = True
+HETEROSKEDASTIC = False
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,10 @@ class BLRConf(RegConf):
     l_bfgs_b_epsilon: float = L_BFGS_B_EPSILON
     l_bfgs_b_norm: str = L_BFGS_B_NORM
 
+    # Design matrix configuration
+    intercept: bool = INTERCEPT
+    heteroskedastic: bool = HETEROSKEDASTIC
+
     # TODO implement var groups, var_covariates, and warp
     # var_groups: list = None
     # heteroskedastic: bool = False
@@ -39,8 +45,6 @@ class BLRConf(RegConf):
         The super class will throw an exception if the configuration is invalid, and show the problems.
         """
 
-        # DESIGN CHOICE (stijn)
-        # This mutable field need to be local here, because the dataclass is defined as immutable.
         configuration_problems = []
 
         def add_problem(problem: str):
@@ -73,6 +77,8 @@ class BLRConf(RegConf):
             l_bfgs_b_l=args_filt.get("l_bfgs_b_l", L_BFGS_B_L),
             l_bfgs_b_epsilon=args_filt.get("l_bfgs_b_epsilon", L_BFGS_B_EPSILON),
             l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
+            intercept=args_filt.get("intercept", INTERCEPT),
+            heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
         )
 
     @classmethod
@@ -88,6 +94,8 @@ class BLRConf(RegConf):
             l_bfgs_b_l=dict["l_bfgs_b_l"],
             l_bfgs_b_epsilon=dict["l_bfgs_b_epsilon"],
             l_bfgs_b_norm=dict["l_bfgs_b_norm"],
+            intercept=dict["intercept"],
+            heteroskedastic=dict["heteroskedastic"],
         )
 
     def to_dict(self):
@@ -102,4 +110,6 @@ class BLRConf(RegConf):
             "l_bfgs_b_l": self.l_bfgs_b_l,
             "l_bfgs_b_epsilon": self.l_bfgs_b_epsilon,
             "l_bfgs_b_norm": self.l_bfgs_b_norm,
+            "intercept": self.intercept,
+            "heteroskedastic": self.heteroskedastic,
         }

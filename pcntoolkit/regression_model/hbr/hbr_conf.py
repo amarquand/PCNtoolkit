@@ -3,13 +3,13 @@ from dataclasses import dataclass, field
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.reg_conf import RegConf
 
-
 # Default configuration values
 DRAWS = 1000
 TUNE = 1000
 CHAINS = 2
 CORES = 1
 LIKELIHOOD = "Normal"
+
 
 @dataclass(frozen=True)
 class HBRConf(RegConf):
@@ -32,9 +32,6 @@ class HBRConf(RegConf):
         """
         Detects problems in the configuration and returns them as a list of strings.
         """
-
-        # DESIGN CHOICE (stijn):
-        # This mutable field need to be local here, because the dataclass is defined as immutable.
         configuration_problems = []
 
         def add_problem(problem: str):

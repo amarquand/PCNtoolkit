@@ -1,14 +1,7 @@
-import argparse
-import sys
-from unittest.mock import patch
-
-import pytest
-
 import pcntoolkit.normative as normative
-
+from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
-from pytest_tests.fixtures.data_fixtures import *
 
 
 def test_fit(hbr_conf_dict):

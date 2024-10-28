@@ -17,9 +17,6 @@ class GPRConf(RegConf):
         """
         Detects problems in the configuration and returns them as a list of strings.
         """
-
-        # DESIGN CHOICE (stijn):
-        # This mutable field need to be local here, because the dataclass is defined as immutable.
         configuration_problems = []
 
         def add_problem(problem: str):
