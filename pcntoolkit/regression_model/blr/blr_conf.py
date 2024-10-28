@@ -1,18 +1,10 @@
 from dataclasses import dataclass
 
-from pcntoolkit.regression_model.blr.warp import (
-    WarpBase,
-    WarpAffine,
-    WarpCompose,
-    WarpLog,
-    WarpSinArcsinh,
-    WarpBoxCox,
-)
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 # Default configuration values
-N_ITER = 100
-TOL = 1e-3
+N_ITER = 300
+TOL = 1e-5
 ARD = False
 OPTIMIZER = "l-bfgs-b"
 L_BFGS_B_L = 0.1

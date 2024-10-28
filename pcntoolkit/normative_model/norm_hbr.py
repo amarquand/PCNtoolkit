@@ -1,14 +1,3 @@
-import gc
-import json
-import os
-import warnings
-from typing import Union
-
-import arviz as az
-import numpy as np
-import pymc as pm
-import pytensor.tensor as pt
-import scipy.stats as stats
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -17,8 +6,6 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.hbr_util import S_inv, m
-from pcntoolkit.regression_model.reg_conf import RegConf
 
 
 class NormHBR(NormBase):
@@ -48,7 +35,6 @@ class NormHBR(NormBase):
         self.current_regression_model.predict(hbrdata)
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
-
         # Transform the data to hbrdata
         fit_hbrdata = self.normdata_to_hbrdata(fit_data)
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
@@ -56,7 +42,6 @@ class NormHBR(NormBase):
         self.current_regression_model.fit_predict(fit_hbrdata, predict_hbrdata)
 
     def _transfer(self, data: NormData, *args, **kwargs) -> "HBR":
-
         freedom = kwargs.get("freedom", 1)
         # Transform the data to hbrdata
         transferdata = self.normdata_to_hbrdata(data)
@@ -90,7 +75,6 @@ class NormHBR(NormBase):
     def _centiles(
         self, data: NormData, cummulative_densities: list[float], resample=True
     ) -> xr.DataArray:
-
         hbrdata = self.normdata_to_hbrdata(data)
 
         return self.current_regression_model.centiles(

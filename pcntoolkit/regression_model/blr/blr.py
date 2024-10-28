@@ -1,14 +1,16 @@
-import numpy as np
+from __future__ import annotations
 
+import numpy as np
+from scipy import linalg, optimize, stats
+from scipy.linalg import LinAlgError
+
+from pcntoolkit.regression_model.blr.blr_data import BLRData
 from pcntoolkit.regression_model.regression_model import RegressionModel
 
 from .blr_conf import BLRConf
-from scipy import optimize, linalg
-from scipy.linalg import LinAlgError
 
 
 class BLR(RegressionModel):
-
     def __init__(
         self, name: str, reg_conf: BLRConf, is_fitted=False, is_from_dict=False
     ):
@@ -29,10 +31,10 @@ class BLR(RegressionModel):
         self.warp = None
         # self.gamma = None # Not used if warp is not used
 
-    def fit(self, X, y, hyp0=None):
+    def fit(self, data: BLRData, hyp0=None):
         if hyp0 is None:
             if self.ard:
-                hyp0 = np.zeros(X.shape[1] + 1)
+                hyp0 = np.zeros(data.X.shape[1] + 1)
             else:
                 hyp0 = np.zeros(2)
 
@@ -42,18 +44,18 @@ class BLR(RegressionModel):
                     f=self.loglik,
                     x0=hyp0,
                     fprime=self.dloglik,
-                    args=(X, y),
+                    args=(data.X, data.y),
                     gtol=self.tol,
                     maxiter=self.n_iter,
                     full_output=1,
                 )
             case "powell":
                 out = optimize.fmin_powell(
-                    func=self.loglik, x0=hyp0, args=(X, y), full_output=1
+                    func=self.loglik, x0=hyp0, args=(data.X, data.y), full_output=1
                 )
             case "nelder-mead":
                 out = optimize.fmin(
-                    func=self.loglik, x0=hyp0, args=(X, y), full_output=1
+                    func=self.loglik, x0=hyp0, args=(data.X, data.y), full_output=1
                 )
             case "l-bfgs-b":
                 all_hyp_i = [hyp0]
@@ -66,7 +68,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=hyp0,
-                        args=(X, y, self.l, self.norm),
+                        args=(data.X, data.y, self.l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                         callback=store,
@@ -78,7 +80,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
-                        args=(X, y, self.l, self.norm),
+                        args=(data.X, data.y, self.l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                     )
@@ -87,16 +89,24 @@ class BLR(RegressionModel):
                 raise ValueError(f"Optimizer {self.reg_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
-        self.beta, _, _ = self.parse_hyps(self.hyp, X)
+        self.beta, _ = self.parse_hyps(self.hyp, data.X)
         self.is_fitted = True
 
-    def predict(self, X):
-        raise NotImplementedError("Predict method not implemented for BLR.")
-        # TODO Find out why we need the train data to predict, and see if we can remove this dependency by saving the quantities needed for prediction in the model.
-        # Note: verify that the privacy of the training data is not compromised by saving those quantities.
+    def predict(self, data: BLRData):
+        """Function to make predictions from the model
+        :param X: covariates for test data
+        This always returns Gaussian predictions, i.e.
+
+        :returns: * ys - predictive mean
+                  * s2 - predictive variance
+        """
+        beta = self.beta
+        self.ys = data.X.dot(self.m)
+        s2n = 1 / beta
+        self.s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
+        return self.ys, self.s2
 
     def parse_hyps(self, hyp, X):
-
         N = X.shape[0]
 
         # Precision for the noise
@@ -115,7 +125,6 @@ class BLR(RegressionModel):
         return alpha, beta
 
     def post(self, hyp, X, y):
-
         # Store the number of samples and features
         self.N = X.shape[0]
         if len(X.shape) == 1:
@@ -306,7 +315,20 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def to_dict(self):
+    def centiles(self, data: BLRData, cummulative_densities, resample=True):
+        if resample:
+            self.predict(data)
+        centiles = np.zeros((len(cummulative_densities), data.X.shape[0]))
+        for i, cdf in enumerate(cummulative_densities):
+            centiles[i, :] = self.ys + stats.norm.ppf(cdf) * np.sqrt(self.s2)
+        return centiles
+
+    def zscores(self, data: BLRData, resample=True):
+        if resample:
+            self.predict(data)
+        return (data.y - self.ys) / np.sqrt(self.s2)
+
+    def to_dict(self, path=None):
         my_dict = super().to_dict()
         my_dict["hyp"] = self.hyp.tolist()
         my_dict["nlZ"] = self.nlZ
@@ -315,10 +337,13 @@ class BLR(RegressionModel):
         my_dict["lambda_n_vec"] = self.lambda_n_vec.tolist()
         my_dict["Sigma_a"] = self.Sigma_a.tolist()
         my_dict["Lambda_a"] = self.Lambda_a.tolist()
+        my_dict["beta"] = self.beta.tolist()
+        my_dict["m"] = self.m.tolist()
+        my_dict["A"] = self.A.tolist()
         return my_dict
 
     @classmethod
-    def from_dict(cls, dict):
+    def from_dict(cls, dict, path=None):
         """
         Creates a configuration from a dictionary.
         """
@@ -334,6 +359,9 @@ class BLR(RegressionModel):
         self.lambda_n_vec = np.array(dict["lambda_n_vec"])
         self.Sigma_a = np.array(dict["Sigma_a"])
         self.Lambda_a = np.array(dict["Lambda_a"])
+        self.beta = np.array(dict["beta"])
+        self.m = np.array(dict["m"])
+        self.A = np.array(dict["A"])
         return self
 
     @classmethod
@@ -352,6 +380,9 @@ class BLR(RegressionModel):
         self.lambda_n_vec = np.array(args.get("lambda_n_vec", None))
         self.Sigma_a = np.array(args.get("Sigma_a", None))
         self.Lambda_a = np.array(args.get("Lambda_a", None))
+        self.beta = np.array(args.get("beta", None))
+        self.m = np.array(args.get("m", None))
+        self.A = np.array(args.get("A", None))
         return self
 
     @property

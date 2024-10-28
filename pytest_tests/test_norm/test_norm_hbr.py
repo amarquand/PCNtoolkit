@@ -3,13 +3,12 @@ import os
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.norm_data_fixtures import *
+from pytest_tests.fixtures.path_fixtures import *
 
 """
 This file contains tests for the NormHBR class in the PCNtoolkit.
@@ -130,7 +129,9 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
             os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"model_{i}.json")
         )
     assert os.path.exists(
-        os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "metadata.json")
+        os.path.join(
+            fitted_norm_hbr_model.norm_conf.save_dir, "normative_model_dict.json"
+        )
     )
 
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
@@ -147,7 +148,7 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     for i in hbr.response_vars:
         os.remove(os.path.join(load_path, f"idata_{i}.nc"))
         os.remove(os.path.join(load_path, f"model_{i}.json"))
-    os.remove(os.path.join(load_path, "metadata.json"))
+    os.remove(os.path.join(load_path, "normative_model_dict.json"))
 
     # Assert the following throws an error
     with pytest.raises(FileNotFoundError):
