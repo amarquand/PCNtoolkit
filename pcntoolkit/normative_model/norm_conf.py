@@ -1,8 +1,6 @@
-import json
 import os
 import warnings
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass(frozen=True)  # Creates an immutable datasclass
@@ -18,7 +16,6 @@ class NormConf:
     log_dir: str = "./logs"
     save_dir: str = "./saves"
 
-    # DESIGN CHOICE (stijn):
     # Add the basis function type here to keep the regression model agnostic of the basis function type.
     # The regression model should only see the dimensionality of the input data, and handle any shape incompatibilities itself.
     # With the default value of "linear", applied basis expansion will be an identity function.
@@ -85,7 +82,6 @@ class NormConf:
         """
         Detects problems in the configuration and returns them as a list.
         """
-        # DESIGN CHOICE (stijn):
         # This mutable list needs to be defined here, because the dataclass is defined as immutable, and can not hold mutable fields.
         # The add_problem function is defined here, because it needs access to the mutable configuration_problems variable.
         configuration_problems = []
