@@ -11,7 +11,9 @@ L_BFGS_B_L = 0.1
 L_BFGS_B_EPSILON = 0.1
 L_BFGS_B_NORM = "l2"
 INTERCEPT = True
+RANDOM_INTERCEPT = False
 HETEROSKEDASTIC = False
+RANDOM_VAR = False
 
 
 @dataclass(frozen=True)
@@ -31,7 +33,9 @@ class BLRConf(RegConf):
 
     # Design matrix configuration
     intercept: bool = INTERCEPT
+    random_intercept: bool = RANDOM_INTERCEPT
     heteroskedastic: bool = HETEROSKEDASTIC
+    random_var: bool = RANDOM_VAR
 
     # TODO implement var groups, var_covariates, and warp
     # var_groups: list = None
