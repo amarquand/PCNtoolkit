@@ -408,3 +408,48 @@ class NormData(xr.Dataset):
             )
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
         return to_return
+
+    def to_dataframe(self):
+        acc = []
+        x_columns = [col for col in ["X", "scaled_X"] if hasattr(self, col)]
+        y_columns = [col for col in ["y", "zscores", "scaled_y"] if hasattr(self, col)]
+        acc.append(
+            xr.Dataset.to_dataframe(self[x_columns])
+            .reset_index(drop=False)
+            .pivot(index="datapoints", columns="covariates", values=x_columns)
+        )
+        acc.append(
+            xr.Dataset.to_dataframe(self[y_columns])
+            .reset_index(drop=False)
+            .pivot(index="datapoints", columns="response_vars", values=y_columns)
+        )
+        be = (
+            xr.DataArray.to_dataframe(self.batch_effects)
+            .reset_index(drop=False)
+            .pivot(
+                index="datapoints", columns="batch_effect_dims", values="batch_effects"
+            )
+        )
+        be.columns = [("batch_effects", col) for col in be.columns]
+        acc.append(be)
+        if hasattr(self, "Phi"):
+            phi = (
+                xr.DataArray.to_dataframe(self.Phi)
+                .reset_index(drop=False)
+                .pivot(index="datapoints", columns="basis_functions", values="Phi")
+            )
+            phi.columns = [("Phi", col) for col in phi.columns]
+            acc.append(phi)
+        if hasattr(self, "centiles"):
+            centiles = (
+                xr.DataArray.to_dataframe(self.centiles)
+                .reset_index(drop=False)
+                .pivot(
+                    index="datapoints",
+                    columns=["response_vars", "cdf"],
+                    values="centiles",
+                )
+            )
+            centiles.columns = [("centiles", col) for col in centiles.columns]
+            acc.append(centiles)
+        return pd.concat(acc, axis=1)
