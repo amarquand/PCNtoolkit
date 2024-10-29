@@ -162,26 +162,24 @@ class NormBLR(NormBase):
             this_y = data.y.to_numpy()
 
         # Create intercept
-        if self.current_regression_model.reg_conf.intercept:
+        if self.current_regression_model.intercept:
             this_X = np.hstack((this_X, np.ones((this_X.shape[0], 1))))
 
-        # # For each of the columns in the batch_effects, create a one-hot encoding
-        # for i in data.batch_effects.columns:
-        #     eye = np.eye(i)
-        #     this_X = np.hstack(
-        #         (
-        #             this_X,
-        #             np.array(
-        #                 [
-        #                     [
-        #                         1 if i[batch_effect] == j else 0
-        #                         for j in range(len(i))
-        #                     ]
-        #                     for batch_effect in i[:, i]
-        #                 ]
-        #             ),
-        #         )
-        #     )
+        # Create one-hot encoding for random intercept
+        if self.current_regression_model.random_intercept:
+            for i in data.batch_effect_dims:
+                cur_be = data.batch_effects.sel(batch_effect_dims=i)
+                cur_be_id = np.vectorize(
+                    data.attrs["batch_effects_maps"][i.item()].get
+                )(cur_be.values)
+                this_X = np.hstack(
+                    (
+                        this_X,
+                        np.eye(len(data.attrs["batch_effects_maps"][i.item()]))[
+                            cur_be_id
+                        ],
+                    )
+                )
 
         blrdata = BLRData(
             X=this_X,
