@@ -4,11 +4,9 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple
 
 import arviz as az
-import numpy as np
 import pymc as pm
 import scipy.stats as stats
 import xarray as xr
-from pytensor.tensor.extra_ops import repeat
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
@@ -19,7 +17,7 @@ class Param:
     dims: Tuple[str] = None
 
     dist_name: str = "Normal"
-    dist_params: tuple = (0, 10)
+    dist_params: tuple = (0, 10.0)
 
     linear: bool = False
     slope: Param = None
@@ -59,14 +57,14 @@ class Param:
 
         if self.linear:
             self.set_linear_params()
-            self.sample_dims = ('datapoints',)
+            self.sample_dims = ("datapoints",)
 
         elif self.random:
             if self.centered:
                 self.set_centered_random_params()
             else:
                 self.set_noncentered_random_params()
-            self.sample_dims = ('datapoints',)
+            self.sample_dims = ("datapoints",)
 
         else:
             # If the parameter is really only a single number, we need to add an empty dimension so our outputs are always 2D
@@ -78,7 +76,6 @@ class Param:
                 if type(self.dims) is str:
                     self.dims = (self.dims,)
             self.sample_dims = ()
-
 
     def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
@@ -100,7 +97,7 @@ class Param:
                     self.mu.create_graph(model, idata, freedom)
                     self.sigma.create_graph(model, idata, freedom)
                     self.offset = pm.Normal(
-                        f"offset_" + self.name,
+                        "offset_" + self.name,
                         mu=0,
                         sigma=1,
                         dims=(*model.custom_batch_effect_dims, *self._dims),
@@ -160,8 +157,10 @@ class Param:
 
     def set_noncentered_random_params(self):
         if not self.mu:
-            self.mu = Param(f"mu_{self.name}", dims=self.dims)
+            self.mu = Param.default_sub_mu(self.name, self.dims)
+            self.mu.name = f"mu_{self.name}"
         if not self.sigma:
+            self.sigma = Param.default_sub_sigma(self.name, self.dims)
             self.sigma = Param(
                 f"sigma_{self.name}",
                 dims=self.dims,
@@ -174,19 +173,24 @@ class Param:
 
     def set_linear_params(self):
         if not self.slope:
-            self.slope = Param(f"slope_{self.name}", dims=(*self._dims, "covariates"))
+            self.slope = Param.default_slope(self.name, (*self._dims, "covariates"))
         if not self.intercept:
-            self.intercept = Param(f"intercept_{self.name}", dims=self.dims)
-
+            self.intercept = Param.default_intercept(self.name, self._dims)
 
     def get_samples(self, data: HBRData):
+        """Uses the linear or random effect to get samples.
+
+        Args:
+            data (HBRData): HBRData object, used to regress the data.
+
+        Returns:
+            pm.Distribution: Distribution object
+        """
+
         if self.linear:
             slope_samples = self.slope.get_samples(data)
             intercept_samples = self.intercept.get_samples(data)
-            result = (
-                pm.math.sum(slope_samples * data.pm_X, axis=1)
-                + intercept_samples
-            )
+            result = pm.math.sum(slope_samples * data.pm_X, axis=1) + intercept_samples
             return self.apply_mapping(result)
 
         elif self.random:
@@ -195,15 +199,28 @@ class Param:
             return self.dist
 
     def apply_mapping(self, x):
+        """Applies the mapping function to the input.
+
+        Args:
+            x (number): input value
+
+        Raises:
+            ValueError: if the mapping is not recognized.
+        Returns:
+            value: mapped value
+        """
+        a, b = self.mapping_params[0], self.mapping_params[1]
         if self.mapping == "identity":
-            return x
+            toreturn = x
         elif self.mapping == "exp":
-            return pm.math.exp(x)
+            toreturn = pm.math.exp(a + x / b) * b
         elif self.mapping == "softplus":
-            return pm.math.log1pexp(x)
+            toreturn = pm.math.log(1 + pm.math.exp(a + x / b)) * b
         else:
-            # raise ValueError(f"Unknown mapping {self.mapping}")
-            return x
+            raise ValueError(f"Unknown mapping {self.mapping}")
+        if len(self.mapping_params) > 2:
+            toreturn = toreturn + self.mapping_params[2]
+        return toreturn
 
     def to_dict(self):
         param_dict = {
@@ -234,6 +251,16 @@ class Param:
 
     @classmethod
     def from_args(cls, name: str, args: Dict[str, any], dims=None):
+        """Creates a Param object from command line arguments.
+
+        Args:
+            name (str): Name of the parameter.
+            args (Dict[str, any]): Dictionary of arguments.
+            dims (_type_, optional): Dimensions. Defaults to None.
+
+        Returns:
+            Param: Param object
+        """
         tupdims = dims if dims else ()
         if args.get(f"linear_{name}", False):
             slope = cls.from_args(f"slope_{name}", args, dims=(*tupdims, "covariates"))
@@ -327,21 +354,26 @@ class Param:
 
     @classmethod
     def default_mu(cls):
+        slope = cls.default_slope("mu")
+        intercept = cls.default_intercept("mu")
         return cls(
             "mu",
             linear=True,
-            slope=cls("slope_mu", dims=("covariates",), random=False),
-            intercept=cls("intercept_mu", random=True, centered=False),
+            slope=slope,
+            intercept=intercept,
         )
 
     @classmethod
     def default_sigma(cls):
+        slope = cls.default_slope("sigma")
+        intercept = cls.default_intercept("sigma")
         return cls(
             "sigma",
             linear=True,
-            slope=cls("slope_sigma", dims=("covariates",), random=False),
-            intercept=cls("intercept_sigma", random=True, centered=True),
+            slope=slope,
+            intercept=intercept,
             mapping="softplus",
+            mapping_params=(0.0, 10.0),
         )
 
     @classmethod
@@ -350,6 +382,11 @@ class Param:
             "epsilon",
             linear=False,
             random=False,
+            dist_name="Normal",
+            dist_params=(
+                0.0,
+                2.0,
+            ),
         )
 
     @classmethod
@@ -358,6 +395,64 @@ class Param:
             "delta",
             linear=False,
             random=False,
+            dist_name="Normal",
+            dist_params=(
+                0.0,
+                2.0,
+            ),
+            mapping="softplus",
+            mapping_params=(0.0, 3.0, 0.3),
+        )
+
+    @classmethod
+    def default_slope(cls, name, dims=("covariates",)):
+        return cls(
+            f"slope_{name}",
+            linear=False,
+            random=False,
+            dims=dims,
+            dist_name="Normal",
+            dist_params=(
+                0.0,
+                10.0,
+            ),
+        )
+
+    @classmethod
+    def default_intercept(cls, name, dims=None):
+        return cls(
+            f"intercept_{name}",
+            linear=False,
+            random=False,
+            dims=dims,
+            dist_name="Normal",
+            dist_params=(
+                0.0,
+                10.0,
+            ),
+        )
+
+    @classmethod
+    def default_sub_mu(cls, name, dims=None):
+        return cls(
+            f"mu_{name}",
+            linear=False,
+            random=False,
+            dims=dims,
+            dist_name="Normal",
+            dist_params=(
+                0.0,
+                10.0,
+            ),
+        )
+
+    @classmethod
+    def default_sub_sigma(cls, name, dims=None):
+        return cls(
+            f"sigma_{name}",
+            linear=False,
+            random=False,
+            dims=dims,
             dist_name="LogNormal",
             dist_params=(2.0,),
         )
