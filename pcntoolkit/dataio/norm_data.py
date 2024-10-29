@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import xarray as xr
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -222,11 +223,9 @@ class NormData(xr.Dataset):
         return to_return
 
     def get_single_batch_effect(self):
-        batch_effects_to_sample = [
-            [list(map.keys())[0]] for map in self.batch_effects_maps.values()
-        ]
-
-        return batch_effects_to_sample
+        return {
+            k: [list(v.keys())[0]] for k, v in self.attrs["batch_effects_maps"].items()
+        }
 
     def train_test_split(
         self, splits: Tuple[float, ...], split_names: Tuple[str, ...] = None
@@ -361,36 +360,96 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def plot_qq(self, plt_kwargs=None, bound=0):
+    def plot_qq(
+        self,
+        plt_kwargs=None,
+        bound=0,
+        plot_id_line=False,
+        hue_data=None,
+        markers_data=None,
+        split_data=None,
+    ):
         """Create a QQ-plot for all response variables."""
-        if not plt_kwargs:
-            plt_kwargs = {}
+        plt_kwargs = plt_kwargs or {}
         for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_qq(response_var, plt_kwargs, bound)
+            self._plot_qq(
+                response_var,
+                plt_kwargs,
+                bound,
+                plot_id_line,
+                hue_data,
+                markers_data,
+                split_data,
+            )
 
-    def _plot_qq(self, response_var: str, plt_kwargs, bound=0):
+    def _plot_qq(
+        self,
+        response_var: str,
+        plt_kwargs,
+        bound=0,
+        plot_id_line=False,
+        hue_data="site",
+        markers_data="sex",
+        split_data="site",
+    ):
+        sns.set_style("whitegrid")
         """Create a QQ-plot for a single response variable."""
-
         # Filter the responsevar that is to be plotted
         filter_dict = {
             "response_vars": response_var,
         }
-
         filt = self.sel(filter_dict)
 
-        ran = np.random.randn(filt.X.shape[0])
-        ran.sort()
+        # Create a dataframe from the filtered data
+        df: pd.DataFrame = filt.to_dataframe()
 
-        z_scores = filt.zscores.data
-        z_scores.sort()
+        # Create labels for the axes
+        tq = "theoretical quantiles"
+        rq = f"{response_var} quantiles"
 
-        plt.figure()
-        plt.scatter(ran, z_scores, **plt_kwargs)
+        # Filter columns needed for plotting
+        columns = [("zscores", response_var)]
+        columns.extend([("batch_effects", be.item()) for be in self.batch_effect_dims])
+        df = df[columns]
+        df.columns = [rq] + [be.item() for be in self.batch_effect_dims]
+
+        # Sort the dataframe by the response variable
+        df.sort_values(by=rq, inplace=True)
+
+        # Create a column for the theoretical quantiles
+        rand = np.random.randn(df.shape[0])
+        rand.sort()
+        df[tq] = rand
+
+        if split_data:
+            for i, g in enumerate(df.groupby(split_data, sort=False)):
+                id = g[1].index
+                df.loc[id, rq] += i * 1.0
+                rand = np.random.randn(g[1].shape[0])
+                rand.sort()
+                df.loc[id, tq] = rand
+
+        # Plot the QQ-plot
+        hue_data = hue_data
+        sns.scatterplot(
+            data=df,
+            x="theoretical quantiles",
+            y=rq,
+            hue=hue_data if hue_data in df else None,
+            style=markers_data if markers_data in df else None,
+            **plt_kwargs,
+        )
+        if plot_id_line:
+            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
+            plt.plot(
+                [-max_abs_val, max_abs_val],
+                [-max_abs_val, max_abs_val],
+                color="black",
+                linestyle="--",
+            )
+
         if bound != 0:
             plt.axis([-bound, bound, -bound, bound])
-        plt.title(f"QQ-plot for {response_var}")
-        plt.xlabel("Theoretical quantiles")
-        plt.ylabel("Predicted quantiles")
         plt.show()
 
     def select_batch_effects(self, batch_effects: dict[str, list[str]]):
