@@ -315,11 +315,11 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def centiles(self, data: BLRData, cummulative_densities, resample=True):
+    def centiles(self, data: BLRData, cdf, resample=True):
         if resample:
             self.predict(data)
-        centiles = np.zeros((len(cummulative_densities), data.X.shape[0]))
-        for i, cdf in enumerate(cummulative_densities):
+        centiles = np.zeros((len(cdf), data.X.shape[0]))
+        for i, cdf in enumerate(cdf):
             centiles[i, :] = self.ys + stats.norm.ppf(cdf) * np.sqrt(self.s2)
         return centiles
 

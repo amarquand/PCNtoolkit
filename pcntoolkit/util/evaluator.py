@@ -1,7 +1,7 @@
 import numpy as np
+import xarray as xr
 from scipy import stats
 from sklearn.metrics import explained_variance_score
-import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
 
@@ -11,10 +11,9 @@ class Evaluator:
         pass
 
     def evaluate(self, data: NormData) -> NormData:
-        data["Yhat"] = data.centiles.sel(cummulative_densities=0.5, method="nearest")
+        data["Yhat"] = data.centiles.sel(cdf=0.5, method="nearest")
         data["S2"] = (
-            data.centiles.sel(cummulative_densities=0.1587, method="nearest")
-            - data["Yhat"]
+            data.centiles.sel(cdf=0.1587, method="nearest") - data["Yhat"]
         ) ** 2
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
 

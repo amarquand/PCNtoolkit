@@ -116,7 +116,7 @@ class HBR(RegressionModel):
         return new_hbr_model
 
     def centiles(
-        self, hbrdata: HBRData, cummulative_densities: list[float], resample=True
+        self, hbrdata: HBRData, cdf: list[float], resample=True
     ) -> xr.DataArray:
         var_names = self.get_var_names()
 
@@ -137,12 +137,12 @@ class HBR(RegressionModel):
 
         # Create an array to hold the centiles
         n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
-        centiles = np.zeros((len(cummulative_densities), n_datapoints, n_mcmc_samples))
+        centiles = np.zeros((len(cdf), n_datapoints, n_mcmc_samples))
 
         # Compute the centiles iteratively for each cummulative density
-        for i, cdf in enumerate(cummulative_densities):
+        for i, _cdf in enumerate(cdf):
             zs = np.full(
-                (n_datapoints, n_mcmc_samples), stats.norm.ppf(cdf), dtype=float
+                (n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float
             )
             centiles[i] = xr.apply_ufunc(
                 centile,
@@ -153,8 +153,8 @@ class HBR(RegressionModel):
 
         return xr.DataArray(
             centiles,
-            dims=["cummulative_densities", "datapoints", "sample"],
-            coords={"cummulative_densities": cummulative_densities},
+            dims=["cdf", "datapoints", "sample"],
+            coords={"cdf": cdf},
         ).mean(dim="sample")
 
     def zscores(self, hbrdata: HBRData, resample=False) -> xr.DataArray:
