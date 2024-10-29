@@ -10,7 +10,7 @@ OPTIMIZER = "l-bfgs-b"
 L_BFGS_B_L = 0.1
 L_BFGS_B_EPSILON = 0.1
 L_BFGS_B_NORM = "l2"
-INTERCEPT = True
+INTERCEPT = False
 RANDOM_INTERCEPT = False
 HETEROSKEDASTIC = False
 RANDOM_VAR = False
@@ -37,9 +37,9 @@ class BLRConf(RegConf):
     heteroskedastic: bool = HETEROSKEDASTIC
     random_var: bool = RANDOM_VAR
 
-    # TODO implement var groups, var_covariates, and warp
-    # var_groups: list = None
-    # heteroskedastic: bool = False
+    has_random_effect = random_intercept or random_var
+
+    # TODO implement warp
     # warp: WarpBase = None
     # warp_reparam: bool = False
 
@@ -83,6 +83,8 @@ class BLRConf(RegConf):
             l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
             intercept=args_filt.get("intercept", INTERCEPT),
             heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
+            random_intercept=args_filt.get("random_intercept", RANDOM_INTERCEPT),
+            random_var=args_filt.get("random_var", RANDOM_VAR),
         )
 
     @classmethod
@@ -100,6 +102,8 @@ class BLRConf(RegConf):
             l_bfgs_b_norm=dict["l_bfgs_b_norm"],
             intercept=dict["intercept"],
             heteroskedastic=dict["heteroskedastic"],
+            random_intercept=dict["random_intercept"],
+            random_var=dict["random_var"],
         )
 
     def to_dict(self):
@@ -116,4 +120,6 @@ class BLRConf(RegConf):
             "l_bfgs_b_norm": self.l_bfgs_b_norm,
             "intercept": self.intercept,
             "heteroskedastic": self.heteroskedastic,
+            "random_intercept": self.random_intercept,
+            "random_var": self.random_var,
         }

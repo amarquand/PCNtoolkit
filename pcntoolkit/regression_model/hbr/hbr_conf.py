@@ -120,3 +120,10 @@ class HBRConf(RegConf):
         if self.delta:
             conf_dict["delta"] = self.delta.to_dict()
         return conf_dict
+
+    @property
+    def has_random_effect(self):
+        for attr in ["mu", "sigma", "epsilon", "delta"]:
+            if getattr(self, attr) and getattr(self, attr).has_random_effect:
+                return True
+        return False
