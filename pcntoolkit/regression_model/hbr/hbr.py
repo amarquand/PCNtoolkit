@@ -30,6 +30,8 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None
         self.pymc_model = None
 
+        # Make a new model if needed
+
     def fit(self, hbrdata: HBRData, make_new_model: bool = True):
         # Make a new model if needed
         if make_new_model or (not self.pymc_model):
@@ -42,6 +44,7 @@ class HBR(RegressionModel):
                 tune=self.reg_conf.tune,
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
+                nuts_sampler=self.reg_conf.nuts_sampler,
                 # var_names=["y_pred"],
             )
 
@@ -79,6 +82,7 @@ class HBR(RegressionModel):
                 tune=self.reg_conf.tune,
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
+                nuts_sampler=self.reg_conf.nuts_sampler,
             )
 
         # Set the is_fitted flag to True

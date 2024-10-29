@@ -38,6 +38,18 @@ class HBRConf(RegConf):
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
+        # Check if nuts_sampler is valid
+        if self.nuts_sampler not in ["pymc", "nutpie"]:
+            add_problem(
+                f"Nuts sampler '{self.nuts_sampler}' is not supported. Please specify a valid nuts sampler. Available options are 'pymc' and 'nutpie'."
+            )
+
+        # Check if likelihood is valid
+        if self.likelihood not in ["Normal", "SHASHb", "SHASHo", "SHASHo2"]:
+            add_problem(
+                f"Likelihood '{self.likelihood}' is not supported. Please specify a valid likelihood."
+            )
+
         # Check positivity of sigma
         if self.sigma:
             if self.sigma.linear:
