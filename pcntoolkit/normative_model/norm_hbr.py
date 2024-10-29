@@ -73,13 +73,11 @@ class NormHBR(NormBase):
         )
 
     def _centiles(
-        self, data: NormData, cummulative_densities: list[float], resample=True
+        self, data: NormData, cdf: list[float], resample=True
     ) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
 
-        return self.current_regression_model.centiles(
-            hbrdata, cummulative_densities, resample
-        )
+        return self.current_regression_model.centiles(hbrdata, cdf, resample)
 
     def _zscores(self, data: NormData, resample=False) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
