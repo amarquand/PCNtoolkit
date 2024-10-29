@@ -4,11 +4,9 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple
 
 import arviz as az
-import numpy as np
 import pymc as pm
 import scipy.stats as stats
 import xarray as xr
-from pytensor.tensor.extra_ops import repeat
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
@@ -59,14 +57,14 @@ class Param:
 
         if self.linear:
             self.set_linear_params()
-            self.sample_dims = ('datapoints',)
+            self.sample_dims = ("datapoints",)
 
         elif self.random:
             if self.centered:
                 self.set_centered_random_params()
             else:
                 self.set_noncentered_random_params()
-            self.sample_dims = ('datapoints',)
+            self.sample_dims = ("datapoints",)
 
         else:
             # If the parameter is really only a single number, we need to add an empty dimension so our outputs are always 2D
@@ -79,6 +77,9 @@ class Param:
                     self.dims = (self.dims,)
             self.sample_dims = ()
 
+        self.has_random_effect = (self.random and not self.linear) or (
+            self.linear and (self.slope.random or self.intercept.random)
+        )
 
     def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
@@ -100,7 +101,7 @@ class Param:
                     self.mu.create_graph(model, idata, freedom)
                     self.sigma.create_graph(model, idata, freedom)
                     self.offset = pm.Normal(
-                        f"offset_" + self.name,
+                        "offset_" + self.name,
                         mu=0,
                         sigma=1,
                         dims=(*model.custom_batch_effect_dims, *self._dims),
@@ -178,15 +179,11 @@ class Param:
         if not self.intercept:
             self.intercept = Param(f"intercept_{self.name}", dims=self.dims)
 
-
     def get_samples(self, data: HBRData):
         if self.linear:
             slope_samples = self.slope.get_samples(data)
             intercept_samples = self.intercept.get_samples(data)
-            result = (
-                pm.math.sum(slope_samples * data.pm_X, axis=1)
-                + intercept_samples
-            )
+            result = pm.math.sum(slope_samples * data.pm_X, axis=1) + intercept_samples
             return self.apply_mapping(result)
 
         elif self.random:

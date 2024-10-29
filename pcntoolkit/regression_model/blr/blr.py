@@ -109,6 +109,9 @@ class BLR(RegressionModel):
     def parse_hyps(self, hyp, X):
         N = X.shape[0]
 
+        # if self.heteroskedastic:
+        #     Xv =
+
         # Precision for the noise
         beta = np.asarray([np.exp(hyp[0])])
         n_lik_param = len(beta)
@@ -412,3 +415,19 @@ class BLR(RegressionModel):
     @property
     def norm(self):
         return self.reg_conf.l_bfgs_b_norm
+
+    @property
+    def intercept(self):
+        return self.reg_conf.intercept
+
+    @property
+    def random_intercept(self):
+        return self.reg_conf.random_intercept
+
+    @property
+    def heteroskedastic(self):
+        return self.reg_conf.heteroskedastic
+
+    @property
+    def random_var(self):
+        return self.reg_conf.random_var
