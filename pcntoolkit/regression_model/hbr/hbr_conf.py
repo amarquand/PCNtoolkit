@@ -9,6 +9,7 @@ TUNE = 1000
 CHAINS = 2
 CORES = 1
 LIKELIHOOD = "Normal"
+NUTS_SAMPLER = "pymc"
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,8 @@ class HBRConf(RegConf):
     tune: int = TUNE
     chains: int = CHAINS
     cores: int = CORES
+
+    nuts_sampler: str = NUTS_SAMPLER
 
     # model config
     likelihood: str = LIKELIHOOD
@@ -122,6 +125,7 @@ class HBRConf(RegConf):
             "tune": self.tune,
             "cores": self.cores,
             "likelihood": self.likelihood,
+            "nuts_sampler": self.nuts_sampler,
         }
         if self.mu:
             conf_dict["mu"] = self.mu.to_dict()

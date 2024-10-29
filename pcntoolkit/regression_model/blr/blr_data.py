@@ -1,11 +1,12 @@
 import warnings
-from collections import OrderedDict
 from typing import Any
 
 import numpy as np
 
 
 class BLRData:
+    """An object to store the data used in Bayesian linear regression."""
+
     def __init__(
         self,
         X: np.ndarray,
@@ -22,9 +23,6 @@ class BLRData:
         self._n_covariates = self.X.shape[1]
         self._n_datapoints = self.X.shape[0]
         self._n_batch_effect_columns = self.batch_effects.shape[1]
-
-        # The coords will be passed to the pymc model
-        self._coords = OrderedDict()  # This preserves the order of the keys
 
     def check_and_set_data(self, X, y, batch_effects):
         """
@@ -95,10 +93,6 @@ class BLRData:
     @property
     def n_batch_effect_columns(self):
         return self._n_batch_effect_columns
-
-    @property
-    def coords(self):
-        return self._coords
 
     @property
     def batch_effects_maps(self):
