@@ -1,159 +1,97 @@
-from typing import List, Optional, Union
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pymc as pm
-import pytensor as pt
-import pytensor.tensor as ptt
-import scipy.special as spp
-from pymc import floatX
-from pymc.distributions import Continuous
-from pytensor.gradient import grad_not_implemented
-from pytensor.graph import Apply
-from pytensor.graph.op import Op
-from pytensor.tensor.random.basic import normal
-from pytensor.tensor.random.op import RandomVariable
-
 """
 @author: Stijn de Boer (AuguB)
 See: Jones et al. (2009), Sinh-Arcsinh distributions.
 """
 
+from functools import lru_cache
 
-def numpy_P(q):
-    """
-    The P function as given in Jones et al.
-    :param q:
-    :return:
-    """
-    frac = np.exp(1.0 / 4.0) / np.power(8.0 * np.pi, 1.0 / 2.0)
-    K1 = numpy_K((q + 1) / 2, 1.0 / 4.0)
-    K2 = numpy_K((q - 1) / 2, 1.0 / 4.0)
-    a = (K1 + K2) * frac
-    return a
+import numpy as np
+import pytensor as pt
+from pymc import floatX
+from pymc.distributions import Continuous
+from pytensor.tensor import as_tensor_variable
+from pytensor.tensor.elemwise import Elemwise
+from pytensor.tensor.random.op import RandomVariable
+from scipy.special import kv
 
+from pcntoolkit.regression_model.hbr.KnuOp import knuop
 
-def numpy_K(p, x):
-    """
-    Computes the values of spp.kv(p,x) for only the unique values of p
-    """
+##### Constants #####
 
-    ps, idxs = np.unique(p, return_inverse=True)
-    return spp.kv(ps, x)[idxs].reshape(p.shape)
+CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
+CONST2 = -np.log(2 * np.pi) / 2
 
-
-class K(Op):
-    """
-    Modified Bessel function of the second kind, pytensor implementation
-    """
-
-    __props__ = ()
-
-    def make_node(self, p, x):
-        p = pt.tensor.as_tensor_variable(p)
-        x = pt.tensor.as_tensor_variable(x)
-        return Apply(self, [p, x], [p.type()])
-
-    def perform(self, node, inputs_storage, output_storage):
-        # Doing this on the unique values avoids doing A LOT OF double work, apparently scipy doesn't do this by itself
-
-        unique_inputs, inverse_indices = np.unique(
-            inputs_storage[0], return_inverse=True
-        )
-        unique_outputs = spp.kv(unique_inputs, inputs_storage[1])
-        outputs = unique_outputs[inverse_indices].reshape(inputs_storage[0].shape)
-        output_storage[0][0] = outputs
-
-    def grad(self, inputs, output_grads):
-        # Approximation of the derivative. This should suffice for using NUTS
-        dp = 1e-10
-        p = inputs[0]
-        x = inputs[1]
-        grad = (self(p + dp, x) - self(p, x)) / dp
-        return [output_grads[0] * grad, grad_not_implemented(0, 1, 2, 3)]
+##### SHASH Transformations #####
 
 
 def S(x, epsilon, delta):
-    """
-    :param epsilon:
-    :param delta:
-    :param x:
-    :return: The sinharcsinh transformation of x
+    """Sinh-arcsinh transformation.
+
+    Args:
+        x: input value
+        epsilon: parameter for skew
+        delta: parameter for kurtosis
+
+    Returns:
+        Sinh-arcsinh transformed value
     """
     return np.sinh(np.arcsinh(x) * delta - epsilon)
 
 
 def S_inv(x, epsilon, delta):
+    """Inverse sinh-arcsinh transformation.
+
+    Args:
+        x: input value
+        epsilon: parameter for skew
+        delta: parameter for kurtosis
+
+    Returns:
+        Inverse sinh-arcsinh transformed value
+    """
     return np.sinh((np.arcsinh(x) + epsilon) / delta)
 
 
 def C(x, epsilon, delta):
-    """
-    :param epsilon:
-    :param delta:
-    :param x:
-    :return: the cosharcsinh transformation of x
-    Be aware that this is sqrt(1+S(x)^2), so you may save some compute if you can re-use the result from S.
+    """Cosh-arcsinh transformation.
+
+    Args:
+        x: input value
+        epsilon: parameter for skew
+        delta: parameter for kurtosis
+
+    Returns:
+        The cosh-arcsinh transformation of x.
+
+    Note: C(x) = sqrt(1+S(x)^2)
     """
     return np.cosh(np.arcsinh(x) * delta - epsilon)
 
 
-def P(q):
-    """
-    The P function as given in Jones et al.
-    :param q:
-    :return:
-    """
-    frac = np.exp(1.0 / 4.0) / np.power(8.0 * np.pi, 1.0 / 2.0)
-    K1 = K()((q + 1) / 2, 1.0 / 4.0)
-    K2 = K()((q - 1) / 2, 1.0 / 4.0)
-    a = (K1 + K2) * frac
-    return a
-
-
-def m(epsilon, delta, r):
-    """
-    :param epsilon:
-    :param delta:
-    :param r:
-    :return:  The r'th uncentered moment of the SHASH distribution parameterized by epsilon and delta. Given by Jones et al.
-    The first four moments are given in closed form.
-    """
-    if r == 1:
-        return np.sinh(epsilon / delta) * P(1 / delta)
-    elif r == 2:
-        return (np.cosh(2 * epsilon / delta) * P(2 / delta) - 1) / 2
-    elif r == 3:
-        return (
-            np.sinh(3 * epsilon / delta) * P(3 / delta)
-            - 3 * np.sinh(epsilon / delta) * P(1 / delta)
-        ) / 4
-    elif r == 4:
-        return (
-            np.cosh(4 * epsilon / delta) * P(4 / delta)
-            - 4 * np.cosh(2 * epsilon / delta) * P(2 / delta)
-            + 3
-        ) / 8
-    # else:
-    #     frac1 = ptt.as_tensor_variable(1 / pm.power(2, r))
-    #     acc = ptt.as_tensor_variable(0)
-    #     for i in range(r + 1):
-    #         combs = spp.comb(r, i)
-    #         flip = pm.power(-1, i)
-    #         ex = np.exp((r - 2 * i) * epsilon / delta)
-    #         p = P((r - 2 * i) / delta)
-    #         acc += combs * flip * ex * p
-    #     return frac1 * acc
+##### SHASH Distributions #####
 
 
 class SHASH(RandomVariable):
+    """SHASH RV, described by Jones et al., based on a standard normal distribution."""
+
     name = "shash"
     signature = "(),()->()"
     dtype = "floatX"
     _print_name = ("SHASH", "\\operatorname{SHASH}")
 
     @classmethod
-    def rng_fn(cls, rng, epsilon, delta, size=None) -> np.ndarray:
+    def rng_fn(cls, rng, epsilon, delta, size=None):
+        """Draw random samples from SHASH distribution.
+
+        Args:
+            rng: Random number generator
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            size: sample size. Defaults to None.
+
+        Returns:
+            Random samples from SHASH distribution
+        """
         return np.sinh(
             (np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta
         )
@@ -165,35 +103,144 @@ shash = SHASH()
 class SHASH(Continuous):
     rv_op = shash
     """
-    SHASH described by Jones et al., based on a standard normal distribution.
+    SHASH distribution described by Jones et al., based on a standard normal distribution.
     """
+
+    # Instance of the KOp
+    my_K = Elemwise(knuop)
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def P(q):
+        """The P function as given in Jones et al.
+
+        Args:
+            q: input parameter for the P function
+
+        Returns:
+            Result of the P function computation
+        """
+        K1 = SHASH.my_K((q + 1) / 2, 0.25)
+        K2 = SHASH.my_K((q - 1) / 2, 0.25)
+        a = (K1 + K2) * CONST1
+        return a
+
+    @staticmethod
+    def m1(epsilon, delta):
+        """The first moment of the SHASH distribution parametrized by epsilon and delta.
+
+        Args:
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            First moment of the SHASH distribution
+        """
+        return np.sinh(epsilon / delta) * SHASH.P(1 / delta)
+
+    @staticmethod
+    def m2(epsilon, delta):
+        """The second moment of the SHASH distribution parametrized by epsilon and delta.
+
+        Args:
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Second moment of the SHASH distribution
+        """
+        return (np.cosh(2 * epsilon / delta) * SHASH.P(2 / delta) - 1) / 2
+
+    @staticmethod
+    def m1m2(epsilon, delta):
+        """Compute both first and second moments together to avoid redundant calculations.
+
+        Args:
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Tuple containing (mean, variance) of the SHASH distribution
+        """
+        inv_delta = 1.0 / delta
+        two_inv_delta = 2.0 * inv_delta
+
+        # Compute P values once
+        p1 = SHASH.P(inv_delta)
+        p2 = SHASH.P(two_inv_delta)
+
+        # Compute trig terms once
+        eps_delta = epsilon / delta
+        sinh_eps_delta = np.sinh(eps_delta)
+        cosh_2eps_delta = np.cosh(2 * eps_delta)
+
+        # Compute moments
+        mean = sinh_eps_delta * p1
+        raw_second = (cosh_2eps_delta * p2 - 1) / 2
+        var = raw_second - mean**2
+        return mean, var
 
     @classmethod
     def dist(cls, epsilon, delta, **kwargs):
-        epsilon = ptt.as_tensor_variable(floatX(epsilon))
-        delta = ptt.as_tensor_variable(floatX(delta))
+        """Return a SHASH distribution.
+
+        Args:
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            **kwargs: Additional arguments passed to the distribution
+
+        Returns:
+            A SHASH distribution
+        """
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
     def logp(value, epsilon, delta):
+        """Log-probability of the SHASH distribution.
+
+        Args:
+            value: value to evaluate the log-probability at
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Log-probability of the SHASH distribution
+        """
         this_S = S(value, epsilon, delta)
-        this_S_sqr = ptt.sqr(this_S)
+        this_S_sqr = pt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
-        frac2 = (
-            ptt.log(delta) + ptt.log(this_C_sqr) / 2 - ptt.log(1 + ptt.sqr(value)) / 2
-        )
+        frac2 = pt.log(delta) + pt.log(this_C_sqr) / 2 - pt.log(1 + pt.sqr(value)) / 2
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp
+        return CONST2 + frac2 + exp
 
 
 class SHASHoRV(RandomVariable):
+    """SHASHo Random Variable.
+
+    Samples from a SHASHo distribution, which is a SHASH distribution scaled by sigma and translated by mu.
+    """
+
     name = "shasho"
     signature = "(),(),(),()->()"
     dtype = "floatX"
     _print_name = ("SHASHo", "\\operatorname{SHASHo}")
 
     @classmethod
-    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None) -> np.ndarray:
+    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
+        """Draw random samples from a SHASHo distribution.
+
+        Args:
+            rng: Random number generator
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            size: sample size. Defaults to None.
+
+        Returns:
+            Random samples from SHASHo distribution
+        """
         s = rng.normal(size=size)
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu
 
@@ -202,42 +249,84 @@ shasho = SHASHoRV()
 
 
 class SHASHo(Continuous):
+    """SHASHo distribution, which is a SHASH distribution scaled by sigma and translated by mu."""
+
     rv_op = shasho
-    """
-    This is the transformation where the location and scale parameters have simply been applied as an linear transformation directly on the original distribution.
-    """
 
     @classmethod
     def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        mu = ptt.as_tensor_variable(floatX(mu))
-        sigma = ptt.as_tensor_variable(floatX(sigma))
-        epsilon = ptt.as_tensor_variable(floatX(epsilon))
-        delta = ptt.as_tensor_variable(floatX(delta))
+        """Return a SHASHo distribution.
+
+        Args:
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            **kwargs: Additional arguments passed to the distribution
+
+        Returns:
+            A SHASHo distribution
+        """
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
+        """The log-probability of the SHASHo distribution.
+
+        Args:
+            value: value to evaluate the log-probability at
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Log-probability of the SHASHo distribution
+        """
         remapped_value = (value - mu) / sigma
         this_S = S(remapped_value, epsilon, delta)
-        this_S_sqr = ptt.sqr(this_S)
+        this_S_sqr = pt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
-            ptt.log(delta)
-            + ptt.log(this_C_sqr) / 2
-            - ptt.log(1 + ptt.sqr(remapped_value)) / 2
+            pt.log(delta)
+            + pt.log(this_C_sqr) / 2
+            - pt.log(1 + pt.sqr(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp - ptt.log(sigma)
+        return CONST2 + frac2 + exp - pt.log(sigma)
 
 
 class SHASHo2RV(RandomVariable):
+    """SHASHo2 Random Variable.
+
+    Samples from a SHASHo2 distribution, which is a SHASH distribution scaled by sigma/delta
+    and translated by mu. This variant provides an alternative parameterization where the
+    scale parameter is adjusted by the kurtosis parameter.
+    """
+
     name = "shasho2"
     signature = "(),(),(),()->()"
     dtype = "floatX"
     _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
 
     @classmethod
-    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None) -> np.ndarray:
+    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
+        """Draw random samples from SHASHo2 distribution.
+
+        Args:
+            rng: Random number generator
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            size: sample size. Defaults to None.
+
+        Returns:
+            Random samples from SHASHo2 distribution
+        """
         s = rng.normal(size=size)
         sigma_d = sigma / delta
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma_d + mu
@@ -247,54 +336,113 @@ shasho2 = SHASHo2RV()
 
 
 class SHASHo2(Continuous):
+    """SHASHo2 distribution, which is a SHASH distribution scaled by sigma/delta and translated by mu.
+
+    This distribution provides an alternative parameterization of the SHASH distribution where
+    the scale parameter is adjusted by the kurtosis parameter. This can be useful in scenarios
+    where the relationship between scale and kurtosis needs to be explicitly modeled.
+    """
+
     rv_op = shasho2
-    """
-    This is the reparameterization where we apply the transformation provided in section 4.3 in Jones et al.
-    """
 
     @classmethod
     def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        mu = ptt.as_tensor_variable(floatX(mu))
-        sigma = ptt.as_tensor_variable(floatX(sigma))
-        epsilon = ptt.as_tensor_variable(floatX(epsilon))
-        delta = ptt.as_tensor_variable(floatX(delta))
+        """Return a SHASHo2 distribution.
+
+        Args:
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            **kwargs: Additional arguments passed to the distribution
+
+        Returns:
+            A SHASHo2 distribution
+        """
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
+        """The log-probability of the SHASHo2 distribution.
+
+        Args:
+            value: value to evaluate the log-probability at
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Log-probability of the SHASHo2 distribution
+        """
         sigma_d = sigma / delta
         remapped_value = (value - mu) / sigma_d
         this_S = S(remapped_value, epsilon, delta)
-        this_S_sqr = ptt.sqr(this_S)
+        this_S_sqr = pt.sqr(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -ptt.log(ptt.constant(2 * np.pi)) / 2
         frac2 = (
-            ptt.log(delta)
-            + ptt.log(this_C_sqr) / 2
-            - ptt.log(1 + ptt.sqr(remapped_value)) / 2
+            pt.log(delta)
+            + pt.log(this_C_sqr) / 2
+            - pt.log(1 + pt.sqr(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp - ptt.log(sigma_d)
+        return CONST2 + frac2 + exp - pt.log(sigma_d)
 
 
 class SHASHbRV(RandomVariable):
+    """SHASHb Random Variable.
+
+    Samples from a SHASHb distribution, which is a standardized SHASH distribution scaled by sigma
+    and translated by mu. This variant provides a standardized version of the SHASH distribution
+    where the base distribution is normalized to have zero mean and unit variance before applying
+    the location and scale transformations.
+    """
+
     name = "shashb"
     signature = "(),(),(),()->()"
     dtype = "floatX"
-    _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
+    _print_name = ("SHASHb", "\\operatorname{SHASHb}")
 
     @classmethod
-    def rng_fn(
-        cls,
-        rng: np.random.RandomState,
-        mu: Union[np.ndarray, float],
-        sigma: Union[np.ndarray, float],
-        epsilon: Union[np.ndarray, float],
-        delta: Union[np.ndarray, float],
-        size: Optional[Union[List[int], int]],
-    ) -> np.ndarray:
+    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
+        """Draw random samples from SHASHb distribution.
+
+        Args:
+            rng: Random number generator
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            size: sample size. Defaults to None.
+
+        Returns:
+            Random samples from SHASHb distribution
+        """
         s = rng.normal(size=size)
-        mean = np.sinh(epsilon / delta) * numpy_P(1 / delta)
-        var = ((np.cosh(2 * epsilon / delta) * numpy_P(2 / delta) - 1) / 2) - mean**2
+
+        def P(q):
+            K1 = kv((q + 1) / 2, 0.25)
+            K2 = kv((q - 1) / 2, 0.25)
+            a = (K1 + K2) * CONST1
+            return a
+
+        def m1m2(epsilon, delta):
+            inv_delta = 1.0 / delta
+            two_inv_delta = 2.0 * inv_delta
+            p1 = P(inv_delta)
+            p2 = P(two_inv_delta)
+            eps_delta = epsilon / delta
+            sinh_eps_delta = np.sinh(eps_delta)
+            cosh_2eps_delta = np.cosh(2 * eps_delta)
+            mean = sinh_eps_delta * p1
+            raw_second = (cosh_2eps_delta * p2 - 1) / 2
+            var = raw_second - mean**2
+            return mean, var
+
+        mean, var = m1m2(epsilon, delta)
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
         ) * sigma + mu
@@ -305,31 +453,58 @@ shashb = SHASHbRV()
 
 
 class SHASHb(Continuous):
+    """SHASHb distribution, which is a standardized SHASH distribution scaled by sigma and translated by mu.
+
+    This distribution provides a standardized version of the SHASH distribution where the base
+    distribution is normalized to have zero mean and unit variance before applying the location
+    and scale transformations. This transformation aims to remove the correlation between the
+    parameters, which can be useful in MCMC sampling.
+    """
+
     rv_op = shashb
-    """
-    This is the reparameterization where the location and scale parameters been applied as an linear transformation on the shash distribution which was corrected for mean and variance.
-    """
 
     @classmethod
     def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        mu = ptt.as_tensor_variable(floatX(mu))
-        sigma = ptt.as_tensor_variable(floatX(sigma))
-        epsilon = ptt.as_tensor_variable(floatX(epsilon))
-        delta = ptt.as_tensor_variable(floatX(delta))
+        """Return a SHASHb distribution.
+
+        Args:
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+            **kwargs: Additional arguments passed to the distribution
+
+        Returns:
+            A SHASHb distribution
+        """
+        mu = as_tensor_variable(floatX(mu))
+        sigma = as_tensor_variable(floatX(sigma))
+        epsilon = as_tensor_variable(floatX(epsilon))
+        delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(value, mu, sigma, epsilon, delta):
-        mean = m(epsilon, delta, 1)
-        var = m(epsilon, delta, 2) - mean**2
+        """The log-probability of the SHASHb distribution.
+
+        Args:
+            value: value to evaluate the log-probability at
+            mu: location parameter
+            sigma: scale parameter
+            epsilon: skew parameter
+            delta: kurtosis parameter
+
+        Returns:
+            Log-probability of the SHASHb distribution
+        """
+        mean, var = SHASH.m1m2(epsilon, delta)
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac1 = -np.log(2 * np.pi) / 2
         frac2 = (
             np.log(delta)
             + np.log(this_C_sqr) / 2
             - np.log(1 + np.square(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return frac1 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
+        return CONST2 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
