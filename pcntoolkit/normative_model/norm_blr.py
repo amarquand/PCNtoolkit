@@ -148,42 +148,59 @@ class NormBLR(NormBase):
             f"n_params method not implemented for {self.__class__.__name__}"
         )
 
-    def normdata_to_blrdata(self, data: NormData, intercept=True) -> BLRData:
-        if hasattr(data, "Phi") and data.Phi is not None:
-            this_X = data.Phi.to_numpy()
-        elif hasattr(data, "scaled_X") and data.scaled_X is not None:
-            this_X = data.scaled_X.to_numpy()
-        else:
-            this_X = data.X.to_numpy()
+    def create_design_matrix(
+        self, data: NormData, linear=False, intercept=False, random_intercept=False
+    ) -> np.ndarray:
+        acc = []
+        if linear:
+            if hasattr(data, "Phi") and data.Phi is not None:
+                acc.append(data.Phi.to_numpy())
+            elif hasattr(data, "scaled_X") and data.scaled_X is not None:
+                acc.append(data.scaled_X.to_numpy())
+            else:
+                acc.append(data.X.to_numpy())
+
+        if intercept:
+            acc.append(np.ones((data.X.shape[0], 1)))
+
+        # Create one-hot encoding for random intercept
+        if random_intercept:
+            for i in data.batch_effect_dims:
+                cur_be = data.batch_effects.sel(batch_effect_dims=i)
+                cur_be_id = np.vectorize(
+                    data.attrs["batch_effects_maps"][i.item()].get
+                )(cur_be.values)
+                acc.append(
+                    np.eye(len(data.attrs["batch_effects_maps"][i.item()]))[cur_be_id],
+                )
+        if len(acc) == 0:
+            return None
+        return np.concatenate(acc, axis=1)
+
+    def normdata_to_blrdata(self, data: NormData) -> BLRData:
+        this_X = self.create_design_matrix(
+            data,
+            linear=True,
+            intercept=self.current_regression_model.reg_conf.intercept,
+            random_intercept=self.current_regression_model.reg_conf.random_intercept,
+        )
+
+        this_var_X = self.create_design_matrix(
+            data,
+            linear=self.current_regression_model.reg_conf.heteroskedastic,
+            intercept=self.current_regression_model.reg_conf.intercept_var,
+            random_intercept=self.current_regression_model.reg_conf.random_intercept_var,
+        )
 
         if hasattr(data, "scaled_y") and data.scaled_y is not None:
             this_y = data.scaled_y.to_numpy()
         else:
             this_y = data.y.to_numpy()
 
-        # Create intercept
-        if self.current_regression_model.intercept:
-            this_X = np.hstack((this_X, np.ones((this_X.shape[0], 1))))
-
-        # Create one-hot encoding for random intercept
-        if self.current_regression_model.random_intercept:
-            for i in data.batch_effect_dims:
-                cur_be = data.batch_effects.sel(batch_effect_dims=i)
-                cur_be_id = np.vectorize(
-                    data.attrs["batch_effects_maps"][i.item()].get
-                )(cur_be.values)
-                this_X = np.hstack(
-                    (
-                        this_X,
-                        np.eye(len(data.attrs["batch_effects_maps"][i.item()]))[
-                            cur_be_id
-                        ],
-                    )
-                )
-
         blrdata = BLRData(
             X=this_X,
             y=this_y,
+            var_X=this_var_X,
             batch_effects=data.batch_effects.to_numpy(),
             response_var=data.response_vars.to_numpy().item(),
         )

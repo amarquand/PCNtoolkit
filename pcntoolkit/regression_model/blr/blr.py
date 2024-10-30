@@ -31,12 +31,33 @@ class BLR(RegressionModel):
         self.warp = None
         # self.gamma = None # Not used if warp is not used
 
+    def init_hyp(self, data: BLRData):
+        """Function to initialize hyperparameters
+
+        Args:
+            data (BLRData): Data object
+        """
+        # model_order = 1
+
+        if self.models_variance:
+            n_beta = self.var_D
+        else:
+            n_beta = 1
+
+        n_alpha = self.D
+        n_gamma = 0
+
+        self.n_hyp = n_beta + n_alpha + n_gamma
+        return np.zeros(self.n_hyp)
+
     def fit(self, data: BLRData, hyp0=None):
-        if hyp0 is None:
-            if self.ard:
-                hyp0 = np.zeros(data.X.shape[1] + 1)
-            else:
-                hyp0 = np.zeros(2)
+        self.D = data.X.shape[1]
+        self.var_D = data.var_X.shape[1]
+
+        # Initialize hyperparameters if not provided
+        hyp0 = hyp0 or self.init_hyp(data)
+
+        args = (data.X, data.y, data.var_X)
 
         match self.reg_conf.optimizer.lower():
             case "cg":
@@ -44,19 +65,17 @@ class BLR(RegressionModel):
                     f=self.loglik,
                     x0=hyp0,
                     fprime=self.dloglik,
-                    args=(data.X, data.y),
+                    args=args,
                     gtol=self.tol,
                     maxiter=self.n_iter,
                     full_output=1,
                 )
             case "powell":
                 out = optimize.fmin_powell(
-                    func=self.loglik, x0=hyp0, args=(data.X, data.y), full_output=1
+                    func=self.loglik, x0=hyp0, args=args, full_output=1
                 )
             case "nelder-mead":
-                out = optimize.fmin(
-                    func=self.loglik, x0=hyp0, args=(data.X, data.y), full_output=1
-                )
+                out = optimize.fmin(func=self.loglik, x0=hyp0, args=args, full_output=1)
             case "l-bfgs-b":
                 all_hyp_i = [hyp0]
 
@@ -68,7 +87,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=hyp0,
-                        args=(data.X, data.y, self.l, self.norm),
+                        args=(*args, self.l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                         callback=store,
@@ -80,7 +99,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
-                        args=(data.X, data.y, self.l, self.norm),
+                        args=(*args, self.l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                     )
@@ -89,7 +108,7 @@ class BLR(RegressionModel):
                 raise ValueError(f"Optimizer {self.reg_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
-        self.beta, _ = self.parse_hyps(self.hyp, data.X)
+        _, self.beta = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.is_fitted = True
 
     def predict(self, data: BLRData):
@@ -100,34 +119,37 @@ class BLR(RegressionModel):
         :returns: * ys - predictive mean
                   * s2 - predictive variance
         """
-        beta = self.beta
+
+        alpha, beta = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.ys = data.X.dot(self.m)
         s2n = 1 / beta
         self.s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
         return self.ys, self.s2
 
-    def parse_hyps(self, hyp, X):
+    def parse_hyps(self, hyp, X, var_X):
         N = X.shape[0]
 
-        # if self.heteroskedastic:
-        #     Xv =
+        # Noise precision
+        if self.models_variance:
+            Dv = var_X.shape[1]
+            w_d = np.asarray(hyp[0:Dv])
+            beta = np.exp(var_X.dot(w_d))
+            n_lik_param = len(w_d)
+            self.lambda_n_vec = beta
+        else:
+            beta = np.asarray([np.exp(hyp[0])])
+            n_lik_param = len(beta)
+            self.lambda_n_vec = np.ones(N) * beta
 
-        # Precision for the noise
-        beta = np.asarray([np.exp(hyp[0])])
-        n_lik_param = len(beta)
-
-        # Precision for the coefficients
+        # Coefficients precision
         if isinstance(beta, list) or type(beta) is np.ndarray:
             alpha = np.exp(hyp[n_lik_param:])
         else:
             alpha = np.exp(hyp[1:])
 
-        # Precision matrix
-        self.lambda_n_vec = np.ones(N) * beta
-
         return alpha, beta
 
-    def post(self, hyp, X, y):
+    def post(self, hyp, X, y, var_X):
         # Store the number of samples and features
         self.N = X.shape[0]
         if len(X.shape) == 1:
@@ -143,7 +165,7 @@ class BLR(RegressionModel):
             self.hyp = hyp
 
         # Parse hyperparameters
-        alpha, beta = self.parse_hyps(self.hyp, X)
+        alpha, beta = self.parse_hyps(self.hyp, X, var_X)
 
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
@@ -158,15 +180,15 @@ class BLR(RegressionModel):
         invAXt = linalg.solve(self.A, X.T, check_finite=False)
         self.m = (invAXt * self.lambda_n_vec).dot(y)
 
-    def loglik(self, hyp, X, y):
-        alpha, beta = self.parse_hyps(hyp, X)
+    def loglik(self, hyp, X, y, var_X):
+        alpha, beta = self.parse_hyps(hyp, X, var_X)
 
         something_big = 1 / np.finfo(float).eps
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not (hasattr(self, "A")):
             try:
-                self.post(hyp, X, y)
+                self.post(hyp, X, y, var_X)
             except ValueError:
                 print("Warning: Estimation of posterior distribution failed")
                 nlZ = something_big
@@ -201,7 +223,7 @@ class BLR(RegressionModel):
         self.nlZ = nlZ
         return nlZ
 
-    def penalized_loglik(self, hyp, X, y, l=0.1, norm="L1"):
+    def penalized_loglik(self, hyp, X, y, var_X, l=0.1, norm="L1"):
         """Function to compute the penalized log (marginal) likelihood
 
         :param hyp: hyperparameter vector
@@ -212,23 +234,23 @@ class BLR(RegressionModel):
         """
 
         if norm.lower() == "l1":
-            L = self.loglik(hyp, X, y) + l * sum(abs(hyp))
+            L = self.loglik(hyp, X, y, var_X) + l * sum(abs(hyp))
         elif norm.lower() == "l2":
-            L = self.loglik(hyp, X, y) + l * sum(np.sqrt(hyp**2))
+            L = self.loglik(hyp, X, y, var_X) + l * sum(np.sqrt(hyp**2))
         else:
             print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
         return L
 
-    def dloglik(self, hyp, X, y):
+    def dloglik(self, hyp, X, y, var_X):
         """Function to compute derivatives"""
 
         # hyperparameters
-        beta, alpha = self.parse_hyps(hyp, X)
+        alpha, beta = self.parse_hyps(hyp, X, var_X)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not (hasattr(self, "A")):
             try:
-                self.post(hyp, X, y)
+                self.post(hyp, X, y, var_X)
             except ValueError:
                 print("Warning: Estimation of posterior distribution failed")
                 dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
@@ -246,7 +268,7 @@ class BLR(RegressionModel):
 
         # initialise derivatives
         dnlZ = np.zeros(hyp.shape)
-        dnl2 = np.zeros(hyp.shape)
+        # dnl2 = np.zeros(hyp.shape)
 
         # noise precision parameter(s)
         for i in range(0, len(beta)):
@@ -431,3 +453,11 @@ class BLR(RegressionModel):
     @property
     def random_var(self):
         return self.reg_conf.random_var
+
+    @property
+    def models_variance(self):
+        return (
+            self.reg_conf.heteroskedastic
+            or self.reg_conf.random_intercept_var
+            or self.reg_conf.intercept_var
+        )

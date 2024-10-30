@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import xarray as xr
+from matplotlib.pylab import ArrayLike
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from pcntoolkit.dataio.scaler import scaler
@@ -361,14 +362,25 @@ class NormData(xr.Dataset):
 
     def plot_qq(
         self,
-        plt_kwargs=None,
-        bound=0,
-        plot_id_line=False,
-        hue_data=None,
-        markers_data=None,
-        split_data=None,
+        plt_kwargs: dict = None,
+        bound: int | float = 0,
+        plot_id_line: bool = False,
+        hue_data: ArrayLike = None,
+        markers_data: ArrayLike = None,
+        split_data: ArrayLike = None,
+        seed: int = 42,
     ):
-        """Create a QQ-plot for all response variables."""
+        """Plot a QQ-plot for each response variable.
+
+        Args:
+            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
+            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
+            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
+            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
+            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
+            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
+            seed (int, optional): Random seed for reproducability. Defaults to 42.
+        """
         plt_kwargs = plt_kwargs or {}
         for response_var in self.coords["response_vars"].to_numpy():
             self._plot_qq(
@@ -379,6 +391,7 @@ class NormData(xr.Dataset):
                 hue_data,
                 markers_data,
                 split_data,
+                seed,
             )
 
     def _plot_qq(
@@ -387,10 +400,24 @@ class NormData(xr.Dataset):
         plt_kwargs,
         bound=0,
         plot_id_line=False,
-        hue_data="site",
-        markers_data="sex",
-        split_data="site",
+        hue_data=None,
+        markers_data=None,
+        split_data=None,
+        seed=42,
     ):
+        """Plot a QQ-plot for a single response variable.
+
+        Args:
+            response_var (str): Name of the response variable to plot.
+            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
+            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
+            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
+            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
+            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
+            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
+            seed (int, optional): Random seed for reproducability. Defaults to 42.
+        """
+        np.random.seed(seed)
         sns.set_style("whitegrid")
         """Create a QQ-plot for a single response variable."""
         # Filter the responsevar that is to be plotted
@@ -511,3 +538,7 @@ class NormData(xr.Dataset):
             centiles.columns = [("centiles", col) for col in centiles.columns]
             acc.append(centiles)
         return pd.concat(acc, axis=1)
+
+    @property
+    def name(self):
+        return self.attrs["name"]

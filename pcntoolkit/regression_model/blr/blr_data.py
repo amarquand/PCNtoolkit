@@ -11,10 +11,11 @@ class BLRData:
         self,
         X: np.ndarray,
         y: np.ndarray = None,
+        var_X: np.ndarray = None,
         batch_effects: np.ndarray = None,
         response_var: str = None,
     ):
-        self.check_and_set_data(X, y, batch_effects)
+        self.check_and_set_data(X, y, var_X, batch_effects)
 
         # Set the response var
         self.response_var = response_var
@@ -24,7 +25,7 @@ class BLRData:
         self._n_datapoints = self.X.shape[0]
         self._n_batch_effect_columns = self.batch_effects.shape[1]
 
-    def check_and_set_data(self, X, y, batch_effects):
+    def check_and_set_data(self, X, y, var_X, batch_effects):
         """
         Checks that the data is valid and sets the data attributes.
         """
@@ -35,9 +36,16 @@ class BLRData:
             self.X = X
 
         if y is None:
+            warnings.warn("y is not provided, setting self.y to zeros")
             self.y = np.zeros((X.shape[0], 1))
         else:
             self.y = y
+
+        if var_X is None:
+            warnings.warn("var_X is not provided, setting self.var_X to zeros")
+            self.var_X = np.zeros((X.shape[0], 1))
+        else:
+            self.var_X = var_X
 
         if batch_effects is None:
             warnings.warn(
@@ -47,12 +55,18 @@ class BLRData:
         else:
             self.batch_effects = batch_effects
 
-        self.X, self.batch_effects = self.expand_all("X", "batch_effects")
+        self.X, self.var_X, self.batch_effects = self.expand_all(
+            "X", "var_X", "batch_effects"
+        )
 
         # Check that the dimensions are correct
         assert (
-            self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
-        ), "X, y and batch_effects must have the same number of rows"
+            self.X.shape[0]
+            == self.y.shape[0]
+            == self.var_X.shape[0]
+            == self.batch_effects.shape[0]
+        ), "X, var_X, y and batch_effects must have the same number of rows"
+
         if len(self.y.shape) > 1:
             assert (
                 self.y.shape[1] == 1
