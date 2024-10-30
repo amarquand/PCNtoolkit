@@ -13,7 +13,8 @@ L_BFGS_B_NORM = "l2"
 INTERCEPT = False
 RANDOM_INTERCEPT = False
 HETEROSKEDASTIC = False
-RANDOM_VAR = False
+INTERCEPT_VAR = False
+RANDOM_INTERCEPT_VAR = False
 
 
 @dataclass(frozen=True)
@@ -35,9 +36,10 @@ class BLRConf(RegConf):
     intercept: bool = INTERCEPT
     random_intercept: bool = RANDOM_INTERCEPT
     heteroskedastic: bool = HETEROSKEDASTIC
-    random_var: bool = RANDOM_VAR
+    intercept_var: bool = INTERCEPT_VAR
+    random_intercept_var: bool = RANDOM_INTERCEPT_VAR
 
-    has_random_effect = random_intercept or random_var
+    has_random_effect = random_intercept or random_intercept_var
 
     # TODO implement warp
     # warp: WarpBase = None
@@ -82,9 +84,12 @@ class BLRConf(RegConf):
             l_bfgs_b_epsilon=args_filt.get("l_bfgs_b_epsilon", L_BFGS_B_EPSILON),
             l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
             intercept=args_filt.get("intercept", INTERCEPT),
-            heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
             random_intercept=args_filt.get("random_intercept", RANDOM_INTERCEPT),
-            random_var=args_filt.get("random_var", RANDOM_VAR),
+            heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
+            intercept_var=args_filt.get("intercept_var", INTERCEPT_VAR),
+            random_intercept_var=args_filt.get(
+                "random_intercept_var", RANDOM_INTERCEPT_VAR
+            ),
         )
 
     @classmethod
@@ -101,9 +106,10 @@ class BLRConf(RegConf):
             l_bfgs_b_epsilon=dict["l_bfgs_b_epsilon"],
             l_bfgs_b_norm=dict["l_bfgs_b_norm"],
             intercept=dict["intercept"],
-            heteroskedastic=dict["heteroskedastic"],
             random_intercept=dict["random_intercept"],
-            random_var=dict["random_var"],
+            heteroskedastic=dict["heteroskedastic"],
+            intercept_var=dict["intercept_var"],
+            random_intercept_var=dict["random_intercept_var"],
         )
 
     def to_dict(self):
@@ -119,7 +125,8 @@ class BLRConf(RegConf):
             "l_bfgs_b_epsilon": self.l_bfgs_b_epsilon,
             "l_bfgs_b_norm": self.l_bfgs_b_norm,
             "intercept": self.intercept,
-            "heteroskedastic": self.heteroskedastic,
             "random_intercept": self.random_intercept,
-            "random_var": self.random_var,
+            "heteroskedastic": self.heteroskedastic,
+            "intercept_var": self.intercept_var,
+            "random_intercept_var": self.random_intercept_var,
         }

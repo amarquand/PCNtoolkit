@@ -9,6 +9,7 @@ import numpy as np
 import seaborn as sns
 import xarray as xr
 from matplotlib import pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
@@ -410,6 +411,8 @@ class NormBase(ABC):
         hue_data="site",
         markers_data="sex",
         palette="viridis",
+        hue_title=None,
+        style_title=None,
     ):
         """Plot the centiles for a single response variable."""
 
@@ -426,7 +429,6 @@ class NormBase(ABC):
         filtered = synth_data.sel(filter_dict)
 
         # Create centile lines with seaborn
-        lines = []
         for cdf in synth_data.coords["cdf"][::-1]:
             # Calculate the style of the line
             d_mean = abs(cdf - 0.5)
@@ -438,24 +440,49 @@ class NormBase(ABC):
                 style = ":"
 
             # Plot centile line
-            line = sns.lineplot(
+            sns.lineplot(
                 x=filtered.X,
                 y=filtered.centiles.sel(cdf=cdf),
                 color=cmap(cdf),
                 linestyle=style,
                 linewidth=1,
                 zorder=2,
+                legend="brief",
             )
-            lines.append(line.lines[-1])
+            # Add text annotation at the terminal points of the line
+            color = cmap(cdf)
+            font = FontProperties()
+            font.set_weight("bold")
+            plt.text(
+                s=cdf.item(),
+                x=filtered.X[0] - 1,
+                y=filtered.centiles.sel(cdf=cdf)[0],
+                color=color,
+                horizontalalignment="right",
+                verticalalignment="center",
+                fontproperties=font,
+            )
+            plt.text(
+                s=cdf.item(),
+                x=filtered.X[-1] + 1,
+                y=filtered.centiles.sel(cdf=cdf)[-1],
+                color=color,
+                horizontalalignment="left",
+                verticalalignment="center",
+                fontproperties=font,
+            )
 
-        # Add legend for centile lines
-        line_legend = plt.legend(
-            lines,
-            synth_data.coords["cdf"].values,
-            loc="upper right",
-            title="Percentile",
-        )
-        plt.gca().add_artist(line_legend)
+        # Increase xlim by 10%
+        minx, maxx = plt.xlim()
+        plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
+
+        # # Add legend for centile lines
+        # line_legend = plt.legend(
+        #     lines,
+        #     synth_data.coords["cdf"].values,
+        #     title="Percentile",
+        # )
+        # plt.gca().add_artist(line_legend)
 
         if show_data:
             df = data.sel(filter_dict).to_dataframe()
@@ -472,9 +499,9 @@ class NormBase(ABC):
                     df,
                     x=covariate,
                     y=response_var,
-                    label=data.attrs["name"],
+                    label=data.name,
                     color="black",
-                    s=50,  # Slightly larger point size
+                    s=20,  # Slightly larger point size
                     alpha=0.6,
                     zorder=1,
                 )
@@ -487,7 +514,7 @@ class NormBase(ABC):
                         df[j].isin(batch_effects[j]),
                     )
                 be_df = df[idx]
-                sns.scatterplot(
+                scatter = sns.scatterplot(
                     data=be_df,
                     x=covariate,
                     y=response_var,
@@ -509,11 +536,19 @@ class NormBase(ABC):
                     alpha=0.4,
                     zorder=0,
                 )
+
+                legend = scatter.get_legend()
+                if legend:
+                    handles = legend.legend_handles
+                    labels = [t.get_text() for t in legend.get_texts()]
+                    plt.legend(
+                        handles,
+                        labels,
+                        title=data.name + " data",
+                        title_fontsize=10,
+                    )
         # Set title and labels
-        if show_data:
-            plt.title(f"Centiles of {response_var} with {data.attrs['name']} scatter")
-        else:
-            plt.title(f"Centiles of {response_var}")
+        plt.title(f"Centiles of {response_var}")
         plt.xlabel(covariate)
         plt.ylabel(response_var)
 
