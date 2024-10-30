@@ -340,10 +340,10 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def centiles(self, data: BLRData, cdf, resample=True):
+    def centiles(self, data: BLRData, cdf: np.ndarray, resample=True):
         if resample:
             self.predict(data)
-        centiles = np.zeros((len(cdf), data.X.shape[0]))
+        centiles = np.zeros((cdf.shape[0], data.X.shape[0]))
         for i, cdf in enumerate(cdf):
             centiles[i, :] = self.ys + stats.norm.ppf(cdf) * np.sqrt(self.s2)
         return centiles

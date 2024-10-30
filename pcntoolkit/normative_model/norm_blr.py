@@ -88,9 +88,7 @@ class NormBLR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _centiles(
-        self, data: NormData, cdf: list[float], *args, **kwargs
-    ) -> xr.DataArray:
+    def _centiles(self, data: NormData, cdf: np.ndarray) -> xr.DataArray:
         """
         Compute centiles for the model at the given data points.
         Will be called for each model in self.regression_models from the super class.

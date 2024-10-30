@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 
@@ -6,7 +8,7 @@ class RegConf(ABC):
     A class containig the configuration of a regression model. It should only contain configuration parameters, and not learned coefficients or such. Those are stored in the model itself.
     """
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """
         Checks if the configuration is valid.
         """
@@ -23,35 +25,23 @@ class RegConf(ABC):
 
     @property
     @abstractmethod
-    def has_random_effect(self):
+    def has_random_effect(self) -> bool:
         return False
 
     @abstractmethod
     def detect_configuration_problems(self) -> str:
-        """
-        Detects problems in the configuration and returns them as a list of strings.
-        """
         pass
 
     @classmethod
     @abstractmethod
-    def from_args(cls, dict):
-        """
-        Creates a configuration from command line arguments.
-        """
+    def from_args(cls, dct: dict) -> RegConf:
         pass
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, dict):
-        """
-        Creates a configuration from a dictionary.
-        """
+    def from_dict(cls, dct: dict) -> RegConf:
         pass
 
     @abstractmethod
-    def to_dict(self):
-        """
-        Creates a dictionary from the configuration.
-        """
+    def to_dict(self, path: str | None = None) -> dict:
         pass
