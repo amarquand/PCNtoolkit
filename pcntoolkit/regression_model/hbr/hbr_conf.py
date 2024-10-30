@@ -3,18 +3,29 @@ from dataclasses import dataclass, field
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.reg_conf import RegConf
 
+# Default configuration values
+DRAWS = 1000
+TUNE = 1000
+CHAINS = 2
+CORES = 1
+LIKELIHOOD = "Normal"
+NUTS_SAMPLER = "pymc"
+INIT = "jitter+adapt_diag"
+
 
 @dataclass(frozen=True)
 class HBRConf(RegConf):
     # sampling config
-    draws: int = 1000
-    tune: int = 1000
-    chains: int = 2
-    cores: int = 1
-    nuts_sampler: str = "pymc"
+    draws: int = DRAWS
+    tune: int = TUNE
+    chains: int = CHAINS
+    cores: int = CORES
+
+    nuts_sampler: str = NUTS_SAMPLER
+    init: str = INIT
 
     # model config
-    likelihood: str = "Normal"
+    likelihood: str = LIKELIHOOD
 
     # prior config with defaults
     mu: Param = field(default_factory=Param.default_mu)
@@ -26,9 +37,6 @@ class HBRConf(RegConf):
         """
         Detects problems in the configuration and returns them as a list of strings.
         """
-
-        # DESIGN CHOICE (stijn):
-        # This mutable field need to be local here, because the dataclass is defined as immutable.
         configuration_problems = []
 
         def add_problem(problem: str):
@@ -119,6 +127,7 @@ class HBRConf(RegConf):
             "tune": self.tune,
             "cores": self.cores,
             "likelihood": self.likelihood,
+            "nuts_sampler": self.nuts_sampler,
         }
         if self.mu:
             conf_dict["mu"] = self.mu.to_dict()
@@ -129,3 +138,10 @@ class HBRConf(RegConf):
         if self.delta:
             conf_dict["delta"] = self.delta.to_dict()
         return conf_dict
+
+    @property
+    def has_random_effect(self):
+        for attr in ["mu", "sigma", "epsilon", "delta"]:
+            if getattr(self, attr) and getattr(self, attr).has_random_effect:
+                return True
+        return False

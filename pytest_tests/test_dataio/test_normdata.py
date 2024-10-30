@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from pytest_tests.fixtures.norm_data_fixtures import *
@@ -58,8 +57,8 @@ def test_split_with_stratify(
 
     # Check basic split properties
     assert len(splits) == 2
-    assert splits[0].attrs["name"] == "train"
-    assert splits[1].attrs["name"] == "val"
+    assert splits[0].name == "train"
+    assert splits[1].name == "val"
 
     # Check if total samples in splits equal original samples
     assert splits[0].X.shape[0] + splits[1].X.shape[0] == n_train_datapoints
@@ -115,7 +114,7 @@ def test_split_with_stratify(
 
         # Check if the attributes are preserved in the splits
         for split in splits:
-            assert split.attrs["name"] in ["train", "val"]
+            assert split.name in ["train", "val"]
             for key in norm_data_from_arrays.attrs:
                 if key != "name":
                     assert split.attrs[key] == norm_data_from_arrays.attrs[key]

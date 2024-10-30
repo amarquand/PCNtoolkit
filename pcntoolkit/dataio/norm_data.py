@@ -4,7 +4,9 @@ from typing import Any, Dict, List, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import xarray as xr
+from matplotlib.pylab import ArrayLike
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from pcntoolkit.dataio.scaler import scaler
@@ -76,7 +78,7 @@ class NormData(xr.Dataset):
                 "batch_effects": (["datapoints", "batch_effect_dims"], batch_effects),
             },
             coords={
-                "datapoints": [f"datapoint_{i}" for i in np.arange(X.shape[0])],
+                "datapoints": list(np.arange(X.shape[0])),
                 "covariates": [f"covariate_{i}" for i in np.arange(X.shape[1])],
                 "response_vars": [f"response_var_{i}" for i in np.arange(y.shape[1])],
                 "batch_effect_dims": [
@@ -129,10 +131,9 @@ class NormData(xr.Dataset):
                 ),
             },
             coords={
-                "datapoints": [
-                    f"datapoint_{i}"
-                    for i in np.arange(dataframe[covariates].to_numpy().shape[0])
-                ],
+                "datapoints": list(
+                    np.arange(dataframe[covariates].to_numpy().shape[0])
+                ),
                 "response_vars": response_vars,
                 "covariates": covariates,
                 "batch_effect_dims": batch_effects,
@@ -223,11 +224,9 @@ class NormData(xr.Dataset):
         return to_return
 
     def get_single_batch_effect(self):
-        batch_effects_to_sample = [
-            [list(map.keys())[0]] for map in self.batch_effects_maps.values()
-        ]
-
-        return batch_effects_to_sample
+        return {
+            k: [list(v.keys())[0]] for k, v in self.attrs["batch_effects_maps"].items()
+        }
 
     def concatenate_string_arrays(self, arrays: List[np.ndarray]) -> np.ndarray:
         """Concatenate arrays of strings."""
@@ -368,35 +367,122 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def plot_qq(self):
-        """Create a QQ-plot for all response variables."""
+    def plot_qq(
+        self,
+        plt_kwargs: dict = None,
+        bound: int | float = 0,
+        plot_id_line: bool = False,
+        hue_data: ArrayLike = None,
+        markers_data: ArrayLike = None,
+        split_data: ArrayLike = None,
+        seed: int = 42,
+    ):
+        """Plot a QQ-plot for each response variable.
+
+        Args:
+            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
+            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
+            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
+            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
+            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
+            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
+            seed (int, optional): Random seed for reproducability. Defaults to 42.
+        """
+        plt_kwargs = plt_kwargs or {}
         for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_qq(response_var)
+            self._plot_qq(
+                response_var,
+                plt_kwargs,
+                bound,
+                plot_id_line,
+                hue_data,
+                markers_data,
+                split_data,
+                seed,
+            )
 
     def _plot_qq(
         self,
         response_var: str,
+        plt_kwargs,
+        bound=0,
+        plot_id_line=False,
+        hue_data=None,
+        markers_data=None,
+        split_data=None,
+        seed=42,
     ):
-        """Create a QQ-plot for a single response variable."""
+        """Plot a QQ-plot for a single response variable.
 
+        Args:
+            response_var (str): Name of the response variable to plot.
+            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
+            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
+            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
+            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
+            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
+            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
+            seed (int, optional): Random seed for reproducability. Defaults to 42.
+        """
+        np.random.seed(seed)
+        sns.set_style("whitegrid")
+        """Create a QQ-plot for a single response variable."""
         # Filter the responsevar that is to be plotted
         filter_dict = {
             "response_vars": response_var,
         }
-
         filt = self.sel(filter_dict)
 
-        ran = np.random.randn(filt.X.shape[0])
-        ran.sort()
+        # Create a dataframe from the filtered data
+        df: pd.DataFrame = filt.to_dataframe()
 
-        z_scores = filt.zscores.data
-        z_scores.sort()
+        # Create labels for the axes
+        tq = "theoretical quantiles"
+        rq = f"{response_var} quantiles"
 
-        plt.figure()
-        plt.scatter(ran, z_scores)
-        plt.title(f"QQ-plot for {response_var}")
-        plt.xlabel("Theoretical quantiles")
-        plt.ylabel("Predicted quantiles")
+        # Filter columns needed for plotting
+        columns = [("zscores", response_var)]
+        columns.extend([("batch_effects", be.item()) for be in self.batch_effect_dims])
+        df = df[columns]
+        df.columns = [rq] + [be.item() for be in self.batch_effect_dims]
+
+        # Sort the dataframe by the response variable
+        df.sort_values(by=rq, inplace=True)
+
+        # Create a column for the theoretical quantiles
+        rand = np.random.randn(df.shape[0])
+        rand.sort()
+        df[tq] = rand
+
+        if split_data:
+            for i, g in enumerate(df.groupby(split_data, sort=False)):
+                id = g[1].index
+                df.loc[id, rq] += i * 1.0
+                rand = np.random.randn(g[1].shape[0])
+                rand.sort()
+                df.loc[id, tq] = rand
+
+        # Plot the QQ-plot
+        hue_data = hue_data
+        sns.scatterplot(
+            data=df,
+            x="theoretical quantiles",
+            y=rq,
+            hue=hue_data if hue_data in df else None,
+            style=markers_data if markers_data in df else None,
+            **plt_kwargs,
+        )
+        if plot_id_line:
+            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
+            plt.plot(
+                [-max_abs_val, max_abs_val],
+                [-max_abs_val, max_abs_val],
+                color="black",
+                linestyle="--",
+            )
+
+        if bound != 0:
+            plt.axis([-bound, bound, -bound, bound])
         plt.show()
 
     def select_batch_effects(self, batch_effects: dict[str, list[str]]):
@@ -414,3 +500,52 @@ class NormData(xr.Dataset):
             )
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
         return to_return
+
+    def to_dataframe(self):
+        acc = []
+        x_columns = [col for col in ["X", "scaled_X"] if hasattr(self, col)]
+        y_columns = [col for col in ["y", "zscores", "scaled_y"] if hasattr(self, col)]
+        acc.append(
+            xr.Dataset.to_dataframe(self[x_columns])
+            .reset_index(drop=False)
+            .pivot(index="datapoints", columns="covariates", values=x_columns)
+        )
+        acc.append(
+            xr.Dataset.to_dataframe(self[y_columns])
+            .reset_index(drop=False)
+            .pivot(index="datapoints", columns="response_vars", values=y_columns)
+        )
+        be = (
+            xr.DataArray.to_dataframe(self.batch_effects)
+            .reset_index(drop=False)
+            .pivot(
+                index="datapoints", columns="batch_effect_dims", values="batch_effects"
+            )
+        )
+        be.columns = [("batch_effects", col) for col in be.columns]
+        acc.append(be)
+        if hasattr(self, "Phi"):
+            phi = (
+                xr.DataArray.to_dataframe(self.Phi)
+                .reset_index(drop=False)
+                .pivot(index="datapoints", columns="basis_functions", values="Phi")
+            )
+            phi.columns = [("Phi", col) for col in phi.columns]
+            acc.append(phi)
+        if hasattr(self, "centiles"):
+            centiles = (
+                xr.DataArray.to_dataframe(self.centiles)
+                .reset_index(drop=False)
+                .pivot(
+                    index="datapoints",
+                    columns=["response_vars", "cdf"],
+                    values="centiles",
+                )
+            )
+            centiles.columns = [("centiles", col) for col in centiles.columns]
+            acc.append(centiles)
+        return pd.concat(acc, axis=1)
+
+    @property
+    def name(self):
+        return self.attrs["name"]

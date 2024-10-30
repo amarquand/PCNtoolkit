@@ -1,8 +1,8 @@
-"""This file contains the NormConf dataclass, which is used to store the configuration for a normative model. 
+"""This file contains the NormConf dataclass, which is used to store the configuration for a normative model.
 The NormConf class is a dataclass that contains parameters for cross-validation, basis expansion, logging, and
 saving output. It performs checks on these configurations to ensure they are valid. The class also provides
 methods for creating a configuration from command line arguments, a dictionary, or converting the configuration
-to a dictionary. Additionally, it provides methods for detecting problems in the configuration and setting the 
+to a dictionary. Additionally, it provides methods for detecting problems in the configuration and setting the
 save and log directories."""
 
 import os
@@ -25,7 +25,6 @@ class NormConf:
     log_dir: str = "./logs"
     save_dir: str = "./saves"
 
-    # DESIGN CHOICE (stijn):
     # Add the basis function type here to keep the regression model agnostic of the basis function type.
     # The regression model should only see the dimensionality of the input data, and handle any shape incompatibilities itself.
     # With the default value of "linear", applied basis expansion will be an identity function.
@@ -92,7 +91,6 @@ class NormConf:
         """
         Detects problems in the configuration and returns them as a list.
         """
-        # DESIGN CHOICE (stijn):
         # This mutable list needs to be defined here, because the dataclass is defined as immutable, and can not hold mutable fields.
         # The add_problem function is defined here, because it needs access to the mutable configuration_problems variable.
         configuration_problems = []
@@ -144,7 +142,7 @@ class NormConf:
                 add_problem(f"cv_folds must be at least 2, but is {self.cv_folds}")
 
     def detect_basis_function_problem(self, add_problem):
-        acceptable_basis_functions = ["linear", "polynomial", "bspline"]
+        acceptable_basis_functions = ["linear", "polynomial", "bspline", "none"]
         if not isinstance(self.basis_function, str):
             add_problem(
                 f"basis_function_type is not a string, but {type(self.basis_function).__name__}"

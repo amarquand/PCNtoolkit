@@ -1,4 +1,3 @@
-import json
 from abc import ABC, abstractmethod
 
 
@@ -21,6 +20,11 @@ class RegConf(ABC):
             )
         else:
             print("Configuration of regression model is valid.")
+
+    @property
+    @abstractmethod
+    def has_random_effect(self):
+        return False
 
     @abstractmethod
     def detect_configuration_problems(self) -> str:

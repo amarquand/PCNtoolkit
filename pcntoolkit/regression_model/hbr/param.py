@@ -77,6 +77,10 @@ class Param:
                     self.dims = (self.dims,)
             self.sample_dims = ()
 
+        self.has_random_effect = (self.random and not self.linear) or (
+            self.linear and (self.slope.random or self.intercept.random)
+        )
+
     def create_graph(self, model, idata=None, freedom=1):
         self.freedom = freedom
         with model:

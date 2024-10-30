@@ -46,3 +46,7 @@ class RegressionModel(ABC):
     @abstractmethod
     def from_args(cls, name, args):
         pass
+
+    @property
+    def has_random_effect(self):
+        return self.reg_conf.has_random_effect
