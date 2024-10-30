@@ -3,20 +3,15 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List
 
 import numpy as np
 import xarray as xr
 from matplotlib import pyplot as plt
-from scipy import stats
-from sklearn.metrics import explained_variance_score
 
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
-from pcntoolkit.regression_model.blr.blr import BLR
-from pcntoolkit.regression_model.gpr.gpr import GPR
-from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
@@ -40,15 +35,15 @@ class NormBase(ABC):
         )
 
         # Response variables is a list of names of the response variables for which the model is fitted
-        self.response_vars: list[str] = None
+        self.response_vars: list[str] = None  # type: ignore
 
         # the regression_model_type attribute is used to store the type of regression model
         # should be set by the subclass
-        self.regression_model_type = None
+        self.regression_model_type: type = None  # type: ignore
 
         # the self.defult_reg_conf attribute is used whenever a new regression model is created, and no reg_conf is provided
         # should be set by the subclass
-        self.default_reg_conf: RegConf = None
+        self.default_reg_conf: RegConf = None  # type: ignore
 
         # Regression models is a dictionary that contains the regression models
         # - the keys are the response variables
@@ -57,22 +52,22 @@ class NormBase(ABC):
 
         # the self.current_regression_model attribute is used to store the current regression model
         # this model is used internally by the _fit and _predict methods of the subclass
-        self.current_regression_model: RegressionModel = None
+        self.current_regression_model: RegressionModel = None  # type: ignore
 
         # The evaluator is used to evaluate the normative model
         self.evaluator = Evaluator()
 
         # Inscalers contains a scaler for each covariate
-        self.inscalers = {}
+        self.inscalers: dict = {}
 
         # Outscalers contains a scaler for each response variable
-        self.outscalers = {}
+        self.outscalers: dict = {}
 
     @property
-    def norm_conf(self):
+    def norm_conf(self) -> NormConf:
         return self._norm_conf
 
-    def fit(self, data: NormData):
+    def fit(self, data: NormData) -> None:
         """
         Contains all the general fitting logic that is not specific to the regression model.
         """
@@ -112,7 +107,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to predict model {responsevar}, but it does not exist."
                 )
@@ -127,8 +122,8 @@ class NormBase(ABC):
             self.reset()
 
         # Return the results
-        results = self.evaluate(data)
-        return results
+        self.evaluate(data)
+        return data
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
         """
@@ -150,13 +145,12 @@ class NormBase(ABC):
         # Fit and predict for each response variable
         print(f"Going to fit and predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-
             # Select the data for the current response variable
             resp_fit_data = fit_data.sel(response_vars=responsevar)
             resp_predict_data = predict_data.sel(response_vars=responsevar)
 
             # Create a new model if it does not exist yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 self.regression_models[responsevar] = self.regression_model_type(
                     responsevar, self.default_reg_conf
                 )
@@ -171,10 +165,10 @@ class NormBase(ABC):
             self.reset()
 
         # Get the results
-        results = self.evaluate(predict_data)
-        return results
+        self.evaluate(predict_data)
+        return predict_data
 
-    def transfer(self, data: NormData, *args, **kwargs) -> "NormBase":
+    def transfer(self, data: NormData, *args: Any, **kwargs: Any) -> "NormBase":
         """
         Transfers the normative model to a new dataset. Calls the subclass' _transfer method.
         """
@@ -190,9 +184,9 @@ class NormBase(ABC):
             resp_transfer_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
-                    f"Attempted to transfer a model that has not been fitted."
+                    "Attempted to transfer a model that has not been fitted."
                 )
 
             # Set self.model to the current model
@@ -202,7 +196,7 @@ class NormBase(ABC):
             print(f"Transferring model for {responsevar}")
             transfered_models[responsevar] = self._transfer(
                 resp_transfer_data, *args, **kwargs
-            )
+            ).regression_models[responsevar]
 
             self.reset()
 
@@ -213,9 +207,10 @@ class NormBase(ABC):
         transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf)
 
-        transfered_normative_model = self.__class__(
-            transfered_norm_conf, self.default_reg_conf
-        )
+        transfered_normative_model = self.__class__(  # type: ignore
+            transfered_norm_conf,  # type: ignore
+            self.default_reg_conf,  # type: ignore
+        )  # type: ignore
 
         # Set the models
         transfered_normative_model.response_vars = (
@@ -226,35 +221,31 @@ class NormBase(ABC):
         # Return the new model
         return transfered_normative_model
 
-    def extend(self, data: NormData):
+    def extend(self, data: NormData) -> None:
         """
         Extends the normative model with new data. Calls the subclass' _extend method.
         """
         # some preparations and preprocessing
         # ...
 
-        result = self._extend(data)
+        self._extend(data)
 
         # some cleanup and postprocessing
         # ...
 
-        return result
-
-    def tune(self, data: NormData):
+    def tune(self, data: NormData) -> None:
         """
         Tunes the normative model. Calls the subclass' _tune method.
         """
         # some preparations and preprocessing
         # ...
 
-        result = self._tune(data)
+        self._tune(data)
 
         # some cleanup and postprocessing
         # ...
 
-        return result
-
-    def merge(self, other: "NormBase"):
+    def merge(self, other: "NormBase") -> None:
         """
         Merges the normative model with another normative model. Calls the subclass' _merge method.
         """
@@ -264,14 +255,12 @@ class NormBase(ABC):
         if not self.__class__ == other.__class__:
             raise ValueError("Attempted to merge two different normative models.")
 
-        result = self._merge(other)
+        self._merge(other)
 
         # some cleanup and postprocessing
         # ...
 
-        return result
-
-    def evaluate(self, data: NormData):
+    def evaluate(self, data: NormData) -> None:
         """
         Contains evaluation logic.
         """
@@ -280,7 +269,11 @@ class NormBase(ABC):
         data = self.evaluator.evaluate(data)
 
     def compute_centiles(
-        self, data: NormData, cummulative_densities=None, *args, **kwargs
+        self,
+        data: NormData,
+        cummulative_densities: list = None,  # type: ignore
+        *args: Any,
+        **kwargs: Any,
     ) -> NormData:
         # Preprocess the data
         self.preprocess(data)
@@ -315,7 +308,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find quantiles for model {responsevar}, but it does not exist."
                 )
@@ -338,7 +331,7 @@ class NormBase(ABC):
         return data
 
     # def plot_centiles(self, data:NormData):
-    def plot_qq(self, data: NormData):
+    def plot_qq(self, data: NormData) -> None:
         """
         Plot QQ plots for all response variables in the data.
 
@@ -354,12 +347,12 @@ class NormBase(ABC):
     def plot_centiles(
         self,
         data: NormData,
-        covariate: str = None,
-        batch_effects: Dict[str, List[str]] = None,
-        cummul_densities=None,
+        covariate: str = None,  # type: ignore
+        batch_effects: Dict[str, List[str]] = None,  # type: ignore
+        cummul_densities: list = None,  # type: ignore
         show_data: bool = False,
-        plt_kwargs=None,
-    ):
+        plt_kwargs: dict = None,  # type: ignore
+    ) -> None:
         """Plot the centiles for all response variables."""
         synth_data = data.create_synthetic_data(
             n_datapoints=150,
@@ -387,7 +380,7 @@ class NormBase(ABC):
         batch_effects: Dict[str, List[str]] = None,
         show_data: bool = False,
         plt_kwargs=None,
-    ):
+    ) -> None:
         """Plot the centiles for a single response variable."""
         # Use the first covariate, if not specified
         if covariate is None:
@@ -481,7 +474,7 @@ class NormBase(ABC):
             plt.scatter(
                 filt2.X,
                 filt2.y,
-                label=f"other batches",
+                label="other batches",
             )
         if show_data:
             plt.title(f"Centiles of {response_var} with {data.attrs['name']} scatter")
@@ -509,7 +502,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
-            if not responsevar in self.regression_models:
+            if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find zscores for model {responsevar}, but it does not exist."
                 )
@@ -611,12 +604,12 @@ class NormBase(ABC):
         Contains all the general scaling logic that is not specific to the regression model.
         """
         for covariate in data.covariates.to_numpy():
-            if (not covariate in self.inscalers) or overwrite:
+            if (covariate not in self.inscalers) or overwrite:
                 self.inscalers[covariate] = scaler(self.norm_conf.inscaler)
                 self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
 
         for responsevar in data.response_vars.to_numpy():
-            if (not responsevar in self.outscalers) or overwrite:
+            if (responsevar not in self.outscalers) or overwrite:
                 self.outscalers[responsevar] = scaler(self.norm_conf.outscaler)
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
@@ -711,7 +704,7 @@ class NormBase(ABC):
     def prepare(self, responsevar):
         self.current_response_var = responsevar
         # Create a new model if it does not exist yet
-        if not responsevar in self.regression_models:
+        if responsevar not in self.regression_models:
             self.regression_models[responsevar] = self.regression_model_type(
                 responsevar, self.get_reg_conf(responsevar)
             )

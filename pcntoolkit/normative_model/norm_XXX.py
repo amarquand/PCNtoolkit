@@ -1,6 +1,3 @@
-import warnings
-
-import numpy as np
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
