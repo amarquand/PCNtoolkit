@@ -32,9 +32,7 @@ class HBRData:
 
         # Create datapoint coordinates
         if datapoint_coords is None:
-            self._coords["datapoints"] = [
-                f"datapoint_{i}" for i in np.arange(self._n_datapoints)
-            ]
+            self._coords["datapoints"] = list(np.arange(self._n_datapoints))
         else:
             self._coords["datapoints"] = datapoint_coords
 
@@ -80,7 +78,7 @@ class HBRData:
             self.X = X
 
         if y is None:
-            self.y = np.zeros((X.shape[0],1) )
+            self.y = np.zeros((X.shape[0], 1))
         else:
             self.y = y
 
@@ -98,11 +96,12 @@ class HBRData:
         assert (
             self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
         ), "X, y and batch_effects must have the same number of rows"
-        if len(self.y.shape)> 1 :
-            assert self.y.shape[1] == 1, "y can only have one column, or it must be a 1D array"
+        if len(self.y.shape) > 1:
+            assert (
+                self.y.shape[1] == 1
+            ), "y can only have one column, or it must be a 1D array"
             self.y = np.squeeze(self.y)
-        
-        
+
     def add_to_graph(self, model: pm.Model) -> None:
         """
         Add the data to the pymc model graph using the model context.
@@ -113,7 +112,7 @@ class HBRData:
             self.pm_batch_effect_indices = tuple(
                 [
                     pm.Data(
-                        str(self.batch_effect_dims[i])+"_data",
+                        str(self.batch_effect_dims[i]) + "_data",
                         self.batch_effect_indices[i],
                         dims=("datapoints",),
                     )
@@ -137,8 +136,10 @@ class HBRData:
         self.pm_y = model["y"]
         be_acc = []
         for i in range(self._n_batch_effect_columns):
-            model.set_data(str(self.batch_effect_dims[i])+"_data", self.batch_effect_indices[i])
-            be_acc.append(model[self.batch_effect_dims[i]+"_data"])
+            model.set_data(
+                str(self.batch_effect_dims[i]) + "_data", self.batch_effect_indices[i]
+            )
+            be_acc.append(model[self.batch_effect_dims[i] + "_data"])
         self.pm_batch_effect_indices = tuple(be_acc)
 
     def expand_all(self, *args):
