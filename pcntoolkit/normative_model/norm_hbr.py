@@ -41,7 +41,7 @@ class NormHBR(NormBase):
 
         self.current_regression_model.fit_predict(fit_hbrdata, predict_hbrdata)
 
-    def _transfer(self, data: NormData, *args, **kwargs) -> "HBR":
+    def _transfer(self, data: NormData, **kwargs) -> "HBR":
         freedom = kwargs.get("freedom", 1)
         # Transform the data to hbrdata
         transferdata = self.normdata_to_hbrdata(data)
@@ -72,9 +72,7 @@ class NormHBR(NormBase):
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
-    def _centiles(
-        self, data: NormData, cdf: list[float], resample=True
-    ) -> xr.DataArray:
+    def _centiles(self, data: NormData, cdf: np.ndarray, resample=True) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
 
         return self.current_regression_model.centiles(hbrdata, cdf, resample)

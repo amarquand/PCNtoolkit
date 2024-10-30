@@ -1,12 +1,12 @@
 from functools import reduce
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import xarray as xr
-from matplotlib.pylab import ArrayLike
+from numpy.typing import ArrayLike
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from pcntoolkit.dataio.scaler import scaler
@@ -144,8 +144,8 @@ class NormData(xr.Dataset):
     def create_synthetic_data(
         self,
         n_datapoints: int = 100,
-        range_dim: Union[int, str] = 0,
-        batch_effects_to_sample: Dict[str, List[Any]] = None,  # type: ignore
+        range_dim: int | str = 0,
+        batch_effects_to_sample: Dict[str, List[Any]] | None = None,  # type: ignore
     ):
         """
         Create a synthetic dataset with the same dimensions as the original dataset.

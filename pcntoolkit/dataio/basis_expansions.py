@@ -3,7 +3,7 @@ import numpy as np
 from bspline import splinelab
 
 
-def create_poly_basis(X, dimpoly):
+def create_poly_basis(X: np.ndarray, dimpoly: int) -> np.ndarray:
     """
     Creates a polynomial basis matrix for the given input matrix.
 
@@ -32,25 +32,31 @@ def create_poly_basis(X, dimpoly):
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
     D = X.shape[1]
-    Phi = np.zeros((X.shape[0], D*dimpoly))
+    Phi = np.zeros((X.shape[0], D * dimpoly))
     colid = np.arange(0, D)
-    for d in range(1, dimpoly+1):
-        Phi[:, colid] = X ** d
+    for d in range(1, dimpoly + 1):
+        Phi[:, colid] = X**d
         colid += D
 
     return Phi
 
 
-def create_bspline_basis(xmin, xmax, p=3, nknots=5):
-    """ 
-    Compute a Bspline basis set where:
+def create_bspline_basis(
+    xmin: float | int, xmax: float | int, p: int = 3, nknots: int = 5
+) -> bspline.Bspline:
+    """Compute a B-spline basis.
 
-        :param p: order of spline (3 = cubic)
-        :param nknots: number of knots (endpoints only counted once)
+    Args:
+        xmin (float | int): minimum value of the input domain
+        xmax (float | int): maximum value of the input domain
+        p (int, optional): Order of the bspline. Defaults to 3.
+        nknots (int, optional): Number of knots. Defaults to 5.
 
+    Returns:
+        bspline.Bspline: The bspline basis
     """
 
     knots = np.linspace(xmin, xmax, nknots)
-    k = splinelab.augknt(knots, p)       # pad the knot vector
+    k = splinelab.augknt(knots, p)  # pad the knot vector
     B = bspline.Bspline(k, p)
     return B
