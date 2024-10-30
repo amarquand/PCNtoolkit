@@ -1,14 +1,3 @@
-import gc
-import json
-import os
-import warnings
-from typing import Union
-
-import arviz as az
-import numpy as np
-import pymc as pm
-import pytensor.tensor as pt
-import scipy.stats as stats
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -17,8 +6,6 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.hbr_util import S_inv, m
-from pcntoolkit.regression_model.reg_conf import RegConf
 
 
 class NormHBR(NormBase):
@@ -36,7 +23,6 @@ class NormHBR(NormBase):
 
         self.current_regression_model.fit(hbrdata, make_new_model)
 
-
     def _predict(self, data: NormData) -> NormData:
         # Assert that the model is fitted
         assert (
@@ -48,10 +34,7 @@ class NormHBR(NormBase):
 
         self.current_regression_model.predict(hbrdata)
 
-
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
-
-
         # Transform the data to hbrdata
         fit_hbrdata = self.normdata_to_hbrdata(fit_data)
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
@@ -59,7 +42,6 @@ class NormHBR(NormBase):
         self.current_regression_model.fit_predict(fit_hbrdata, predict_hbrdata)
 
     def _transfer(self, data: NormData, *args, **kwargs) -> "HBR":
-
         freedom = kwargs.get("freedom", 1)
         # Transform the data to hbrdata
         transferdata = self.normdata_to_hbrdata(data)
@@ -67,9 +49,10 @@ class NormHBR(NormBase):
         # Assert that the model is fitted
         if not self.current_regression_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
-        
-        new_hbr_model = self.current_regression_model.transfer(self.default_reg_conf, transferdata, freedom)
 
+        new_hbr_model = self.current_regression_model.transfer(
+            self.default_reg_conf, transferdata, freedom
+        )
 
         # Return the new model
         return new_hbr_model
@@ -90,21 +73,16 @@ class NormHBR(NormBase):
         )
 
     def _centiles(
-        self, data: NormData, cummulative_densities: list[float], resample=True
+        self, data: NormData, cdf: list[float], resample=True
     ) -> xr.DataArray:
-
         hbrdata = self.normdata_to_hbrdata(data)
 
-        return self.current_regression_model.centiles(hbrdata, cummulative_densities, resample)
-
-    
+        return self.current_regression_model.centiles(hbrdata, cdf, resample)
 
     def _zscores(self, data: NormData, resample=False) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
 
         return self.current_regression_model.zscores(hbrdata, resample)
-
-
 
     def n_params(self):
         return sum(
@@ -138,7 +116,9 @@ class NormHBR(NormBase):
         else:
             this_y = data.y.to_numpy()
 
-        assert (len(data.y.shape)==1) or (data.y.shape[1] == 1), "Only one response variable is supported for HBRdata"
+        assert (len(data.y.shape) == 1) or (
+            data.y.shape[1] == 1
+        ), "Only one response variable is supported for HBRdata"
 
         hbrdata = hbr_data.HBRData(
             X=this_X,
@@ -151,4 +131,3 @@ class NormHBR(NormBase):
         )
         hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return hbrdata
-

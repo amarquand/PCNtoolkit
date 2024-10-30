@@ -1,6 +1,3 @@
-import warnings
-
-import numpy as np
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -89,25 +86,25 @@ class NormGPR(NormBase):
         )
 
     def _centiles(
-        self, data: NormData, cummulative_densities: list[float], *args, **kwargs
+        self, data: NormData, cdf: list[float], *args, **kwargs
     ) -> xr.DataArray:
         """
         Compute centiles for the model at the given data points.
         Will be called for each model in self.regression_models from the super class.
         Data contains only the response variable for the current model.
         The return type should be a DataArray with dimensions:
-        - cummulative_densities
+        - cdf
         - datapoints
 
         ```
-        centiles = np.zeros((len(cummulative_densities), data.X.shape[0])))
-        for i, zscore in enumerate(cummulative_densities):
+        centiles = np.zeros((len(cdf), data.X.shape[0])))
+        for i, zscore in enumerate(cdf):
             centiles[i, :] = *compute centiles for cummulative_density*
 
         return xr.DataArray(
             centiles,
-            dims=["cummulative_densities", "datapoints"],
-            coords={"cummulative_densities": cummulative_densities},
+            dims=["cdf", "datapoints"],
+            coords={"cdf": cdf},
         )```
         """
 

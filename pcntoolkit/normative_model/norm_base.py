@@ -6,12 +6,16 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 import numpy as np
+import seaborn as sns
 import xarray as xr
 from matplotlib import pyplot as plt
 
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
+from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401
+from pcntoolkit.regression_model.gpr.gpr import GPR  # noqa: F401
+from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
@@ -268,38 +272,30 @@ class NormBase(ABC):
         data = self.compute_centiles(data)
         data = self.evaluator.evaluate(data)
 
-    def compute_centiles(
-        self,
+    def compute_centiles(self,
         data: NormData,
-        cummulative_densities: list = None,  # type: ignore
+        cdf: list = None,  # type: ignore
         *args: Any,
-        **kwargs: Any,
-    ) -> NormData:
+        **kwargs: Any,) -> NormData:
         # Preprocess the data
         self.preprocess(data)
 
-        if cummulative_densities is None:
-            cummulative_densities = np.array(
-                [0.05, 0.1587, 0.25, 0.5, 0.75, 0.8413, 0.95]
-            )
+        if cdf is None:
+            cdf = np.array([0.05, 0.1587, 0.25, 0.5, 0.75, 0.8413, 0.95])
 
         # If centiles are already computed, remove them
         centiles_already_computed = (
-            "scaled_centiles" in data
-            or "centiles" in data
-            or "cummulative_densities" in data.coords
+            "scaled_centiles" in data or "centiles" in data or "cdf" in data.coords
         )
         if centiles_already_computed:
             data = data.drop_vars(["scaled_centiles", "centiles"])
-            data = data.drop_dims(["cummulative_densities"])
+            data = data.drop_dims(["cdf"])
 
         # Create an empty array to store the scaled centiles
         data["scaled_centiles"] = xr.DataArray(
-            np.zeros(
-                (len(cummulative_densities), data.X.shape[0], len(self.response_vars))
-            ),
-            dims=("cummulative_densities", "datapoints", "response_vars"),
-            coords={"cummulative_densities": cummulative_densities},
+            np.zeros((len(cdf), data.X.shape[0], len(self.response_vars))),
+            dims=("cdf", "datapoints", "response_vars"),
+            coords={"cdf": cdf},
         )
 
         # Predict for each response variable
@@ -319,9 +315,7 @@ class NormBase(ABC):
             # Overwrite centiles
             print("Computing centiles for", responsevar)
             data["scaled_centiles"].loc[{"response_vars": responsevar}] = (
-                self._centiles(
-                    resp_predict_data, cummulative_densities, *args, **kwargs
-                )
+                self._centiles(resp_predict_data, cdf, *args, **kwargs)
             )
 
             self.reset()
@@ -330,7 +324,6 @@ class NormBase(ABC):
 
         return data
 
-    # def plot_centiles(self, data:NormData):
     def plot_qq(self, data: NormData) -> None:
         """
         Plot QQ plots for all response variables in the data.
@@ -352,14 +345,44 @@ class NormBase(ABC):
         cummul_densities: list = None,  # type: ignore
         show_data: bool = False,
         plt_kwargs: dict = None,  # type: ignore
+        *args,
+        **kwargs,
     ) -> None:
         """Plot the centiles for all response variables."""
+
+        # Use the first covariate, if not specified
+        if covariate is None:
+            covariate = data.covariates[0].to_numpy().item()
+
+        # Use the first batch effect if not specified
+        if batch_effects is None:
+            if self.has_random_effect:
+                batch_effects = data.get_single_batch_effect()
+
+        # Ensure that the batch effects are in the correct format
+        if batch_effects:
+            for k, v in batch_effects.items():
+                if isinstance(v, str):
+                    batch_effects[k] = [v]
+                elif not isinstance(v, list):
+                    raise ValueError(
+                        f"Items of the batch_effect dict be a list or a string, not {type(v)}"
+                    )
+
+        # Set the plt kwargs to an empty dictionary if they are not provided
+        if plt_kwargs is None:
+            plt_kwargs = {}
+
+        palette = plt_kwargs.pop("cmap", "viridis")
+
         synth_data = data.create_synthetic_data(
             n_datapoints=150,
             range_dim=covariate,
-            batch_effects_to_sample=batch_effects,
+            batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()}
+            if batch_effects
+            else None,
         )
-        self.compute_centiles(synth_data, cummulative_densities=cummul_densities)
+        self.compute_centiles(synth_data, cdf=cummul_densities)
         for response_var in data.coords["response_vars"].to_numpy():
             self._plot_centiles(
                 data,
@@ -369,10 +392,13 @@ class NormBase(ABC):
                 batch_effects,
                 show_data,
                 plt_kwargs,
+                palette=palette,
+                *args,
+                **kwargs,
             )
 
     def _plot_centiles(
-        _self,
+        self,
         data: NormData,
         synth_data: NormData,
         response_var: str,
@@ -380,33 +406,18 @@ class NormBase(ABC):
         batch_effects: Dict[str, List[str]] = None,
         show_data: bool = False,
         plt_kwargs=None,
+        hue_data="site",
+        markers_data="sex",
+        palette="viridis",
+        hue_title=None,
+        style_title=None,
     ) -> None:
         """Plot the centiles for a single response variable."""
-        # Use the first covariate, if not specified
-        if covariate is None:
-            covariate = data.covariates[0].to_numpy().item()
 
-        if batch_effects is None:
-            batch_effects = data.get_single_batch_effect()
-
-        # Set the plt kwargs to an empty dictionary if they are not provided
-        if plt_kwargs is None:
-            plt_kwargs = {}
-
-        new_batch_effects = []
-
-        # Create a list of batch effects
-        for be in batch_effects:
-            if isinstance(be, str):
-                new_batch_effects.append(be)
-            elif isinstance(be, list):
-                new_batch_effects.append(be[0])
-            else:
-                try:
-                    new_batch_effects.append(be.item())
-                except AttributeError:
-                    new_batch_effects.append(be)
-        batch_effects_list = new_batch_effects
+        # Set up the plot style
+        sns.set_style("whitegrid")
+        plt.figure(**plt_kwargs)
+        cmap = plt.get_cmap(palette)
 
         # Filter the covariate and responsevar that are to be plotted
         filter_dict = {
@@ -415,12 +426,10 @@ class NormBase(ABC):
         }
         filtered = synth_data.sel(filter_dict)
 
-        plt.figure(**plt_kwargs)
-        lines = []
-        for cdf in synth_data.coords["cummulative_densities"][::-1]:
+        # Create centile lines with seaborn
+        for cdf in synth_data.coords["cdf"][::-1]:
+            # Calculate the style of the line
             d_mean = abs(cdf - 0.5)
-            thickness = 3 - 4 * d_mean
-
             if d_mean < 0.25:
                 style = "-"
             elif d_mean < 0.475:
@@ -428,61 +437,120 @@ class NormBase(ABC):
             else:
                 style = ":"
 
-            cmap = plt.get_cmap("viridis")
+            # Plot centile line
+            sns.lineplot(
+                x=filtered.X,
+                y=filtered.centiles.sel(cdf=cdf),
+                color=cmap(cdf),
+                linestyle=style,
+                linewidth=1,
+                zorder=2,
+                legend="brief",
+            )
+            # Add text annotation at the terminal points of the line
             color = cmap(cdf)
+            font = FontProperties()
+            font.set_weight("bold")
+            plt.text(
+                s=cdf.item(),
+                x=filtered.X[0] - 1,
+                y=filtered.centiles.sel(cdf=cdf)[0],
+                color=color,
+                horizontalalignment="right",
+                verticalalignment="center",
+                fontproperties=font,
+            )
+            plt.text(
+                s=cdf.item(),
+                x=filtered.X[-1] + 1,
+                y=filtered.centiles.sel(cdf=cdf)[-1],
+                color=color,
+                horizontalalignment="left",
+                verticalalignment="center",
+                fontproperties=font,
+            )
 
-            lines.extend(
-                plt.plot(
-                    filtered.X,
-                    filtered.centiles.sel(cummulative_densities=cdf),
-                    color=color,
-                    linewidth=thickness,
-                    linestyle=style,
+        # Increase xlim by 10%
+        minx, maxx = plt.xlim()
+        plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
+
+        # # Add legend for centile lines
+        # line_legend = plt.legend(
+        #     lines,
+        #     synth_data.coords["cdf"].values,
+        #     title="Percentile",
+        # )
+        # plt.gca().add_artist(line_legend)
+
+        if show_data:
+            df = data.sel(filter_dict).to_dataframe()
+            columns = [("X", covariate), ("y", response_var)]
+            columns.extend(
+                [("batch_effects", be.item()) for be in data.batch_effect_dims]
+            )
+            df = df[columns]
+            df.columns = [c[1] for c in df.columns]
+
+            if not batch_effects:
+                # If no batch effects are provided, plot all data with slightly larger points
+                sns.scatterplot(
+                    df,
+                    x=covariate,
+                    y=response_var,
+                    label=data.name,
+                    color="black",
+                    s=20,  # Slightly larger point size
+                    alpha=0.6,
+                    zorder=1,
                 )
-            )
-        line_legend = plt.legend(
-            lines,
-            synth_data.coords["cummulative_densities"].values,
-            loc="upper right",
-            title="Centiles",
-        )
-        plt.gca().add_artist(line_legend)
+            else:
+                # Filter data based on batch effects
+                idx = np.full(len(df), True)
+                for j in batch_effects:
+                    idx = np.logical_and(
+                        idx,
+                        df[j].isin(batch_effects[j]),
+                    )
+                be_df = df[idx]
+                scatter = sns.scatterplot(
+                    data=be_df,
+                    x=covariate,
+                    y=response_var,
+                    hue=hue_data if hue_data in df else None,
+                    style=markers_data if markers_data in df else None,
+                    s=50,
+                    alpha=0.7,
+                    zorder=1,
+                )
 
-        if show_data:
-            filtered_scatter = data.sel(filter_dict)
-            idx = np.all(
-                np.stack(
-                    [
-                        filtered_scatter.batch_effects[:, i] == batch_effects_list[i]
-                        for i in range(filtered_scatter.batch_effects.shape[1])
-                    ],
-                    axis=1,
-                ),
-                axis=1,
-            )
-            idx = xr.DataArray(idx)
-            filt1: xr.Dataset = filtered_scatter.isel(datapoints=list(np.where(idx)[0]))
-            be_string = ", ".join([f"{k}={v}" for k, v in batch_effects.items()])
-            plt.scatter(
-                filt1.X,
-                filt1.y,
-                label=f"{{{be_string}}})",
-            )
-            filt2: xr.Dataset = filtered_scatter.isel(
-                datapoints=list(np.where(~idx)[0])
-            )
-            plt.scatter(
-                filt2.X,
-                filt2.y,
-                label="other batches",
-            )
-        if show_data:
-            plt.title(f"Centiles of {response_var} with {data.attrs['name']} scatter")
-            plt.legend(loc="upper left", title="Batch effect")
-        else:
-            plt.title(f"Centiles of {response_var}")
+                non_be_df = df[~idx]
+                # Plot other data as small black points
+                sns.scatterplot(
+                    data=non_be_df,
+                    x=covariate,
+                    y=response_var,
+                    color="black",
+                    s=20,  # Smaller point size
+                    alpha=0.4,
+                    zorder=0,
+                )
+
+                legend = scatter.get_legend()
+                if legend:
+                    handles = legend.legend_handles
+                    labels = [t.get_text() for t in legend.get_texts()]
+                    plt.legend(
+                        handles,
+                        labels,
+                        title=data.name + " data",
+                        title_fontsize=10,
+                    )
+        # Set title and labels
+        plt.title(f"Centiles of {response_var}")
         plt.xlabel(covariate)
         plt.ylabel(response_var)
+
+        # Show the plot
         plt.show()
 
     def compute_zscores(self, data: NormData, *args, **kwargs) -> NormData:
@@ -502,6 +570,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel(response_vars=responsevar)
 
             # raise an error if the model has not been fitted yet
+            if responsevar not in self.regression_models:
             if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find zscores for model {responsevar}, but it does not exist."
@@ -543,22 +612,28 @@ class NormBase(ABC):
         elif source_array == "X":
             source_array = data.X
 
+        # Every basis expansion has a linear component, so we always include the original data
         all_arrays = [source_array.data]
+
+        # Get the original named dimensions of the data
         all_dims = list(data.covariates.to_numpy())
 
         # Create a new array with the expanded basis
         basis_expansion = self.norm_conf.basis_function
         basis_column = self.norm_conf.basis_column
         if basis_expansion == "polynomial":
-            order = self.norm_conf.order
+            # Expand the basis with polynomial basis functions
             expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], order
+                source_array.data[:, basis_column], self.norm_conf.order
             )
+            # Add the expanded basis to the list of arrays
             all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
             all_dims.extend(
                 [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
             )
         elif basis_expansion == "bspline":
+            # Expand the basis with bspline basis functions
             if not hasattr(self, "bspline_basis"):
                 order = self.norm_conf.order
                 nknots = self.norm_conf.nknots
@@ -576,10 +651,15 @@ class NormBase(ABC):
             expanded_basis = np.array(
                 [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
             )
+            # Add the expanded basis to the list of arrays
             all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
             all_dims.extend(
                 [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
             )
+        elif basis_expansion in ["none", "linear"]:
+            # Do not expand the basis
+            pass
 
         if intercept:
             all_dims.append("intercept")
@@ -648,7 +728,9 @@ class NormBase(ABC):
         metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
         metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
 
-        with open(os.path.join(self.norm_conf.save_dir, "metadata.json"), "w") as f:
+        with open(
+            os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"), "w"
+        ) as f:
             json.dump(metadata, f, indent=4)
 
         # Save regression models as JSON -> use the to_dict method of the regression model
@@ -661,7 +743,7 @@ class NormBase(ABC):
 
     @classmethod
     def load(cls, path):
-        with open(os.path.join(path, "metadata.json"), "r") as f:
+        with open(os.path.join(path, "normative_model_dict.json"), "r") as f:
             metadata = json.load(f)
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
@@ -719,6 +801,10 @@ class NormBase(ABC):
     def reset(self):
         pass
 
+    @property
+    def has_random_effect(self):
+        return self.current_regression_model.has_random_effect
+
     #######################################################################################################
 
     # all the methods below are abstract methods, which means they have to be implemented in the subclass
@@ -770,7 +856,7 @@ class NormBase(ABC):
         self, data: NormData, centiles: list[float], *args, **kwargs
     ) -> xr.DataArray:
         """Takes a list of cummulative densities and returns the corresponding centiles of the model.
-        The return type is an xr.datarray with dimensions (cummulative_densities, datapoints).
+        The return type is an xr.datarray with dimensions (cdf, datapoints).
         """
         pass
 

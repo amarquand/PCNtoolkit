@@ -43,7 +43,6 @@ def m(epsilon, delta, r):
     return frac1 * acc
 
 
-
 def centile(likelihood, mu, sigma, epsilon=None, delta=None, zs=0):
     """Auxiliary function for computing centile"""
     if likelihood == "SHASHo":
@@ -61,6 +60,7 @@ def centile(likelihood, mu, sigma, epsilon=None, delta=None, zs=0):
     else:
         exit("Unsupported likelihood")
     return quantiles
+
 
 def zscore(likelihood, mu, sigma, epsilon=None, delta=None, y=None):
     """Auxiliary function for computing z-scores"""

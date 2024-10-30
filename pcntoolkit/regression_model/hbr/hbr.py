@@ -30,10 +30,12 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None
         self.pymc_model = None
 
+        # Make a new model if needed
+
     def fit(self, hbrdata: HBRData, make_new_model: bool = True):
         # Make a new model if needed
         if make_new_model or (not self.pymc_model):
-            self.create_pymc_graph(hbrdata)
+            self.compile_model(hbrdata)
 
         # Sample from pymc model
         with self.pymc_model:
@@ -43,6 +45,7 @@ class HBR(RegressionModel):
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
                 nuts_sampler=self.reg_conf.nuts_sampler,
+                init=self.reg_conf.init,
                 # var_names=["y_pred"],
             )
 
@@ -52,7 +55,7 @@ class HBR(RegressionModel):
     def predict(self, hbrdata: HBRData):
         # Create a new pymc model if needed
         if not self.pymc_model:
-            self.create_pymc_graph(hbrdata)
+            self.compile_model(hbrdata)
 
         # Set the data in the model
         hbrdata.set_data_in_existing_model(self.pymc_model)
@@ -71,7 +74,7 @@ class HBR(RegressionModel):
     def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData):
         # Make a new model if needed
         if not self.pymc_model:
-            self.create_pymc_graph(fit_hbrdata)
+            self.compile_model(fit_hbrdata)
 
         # Sample from pymc model
         with self.pymc_model:
@@ -81,6 +84,7 @@ class HBR(RegressionModel):
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
                 nuts_sampler=self.reg_conf.nuts_sampler,
+                init=self.reg_conf.init,
             )
 
         # Set the is_fitted flag to True
@@ -100,10 +104,8 @@ class HBR(RegressionModel):
     def transfer(self, hbrconf, transferdata, freedom):
         new_hbr_model = HBR(self.name, hbrconf)
 
-        # new_hbr_model.transfer(transferdata, freedom)
-
         # Create a new model, using the idata from the original model to inform the priors
-        new_hbr_model.create_pymc_graph(transferdata, self.idata, freedom)
+        new_hbr_model.compile_model(transferdata, self.idata, freedom)
 
         # Sample using the new model
         with new_hbr_model.pymc_model:
@@ -112,34 +114,19 @@ class HBR(RegressionModel):
                 tune=hbrconf.tune,
                 cores=hbrconf.cores,
                 chains=hbrconf.chains,
+                nuts_sampler=hbrconf.nuts_sampler,
             )
             new_hbr_model.is_fitted = True
 
         return new_hbr_model
 
     def centiles(
-        self, hbrdata: HBRData, cummulative_densities: list[float], resample=True
+        self, hbrdata: HBRData, cdf: list[float], resample=True
     ) -> xr.DataArray:
         var_names = self.get_var_names()
 
-        # Create a new pymc model if needed
-        if not self.pymc_model:
-            self.create_pymc_graph(hbrdata)
-
-        # Set the data in the model
-        hbrdata.set_data_in_existing_model(self.pymc_model)
-
-        # Delete the posterior predictive if it exists
-        if "posterior_predictive" in self.idata:
-            del self.idata.posterior_predictive
-
-        # Sample from the posterior predictive
-        with self.pymc_model:
-            pm.sample_posterior_predictive(
-                self.idata,
-                extend_inferencedata=True,
-                var_names=var_names + ["y_pred"],
-            )
+        if resample:
+            self.predict(hbrdata)
 
         # Extract the posterior predictive
         post_pred = az.extract(
@@ -155,12 +142,12 @@ class HBR(RegressionModel):
 
         # Create an array to hold the centiles
         n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
-        centiles = np.zeros((len(cummulative_densities), n_datapoints, n_mcmc_samples))
+        centiles = np.zeros((len(cdf), n_datapoints, n_mcmc_samples))
 
         # Compute the centiles iteratively for each cummulative density
-        for i, cdf in enumerate(cummulative_densities):
+        for i, _cdf in enumerate(cdf):
             zs = np.full(
-                (n_datapoints, n_mcmc_samples), stats.norm.ppf(cdf), dtype=float
+                (n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float
             )
             centiles[i] = xr.apply_ufunc(
                 centile,
@@ -171,8 +158,8 @@ class HBR(RegressionModel):
 
         return xr.DataArray(
             centiles,
-            dims=["cummulative_densities", "datapoints", "sample"],
-            coords={"cummulative_densities": cummulative_densities},
+            dims=["cdf", "datapoints", "sample"],
+            coords={"cdf": cdf},
         ).mean(dim="sample")
 
     def zscores(self, hbrdata: HBRData, resample=False) -> xr.DataArray:
@@ -180,7 +167,7 @@ class HBR(RegressionModel):
         if resample:
             # Create a new pymc model if needed
             if self.pymc_model is None:
-                self.create_pymc_graph(hbrdata)
+                self.compile_model(hbrdata)
 
             # Set the data in the model
             hbrdata.set_data_in_existing_model(self.pymc_model)
@@ -234,7 +221,7 @@ class HBR(RegressionModel):
             raise RuntimeError("Unsupported likelihood " + likelihood)
         return var_names
 
-    def create_pymc_graph(
+    def compile_model(
         self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
@@ -243,17 +230,17 @@ class HBR(RegressionModel):
         self.pymc_model = pm.Model(coords=data.coords)
         data.add_to_graph(self.pymc_model)
         if self.reg_conf.likelihood == "Normal":
-            self.create_normal_pymc_graph(data, idata, freedom)
+            self.compile_normal(data, idata, freedom)
         elif self.reg_conf.likelihood == "SHASHb":
-            self.create_SHASHb_pymc_graph(data, idata, freedom)
+            self.compile_SHASHb(data, idata, freedom)
         elif self.reg_conf.likelihood == "SHASHo":
-            self.create_SHASHo_pymc_graph(data, idata, freedom)
+            self.compile_SHASHo(data, idata, freedom)
         else:
             raise NotImplementedError(
                 f"Likelihood {self.reg_conf.likelihood} not implemented for {self.__class__.__name__}"
             )
 
-    def create_normal_pymc_graph(
+    def compile_normal(
         self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
@@ -280,7 +267,7 @@ class HBR(RegressionModel):
                 dims=("datapoints",),
             )
 
-    def create_SHASHb_pymc_graph(
+    def compile_SHASHb(
         self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
@@ -321,7 +308,7 @@ class HBR(RegressionModel):
                 dims=("datapoints",),
             )
 
-    def create_SHASHo_pymc_graph(
+    def compile_SHASHo(
         self, data: HBRData, idata: az.InferenceData = None, freedom=1
     ) -> HBRData:
         """
@@ -335,22 +322,22 @@ class HBR(RegressionModel):
             mu_samples = pm.Deterministic(
                 "mu_samples",
                 self.reg_conf.mu.get_samples(data),
-                self.reg_conf.mu.sample_dims,
+                dims=self.reg_conf.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
                 self.reg_conf.sigma.get_samples(data),
-                self.reg_conf.sigma.sample_dims,
+                dims=self.reg_conf.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
                 self.reg_conf.epsilon.get_samples(data),
-                dims=("datapoints", "response_vars"),
+                dims=self.reg_conf.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
                 self.reg_conf.delta.get_samples(data),
-                self.reg_conf.delta.sample_dims,
+                dims=self.reg_conf.delta.sample_dims,
             )
             y_pred = SHASHo(
                 "y_pred",

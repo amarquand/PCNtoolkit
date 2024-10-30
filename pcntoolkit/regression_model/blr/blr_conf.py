@@ -2,12 +2,48 @@ from dataclasses import dataclass
 
 from pcntoolkit.regression_model.reg_conf import RegConf
 
+# Default configuration values
+N_ITER = 300
+TOL = 1e-5
+ARD = False
+OPTIMIZER = "l-bfgs-b"
+L_BFGS_B_L = 0.1
+L_BFGS_B_EPSILON = 0.1
+L_BFGS_B_NORM = "l2"
+INTERCEPT = False
+RANDOM_INTERCEPT = False
+HETEROSKEDASTIC = False
+INTERCEPT_VAR = False
+RANDOM_INTERCEPT_VAR = False
+
 
 @dataclass(frozen=True)
 class BLRConf(RegConf):
     # some configuration parameters
-    n_iter: int = 100
-    tol: float = 1e-3
+    n_iter: int = N_ITER
+    tol: float = TOL
+
+    # use ard
+    ard: bool = ARD
+
+    # optimization parameters
+    optimizer: str = OPTIMIZER  # options: "l-bfgs-b", "cg", "powell", " nelder-mead"
+    l_bfgs_b_l: float = L_BFGS_B_L
+    l_bfgs_b_epsilon: float = L_BFGS_B_EPSILON
+    l_bfgs_b_norm: str = L_BFGS_B_NORM
+
+    # Design matrix configuration
+    intercept: bool = INTERCEPT
+    random_intercept: bool = RANDOM_INTERCEPT
+    heteroskedastic: bool = HETEROSKEDASTIC
+    intercept_var: bool = INTERCEPT_VAR
+    random_intercept_var: bool = RANDOM_INTERCEPT_VAR
+
+    has_random_effect = random_intercept or random_intercept_var
+
+    # TODO implement warp
+    # warp: WarpBase = None
+    # warp_reparam: bool = False
 
     def detect_configuration_problems(self) -> str:
         """
@@ -15,18 +51,20 @@ class BLRConf(RegConf):
         The super class will throw an exception if the configuration is invalid, and show the problems.
         """
 
-        # DESIGN CHOICE (stijn):
-        # This mutable field need to be local here, because the dataclass is defined as immutable.
         configuration_problems = []
 
         def add_problem(problem: str):
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
-        # some configuration checks
-        # ...
-        if self.example_parameter < 0:
-            add_problem("Example parameter must be greater than 0.")
+        if self.n_iter < 1:
+            add_problem("n_iter must be greater than 0.")
+
+        if self.tol <= 0:
+            add_problem("tol must be greater than 0.")
+
+        if self.optimizer not in ["l-bfgs-b", "cg", "powell", "nelder-mead"]:
+            add_problem(f"Optimizer {self.optimizer} not recognized.")
 
         return configuration_problems
 
@@ -35,9 +73,23 @@ class BLRConf(RegConf):
         """
         Creates a configuration from command line arguments.
         """
+        args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
+
         return cls(
-            n_iter=args["n_iter"],
-            tol=args["tol"],
+            n_iter=args_filt.get("n_iter", N_ITER),
+            tol=args_filt.get("tol", TOL),
+            ard=args_filt.get("ard", ARD),
+            optimizer=args_filt.get("optimizer", OPTIMIZER),
+            l_bfgs_b_l=args_filt.get("l_bfgs_b_l", L_BFGS_B_L),
+            l_bfgs_b_epsilon=args_filt.get("l_bfgs_b_epsilon", L_BFGS_B_EPSILON),
+            l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
+            intercept=args_filt.get("intercept", INTERCEPT),
+            random_intercept=args_filt.get("random_intercept", RANDOM_INTERCEPT),
+            heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
+            intercept_var=args_filt.get("intercept_var", INTERCEPT_VAR),
+            random_intercept_var=args_filt.get(
+                "random_intercept_var", RANDOM_INTERCEPT_VAR
+            ),
         )
 
     @classmethod
@@ -48,6 +100,16 @@ class BLRConf(RegConf):
         return cls(
             n_iter=dict["n_iter"],
             tol=dict["tol"],
+            ard=dict["ard"],
+            optimizer=dict["optimizer"],
+            l_bfgs_b_l=dict["l_bfgs_b_l"],
+            l_bfgs_b_epsilon=dict["l_bfgs_b_epsilon"],
+            l_bfgs_b_norm=dict["l_bfgs_b_norm"],
+            intercept=dict["intercept"],
+            random_intercept=dict["random_intercept"],
+            heteroskedastic=dict["heteroskedastic"],
+            intercept_var=dict["intercept_var"],
+            random_intercept_var=dict["random_intercept_var"],
         )
 
     def to_dict(self):
@@ -57,4 +119,14 @@ class BLRConf(RegConf):
         return {
             "n_iter": self.n_iter,
             "tol": self.tol,
+            "ard": self.ard,
+            "optimizer": self.optimizer,
+            "l_bfgs_b_l": self.l_bfgs_b_l,
+            "l_bfgs_b_epsilon": self.l_bfgs_b_epsilon,
+            "l_bfgs_b_norm": self.l_bfgs_b_norm,
+            "intercept": self.intercept,
+            "random_intercept": self.random_intercept,
+            "heteroskedastic": self.heteroskedastic,
+            "intercept_var": self.intercept_var,
+            "random_intercept_var": self.random_intercept_var,
         }

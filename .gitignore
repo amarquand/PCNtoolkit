@@ -101,3 +101,6 @@ prof/*
 dist/pcntoolkit-0.3-py3.11.egg
 example_notebooks/resources/*
 example_notebooks/resources/save_dir/idata_rh_MeanThickness_thickness.nc
+example_notebooks/resources/save_dir/normative_model_dict.json
+example_notebooks/resources/save_dir/*
+example_notebooks/resources 

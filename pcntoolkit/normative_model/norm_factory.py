@@ -46,7 +46,7 @@ def load_normative_model(path) -> NormBase:
     Loads the normative model from a directory.
     """
     try:
-        with open(os.path.join(path, "metadata.json"), "r") as f:
+        with open(os.path.join(path, "normative_model_dict.json"), "r") as f:
             metadata = json.load(f)
     except FileNotFoundError:
         raise FileNotFoundError(f"Path {path} does not exist.")
