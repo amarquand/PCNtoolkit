@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Any, Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -6,7 +7,6 @@ import pandas as pd
 import xarray as xr
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.scaler import scaler
 
 
@@ -36,12 +36,11 @@ class NormData(xr.Dataset):
         large datasets.
 
     Example:
-        >>> data = NormData.from_dataframe("my_data", df, covariates, 
+        >>> data = NormData.from_dataframe("my_data", df, covariates,
         ...                                batch_effects, response_vars)
         >>> data.scale_forward(inscalers, outscalers)
         >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
-
 
     __slots__ = (
         "X",
@@ -88,17 +87,17 @@ class NormData(xr.Dataset):
         )
 
     @classmethod
-    def from_fsl(cls, fsl_folder, config_params) -> "NormData":
+    def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
         """Load a normative dataset from a FSL file."""
         pass
 
     @classmethod
-    def from_nifti(cls, nifti_folder, config_params) -> "NormData":
+    def from_nifti(cls, nifti_folder, config_params) -> "NormData":  # type: ignore
         """Load a normative dataset from a Nifti file."""
         pass
 
     @classmethod
-    def from_bids(cls, bids_folder, config_params) -> "NormData":
+    def from_bids(cls, bids_folder, config_params) -> "NormData":  # type: ignore
         """Load a normative dataset from a BIDS dataset."""
         pass
 
@@ -145,7 +144,7 @@ class NormData(xr.Dataset):
         self,
         n_datapoints: int = 100,
         range_dim: Union[int, str] = 0,
-        batch_effects_to_sample: Dict[str, List[Any]] = None,
+        batch_effects_to_sample: Dict[str, List[Any]] = None,  # type: ignore
     ):
         """
         Create a synthetic dataset with the same dimensions as the original dataset.
@@ -230,11 +229,17 @@ class NormData(xr.Dataset):
 
         return batch_effects_to_sample
 
+    def concatenate_string_arrays(self, arrays: List[np.ndarray]) -> np.ndarray:
+        """Concatenate arrays of strings."""
+        return reduce(np.char.add, arrays)
+
     def train_test_split(
-        self, splits: Tuple[float, ...], split_names: Tuple[str, ...] = None
+        self,
+        splits: Tuple[float, ...],
+        split_names: Tuple[str, ...] = None,  # type: ignore
     ) -> Tuple["NormData", ...]:
         """Split the data into 2 datasets."""
-        batch_effects_stringified = np.core.defchararray.add(
+        batch_effects_stringified = self.concatenate_string_arrays(
             *[
                 self.batch_effects[:, i].astype(str)
                 for i in range(self.batch_effects.shape[1])
@@ -263,14 +268,14 @@ class NormData(xr.Dataset):
         stratified_kfold_split = StratifiedKFold(
             n_splits=k, shuffle=True, random_state=42
         )
-        batch_effects_added_strings = np.core.defchararray.add(
+        batch_effects_stringified = self.concatenate_string_arrays(
             *[
                 self.batch_effects[:, i].astype(str)
                 for i in range(self.batch_effects.shape[1])
             ]
         )
         for train_idx, test_idx in stratified_kfold_split.split(
-            self.X, batch_effects_added_strings
+            self.X, batch_effects_stringified
         ):
             split1 = self.isel(datapoints=train_idx)
             split2 = self.isel(datapoints=test_idx)

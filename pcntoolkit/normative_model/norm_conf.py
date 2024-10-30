@@ -1,8 +1,13 @@
-import json
+"""This file contains the NormConf dataclass, which is used to store the configuration for a normative model. 
+The NormConf class is a dataclass that contains parameters for cross-validation, basis expansion, logging, and
+saving output. It performs checks on these configurations to ensure they are valid. The class also provides
+methods for creating a configuration from command line arguments, a dictionary, or converting the configuration
+to a dictionary. Additionally, it provides methods for detecting problems in the configuration and setting the 
+save and log directories."""
+
 import os
 import warnings
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass(frozen=True)  # Creates an immutable datasclass
@@ -10,6 +15,8 @@ class NormConf:
     """
     Configuration for a normative model. Contains parameters for cross-validation, basis expansion, logging, and saving output.
     Performs checks on these configurations.
+
+
     This does not care about the underlying regression model.
     """
 
@@ -69,11 +76,11 @@ class NormConf:
         return cls(**norm_args)
 
     @classmethod
-    def from_dict(cls, dict) -> "NormConf":
+    def from_dict(cls, dct) -> "NormConf":
         """
         Creates a configuration from a dictionary.
         """
-        return cls.from_args(dict)
+        return cls.from_args(dct)
 
     def to_dict(self):
         """

@@ -1,22 +1,21 @@
+"""
+Module providing entry points for fitting and predicting with normative models.
+"""
+
 import argparse
-import os
-import sys
 
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
 
 from pcntoolkit.dataio import fileio
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
-from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_factory import (
-    create_normative_model,
     create_normative_model_from_args,
     load_normative_model,
 )
 
 
-def fit(conf_dict: dict):
+def fit(conf_dict: dict) -> None:
     """
     Fit a normative model.
 
@@ -37,7 +36,7 @@ def fit(conf_dict: dict):
         normative_model.save()
 
 
-def predict(conf_dict: dict):
+def predict(conf_dict: dict) -> None:
     """
     Predict response variables using a normative model.
 
@@ -57,7 +56,7 @@ def predict(conf_dict: dict):
     # fileio.save(Y_pred, os.path.join(conf_dict["save_dir"], "Y_pred.csv"))
 
 
-def fit_predict(conf_dict: dict):
+def fit_predict(conf_dict: dict) -> None:
     """
     Fit a normative model and predict response variables.
 
@@ -83,11 +82,21 @@ def fit_predict(conf_dict: dict):
         normative_model.save()
 
 
-def estimate(conf_dict: dict):
+def estimate(conf_dict: dict) -> None:
+    """Legacy function signature. Calls fit_predict.
+
+    Args:
+        conf_dict (dict): Dictionary containing configuration options
+    """
     fit_predict(conf_dict)
 
 
 def load_data(conf_dict: dict) -> NormData:
+    """Load the data from the configuration dictionary.
+
+    Returns:
+        NormData: NormData object containing the data
+    """
     respfile = conf_dict.pop("responses")
     covfile = conf_dict.pop("covfile")
     maskfile = conf_dict.pop("maskfile", None)
@@ -96,7 +105,7 @@ def load_data(conf_dict: dict) -> NormData:
     X = fileio.load(covfile)
 
     # Load the response variables
-    Y, volmask = load_response_vars(respfile, maskfile=maskfile)
+    Y, _ = load_response_vars(respfile, maskfile=maskfile)
 
     # Load the batch effects
     batch_effects = conf_dict.pop("trbefile", None)
@@ -111,6 +120,14 @@ def load_data(conf_dict: dict) -> NormData:
 
 
 def load_test_data(conf_dict: dict) -> NormData:
+    """Load the test data from the file specified in the configuration dictionary.
+
+    Args:
+        conf_dict (dict): dictionary containing the configuration options
+
+    Returns:
+        NormData: NormData object containing the test data
+    """
     respfile = conf_dict.pop("testresp")
     covfile = conf_dict.pop("testcov")
     maskfile = conf_dict.pop("maskfile", None)
@@ -119,7 +136,7 @@ def load_test_data(conf_dict: dict) -> NormData:
     X = fileio.load(covfile)
 
     # Load the response variables
-    Y, volmask = load_response_vars(respfile, maskfile=maskfile)
+    Y, _ = load_response_vars(respfile, maskfile=maskfile)
 
     # Load the batch effects
     batch_effects = conf_dict.pop("tsbefile", None)
@@ -133,7 +150,9 @@ def load_test_data(conf_dict: dict) -> NormData:
     return data
 
 
-def load_response_vars(datafile, maskfile=None, vol=True):
+def load_response_vars(
+    datafile: str, maskfile: str | None = None, vol: bool = True
+) -> tuple[np.ndarray, np.ndarray | None]:
     """
     Load response variables from file. This will load the data and mask it if
     necessary. If the data is in ascii format it will be converted into a numpy
@@ -160,7 +179,12 @@ def load_response_vars(datafile, maskfile=None, vol=True):
     return Y, volmask
 
 
-def get_argparser():
+def get_argparser() -> argparse.ArgumentParser:
+    """Get an argument parser for the normative modeling functions.
+
+    Returns:
+        argparse.ArgumentParser: The argument parser
+    """
     #  parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("responses")
@@ -183,11 +207,18 @@ def get_argparser():
         "-r", "--testresp", help="responses (test data)", dest="testresp", default=None
     )
     parser.add_argument("-a", "--alg", help="algorithm", dest="alg", default="gpr")
-    # parser.add_argument("-x", '--configparam', help="algorithm specific config options", dest="configparam", default=None, nargs=)
     return parser
 
 
-def get_conf_dict_from_args():
+def get_conf_dict_from_args() -> dict[str, str | int | float | bool]:
+    """Parse the arguments and return a dictionary with the configuration options.
+
+    Raises:
+        ValueError: Raised if an argument is specified twice.
+
+    Returns:
+        dict[str, str | int | float | bool]: A dictionary with the configuration option, parsed to the correct type.
+    """
     parser = get_argparser()
     known, unknown = parser.parse_known_args()
 
@@ -221,7 +252,8 @@ def get_conf_dict_from_args():
     return conf_dict
 
 
-def make_synthetic_data():
+def make_synthetic_data() -> None:
+    """Create synthetic data for testing."""
     np.random.seed(42)
     X = np.random.randn(1000, 2)
     Y = np.random.randn(1000, 2)
@@ -233,21 +265,24 @@ def make_synthetic_data():
     np.savetxt("responses.csv", Y)
     np.savetxt("batch_effects.csv", batch_effects)
 
-    X = []
-    X.append(np.linspace(-3, 4, 200))
-    X.append(np.full(200, 0))
-    X = np.stack(X, axis=1)
-    Y = np.random.randn(200, 2)
-    batch_effects = np.zeros((200, 2))
+    X = np.random.randn(1000, 2)
+    Y = np.random.randn(1000, 2)
+    batch_effects = []
+    for i in range(2):
+        batch_effects.append(np.random.choice(list(range(i + 2)), size=1000))
+    batch_effects = np.stack(batch_effects, axis=1)
     np.savetxt("covariates_test.csv", X)
     np.savetxt("responses_test.csv", Y)
     np.savetxt("batch_effects_test.csv", batch_effects)
 
 
-def main():
-    # make_synthetic_data()
+def main() -> None:
+    """Main function to run the normative modeling functions.
 
-    # conf_dict = get_conf_dict_from_args()
+    Raises:
+        ValueError: If the function specified in the configuration dictionary is unknown.
+
+    """
     conf_dict = {
         "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
         "func": "predict",
