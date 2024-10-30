@@ -76,7 +76,7 @@ class NormData(xr.Dataset):
                 "batch_effects": (["datapoints", "batch_effect_dims"], batch_effects),
             },
             coords={
-                "datapoints": [f"datapoint_{i}" for i in np.arange(X.shape[0])],
+                "datapoints": list(np.arange(X.shape[0])),
                 "covariates": [f"covariate_{i}" for i in np.arange(X.shape[1])],
                 "response_vars": [f"response_var_{i}" for i in np.arange(y.shape[1])],
                 "batch_effect_dims": [
@@ -129,10 +129,9 @@ class NormData(xr.Dataset):
                 ),
             },
             coords={
-                "datapoints": [
-                    f"datapoint_{i}"
-                    for i in np.arange(dataframe[covariates].to_numpy().shape[0])
-                ],
+                "datapoints": list(
+                    np.arange(dataframe[covariates].to_numpy().shape[0])
+                ),
                 "response_vars": response_vars,
                 "covariates": covariates,
                 "batch_effect_dims": batch_effects,

@@ -10,6 +10,7 @@ CHAINS = 2
 CORES = 1
 LIKELIHOOD = "Normal"
 NUTS_SAMPLER = "pymc"
+INIT = "jitter+adapt_diag"
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class HBRConf(RegConf):
     cores: int = CORES
 
     nuts_sampler: str = NUTS_SAMPLER
+    init: str = INIT
 
     # model config
     likelihood: str = LIKELIHOOD

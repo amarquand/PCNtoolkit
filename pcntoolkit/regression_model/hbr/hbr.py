@@ -45,6 +45,7 @@ class HBR(RegressionModel):
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
                 nuts_sampler=self.reg_conf.nuts_sampler,
+                init=self.reg_conf.init,
                 # var_names=["y_pred"],
             )
 
@@ -83,6 +84,7 @@ class HBR(RegressionModel):
                 cores=self.reg_conf.cores,
                 chains=self.reg_conf.chains,
                 nuts_sampler=self.reg_conf.nuts_sampler,
+                init=self.reg_conf.init,
             )
 
         # Set the is_fitted flag to True
