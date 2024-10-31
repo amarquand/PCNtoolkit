@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any, ClassVar, Dict, List
 
 from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.reg_conf import RegConf
@@ -33,13 +34,16 @@ class HBRConf(RegConf):
     epsilon: Param = field(default_factory=Param.default_epsilon)
     delta: Param = field(default_factory=Param.default_delta)
 
-    def detect_configuration_problems(self) -> str:
+    # Add class variable for dataclass fields
+    __dataclass_fields__: ClassVar[Dict[str, Any]]
+
+    def detect_configuration_problems(self) -> List[str]:
         """
         Detects problems in the configuration and returns them as a list of strings.
         """
-        configuration_problems = []
+        configuration_problems: List[str] = []
 
-        def add_problem(problem: str):
+        def add_problem(problem: str) -> None:
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
@@ -84,7 +88,7 @@ class HBRConf(RegConf):
         return configuration_problems
 
     @classmethod
-    def from_args(cls, args):
+    def from_args(cls, args: Dict[str, Any]) -> "HBRConf":
         """
         Creates a configuration from command line arguments.
         """
@@ -103,25 +107,25 @@ class HBRConf(RegConf):
         return self
 
     @classmethod
-    def from_dict(cls, dict):
+    def from_dict(cls, dct: Dict[str, Any]) -> "HBRConf":
         """
         Creates a configuration from a dictionary.
         """
         # Filter out the arguments that are not relevant for this configuration
-        args_filt = {k: v for k, v in dict.items() if k in cls.__dataclass_fields__}
+        args_filt = {k: v for k, v in dct.items() if k in cls.__dataclass_fields__}
         likelihood = args_filt.get("likelihood", "Normal")
         if likelihood == "Normal":
-            args_filt["mu"] = Param.from_dict(dict["mu"])
-            args_filt["sigma"] = Param.from_dict(dict["sigma"])
+            args_filt["mu"] = Param.from_dict(dct["mu"])
+            args_filt["sigma"] = Param.from_dict(dct["sigma"])
         elif likelihood.startswith("SHASH"):
-            args_filt["mu"] = Param.from_dict(dict["mu"])
-            args_filt["sigma"] = Param.from_dict(dict["sigma"])
-            args_filt["epsilon"] = Param.from_dict(dict["epsilon"])
-            args_filt["delta"] = Param.from_dict(dict["delta"])
+            args_filt["mu"] = Param.from_dict(dct["mu"])
+            args_filt["sigma"] = Param.from_dict(dct["sigma"])
+            args_filt["epsilon"] = Param.from_dict(dct["epsilon"])
+            args_filt["delta"] = Param.from_dict(dct["delta"])
         self = cls(**args_filt)
         return self
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         conf_dict = {
             "draws": self.draws,
             "tune": self.tune,
@@ -140,7 +144,7 @@ class HBRConf(RegConf):
         return conf_dict
 
     @property
-    def has_random_effect(self):
+    def has_random_effect(self) -> bool:
         for attr in ["mu", "sigma", "epsilon", "delta"]:
             if getattr(self, attr) and getattr(self, attr).has_random_effect:
                 return True

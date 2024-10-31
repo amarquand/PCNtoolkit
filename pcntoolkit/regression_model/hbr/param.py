@@ -81,7 +81,7 @@ class Param:
             self.linear and (self.slope.random or self.intercept.random)
         )
 
-    def create_graph(self, model, idata=None, freedom=1):
+    def create_graph(self, model, idata=None, freedom: float = 1):
         self.freedom = freedom
         with model:
             if self.linear:

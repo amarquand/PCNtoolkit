@@ -1,11 +1,69 @@
+"""
+Hierarchical Bayesian Regression model implementation.
+
+This class implements a Bayesian hierarchical regression model using PyMC for
+posterior sampling. It supports multiple likelihood functions and provides
+methods for model fitting, prediction, and analysis.
+
+Parameters
+----------
+name : str
+    Unique identifier for the model instance
+reg_conf : HBRConf
+    Configuration object containing model hyperparameters and structure
+is_fitted : bool, optional
+    Flag indicating if the model has been fitted, by default False
+is_from_dict : bool, optional
+    Flag indicating if model was created from dictionary, by default False
+
+Attributes
+----------
+idata : arviz.InferenceData
+    Contains the MCMC samples and model inference data
+pymc_model : pm.Model
+    PyMC model object containing the computational graph
+reg_conf : HBRConf
+    Model configuration object
+is_fitted : bool
+    Indicates if model has been fitted
+name : str
+    Model identifier
+
+Methods
+-------
+fit(data: HBRData, idata: Optional[az.InferenceData] = None, freedom: float = 1)
+    Fit the model to training data
+predict(data: HBRData)
+    Generate predictions for new data
+centiles(data: HBRData, cdf: np.ndarray, resample: bool = True)
+    Calculate centile values for observations
+zscores(data: HBRData, resample: bool = False)
+    Calculate z-scores for observations
+compile_model(data: HBRData, idata: Optional[az.InferenceData] = None, freedom: float = 1)
+    Create the PyMC model computational graph
+to_dict(path: Optional[str] = None)
+    Serialize model to dictionary format
+from_dict(dct: Dict[str, Any], path: Optional[str] = None)
+    Create model instance from serialized dictionary
+from_args(name: str, args: Dict[str, Any])
+    Create model instance from command line arguments
+
+Notes
+-----
+The model supports Normal, SHASHb and SHASHo likelihood functions. The model structure
+is defined through the HBRConf configuration object which specifies the parameters
+(mu, sigma, epsilon, delta) and their hierarchical relationships.
+"""
+
 from __future__ import annotations
 
 import os
+from typing import Any, Dict, List, Optional
 
-import arviz as az
+import arviz as az  # type: ignore
 import numpy as np
-import pymc as pm
-import scipy.stats as stats
+import pymc as pm  # type: ignore
+import scipy.stats as stats  # type: ignore
 import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
@@ -18,8 +76,57 @@ from .hbr_conf import HBRConf
 
 
 class HBR(RegressionModel):
+    """
+    Hierarchical Bayesian Regression model implementation.
+
+    This class implements a Bayesian hierarchical regression model using PyMC for
+    posterior sampling. It supports multiple likelihood functions and provides
+    methods for model fitting, prediction, and analysis.
+
+    Parameters
+    ----------
+    name : str
+        Unique identifier for the model instance
+    reg_conf : HBRConf
+        Configuration object containing model hyperparameters and structure
+    is_fitted : bool, optional
+        Flag indicating if the model has been fitted, by default False
+    is_from_dict : bool, optional
+        Flag indicating if model was created from dictionary, by default False
+
+    Attributes
+    ----------
+    idata : arviz.InferenceData
+        Contains the MCMC samples and model inference data
+    pymc_model : pm.Model
+        PyMC model object containing the computational graph
+    reg_conf : HBRConf
+        Model configuration object
+    is_fitted : bool
+        Indicates if model has been fitted
+
+    Methods
+    -------
+    fit(hbrdata, make_new_model=True)
+        Fit the model to training data using MCMC sampling
+    predict(hbrdata)
+        Generate predictions for new data
+    fit_predict(fit_hbrdata, predict_hbrdata)
+        Fit model and generate predictions in one step
+    transfer(hbrconf, transferdata, freedom)
+        Perform transfer learning using existing model as prior
+    centiles(hbrdata, cdf, resample=True)
+        Calculate centile values for given cumulative densities
+    zscores(hbrdata, resample=False)
+        Calculate z-scores for observations
+    """
+
     def __init__(
-        self, name: str, reg_conf: HBRConf, is_fitted=False, is_from_dict=False
+        self,
+        name: str,
+        reg_conf: HBRConf,
+        is_fitted: bool = False,
+        is_from_dict: bool = False,
     ):
         """
         Initializes the model.
@@ -27,43 +134,56 @@ class HBR(RegressionModel):
         Any immutable parameters should be initialized in the configuration.
         """
         super().__init__(name, reg_conf, is_fitted, is_from_dict)
-        self.idata: az.InferenceData = None
-        self.pymc_model = None
+        self.idata: az.InferenceData = None  # type: ignore
+        self.pymc_model: pm.Model = None  # type: ignore
 
-        # Make a new model if needed
+    def fit(self, hbrdata: HBRData, make_new_model: bool = True) -> None:
+        """
+        Fit the model to training data using MCMC sampling.
 
-    def fit(self, hbrdata: HBRData, make_new_model: bool = True):
-        # Make a new model if needed
+        Parameters
+        ----------
+        hbrdata : HBRData
+            Training data object containing features and targets
+        make_new_model : bool, optional
+            Whether to create a new PyMC model, by default True
+
+        Returns
+        -------
+        None
+        """
         if make_new_model or (not self.pymc_model):
             self.compile_model(hbrdata)
-
-        # Sample from pymc model
         with self.pymc_model:
             self.idata = pm.sample(
-                self.reg_conf.draws,
-                tune=self.reg_conf.tune,
-                cores=self.reg_conf.cores,
-                chains=self.reg_conf.chains,
-                nuts_sampler=self.reg_conf.nuts_sampler,
-                init=self.reg_conf.init,
-                # var_names=["y_pred"],
+                self.draws,
+                tune=self.tune,
+                cores=self.cores,
+                chains=self.chains,
+                nuts_sampler=self.nuts_sampler,  # type: ignore
+                init=self.init,
             )
-
-        # Set the is_fitted flag to True
         self.is_fitted = True
 
-    def predict(self, hbrdata: HBRData):
-        # Create a new pymc model if needed
+    def predict(self, hbrdata: HBRData) -> None:
+        """
+        Generate predictions for new data.
+
+        Parameters
+        ----------
+        hbrdata : HBRData
+            Data object containing features to predict on
+
+        Returns
+        -------
+        None
+            Updates the model's inference data with predictions
+        """
         if not self.pymc_model:
             self.compile_model(hbrdata)
-
-        # Set the data in the model
         hbrdata.set_data_in_existing_model(self.pymc_model)
-
-        if "posterior_predictive" in self.idata:
+        if hasattr(self.idata, "posterior_predictive"):
             del self.idata.posterior_predictive
-
-        # Sample from the posterior predictive
         with self.pymc_model:
             pm.sample_posterior_predictive(
                 self.idata,
@@ -71,29 +191,35 @@ class HBR(RegressionModel):
                 var_names=self.get_var_names() + ["y_pred"],
             )
 
-    def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData):
-        # Make a new model if needed
+    def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData) -> None:
+        """
+        Fit model and generate predictions in one step.
+
+        Parameters
+        ----------
+        fit_hbrdata : HBRData
+            Training data for model fitting
+        predict_hbrdata : HBRData
+            Data to generate predictions for
+
+        Returns
+        -------
+        None
+            Updates model's inference data with fitted parameters and predictions
+        """
         if not self.pymc_model:
             self.compile_model(fit_hbrdata)
-
-        # Sample from pymc model
         with self.pymc_model:
             self.idata = pm.sample(
-                self.reg_conf.draws,
-                tune=self.reg_conf.tune,
-                cores=self.reg_conf.cores,
-                chains=self.reg_conf.chains,
-                nuts_sampler=self.reg_conf.nuts_sampler,
-                init=self.reg_conf.init,
+                self.draws,
+                tune=self.tune,
+                cores=self.cores,
+                chains=self.chains,
+                nuts_sampler=self.nuts_sampler,  # type: ignore
+                init=self.init,
             )
-
-        # Set the is_fitted flag to True
         self.is_fitted = True
-
-        # Set the data in the model
         predict_hbrdata.set_data_in_existing_model(self.pymc_model)
-
-        # Sample from the posterior predictive
         with self.pymc_model:
             pm.sample_posterior_predictive(
                 self.idata,
@@ -101,50 +227,72 @@ class HBR(RegressionModel):
                 var_names=self.get_var_names() + ["y_pred"],
             )
 
-    def transfer(self, hbrconf, transferdata, freedom):
+    def transfer(self, hbrconf: HBRConf, transferdata: HBRData, freedom: float) -> HBR:
+        """
+        Perform transfer learning using existing model as prior.
+
+        Parameters
+        ----------
+        hbrconf : HBRConf
+            Configuration for new model
+        transferdata : HBRData
+            Data for transfer learning
+        freedom : float
+            Parameter controlling influence of prior model (0-1)
+
+        Returns
+        -------
+        HBR
+            New model instance with transferred knowledge
+        """
         new_hbr_model = HBR(self.name, hbrconf)
-
-        # Create a new model, using the idata from the original model to inform the priors
         new_hbr_model.compile_model(transferdata, self.idata, freedom)
-
-        # Sample using the new model
         with new_hbr_model.pymc_model:
             new_hbr_model.idata = pm.sample(
                 hbrconf.draws,
                 tune=hbrconf.tune,
                 cores=hbrconf.cores,
                 chains=hbrconf.chains,
-                nuts_sampler=hbrconf.nuts_sampler,
+                nuts_sampler=hbrconf.nuts_sampler,  # type: ignore
             )
             new_hbr_model.is_fitted = True
 
         return new_hbr_model
 
     def centiles(
-        self, hbrdata: HBRData, cdf: np.ndarray, resample=True
+        self, hbrdata: HBRData, cdf: np.ndarray, resample: bool = True
     ) -> xr.DataArray:
+        """
+        Calculate centile values for given cumulative densities.
+
+        Parameters
+        ----------
+        hbrdata : HBRData
+            Data to calculate centiles for
+        cdf : np.ndarray
+            Array of cumulative density values
+        resample : bool, optional
+            Whether to generate new posterior samples, by default True
+
+        Returns
+        -------
+        xr.DataArray
+            Calculated centile values
+        """
         var_names = self.get_var_names()
 
         if resample:
             self.predict(hbrdata)
-
-        # Extract the posterior predictive
         post_pred = az.extract(
             self.idata,
             "posterior_predictive",
             var_names=var_names,
         )
-
-        # Separate the samples into a list so that they can be unpacked
         array_of_vars = [self.likelihood] + list(
             map(lambda x: np.squeeze(post_pred[x]), var_names)
         )
-
-        # Create an array to hold the centiles
         n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
         centiles = np.zeros((cdf.shape[0], n_datapoints, n_mcmc_samples))
-
-        # Compute the centiles iteratively for each cummulative density
         for i, _cdf in enumerate(cdf):
             zs = np.full(
                 (n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float
@@ -154,44 +302,46 @@ class HBR(RegressionModel):
                 *array_of_vars,
                 kwargs={"zs": zs},
             )
-        pass
-
         return xr.DataArray(
             centiles,
             dims=["cdf", "datapoints", "sample"],
             coords={"cdf": cdf},
         ).mean(dim="sample")
 
-    def zscores(self, hbrdata: HBRData, resample=False) -> xr.DataArray:
+    def zscores(self, hbrdata: HBRData, resample: bool = False) -> xr.DataArray:
+        """
+        Calculate z-scores for observations.
+
+        Parameters
+        ----------
+        hbrdata : HBRData
+            Data containing observations to calculate z-scores for
+        resample : bool, optional
+            Whether to generate new posterior samples, by default False
+
+        Returns
+        -------
+        xr.DataArray
+            Calculated z-scores
+        """
         var_names = self.get_var_names()
         if resample:
-            # Create a new pymc model if needed
             if self.pymc_model is None:
                 self.compile_model(hbrdata)
-
-            # Set the data in the model
             hbrdata.set_data_in_existing_model(self.pymc_model)
-
-            # Delete the posterior predictive if it exists
-            if "posterior_predictive" in self.idata:
+            if hasattr(self.idata, "posterior_predictive"):
                 del self.idata.posterior_predictive
-
-            # Sample from the posterior predictive
-            with self.pymc_model:
+            with self.pymc_model:  # type: ignore
                 pm.sample_posterior_predictive(
                     self.idata,
                     extend_inferencedata=True,
                     var_names=var_names + ["y_pred"],
                 )
-
-        # Extract the posterior predictive
         post_pred = az.extract(
             self.idata,
             "posterior_predictive",
             var_names=var_names,
         )
-
-        # Separate the samples into a list so that they can be unpacked
         array_of_vars = [self.likelihood] + list(
             map(lambda x: np.squeeze(post_pred[x]), var_names)
         )
@@ -204,9 +354,22 @@ class HBR(RegressionModel):
 
         return zscores
 
-    def get_var_names(self):
-        likelihood = self.reg_conf.likelihood
-        # Determine the variables to predict
+    def get_var_names(self) -> List[str]:
+        """Get the variable names for the current likelihood function.
+
+        Returns
+        -------
+        List[str]
+            List of variable names required for the current likelihood function.
+            For Normal likelihood: ['mu_samples', 'sigma_samples']
+            For SHASH likelihoods: ['mu_samples', 'sigma_samples', 'epsilon_samples', 'delta_samples']
+
+        Raises
+        ------
+        RuntimeError
+            If likelihood is not supported (must be 'Normal', 'SHASHb', or 'SHASHo')
+        """
+        likelihood = self.likelihood
         if likelihood == "Normal":
             var_names = ["mu_samples", "sigma_samples"]
         elif likelihood.startswith("SHASH"):
@@ -216,50 +379,83 @@ class HBR(RegressionModel):
                 "epsilon_samples",
                 "delta_samples",
             ]
-
         else:
             raise RuntimeError("Unsupported likelihood " + likelihood)
         return var_names
 
     def compile_model(
-        self, data: HBRData, idata: az.InferenceData = None, freedom=1
-    ) -> HBRData:
+        self,
+        data: HBRData,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
+    ) -> None:
         """
-        Creates the pymc model.
+        Create the PyMC model computational graph.
+
+        Parameters
+        ----------
+        data : HBRData
+            Data object containing model inputs
+        idata : Optional[az.InferenceData], optional
+            Previous inference data for transfer learning, by default None
+        freedom : float, optional
+            Parameter controlling influence of prior model, by default 1
+
+        Returns
+        -------
+        None
+            Creates and stores PyMC model in instance
         """
         self.pymc_model = pm.Model(coords=data.coords)
         data.add_to_graph(self.pymc_model)
-        if self.reg_conf.likelihood == "Normal":
+        if self.likelihood == "Normal":
             self.compile_normal(data, idata, freedom)
-        elif self.reg_conf.likelihood == "SHASHb":
+        elif self.likelihood == "SHASHb":
             self.compile_SHASHb(data, idata, freedom)
-        elif self.reg_conf.likelihood == "SHASHo":
+        elif self.likelihood == "SHASHo":
             self.compile_SHASHo(data, idata, freedom)
         else:
             raise NotImplementedError(
-                f"Likelihood {self.reg_conf.likelihood} not implemented for {self.__class__.__name__}"
+                f"Likelihood {self.likelihood} not implemented for {self.__class__.__name__}"
             )
 
     def compile_normal(
-        self, data: HBRData, idata: az.InferenceData = None, freedom=1
-    ) -> HBRData:
+        self,
+        data: HBRData,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
+    ) -> None:
         """
-        Creates the pymc model.
+        Create PyMC model with Normal likelihood.
+
+        Parameters
+        ----------
+        data : HBRData
+            Data object containing model inputs
+        idata : Optional[az.InferenceData], optional
+            Previous inference data for transfer learning, by default None
+        freedom : float, optional
+            Parameter controlling influence of prior model (0-1), by default 1
+
+        Returns
+        -------
+        None
+            Updates the PyMC model in place with Normal likelihood components
         """
-        self.reg_conf.mu.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.mu.create_graph(self.pymc_model, idata, freedom)
+        self.sigma.create_graph(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.reg_conf.mu.get_samples(data),
-                dims=self.reg_conf.mu.sample_dims,
+                self.mu.get_samples(data),
+                dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.reg_conf.sigma.get_samples(data),
-                dims=self.reg_conf.sigma.sample_dims,
+                self.sigma.get_samples(data),
+                dims=self.sigma.sample_dims,
             )
-            y_pred = pm.Normal(
+            pm.Normal(
                 "y_pred",
                 mu=mu_samples,
                 sigma=sigma_samples,
@@ -268,37 +464,54 @@ class HBR(RegressionModel):
             )
 
     def compile_SHASHb(
-        self, data: HBRData, idata: az.InferenceData = None, freedom=1
-    ) -> HBRData:
+        self,
+        data: HBRData,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
+    ) -> None:
         """
-        Creates the pymc model.
+        Create PyMC model with SHASHb likelihood.
+
+        Parameters
+        ----------
+        data : HBRData
+            Data object containing model inputs
+        idata : Optional[az.InferenceData], optional
+            Previous inference data for transfer learning, by default None
+        freedom : float, optional
+            Parameter controlling influence of prior model (0-1), by default 1
+
+        Returns
+        -------
+        None
+            Updates the PyMC model in place with SHASHb likelihood components
         """
-        self.reg_conf.mu.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.sigma.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.epsilon.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.delta.create_graph(self.pymc_model, idata, freedom)
+        self.mu.create_graph(self.pymc_model, idata, freedom)
+        self.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.epsilon.create_graph(self.pymc_model, idata, freedom)
+        self.delta.create_graph(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.reg_conf.mu.get_samples(data),
-                dims=self.reg_conf.mu.sample_dims,
+                self.mu.get_samples(data),
+                dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.reg_conf.sigma.get_samples(data),
-                dims=self.reg_conf.sigma.sample_dims,
+                self.sigma.get_samples(data),
+                dims=self.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
-                self.reg_conf.epsilon.get_samples(data),
-                dims=self.reg_conf.epsilon.sample_dims,
+                self.epsilon.get_samples(data),
+                dims=self.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
-                self.reg_conf.delta.get_samples(data),
-                dims=self.reg_conf.delta.sample_dims,
+                self.delta.get_samples(data),
+                dims=self.delta.sample_dims,
             )
-            y_pred = SHASHb(
+            SHASHb(
                 "y_pred",
                 mu=mu_samples,
                 sigma=sigma_samples,
@@ -309,37 +522,54 @@ class HBR(RegressionModel):
             )
 
     def compile_SHASHo(
-        self, data: HBRData, idata: az.InferenceData = None, freedom=1
-    ) -> HBRData:
+        self,
+        data: HBRData,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
+    ) -> None:
         """
-        Creates the pymc model.
+        Create PyMC model with SHASHo likelihood.
+
+        Parameters
+        ----------
+        data : HBRData
+            Data object containing model inputs
+        idata : Optional[az.InferenceData], optional
+            Previous inference data for transfer learning, by default None
+        freedom : float, optional
+            Parameter controlling influence of prior model (0-1), by default 1
+
+        Returns
+        -------
+        None
+            Updates the PyMC model in place with SHASHo likelihood components
         """
-        self.reg_conf.mu.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.sigma.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.epsilon.create_graph(self.pymc_model, idata, freedom)
-        self.reg_conf.delta.create_graph(self.pymc_model, idata, freedom)
+        self.mu.create_graph(self.pymc_model, idata, freedom)
+        self.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.epsilon.create_graph(self.pymc_model, idata, freedom)
+        self.delta.create_graph(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.reg_conf.mu.get_samples(data),
-                dims=self.reg_conf.mu.sample_dims,
+                self.mu.get_samples(data),
+                dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.reg_conf.sigma.get_samples(data),
-                dims=self.reg_conf.sigma.sample_dims,
+                self.sigma.get_samples(data),
+                dims=self.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
-                self.reg_conf.epsilon.get_samples(data),
-                dims=self.reg_conf.epsilon.sample_dims,
+                self.epsilon.get_samples(data),
+                dims=self.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
-                self.reg_conf.delta.get_samples(data),
-                dims=self.reg_conf.delta.sample_dims,
+                self.delta.get_samples(data),
+                dims=self.delta.sample_dims,
             )
-            y_pred = SHASHo(
+            SHASHo(
                 "y_pred",
                 mu=mu_samples,
                 sigma=sigma_samples,
@@ -349,9 +579,19 @@ class HBR(RegressionModel):
                 dims=("datapoints",),
             )
 
-    def to_dict(self, path=None):
+    def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """
-        Converts the regression model to a dictionary.
+        Serialize model to dictionary format.
+
+        Parameters
+        ----------
+        path : Optional[str], optional
+            Path to save inference data, by default None
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing serialized model
         """
         my_dict = super().to_dict()
         if self.is_fitted and (path is not None):
@@ -360,14 +600,25 @@ class HBR(RegressionModel):
         return my_dict
 
     @classmethod
-    def from_dict(cls, dict, path=None):
+    def from_dict(cls, dct: Dict[str, Any], path: Optional[str] = None) -> "HBR":
         """
-        Creates a configuration from a dictionary.
-        Takes an optional path argument to load idata from.
+        Create model instance from serialized dictionary.
+
+        Parameters
+        ----------
+        dict : Dict[str, Any]
+            Dictionary containing serialized model
+        path : Optional[str], optional
+            Path to load inference data from, by default None
+
+        Returns
+        -------
+        HBR
+            New model instance
         """
-        name = dict["name"]
-        conf = HBRConf.from_dict(dict["reg_conf"])
-        is_fitted = dict["is_fitted"]
+        name = dct["name"]
+        conf = HBRConf.from_dict(dct["reg_conf"])
+        is_fitted = dct["is_fitted"]
         is_from_dict = True
         self = cls(name, conf, is_fitted, is_from_dict)
         if is_fitted and (path is not None):
@@ -376,9 +627,21 @@ class HBR(RegressionModel):
         return self
 
     @classmethod
-    def from_args(cls, name, args):
+    def from_args(cls, name: str, args: Dict[str, Any]) -> "HBR":
         """
-        Creates a configuration from command line arguments
+        Create model instance from command line arguments.
+
+        Parameters
+        ----------
+        name : str
+            Name for new model instance
+        args : Dict[str, Any]
+            Dictionary of command line arguments
+
+        Returns
+        -------
+        HBR
+            New model instance
         """
         conf = HBRConf.from_args(args)
         is_fitted = args.get("is_fitted", False)
@@ -386,56 +649,158 @@ class HBR(RegressionModel):
         self = cls(name, conf, is_fitted, is_from_dict)
         return self
 
-    def save_idata(self, path):
+    def save_idata(self, path: str) -> None:
+        """
+        Save inference data to NetCDF file.
+
+        Parameters
+        ----------
+        path : str
+            Path to save inference data to. Should end in '.nc'
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If model is fitted but does not have inference data
+        """
         if self.is_fitted:
             if hasattr(self, "idata"):
                 self.remove_samples_from_idata_posterior()
-                self.idata.to_netcdf(path, groups="posterior")
+                self.idata.to_netcdf(path, groups=["posterior"])
             else:
                 raise RuntimeError(
                     "HBR model is fitted but does not have idata. This should not happen."
                 )
 
-    def load_idata(self, path):
+    def load_idata(self, path: str) -> None:
+        """
+        Load inference data from NetCDF file.
+
+        Parameters
+        ----------
+        path : str
+            Path to load inference data from. Should end in '.nc'
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If model is fitted but inference data cannot be loaded from path
+        """
         if self.is_fitted:
             try:
                 self.idata = az.from_netcdf(path)
-            except:
-                raise RuntimeError(f"Could not load idata from {path}.")
+            except Exception as exc:
+                raise RuntimeError(f"Could not load idata from {path}.") from exc
             self.replace_samples_in_idata_posterior()
 
-    def remove_samples_from_idata_posterior(self):
-        for name in self.idata.posterior.variables.mapping.keys():
-            if name.endswith("_samples"):
-                self.idata.posterior.drop_vars(name)
+    def remove_samples_from_idata_posterior(self) -> None:
+        """
+        Remove sample variables from the posterior group of inference data.
+
+        This method removes variables ending with '_samples' from the posterior group
+        before saving to avoid privacy issues. The variables can be recomputed from the
+        model parameters. The names of removed variables are stored in idata.attrs['removed_samples'].
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        This is used internally before saving the inference data to disk to reduce
+        storage size, since sample variables can be recomputed from the model parameters.
+        """
+        post: xr.Dataset = self.idata.posterior  # type: ignore
+        for name in post.variables.mapping.keys():
+            if str(name).endswith("_samples"):
+                post.drop_vars(str(name))
                 if "removed_samples" not in self.idata.attrs:
                     self.idata.attrs["removed_samples"] = []
                 self.idata.attrs["removed_samples"].append(name)
 
-    def replace_samples_in_idata_posterior(self):
+    def replace_samples_in_idata_posterior(self) -> None:
+        """
+        Replace previously removed sample variables in the posterior group.
+
+        This method adds back placeholder arrays for variables that were removed by
+        remove_samples_from_idata_posterior(). The arrays are initialized with zeros
+        and will be populated when the model is used.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        This is used internally after loading inference data from disk to restore
+        the structure needed for model predictions. The actual values will be
+        recomputed when needed.
+        """
+        post: xr.Dataset = self.idata.posterior  # type: ignore
         for name in self.idata.attrs["removed_samples"]:
-            samples = np.zeros(self.idata.posterior[name].shape)
-            self.idata.posterior[name] = xr.DataArray(
-                samples,
-                dims=self.idata.posterior[name].dims,
+            post[name] = xr.DataArray(
+                np.zeros(post[name].shape),
+                dims=post[name].dims,
             )
+
+    # pylint: disable=C0116
 
     @property
     def mu(self) -> Param:
-        return self.reg_conf.mu
+        return self.reg_conf.mu  # type: ignore
 
     @property
     def sigma(self) -> Param:
-        return self.reg_conf.sigma
+        return self.reg_conf.sigma  # type: ignore
 
     @property
     def epsilon(self) -> Param:
-        return self.reg_conf.epsilon
+        return self.reg_conf.epsilon  # type: ignore
 
     @property
     def delta(self) -> Param:
-        return self.reg_conf.delta
+        return self.reg_conf.delta  # type: ignore
 
     @property
     def likelihood(self) -> str:
-        return self.reg_conf.likelihood
+        return self.reg_conf.likelihood  # type: ignore
+
+    @property
+    def draws(self) -> int:
+        return self.reg_conf.draws  # type: ignore
+
+    @property
+    def tune(self) -> int:
+        return self.reg_conf.tune  # type: ignore
+
+    @property
+    def cores(self) -> int:
+        return self.reg_conf.cores  # type: ignore
+
+    @property
+    def chains(self) -> int:
+        return self.reg_conf.chains  # type: ignore
+
+    @property
+    def nuts_sampler(self) -> str:
+        return self.reg_conf.nuts_sampler  # type: ignore
+
+    @property
+    def init(self) -> str:
+        return self.reg_conf.init  # type: ignore
