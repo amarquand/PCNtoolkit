@@ -22,16 +22,9 @@ def fit(conf_dict: dict) -> None:
     :param conf_dict: Dictionary containing configuration options
     """
 
-    # Load the data
     fit_data = load_data(conf_dict)
-
-    # Create the normative model
     normative_model: NormBase = create_normative_model_from_args(conf_dict)
-
-    # Fit the normative model
     normative_model.fit(fit_data)
-
-    # Save the normative model
     if normative_model.norm_conf.savemodel:
         normative_model.save()
 
@@ -43,17 +36,9 @@ def predict(conf_dict: dict) -> None:
     :param conf_dict: Dictionary containing configuration options
     """
 
-    # Load the data
     predict_data = load_data(conf_dict)
-
-    # Load the normative model
     normative_model = load_normative_model(conf_dict["save_dir"])
-
-    # Predicts on new data
     normative_model.predict(predict_data)
-
-    # # Save the predicted response variables
-    # fileio.save(Y_pred, os.path.join(conf_dict["save_dir"], "Y_pred.csv"))
 
 
 def fit_predict(conf_dict: dict) -> None:
@@ -63,7 +48,6 @@ def fit_predict(conf_dict: dict) -> None:
     :param conf_dict: Dictionary containing configuration options
     """
 
-    # Load the data
     fit_data = load_data(conf_dict)
     predict_data = load_test_data(conf_dict)
 
@@ -71,13 +55,8 @@ def fit_predict(conf_dict: dict) -> None:
         predict_data
     ), "Fit and predict data are not compatible."
 
-    # Create the normative model
     normative_model: NormBase = create_normative_model_from_args(conf_dict)
-
-    # Fit and predict the normative model
     normative_model.fit_predict(fit_data, predict_data)
-
-    # Save the normative model
     if normative_model.norm_conf.savemodel:
         normative_model.save()
 
@@ -101,21 +80,15 @@ def load_data(conf_dict: dict) -> NormData:
     covfile = conf_dict.pop("covfile")
     maskfile = conf_dict.pop("maskfile", None)
 
-    # Load the covariates
     X = fileio.load(covfile)
-
-    # Load the response variables
     Y, _ = load_response_vars(respfile, maskfile=maskfile)
-
-    # Load the batch effects
     batch_effects = conf_dict.pop("trbefile", None)
     if batch_effects:
         batch_effects = fileio.load(batch_effects)
     else:
+        # If no batch effects are specified, create a zero array
         batch_effects = np.zeros((Y.shape[0], 1))
-
     data = NormData.from_ndarrays("fit_data", X, Y, batch_effects)
-
     return data
 
 
@@ -132,13 +105,8 @@ def load_test_data(conf_dict: dict) -> NormData:
     covfile = conf_dict.pop("testcov")
     maskfile = conf_dict.pop("maskfile", None)
 
-    # Load the covariates
     X = fileio.load(covfile)
-
-    # Load the response variables
     Y, _ = load_response_vars(respfile, maskfile=maskfile)
-
-    # Load the batch effects
     batch_effects = conf_dict.pop("tsbefile", None)
     if batch_effects:
         batch_effects = fileio.load(batch_effects)

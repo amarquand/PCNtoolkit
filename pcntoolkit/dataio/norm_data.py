@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import reduce
 from typing import Any, Dict, List, Tuple
 
@@ -9,6 +11,7 @@ import xarray as xr
 from numpy.typing import ArrayLike
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
+from pcntoolkit.dataio.basis_expansions import create_poly_basis
 from pcntoolkit.dataio.scaler import scaler
 
 
@@ -87,6 +90,50 @@ class NormData(xr.Dataset):
             },
             attrs=attrs,
         )
+
+    def expand_basis(
+        self,
+        source_array_name: str,
+        basis_function: str,
+        basis_column: int = 0,
+        linear_component: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        all_arrays = []
+        all_dims = self.X.dims()
+        source_array: xr.DataArray = None  # type: ignore
+        if source_array_name == "scaled_X":
+            if self.scaled_X is None:
+                raise ValueError(
+                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
+                )
+            source_array = self.scaled_X
+        elif source_array_name == "X":
+            source_array = self.X
+
+        if basis_function == "polynomial":
+            expanded_basis = create_poly_basis(
+                source_array.data[:, basis_column], self.norm_conf.order
+            )
+            all_arrays.append(expanded_basis)
+            all_dims.extend([f"poly_{i}" for i in range(expanded_basis.shape[1])])
+        elif basis_function == "bspline":
+            bspline_basis = kwargs["bspline_basis"]
+            if bspline_basis is None:
+                raise ValueError(
+                    "bspline_basis is not defined. Please provide a bspline basis function."
+                )
+            expanded_basis = np.array(
+                [bspline_basis(c) for c in source_array.data[:, basis_column]]  # type: ignore
+            )
+            all_arrays.append(expanded_basis)
+            all_dims.extend([f"bspline_{i}" for i in range(expanded_basis.shape[1])])
+        elif basis_function == "linear" or linear_component:
+            all_arrays.append(source_array.data)
+            all_dims.extend([f"linear_{i}" for i in range(source_array.data.shape[1])])
+        elif basis_function in ["none"]:
+            # Do not expand the basis
+            pass
 
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore

@@ -204,3 +204,7 @@ class NormBLR(NormBase):
         )
         blrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return blrdata
+
+    @property
+    def focused_model(self) -> BLR:
+        return self[self.focused_var]  # type:ignore

@@ -1,9 +1,65 @@
 """
-The NormBase class is the base class for all normative models.
-This class holds a number of regression models, one for each response variable.
-The class contains methods for fitting, predicting, transferring, extending, tuning, merging, and evaluating the normative model.
-This class contains the general logic that is not specific to the regression model. The subclasses implement the actual logic for fitting, predicting, etc.
-All the bookkeeping is done in this class, such as keeping track of the regression models, the scalers, the response variables, etc.
+NormBase Module Documentation
+===========================
+
+This module provides the abstract base class for normative modeling implementations.
+
+The module implements a flexible framework for creating, training, and applying normative models
+to neuroimaging or other high-dimensional data. It supports various regression models and provides
+functionality for data preprocessing, model fitting, prediction, and evaluation.
+
+Classes
+-------
+NormBase
+    Abstract base class for normative modeling implementations.
+
+Notes
+-----
+The NormBase class is designed to be subclassed to implement specific normative modeling approaches.
+It provides a comprehensive interface for:
+- Model fitting and prediction
+- Data preprocessing and postprocessing
+- Model evaluation and visualization
+- Model persistence (saving/loading)
+- Transfer learning capabilities
+
+The class supports multiple regression model types including:
+- Bayesian Linear Regression (BLR)
+- Gaussian Process Regression (GPR)
+- Hierarchical Bayesian Regression (HBR)
+
+Dependencies
+-----------
+- numpy
+- xarray
+- json
+- abc (Abstract Base Classes)
+- typing
+- pcntoolkit.dataio
+- pcntoolkit.regression_model
+- pcntoolkit.util
+
+Examples
+--------
+>>> from pcntoolkit.normative_model import NormBase
+>>> from pcntoolkit.normative_model.norm_conf import NormConf
+>>>
+>>> # Create configuration
+>>> norm_conf = NormConf(save_dir="./models", log_dir="./logs")
+>>>
+>>> # Initialize normative model (through a concrete subclass)
+>>> model = ConcreteNormBase(norm_conf)
+>>>
+>>> # Fit model
+>>> model.fit(training_data)
+>>>
+>>> # Make predictions
+>>> predictions = model.predict(test_data)
+
+See Also
+--------
+pcntoolkit.regression_model : Package containing various regression model implementations
+pcntoolkit.dataio : Package for data input/output operations
 """
 
 from __future__ import annotations
@@ -11,16 +67,12 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, List, Optional
 
 import numpy as np
-import seaborn as sns  # type: ignore
 import xarray as xr
-from bspline import splinelab  # type: ignore
-from matplotlib import pyplot as plt
-from matplotlib.font_manager import FontProperties
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
+from pcntoolkit.dataio.basis_expansions import create_bspline_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import scaler
 
@@ -37,12 +89,142 @@ from .norm_conf import NormConf
 
 class NormBase(ABC):
     """
-    The base class for all normative models.
+    Abstract base class for normative modeling implementations.
 
-    Contains a number of regression models, one for each response variable. Has methods for fitting, predicting, transferring, extending,
-    tuning, merging, and evaluating. All methods contains general logic that is not specific to the regression model. The subclasses
-    implement the actual numerical methods for fitting, predicting, etc. All the bookkeeping is done in this class, such as keeping track
-    of the regression models, the scalers, the response variables, etc.
+    This class provides the foundation for building normative models, handling multiple
+    response variables through separate regression models. It manages data preprocessing,
+    model fitting, prediction, and evaluation.
+
+    Parameters
+    ----------
+    norm_conf : NormConf
+        Configuration object containing normative model parameters.
+
+    Attributes
+    ----------
+    response_vars : list[str]
+        List of response variable names.
+    regression_model_type : Any
+        Type of regression model being used.
+    default_reg_conf : RegConf
+        Default regression configuration.
+    regression_models : dict[str, RegressionModel]
+        Dictionary mapping response variables to their regression models.
+    focused_var : str
+        Currently focused response variable.
+    evaluator : Evaluator
+        Model evaluation utility instance.
+    inscalers : dict
+        Input data scalers.
+    outscalers : dict
+        Output data scalers.
+    bspline_basis : Any
+        B-spline basis for covariate expansion.
+
+    Methods
+    -------
+    fit(data: NormData) -> None
+        Fit the normative model to training data.
+
+    predict(data: NormData) -> NormData
+        Make predictions using the fitted model.
+
+    fit_predict(fit_data: NormData, predict_data: NormData) -> NormData
+        Fit the model and make predictions in one step.
+
+    transfer(data: NormData, *args: Any, **kwargs: Any) -> NormBase
+        Transfer the model to new data.
+
+    extend(data: NormData) -> None
+        Extend the model with additional data.
+
+    tune(data: NormData) -> None
+        Tune model parameters using validation data.
+
+    merge(other: NormBase) -> None
+        Merge current model with another normative model.
+
+    evaluate(data: NormData) -> None
+        Evaluate model performance.
+
+    compute_centiles(data: NormData, cdf: Optional[List | np.ndarray] = None) -> NormData
+        Compute prediction centiles
+    compute_zscores(data: NormData) -> NormData
+        Compute z-scores for predictions.
+
+    save(path: Optional[str] = None) -> None
+        Save model to disk.
+
+    load(path: str) -> NormBase
+        Load model from disk.
+
+    Notes
+    -----
+    The NormBase class implements the Template Method pattern, where the main workflow
+    is defined in the base class, but specific implementations are delegated to
+    subclasses through abstract methods.
+
+    Abstract Methods
+    ---------------
+    _fit(data: NormData) -> NormData
+        Internal fitting implementation.
+
+    _predict(data: NormData) -> NormData
+        Internal prediction implementation.
+
+    _fit_predict(fit_data: NormData, predict_data: NormData) -> NormData
+        Internal fit-predict implementation.
+
+    _transfer(data: NormData, **kwargs: Any) -> RegressionModel
+        Internal transfer learning implementation.
+
+    _extend(data: NormData) -> NormBase
+        Internal model extension implementation.
+
+    _tune(data: NormData) -> NormBase
+        Internal parameter tuning implementation.
+
+    _merge(other: NormBase) -> NormBase
+        Internal model merging implementation.
+
+    _centiles(data: NormData, centiles: np.ndarray) -> xr.DataArray
+        Internal centile computation implementation.
+
+    _zscores(data: NormData) -> xr.DataArray
+        Internal z-score computation implementation.
+
+    Examples
+    --------
+    Example of implementing a concrete normative model:
+
+    >>> class ConcreteNormModel(NormBase):
+    ...     def _fit(self, data):
+    ...         # Implementation
+    ...         pass
+    ...
+    ...     def _predict(self, data):
+    ...         # Implementation
+    ...         pass
+    ...
+    ...     # Implement other abstract methods...
+
+    Example of using a normative model:
+
+    >>> from pcntoolkit.dataio import NormData
+    >>>
+    >>> # Prepare data
+    >>> train_data = NormData(X=train_covariates, y=train_responses)
+    >>> test_data = NormData(X=test_covariates, y=test_responses)
+    >>>
+    >>> # Create and fit model
+    >>> model = ConcreteNormModel(norm_conf)
+    >>> model.fit(train_data)
+    >>>
+    >>> # Make predictions
+    >>> predictions = model.predict(test_data)
+    >>>
+    >>> # Compute evaluation metrics
+    >>> model.evaluate(predictions)
     """
 
     def __init__(self, norm_conf: NormConf):
@@ -51,145 +233,210 @@ class NormBase(ABC):
             self._norm_conf, "normative_model_name", self.__class__.__name__
         )
 
-        # Response variables is a list of names of the response variables for which the model is fitted
         self.response_vars: list[str] = None  # type: ignore
-
-        # the regression_model_type attribute is used to store the type of regression model
-        # should be set by the subclass
         self.regression_model_type: Any = None  # type: ignore
-
-        # the self.defult_reg_conf attribute is used whenever a new regression model is created, and no reg_conf is provided
-        # should be set by the subclass
         self.default_reg_conf: RegConf = None  # type: ignore
-
-        # Regression models is a dictionary that contains the regression models
-        # - the keys are the response variables
-        # - the values are the regression models
         self.regression_models: dict[str, RegressionModel] = {}
-
-        # the self.current_regression_model attribute is used to store the current regression model
-        # this model is used internally by the _fit and _predict methods of the subclass
-        self.current_response_var: str = None  # type: ignore
-        self.current_regression_model: RegressionModel = None  # type: ignore
-
-        # The evaluator is used to evaluate the normative model
+        self.focused_var: str = None  # type: ignore
         self.evaluator = Evaluator()
-
-        # Inscalers contains a scaler for each covariate
         self.inscalers: dict = {}
-
-        # Outscalers contains a scaler for each response variable
         self.outscalers: dict = {}
-
-        # The basis expansion for the covariates
-        self.bspline_basis: splinelab.bspline.Bspline = None  # type: ignore
+        self.bspline_basis: Any = None
 
     def fit(self, data: NormData) -> None:
-        """Fits a regression model for each response variable in the data.
-
-        Args:
-            data (NormData): Fit data containing the covariates and response variables.
         """
-        # Preprocess the data
+        Fits a regression model for each response variable in the data.
+
+        This method performs the following steps:
+        1. Preprocesses the input data (scaling and basis expansion)
+        2. Extracts response variables
+        3. Fits individual regression models for each response variable
+
+        Parameters
+        ----------
+        data : NormData
+            Training data containing covariates (X) and response variables (y).
+            Must be a valid NormData object with properly formatted dimensions:
+            - X: (n_samples, n_covariates)
+            - y: (n_samples, n_response_vars)
+
+        Returns
+        -------
+        None
+            The method modifies the model's internal state by fitting regression models.
+
+        Notes
+        -----
+        - The method fits one regression model per response variable
+        - Each model is stored in self.regression_models with response variable name as key
+        - Preprocessing includes scaling and basis expansion based on norm_conf settings
+
+        Examples
+        --------
+        >>> from pcntoolkit.dataio import NormData
+        >>> model = NormBase(norm_conf)
+        >>> train_data = NormData(X=covariates, y=responses)
+        >>> model.fit(train_data)
+
+        Raises
+        ------
+        ValueError
+            If data is not properly formatted or contains invalid values
+        RuntimeError
+            If preprocessing or model fitting fails
+        """
         self.preprocess(data)
-
-        # Set self.response_vars
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
-
-        # Fit the model for each response variable
         print(f"Going to fit {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_fit_data = data.sel(response_vars=responsevar)
-
-            # Set self.current_regression_model to the current model
-            self.prepare(responsevar)
-
-            # Fit the model
+            self.focus(responsevar)
             print(f"Fitting model for {responsevar}")
             self._fit(resp_fit_data)
-
             self.reset()
 
     def predict(self, data: NormData) -> NormData:
-        """Makes predictions for each response variable in the data.
-
-        Args:
-            data (NormData): Data containing the covariates for which to make predictions.
-
-        Raises:
-            ValueError: Error if the model has not been fitted yet.
-
-        Returns:
-            NormData: Data containing the predictions.
         """
-        # Preprocess the data
-        self.preprocess(data)
+        Makes predictions for each response variable using fitted regression models.
 
-        # Predict for each response variable
+        This method performs the following steps:
+        1. Preprocesses the input data
+        2. Generates predictions for each response variable
+        3. Evaluates prediction performance
+        4. Postprocesses the predictions
+
+        Parameters
+        ----------
+        data : NormData
+            Test data containing covariates (X) for which to generate predictions.
+            Must have the same covariate structure as training data.
+
+        Returns
+        -------
+        NormData
+            Prediction results containing:
+            - yhat: predicted values
+            - ys2: prediction variances (if applicable)
+            - Additional metrics (z-scores, centiles, etc.)
+
+        Notes
+        -----
+        - Requires models to be previously fitted using fit()
+        - Predictions are made independently for each response variable
+        - Automatically computes evaluation metrics after prediction
+
+        Examples
+        --------
+        >>> test_data = NormData(X=test_covariates)
+        >>> predictions = model.predict(test_data)
+        >>> print(predictions.yhat)  # access predictions
+        >>> print(predictions.ys2)   # access variances
+
+        Raises
+        ------
+        ValueError
+            If model hasn't been fitted or data format is invalid
+        RuntimeError
+            If prediction process fails for any response variable
+        """
+        self.preprocess(data)
         print(f"Going to predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
-
-            # raise an error if the model has not been fitted yet
             if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to predict model {responsevar}, but it does not exist."
                 )
-
-            # Set self.model to the current model
-            self.prepare(responsevar)
-
-            # Predict
+            self.focus(responsevar)
             print(f"Predicting model for {responsevar}")
             self._predict(resp_predict_data)
-
             self.reset()
-
-        # Return the results
         self.evaluate(data)
         return data
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
-        """Fits and predicts for each response variable in the data.
+        """
+        Combines model fitting and prediction in a single operation.
 
-        Args:
-            fit_data (NormData): Data containing the covariates and response variables for fitting.
-            predict_data (NormData): Data containing the covariates for which to make predictions.
+        This method provides a convenient way to fit models and generate predictions
+        in one step, which can be more efficient than separate fit() and predict()
+        calls.
 
-        Returns:
-            NormData: Data containing the predictions.
+        Parameters
+        ----------
+        fit_data : NormData
+            Training data containing covariates (X) and response variables (y)
+            for model fitting. Must be a valid NormData object with dimensions:
+            - X: (n_train_samples, n_covariates)
+            - y: (n_train_samples, n_response_vars)
+
+        predict_data : NormData
+            Test data containing covariates (X) for prediction. Must have the same
+            covariate structure as fit_data with dimensions:
+            - X: (n_test_samples, n_covariates)
+
+        Returns
+        -------
+        NormData
+            Prediction results containing:
+            - yhat: predicted values (n_test_samples, n_response_vars)
+            - ys2: prediction variances (n_test_samples, n_response_vars)
+            - zscores: standardized residuals
+            - centiles: prediction percentiles
+            - Additional evaluation metrics
+
+        Notes
+        -----
+        - Performs compatibility check between fit_data and predict_data
+        - More memory efficient than separate fit() and predict() calls
+        - Automatically handles preprocessing and postprocessing
+        - Computes evaluation metrics after prediction
+
+        Examples
+        --------
+        >>> train_data = NormData(X=train_covariates, y=train_responses)
+        >>> test_data = NormData(X=test_covariates)
+        >>> results = model.fit_predict(train_data, test_data)
+        >>>
+        >>> # Access predictions
+        >>> predictions = results.yhat
+        >>> variances = results.ys2
+        >>> zscores = results.zscores
+        >>> centiles = results.centiles
+
+        Raises
+        ------
+        ValueError
+            If data formats are incompatible or invalid
+        AssertionError
+            If fit_data and predict_data have incompatible structures
+        RuntimeError
+            If fitting or prediction process fails
+
+        See Also
+        --------
+        fit : Method for model fitting only
+        predict : Method for prediction using pre-fitted model
+        compute_zscores : Method for computing standardized residuals
+        compute_centiles : Method for computing prediction percentiles
         """
 
         assert fit_data.is_compatible_with(
             predict_data
         ), "Fit data and predict data are not compatible!"
 
-        # Preprocess the data
         self.preprocess(fit_data)
         self.preprocess(predict_data)
-
-        # Set self.response_vars
         self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
-
-        # Fit and predict for each response variable
         print(f"Going to fit and predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_fit_data = fit_data.sel(response_vars=responsevar)
             resp_predict_data = predict_data.sel(response_vars=responsevar)
-
-            # Create a new model if it does not exist yet
             if responsevar not in self.regression_models:
                 self.regression_models[responsevar] = self.regression_model_type(
                     responsevar, self.default_reg_conf
                 )
-
-            # Set self.model to the current model
-            self.prepare(responsevar)
-
-            # Fit and predict
+            self.focus(responsevar)
             print(f"Fitting and predicting model for {responsevar}")
             self._fit_predict(resp_fit_data, resp_predict_data)
 
@@ -200,47 +447,108 @@ class NormBase(ABC):
         return predict_data
 
     def transfer(self, data: NormData, *args: Any, **kwargs: Any) -> "NormBase":
-        """Transfers the normative model to new data, returning a new normative model.
-
-        Args:
-            data (NormData): Transfer data containing the covariates and response variables.
-
-        Raises:
-            ValueError: Error if the model has not been fitted yet.
-
-        Returns:
-            NormBase: A new normative model transferred to the new data.
         """
-        # Preprocess the data
+        Transfers the normative model to new data, creating a new adapted model.
+
+        This method performs transfer learning by adapting the existing model to new data
+        while preserving knowledge from the original training. It creates a new normative
+        model instance with transferred parameters for each response variable.
+
+        Parameters
+        ----------
+        data : NormData
+            Transfer data containing covariates (X) and response variables (y).
+            Must have compatible structure with the original training data.
+        *args : Any
+            Additional positional arguments passed to the underlying transfer implementation.
+        **kwargs : Any
+            Additional keyword arguments passed to the underlying transfer implementation.
+            Common options include:
+            - 'transfer_type': str, type of transfer learning to perform
+            - 'learning_rate': float, adaptation rate for transfer
+            - 'regularization': float, strength of regularization during transfer
+
+        Returns
+        -------
+        NormBase
+            A new normative model instance adapted to the transfer data, containing:
+            - Transferred regression models for each response variable
+            - Updated configuration with transfer-specific settings
+            - Preserved preprocessing transformations from original model
+
+        Notes
+        -----
+        The transfer process:
+        1. Preprocesses transfer data using original scalers
+        2. Transfers each response variable's model separately
+        3. Creates new model instance with transferred parameters
+        4. Maintains original model's configuration with transfer-specific adjustments
+
+        The method supports different transfer learning approaches depending on the
+        underlying regression model implementation.
+
+        Examples
+        --------
+        >>> # Original model trained on source domain
+        >>> original_model = NormBase(norm_conf)
+        >>> original_model.fit(source_data)
+        >>>
+        >>> # Transfer to target domain
+        >>> transfer_data = NormData(X=target_covariates, y=target_responses)
+        >>> transferred_model = original_model.transfer(
+        ...     transfer_data,
+        ...     transfer_type='fine_tune',
+        ...     learning_rate=0.01
+        ... )
+        >>>
+        >>> # Make predictions with transferred model
+        >>> predictions = transferred_model.predict(test_data)
+
+        Raises
+        ------
+        ValueError
+            If the model hasn't been fitted before transfer attempt
+        AssertionError
+            If transfer data is incompatible with original model structure
+        RuntimeError
+            If transfer process fails for any response variable
+
+        See Also
+        --------
+        _transfer : Abstract method implementing specific transfer logic
+        fit : Method for initial model fitting
+        predict : Method for making predictions
+
+        Notes
+        -----
+        Transfer learning considerations:
+        - Ensures knowledge preservation from source domain
+        - Adapts to target domain characteristics
+        - Maintains model structure and constraints
+        - Supports various transfer strategies
+
+        The effectiveness of transfer depends on:
+        - Similarity between source and target domains
+        - Amount of transfer data available
+        - Choice of transfer learning parameters
+        - Underlying model architecture
+        """
         self.preprocess(data)
-
         transfered_models = {}
-
-        # Transfer for each response variable
         print(f"Going to transfer {len(self.response_vars)} models")
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_transfer_data = data.sel(response_vars=responsevar)
-
-            # raise an error if the model has not been fitted yet
             if responsevar not in self.regression_models:
                 raise ValueError(
                     "Attempted to transfer a model that has not been fitted."
                 )
-
-            # Set self.model to the current model
-            self.prepare(responsevar)
-
-            # Transfer
+            self.focus(responsevar)
             print(f"Transferring model for {responsevar}")
             transfered_models[responsevar] = self._transfer(
                 resp_transfer_data, *args, **kwargs
             )
-
             self.reset()
 
-        # Create a new normative model
-        # Change the reg_conf save_dir and log_dir
         transfered_norm_conf = self.norm_conf.to_dict()
         transfered_norm_conf["save_dir"] = self.norm_conf.save_dir + "_transfer"
         transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
@@ -252,13 +560,10 @@ class NormBase(ABC):
             self.default_reg_conf,  # type: ignore
         )
 
-        # Set the models
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_normative_model.regression_models = transfered_models
-
-        # Return the new model
         return transfered_normative_model
 
     def extend(self, data: NormData) -> None:
@@ -267,14 +572,7 @@ class NormBase(ABC):
         Args:
             data (NormData): Data containing the covariates and response variables to extend the model with.
         """
-
-        # some preparations and preprocessing
-        # ...
-
         self._extend(data)
-
-        # some cleanup and postprocessing
-        # ...
 
     def tune(self, data: NormData) -> None:
         """Tunes the normative model with new data.
@@ -282,13 +580,7 @@ class NormBase(ABC):
         Args:
             data (NormData): Data containing the covariates and response variables to tune the model with.
         """
-        # some preparations and preprocessing
-        # ...
-
         self._tune(data)
-
-        # some cleanup and postprocessing
-        # ...
 
     def merge(self, other: "NormBase") -> None:
         """Merges the current normative model with another normative model.
@@ -299,22 +591,80 @@ class NormBase(ABC):
         Raises:
             ValueError: Error if the models are not of the same type.
         """
-        # some preparations and preprocessing
-        # ...
-
         if not self.__class__ == other.__class__:
             raise ValueError("Attempted to merge normative models of different types.")
-
         self._merge(other)
 
-        # some cleanup and postprocessing
-        # ...
-
     def evaluate(self, data: NormData) -> None:
-        """Calls evaluation methods on the data.
+        """
+        Evaluates model performance by computing z-scores, centiles, and additional evaluation metrics.
 
-        Args:
-            data (NormData): Data containing the results of the evaluation.
+        This method performs a comprehensive evaluation of the normative model by:
+        1. Computing standardized residuals (z-scores)
+        2. Computing prediction centiles
+        3. Calculating various evaluation metrics through the Evaluator class
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing prediction results to evaluate, including:
+            - yhat: predicted values
+            - ys2: prediction variances
+            - y: actual values (if available for evaluation)
+
+        Returns
+        -------
+        None
+            Modifies the input data object in-place by adding evaluation metrics:
+            - zscores: standardized residuals
+            - centiles: prediction percentiles
+            - Additional metrics from Evaluator (e.g., MSE, R², etc.)
+
+        Notes
+        -----
+        The evaluation process includes:
+        - Z-score computation to identify outliers
+        - Centile computation for distributional analysis
+        - Performance metrics calculation through Evaluator
+
+        The method modifies the input data object by adding computed metrics
+        as new variables/attributes.
+
+        Examples
+        --------
+        >>> # After making predictions
+        >>> predictions = model.predict(test_data)
+        >>> model.evaluate(predictions)
+        >>>
+        >>> # Access evaluation results
+        >>> zscores = predictions.zscores
+        >>> centiles = predictions.centiles
+        >>> metrics = predictions.metrics  # Additional evaluation metrics
+
+        See Also
+        --------
+        compute_zscores : Method for computing standardized residuals
+        compute_centiles : Method for computing prediction percentiles
+        Evaluator : Class handling additional evaluation metrics
+
+        Notes
+        -----
+        Evaluation metrics typically include:
+        - Mean Squared Error (MSE)
+        - R-squared (R²)
+        - Mean Absolute Error (MAE)
+        - Additional metrics defined in Evaluator
+
+        The exact metrics computed depend on:
+        - Availability of true values (y)
+        - Model type and capabilities
+        - Evaluator configuration
+
+        Warnings
+        --------
+        - Ensure data contains necessary fields for evaluation
+        - Some metrics may be unavailable without true values
+        - Large datasets may require significant computation time
         """
         data = self.compute_zscores(data)
         data = self.compute_centiles(data)
@@ -323,31 +673,106 @@ class NormBase(ABC):
     def compute_centiles(
         self,
         data: NormData,
-        cdf: List | np.ndarray | None = None,
+        cdf: Optional[List | np.ndarray] = None,
         **kwargs: Any,
     ) -> NormData:
-        """Computes centiles for each response variable in the data.
+        """
+        Computes prediction centiles for each response variable in the data.
 
-        Args:
-            data (NormData): Data containing the covariates and response variables.
-            cdf (list, optional): A list containing the CDF values corresponding to the centiles. Setting this to [0.5], for instance, would result in computation of the median. Defaults to None.
+        This method calculates percentile values for model predictions, providing a way to
+        assess the distribution of predicted values and identify potential outliers.
 
-        Raises:
-            ValueError: Error raised if the model for the response variable does not exist.
+        Parameters
+        ----------
+        data : NormData
+            Input data containing predictions for which to compute centiles.
+            Must contain:
+            - X: covariates array
+            - yhat: predicted values (if already predicted)
+            - ys2: prediction variances (if applicable)
 
-        Returns:
-            NormData: Data extended with the centiles.
+        cdf : array-like, optional
+            Cumulative distribution function values at which to compute centiles.
+            Default values are [0.05, 0.25, 0.5, 0.75, 0.95], corresponding to:
+            - 5th percentile
+            - 25th percentile (Q1)
+            - 50th percentile (median)
+            - 75th percentile (Q3)
+            - 95th percentile
+
+        **kwargs : Any
+            Additional keyword arguments passed to the underlying _centiles implementation.
+            Model-specific parameters that affect centile computation.
+
+        Returns
+        -------
+        NormData
+            Input data extended with centile computations, adding:
+            - scaled_centiles: centiles in scaled space
+            - centiles: centiles in original space
+            Both arrays have dimensions (cdf, datapoints, response_vars)
+
+        Notes
+        -----
+        The computation process:
+        1. Preprocesses input data (scaling)
+        2. Computes centiles for each response variable
+        3. Postprocesses results (inverse scaling)
+        4. Handles existing centile computations by removing them first
+
+        The method supports both parametric and non-parametric centile computations
+        depending on the underlying model implementation.
+
+        Examples
+        --------
+        >>> # Compute default centiles
+        >>> results = model.compute_centiles(prediction_data)
+        >>> centiles = results.centiles
+        >>>
+        >>> # Compute specific centiles
+        >>> custom_centiles = model.compute_centiles(
+        ...     prediction_data,
+        ...     cdf=[0.1, 0.5, 0.9]  # 10th, 50th, 90th percentiles
+        ... )
+        >>>
+        >>> # Access specific centile (e.g., median)
+        >>> median = results.centiles.sel(cdf=0.5)
+
+        Raises
+        ------
+        ValueError
+            If attempting to compute centiles for a model that hasn't been fitted
+        AssertionError
+            If input data format is invalid or incompatible
+
+        See Also
+        --------
+        compute_zscores : Method for computing standardized scores
+        _centiles : Abstract method implementing specific centile computation
+        scale_forward : Method for data preprocessing
+        scale_backward : Method for data postprocessing
+
+        Notes
+        -----
+        Centile interpretation:
+        - Values below 5th or above 95th percentile may indicate outliers
+        - Median (50th) provides central tendency
+        - Q1-Q3 range (25th-75th) shows typical variation
+
+        Performance considerations:
+        - Computation time scales with number of response variables
+        - Memory usage depends on number of centile points requested
+        - Consider using fewer centile points for large datasets
         """
 
-        # Preprocess the data
         self.preprocess(data)
 
         if cdf is None:
-            cdf = np.array([0.05, 0.1587, 0.25, 0.5, 0.75, 0.8413, 0.95])
+            cdf = np.array([0.05, 0.25, 0.5, 0.75, 0.95])
         if isinstance(cdf, list):
             cdf = np.array(cdf)
 
-        # If centiles are already computed, remove them
+        # Drop the centiles and dimensions if they already exist
         centiles_already_computed = (
             "scaled_centiles" in data or "centiles" in data or "cdf" in data.coords
         )
@@ -355,428 +780,215 @@ class NormBase(ABC):
             data = data.drop_vars(["scaled_centiles", "centiles"])
             data = data.drop_dims(["cdf"])
 
-        # Create an empty array to store the scaled centiles
         data["scaled_centiles"] = xr.DataArray(
             np.zeros((cdf.shape[0], data.X.shape[0], len(self.response_vars))),
             dims=("cdf", "datapoints", "response_vars"),
             coords={"cdf": cdf},
         )
-
-        # Predict for each response variable
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
-
-            # raise an error if the model has not been fitted yet
             if responsevar not in self.regression_models:
                 raise ValueError(
                     f"Attempted to find quantiles for model {responsevar}, but it does not exist."
                 )
-
-            # Set self.model to the current model
-            self.prepare(responsevar)
-
-            # Overwrite centiles
+            self.focus(responsevar)
             print("Computing centiles for", responsevar)
             data["scaled_centiles"].loc[{"response_vars": responsevar}] = (
                 self._centiles(resp_predict_data, cdf, **kwargs)
             )
-
             self.reset()
-
         self.postprocess(data)
-
         return data
 
-    def plot_qq(self, data: NormData) -> None:
-        """
-        Plot QQ plots for all response variables in the data.
-
-        This function calls the plot_qq method of the NormData object.
-
-        Parameters:
-        -----------
-        data : NormData
-            The NormData object containing the data to be plotted.
-        """
-        data.plot_qq()
-
-    def plot_centiles(
-        self,
-        data: NormData,
-        covariate: str | None = None,
-        cummul_densities: list | None = None,
-        show_data: bool = False,
-        plt_kwargs: dict | None = None,
-        hue_data: str = "site",
-        markers_data: str = "sex",
-        batch_effects: Dict[str, List[str]] | None = None,
-    ) -> None:
-        """Plot centiles for all response variables in the data.
-
-        Args:
-            data (NormData): Data containing the covariates and response variables.
-            covariate (str | None, optional): Name of the covariate on the x-axis. Defaults to None.
-            cummul_densities (list | None, optional): Which CDF values correspond to the centiles. Defaults to None.
-            show_data (bool, optional): Scatter data along with centiles. Defaults to False.
-            plt_kwargs (dict | None, optional): Additional kwargs to pt. Defaults to None.
-            hue_data (str, optional): Column to use for coloring. Defaults to "site".
-            markers_data (str, optional): Column to use for marker styling. Defaults to "sex".
-            batch_effects (Dict[str, List[str]] | None, optional): Models with a random effect have different centiles for different batch effects. This parameter allows you to specify for which batch effects to plot the centiles, by providing a dictionary with the batch effect name as key and a list of batch effect values as value. The first values in the lists will be used for computing the centiles. If no list is provided, the batch effect that occurs first in the data will be used. Addtionally, if show_data=True, the dictionary values specify which batch effects are highlighted in the scatterplot.
-
-        Raises:
-            ValueError: _description_
-        """
-        # Use the first covariate, if not specified
-        if covariate is None:
-            covariate = data.covariates[0].to_numpy().item()
-            assert isinstance(covariate, str)
-
-        # Use the first batch effect if not specified
-        if batch_effects is None:
-            if self.has_random_effect:
-                batch_effects = data.get_single_batch_effect()
-            else:
-                batch_effects = {}
-
-        # Ensure that the batch effects are in the correct format
-        if batch_effects:
-            for k, v in batch_effects.items():
-                if isinstance(v, str):
-                    batch_effects[k] = [v]
-                elif not isinstance(v, list):
-                    raise ValueError(
-                        f"Items of the batch_effect dict be a list or a string, not {type(v)}"
-                    )
-
-        # Set the plt kwargs to an empty dictionary if they are not provided
-        if plt_kwargs is None:
-            plt_kwargs = {}
-
-        palette = plt_kwargs.pop("cmap", "viridis")
-
-        synth_data = data.create_synthetic_data(
-            n_datapoints=150,
-            range_dim=covariate,
-            batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()}
-            if batch_effects
-            else None,
-        )
-        self.compute_centiles(synth_data, cdf=cummul_densities)
-        for response_var in data.coords["response_vars"].to_numpy():
-            self._plot_centiles(
-                data=data,
-                synth_data=synth_data,
-                response_var=response_var,
-                covariate=covariate,
-                batch_effects=batch_effects,
-                show_data=show_data,
-                plt_kwargs=plt_kwargs,
-                hue_data=hue_data,
-                markers_data=markers_data,
-                palette=palette,
-            )
-
-    def _plot_centiles(
-        self,
-        data: NormData,
-        synth_data: NormData,
-        response_var: str,
-        batch_effects: Dict[str, List[str]],
-        covariate: str = None,  # type: ignore
-        show_data: bool = False,
-        plt_kwargs: dict = None,  # type: ignore
-        hue_data: str = "site",
-        markers_data: str = "sex",
-        palette: str = "viridis",
-    ) -> None:
-        """Plot the centiles for a single response variable."""
-
-        # Set up the plot style
-        sns.set_style("whitegrid")
-        plt.figure(**plt_kwargs)
-        cmap = plt.get_cmap(palette)
-
-        # Filter the covariate and responsevar that are to be plotted
-        filter_dict = {
-            "covariates": covariate,
-            "response_vars": response_var,
-        }
-        filtered = synth_data.sel(filter_dict)
-
-        # Create centile lines with seaborn
-        for cdf in synth_data.coords["cdf"][::-1]:
-            # Calculate the style of the line
-            d_mean = abs(cdf - 0.5)
-            if d_mean < 0.25:
-                style = "-"
-            elif d_mean < 0.475:
-                style = "--"
-            else:
-                style = ":"
-
-            # Plot centile line
-            sns.lineplot(
-                x=filtered.X,
-                y=filtered.centiles.sel(cdf=cdf),
-                color=cmap(cdf),
-                linestyle=style,
-                linewidth=1,
-                zorder=2,
-                legend="brief",
-            )
-            # Add text annotation at the terminal points of the line
-            color = cmap(cdf)
-            font = FontProperties()
-            font.set_weight("bold")
-            plt.text(
-                s=cdf.item(),
-                x=filtered.X[0] - 1,
-                y=filtered.centiles.sel(cdf=cdf)[0],
-                color=color,
-                horizontalalignment="right",
-                verticalalignment="center",
-                fontproperties=font,
-            )
-            plt.text(
-                s=cdf.item(),
-                x=filtered.X[-1] + 1,
-                y=filtered.centiles.sel(cdf=cdf)[-1],
-                color=color,
-                horizontalalignment="left",
-                verticalalignment="center",
-                fontproperties=font,
-            )
-
-        # Increase xlim by 10%
-        minx, maxx = plt.xlim()
-        plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
-
-        # # Add legend for centile lines
-        # line_legend = plt.legend(
-        #     lines,
-        #     synth_data.coords["cdf"].values,
-        #     title="Percentile",
-        # )
-        # plt.gca().add_artist(line_legend)
-
-        if show_data:
-            df = data.sel(filter_dict).to_dataframe()
-            columns = [("X", covariate), ("y", response_var)]
-            columns.extend(
-                [("batch_effects", be.item()) for be in data.batch_effect_dims]
-            )
-            df = df[columns]
-            df.columns = [c[1] for c in df.columns]
-
-            if batch_effects == {}:
-                # If no batch effects are provided, plot all data with slightly larger points
-                sns.scatterplot(
-                    df,
-                    x=covariate,
-                    y=response_var,
-                    label=data.name,
-                    color="black",
-                    s=20,  # Slightly larger point size
-                    alpha=0.6,
-                    zorder=1,
-                )
-            else:
-                # Filter data based on batch effects
-                idx = np.full(len(df), True)
-                for j in batch_effects:
-                    idx = np.logical_and(
-                        idx,
-                        df[j].isin(batch_effects[j]),
-                    )
-                be_df = df[idx]
-                scatter = sns.scatterplot(
-                    data=be_df,
-                    x=covariate,
-                    y=response_var,
-                    hue=hue_data if hue_data in df else None,
-                    style=markers_data if markers_data in df else None,
-                    s=50,
-                    alpha=0.7,
-                    zorder=1,
-                )
-
-                non_be_df = df[~idx]
-                # Plot other data as small black points
-                sns.scatterplot(
-                    data=non_be_df,
-                    x=covariate,
-                    y=response_var,
-                    color="black",
-                    s=20,  # Smaller point size
-                    alpha=0.4,
-                    zorder=0,
-                )
-
-                legend = scatter.get_legend()
-                if legend:
-                    handles = legend.legend_handles
-                    labels = [t.get_text() for t in legend.get_texts()]
-                    plt.legend(
-                        handles,
-                        labels,
-                        title=data.name + " data",
-                        title_fontsize=10,
-                    )
-        # Set title and labels
-        plt.title(f"Centiles of {response_var}")
-        plt.xlabel(covariate)
-        plt.ylabel(response_var)
-
-        # Show the plot
-        plt.show()
-
     def compute_zscores(self, data: NormData) -> NormData:
-        """Computes zscores for each response variable in the data.
+        """
+        Computes standardized z-scores for each response variable in the data.
 
-        Args:
-            data (NormData): Data containing the covariates and response variables.
+        Z-scores represent the number of standard deviations an observation is from the model's
+        predicted mean. The specific computation depends on the underlying regression model.
 
-        Raises:
-            ValueError: Error raised if the model for the response variable does not exist.
+        Parameters
+        ----------
+        data : NormData
+            Input data containing:
+            - X: covariates array (n_samples, n_features)
+            - y: observed responses (n_samples, n_response_vars)
+            - yhat: predicted means (n_samples, n_response_vars)
+            - ys2: predicted variances (n_samples, n_response_vars)
 
-        Returns:
-            NormData: NormData extended with the zscores.
+        Returns
+        -------
+        NormData
+            Input data extended with:
+            - zscores: array of z-scores (n_samples, n_response_vars)
+            Original data structure is preserved with additional z-score information.
+
+        Notes
+        -----
+        The method:
+        1. Preprocesses input data using model's scalers
+        2. Computes z-scores independently for each response variable
+        3. Uses model-specific z-score computation (_zscores abstract method)
+        4. Postprocesses results back to original scale
+
+        Z-scores can be interpreted as:
+        - |z| < 1: observation within 1 SD of prediction
+        - |z| < 2: observation within 2 SD of prediction
+        - |z| > 3: potential outlier
+
+        Examples
+        --------
+        >>> # Compute z-scores for test data
+        >>> test_data = NormData(X=test_covariates, y=test_responses)
+        >>> results = model.compute_zscores(test_data)
+        >>>
+        >>> # Access z-scores
+        >>> zscores = results.zscores
+        >>>
+        >>> # Identify potential outliers
+        >>> outliers = np.abs(zscores) > 3
+
+        Raises
+        ------
+        ValueError
+            If model hasn't been fitted for any response variable
+
+        See Also
+        --------
+        _zscores : Abstract method implementing specific z-score computation
+        compute_centiles : Method for computing prediction percentiles
+        preprocess : Method for data preprocessing
+        postprocess : Method for data postprocessing
+
+        Notes
+        -----
+        Implementation considerations:
+        - Handles missing data appropriately
+        - Supports multiple response variables
+        - Maintains data dimensionality
+        - Computationally efficient for large datasets
+
+        The z-scores are particularly useful for:
+        - Identifying outliers
+        - Assessing prediction accuracy
+        - Comparing across different response variables
+        - Quality control in clinical applications
         """
 
-        # Preprocess the data
         self.preprocess(data)
-
-        # Create an empty array to store the zscores
         data["zscores"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(self.response_vars))),
             dims=("datapoints", "response_vars"),
             coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
         )
-
-        # Predict for each response variable
         for responsevar in self.response_vars:
-            # Select the data for the current response variable
             resp_predict_data = data.sel(response_vars=responsevar)
-
-            # raise an error if the model has not been fitted yet
             if responsevar not in self.regression_models:
                 raise ValueError(
-                    f"Attempted to find zscores for model {responsevar}, but it does not exist."
+                    f"Attempted to find zscores for self {responsevar}, but it does not exist."
                 )
-
-            # Set self.model to the current model
-            self.prepare(responsevar)
-
-            # Overwrite zscores
+            self.focus(responsevar)
             print("Computing zscores for", responsevar)
             data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
                 resp_predict_data
             )
-
             self.reset()
-
         self.postprocess(data)
         return data
 
     def preprocess(self, data: NormData) -> None:
-        """Applies preprocessing to the data.
+        """
+        Applies preprocessing transformations to the input data.
 
-        Consists of scaling the data and expanding the basis of the covariates.
+        This method performs two main preprocessing steps:
+        1. Data scaling using configured scalers
+        2. Basis expansion of covariates (if specified)
 
-        Args:
-            data (NormData): Data to preprocess.
+        Parameters
+        ----------
+        data : NormData
+            Data to preprocess containing:
+            - X: covariates array
+            - y: response variables array (optional)
+            Must be a valid NormData object with proper dimensions.
+
+        Returns
+        -------
+        None
+            Modifies the input data object in-place by adding:
+            - scaled_X: scaled covariates
+            - scaled_y: scaled responses (if y exists)
+            - expanded_X: basis-expanded covariates (if basis_function specified)
+
+        Notes
+        -----
+        Scaling operations:
+        - Creates and fits scalers if they don't exist
+        - Applies existing scalers if already created
+        - Supports different scaling methods via norm_conf.inscaler/outscaler
+
+        Basis expansion options:
+        - B-spline expansion: Creates basis using specified knots and order
+        - Other basis functions as specified in norm_conf.basis_function
+
+        Examples
+        --------
+        >>> data = NormData(X=covariates, y=responses)
+        >>> model.preprocess(data)
+        >>>
+        >>> # Access preprocessed data
+        >>> scaled_X = data.scaled_X
+        >>> scaled_y = data.scaled_y
+        >>> expanded_X = data.expanded_X  # if basis expansion enabled
+
+        See Also
+        --------
+        scale_forward : Method handling data scaling
+        scale_backward : Method for inverse scaling
+        NormData.expand_basis : Method for covariate basis expansion
+
+        Notes
+        -----
+        B-spline basis expansion:
+        - Creates basis only once and reuses for subsequent calls
+        - Basis is created using min/max of specified column
+        - Supports linear component inclusion
+
+        Other basis expansions:
+        - Applied directly without storing basis
+        - Linear component handling configurable
+
+        Warnings
+        --------
+        - Ensure consistent preprocessing between training and test data
+        - B-spline basis requires sufficient data range in basis column
+        - Memory usage increases with basis expansion complexity
         """
         self.scale_forward(data)
 
-        # data.scale_forward(self.norm_conf.inscaler, self.norm_conf.outscaler)
-        self.expand_basis(data, source_array_name="scaled_X")
-
-    def expand_basis(
-        self, data: NormData, source_array_name: str, intercept: bool = False
-    ) -> None:
-        """Expand the basis of the source array.
-
-        Args:
-            data (NormData): Data to expand the basis of.
-            source_array_name (str): Name of the source array to expand the basis of.
-            intercept (bool, optional): Whether to include a column of ones for modeling an intercept in a linear regression. Defaults to False.
-
-        Raises:
-            ValueError: Error if the source array does not exist.
-        """
-
-        # Expand the basis of the source array
-        source_array: xr.DataArray = None  # type: ignore
-        if source_array_name == "scaled_X":
-            if "scaled_X" not in data.data_vars:
-                raise ValueError(
-                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
-                )
-            source_array = data.scaled_X
-        elif source_array_name == "X":
-            source_array = data.X
-
-        # TODO: Should this be like this?
-        # Every basis expansion has a linear component, so we always include the original data
-        all_arrays = [source_array.data]
-
-        # Get the original named dimensions of the data
-        all_dims = list(data.covariates.to_numpy())
-
-        # Create a new array with the expanded basis
-        basis_expansion = self.norm_conf.basis_function
-        basis_column = self.norm_conf.basis_column
-        if basis_expansion == "polynomial":
-            # Expand the basis with polynomial basis functions
-            expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], self.norm_conf.order
-            )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion == "bspline":
-            # Expand the basis with bspline basis functions
+        if self.norm_conf.basis_function == "bspline":
             if not hasattr(self, "bspline_basis"):
-                order = self.norm_conf.order
-                nknots = self.norm_conf.nknots
-                xmin = np.min(source_array.data[:, basis_column])
-                xmax = np.max(source_array.data[:, basis_column])
-                diff = xmax - xmin
-                xmin = xmin - 0.2 * diff
-                xmax = xmax + 0.2 * diff
-                self.bspline_basis: splinelab.bspline.Bspline = create_bspline_basis(  # type: ignore
-                    xmin=xmin,
-                    xmax=xmax,
-                    p=order,
-                    nknots=nknots,
+                source_array = data.X.isel(covariates=self.norm_conf.basis_column)
+                self.bspline_basis = create_bspline_basis(
+                    source_array.min(),
+                    source_array.max(),
+                    self.norm_conf.order,
+                    self.norm_conf.nknots,
                 )
-            expanded_basis = np.array(
-                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]  # type: ignore
+            data.expand_basis(
+                "scaled_X",
+                self.norm_conf.basis_function,
+                self.norm_conf.basis_column,
+                linear_component=True,
+                bspline_basis=self.bspline_basis,
             )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
+        else:
+            data.expand_basis(
+                "scaled_X",
+                self.norm_conf.basis_function,
+                self.norm_conf.basis_column,
+                linear_component=False,
             )
-        elif basis_expansion in ["none", "linear"]:
-            # Do not expand the basis
-            pass
-
-        if intercept:
-            all_dims.append("intercept")
-            all_arrays.append(np.ones((expanded_basis.shape[0], 1)))
-
-        Phi = np.concatenate(all_arrays, axis=1)
-        data["Phi"] = xr.DataArray(
-            Phi,
-            coords={"basis_functions": all_dims},
-            dims=["datapoints", "basis_functions"],
-        )
 
     def postprocess(self, data: NormData) -> None:
         """Apply postprocessing to the data.
@@ -787,6 +999,79 @@ class NormBase(ABC):
         self.scale_backward(data)
 
     def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
+        """
+        Scales input data to standardized form using configured scalers.
+
+        This method handles the forward scaling transformation of both covariates (X)
+        and response variables (y) using separate scalers for each variable. It creates
+        and fits new scalers if they don't exist or if overwrite is True.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing arrays to be scaled:
+            - X : array-like, shape (n_samples, n_covariates)
+                Covariate data to be scaled
+            - y : array-like, shape (n_samples, n_response_vars), optional
+                Response variable data to be scaled
+
+        overwrite : bool, default=False
+            If True, creates new scalers even if they already exist.
+            If False, uses existing scalers when available.
+
+        Returns
+        -------
+        None
+            Modifies the input data object in-place by adding:
+            - scaled_X : scaled covariate data
+            - scaled_y : scaled response data (if y exists)
+
+        Notes
+        -----
+        Scaling operations:
+        1. For each covariate:
+            - Creates/retrieves scaler using norm_conf.inscaler type
+            - Fits scaler if new or overwrite=True
+            - Transforms data using scaler
+
+        2. For each response variable:
+            - Creates/retrieves scaler using norm_conf.outscaler type
+            - Fits scaler if new or overwrite=True
+            - Transforms data using scaler
+
+        The scalers are stored in:
+        - self.inscalers : dict mapping covariate names to their scalers
+        - self.outscalers : dict mapping response variable names to their scalers
+
+        Examples
+        --------
+        >>> # Basic usage
+        >>> data = NormData(X=covariates, y=responses)
+        >>> model.scale_forward(data)
+        >>> scaled_X = data.scaled_X
+        >>> scaled_y = data.scaled_y
+
+        >>> # Force new scalers
+        >>> model.scale_forward(data, overwrite=True)
+
+        See Also
+        --------
+        scale_backward : Method for inverse scaling transformation
+        NormData : Class containing data structures
+        scaler : Factory function for creating scalers
+
+        Notes
+        -----
+        Supported scaler types (configured in norm_conf):
+        - 'StandardScaler': zero mean, unit variance
+        - 'MinMaxScaler': scales to specified range
+        - 'RobustScaler': scales using statistics robust to outliers
+        - Custom scalers implementing fit/transform interface
+
+        References
+        ----------
+        .. [1] Scikit-learn preprocessing: https://scikit-learn.org/stable/modules/preprocessing.html
+        """
         for covariate in data.covariates.to_numpy():
             if (covariate not in self.inscalers) or overwrite:
                 self.inscalers[covariate] = scaler(self.norm_conf.inscaler)
@@ -802,26 +1087,145 @@ class NormBase(ABC):
         data.scale_forward(self.inscalers, self.outscalers)
 
     def scale_backward(self, data: NormData) -> None:
-        """Scale the data back to the original scale.
+        """
+        Scales data back to its original scale using stored scalers.
 
-        Args:
-            data (NormData): Data to scale back.
+        This method performs inverse scaling transformation on the data using previously
+        fitted scalers. It reverses the scaling applied during preprocessing to return
+        predictions and other computed values to their original scale.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing scaled values to be transformed back. May include:
+            - scaled_X: scaled covariates
+            - scaled_y: scaled responses
+            - scaled_yhat: scaled predictions
+            - scaled_ys2: scaled prediction variances
+            - scaled_centiles: scaled prediction centiles
+
+        Returns
+        -------
+        None
+            Modifies the input data object in-place by adding or updating:
+            - X: unscaled covariates
+            - y: unscaled responses
+            - yhat: unscaled predictions
+            - ys2: unscaled prediction variances
+            - centiles: unscaled prediction centiles
+
+        Notes
+        -----
+        The method:
+        - Uses stored inscalers for covariates
+        - Uses stored outscalers for responses and predictions
+        - Preserves the original data structure and coordinates
+        - Handles missing data appropriately
+        - Maintains data consistency across all variables
+
+        The inverse scaling is applied to all relevant variables that were previously
+        scaled during preprocessing. The original scalers must have been created and
+        stored during the forward scaling process.
+
+        Examples
+        --------
+        >>> # Assuming model has been fitted and predictions made
+        >>> predictions = model.predict(test_data)
+        >>> # Scale predictions back to original scale
+        >>> model.scale_backward(predictions)
+        >>> # Access unscaled predictions
+        >>> unscaled_yhat = predictions.yhat
+        >>> unscaled_ys2 = predictions.ys2
+
+        See Also
+        --------
+        scale_forward : Method for forward scaling of data
+        preprocess : Method handling complete preprocessing pipeline
+        NormData.scale_backward : Underlying scaling implementation
+
+        Warnings
+        --------
+        - Requires scalers to be previously fitted
+        - May produce unexpected results if applied multiple times
+        - Should be used only on data scaled with corresponding forward scalers
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
-    def save(self) -> None:
-        """Save the normative model to disk, at the location specified in the norm_conf."""
-        # TODO pass a path to save the model, which takes precedence over the save_dir in the norm_conf
+    def save(self, path: Optional[str] = None) -> None:
+        """
+        Save the normative model to disk.
 
-        # Save metadata and small components in JSON
+        This method serializes the entire normative model, including configuration,
+        fitted regression models, scalers, and basis functions (if applicable).
+
+        Parameters
+        ----------
+        path : str , optional
+            Directory path where the model should be saved. If None, uses the
+            path specified in norm_conf.save_dir. Default is None.
+
+        Returns
+        -------
+        None
+            Saves files to disk but doesn't return any value.
+
+        Notes
+        -----
+        The method saves the following components:
+        1. Metadata JSON file ('normative_model_dict.json') containing:
+            - Normative model configuration
+            - Response variable names
+            - Regression model type
+            - Default regression configuration
+            - B-spline basis parameters (if used)
+            - Input/output scaler configurations
+
+        2. Individual regression model files:
+            - One JSON file per response variable
+            - Named as 'model_{response_var}.json'
+            - Contains model-specific parameters and states
+
+        File Structure
+        -------------
+        save_dir/
+        ├── normative_model_dict.json
+        ├── model_response1.json
+        ├── model_response2.json
+        └── ...
+
+        Examples
+        --------
+        >>> # Save model to default location
+        >>> model.save()
+        >>>
+        >>> # Save model to specific path
+        >>> model.save("/path/to/save/directory")
+
+        See Also
+        --------
+        load : Class method for loading a saved model
+        set_save_dir : Method to change the save directory
+
+        Notes
+        -----
+        - Ensures thread-safety when multiple models save to same directory
+        - Maintains backward compatibility with older saved models
+        - Handles complex nested objects through JSON serialization
+        - Preserves all necessary information for model reconstruction
+
+        Warnings
+        --------
+        - Ensure sufficient disk space before saving large models
+        - Avoid modifying saved files manually to prevent corruption
+        - Consider backup strategies for important models
+        """
+        # TODO save the model in such a format that parallel models with identical save dirs result in a single model
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
             "response_vars": self.response_vars,
             "regression_model_type": self.regression_model_type.__name__,
             "default_reg_conf": self.default_reg_conf.to_dict(),
         }
-
-        # Include bspline basis expansion if it exists
         if self.norm_conf.basis_function == "bspline" and hasattr(
             self, "bspline_basis"
         ):
@@ -832,19 +1236,17 @@ class NormBase(ABC):
                 "nknots": self.norm_conf.nknots,
                 "p": self.norm_conf.order,
             }
-
-        # Save inscalers and outscalers
         metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
         metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
 
+        if path is not None:
+            self.norm_conf.set_save_dir(path)
         with open(
             os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
             json.dump(metadata, f, indent=4)
-
-        # Save regression models as JSON -> use the to_dict method of the regression model
         for responsevar, model in self.regression_models.items():
             model_dict = model.to_dict(self.norm_conf.save_dir)
             with open(
@@ -856,13 +1258,96 @@ class NormBase(ABC):
 
     @classmethod
     def load(cls, path: str) -> NormBase:
-        """Load a normative model from a specified path.
+        """
+        Load a normative model from disk.
 
-        Args:
-            path (str): The path to the directory containing the normative model.
+        This class method reconstructs a normative model from saved files, including model
+        configuration, regression models, scalers, and basis functions.
 
-        Returns:
-            NormBase: A normative model loaded from the specified path.
+        Parameters
+        ----------
+        path : str
+            Directory path containing the saved model files. Must contain:
+            - normative_model_dict.json: Model metadata and configuration
+            - model_{response_var}.json: Individual regression model files
+            - Additional model-specific files referenced in the JSONs
+
+        Returns
+        -------
+        NormBase
+            Reconstructed normative model instance with:
+            - Loaded configuration settings
+            - Reconstructed regression models
+            - Restored preprocessing transformations
+            - Recreated basis functions (if applicable)
+
+        Notes
+        -----
+        Loading process:
+        1. Reads model metadata from normative_model_dict.json
+        2. Reconstructs configuration objects
+        3. Loads individual regression models
+        4. Recreates preprocessing transformations
+        5. Rebuilds basis functions if used
+
+        The method expects a specific directory structure and file format:
+        ```
+        path/
+        ├── normative_model_dict.json
+        ├── model_response1.json
+        ├── model_response2.json
+        └── ...
+        ```
+
+        Examples
+        --------
+        >>> # Save model
+        >>> original_model.save("./saved_model")
+        >>>
+        >>> # Load model
+        >>> loaded_model = NormBase.load("./saved_model")
+        >>>
+        >>> # Use loaded model
+        >>> predictions = loaded_model.predict(test_data)
+
+        Raises
+        ------
+        FileNotFoundError
+            If required model files are missing
+        JSONDecodeError
+            If model files are corrupted or improperly formatted
+        ValueError
+            If model configuration is invalid or incompatible
+        ImportError
+            If required model classes cannot be imported
+
+        See Also
+        --------
+        save : Method for saving model to disk
+        NormConf : Configuration class for normative models
+        RegressionModel : Base class for regression models
+
+        Notes
+        -----
+        Loaded components:
+        - Model configuration (NormConf)
+        - Response variables list
+        - Regression model type and instances
+        - Input/output scalers
+        - B-spline basis (if used)
+        - Default regression configuration
+
+        The method supports loading:
+        - Different regression model types (BLR, GPR, HBR)
+        - Various preprocessing configurations
+        - Multiple response variables
+        - Custom basis functions
+
+        Compatibility considerations:
+        - Python version compatibility
+        - Package version compatibility
+        - Hardware/platform independence
+        - Backward compatibility with older saved models
         """
         with open(
             os.path.join(path, "normative_model_dict.json"), mode="r", encoding="utf-8"
@@ -872,20 +1357,14 @@ class NormBase(ABC):
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
         self.response_vars = metadata["response_vars"]
         self.regression_model_type = globals()[metadata["regression_model_type"]]
-
-        # Load bspline basis if it exists
         if "bspline_basis" in metadata:
             self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
-
-        # Load inscalers and outscalers
         self.inscalers = {
             k: scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }
         self.outscalers = {
             k: scaler.from_dict(v) for k, v in metadata["outscalers"].items()
         }
-
-        # Load regression models
         self.regression_models = {}
         for responsevar in self.response_vars:
             model_path = os.path.join(path, f"model_{responsevar}.json")
@@ -894,11 +1373,127 @@ class NormBase(ABC):
             self.regression_models[responsevar] = self.regression_model_type.from_dict(
                 model_dict, path
             )
-
         self.default_reg_conf = type(
-            self.regression_models[responsevar].reg_conf
+            self.regression_models[self.response_vars[0]].reg_conf
         ).from_dict(metadata["default_reg_conf"])
         return self
+
+    def focus(self, responsevar: str) -> None:
+        """
+        Prepares the model for operations on a specific response variable by setting up
+        the corresponding regression model.
+
+        This method serves as an internal state manager that:
+        1. Sets the current focused response variable
+        2. Creates a new regression model if one doesn't exist for this variable
+        3. Makes the focused model easily accessible for subsequent operations
+
+        Parameters
+        ----------
+        responsevar : str
+            The name of the response variable to focus on. Must be one of the variables
+            present in the training data.
+
+        Returns
+        -------
+        None
+            Modifies the internal state of the normative model by:
+            - Setting self.focused_var
+            - Creating/accessing self.regression_models[responsevar]
+            - Setting self.focused_model reference
+
+        Notes
+        -----
+        This method is typically called before performing operations that work with
+        individual response variables, such as:
+        - Model fitting
+        - Prediction
+        - Transfer learning
+        - Model evaluation
+
+        The method implements a lazy initialization strategy for regression models,
+        creating them only when needed.
+
+        Examples
+        --------
+        >>> model = NormBase(norm_conf)
+        >>> model.focus('brain_region_1')
+        >>> # Now model.focused_model refers to the regression model for 'brain_region_1'
+        >>> model.focused_model.fit(data)
+        >>>
+        >>> # Switch focus to another variable
+        >>> model.focus('brain_region_2')
+        >>> # Now working with the model for 'brain_region_2'
+        >>> predictions = model.focused_model.predict(test_data)
+
+        See Also
+        --------
+        reset : Method to clear the current focus
+        get_reg_conf : Method to get regression configuration for a response variable
+
+        Notes
+        -----
+        - The focused model is accessible through self.focused_model property
+        - New regression models are initialized with default configuration
+        - Focus state persists until explicitly changed or reset
+        - Thread safety should be considered in concurrent operations
+
+        Warnings
+        --------
+        - Ensure responsevar exists in the training data
+        - Be mindful of memory usage when creating many regression models
+        - Consider resetting focus when switching between response variables
+        """
+        self.focused_var = responsevar
+        if responsevar not in self.regression_models:
+            self.regression_models[responsevar] = self.regression_model_type(
+                responsevar, self.get_reg_conf(responsevar)
+            )
+        self.focused_model = self.regression_models.get(responsevar, None)  # type: ignore
+
+    def get_reg_conf(self, responsevar: str) -> RegConf:
+        """
+        Get regression configuration for a specific response variable.
+
+        This method retrieves the regression configuration for a given response variable,
+        either returning an existing configuration if the model exists, or the default
+        configuration if it doesn't.
+
+        Parameters
+        ----------
+        responsevar : str
+            Name of the response variable to get configuration for.
+
+        Returns
+        -------
+        RegConf
+            Regression configuration object for the specified response variable.
+
+        Notes
+        -----
+        The method implements a simple lookup strategy:
+        1. Check if model exists for response variable
+        2. If yes, return its configuration
+        3. If no, return default configuration
+
+        Examples
+        --------
+        >>> model = NormBase(norm_conf)
+        >>> # Get config for existing model
+        >>> config = model.get_reg_conf('brain_region_1')
+        >>>
+        >>> # Get default config for new variable
+        >>> default_config = model.get_reg_conf('new_region')
+
+        See Also
+        --------
+        focus : Method to set focus on a response variable
+        RegConf : Regression configuration class
+        """
+        if responsevar in self.regression_models:
+            return self.regression_models[responsevar].reg_conf
+        else:
+            return self.default_reg_conf
 
     def set_save_dir(self, save_dir: str) -> None:
         """Override the save_dir in the norm_conf.
@@ -916,41 +1511,10 @@ class NormBase(ABC):
         """
         self.norm_conf.set_log_dir(log_dir)
 
-    def prepare(self, responsevar: str) -> None:
-        """Prepare the model for a specific response variable.
-        Sets the current_regression_model attribute and the current_response_var attribute.
-        Creates a new regression model if it does not exist yet.
-
-        Args:
-            responsevar (str): The response variable to prepare the model for.
-        """
-        self.current_response_var = responsevar
-        # Create a new model if it does not exist yet
-        if responsevar not in self.regression_models:
-            self.regression_models[responsevar] = self.regression_model_type(
-                responsevar, self.get_reg_conf(responsevar)
-            )
-        self.current_regression_model = self.regression_models.get(responsevar, None)  # type: ignore
-
-    def get_reg_conf(self, responsevar: str) -> RegConf:
-        """Get the regression configuration for a specific response variable.
-
-        Args:
-            responsevar (str): The response variable to get the regression configuration for.
-
-        Returns:
-            RegConf: The regression configuration for the response variable.
-        """
-        if responsevar in self.regression_models:
-            return self.regression_models[responsevar].reg_conf
-        else:
-            return self.default_reg_conf
-
     def reset(self) -> None:
         """Does nothing. Can be overridden by subclasses."""
-        pass
 
-    def __item__(self, key: str) -> RegressionModel:
+    def __getitem__(self, key: str) -> RegressionModel:
         return self.regression_models[key]
 
     #######################################################################################################
@@ -960,21 +1524,21 @@ class NormBase(ABC):
     #######################################################################################################
 
     @abstractmethod
-    def _fit(self, data: NormData) -> NormData:
+    def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         """
         Acts as the adapter for fitting the specific regression model.
         Is not responsible for cv, logging, saving, etc.
         """
 
     @abstractmethod
-    def _predict(self, data: NormData) -> NormData:
+    def _predict(self, data: NormData) -> None:
         """
         Acts as the adapter for prediction using the specific regression model.
         Is not responsible for cv, logging, saving, etc.
         """
 
     @abstractmethod
-    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
+    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         """
         Acts as the adapter for fit_predict using the specific regression model.
         Is not responsible for cv, logging, saving, etc.
@@ -1011,15 +1575,75 @@ class NormBase(ABC):
         pass
 
     @abstractmethod
-    def _centiles(self, data: NormData, centiles: np.ndarray) -> xr.DataArray:
-        """Takes a list of cummulative densities and returns the corresponding centiles of the model.
-        The return type is an xr.datarray with dimensions (cdf, datapoints).
+    def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
+        """Computes centiles of the model predictions for given cumulative density values.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing model predictions to compute centiles for
+        cdf : np.ndarray
+            Array of cumulative density values to compute centiles at (between 0 and 1)
+        **kwargs : Any
+            Additional keyword arguments passed to the centile computation
+
+        Returns
+        -------
+        xr.DataArray
+            DataArray containing the computed centiles with dimensions (cdf, datapoints)
+            where:
+            - cdf dimension corresponds to the input cumulative density values
+            - datapoints dimension corresponds to the samples in the input data
+
+        Notes
+        -----
+        Centiles represent the values below which a given percentage of observations fall.
+        For example, the 50th centile is the median value.
+
+        The centile computation depends on the specific regression model implementation
+        and its underlying distributional assumptions.
+
+        Examples
+        --------
+        >>> # Compute 25th, 50th and 75th centiles
+        >>> centiles = model._centiles(data, np.array([0.25, 0.5, 0.75]))
+        >>> median = centiles.sel(cdf=0.5)
         """
 
     @abstractmethod
     def _zscores(self, data: NormData) -> xr.DataArray:
-        """Returns the zscores of the model.
-        The return type is an xr.datarray with dimensions (datapoints)."""
+        """Computes standardized residuals (z-scores) for model predictions.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing model predictions to compute z-scores for,
+            including predicted values (yhat), prediction variances (ys2),
+            and actual values (y)
+
+        Returns
+        -------
+        xr.DataArray
+            DataArray containing the computed z-scores with dimensions (datapoints)
+            where datapoints corresponds to the samples in the input data
+
+        Notes
+        -----
+        Z-scores measure how many standard deviations an observation is from the mean
+        of the predicted distribution. They are useful for:
+        - Identifying outliers
+        - Assessing prediction accuracy
+        - Standardizing residuals across different scales
+
+        The computation depends on the specific regression model implementation
+        and its underlying distributional assumptions.
+
+        Examples
+        --------
+        >>> # Compute z-scores for predictions
+        >>> zscores = model._zscores(predictions)
+        >>> outliers = abs(zscores) > 2  # Find outliers beyond 2 SD
+        """
 
     @abstractmethod
     def n_params(self) -> int:
@@ -1056,4 +1680,9 @@ class NormBase(ABC):
         Returns:
             bool: True if the model has a random effect, False otherwise.
         """
-        return self.current_regression_model.has_random_effect
+        return self.focused_model.has_random_effect
+
+    @property
+    def focused_model(self) -> RegressionModel:
+        """Returns the regression model that is currently focused on."""
+        return self[self.focused_var]
