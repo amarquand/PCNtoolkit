@@ -1,12 +1,18 @@
-def yes_or_no(question):
-    """
-    Utility function for getting yes/no action from the user.
-
-    :param question: String for user query.
-
-    :return: Boolean of True for 'yes' and False for 'no'.
+"""A collection of general utility functions for the package."""
 
 
+def yes_or_no(question: str) -> bool:
+    """Utility function to ask a yes/no question from the user.
+
+    Parameters
+    ----------
+    question : str
+        String for user query.
+
+    Returns
+    -------
+    bool
+        Boolean of True for 'yes' and False for 'no'.
     """
 
     while "the answer is invalid":
@@ -15,3 +21,4 @@ def yes_or_no(question):
             return True
         if reply[:1] == "n":
             return False
+    return False
