@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
-from scipy import linalg, optimize, stats
-from scipy.linalg import LinAlgError
+from scipy import linalg, optimize, stats  # type: ignore
+from scipy.linalg import LinAlgError  # type: ignore
 
 from pcntoolkit.regression_model.blr.blr_data import BLRData
 from pcntoolkit.regression_model.regression_model import RegressionModel
@@ -11,9 +13,17 @@ from .blr_conf import BLRConf
 
 
 class BLR(RegressionModel):
+    @property
+    def blr_conf(self) -> BLRConf:
+        return cast(BLRConf, self.reg_conf)
+
     def __init__(
-        self, name: str, reg_conf: BLRConf, is_fitted=False, is_from_dict=False
-    ):
+        self,
+        name: str,
+        reg_conf: BLRConf,
+        is_fitted: bool = False,
+        is_from_dict: bool = False,
+    ) -> None:
         """
         Initializes the model.
         Any mutable parameters should be initialized here.
@@ -21,23 +31,27 @@ class BLR(RegressionModel):
         """
         super().__init__(name, reg_conf, is_fitted, is_from_dict)
 
-        self.hyp = None
-        self.nlZ = np.nan
-        self.N = None  # Number of samples
-        self.D = None  # Number of features
-        self.lambda_n_vec = None  # precision matrix
-        self.Sigma_a = None  # prior covariance
-        self.Lambda_a = None  # prior precision
-        self.warp = None
+        self.hyp: np.ndarray = None  # type: ignore
+        self.nlZ: np.ndarray = np.nan  # type: ignore
+        self.N: int = None  # type: ignore  # Number of samples
+        self.D: int = None  # type: ignore # Number of features
+        self.lambda_n_vec: np.ndarray = None  # type: ignore  # precision matrix
+        self.Sigma_a: np.ndarray = None  # type: ignore  # prior covariance
+        self.Lambda_a: np.ndarray = None  # type: ignore # prior precision
+        self.warp: bool = None  # type: ignore
+        self.hyp0: np.ndarray = None  # type: ignore
+        self.n_hyp: int = 0
         # self.gamma = None # Not used if warp is not used
 
-    def init_hyp(self, data: BLRData):
+    def init_hyp(self, data: BLRData) -> np.ndarray:
         """Function to initialize hyperparameters
 
         Args:
             data (BLRData): Data object
         """
         # model_order = 1
+        if self.hyp0:
+            return self.hyp0
 
         if self.models_variance:
             n_beta = self.var_D
@@ -47,19 +61,19 @@ class BLR(RegressionModel):
         n_alpha = self.D
         n_gamma = 0
 
-        self.n_hyp = n_beta + n_alpha + n_gamma
+        self.n_hyp = n_beta + n_alpha + n_gamma  # type: ignore
         return np.zeros(self.n_hyp)
 
-    def fit(self, data: BLRData, hyp0=None):
+    def fit(self, data: BLRData) -> None:
         self.D = data.X.shape[1]
         self.var_D = data.var_X.shape[1]
 
         # Initialize hyperparameters if not provided
-        hyp0 = hyp0 or self.init_hyp(data)
+        hyp0 = self.init_hyp(data)
 
         args = (data.X, data.y, data.var_X)
 
-        match self.reg_conf.optimizer.lower():
+        match self.blr_conf.optimizer.lower():
             case "cg":
                 out = optimize.fmin_cg(
                     f=self.loglik,
@@ -79,7 +93,7 @@ class BLR(RegressionModel):
             case "l-bfgs-b":
                 all_hyp_i = [hyp0]
 
-                def store(X):
+                def store(X: np.ndarray) -> None:
                     hyp = X
                     all_hyp_i.append(hyp)
 
@@ -105,13 +119,13 @@ class BLR(RegressionModel):
                     )
 
             case _:
-                raise ValueError(f"Optimizer {self.reg_conf.optimizer} not recognized.")
+                raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
         _, self.beta = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.is_fitted = True
 
-    def predict(self, data: BLRData):
+    def predict(self, data: BLRData) -> tuple[np.ndarray, np.ndarray]:
         """Function to make predictions from the model
         :param X: covariates for test data
         This always returns Gaussian predictions, i.e.
@@ -126,9 +140,11 @@ class BLR(RegressionModel):
         self.s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
         return self.ys, self.s2
 
-    def parse_hyps(self, hyp, X, var_X):
+    def parse_hyps(
+        self, hyp: np.ndarray, X: np.ndarray, var_X: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         N = X.shape[0]
-
+        beta: np.ndarray = None  # type: ignore
         # Noise precision
         if self.models_variance:
             Dv = var_X.shape[1]
@@ -142,14 +158,16 @@ class BLR(RegressionModel):
             self.lambda_n_vec = np.ones(N) * beta
 
         # Coefficients precision
-        if isinstance(beta, list) or type(beta) is np.ndarray:
+        if isinstance(beta, list) or isinstance(beta, np.ndarray):
             alpha = np.exp(hyp[n_lik_param:])
         else:
             alpha = np.exp(hyp[1:])
 
         return alpha, beta
 
-    def post(self, hyp, X, y, var_X):
+    def post(
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+    ) -> None:
         # Store the number of samples and features
         self.N = X.shape[0]
         if len(X.shape) == 1:
@@ -177,13 +195,15 @@ class BLR(RegressionModel):
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
         self.A = XtLambda_n.dot(X) + self.Lambda_a
-        invAXt = linalg.solve(self.A, X.T, check_finite=False)
+        invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
         self.m = (invAXt * self.lambda_n_vec).dot(y)
 
-    def loglik(self, hyp, X, y, var_X):
-        alpha, beta = self.parse_hyps(hyp, X, var_X)
+    def loglik(
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+    ) -> float:
+        _, _ = self.parse_hyps(hyp, X, var_X)
 
-        something_big = 1 / np.finfo(float).eps
+        something_big: float = float(np.finfo(np.float64).max)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not (hasattr(self, "A")):
@@ -223,7 +243,15 @@ class BLR(RegressionModel):
         self.nlZ = nlZ
         return nlZ
 
-    def penalized_loglik(self, hyp, X, y, var_X, l=0.1, norm="L1"):
+    def penalized_loglik(
+        self,
+        hyp: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        var_X: np.ndarray,
+        l: float = 0.1,
+        norm: str = "L1",
+    ) -> float:
         """Function to compute the penalized log (marginal) likelihood
 
         :param hyp: hyperparameter vector
@@ -241,7 +269,9 @@ class BLR(RegressionModel):
             print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
         return L
 
-    def dloglik(self, hyp, X, y, var_X):
+    def dloglik(
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+    ) -> np.ndarray:
         """Function to compute derivatives"""
 
         # hyperparameters
@@ -271,7 +301,7 @@ class BLR(RegressionModel):
         # dnl2 = np.zeros(hyp.shape)
 
         # noise precision parameter(s)
-        for i in range(0, len(beta)):
+        for i, _ in enumerate(beta):
             # first compute derivative of Lambda_n with respect to beta
             dL_n_vec = np.ones(self.N)
             dLambda_n = np.diag(dL_n_vec)
@@ -305,7 +335,7 @@ class BLR(RegressionModel):
             )
 
         # scaling parameter(s)
-        for i in range(0, len(alpha)):
+        for i, _ in enumerate(beta):
             # first compute derivatives with respect to alpha
             if len(alpha) == self.D:  # are we using ARD?
                 dLambda_a = np.zeros((self.D, self.D))
@@ -340,7 +370,9 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def centiles(self, data: BLRData, cdf: np.ndarray, resample=True):
+    def centiles(
+        self, data: BLRData, cdf: np.ndarray, resample: bool = True
+    ) -> np.ndarray:
         if resample:
             self.predict(data)
         centiles = np.zeros((cdf.shape[0], data.X.shape[0]))
@@ -348,12 +380,12 @@ class BLR(RegressionModel):
             centiles[i, :] = self.ys + stats.norm.ppf(cdf) * np.sqrt(self.s2)
         return centiles
 
-    def zscores(self, data: BLRData, resample=True):
+    def zscores(self, data: BLRData, resample: bool = True) -> np.ndarray:
         if resample:
             self.predict(data)
         return (data.y - self.ys) / np.sqrt(self.s2)
 
-    def to_dict(self, path=None):
+    def to_dict(self, path: str | None = None) -> dict:
         my_dict = super().to_dict()
         my_dict["hyp"] = self.hyp.tolist()
         my_dict["nlZ"] = self.nlZ
@@ -368,7 +400,7 @@ class BLR(RegressionModel):
         return my_dict
 
     @classmethod
-    def from_dict(cls, dict, path=None):
+    def from_dict(cls, dict: dict, path: str | None = None) -> "BLR":
         """
         Creates a configuration from a dictionary.
         """
@@ -390,7 +422,7 @@ class BLR(RegressionModel):
         return self
 
     @classmethod
-    def from_args(cls, name, args):
+    def from_args(cls, name: str, args: dict) -> "BLR":
         """
         Creates a configuration from command line arguments
         """
@@ -411,53 +443,53 @@ class BLR(RegressionModel):
         return self
 
     @property
-    def tol(self):
-        return self.reg_conf.tol
+    def tol(self) -> float:
+        return self.blr_conf.tol
 
     @property
-    def n_iter(self):
-        return self.reg_conf.n_iter
+    def n_iter(self) -> int:
+        return self.blr_conf.n_iter
 
     @property
-    def optimizer(self):
-        return self.reg_conf.optimizer
+    def optimizer(self) -> str:
+        return self.blr_conf.optimizer
 
     @property
-    def ard(self):
-        return self.reg_conf.ard
+    def ard(self) -> bool:
+        return self.blr_conf.ard
 
     @property
-    def l(self):
-        return self.reg_conf.l_bfgs_b_l
+    def l(self) -> float:
+        return self.blr_conf.l_bfgs_b_l
 
     @property
-    def epsilon(self):
-        return self.reg_conf.l_bfgs_b_epsilon
+    def epsilon(self) -> float:
+        return self.blr_conf.l_bfgs_b_epsilon
 
     @property
-    def norm(self):
-        return self.reg_conf.l_bfgs_b_norm
+    def norm(self) -> str:
+        return self.blr_conf.l_bfgs_b_norm
 
     @property
-    def intercept(self):
-        return self.reg_conf.intercept
+    def intercept(self) -> bool:
+        return self.blr_conf.intercept
 
     @property
-    def random_intercept(self):
-        return self.reg_conf.random_intercept
+    def random_intercept(self) -> bool:
+        return self.blr_conf.random_intercept
 
     @property
-    def heteroskedastic(self):
-        return self.reg_conf.heteroskedastic
+    def heteroskedastic(self) -> bool:
+        return self.blr_conf.heteroskedastic
 
     @property
-    def random_var(self):
-        return self.reg_conf.random_var
+    def random_var(self) -> bool:
+        return self.blr_conf.random_var
 
     @property
-    def models_variance(self):
+    def models_variance(self) -> bool:
         return (
-            self.reg_conf.heteroskedastic
-            or self.reg_conf.random_intercept_var
-            or self.reg_conf.intercept_var
+            self.blr_conf.heteroskedastic
+            or self.blr_conf.random_intercept_var
+            or self.blr_conf.intercept_var
         )

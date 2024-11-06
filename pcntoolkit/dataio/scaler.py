@@ -1,40 +1,64 @@
+from typing import Dict, List, Optional, Union
+
 import numpy as np
+from numpy.typing import NDArray
 
 
-class scaler:
-    def __init__(self, scaler_type="standardize", tail=0.05, adjust_outliers=True):
-        """
-        A class for rescaling data using either standardization or minmax
-        normalization.
+class Scaler:
+    """A class for scaling numerical data using various methods.
 
-        :param scaler_type: String that decides the type of scaler including
-            1) 'standardize' for standardizing data, 2) 'minmax' for minmax normalization
-            in range of [0,1], and 3) 'robminmax' for robust (to outliers) minmax
-            normalization.The default is 'standardize'.
-        :param tail: Is a decimal in range [0,1] that decides the tails of
-            distribution for finding robust min and max in 'robminmax'
-            normalization. The defualt is 0.05.
-        :param adjust_outliers: Boolean that decides whether to adjust the
-            outliers in 'robminmax' normalization or not. If True the outliers
-            values are truncated to 0 or 1. The defauls is True.
+    Parameters
+    ----------
+    scaler_type : str, optional
+        The type of scaling to apply. Options are:
+        - "standardize": zero mean, unit variance
+        - "minmax": scale to range [0,1]
+        - "robminmax": robust minmax scaling using percentiles
+        - "id" or "none": no scaling
+        Default is "standardize"
+    tail : float, optional
+        The tail probability for robust scaling, by default 0.05
+    adjust_outliers : bool, optional
+        Whether to clip values to [0,1] range for minmax scaling, by default True
 
-        """
+    Attributes
+    ----------
+    scaler_type : str
+        The type of scaling being used
+    tail : float
+        The tail probability for robust scaling
+    adjust_outliers : bool
+        Whether outliers are adjusted
+    """
 
+    def __init__(
+        self,
+        scaler_type: str = "standardize",
+        tail: float = 0.05,
+        adjust_outliers: bool = True,
+    ) -> None:
         self.scaler_type: str = scaler_type
         self.tail: float = tail
         self.adjust_outliers: bool = adjust_outliers
 
         if self.scaler_type not in ["standardize", "minmax", "robminmax", "id", "none"]:
-            raise ValueError("Undifined scaler type!")
+            raise ValueError("Undefined scaler type!")
 
-    def fit(self, X):
+    def fit(self, X: NDArray) -> None:
+        """Fit the scaler to the data.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Input data to fit the scaler
+        """
         if self.scaler_type == "standardize":
-            self.m = np.mean(X, axis=0)
-            self.s = np.std(X, axis=0)
+            self.m: NDArray = np.mean(X, axis=0)
+            self.s: NDArray = np.std(X, axis=0)
 
         elif self.scaler_type == "minmax":
-            self.min = np.min(X, axis=0)
-            self.max = np.max(X, axis=0)
+            self.min: NDArray = np.min(X, axis=0)
+            self.max: NDArray = np.max(X, axis=0)
 
         elif self.scaler_type == "robminmax":
             self.min = np.zeros(X.shape[1])
@@ -50,7 +74,21 @@ class scaler:
         elif self.scaler_type in ["id", "none"]:
             pass
 
-    def transform(self, X, index=None):
+    def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        """Transform the data using the fitted scaler.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Data to transform
+        index : np.ndarray, optional
+            Indices for partial transformation, by default None
+
+        Returns
+        -------
+        np.ndarray
+            Transformed data
+        """
         if self.scaler_type == "standardize":
             if index is None:
                 X = (X - self.m) / self.s
@@ -72,7 +110,21 @@ class scaler:
 
         return X
 
-    def inverse_transform(self, X, index=None):
+    def inverse_transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        """Inverse transform scaled data back to original scale.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Scaled data to inverse transform
+        index : np.ndarray, optional
+            Indices for partial transformation, by default None
+
+        Returns
+        -------
+        np.ndarray
+            Inverse transformed data
+        """
         if self.scaler_type == "standardize":
             if index is None:
                 X = X * self.s + self.m
@@ -90,7 +142,19 @@ class scaler:
 
         return X
 
-    def fit_transform(self, X):
+    def fit_transform(self, X: NDArray) -> NDArray:
+        """Fit the scaler and transform the data in one step.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Input data to fit and transform
+
+        Returns
+        -------
+        np.ndarray
+            Transformed data
+        """
         if self.scaler_type == "standardize":
             self.m = np.mean(X, axis=0)
             self.s = np.std(X, axis=0)
@@ -132,7 +196,14 @@ class scaler:
 
         return X
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
+        """Convert scaler instance to dictionary.
+
+        Returns
+        -------
+        Dict[str, Union[bool, str, float, List[float]]]
+            Dictionary containing the scaler parameters
+        """
         my_dict = {
             "adjust_outliers": self.adjust_outliers,
             "scaler_type": self.scaler_type,
@@ -147,7 +218,21 @@ class scaler:
             return my_dict
 
     @classmethod
-    def from_dict(cls, my_dict):
+    def from_dict(
+        cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
+    ) -> "Scaler":
+        """Create a scaler instance from a dictionary.
+
+        Parameters
+        ----------
+        my_dict : Dict[str, Union[bool, str, float, List[float]]]
+            Dictionary containing scaler parameters
+
+        Returns
+        -------
+        Scaler
+            New scaler instance with the specified parameters
+        """
         scaler_type = my_dict.pop("scaler_type")
         adjust_outliers = my_dict.pop("adjust_outliers")
         tail = my_dict.pop("tail")
