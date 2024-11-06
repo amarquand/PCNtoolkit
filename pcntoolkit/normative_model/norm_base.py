@@ -1,8 +1,10 @@
 import os
-import sys
-from six import with_metaclass
-from abc import ABCMeta, abstractmethod
 import pickle
+import sys
+from abc import ABCMeta, abstractmethod
+
+import pandas as pd
+from six import with_metaclass
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -53,7 +55,7 @@ class NormBase(with_metaclass(ABCMeta)):
     def load(self, load_path):
         try:
             with open(load_path, 'rb') as handle:
-                nm = pickle.load(handle)
+                nm = pd.read_pickle(handle)
             return nm
         except Exception as err:
             print('Error:', err)
