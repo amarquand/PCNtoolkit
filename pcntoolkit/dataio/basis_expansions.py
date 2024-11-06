@@ -29,6 +29,7 @@ def create_poly_basis(X: np.ndarray, dimpoly: int) -> np.ndarray:
            [ 3.,  4.,  9., 16.],
            [ 5.,  6., 25., 36.]])
     """
+    # TODO: Check this oneliner : Phi = np.power.outer(X.reshape(-1,1), np.arange(1,dimpoly+1)).reshape(X.shape[0], -1)
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
     D = X.shape[1]
@@ -46,14 +47,21 @@ def create_bspline_basis(
 ) -> bspline.Bspline:
     """Compute a B-spline basis.
 
-    Args:
-        xmin (float | int): minimum value of the input domain
-        xmax (float | int): maximum value of the input domain
-        p (int, optional): Order of the bspline. Defaults to 3.
-        nknots (int, optional): Number of knots. Defaults to 5.
+    Parameters
+    ----------
+    xmin : float | int
+        Lower bound of the input domain
+    xmax : float | int
+        Upper bound of the input domain
+    p : int, optional
+        Order of the BSpline, by default 3
+    nknots : int, optional
+        Number of Knots, by default 5
 
-    Returns:
-        bspline.Bspline: The bspline basis
+    Returns
+    -------
+    bspline.Bspline
+        The BSpline basis
     """
 
     knots = np.linspace(xmin, xmax, nknots)

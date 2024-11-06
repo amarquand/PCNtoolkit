@@ -74,7 +74,7 @@ import xarray as xr
 
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.dataio.scaler import scaler
+from pcntoolkit.dataio.scaler import Scaler
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
@@ -1074,12 +1074,12 @@ class NormBase(ABC):
         """
         for covariate in data.covariates.to_numpy():
             if (covariate not in self.inscalers) or overwrite:
-                self.inscalers[covariate] = scaler(self.norm_conf.inscaler)
+                self.inscalers[covariate] = Scaler(self.norm_conf.inscaler)
                 self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
 
         for responsevar in data.response_vars.to_numpy():
             if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = scaler(self.norm_conf.outscaler)
+                self.outscalers[responsevar] = Scaler(self.norm_conf.outscaler)
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
                 )
@@ -1360,10 +1360,10 @@ class NormBase(ABC):
         if "bspline_basis" in metadata:
             self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
         self.inscalers = {
-            k: scaler.from_dict(v) for k, v in metadata["inscalers"].items()
+            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }
         self.outscalers = {
-            k: scaler.from_dict(v) for k, v in metadata["outscalers"].items()
+            k: Scaler.from_dict(v) for k, v in metadata["outscalers"].items()
         }
         self.regression_models = {}
         for responsevar in self.response_vars:
