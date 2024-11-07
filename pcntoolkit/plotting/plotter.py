@@ -6,6 +6,7 @@ from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd  #type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
 
@@ -220,3 +221,157 @@ def _plot_centiles(
     plt.ylabel(response_var)
 
     plt.show()
+
+    def plot_qq(
+        data: NormData,
+        plt_kwargs: dict | None = None,
+        bound: int | float = 0,
+        plot_id_line: bool = False,
+        hue_data: str | None = None,
+        markers_data: str | None = None,
+        split_data: str | None = None,
+        seed: int = 42,
+    ) -> None:
+        """
+        Plot QQ plots for each response variable in the data.
+
+        Parameters
+        ----------
+        data : NormData
+            Data containing the response variables.
+        plt_kwargs : dict or None, optional
+            Additional keyword arguments for the plot. Defaults to None.
+        bound : int or float, optional
+            Axis limits for the plot. Defaults to 0.
+        plot_id_line : bool, optional
+            Whether to plot the identity line. Defaults to False.
+        hue_data : str or None, optional
+            Column to use for coloring. Defaults to None.
+        markers_data : str or None, optional
+            Column to use for marker styling. Defaults to None.
+        split_data : str or None, optional
+            Column to use for splitting data. Defaults to None.
+        seed : int, optional
+            Random seed for reproducibility. Defaults to 42.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> plot_qq(data, plt_kwargs={'figsize': (10, 6)}, bound=3)
+        """
+        plt_kwargs = plt_kwargs or {}
+        for response_var in data.coords["response_vars"].to_numpy():
+            _plot_qq(
+                data,
+                response_var,
+                plt_kwargs,
+                bound,
+                plot_id_line,
+                hue_data,
+                markers_data,
+                split_data,
+                seed,
+            )
+
+    def _plot_qq(
+        data: NormData,
+        response_var: str,
+        plt_kwargs: dict,
+        bound: float = 0,
+        plot_id_line: bool = False,
+        hue_data: str | None = None,
+        markers_data: str | None = None,
+        split_data: str | None = None,
+        seed: int = 42,
+    ) -> None:
+        """
+        Plot a QQ plot for a single response variable.
+
+        Parameters
+        ----------
+        data : NormData
+            Data containing the response variable.
+        response_var : str
+            The response variable to plot.
+        plt_kwargs : dict
+            Additional keyword arguments for the plot.
+        bound : float, optional
+            Axis limits for the plot. Not used if 0. Defaults to 0.
+        plot_id_line : bool, optional
+            Whether to plot the identity line. Defaults to False.
+        hue_data : str or None, optional
+            Column to use for coloring. Defaults to None.
+        markers_data : str or None, optional
+            Column to use for marker styling. Defaults to None.
+        split_data : str or None, optional
+            Column to use for splitting data. Defaults to None. All split data will be offset by 1.
+        seed : int, optional
+            Random seed for reproducibility. Defaults to 42.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> _plot_qq(data, 'response_var', plt_kwargs={'figsize': (10, 6)}, bound=3)
+        """
+        np.random.seed(seed)
+        sns.set_style("whitegrid")
+        filter_dict = {
+            "response_vars": response_var,
+        }
+        filt = data.sel(filter_dict)
+
+        df: pd.DataFrame = filt.to_dataframe()
+
+        # Create labels for the axes
+        tq = "theoretical quantiles"
+        rq = f"{response_var} quantiles"
+
+        # Filter columns needed for plotting
+        columns = [("zscores", response_var)]
+        columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
+        df = df[columns]
+        df.columns = [rq] + [be.item() for be in data.batch_effect_dims]
+
+        # Sort the dataframe by the response variable
+        df.sort_values(by=rq, inplace=True)
+
+        # Create a column for the theoretical quantiles
+        rand = np.random.randn(df.shape[0])
+        rand.sort()
+        df[tq] = rand
+
+        if split_data:
+            for i, g in enumerate(df.groupby(split_data, sort=False)):
+                my_id = g[1].index
+                df.loc[my_id, rq] += i * 1.0
+                rand = np.random.randn(g[1].shape[0])
+                rand.sort()
+                df.loc[my_id, tq] = rand
+
+        # Plot the QQ-plot
+        sns.scatterplot(
+            data=df,
+            x="theoretical quantiles",
+            y=rq,
+            hue=hue_data if hue_data in df else None,
+            style=markers_data if markers_data in df else None,
+            **plt_kwargs,
+        )
+        if plot_id_line:
+            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
+            plt.plot(
+                [-max_abs_val, max_abs_val],
+                [-max_abs_val, max_abs_val],
+                color="black",
+                linestyle="--",
+            )
+
+        if bound != 0:
+            plt.axis((-bound, bound, -bound, bound))
+        plt.show()

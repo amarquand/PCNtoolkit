@@ -96,7 +96,7 @@ class NormConf:
         NormConf
             New configuration instance
         """
-        norm_args = {k: v for k, v in args.items() if k in fields(cls)}
+        norm_args:dict[str, Any] = {k: v for k, v in args.items() if k in fields(cls)}
         return cls(**norm_args)
 
     @classmethod

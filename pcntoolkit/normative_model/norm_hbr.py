@@ -49,7 +49,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import xarray as xr
@@ -132,7 +132,7 @@ class NormHBR(NormBase):
     >>> predictions = model._predict(data)
     """
 
-    def __init__(self, norm_conf: NormConf, reg_conf: Optional[HBRConf] = None):
+    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf = None): # type: ignore
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = HBRConf()

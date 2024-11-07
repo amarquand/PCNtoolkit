@@ -54,179 +54,46 @@ class NormBLR(NormBase):
 
     @classmethod
     def from_args(cls, args: Any) -> "NormBLR":
-        """Create a NormBLR instance from command line arguments.
-
-        Parameters
-        ----------
-        args : Any
-            Command line arguments containing model configuration.
-
-        Returns
-        -------
-        NormBLR
-            Instantiated NormBLR object.
-        """
         norm_conf = NormConf.from_args(args)
         hbrconf = BLRConf.from_args(args)
         self = cls(norm_conf, hbrconf)
         return self
 
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
-        """Fit the BLR model on the provided data.
-
-        Parameters
-        ----------
-        data : NormData
-            Training data containing features and responses.
-        make_new_model : bool, default=False
-            If True, creates a new model instance before fitting.
-        """
         blrdata = self.normdata_to_blrdata(data)
         self.current_regression_model.fit(blrdata)
         assert self.current_regression_model.is_fitted
 
     def _predict(self, data: NormData) -> None:
-        """Make predictions using the fitted BLR model.
-
-        Parameters
-        ----------
-        data : NormData
-            Test data containing features for prediction.
-
-        Notes
-        -----
-        Predictions are stored within the model instance and can be accessed
-        through the appropriate properties.
-        """
         blrdata = self.normdata_to_blrdata(data)
         self.current_regression_model.predict(blrdata)
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
-        """Fit model on training data and make predictions on test data.
-
-        Parameters
-        ----------
-        fit_data : NormData
-            Training data for model fitting.
-        predict_data : NormData
-            Test data for making predictions.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"Fit-predict method not implemented for {self.__class__.__name__}"
         )
 
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
-        """Transfer the model to a new dataset.
-
-        Parameters
-        ----------
-        data : NormData
-            Data to transfer the model to.
-        **kwargs : Any
-            Additional keyword arguments for transfer.
-
-        Returns
-        -------
-        BLR
-            Transferred model.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"Transfer method not implemented for {self.__class__.__name__}"
         )
 
     def _extend(self, data: NormData) -> "NormBLR":
-        """Extend the model to incorporate new data.
-
-        Parameters
-        ----------
-        data : NormData
-            New data to extend the model with.
-
-        Returns
-        -------
-        NormBLR
-            Extended model.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"Extend method not implemented for {self.__class__.__name__}"
         )
 
     def _tune(self, data: NormData) -> "NormBLR":
-        """Tune model hyperparameters using provided data.
-
-        Parameters
-        ----------
-        data : NormData
-            Data for hyperparameter tuning.
-
-        Returns
-        -------
-        NormBLR
-            Tuned model.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"Tune method not implemented for {self.__class__.__name__}"
         )
 
     def _merge(self, other: NormBase) -> "NormBLR":
-        """Merge this model with another normative model.
-
-        Parameters
-        ----------
-        other : NormBase
-            Other normative model to merge with.
-
-        Returns
-        -------
-        NormBLR
-            Merged model.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"Merge method not implemented for {self.__class__.__name__}"
         )
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
-        """Compute centiles for the model at given data points.
-
-        Parameters
-        ----------
-        data : NormData
-            Input data points.
-        cdf : np.ndarray
-            Array of cumulative density function values to compute centiles for.
-        **kwargs : Any
-            Additional keyword arguments.
-
-        Returns
-        -------
-        xr.DataArray
-            Computed centiles with dimensions [cdf, datapoints].
-        """
         blrdata = self.normdata_to_blrdata(data)
         centiles = self.current_regression_model.centiles(blrdata, cdf)
         return xr.DataArray(
@@ -236,18 +103,6 @@ class NormBLR(NormBase):
         )
 
     def _zscores(self, data: NormData) -> xr.DataArray:
-        """Compute z-scores for the model at given data points.
-
-        Parameters
-        ----------
-        data : NormData
-            Input data points.
-
-        Returns
-        -------
-        xr.DataArray
-            Computed z-scores with dimension [datapoints].
-        """
         blrdata = self.normdata_to_blrdata(data)
         zscores = self.current_regression_model.zscores(blrdata)
         return xr.DataArray(
@@ -256,18 +111,6 @@ class NormBLR(NormBase):
         )
 
     def n_params(self) -> int:
-        """Compute the number of parameters in the model.
-
-        Returns
-        -------
-        int
-            Number of model parameters.
-
-        Raises
-        ------
-        NotImplementedError
-            This method is not implemented for NormBLR.
-        """
         raise NotImplementedError(
             f"n_params method not implemented for {self.__class__.__name__}"
         )

@@ -44,10 +44,18 @@ class BLR(RegressionModel):
         # self.gamma = None # Not used if warp is not used
 
     def init_hyp(self, data: BLRData) -> np.ndarray:
-        """Function to initialize hyperparameters
+        """
+        Initialize hyperparameters.
 
-        Args:
-            data (BLRData): Data object
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features and target.
+
+        Returns
+        -------
+        np.ndarray
+            Initialized hyperparameters.
         """
         # model_order = 1
         if self.hyp0:
@@ -65,6 +73,14 @@ class BLR(RegressionModel):
         return np.zeros(self.n_hyp)
 
     def fit(self, data: BLRData) -> None:
+        """
+        Fit the Bayesian Linear Regression model to the data.
+
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features and target.
+        """
         self.D = data.X.shape[1]
         self.var_D = data.var_X.shape[1]
 
@@ -126,14 +142,19 @@ class BLR(RegressionModel):
         self.is_fitted = True
 
     def predict(self, data: BLRData) -> tuple[np.ndarray, np.ndarray]:
-        """Function to make predictions from the model
-        :param X: covariates for test data
-        This always returns Gaussian predictions, i.e.
-
-        :returns: * ys - predictive mean
-                  * s2 - predictive variance
         """
+        Make predictions using the fitted model.
 
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features for prediction.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            Predictive mean and variance.
+        """
         alpha, beta = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.ys = data.X.dot(self.m)
         s2n = 1 / beta
@@ -143,6 +164,23 @@ class BLR(RegressionModel):
     def parse_hyps(
         self, hyp: np.ndarray, X: np.ndarray, var_X: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Parse hyperparameters into model parameters.
+
+        Parameters
+        ----------
+        hyp : np.ndarray
+            Hyperparameter vector.
+        X : np.ndarray
+            Covariates.
+        var_X : np.ndarray
+            Variance of covariates.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            Parsed alpha and beta parameters.
+        """
         N = X.shape[0]
         beta: np.ndarray = None  # type: ignore
         # Noise precision
@@ -168,6 +206,20 @@ class BLR(RegressionModel):
     def post(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
     ) -> None:
+        """
+        Compute the posterior distribution.
+
+        Parameters
+        ----------
+        hyp : np.ndarray
+            Hyperparameter vector.
+        X : np.ndarray
+            Covariates.
+        y : np.ndarray
+            Responses.
+        var_X : np.ndarray
+            Variance of covariates.
+        """
         # Store the number of samples and features
         self.N = X.shape[0]
         if len(X.shape) == 1:
@@ -201,6 +253,25 @@ class BLR(RegressionModel):
     def loglik(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
     ) -> float:
+        """
+        Compute the negative log likelihood.
+
+        Parameters
+        ----------
+        hyp : np.ndarray
+            Hyperparameter vector.
+        X : np.ndarray
+            Covariates.
+        y : np.ndarray
+            Responses.
+        var_X : np.ndarray
+            Variance of covariates.
+
+        Returns
+        -------
+        float
+            Negative log likelihood.
+        """
         _, _ = self.parse_hyps(hyp, X, var_X)
 
         something_big: float = float(np.finfo(np.float64).max)
@@ -240,7 +311,7 @@ class BLR(RegressionModel):
         if not np.isfinite(nlZ):
             nlZ = something_big
 
-        self.nlZ = nlZ
+        self.nlZ = nlZ #type: ignore
         return nlZ
 
     def penalized_loglik(
@@ -252,15 +323,30 @@ class BLR(RegressionModel):
         l: float = 0.1,
         norm: str = "L1",
     ) -> float:
-        """Function to compute the penalized log (marginal) likelihood
-
-        :param hyp: hyperparameter vector
-        :param X: covariates
-        :param y: responses
-        :param l: regularisation penalty
-        :param norm: type of regulariser (L1 or L2)
         """
+        Compute the penalized log likelihood.
 
+        Parameters
+        ----------
+        hyp : np.ndarray
+            Hyperparameter vector.
+        X : np.ndarray
+            Covariates.
+        y : np.ndarray
+            Responses.
+        var_X : np.ndarray
+            Variance of covariates.
+        l : float, optional
+            Regularization penalty, by default 0.1.
+        norm : str, optional
+            Type of regularizer ('L1' or 'L2'), by default 'L1'.
+
+        Returns
+        -------
+        float
+            Penalized log likelihood.
+        """
+        L = None  # Initialize L to avoid usage before assignment
         if norm.lower() == "l1":
             L = self.loglik(hyp, X, y, var_X) + l * sum(abs(hyp))
         elif norm.lower() == "l2":
