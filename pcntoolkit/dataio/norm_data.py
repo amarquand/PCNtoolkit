@@ -1,18 +1,43 @@
+"""
+norm_data module
+================
+
+This module provides functionalities for normalizing and converting dataset
+attributes into a pandas DataFrame. It is designed to handle datasets with
+attributes such as 'X' and 'scaled_X', facilitating data manipulation and
+analysis.
+
+>>> print(df.head())
+"""
+
+
 from __future__ import annotations
 
 from functools import reduce
-from typing import Any, Dict, List, Tuple
 
-import matplotlib.pyplot as plt
+#pylint: disable=deprecated-class
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    Hashable,
+    List,
+    Mapping,
+    Sequence,
+    Tuple,
+    Union,
+)
+
+#pylint: enable=deprecated-class
 import numpy as np
-import pandas as pd
-import seaborn as sns
+import pandas as pd  # type: ignore
 import xarray as xr
-from numpy.typing import ArrayLike
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
+
+# import datavars from xarray
+from xarray.core.types import DataVars
 
 from pcntoolkit.dataio.basis_expansions import create_poly_basis
-from pcntoolkit.dataio.scaler import scaler
 
 
 class NormData(xr.Dataset):
@@ -58,15 +83,63 @@ class NormData(xr.Dataset):
         "zscores",
     )
 
-    def __init__(self, name, data_vars, coords, attrs=None) -> None:
+    def __init__(
+        self,
+        name: str,
+        data_vars: DataVars,
+        coords: Mapping[Any, Any],
+        attrs: Mapping[Any, Any] | None = None,
+    ) -> None:
+        """
+        Initialize a NormData object.
+
+        Parameters
+        ----------
+        name : str
+            The name of the dataset.
+        data_vars : DataVars
+            Data variables for the dataset.
+        coords : Mapping[Any, Any]
+            Coordinates for the dataset.
+        attrs : Mapping[Any, Any] | None, optional
+            Additional attributes for the dataset, by default None.
+        """
         if attrs is None:
             attrs = {}
-        attrs["name"] = name
+        attrs["name"] = name  # type: ignore
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
         self.create_batch_effects_maps()
 
     @classmethod
-    def from_ndarrays(cls, name, X, y, batch_effects, attrs=None):
+    def from_ndarrays(
+        cls,
+        name: str,
+        X: np.ndarray,
+        y: np.ndarray,
+        batch_effects: np.ndarray,
+        attrs: Mapping[str, Any] | None = None,
+    ) -> NormData:
+        """
+        Create a NormData object from numpy arrays.
+
+        Parameters
+        ----------
+        name : str
+            The name of the dataset.
+        X : np.ndarray
+            Covariate data.
+        y : np.ndarray
+            Response variable data.
+        batch_effects : np.ndarray
+            Batch effect data.
+        attrs : Mapping[str, Any] | None, optional
+            Additional attributes for the dataset, by default None.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
         if X.ndim == 1:
             X = X[:, None]
         if y.ndim == 1:
@@ -99,6 +172,27 @@ class NormData(xr.Dataset):
         linear_component: bool = True,
         **kwargs: Any,
     ) -> None:
+        """
+        Expand the basis of a source array using a specified basis function.
+
+        Parameters
+        ----------
+        source_array_name : str
+            The name of the source array to expand.
+        basis_function : str
+            The basis function to use ('polynomial', 'bspline', 'linear', or 'none').
+        basis_column : int, optional
+            The column index to apply the basis function, by default 0.
+        linear_component : bool, optional
+            Whether to include a linear component, by default True.
+        **kwargs : Any
+            Additional arguments for basis functions.
+
+        Raises
+        ------
+        ValueError
+            If the source array does not exist or if required parameters are missing.
+        """
         all_arrays = []
         all_dims = self.X.dims()
         source_array: xr.DataArray = None  # type: ignore
@@ -137,22 +231,75 @@ class NormData(xr.Dataset):
 
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
-        """Load a normative dataset from a FSL file."""
-        pass
+        """
+        Load a normative dataset from a FSL file.
+
+        Parameters
+        ----------
+        fsl_folder : str
+            Path to the FSL folder.
+        config_params : dict
+            Configuration parameters for loading the dataset.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
 
     @classmethod
     def from_nifti(cls, nifti_folder, config_params) -> "NormData":  # type: ignore
-        """Load a normative dataset from a Nifti file."""
-        pass
+        """
+        Load a normative dataset from a Nifti file.
+
+        Parameters
+        ----------
+        nifti_folder : str
+            Path to the Nifti folder.
+        config_params : dict
+            Configuration parameters for loading the dataset.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
 
     @classmethod
     def from_bids(cls, bids_folder, config_params) -> "NormData":  # type: ignore
-        """Load a normative dataset from a BIDS dataset."""
-        pass
+        """
+        Load a normative dataset from a BIDS dataset.
+
+        Parameters
+        ----------
+        bids_folder : str
+            Path to the BIDS folder.
+        config_params : dict
+            Configuration parameters for loading the dataset.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
 
     @classmethod
-    def from_xarray(cls, name, xarray_dataset) -> "NormData":
-        """Load a normative dataset from an xarray dataset."""
+    def from_xarray(cls, name: str, xarray_dataset: xr.Dataset) -> NormData:
+        """
+        Load a normative dataset from an xarray dataset.
+
+        Parameters
+        ----------
+        name : str
+            The name of the dataset.
+        xarray_dataset : xr.Dataset
+            The xarray dataset to load.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
         return cls(
             name,
             xarray_dataset.data_vars,
@@ -160,10 +307,17 @@ class NormData(xr.Dataset):
             xarray_dataset.attrs,
         )
 
+    # pylint: disable=arguments-differ
     @classmethod
-    def from_dataframe(
-        cls, name, dataframe, covariates, batch_effects, response_vars, attrs=None
-    ):
+    def from_dataframe(  # type:ignore
+        cls,
+        name: str,
+        dataframe: pd.DataFrame,
+        covariates: List[str],
+        batch_effects: List[str],
+        response_vars: List[str],
+        attrs: Mapping[str, Any] | None = None,
+    ) -> NormData:
         return cls(
             name,
             {
@@ -188,23 +342,30 @@ class NormData(xr.Dataset):
             attrs=attrs,
         )
 
+    # pylint: enable=arguments-differ
+
     def create_synthetic_data(
         self,
         n_datapoints: int = 100,
-        range_dim: int | str = 0,
+        range_dim: Union[int, str] = 0,
         batch_effects_to_sample: Dict[str, List[Any]] | None = None,  # type: ignore
-    ):
+    ) -> NormData:
         """
         Create a synthetic dataset with the same dimensions as the original dataset.
 
-        Inputs:
-            n_datapoints: int = 100
-                The number of datapoints to create.
-            range_dim: Union[int, str] = 0
-                The covariate to use for the range of values. np.linspace will be used to generate values between the min and max of this covariate.
-            batch_effects_to_sample: list[Any] = None
-                The batch effects to sample. For every batch effect, this list should contain the values to sample from.
-                If None, the batch effects to sample are the first values in the batch effects maps.
+        Parameters
+        ----------
+        n_datapoints : int, optional
+            The number of datapoints to create, by default 100.
+        range_dim : Union[int, str], optional
+            The covariate to use for the range of values, by default 0.
+        batch_effects_to_sample : Dict[str, List[Any]] | None, optional
+            The batch effects to sample, by default None.
+
+        Returns
+        -------
+        NormData
+            A synthetic NormData instance.
         """
         ## Creates a synthetic dataset with the same dimensions as the original dataset
 
@@ -270,21 +431,55 @@ class NormData(xr.Dataset):
 
         return to_return
 
-    def get_single_batch_effect(self):
+    def get_single_batch_effect(self) -> Dict[str, List[str]]:
+        """
+        Get a single batch effect for each dimension.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            A dictionary mapping each batch effect dimension to a list containing a single value.
+        """
         return {
             k: [list(v.keys())[0]] for k, v in self.attrs["batch_effects_maps"].items()
         }
 
     def concatenate_string_arrays(self, arrays: List[np.ndarray]) -> np.ndarray:
-        """Concatenate arrays of strings."""
+        """
+        Concatenate arrays of strings.
+
+        Parameters
+        ----------
+        arrays : List[np.ndarray]
+            A list of numpy arrays containing strings.
+
+        Returns
+        -------
+        np.ndarray
+            A single concatenated numpy array of strings.
+        """
         return reduce(np.char.add, arrays)
 
     def train_test_split(
         self,
         splits: Tuple[float, ...],
-        split_names: Tuple[str, ...] = None,  # type: ignore
-    ) -> Tuple["NormData", ...]:
-        """Split the data into 2 datasets."""
+        split_names: Tuple[str, ...] | None = None,  # type: ignore
+    ) -> Tuple[NormData, ...]:
+        """
+        Split the data into training and testing datasets.
+
+        Parameters
+        ----------
+        splits : Tuple[float, ...]
+            A tuple specifying the proportion of data for each split.
+        split_names : Tuple[str, ...] | None, optional
+            Names for the splits, by default None.
+
+        Returns
+        -------
+        Tuple[NormData, ...]
+            A tuple containing the training and testing NormData instances.
+        """
         batch_effects_stringified = self.concatenate_string_arrays(
             *[
                 self.batch_effects[:, i].astype(str)
@@ -309,7 +504,20 @@ class NormData(xr.Dataset):
             split2.attrs["name"] = f"{self.attrs['name']}_test"
         return split1, split2
 
-    def kfold_split(self, k: int):
+    def kfold_split(self, k: int) -> Generator[Tuple[NormData, NormData], Any, Any]:
+        """
+        Perform k-fold splitting of the data.
+
+        Parameters
+        ----------
+        k : int
+            The number of folds.
+
+        Returns
+        -------
+        Generator[Tuple[NormData, NormData], Any, Any]
+            A generator yielding training and testing NormData instances for each fold.
+        """
         # Returns an iterator of (NormData, NormData) objects, split into k folds
         stratified_kfold_split = StratifiedKFold(
             n_splits=k, shuffle=True, random_state=42
@@ -327,7 +535,10 @@ class NormData(xr.Dataset):
             split2 = self.isel(datapoints=test_idx)
             yield split1, split2
 
-    def create_batch_effects_maps(self):
+    def create_batch_effects_maps(self) -> None:
+        """
+        Create a mapping of batch effects to integer indices.
+        """
         # create a dictionary with for each column in the batch effects, a dict from value to int
         batch_effects_maps = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
@@ -336,18 +547,42 @@ class NormData(xr.Dataset):
             }
         self.attrs["batch_effects_maps"] = batch_effects_maps
 
-    def is_compatible_with(self, other: "NormData"):
-        """Check if the data is compatible with another dataset."""
-        same_covariates = np.all(self.covariates == other.covariates)
-        same_batch_effect_dims = np.all(
+    def is_compatible_with(self, other: NormData) -> bool:
+        """
+        Check if the data is compatible with another dataset.
+
+        Parameters
+        ----------
+        other : NormData
+            Another NormData instance to compare with.
+
+        Returns
+        -------
+        bool
+            True if compatible, False otherwise.
+        """
+        same_covariates: bool = np.all(self.covariates == other.covariates).astype(bool)
+        same_batch_effect_dims: bool = np.all(
             self.batch_effect_dims == other.batch_effect_dims
-        )
-        same_batch_effects_maps = (
+        ).astype(bool)
+        same_batch_effects_maps: bool = (
             self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
-        )
+        ).astype(bool)
         return same_covariates and same_batch_effect_dims and same_batch_effects_maps
 
-    def scale_forward(self, inscalers: dict[str, scaler], outscaler: dict[str, scaler]):
+    def scale_forward(
+        self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]
+    ) -> None:
+        """
+        Scale the data forward using provided scalers.
+
+        Parameters
+        ----------
+        inscalers : Dict[str, Any]
+            Scalers for the covariate data.
+        outscaler : Dict[str, Any]
+            Scalers for the response variable data.
+        """
         # Scale X column-wise using the inscalers
         self["scaled_X"] = xr.DataArray(
             np.zeros(self.X.shape),
@@ -373,8 +608,18 @@ class NormData(xr.Dataset):
             )
 
     def scale_backward(
-        self, inscalers: dict[str, scaler], outscalers: dict[str, scaler]
-    ):
+        self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]
+    ) -> None:
+        """
+        Scale the data backward using provided scalers.
+
+        Parameters
+        ----------
+        inscalers : Dict[str, Any]
+            Scalers for the covariate data.
+        outscalers : Dict[str, Any]
+            Scalers for the response variable data.
+        """
         # Scale X column-wise using the inscalers
         self["X"] = xr.DataArray(
             np.zeros(self.scaled_X.shape),
@@ -414,126 +659,20 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def plot_qq(
-        self,
-        plt_kwargs: dict = None,
-        bound: int | float = 0,
-        plot_id_line: bool = False,
-        hue_data: ArrayLike = None,
-        markers_data: ArrayLike = None,
-        split_data: ArrayLike = None,
-        seed: int = 42,
-    ):
-        """Plot a QQ-plot for each response variable.
-
-        Args:
-            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
-            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
-            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
-            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
-            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
-            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
-            seed (int, optional): Random seed for reproducability. Defaults to 42.
+    def select_batch_effects(self, batch_effects: Dict[str, List[str]]) -> NormData:
         """
-        plt_kwargs = plt_kwargs or {}
-        for response_var in self.coords["response_vars"].to_numpy():
-            self._plot_qq(
-                response_var,
-                plt_kwargs,
-                bound,
-                plot_id_line,
-                hue_data,
-                markers_data,
-                split_data,
-                seed,
-            )
+        Select only the specified batch effects.
 
-    def _plot_qq(
-        self,
-        response_var: str,
-        plt_kwargs,
-        bound=0,
-        plot_id_line=False,
-        hue_data=None,
-        markers_data=None,
-        split_data=None,
-        seed=42,
-    ):
-        """Plot a QQ-plot for a single response variable.
+        Parameters
+        ----------
+        batch_effects : Dict[str, List[str]]
+            A dictionary specifying which batch effects to select.
 
-        Args:
-            response_var (str): Name of the response variable to plot.
-            plt_kwargs (dict, optional): kwargs to pass to matplotlib and seaborn. Defaults to None.
-            bound (int | float, optional): set axis bounds to (-bound, bound, -bound, bound) if not 0. Defaults to 0.
-            plot_id_line (bool, optional): Plot the reference line y=x. Defaults to False.
-            hue_data (ArrayLike, optional): Name of the column to use for coloring (for example "site"). Defaults to None.
-            markers_data (ArrayLike, optional): Name of the column to use for setting marker style (for example "sex").  Defaults to None.
-            split_data (ArrayLike, optional): Name of the column to group by. The data will be offset by 1 for each successive group plotted this way. Defaults to None.
-            seed (int, optional): Random seed for reproducability. Defaults to 42.
+        Returns
+        -------
+        NormData
+            A NormData instance with the selected batch effects.
         """
-        np.random.seed(seed)
-        sns.set_style("whitegrid")
-        """Create a QQ-plot for a single response variable."""
-        # Filter the responsevar that is to be plotted
-        filter_dict = {
-            "response_vars": response_var,
-        }
-        filt = self.sel(filter_dict)
-
-        # Create a dataframe from the filtered data
-        df: pd.DataFrame = filt.to_dataframe()
-
-        # Create labels for the axes
-        tq = "theoretical quantiles"
-        rq = f"{response_var} quantiles"
-
-        # Filter columns needed for plotting
-        columns = [("zscores", response_var)]
-        columns.extend([("batch_effects", be.item()) for be in self.batch_effect_dims])
-        df = df[columns]
-        df.columns = [rq] + [be.item() for be in self.batch_effect_dims]
-
-        # Sort the dataframe by the response variable
-        df.sort_values(by=rq, inplace=True)
-
-        # Create a column for the theoretical quantiles
-        rand = np.random.randn(df.shape[0])
-        rand.sort()
-        df[tq] = rand
-
-        if split_data:
-            for i, g in enumerate(df.groupby(split_data, sort=False)):
-                id = g[1].index
-                df.loc[id, rq] += i * 1.0
-                rand = np.random.randn(g[1].shape[0])
-                rand.sort()
-                df.loc[id, tq] = rand
-
-        # Plot the QQ-plot
-        hue_data = hue_data
-        sns.scatterplot(
-            data=df,
-            x="theoretical quantiles",
-            y=rq,
-            hue=hue_data if hue_data in df else None,
-            style=markers_data if markers_data in df else None,
-            **plt_kwargs,
-        )
-        if plot_id_line:
-            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
-            plt.plot(
-                [-max_abs_val, max_abs_val],
-                [-max_abs_val, max_abs_val],
-                color="black",
-                linestyle="--",
-            )
-
-        if bound != 0:
-            plt.axis([-bound, bound, -bound, bound])
-        plt.show()
-
-    def select_batch_effects(self, batch_effects: dict[str, list[str]]):
-        """Select only the batch_effects specified."""
         mask = np.zeros(self.batch_effects.shape[0], dtype=bool)
         for key, values in batch_effects.items():
             this_batch_effect = self.batch_effects.sel(batch_effect_dims=key)
@@ -541,29 +680,42 @@ class NormData(xr.Dataset):
                 mask = np.logical_or(mask, this_batch_effect == value)
 
         to_return = self.where(mask).dropna(dim="datapoints", how="all")
-        if type(to_return) == xr.Dataset:
+        if isinstance(to_return, xr.Dataset):
             to_return = NormData.from_xarray(
                 f"{self.attrs['name']}_selected", to_return
             )
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
         return to_return
 
-    def to_dataframe(self):
+    def to_dataframe(self, dim_order: Sequence[Hashable] | None = None) -> pd.DataFrame:
+        """
+        Convert the NormData instance to a pandas DataFrame.
+
+        Parameters
+        ----------
+        dim_order : Sequence[Hashable] | None, optional
+            The order of dimensions for the DataFrame, by default None.
+
+        Returns
+        -------
+        pd.DataFrame
+            A DataFrame representation of the NormData instance.
+        """
         acc = []
         x_columns = [col for col in ["X", "scaled_X"] if hasattr(self, col)]
         y_columns = [col for col in ["y", "zscores", "scaled_y"] if hasattr(self, col)]
         acc.append(
-            xr.Dataset.to_dataframe(self[x_columns])
+            xr.Dataset.to_dataframe(self[x_columns], dim_order)
             .reset_index(drop=False)
             .pivot(index="datapoints", columns="covariates", values=x_columns)
         )
         acc.append(
-            xr.Dataset.to_dataframe(self[y_columns])
+            xr.Dataset.to_dataframe(self[y_columns], dim_order)
             .reset_index(drop=False)
             .pivot(index="datapoints", columns="response_vars", values=y_columns)
         )
         be = (
-            xr.DataArray.to_dataframe(self.batch_effects)
+            xr.DataArray.to_dataframe(self.batch_effects, dim_order)
             .reset_index(drop=False)
             .pivot(
                 index="datapoints", columns="batch_effect_dims", values="batch_effects"
@@ -573,7 +725,7 @@ class NormData(xr.Dataset):
         acc.append(be)
         if hasattr(self, "Phi"):
             phi = (
-                xr.DataArray.to_dataframe(self.Phi)
+                xr.DataArray.to_dataframe(self.Phi, dim_order)
                 .reset_index(drop=False)
                 .pivot(index="datapoints", columns="basis_functions", values="Phi")
             )
@@ -581,7 +733,7 @@ class NormData(xr.Dataset):
             acc.append(phi)
         if hasattr(self, "centiles"):
             centiles = (
-                xr.DataArray.to_dataframe(self.centiles)
+                xr.DataArray.to_dataframe(self.centiles, dim_order)
                 .reset_index(drop=False)
                 .pivot(
                     index="datapoints",
@@ -594,5 +746,13 @@ class NormData(xr.Dataset):
         return pd.concat(acc, axis=1)
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """
+        Get the name of the dataset.
+
+        Returns
+        -------
+        str
+            The name of the dataset.
+        """
         return self.attrs["name"]

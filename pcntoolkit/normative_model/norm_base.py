@@ -78,7 +78,8 @@ from pcntoolkit.dataio.scaler import Scaler
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
-from pcntoolkit.regression_model.gpr.gpr import GPR  # noqa: F401 # type: ignore
+
+# from pcntoolkit.regression_model.gpr.gpr import GPR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
@@ -549,10 +550,10 @@ class NormBase(ABC):
             )
             self.reset()
 
-        transfered_norm_conf = self.norm_conf.to_dict()
-        transfered_norm_conf["save_dir"] = self.norm_conf.save_dir + "_transfer"
-        transfered_norm_conf["log_dir"] = self.norm_conf.log_dir + "_transfer"
-        transfered_norm_conf = NormConf.from_dict(transfered_norm_conf)
+        transfered_norm_conf_dict = self.norm_conf.to_dict()
+        transfered_norm_conf_dict["save_dir"] = self.norm_conf.save_dir + "_transfer"
+        transfered_norm_conf_dict["log_dir"] = self.norm_conf.log_dir + "_transfer"
+        transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
 
         # pylint: disable=too-many-function-args
         transfered_normative_model = self.__class__(
@@ -1526,53 +1527,188 @@ class NormBase(ABC):
     @abstractmethod
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         """
-        Acts as the adapter for fitting the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
+        Fits the specific regression model to the provided data.
+
+        Parameters
+        ----------
+        data : NormData
+            The data to fit the model to, containing covariates and response variables.
+        make_new_model : bool, optional
+            If True, creates a new model instance for fitting. Default is False.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> model._fit(training_data)
         """
 
     @abstractmethod
     def _predict(self, data: NormData) -> None:
         """
-        Acts as the adapter for prediction using the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
+        Predicts response variables using the fitted regression model.
+
+        Parameters
+        ----------
+        data : NormData
+            The data for which to make predictions, containing covariates.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> model._predict(test_data)
         """
 
     @abstractmethod
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         """
-        Acts as the adapter for fit_predict using the specific regression model.
-        Is not responsible for cv, logging, saving, etc.
+        Fits the model to the fit_data and predicts on the predict_data.
+
+        Parameters
+        ----------
+        fit_data : NormData
+            The data to fit the model to, containing covariates and response variables.
+        predict_data : NormData
+            The data for which to make predictions, containing covariates.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> model._fit_predict(training_data, test_data)
         """
 
     @abstractmethod
     def _transfer(self, data: NormData, **kwargs: Any) -> RegressionModel:
-        """Transfers the current regression model to new data. Returns a new regression model.
+        """
+        Transfers the current regression model to new data.
 
-        Args:
-            data (NormData): Data to transfer the model to.
+        Parameters
+        ----------
+        data : NormData
+            The data to transfer the model to, containing covariates and response variables.
+        **kwargs : Any
+            Additional keyword arguments for the transfer process.
 
-        Returns:
-            RegressionModel: A new regression model transferred to the new data.
+        Returns
+        -------
+        RegressionModel
+            A new regression model adapted to the new data.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> new_model = model._transfer(transfer_data)
         """
 
     @abstractmethod
     def _extend(self, data: NormData) -> NormBase:
-        """Extends the current regression model with new data. Returns a new normative model.
+        """
+        Extends the current regression model with new data.
 
-        Args:
-            data (NormData): _description_
+        Parameters
+        ----------
+        data : NormData
+            The data to extend the model with, containing covariates and response variables.
 
-        Returns:
-            NormBase: _description_
+        Returns
+        -------
+        NormBase
+            The extended normative model.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> extended_model = model._extend(additional_data)
         """
 
     @abstractmethod
     def _tune(self, data: NormData) -> NormBase:
-        pass
+        """
+        Tunes the model parameters using the provided data.
+
+        Parameters
+        ----------
+        data : NormData
+            The data to use for tuning the model, containing covariates and response variables.
+
+        Returns
+        -------
+        NormBase
+            The tuned normative model.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model = ConcreteNormModel(norm_conf)
+        >>> tuned_model = model._tune(validation_data)
+        """
 
     @abstractmethod
     def _merge(self, other: NormBase) -> NormBase:
-        pass
+        """
+        Merges the current model with another normative model.
+
+        Parameters
+        ----------
+        other : NormBase
+            The other normative model to merge with.
+
+        Returns
+        -------
+        NormBase
+            The merged normative model.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> model1 = ConcreteNormModel(norm_conf)
+        >>> model2 = ConcreteNormModel(norm_conf)
+        >>> merged_model = model1._merge(model2)
+        """
 
     @abstractmethod
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
@@ -1649,6 +1785,20 @@ class NormBase(ABC):
     def n_params(self) -> int:
         """
         Returns the number of parameters of the model.
+
+        Returns
+        -------
+        int
+            The number of parameters in the model.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> num_params = model.n_params()
         """
 
     @classmethod
@@ -1656,6 +1806,26 @@ class NormBase(ABC):
     def from_args(cls, args: dict) -> NormBase:
         """
         Creates a normative model from command line arguments.
+
+        Parameters
+        ----------
+        args : dict
+            Dictionary of command line arguments.
+
+        Returns
+        -------
+        NormBase
+            An instance of the normative model.
+
+        Raises
+        ------
+        NotImplementedError
+            If the method is not implemented in a subclass.
+
+        Examples
+        --------
+        >>> args = {'param1': value1, 'param2': value2}
+        >>> model = ConcreteNormModel.from_args(args)
         """
 
     #######################################################################################################
@@ -1686,3 +1856,4 @@ class NormBase(ABC):
     def focused_model(self) -> RegressionModel:
         """Returns the regression model that is currently focused on."""
         return self[self.focused_var]
+
