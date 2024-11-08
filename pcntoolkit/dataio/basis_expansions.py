@@ -1,4 +1,6 @@
-import bspline
+
+
+import bspline  #type: ignore
 import numpy as np
 from bspline import splinelab
 

@@ -600,7 +600,7 @@ class HBR(RegressionModel):
         return my_dict
 
     @classmethod
-    def from_dict(cls, dct: Dict[str, Any], path: Optional[str] = None) -> "HBR":
+    def from_dict(cls, my_dict: Dict[str, Any], path: Optional[str] = None) -> "HBR":
         """
         Create model instance from serialized dictionary.
 
@@ -616,9 +616,9 @@ class HBR(RegressionModel):
         HBR
             New model instance
         """
-        name = dct["name"]
-        conf = HBRConf.from_dict(dct["reg_conf"])
-        is_fitted = dct["is_fitted"]
+        name = my_dict["name"]
+        conf = HBRConf.from_dict(my_dict["reg_conf"])
+        is_fitted = my_dict["is_fitted"]
         is_from_dict = True
         self = cls(name, conf, is_fitted, is_from_dict)
         if is_fitted and (path is not None):
