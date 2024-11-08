@@ -1,6 +1,19 @@
+"""
+Bayesian Linear Regression (BLR) implementation.
+
+This module implements Bayesian Linear Regression with support for:
+- L1/L2 regularization
+- Automatic Relevance Determination (ARD)
+- Heteroskedastic noise modeling
+- Multiple optimization methods (CG, Powell, Nelder-Mead, L-BFGS-B)
+
+The implementation follows standard Bayesian formulation with Gaussian priors
+and supports both homoskedastic and heteroskedastic noise models.
+"""
+
 from __future__ import annotations
 
-from typing import cast
+from typing import Literal, cast
 
 import numpy as np
 from scipy import linalg, optimize, stats  # type: ignore
@@ -13,8 +26,46 @@ from .blr_conf import BLRConf
 
 
 class BLR(RegressionModel):
+    """
+    Bayesian Linear Regression model implementation.
+
+    This class implements Bayesian Linear Regression with various features including
+    automatic relevance determination (ARD), heteroskedastic noise modeling, and
+    multiple optimization methods.
+
+    Attributes
+    ----------
+    hyp : np.ndarray
+        Model hyperparameters
+    nlZ : float
+        Negative log marginal likelihood
+    N : int
+        Number of samples
+    D : int
+        Number of features
+    lambda_n_vec : np.ndarray
+        Precision matrix
+    Sigma_a : np.ndarray
+        Prior covariance
+    Lambda_a : np.ndarray
+        Prior precision
+    warp : bool
+        Whether to use warping
+    hyp0 : np.ndarray
+        Initial hyperparameters
+    n_hyp : int
+        Number of hyperparameters
+    """
+
     @property
     def blr_conf(self) -> BLRConf:
+        """Rewturn the configuration object for the BLR model.
+
+        Returns
+        -------
+        BLRConf
+            BLRConf
+        """
         return cast(BLRConf, self.reg_conf)
 
     def __init__(
@@ -25,9 +76,18 @@ class BLR(RegressionModel):
         is_from_dict: bool = False,
     ) -> None:
         """
-        Initializes the model.
-        Any mutable parameters should be initialized here.
-        Any immutable parameters should be initialized in the configuration.
+        Initialize the BLR model.
+
+        Parameters
+        ----------
+        name : str
+            Model name identifier
+        reg_conf : BLRConf
+            Model configuration object
+        is_fitted : bool, optional
+            Whether the model is already fitted, by default False
+        is_from_dict : bool, optional
+            Whether the model is being loaded from dictionary, by default False
         """
         super().__init__(name, reg_conf, is_fitted, is_from_dict)
 
@@ -41,23 +101,35 @@ class BLR(RegressionModel):
         self.warp: bool = None  # type: ignore
         self.hyp0: np.ndarray = None  # type: ignore
         self.n_hyp: int = 0
+        self.var_D: int = 0
+        self.alpha: np.ndarray = None  # type: ignore
+        self.beta: np.ndarray = None  # type: ignore
+        self.gamma: np.ndarray = None  # type: ignore
+        self.m: np.ndarray = None  # type: ignore
+        self.A: np.ndarray = None  # type: ignore
+        self.dnlZ: np.ndarray = None  # type: ignore
+        # ? Do we need ys and s2?
+        self.ys: np.ndarray = None  # type: ignore
+        self.s2: np.ndarray = None  # type: ignore
+
         # self.gamma = None # Not used if warp is not used
 
-    def init_hyp(self, data: BLRData) -> np.ndarray:
+    def init_hyp(self, data: BLRData) -> np.ndarray:  # type:ignore
         """
-        Initialize hyperparameters.
+        Initialize model hyperparameters.
 
         Parameters
         ----------
         data : BLRData
-            Data object containing features and target.
+            Training data containing features and targets
 
         Returns
         -------
         np.ndarray
-            Initialized hyperparameters.
+            Initialized hyperparameter vector
         """
-        # model_order = 1
+        # TODO check if this is correct
+        # Model order
         if self.hyp0:
             return self.hyp0
 
@@ -68,7 +140,6 @@ class BLR(RegressionModel):
 
         n_alpha = self.D
         n_gamma = 0
-
         self.n_hyp = n_beta + n_alpha + n_gamma  # type: ignore
         return np.zeros(self.n_hyp)
 
@@ -117,7 +188,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=hyp0,
-                        args=(*args, self.l, self.norm),
+                        args=(*args, self.l_bfgs_b_l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                         callback=store,
@@ -129,7 +200,7 @@ class BLR(RegressionModel):
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
-                        args=(*args, self.l, self.norm),
+                        args=(*args, self.l_bfgs_b_l, self.norm),
                         approx_grad=True,
                         epsilon=self.epsilon,
                     )
@@ -155,11 +226,15 @@ class BLR(RegressionModel):
         tuple[np.ndarray, np.ndarray]
             Predictive mean and variance.
         """
-        alpha, beta = self.parse_hyps(self.hyp, data.X, data.var_X)
-        self.ys = data.X.dot(self.m)
+        _, beta = self.parse_hyps(self.hyp, data.X, data.var_X)
+        ys = data.X.dot(self.m)
         s2n = 1 / beta
-        self.s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
-        return self.ys, self.s2
+        s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
+        # ! These need to be stored for the centiles and zscores methods
+        self.ys = ys
+        self.s2 = s2
+
+        return ys, s2
 
     def parse_hyps(
         self, hyp: np.ndarray, X: np.ndarray, var_X: np.ndarray
@@ -235,7 +310,7 @@ class BLR(RegressionModel):
             self.hyp = hyp
 
         # Parse hyperparameters
-        alpha, beta = self.parse_hyps(self.hyp, X, var_X)
+        alpha, _ = self.parse_hyps(self.hyp, X, var_X)
 
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
@@ -277,7 +352,7 @@ class BLR(RegressionModel):
         something_big: float = float(np.finfo(np.float64).max)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not (hasattr(self, "A")):
+        if (hyp != self.hyp).any() or not hasattr(self, "A"):
             try:
                 self.post(hyp, X, y, var_X)
             except ValueError:
@@ -311,7 +386,7 @@ class BLR(RegressionModel):
         if not np.isfinite(nlZ):
             nlZ = something_big
 
-        self.nlZ = nlZ #type: ignore
+        self.nlZ = nlZ  # type: ignore
         return nlZ
 
     def penalized_loglik(
@@ -320,40 +395,49 @@ class BLR(RegressionModel):
         X: np.ndarray,
         y: np.ndarray,
         var_X: np.ndarray,
-        l: float = 0.1,
-        norm: str = "L1",
+        regularizer_strength: float = 0.1,
+        norm: Literal["L1", "L2"] = "L1",
     ) -> float:
         """
-        Compute the penalized log likelihood.
+        Compute the penalized log likelihood with L1 or L2 regularization.
 
         Parameters
         ----------
         hyp : np.ndarray
-            Hyperparameter vector.
+            Hyperparameter vector
         X : np.ndarray
-            Covariates.
+            Feature matrix
         y : np.ndarray
-            Responses.
+            Target vector
         var_X : np.ndarray
-            Variance of covariates.
-        l : float, optional
-            Regularization penalty, by default 0.1.
-        norm : str, optional
-            Type of regularizer ('L1' or 'L2'), by default 'L1'.
+            Variance of features
+        regularizer_strength : float, optional
+            Regularization strength, by default 0.1
+        norm : {"L1", "L2"}, optional
+            Type of regularization norm, by default "L1"
 
         Returns
         -------
         float
-            Penalized log likelihood.
+            Penalized negative log likelihood value
+
+        Raises
+        ------
+        ValueError
+            If norm is not "L1" or "L2"
         """
-        L = None  # Initialize L to avoid usage before assignment
-        if norm.lower() == "l1":
-            L = self.loglik(hyp, X, y, var_X) + l * sum(abs(hyp))
-        elif norm.lower() == "l2":
-            L = self.loglik(hyp, X, y, var_X) + l * sum(np.sqrt(hyp**2))
+        if norm.upper() == "L1":
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
+                np.abs(hyp)
+            )
+        elif norm.upper() == "L2":
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
+                np.square(hyp)
+            )
         else:
-            print("Requested penalty not recognized, choose between 'L1' or 'L2'.")
-        return L
+            raise ValueError(
+                "Requested penalty not recognized, choose between 'L1' or 'L2'."
+            )
 
     def dloglik(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
@@ -364,14 +448,15 @@ class BLR(RegressionModel):
         alpha, beta = self.parse_hyps(hyp, X, var_X)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not (hasattr(self, "A")):
+        if (hyp != self.hyp).any() or not hasattr(self, "A"):
             try:
                 self.post(hyp, X, y, var_X)
             except ValueError:
                 print("Warning: Estimation of posterior distribution failed")
-                dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
-                return dnlZ
-
+                if self.dnlZ is not None:
+                    dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
+                    return dnlZ
+                return np.array(1 / np.finfo(float).eps)
         # precompute re-used quantities to maximise speed
         # todo: revise implementation to use Cholesky throughout
         #       that would remove the need to explicitly compute the inverse
@@ -451,7 +536,7 @@ class BLR(RegressionModel):
         if not all(np.isfinite(dnlZ)):
             bad = np.where(np.logical_not(np.isfinite(dnlZ)))
             for b in bad:
-                dnlZ[b] = np.sign(self.dnlZ[b]) / np.finfo(float).eps
+                dnlZ[b] = np.sign(self.dnlZ[b]) / np.finfo(float).eps  # type: ignore
 
         self.dnlZ = dnlZ
         return dnlZ
@@ -459,6 +544,23 @@ class BLR(RegressionModel):
     def centiles(
         self, data: BLRData, cdf: np.ndarray, resample: bool = True
     ) -> np.ndarray:
+        """Calculate prediction centiles for given cumulative distribution function values.
+
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features for prediction
+        cdf : np.ndarray
+            Array of cumulative distribution function values to compute centiles for
+        resample : bool, optional
+            Whether to recompute predictions before calculating centiles, by default True
+
+        Returns
+        -------
+        np.ndarray
+            Array of shape (len(cdf), n_samples) containing the predicted centile 
+            values for each CDF value and sample
+        """
         if resample:
             self.predict(data)
         centiles = np.zeros((cdf.shape[0], data.X.shape[0]))
@@ -467,6 +569,20 @@ class BLR(RegressionModel):
         return centiles
 
     def zscores(self, data: BLRData, resample: bool = True) -> np.ndarray:
+        """Calculate z-scores for observed values relative to predictions.
+
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features and observed values
+        resample : bool, optional
+            Whether to recompute predictions before calculating z-scores, by default True
+
+        Returns
+        -------
+        np.ndarray
+            Array of z-scores for each observation
+        """
         if resample:
             self.predict(data)
         return (data.y - self.ys) / np.sqrt(self.s2)
@@ -486,25 +602,25 @@ class BLR(RegressionModel):
         return my_dict
 
     @classmethod
-    def from_dict(cls, dict: dict, path: str | None = None) -> "BLR":
+    def from_dict(cls, my_dict: dict, path: str | None = None) -> "BLR":
         """
         Creates a configuration from a dictionary.
         """
-        name = dict["name"]
-        conf = BLRConf.from_dict(dict["reg_conf"])
-        is_fitted = dict["is_fitted"]
+        name = my_dict["name"]
+        conf = BLRConf.from_dict(my_dict["reg_conf"])
+        is_fitted = my_dict["is_fitted"]
         is_from_dict = True
         self = cls(name, conf, is_fitted, is_from_dict)
-        self.hyp = np.array(dict["hyp"])
-        self.nlZ = dict["nlZ"]
-        self.N = dict["N"]
-        self.D = dict["D"]
-        self.lambda_n_vec = np.array(dict["lambda_n_vec"])
-        self.Sigma_a = np.array(dict["Sigma_a"])
-        self.Lambda_a = np.array(dict["Lambda_a"])
-        self.beta = np.array(dict["beta"])
-        self.m = np.array(dict["m"])
-        self.A = np.array(dict["A"])
+        self.hyp = np.array(my_dict["hyp"])
+        self.nlZ = my_dict["nlZ"]
+        self.N = my_dict["N"]
+        self.D = my_dict["D"]
+        self.lambda_n_vec = np.array(my_dict["lambda_n_vec"])
+        self.Sigma_a = np.array(my_dict["Sigma_a"])
+        self.Lambda_a = np.array(my_dict["Lambda_a"])
+        self.beta = np.array(my_dict["beta"])
+        self.m = np.array(my_dict["m"])
+        self.A = np.array(my_dict["A"])
         return self
 
     @classmethod
@@ -530,50 +646,146 @@ class BLR(RegressionModel):
 
     @property
     def tol(self) -> float:
+        """Optimization convergence tolerance.
+
+        Returns
+        -------
+        float
+            Tolerance value for optimization convergence
+        """
         return self.blr_conf.tol
 
     @property
     def n_iter(self) -> int:
+        """Maximum number of optimization iterations.
+
+        Returns
+        -------
+        int
+            Maximum number of iterations for optimization
+        """
         return self.blr_conf.n_iter
 
     @property
     def optimizer(self) -> str:
+        """Optimization method to use.
+
+        Returns
+        -------
+        str
+            Name of optimization method ('cg', 'powell', 'nelder-mead', or 'l-bfgs-b')
+        """
         return self.blr_conf.optimizer
 
     @property
     def ard(self) -> bool:
+        """Whether to use Automatic Relevance Determination.
+
+        Returns
+        -------
+        bool
+            True if using ARD, False otherwise
+        """
         return self.blr_conf.ard
 
     @property
-    def l(self) -> float:
+    def l_bfgs_b_l(self) -> float:
+        """L-BFGS-B regularization strength.
+
+        Returns
+        -------
+        float
+            Regularization strength parameter for L-BFGS-B optimizer
+        """
         return self.blr_conf.l_bfgs_b_l
 
     @property
     def epsilon(self) -> float:
+        """Step size for gradient approximation in L-BFGS-B.
+
+        Returns
+        -------
+        float
+            Step size for finite difference gradient approximation
+        """
         return self.blr_conf.l_bfgs_b_epsilon
 
     @property
     def norm(self) -> str:
+        """Type of regularization norm for L-BFGS-B.
+
+        Returns
+        -------
+        str
+            Regularization norm type ('L1' or 'L2')
+        """
         return self.blr_conf.l_bfgs_b_norm
 
     @property
     def intercept(self) -> bool:
+        """Whether to include an intercept term.
+
+        Returns
+        -------
+        bool
+            True if model includes intercept, False otherwise
+        """
         return self.blr_conf.intercept
 
     @property
     def random_intercept(self) -> bool:
+        """Whether to include a random intercept.
+
+        Returns
+        -------
+        bool
+            True if model includes random intercept, False otherwise
+        """
         return self.blr_conf.random_intercept
 
     @property
     def heteroskedastic(self) -> bool:
+        """Whether to model heteroskedastic noise.
+
+        Returns
+        -------
+        bool
+            True if modeling heteroskedastic noise, False otherwise
+        """
         return self.blr_conf.heteroskedastic
 
     @property
-    def random_var(self) -> bool:
-        return self.blr_conf.random_var
+    def random_intercept_var(self) -> bool:
+        """Whether to model random intercept variance.
+
+        Returns
+        -------
+        bool
+            True if modeling random intercept variance, False otherwise
+        """
+        return self.blr_conf.random_intercept_var
+
+    @property
+    def intercept_var(self) -> bool:
+        """Whether to model intercept variance.
+
+        Returns
+        -------
+        bool
+            True if modeling intercept variance, False otherwise
+        """
+        return self.blr_conf.intercept_var
 
     @property
     def models_variance(self) -> bool:
+        """Whether the model includes any variance components.
+
+        Returns
+        -------
+        bool
+            True if model includes heteroskedastic noise, random intercept variance,
+            or intercept variance components
+        """
         return (
             self.blr_conf.heteroskedastic
             or self.blr_conf.random_intercept_var

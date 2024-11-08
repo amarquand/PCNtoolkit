@@ -28,27 +28,32 @@ The class supports multiple regression model types including:
 - Gaussian Process Regression (GPR)
 - Hierarchical Bayesian Regression (HBR)
 
-Dependencies
------------
-- numpy
-- xarray
-- json
-- abc (Abstract Base Classes)
-- typing
-- pcntoolkit.dataio
-- pcntoolkit.regression_model
-- pcntoolkit.util
+The class structure of a normative model (using BLR in this example) is:
+
+- NormBLR (abstract base class)
+    - NormConf
+    - RegressionModels
+        1. BLR (feature 1)
+            - BLRConf
+        2. BLR (feature 2)
+            - BLRConf
+        3. ...
+
 
 Examples
 --------
 >>> from pcntoolkit.normative_model import NormBase
 >>> from pcntoolkit.normative_model.norm_conf import NormConf
 >>>
->>> # Create configuration
+>>> # Create configuration for normative model
 >>> norm_conf = NormConf(save_dir="./models", log_dir="./logs")
->>>
->>> # Initialize normative model (through a concrete subclass)
->>> model = ConcreteNormBase(norm_conf)
+
+>>> # Create configuration for regression models
+>>> hbr_conf = HBRConf()
+
+>>> # Create normative model
+>>> model = NormHBR(norm_conf, hbr_conf)
+
 >>>
 >>> # Fit model
 >>> model.fit(training_data)
@@ -218,7 +223,7 @@ class NormBase(ABC):
     >>> test_data = NormData(X=test_covariates, y=test_responses)
     >>>
     >>> # Create and fit model
-    >>> model = ConcreteNormModel(norm_conf)
+    >>> model = ConcreteNormModel(norm_conf, reg_conf)
     >>> model.fit(train_data)
     >>>
     >>> # Make predictions

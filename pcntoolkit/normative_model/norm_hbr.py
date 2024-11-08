@@ -11,22 +11,6 @@ Classes
 NormHBR : NormBase
     A class for creating and managing a normative model using Hierarchical Bayesian Regression.
 
-Dependencies
-------------
-- numpy
-- xarray
-- pcntoolkit.dataio.norm_data.NormData
-- pcntoolkit.normative_model.norm_base.NormBase
-- pcntoolkit.normative_model.norm_conf.NormConf
-- pcntoolkit.regression_model.hbr.hbr_data
-- pcntoolkit.regression_model.hbr.hbr.HBR
-- pcntoolkit.regression_model.hbr.hbr_conf.HBRConf
-
-Usage
------
-To use this module, create an instance of the NormHBR class with the appropriate
-configuration objects, and then call its methods to fit, predict, or transfer models.
-
 Example
 -------
 >>> from pcntoolkit.normative_model.norm_conf import NormConf
