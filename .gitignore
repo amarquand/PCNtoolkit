@@ -104,3 +104,7 @@ example_notebooks/resources/save_dir/idata_rh_MeanThickness_thickness.nc
 example_notebooks/resources/save_dir/normative_model_dict.json
 example_notebooks/resources/save_dir/*
 example_notebooks/resources 
+
+# Sphinx documentation
+docs/_build/
+docs/autoapi/

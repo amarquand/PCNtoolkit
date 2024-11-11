@@ -1,43 +1,116 @@
+"""
+Parameter handling module for Hierarchical Bayesian Regression models.
+
+This module provides the Param class which handles parameter definitions, 
+distributions, and transformations for hierarchical Bayesian regression models. 
+It supports linear parameters, random effects, and various probability distributions.
+
+The module integrates with PyMC for Bayesian modeling and provides utilities for
+parameter initialization, transformation, and serialization.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 import arviz as az
-import pymc as pm
-import scipy.stats as stats
+import pymc as pm  # type: ignore
+import scipy.stats as stats  # type: ignore
 import xarray as xr
+from pymc import math
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 
 
 @dataclass
 class Param:
+    """
+    A class representing parameters in hierarchical Bayesian regression models.
+    
+    This class handles parameter definitions including their distributions,
+    linear relationships, random effects, and transformations. It supports
+    both centered and non-centered parameterizations.
+
+    Parameters
+    ----------
+    name : str
+        Name of the parameter
+    dims : Optional[Union[Tuple[str, ...], str]], optional
+        Dimension names for the parameter, by default None
+    dist_name : str, optional
+        Name of the probability distribution, by default "Normal"
+    dist_params : tuple, optional
+        Parameters for the probability distribution, by default (0, 10.0)
+    linear : bool, optional
+        Whether parameter has linear relationship, by default False
+    slope : Param, optional
+        Slope parameter for linear relationships, by default None
+    intercept : Param, optional
+        Intercept parameter for linear relationships, by default None
+    mapping : str, optional
+        Transformation mapping type, by default "identity"
+    mapping_params : tuple, optional
+        Parameters for the transformation mapping, by default (0, 1)
+    random : bool, optional
+        Whether parameter has random effects, by default False
+    centered : bool, optional
+        Whether to use centered parameterization, by default False
+    mu : Param, optional
+        Mean parameter for random effects, by default None
+    sigma : Param, optional
+        Standard deviation parameter for random effects, by default None
+    freedom : float, optional
+        Degrees of freedom parameter, by default 1.0
+
+    Attributes
+    ----------
+    has_covariate_dim : bool
+        Whether parameter has covariate dimensions
+    has_random_effect : bool
+        Whether parameter has random effects
+    distmap : Dict[str, Any]
+        Mapping of distribution names to PyMC distribution classes
+    dist : Any
+        PyMC distribution object
+    """
     name: str
-    dims: Tuple[str] = None
+    dims: Optional[Union[Tuple[str, ...], str]] = None
 
     dist_name: str = "Normal"
     dist_params: tuple = (0, 10.0)
 
     linear: bool = False
-    slope: Param = None
-    intercept: Param = None
+    slope: Param = None  # type: ignore
+    intercept: Param = None  # type: ignore
     mapping: str = "identity"
     mapping_params: tuple = (0, 1)
 
     random: bool = False
     centered: bool = False
-    mu: Param = None
-    sigma: Param = None
+    mu: Param = field(default=None)  # type: ignore
+    sigma: Param = field(default=None)  # type: ignore
+    offset: Param = field(default=None)  # type: ignore
 
     has_covariate_dim: bool = field(init=False, default=False)
     has_random_effect: bool = field(init=False, default=False)
-    distmap: Dict[str, pm.Distribution] = field(init=False, default=False)
-    dist: pm.Distribution = field(init=False, default=False)
+    distmap: Dict[str, Any] = field(init=False, default_factory=dict)
+    dist: Any = field(init=False, default=None)
 
     freedom: float = 1.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """
+        Initialize parameter attributes after instance creation.
+
+        Validates parameter configuration and sets up appropriate parameter structure
+        based on whether it's linear, random, or basic parameter.
+
+        Raises
+        ------
+        ValueError
+            If slope parameter is missing required covariate dimension
+        """
         self.has_covariate_dim = False if not self.dims else "covariates" in self.dims
         if self.name.startswith("slope") and not self.has_covariate_dim:
             raise ValueError(
@@ -73,15 +146,34 @@ class Param:
                 self.shape = None
             else:
                 self.shape = None
-                if type(self.dims) is str:
+                if isinstance(self.dims, str):
                     self.dims = (self.dims,)
-            self.sample_dims = ()
+            self.sample_dims = () #type: ignore
 
         self.has_random_effect = (self.random and not self.linear) or (
             self.linear and (self.slope.random or self.intercept.random)
         )
 
-    def create_graph(self, model, idata=None, freedom: float = 1):
+    def create_graph(
+        self, model: Any, idata: Optional[Any] = None, freedom: float = 1
+    ) -> None:
+        """
+        Create PyMC computational graph for the parameter.
+
+        Parameters
+        ----------
+        model : Any
+            PyMC model object
+        idata : Optional[Any], optional
+            Inference data for parameter initialization, by default None
+        freedom : float, optional
+            Degrees of freedom parameter, by default 1
+
+        Notes
+        -----
+        Creates appropriate PyMC variables based on parameter configuration
+        (linear, random, or basic) and adds them to the model graph.
+        """
         self.freedom = freedom
         with model:
             if self.linear:
@@ -122,9 +214,29 @@ class Param:
                     self.name, *self.dist_params, shape=self.shape, dims=self.dims
                 )
 
-    def approximate_marginal(self, model, dist_name: str, samples: xr.DataArray):
+    def approximate_marginal(
+        self, model: Any, dist_name: str, samples: xr.DataArray
+    ) -> None:
         """
-        use scipy stats.XXX.fit to get the parameters of the marginal distribution
+        Approximate marginal distribution parameters from MCMC samples.
+
+        Parameters
+        ----------
+        model : Any
+            PyMC model object
+        dist_name : str
+            Name of distribution to fit
+        samples : xr.DataArray
+            MCMC samples to fit distribution to
+
+        Raises
+        ------
+        ValueError
+            If distribution name is not recognized
+
+        Notes
+        -----
+        Uses scipy.stats to fit distribution parameters to the samples.
         """
         """#TODO At some point, we want to flatten over all dimensions except the covariate dimension."""
         print(
@@ -159,7 +271,14 @@ class Param:
             else:
                 raise ValueError(f"Unknown distribution name {dist_name}")
 
-    def set_noncentered_random_params(self):
+    def set_noncentered_random_params(self) -> None:
+        """
+        Set up non-centered parameterization for random effects.
+
+        Creates default mu and sigma parameters if they don't exist.
+        For non-centered parameterization, parameters are expressed as:
+        param = mu + sigma * offset, where offset ~ Normal(0,1)
+        """
         if not self.mu:
             self.mu = Param.default_sub_mu(self.name, self.dims)
             self.mu.name = f"mu_{self.name}"
@@ -172,29 +291,43 @@ class Param:
                 dist_params=(2.0,),
             )
 
-    def set_centered_random_params(self):
+    def set_centered_random_params(self) -> None:
+        """
+        Set up centered parameterization for random effects.
+
+        Currently delegates to non-centered parameterization setup.
+        """
         self.set_noncentered_random_params()
 
-    def set_linear_params(self):
+    def set_linear_params(self) -> None:
+        """
+        Set up parameters for linear relationships.
+
+        Creates default slope and intercept parameters if they don't exist.
+        """
         if not self.slope:
             self.slope = Param.default_slope(self.name, (*self._dims, "covariates"))
         if not self.intercept:
             self.intercept = Param.default_intercept(self.name, self._dims)
 
-    def get_samples(self, data: HBRData):
-        """Uses the linear or random effect to get samples.
-
-        Args:
-            data (HBRData): HBRData object, used to regress the data.
-
-        Returns:
-            pm.Distribution: Distribution object
+    def get_samples(self, data: HBRData) -> Any:
         """
+        Generate samples from the parameter distribution.
 
+        Parameters
+        ----------
+        data : HBRData
+            Data object containing covariates and batch effects
+
+        Returns
+        -------
+        Any
+            PyMC distribution or transformed random variable
+        """
         if self.linear:
             slope_samples = self.slope.get_samples(data)
             intercept_samples = self.intercept.get_samples(data)
-            result = pm.math.sum(slope_samples * data.pm_X, axis=1) + intercept_samples
+            result = math.sum(slope_samples * data.pm_X, axis=1) + intercept_samples
             return self.apply_mapping(result)
 
         elif self.random:
@@ -202,32 +335,48 @@ class Param:
         else:
             return self.dist
 
-    def apply_mapping(self, x):
-        """Applies the mapping function to the input.
+    def apply_mapping(self, x: Any) -> Any:
+        """
+        Apply transformation mapping to parameter values.
 
-        Args:
-            x (number): input value
+        Parameters
+        ----------
+        x : Any
+            Input value to transform
 
-        Raises:
-            ValueError: if the mapping is not recognized.
-        Returns:
-            value: mapped value
+        Returns
+        -------
+        Any
+            Transformed value
+
+        Raises
+        ------
+        ValueError
+            If mapping type is not recognized
         """
         a, b = self.mapping_params[0], self.mapping_params[1]
         if self.mapping == "identity":
             toreturn = x
         elif self.mapping == "exp":
-            toreturn = pm.math.exp(a + x / b) * b
+            toreturn = math.exp(a + x / b) * b
         elif self.mapping == "softplus":
-            toreturn = pm.math.log(1 + pm.math.exp(a + x / b)) * b
+            toreturn = math.log(1 + math.exp(a + x / b)) * b #type: ignore
         else:
             raise ValueError(f"Unknown mapping {self.mapping}")
         if len(self.mapping_params) > 2:
             toreturn = toreturn + self.mapping_params[2]
         return toreturn
 
-    def to_dict(self):
-        param_dict = {
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert parameter configuration to dictionary format.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing parameter configuration
+        """
+        param_dict: dict[str, Any] = {
             "name": self.name,
             "dims": self.dims,
             "linear": self.linear,
@@ -250,20 +399,40 @@ class Param:
         return param_dict
 
     @property
-    def _dims(self):
-        return self.dims if self.dims else ()
+    def _dims(self) -> Tuple[str, ...]:
+        """
+        Get parameter dimensions as tuple.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Parameter dimensions as tuple, empty tuple if no dimensions
+        """
+        return self.dims if self.dims else () #type: ignore
 
     @classmethod
-    def from_args(cls, name: str, args: Dict[str, any], dims=None):
-        """Creates a Param object from command line arguments.
+    def from_args(
+        cls,
+        name: str,
+        args: Dict[str, Any],
+        dims: Optional[Union[Tuple[str, ...], str]] = None,
+    ) -> Param:
+        """
+        Create parameter from command line arguments.
 
-        Args:
-            name (str): Name of the parameter.
-            args (Dict[str, any]): Dictionary of arguments.
-            dims (_type_, optional): Dimensions. Defaults to None.
+        Parameters
+        ----------
+        name : str
+            Parameter name
+        args : Dict[str, Any]
+            Dictionary of arguments
+        dims : Optional[Union[Tuple[str, ...], str]], optional
+            Parameter dimensions, by default None
 
-        Returns:
-            Param: Param object
+        Returns
+        -------
+        Param
+            New parameter instance
         """
         tupdims = dims if dims else ()
         if args.get(f"linear_{name}", False):
@@ -305,59 +474,80 @@ class Param:
             )
 
     @classmethod
-    def from_dict(cls, dict):
-        if dict.get("linear", False):
-            slope = cls.from_dict(dict["slope"])
-            intercept = cls.from_dict(dict["intercept"])
+    def from_dict(cls, dict_: Dict[str, Any]) -> Param:
+        """
+        Create parameter from dictionary configuration.
+
+        Parameters
+        ----------
+        dict_ : Dict[str, Any]
+            Dictionary containing parameter configuration
+
+        Returns
+        -------
+        Param
+            New parameter instance
+        """
+        if dict_.get("linear", False):
+            slope = cls.from_dict(dict_["slope"])
+            intercept = cls.from_dict(dict_["intercept"])
             return cls(
-                dict["name"],
-                dims=dict["dims"],
+                dict_["name"],
+                dims=dict_["dims"],
                 linear=True,
                 slope=slope,
                 intercept=intercept,
-                mapping=dict.get("mapping", "identity"),
-                mapping_params=dict.get("mapping_params", (0.0, 1.0)),
+                mapping=dict_.get("mapping", "identity"),
+                mapping_params=dict_.get("mapping_params", (0.0, 1.0)),
             )
-        elif dict.get("random", False):
-            if dict.get("centered", False):
-                mu = cls.from_dict(dict["mu"])
-                sigma = cls.from_dict(dict["sigma"])
+        elif dict_.get("random", False):
+            if dict_.get("centered", False):
+                mu = cls.from_dict(dict_["mu"])
+                sigma = cls.from_dict(dict_["sigma"])
                 return cls(
-                    dict["name"],
-                    dims=dict["dims"],
+                    dict_["name"],
+                    dims=dict_["dims"],
                     random=True,
                     centered=True,
                     mu=mu,
                     sigma=sigma,
                 )
             else:
-                mu = cls.from_dict(dict["mu"])
-                sigma = cls.from_dict(dict["sigma"])
+                mu = cls.from_dict(dict_["mu"])
+                sigma = cls.from_dict(dict_["sigma"])
                 return cls(
-                    dict["name"],
-                    dims=dict["dims"],
+                    dict_["name"],
+                    dims=dict_["dims"],
                     random=True,
                     centered=False,
                     mu=mu,
                     sigma=sigma,
                 )
         else:
-            name = dict["name"]
+            name = dict_["name"]
             if name.startswith("sigma") or name == "delta":
                 default_dist = "LogNormal"
-                default_params = (2.0,)
+                default_params: tuple[float, ...] = (2.0,)
             else:
                 default_dist = "Normal"
-                default_params = (0.0, 10.0)
+                default_params= (0.0, 10.0)
             return cls(
-                dict["name"],
-                dims=dict["dims"],
+                dict_["name"],
+                dims=dict_["dims"],
                 dist_name=default_dist,
                 dist_params=default_params,
             )
 
     @classmethod
-    def default_mu(cls):
+    def default_mu(cls) -> Param:
+        """
+        Create default mean parameter.
+
+        Returns
+        -------
+        Param
+            Default mu parameter with linear relationship
+        """
         slope = cls.default_slope("mu")
         intercept = cls.default_intercept("mu")
         return cls(
@@ -368,7 +558,15 @@ class Param:
         )
 
     @classmethod
-    def default_sigma(cls):
+    def default_sigma(cls) -> Param:
+        """
+        Create default standard deviation parameter.
+
+        Returns
+        -------
+        Param
+            Default sigma parameter with linear relationship and softplus mapping
+        """
         slope = cls.default_slope("sigma")
         intercept = cls.default_intercept("sigma")
         return cls(
@@ -381,77 +579,146 @@ class Param:
         )
 
     @classmethod
-    def default_epsilon(cls):
+    def default_epsilon(cls) -> Param:
+        """
+        Create default epsilon (error) parameter.
+
+        Returns
+        -------
+        Param
+            Default epsilon parameter with normal distribution
+        """
         return cls(
             "epsilon",
             linear=False,
             random=False,
             dist_name="Normal",
-            dist_params=(
-                0.0,
-                2.0,
-            ),
+            dist_params=(0.0, 2.0,),
         )
 
     @classmethod
-    def default_delta(cls):
+    def default_delta(cls) -> Param:
+        """
+        Create default delta parameter.
+
+        Returns
+        -------
+        Param
+            Default delta parameter with normal distribution and softplus mapping
+        """
         return cls(
             "delta",
             linear=False,
             random=False,
             dist_name="Normal",
-            dist_params=(
-                0.0,
-                2.0,
-            ),
+            dist_params=(0.0, 2.0,),
             mapping="softplus",
             mapping_params=(0.0, 3.0, 0.3),
         )
 
     @classmethod
-    def default_slope(cls, name, dims=("covariates",)):
+    def default_slope(
+        cls, name: str, dims: Union[Tuple[str, ...], str] = ("covariates",)
+    ) -> Param:
+        """
+        Create default slope parameter.
+
+        Parameters
+        ----------
+        name : str
+            Base name for slope parameter
+        dims : Union[Tuple[str, ...], str], optional
+            Parameter dimensions, by default ("covariates",)
+
+        Returns
+        -------
+        Param
+            Default slope parameter with normal distribution
+        """
         return cls(
             f"slope_{name}",
             linear=False,
             random=False,
             dims=dims,
             dist_name="Normal",
-            dist_params=(
-                0.0,
-                10.0,
-            ),
+            dist_params=(0.0, 10.0,),
         )
 
     @classmethod
-    def default_intercept(cls, name, dims=None):
+    def default_intercept(
+        cls, name: str, dims: Optional[Union[Tuple[str, ...], str]] = None
+    ) -> Param:
+        """
+        Create default intercept parameter.
+
+        Parameters
+        ----------
+        name : str
+            Base name for intercept parameter
+        dims : Optional[Union[Tuple[str, ...], str]], optional
+            Parameter dimensions, by default None
+
+        Returns
+        -------
+        Param
+            Default intercept parameter with normal distribution
+        """
         return cls(
             f"intercept_{name}",
             linear=False,
             random=False,
             dims=dims,
             dist_name="Normal",
-            dist_params=(
-                0.0,
-                10.0,
-            ),
+            dist_params=(0.0, 10.0,),
         )
 
     @classmethod
-    def default_sub_mu(cls, name, dims=None):
+    def default_sub_mu(
+        cls, name: str, dims: Optional[Union[Tuple[str, ...], str]] = None
+    ) -> Param:
+        """
+        Create default sub-model mean parameter.
+
+        Parameters
+        ----------
+        name : str
+            Base name for mu parameter
+        dims : Optional[Union[Tuple[str, ...], str]], optional
+            Parameter dimensions, by default None
+
+        Returns
+        -------
+        Param
+            Default sub-model mu parameter with normal distribution
+        """
         return cls(
             f"mu_{name}",
             linear=False,
             random=False,
             dims=dims,
             dist_name="Normal",
-            dist_params=(
-                0.0,
-                10.0,
-            ),
+            dist_params=(0.0, 10.0,),
         )
 
     @classmethod
-    def default_sub_sigma(cls, name, dims=None):
+    def default_sub_sigma(
+        cls, name: str, dims: Optional[Union[Tuple[str, ...], str]] = None
+    ) -> Param:
+        """
+        Create default sub-model standard deviation parameter.
+
+        Parameters
+        ----------
+        name : str
+            Base name for sigma parameter
+        dims : Optional[Union[Tuple[str, ...], str]], optional
+            Parameter dimensions, by default None
+
+        Returns
+        -------
+        Param
+            Default sub-model sigma parameter with lognormal distribution
+        """
         return cls(
             f"sigma_{name}",
             linear=False,

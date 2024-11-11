@@ -1080,12 +1080,12 @@ class NormBase(ABC):
         """
         for covariate in data.covariates.to_numpy():
             if (covariate not in self.inscalers) or overwrite:
-                self.inscalers[covariate] = Scaler(self.norm_conf.inscaler)
+                self.inscalers[covariate] = Scaler.from_string(self.norm_conf.inscaler)
                 self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
 
         for responsevar in data.response_vars.to_numpy():
             if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = Scaler(self.norm_conf.outscaler)
+                self.outscalers[responsevar] = Scaler.from_string(self.norm_conf.outscaler)
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
                 )

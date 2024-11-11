@@ -1,13 +1,11 @@
 """
 norm_data module
-================
+===============
 
-This module provides functionalities for normalizing and converting dataset
-attributes into a pandas DataFrame. It is designed to handle datasets with
-attributes such as 'X' and 'scaled_X', facilitating data manipulation and
-analysis.
+This module provides functionalities for normalizing and converting different types of data into a NormData object.
 
->>> print(df.head())
+The NormData object is an xarray.Dataset that contains the data, covariates, batch effects, and response variables, and it
+is used by all the models in the toolkit.
 """
 
 
@@ -41,35 +39,57 @@ from pcntoolkit.dataio.basis_expansions import create_poly_basis
 
 
 class NormData(xr.Dataset):
-    """
-    A class for handling normative modeling data, extending xarray.Dataset.
-
-    NormData provides functionality for loading, preprocessing, and managing
+    """A class for handling normative modeling data, extending xarray.Dataset.
+    
+    This class provides functionality for loading, preprocessing, and managing
     data for normative modeling. It supports various data formats and includes
     methods for data scaling, splitting, and visualization.
-
-    Attributes:
-        X (xr.DataArray): Covariate data.
-        y (xr.DataArray): Response variable data.
-        scaled_X (xr.DataArray): Scaled version of covariate data.
-        scaled_y (xr.DataArray): Scaled version of response variable data.
-        batch_effects (xr.DataArray): Batch effect data.
-        Phi (xr.DataArray): Design matrix.
-        scaled_centiles (xr.DataArray): Scaled centile data (if applicable).
-        centiles (xr.DataArray): Unscaled centile data (if applicable).
-        zscores (xr.DataArray): Z-score data (if applicable).
-
-    Note:
-        This class stores both original and scaled versions of X and y data.
-        While this approach offers convenience and transparency, it may
-        increase memory usage. Consider memory constraints when working with
-        large datasets.
-
-    Example:
-        >>> data = NormData.from_dataframe("my_data", df, covariates,
-        ...                                batch_effects, response_vars)
-        >>> data.scale_forward(inscalers, outscalers)
-        >>> train_data, test_data = data.train_test_split([0.8, 0.2])
+    
+    Parameters
+    ----------
+    name : str
+        The name of the dataset
+    data_vars : DataVars
+        Data variables for the dataset
+    coords : Mapping[Any, Any]
+        Coordinates for the dataset
+    attrs : Mapping[Any, Any] | None, optional
+        Additional attributes for the dataset, by default None
+        
+    Attributes
+    ----------
+    X : xr.DataArray
+        Covariate data
+    y : xr.DataArray 
+        Response variable data
+    scaled_X : xr.DataArray
+        Scaled version of covariate data
+    scaled_y : xr.DataArray
+        Scaled version of response variable data
+    batch_effects : xr.DataArray
+        Batch effect data
+    Phi : xr.DataArray
+        Design matrix
+    scaled_centiles : xr.DataArray
+        Scaled centile data (if applicable)
+    centiles : xr.DataArray
+        Unscaled centile data (if applicable) 
+    zscores : xr.DataArray
+        Z-score data (if applicable)
+        
+    Notes
+    -----
+    This class stores both original and scaled versions of X and y data.
+    While this approach offers convenience and transparency, it may
+    increase memory usage. Consider memory constraints when working with
+    large datasets.
+    
+    Examples
+    --------
+    >>> data = NormData.from_dataframe("my_data", df, covariates,
+    ...                                batch_effects, response_vars)
+    >>> data.scale_forward(inscalers, outscalers)
+    >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
 
     __slots__ = (
@@ -119,26 +139,29 @@ class NormData(xr.Dataset):
         batch_effects: np.ndarray,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
-        """
-        Create a NormData object from numpy arrays.
+        """Create a NormData object from numpy arrays.
 
         Parameters
         ----------
         name : str
-            The name of the dataset.
+            The name of the dataset
         X : np.ndarray
-            Covariate data.
+            Covariate data of shape (n_samples, n_features)
         y : np.ndarray
-            Response variable data.
+            Response variable data of shape (n_samples, n_responses)
         batch_effects : np.ndarray
-            Batch effect data.
+            Batch effect data of shape (n_samples, n_batch_effects)
         attrs : Mapping[str, Any] | None, optional
-            Additional attributes for the dataset, by default None.
+            Additional attributes for the dataset, by default None
 
         Returns
         -------
         NormData
-            An instance of NormData.
+            A new NormData instance containing the provided data
+
+        Notes
+        -----
+        Input arrays are automatically reshaped to 2D if they are 1D
         """
         if X.ndim == 1:
             X = X[:, None]
@@ -172,26 +195,25 @@ class NormData(xr.Dataset):
         linear_component: bool = True,
         **kwargs: Any,
     ) -> None:
-        """
-        Expand the basis of a source array using a specified basis function.
+        """Expand the basis of a source array using a specified basis function.
 
         Parameters
         ----------
         source_array_name : str
-            The name of the source array to expand.
+            The name of the source array to expand ('X' or 'scaled_X')
         basis_function : str
-            The basis function to use ('polynomial', 'bspline', 'linear', or 'none').
+            The basis function to use ('polynomial', 'bspline', 'linear', or 'none')
         basis_column : int, optional
-            The column index to apply the basis function, by default 0.
+            The column index to apply the basis function, by default 0
         linear_component : bool, optional
-            Whether to include a linear component, by default True.
-        **kwargs : Any
-            Additional arguments for basis functions.
+            Whether to include a linear component, by default True
+        **kwargs : dict
+            Additional arguments for basis functions
 
         Raises
         ------
         ValueError
-            If the source array does not exist or if required parameters are missing.
+            If the source array does not exist or if required parameters are missing
         """
         all_arrays = []
         all_dims = self.X.dims()
@@ -318,6 +340,30 @@ class NormData(xr.Dataset):
         response_vars: List[str],
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
+        """
+        Load a normative dataset from a pandas DataFrame.
+
+        Parameters
+        ----------
+        name : str
+            The name of the dataset.
+        dataframe : pd.DataFrame
+            The pandas DataFrame to load.
+        covariates : List[str]
+            The list of column names to be used as covariates in the dataset.
+        batch_effects : List[str]
+            The list of column names to be used as batch effects in the dataset.
+        response_vars : List[str]
+            The list of column names to be used as response variables in the dataset.
+        attrs : Mapping[str, Any] | None, optional
+            Additional attributes for the dataset, by default None.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
+
         return cls(
             name,
             {
@@ -745,6 +791,27 @@ class NormData(xr.Dataset):
             acc.append(centiles)
         return pd.concat(acc, axis=1)
 
+
+    def create_measures_group(self) -> None:
+        """
+        Initializes a DataArray for measures with NaN values.
+
+        This method creates a DataArray with dimensions 'response_vars' and 'statistics',
+        where 'response_vars' corresponds to the response variables in the dataset,
+        and 'statistics' includes measures such as Rho, RMSE, SMSE, ExpV, NLL, and ShapiroW.
+        The DataArray is filled with NaN values initially.
+        """
+        rv = self.response_vars.to_numpy().copy().tolist()
+
+        self["measures"] = xr.DataArray(
+            np.nan * np.ones((len(rv), 6)),
+            dims=("response_vars", "statistics"),
+            coords={
+                "response_vars": np.arange(len(rv)),
+                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "ShapiroW"],
+            },
+        )
+
     @property
     def name(self) -> str:
         """
@@ -756,3 +823,7 @@ class NormData(xr.Dataset):
             The name of the dataset.
         """
         return self.attrs["name"]
+    
+    @property
+    def response_var_list(self) -> xr.DataArray:
+        return self.response_vars.to_numpy().copy().tolist()
