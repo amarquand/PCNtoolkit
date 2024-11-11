@@ -1,68 +1,151 @@
-"""
-@author: Stijn de Boer (AuguB)
-See: Jones et al. (2009), Sinh-Arcsinh distributions.
+"""Sinh-Arcsinh (SHASH) Distribution Implementation Module.
+
+This module implements the Sinh-Arcsinh (SHASH) distribution and its variants as described in
+Jones and Pewsey (2009) [1]_. The SHASH distribution is a flexible distribution family that can
+model skewness and kurtosis through separate parameters.
+
+The module provides:
+
+1. Basic SHASH transformations (S, S_inv, C)
+
+2. SHASH distribution (base implementation)
+
+3. SHASHo distribution (location-scale variant)
+
+4. SHASHo2 distribution (alternative parameterization)
+
+5. SHASHb distribution (standardized variant)
+
+
+References
+----------
+.. [1] Jones, M. C., & Pewsey, A. (2009). Sinh-arcsinh distributions. Biometrika, 96(4), 761-780.
+       https://doi.org/10.1093/biomet/asp053
+
+Notes
+-----
+The implementation uses PyMC and PyTensor for probabilistic programming capabilities.
+All distributions support random sampling and log-probability calculations.
 """
 
 from functools import lru_cache
+from typing import Any, Optional, Tuple, Union
 
 import numpy as np
-from pymc import floatX
-from pymc.distributions import Continuous
-from pytensor.tensor import as_tensor_variable
+from numpy.random import Generator
+from numpy.typing import ArrayLike, NDArray
+from pymc import floatX  # type: ignore
+from pymc.distributions import Continuous  # type: ignore
+from pytensor import tensor as pt
+from pytensor.graph.basic import Variable
+from pytensor.tensor import as_tensor_variable  # type: ignore
 from pytensor.tensor.elemwise import Elemwise
-from pytensor.tensor.random.op import RandomVariable
-from scipy.special import kv
+from pytensor.tensor.random.op import RandomVariable  # type: ignore
+from scipy.special import kv  # type: ignore
 
 from pcntoolkit.regression_model.hbr.KnuOp import knuop
+
+# pylint: disable=arguments-differ
+
 
 ##### Constants #####
 
 CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
+"""Constant used in P function calculations."""
+
 CONST2 = -np.log(2 * np.pi) / 2
+"""Constant used in log-probability calculations."""
 
 ##### SHASH Transformations #####
 
 
-def S(x, epsilon, delta):
-    """Sinh-arcsinh transformation.
-
-    Args:
-        x: input value
-        epsilon: parameter for skew
-        delta: parameter for kurtosis
-
-    Returns:
-        Sinh-arcsinh transformed value
+def S(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
+    """Apply the Sinh-arcsinh transformation.
+    
+    This transformation allows for flexible modeling of skewness and kurtosis.
+    
+    Parameters
+    ----------
+    x : array_like
+        Input values to transform
+    epsilon : float
+        Skewness parameter. Positive values give positive skewness
+    delta : float
+        Kurtosis parameter. Values < 1 give heavier tails than normal
+        
+    Returns
+    -------
+    NDArray[np.float64]
+        Transformed values
+        
+    Examples
+    --------
+    >>> S(0.0, epsilon=0.0, delta=1.0)
+    0.0
+    >>> S(1.0, epsilon=0.5, delta=2.0)  # Positive skew, lighter tails
+    1.32460...
     """
     return np.sinh(np.arcsinh(x) * delta - epsilon)
 
 
-def S_inv(x, epsilon, delta):
-    """Inverse sinh-arcsinh transformation.
-
-    Args:
-        x: input value
-        epsilon: parameter for skew
-        delta: parameter for kurtosis
-
-    Returns:
-        Inverse sinh-arcsinh transformed value
+def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
+    """Apply the inverse sinh-arcsinh transformation.
+    
+    Parameters
+    ----------
+    x : array_like
+        Input values to transform
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+        
+    Returns
+    -------
+    NDArray[np.float64]
+        Inverse transformed values
+        
+    Notes
+    -----
+    This is the inverse of the S() transformation function.
+    Used primarily in sampling from SHASH distributions.
+    
+    Examples
+    --------
+    >>> x = 1.0
+    >>> np.allclose(S_inv(S(x, 0.5, 2.0), 0.5, 2.0), x)
+    True
     """
     return np.sinh((np.arcsinh(x) + epsilon) / delta)
 
 
-def C(x, epsilon, delta):
-    """Cosh-arcsinh transformation.
-
-    Args:
-        x: input value
-        epsilon: parameter for skew
-        delta: parameter for kurtosis
-
-    Returns:
-        The cosh-arcsinh transformation of x.
-
-    Note: C(x) = sqrt(1+S(x)^2)
+def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
+    """Apply the cosh-arcsinh transformation.
+    
+    Parameters
+    ----------
+    x : array_like
+        Input values to transform
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+        
+    Returns
+    -------
+    NDArray[np.float64]
+        Transformed values
+        
+    Notes
+    -----
+    This function computes C(x) = sqrt(1 + S(x)^2), where S is the
+    sinh-arcsinh transformation. It is used in computing probability
+    densities of SHASH distributions.
+    
+    Examples
+    --------
+    >>> C(0.0, epsilon=0.0, delta=1.0)
+    1.0
     """
     return np.cosh(np.arcsinh(x) * delta - epsilon)
 
@@ -70,8 +153,17 @@ def C(x, epsilon, delta):
 ##### SHASH Distributions #####
 
 
-class SHASH(RandomVariable):
-    """SHASH RV, described by Jones et al., based on a standard normal distribution."""
+class SHASHrv(RandomVariable):
+    """Random variable class for the base SHASH distribution.
+    
+    This class implements sampling from the basic SHASH distribution
+    without location and scale parameters.
+    
+    Notes
+    -----
+    The base SHASH distribution is obtained by applying the sinh-arcsinh
+    transformation to a standard normal distribution.
+    """
 
     name = "shash"
     signature = "(),()->()"
@@ -79,132 +171,221 @@ class SHASH(RandomVariable):
     _print_name = ("SHASH", "\\operatorname{SHASH}")
 
     @classmethod
-    def rng_fn(cls, rng, epsilon, delta, size=None):
-        """Draw random samples from SHASH distribution.
+    def rng_fn(
+        cls,
+        rng: Generator,
+        epsilon: float,
+        delta: float,
+        size: Optional[Union[int, Tuple[int, ...]]] = None,
+    ) -> NDArray[np.float64]:
+        """Generate random samples from the base SHASH distribution.
 
-        Args:
-            rng: Random number generator
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            size: sample size. Defaults to None.
+        Parameters
+        ----------
+        rng : Generator
+            NumPy random number generator
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
+        size : int or tuple of ints, optional
+            Output shape. Default is None.
 
-        Returns:
-            Random samples from SHASH distribution
+        Returns
+        -------
+        NDArray[np.float64]
+            Array of random samples from the distribution
+
+        Notes
+        -----
+        The sampling process involves:
+        1. Generate standard normal samples
+        2. Apply sinh-arcsinh transformation with parameters
         """
         return np.sinh(
             (np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta
         )
 
 
-shash = SHASH()
+shash = SHASHrv()
 
 
 class SHASH(Continuous):
-    rv_op = shash
-    """
-    SHASH distribution described by Jones et al., based on a standard normal distribution.
+    """Sinh-arcsinh distribution based on standard normal.
+    
+    A flexible distribution family that extends the normal distribution by adding
+    skewness and kurtosis parameters while maintaining many desirable properties.
+    
+    Parameters
+    ----------
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+        
+    Notes
+    -----
+    The distribution reduces to standard normal when epsilon=0 and delta=1.
+    Positive epsilon produces positive skewness.
+    Delta < 1 produces heavier tails than normal.
+    
+    Examples
+    --------
+    >>> import pymc as pm
+    >>> with pm.Model():
+    ...     x = pm.SHASH('x', epsilon=0.5, delta=1.2)
     """
 
-    # Instance of the KOp
+    rv_op = shash
     my_K = Elemwise(knuop)
 
     @staticmethod
     @lru_cache(maxsize=128)
-    def P(q):
+    def P(q: float) -> float:
         """The P function as given in Jones et al.
 
-        Args:
-            q: input parameter for the P function
+        Parameters
+        ----------
+        q : float
+            Input parameter for the P function
 
-        Returns:
+        Returns
+        -------
+        float
             Result of the P function computation
         """
         K1 = SHASH.my_K((q + 1) / 2, 0.25)
         K2 = SHASH.my_K((q - 1) / 2, 0.25)
-        a = (K1 + K2) * CONST1
-        return a
+        a: Variable[Any, Any] = (K1 + K2) * CONST1  # type: ignore
+        return a  # type: ignore
 
     @staticmethod
-    def m1(epsilon, delta):
+    def m1(epsilon: float, delta: float) -> float:
         """The first moment of the SHASH distribution parametrized by epsilon and delta.
 
-        Args:
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
+        Returns
+        -------
+        float
             First moment of the SHASH distribution
         """
         return np.sinh(epsilon / delta) * SHASH.P(1 / delta)
 
     @staticmethod
-    def m2(epsilon, delta):
+    def m2(epsilon: float, delta: float) -> float:
         """The second moment of the SHASH distribution parametrized by epsilon and delta.
 
-        Args:
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
+        Returns
+        -------
+        float
             Second moment of the SHASH distribution
         """
         return (np.cosh(2 * epsilon / delta) * SHASH.P(2 / delta) - 1) / 2
 
     @staticmethod
-    def m1m2(epsilon, delta):
-        """Compute both first and second moments together to avoid redundant calculations.
+    def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
+        """Compute both first and second moments of the SHASH distribution.
 
-        Args:
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        This method efficiently calculates both moments together to avoid redundant 
+        computations of the P function.
 
-        Returns:
-            Tuple containing (mean, variance) of the SHASH distribution
+        Parameters
+        ----------
+        epsilon : float
+            Skewness parameter controlling distribution asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
+
+        Returns
+        -------
+        mean : float
+            First moment (mean) of the distribution
+        var : float
+            Second central moment (variance) of the distribution
+
+        Notes
+        -----
+        This method is more efficient than calling m1() and m2() separately
+        as it reuses intermediate calculations.
+
+        Examples
+        --------
+        >>> mean, var = SHASH.m1m2(0.0, 1.0)  # Standard normal case
+        >>> np.allclose([mean, var], [0.0, 1.0])
+        True
         """
         inv_delta = 1.0 / delta
         two_inv_delta = 2.0 * inv_delta
-
-        # Compute P values once
         p1 = SHASH.P(inv_delta)
         p2 = SHASH.P(two_inv_delta)
-
-        # Compute trig terms once
         eps_delta = epsilon / delta
         sinh_eps_delta = np.sinh(eps_delta)
         cosh_2eps_delta = np.cosh(2 * eps_delta)
-
-        # Compute moments
         mean = sinh_eps_delta * p1
         raw_second = (cosh_2eps_delta * p2 - 1) / 2
         var = raw_second - mean**2
         return mean, var
 
     @classmethod
-    def dist(cls, epsilon, delta, **kwargs):
-        """Return a SHASH distribution.
+    def dist(cls, epsilon: pt.TensorLike, delta: pt.TensorLike, **kwargs: Any) -> Any:
+        """Create a SHASH distribution with given parameters.
 
-        Args:
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            **kwargs: Additional arguments passed to the distribution
+        Parameters
+        ----------
+        epsilon : TensorLike
+            Skewness parameter controlling distribution asymmetry
+        delta : TensorLike
+            Kurtosis parameter controlling tail weight
+        **kwargs : dict
+            Additional arguments passed to the distribution constructor
 
-        Returns:
-            A SHASH distribution
+        Returns
+        -------
+        SHASH
+            A SHASH distribution instance
+
+        Notes
+        -----
+        The parameters are converted to float tensors before distribution creation.
         """
         epsilon = as_tensor_variable(floatX(epsilon))
         delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
-    def logp(value, epsilon, delta):
-        """Log-probability of the SHASH distribution.
+    def logp(self, value: ArrayLike, epsilon: float, delta: float) -> float:
+        """Calculate the log probability density of the SHASH distribution.
 
-        Args:
-            value: value to evaluate the log-probability at
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        value : array_like
+            Points at which to evaluate the log probability density
+        epsilon : float
+            Skewness parameter controlling distribution asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
-            Log-probability of the SHASH distribution
+        Returns
+        -------
+        float
+            Log probability density at the specified points
+
+        Notes
+        -----
+        The implementation follows Jones et al. (2009) equation (2.2).
+        Numerical stability is maintained through log-space calculations.
         """
         this_S = S(value, epsilon, delta)
         this_S_sqr = np.square(this_S)
@@ -217,9 +398,15 @@ class SHASH(Continuous):
 
 
 class SHASHoRV(RandomVariable):
-    """SHASHo Random Variable.
+    """Random variable class for the location-scale SHASH distribution.
 
-    Samples from a SHASHo distribution, which is a SHASH distribution scaled by sigma and translated by mu.
+    This class implements sampling from a SHASH distribution that has been
+    transformed to include location (mu) and scale (sigma) parameters.
+
+    Notes
+    -----
+    The transformation is y = sigma * x + mu, where x follows the base SHASH
+    distribution with parameters epsilon and delta.
     """
 
     name = "shasho"
@@ -228,45 +415,110 @@ class SHASHoRV(RandomVariable):
     _print_name = ("SHASHo", "\\operatorname{SHASHo}")
 
     @classmethod
-    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
-        """Draw random samples from a SHASHo distribution.
+    def rng_fn(
+        cls,
+        rng: Generator,
+        mu: pt.TensorLike,
+        sigma: pt.TensorLike,
+        epsilon: pt.TensorLike,
+        delta: pt.TensorLike,
+        size: Optional[Union[int, Tuple[int, ...]]] = None,
+    ) -> NDArray[np.float64]:
+        """Generate random samples from the location-scale SHASH distribution.
 
-        Args:
-            rng: Random number generator
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            size: sample size. Defaults to None.
+        Parameters
+        ----------
+        rng : Generator
+            NumPy random number generator
+        mu : TensorLike
+            Location parameter (mean)
+        sigma : TensorLike
+            Scale parameter (standard deviation)
+        epsilon : TensorLike
+            Skewness parameter
+        delta : TensorLike
+            Kurtosis parameter
+        size : int or tuple of ints, optional
+            Output shape. Default is None.
 
-        Returns:
-            Random samples from SHASHo distribution
+        Returns
+        -------
+        NDArray[np.float64]
+            Array of random samples from the distribution
+
+        Notes
+        -----
+        The sampling process involves:
+        1. Generate standard normal samples
+        2. Apply SHASH transformation
+        3. Scale and shift the result
         """
         s = rng.normal(size=size)
-        return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu
+        return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu  # type: ignore
 
 
 shasho = SHASHoRV()
 
 
 class SHASHo(Continuous):
-    """SHASHo distribution, which is a SHASH distribution scaled by sigma and translated by mu."""
+    """Location-scale variant of the SHASH distribution.
+    
+    This distribution extends the base SHASH distribution by adding
+    location (mu) and scale (sigma) parameters.
+    
+    Parameters
+    ----------
+    mu : float
+        Location parameter (mean)
+    sigma : float
+        Scale parameter (standard deviation)
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+        
+    Notes
+    -----
+    The distribution is obtained by applying the transformation
+    Y = mu + sigma * X where X follows the base SHASH distribution.
+    
+    Examples
+    --------
+    >>> import pymc as pm
+    >>> with pm.Model():
+    ...     x = pm.SHASHo('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
+    """
 
     rv_op = shasho
 
     @classmethod
-    def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        """Return a SHASHo distribution.
+    def dist(
+        cls,
+        mu: pt.TensorLike,
+        sigma: pt.TensorLike,
+        epsilon: pt.TensorLike,
+        delta: pt.TensorLike,
+        **kwargs: Any,
+    ) -> Any:
+        """Create a SHASHo distribution with given parameters.
 
-        Args:
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            **kwargs: Additional arguments passed to the distribution
+        Parameters
+        ----------
+        mu : TensorLike
+            Location parameter (mean)
+        sigma : TensorLike
+            Scale parameter (standard deviation)
+        epsilon : TensorLike
+            Skewness parameter controlling asymmetry
+        delta : TensorLike
+            Kurtosis parameter controlling tail weight
+        **kwargs : dict
+            Additional arguments passed to the distribution constructor
 
-        Returns:
-            A SHASHo distribution
+        Returns
+        -------
+        SHASHo
+            A location-scale SHASH distribution instance
         """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
@@ -274,20 +526,35 @@ class SHASHo(Continuous):
         delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
-    def logp(value, mu, sigma, epsilon, delta):
-        """The log-probability of the SHASHo distribution.
+    def logp(
+        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
+    ) -> float:
+        """Calculate the log probability density of the SHASHo distribution.
 
-        Args:
-            value: value to evaluate the log-probability at
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        value : array_like
+            Points at which to evaluate the log probability density
+        mu : float
+            Location parameter (mean)
+        sigma : float
+            Scale parameter (standard deviation)
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
-            Log-probability of the SHASHo distribution
+        Returns
+        -------
+        float
+            Log probability density at the specified points
+
+        Notes
+        -----
+        The implementation follows Jones et al. (2009) equation (2.2)
+        with additional location-scale transformation.
         """
-        remapped_value = (value - mu) / sigma
+        remapped_value = (value - mu) / sigma  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
@@ -301,11 +568,15 @@ class SHASHo(Continuous):
 
 
 class SHASHo2RV(RandomVariable):
-    """SHASHo2 Random Variable.
+    """Random variable class for the alternative parameterization of SHASH distribution.
 
-    Samples from a SHASHo2 distribution, which is a SHASH distribution scaled by sigma/delta
-    and translated by mu. This variant provides an alternative parameterization where the
-    scale parameter is adjusted by the kurtosis parameter.
+    This class implements sampling from a SHASH distribution where the scale parameter
+    is adjusted by the kurtosis parameter (sigma/delta).
+
+    Notes
+    -----
+    The transformation is y = (sigma/delta) * x + mu, where x follows the base SHASH
+    distribution with parameters epsilon and delta.
     """
 
     name = "shasho2"
@@ -314,51 +585,113 @@ class SHASHo2RV(RandomVariable):
     _print_name = ("SHASHo2", "\\operatorname{SHASHo2}")
 
     @classmethod
-    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
-        """Draw random samples from SHASHo2 distribution.
+    def rng_fn(
+        cls,
+        rng: Generator,
+        mu: pt.TensorLike,
+        sigma: pt.TensorLike,
+        epsilon: pt.TensorLike,
+        delta: pt.TensorLike,
+        size: Optional[Union[int, Tuple[int, ...]]] = None,
+    ) -> NDArray[np.float64]:
+        """Generate random samples from the alternative parameterization SHASH distribution.
 
-        Args:
-            rng: Random number generator
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            size: sample size. Defaults to None.
+        Parameters
+        ----------
+        rng : Generator
+            NumPy random number generator
+        mu : TensorLike
+            Location parameter (mean)
+        sigma : TensorLike
+            Scale parameter (before delta adjustment)
+        epsilon : TensorLike
+            Skewness parameter
+        delta : TensorLike
+            Kurtosis parameter
+        size : int or tuple of ints, optional
+            Output shape. Default is None.
 
-        Returns:
-            Random samples from SHASHo2 distribution
+        Returns
+        -------
+        NDArray[np.float64]
+            Array of random samples from the distribution
+
+        Notes
+        -----
+        The sampling process involves:
+        1. Generate standard normal samples
+        2. Apply SHASH transformation
+        3. Scale by sigma/delta and shift by mu
         """
         s = rng.normal(size=size)
-        sigma_d = sigma / delta
-        return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma_d + mu
+        sigma_d = sigma / delta  # type: ignore
+        return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma_d + mu  # type: ignore
 
 
 shasho2 = SHASHo2RV()
 
 
 class SHASHo2(Continuous):
-    """SHASHo2 distribution, which is a SHASH distribution scaled by sigma/delta and translated by mu.
+    """Alternative parameterization of the SHASH distribution.
 
-    This distribution provides an alternative parameterization of the SHASH distribution where
-    the scale parameter is adjusted by the kurtosis parameter. This can be useful in scenarios
-    where the relationship between scale and kurtosis needs to be explicitly modeled.
+    This distribution extends the base SHASH distribution by adding location (mu)
+    and an adjusted scale parameter (sigma/delta).
+
+    Parameters
+    ----------
+    mu : float
+        Location parameter (mean)
+    sigma : float
+        Scale parameter (before delta adjustment)
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+
+    Notes
+    -----
+    The distribution is obtained by applying the transformation
+    Y = mu + (sigma/delta) * X where X follows the base SHASH distribution.
+    This parameterization can be useful when the relationship between
+    scale and kurtosis needs to be explicitly modeled.
+
+    Examples
+    --------
+    >>> import pymc as pm
+    >>> with pm.Model():
+    ...     x = pm.SHASHo2('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
     """
 
     rv_op = shasho2
 
     @classmethod
-    def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        """Return a SHASHo2 distribution.
+    def dist(
+        cls,
+        mu: pt.TensorLike,
+        sigma: pt.TensorLike,
+        epsilon: pt.TensorLike,
+        delta: pt.TensorLike,
+        **kwargs: Any,
+    ) -> Any:
+        """Create a SHASHo2 distribution with given parameters.
 
-        Args:
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            **kwargs: Additional arguments passed to the distribution
+        Parameters
+        ----------
+        mu : TensorLike
+            Location parameter (mean)
+        sigma : TensorLike
+            Scale parameter (before delta adjustment)
+        epsilon : TensorLike
+            Skewness parameter controlling asymmetry
+        delta : TensorLike
+            Kurtosis parameter controlling tail weight
+        **kwargs : dict
+            Additional arguments passed to the distribution constructor
 
-        Returns:
-            A SHASHo2 distribution
+        Returns
+        -------
+        SHASHo2
+            An alternative parameterization SHASH distribution instance
         """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
@@ -366,21 +699,37 @@ class SHASHo2(Continuous):
         delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
-    def logp(value, mu, sigma, epsilon, delta):
-        """The log-probability of the SHASHo2 distribution.
+    def logp(
+        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
+    ) -> float:
+        """Calculate the log probability density of the SHASHo2 distribution.
 
-        Args:
-            value: value to evaluate the log-probability at
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        value : array_like
+            Points at which to evaluate the log probability density
+        mu : float
+            Location parameter (mean)
+        sigma : float
+            Scale parameter (before delta adjustment)
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
-            Log-probability of the SHASHo2 distribution
+        Returns
+        -------
+        float
+            Log probability density at the specified points
+
+        Notes
+        -----
+        The implementation follows Jones et al. (2009) equation (2.2)
+        with additional location-scale transformation where scale is
+        adjusted by the kurtosis parameter.
         """
         sigma_d = sigma / delta
-        remapped_value = (value - mu) / sigma_d
+        remapped_value = (value - mu) / sigma_d  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
@@ -394,12 +743,18 @@ class SHASHo2(Continuous):
 
 
 class SHASHbRV(RandomVariable):
-    """SHASHb Random Variable.
+    """Random variable class for the standardized SHASH distribution.
 
-    Samples from a SHASHb distribution, which is a standardized SHASH distribution scaled by sigma
-    and translated by mu. This variant provides a standardized version of the SHASH distribution
-    where the base distribution is normalized to have zero mean and unit variance before applying
-    the location and scale transformations.
+    This class implements sampling from a SHASH distribution that has been
+    standardized to have zero mean and unit variance before applying
+    location and scale transformations.
+
+    Notes
+    -----
+    The transformation involves:
+    1. Generate SHASH samples
+    2. Standardize to zero mean and unit variance
+    3. Apply location-scale transformation
     """
 
     name = "shashb"
@@ -408,29 +763,80 @@ class SHASHbRV(RandomVariable):
     _print_name = ("SHASHb", "\\operatorname{SHASHb}")
 
     @classmethod
-    def rng_fn(cls, rng, mu, sigma, epsilon, delta, size=None):
-        """Draw random samples from SHASHb distribution.
+    def rng_fn(
+        cls,
+        rng: Generator,
+        mu: float,
+        sigma: float,
+        epsilon: float,
+        delta: float,
+        size: Optional[Union[int, Tuple[int, ...]]] = None,
+    ) -> NDArray[np.float64]:
+        """Generate random samples from standardized SHASH distribution.
 
-        Args:
-            rng: Random number generator
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            size: sample size. Defaults to None.
+        Parameters
+        ----------
+        rng : Generator
+            NumPy random number generator
+        mu : float
+            Location parameter (mean)
+        sigma : float
+            Scale parameter (standard deviation)
+        epsilon : float
+            Skewness parameter
+        delta : float
+            Kurtosis parameter
+        size : int or tuple of ints, optional
+            Output shape. Default is None.
 
-        Returns:
-            Random samples from SHASHb distribution
+        Returns
+        -------
+        NDArray[np.float64]
+            Array of random samples from the distribution
+
+        Notes
+        -----
+        The sampling process involves:
+        1. Generate standard normal samples
+        2. Apply SHASH transformation
+        3. Standardize
+        4. Apply location-scale transformation
         """
         s = rng.normal(size=size)
 
-        def P(q):
+        def P(q: float) -> float:
+            """Helper function to compute P function.
+
+            Parameters
+            ----------
+            q : float
+                Input parameter
+
+            Returns
+            -------
+            float
+                P function value
+            """
             K1 = kv((q + 1) / 2, 0.25)
             K2 = kv((q - 1) / 2, 0.25)
             a = (K1 + K2) * CONST1
             return a
 
-        def m1m2(epsilon, delta):
+        def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
+            """Helper function to compute moments.
+
+            Parameters
+            ----------
+            epsilon : float
+                Skewness parameter
+            delta : float
+                Kurtosis parameter
+
+            Returns
+            -------
+            Tuple[float, float]
+                Mean and variance
+            """
             inv_delta = 1.0 / delta
             two_inv_delta = 2.0 * inv_delta
             p1 = P(inv_delta)
@@ -446,7 +852,7 @@ class SHASHbRV(RandomVariable):
         mean, var = m1m2(epsilon, delta)
         out = (
             (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
-        ) * sigma + mu
+        ) * sigma + mu  # type: ignore
         return out
 
 
@@ -454,29 +860,70 @@ shashb = SHASHbRV()
 
 
 class SHASHb(Continuous):
-    """SHASHb distribution, which is a standardized SHASH distribution scaled by sigma and translated by mu.
+    """Standardized variant of the SHASH distribution.
 
-    This distribution provides a standardized version of the SHASH distribution where the base
-    distribution is normalized to have zero mean and unit variance before applying the location
-    and scale transformations. This transformation aims to remove the correlation between the
-    parameters, which can be useful in MCMC sampling.
+    This distribution extends the base SHASH distribution by standardizing it
+    to have zero mean and unit variance before applying location and scale
+    transformations.
+
+    Parameters
+    ----------
+    mu : float
+        Location parameter (mean)
+    sigma : float
+        Scale parameter (standard deviation)
+    epsilon : float
+        Skewness parameter controlling asymmetry
+    delta : float
+        Kurtosis parameter controlling tail weight
+
+    Notes
+    -----
+    The distribution is obtained by:
+    1. Starting with base SHASH distribution
+    2. Standardizing to zero mean and unit variance
+    3. Applying Y = mu + sigma * X transformation
+
+    This standardization can improve numerical stability and parameter
+    interpretability in some applications.
+
+    Examples
+    --------
+    >>> import pymc as pm
+    >>> with pm.Model():
+    ...     x = pm.SHASHb('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
     """
 
     rv_op = shashb
 
     @classmethod
-    def dist(cls, mu, sigma, epsilon, delta, **kwargs):
-        """Return a SHASHb distribution.
+    def dist(
+        cls,
+        mu: pt.TensorLike,
+        sigma: pt.TensorLike,
+        epsilon: pt.TensorLike,
+        delta: pt.TensorLike,
+        **kwargs: Any,
+    ) -> Any:
+        """Create a SHASHb distribution with given parameters.
 
-        Args:
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
-            **kwargs: Additional arguments passed to the distribution
+        Parameters
+        ----------
+        mu : TensorLike
+            Location parameter (mean)
+        sigma : TensorLike
+            Scale parameter (standard deviation)
+        epsilon : TensorLike
+            Skewness parameter controlling asymmetry
+        delta : TensorLike
+            Kurtosis parameter controlling tail weight
+        **kwargs : dict
+            Additional arguments passed to the distribution constructor
 
-        Returns:
-            A SHASHb distribution
+        Returns
+        -------
+        SHASHb
+            A standardized SHASH distribution instance
         """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
@@ -484,21 +931,36 @@ class SHASHb(Continuous):
         delta = as_tensor_variable(floatX(delta))
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
-    def logp(value, mu, sigma, epsilon, delta):
-        """The log-probability of the SHASHb distribution.
+    def logp(
+        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
+    ) -> float:
+        """Calculate the log probability density of the SHASHb distribution.
 
-        Args:
-            value: value to evaluate the log-probability at
-            mu: location parameter
-            sigma: scale parameter
-            epsilon: skew parameter
-            delta: kurtosis parameter
+        Parameters
+        ----------
+        value : array_like
+            Points at which to evaluate the log probability density
+        mu : float
+            Location parameter (mean)
+        sigma : float
+            Scale parameter (standard deviation)
+        epsilon : float
+            Skewness parameter controlling asymmetry
+        delta : float
+            Kurtosis parameter controlling tail weight
 
-        Returns:
-            Log-probability of the SHASHb distribution
+        Returns
+        -------
+        float
+            Log probability density at the specified points
+
+        Notes
+        -----
+        The implementation follows Jones et al. (2009) equation (2.2)
+        with standardization and location-scale transformation.
         """
         mean, var = SHASH.m1m2(epsilon, delta)
-        remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean
+        remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr

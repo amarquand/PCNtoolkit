@@ -25,27 +25,80 @@ def plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
 ) -> None:
-    """Plot centiles for all response variables in the data.
+    """Generate centile plots for response variables with optional data overlay.
 
-    Args:
-        model (NormBase): The normative model.
-        data (NormData): Data containing the covariates and response variables.
-        covariate (str | None, optional): Name of the covariate on the x-axis. Defaults to None.
-        cummul_densities (list | None, optional): Which CDF values correspond to the centiles. Defaults to None.
-        batch_effects (Dict[str, List[str]] | None, optional):
-            Models with a random effect have different centiles for different batch effects. This parameter allows
-            you to specify for which batch effects to plot the centiles, by providing a dictionary with the batch
-            effect name as key and a list of batch effect values as value. The first values in the lists will be
-            used for computing the centiles. If no list is provided, the batch effect that occurs first in the
-            data will be used. Addtionally, if `show_data==True`, the dictionary values specify which batch effects
-            are highlighted in the scatterplot.
-        show_data (bool, optional): Scatter data along with centiles. Defaults to False.
-        plt_kwargs (dict | None, optional): Additional kwargs to pt. Defaults to None.
-        hue_data (str, optional): Column to use for coloring. Defaults to "site".
-        markers_data (str, optional): Column to use for marker styling. Defaults to "sex".
+    This function creates visualization of centile curves for all response variables
+    in the dataset. It can optionally show the actual data points overlaid on the
+    centile curves, with customizable styling based on categorical variables.
 
-    Raises:
-        ValueError: _description_
+    Parameters
+    ----------
+    model : NormBase
+        The fitted normative model used to generate centile predictions.
+    data : NormData
+        Dataset containing covariates and response variables to be plotted.
+    covariate : str | None, optional
+        Name of the covariate to plot on x-axis. If None, uses the first
+        covariate in the dataset, by default None.
+    cummul_densities : list | None, optional
+        List of cumulative density function values to plot as centiles.
+        If None, uses model's default values, by default None.
+    batch_effects : Dict[str, List[str]] | None, optional
+        Specification of batch effects for plotting. Format:
+        {'batch_effect_name': ['value1', 'value2', ...]}
+        For models with random effects, specifies which batch effect values
+        to use for centile computation (first value in each list).
+        For data visualization, specifies which batch effects to highlight.
+        By default None.
+    show_data : bool, optional
+        If True, overlays actual data points on the centile curves.
+        Points matching batch_effects are highlighted, others are shown
+        in light gray, by default False.
+    plt_kwargs : dict | None, optional
+        Additional keyword arguments passed to plt.figure(),
+        by default None.
+    hue_data : str, optional
+        Column name in data used for color-coding points when show_data=True,
+        by default "site".
+    markers_data : str, optional
+        Column name in data used for marker styles when show_data=True,
+        by default "sex".
+
+    Returns
+    -------
+    None
+        Displays the plot using matplotlib.
+
+    Raises
+    ------
+    ValueError
+        If batch_effects dictionary contains invalid value types.
+
+    Notes
+    -----
+    - Centile lines are styled differently based on their distance from the median:
+      - Solid lines for centiles close to median (|cdf - 0.5| < 0.25)
+      - Dashed lines for intermediate centiles (0.25 ≤ |cdf - 0.5| < 0.475)
+      - Dotted lines for extreme centiles (|cdf - 0.5| ≥ 0.475)
+    - CDF values are displayed at both ends of each centile line
+    - When showing data with batch effects, matching points are highlighted
+      while others are shown in gray with reduced opacity
+
+    Examples
+    --------
+    >>> # Basic centile plot
+    >>> plot_centiles(model, data, covariate='age')
+    
+    >>> # With data overlay and batch effects
+    >>> plot_centiles(
+    ...     model, 
+    ...     data,
+    ...     covariate='age',
+    ...     batch_effects={'site': ['site1', 'site2']},
+    ...     show_data=True,
+    ...     hue_data='diagnosis',
+    ...     markers_data='sex'
+    ... )
     """
     if covariate is None:
         covariate = data.covariates[0].to_numpy().item()
@@ -105,7 +158,37 @@ def _plot_centiles(
     markers_data: str = "sex",
     palette: str = "viridis",
 ) -> None:
-    """Plot the centiles for a single response variable."""
+    """Plot centile curves for a single response variable.
+
+    Parameters
+    ----------
+    data : NormData
+        Original dataset containing response variables and covariates.
+    synth_data : NormData
+        Synthetic data containing computed centiles.
+    response_var : str
+        Name of the response variable to plot.
+    batch_effects : Dict[str, List[str]]
+        Dictionary specifying batch effects to highlight in the plot.
+    covariate : str, optional
+        Name of the covariate for x-axis.
+    show_data : bool, optional
+        If True, overlay data points on centile curves.
+    plt_kwargs : dict, optional
+        Additional keyword arguments for plt.figure().
+    hue_data : str, optional
+        Column name for color-coding points, by default "site".
+    markers_data : str, optional
+        Column name for marker styles, by default "sex".
+    palette : str, optional
+        Color palette name for centile curves, by default "viridis".
+
+    Notes
+    -----
+    - Centile line styles vary based on distance from median
+    - CDF values are displayed at both ends of centile lines
+    - When showing data, batch effect points are highlighted
+    """
 
     sns.set_style("whitegrid")
     plt.figure(**plt_kwargs)
@@ -222,156 +305,156 @@ def _plot_centiles(
 
     plt.show()
 
-    def plot_qq(
-        data: NormData,
-        plt_kwargs: dict | None = None,
-        bound: int | float = 0,
-        plot_id_line: bool = False,
-        hue_data: str | None = None,
-        markers_data: str | None = None,
-        split_data: str | None = None,
-        seed: int = 42,
-    ) -> None:
-        """
-        Plot QQ plots for each response variable in the data.
+def plot_qq(
+    data: NormData,
+    plt_kwargs: dict | None = None,
+    bound: int | float = 0,
+    plot_id_line: bool = False,
+    hue_data: str | None = None,
+    markers_data: str | None = None,
+    split_data: str | None = None,
+    seed: int = 42,
+) -> None:
+    """
+    Plot QQ plots for each response variable in the data.
 
-        Parameters
-        ----------
-        data : NormData
-            Data containing the response variables.
-        plt_kwargs : dict or None, optional
-            Additional keyword arguments for the plot. Defaults to None.
-        bound : int or float, optional
-            Axis limits for the plot. Defaults to 0.
-        plot_id_line : bool, optional
-            Whether to plot the identity line. Defaults to False.
-        hue_data : str or None, optional
-            Column to use for coloring. Defaults to None.
-        markers_data : str or None, optional
-            Column to use for marker styling. Defaults to None.
-        split_data : str or None, optional
-            Column to use for splitting data. Defaults to None.
-        seed : int, optional
-            Random seed for reproducibility. Defaults to 42.
+    Parameters
+    ----------
+    data : NormData
+        Data containing the response variables.
+    plt_kwargs : dict or None, optional
+        Additional keyword arguments for the plot. Defaults to None.
+    bound : int or float, optional
+        Axis limits for the plot. Defaults to 0.
+    plot_id_line : bool, optional
+        Whether to plot the identity line. Defaults to False.
+    hue_data : str or None, optional
+        Column to use for coloring. Defaults to None.
+    markers_data : str or None, optional
+        Column to use for marker styling. Defaults to None.
+    split_data : str or None, optional
+        Column to use for splitting data. Defaults to None.
+    seed : int, optional
+        Random seed for reproducibility. Defaults to 42.
 
-        Returns
-        -------
-        None
+    Returns
+    -------
+    None
 
-        Examples
-        --------
-        >>> plot_qq(data, plt_kwargs={'figsize': (10, 6)}, bound=3)
-        """
-        plt_kwargs = plt_kwargs or {}
-        for response_var in data.coords["response_vars"].to_numpy():
-            _plot_qq(
-                data,
-                response_var,
-                plt_kwargs,
-                bound,
-                plot_id_line,
-                hue_data,
-                markers_data,
-                split_data,
-                seed,
-            )
-
-    def _plot_qq(
-        data: NormData,
-        response_var: str,
-        plt_kwargs: dict,
-        bound: float = 0,
-        plot_id_line: bool = False,
-        hue_data: str | None = None,
-        markers_data: str | None = None,
-        split_data: str | None = None,
-        seed: int = 42,
-    ) -> None:
-        """
-        Plot a QQ plot for a single response variable.
-
-        Parameters
-        ----------
-        data : NormData
-            Data containing the response variable.
-        response_var : str
-            The response variable to plot.
-        plt_kwargs : dict
-            Additional keyword arguments for the plot.
-        bound : float, optional
-            Axis limits for the plot. Not used if 0. Defaults to 0.
-        plot_id_line : bool, optional
-            Whether to plot the identity line. Defaults to False.
-        hue_data : str or None, optional
-            Column to use for coloring. Defaults to None.
-        markers_data : str or None, optional
-            Column to use for marker styling. Defaults to None.
-        split_data : str or None, optional
-            Column to use for splitting data. Defaults to None. All split data will be offset by 1.
-        seed : int, optional
-            Random seed for reproducibility. Defaults to 42.
-
-        Returns
-        -------
-        None
-
-        Examples
-        --------
-        >>> _plot_qq(data, 'response_var', plt_kwargs={'figsize': (10, 6)}, bound=3)
-        """
-        np.random.seed(seed)
-        sns.set_style("whitegrid")
-        filter_dict = {
-            "response_vars": response_var,
-        }
-        filt = data.sel(filter_dict)
-
-        df: pd.DataFrame = filt.to_dataframe()
-
-        # Create labels for the axes
-        tq = "theoretical quantiles"
-        rq = f"{response_var} quantiles"
-
-        # Filter columns needed for plotting
-        columns = [("zscores", response_var)]
-        columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
-        df = df[columns]
-        df.columns = [rq] + [be.item() for be in data.batch_effect_dims]
-
-        # Sort the dataframe by the response variable
-        df.sort_values(by=rq, inplace=True)
-
-        # Create a column for the theoretical quantiles
-        rand = np.random.randn(df.shape[0])
-        rand.sort()
-        df[tq] = rand
-
-        if split_data:
-            for i, g in enumerate(df.groupby(split_data, sort=False)):
-                my_id = g[1].index
-                df.loc[my_id, rq] += i * 1.0
-                rand = np.random.randn(g[1].shape[0])
-                rand.sort()
-                df.loc[my_id, tq] = rand
-
-        # Plot the QQ-plot
-        sns.scatterplot(
-            data=df,
-            x="theoretical quantiles",
-            y=rq,
-            hue=hue_data if hue_data in df else None,
-            style=markers_data if markers_data in df else None,
-            **plt_kwargs,
+    Examples
+    --------
+    >>> plot_qq(data, plt_kwargs={'figsize': (10, 6)}, bound=3)
+    """
+    plt_kwargs = plt_kwargs or {}
+    for response_var in data.coords["response_vars"].to_numpy():
+        _plot_qq(
+            data,
+            response_var,
+            plt_kwargs,
+            bound,
+            plot_id_line,
+            hue_data,
+            markers_data,
+            split_data,
+            seed,
         )
-        if plot_id_line:
-            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
-            plt.plot(
-                [-max_abs_val, max_abs_val],
-                [-max_abs_val, max_abs_val],
-                color="black",
-                linestyle="--",
-            )
 
-        if bound != 0:
-            plt.axis((-bound, bound, -bound, bound))
-        plt.show()
+def _plot_qq(
+    data: NormData,
+    response_var: str,
+    plt_kwargs: dict,
+    bound: float = 0,
+    plot_id_line: bool = False,
+    hue_data: str | None = None,
+    markers_data: str | None = None,
+    split_data: str | None = None,
+    seed: int = 42,
+) -> None:
+    """
+    Plot a QQ plot for a single response variable.
+
+    Parameters
+    ----------
+    data : NormData
+        Data containing the response variable.
+    response_var : str
+        The response variable to plot.
+    plt_kwargs : dict
+        Additional keyword arguments for the plot.
+    bound : float, optional
+        Axis limits for the plot. Not used if 0. Defaults to 0.
+    plot_id_line : bool, optional
+        Whether to plot the identity line. Defaults to False.
+    hue_data : str or None, optional
+        Column to use for coloring. Defaults to None.
+    markers_data : str or None, optional
+        Column to use for marker styling. Defaults to None.
+    split_data : str or None, optional
+        Column to use for splitting data. Defaults to None. All split data will be offset by 1.
+    seed : int, optional
+        Random seed for reproducibility. Defaults to 42.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> _plot_qq(data, 'response_var', plt_kwargs={'figsize': (10, 6)}, bound=3)
+    """
+    np.random.seed(seed)
+    sns.set_style("whitegrid")
+    filter_dict = {
+        "response_vars": response_var,
+    }
+    filt = data.sel(filter_dict)
+
+    df: pd.DataFrame = filt.to_dataframe()
+
+    # Create labels for the axes
+    tq = "theoretical quantiles"
+    rq = f"{response_var} quantiles"
+
+    # Filter columns needed for plotting
+    columns = [("zscores", response_var)]
+    columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
+    df = df[columns]
+    df.columns = [rq] + [be.item() for be in data.batch_effect_dims]
+
+    # Sort the dataframe by the response variable
+    df.sort_values(by=rq, inplace=True)
+
+    # Create a column for the theoretical quantiles
+    rand = np.random.randn(df.shape[0])
+    rand.sort()
+    df[tq] = rand
+
+    if split_data:
+        for i, g in enumerate(df.groupby(split_data, sort=False)):
+            my_id = g[1].index
+            df.loc[my_id, rq] += i * 1.0
+            rand = np.random.randn(g[1].shape[0])
+            rand.sort()
+            df.loc[my_id, tq] = rand
+
+    # Plot the QQ-plot
+    sns.scatterplot(
+        data=df,
+        x="theoretical quantiles",
+        y=rq,
+        hue=hue_data if hue_data in df else None,
+        style=markers_data if markers_data in df else None,
+        **plt_kwargs,
+    )
+    if plot_id_line:
+        max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
+        plt.plot(
+            [-max_abs_val, max_abs_val],
+            [-max_abs_val, max_abs_val],
+            color="black",
+            linestyle="--",
+        )
+
+    if bound != 0:
+        plt.axis((-bound, bound, -bound, bound))
+    plt.show()

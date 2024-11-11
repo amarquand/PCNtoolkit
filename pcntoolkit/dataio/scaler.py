@@ -1,221 +1,158 @@
-from typing import Dict, List, Optional, Union
+"""Data scaling and normalization module for PCNToolkit.
+
+This module provides various scaling implementations for data preprocessing,
+including standardization, min-max scaling, robust scaling, and identity scaling.
+All scalers implement a common interface defined by the abstract base class Scaler.
+
+The module supports the following scaling operations:
+    - Standardization (zero mean, unit variance)
+    - Min-max scaling (to [0,1] range)
+    - Robust min-max scaling (using percentiles)
+    - Identity scaling (no transformation)
+
+Each scaler supports:
+    - Fitting to training data
+    - Transforming new data
+    - Inverse transforming scaled data
+    - Serialization to/from dictionaries
+    - Optional outlier adjustment
+
+Available Classes
+---------------
+Scaler : ABC
+    Abstract base class defining the scaler interface
+StandardScaler
+    Standardizes features to zero mean and unit variance
+MinMaxScaler
+    Scales features to a fixed range [0, 1]
+RobustMinMaxScaler
+    Scales features using robust statistics based on percentiles
+IdentityScaler
+    Passes data through unchanged
+
+Examples
+--------
+>>> from pcntoolkit.dataio.scaler import StandardScaler
+>>> import numpy as np
+>>> X = np.array([[1, 2], [3, 4], [5, 6]])
+>>> scaler = StandardScaler()
+>>> X_scaled = scaler.fit_transform(X)
+
+Notes
+-----
+All scalers support both fitting to the entire dataset and transforming specific
+indices of features, allowing for flexible scaling strategies. The scalers can
+be serialized to dictionaries for saving/loading trained parameters.
+
+See Also
+--------
+pcntoolkit.normative_model : Uses scalers for data preprocessing
+pcntoolkit.dataio.basis_expansions : Complementary data transformations
+"""
+
+
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Type, Union
 
 import numpy as np
 from numpy.typing import NDArray
 
 
-class Scaler:
-    """A class for scaling numerical data using various methods.
+class Scaler(ABC):
+    """Abstract base class for data scaling operations.
+
+    This class defines the interface for all scaling operations in PCNToolkit.
+    Concrete implementations must implement fit, transform, inverse_transform,
+    and to_dict methods.
 
     Parameters
     ----------
-    scaler_type : str, optional
-        The type of scaling to apply. Options are:
-        - "standardize": zero mean, unit variance
-        - "minmax": scale to range [0,1]
-        - "robminmax": robust minmax scaling using percentiles
-        - "id" or "none": no scaling
-        Default is "standardize"
-    tail : float, optional
-        The tail probability for robust scaling, by default 0.05
     adjust_outliers : bool, optional
-        Whether to clip values to [0,1] range for minmax scaling, by default True
+        Whether to clip values to valid ranges, by default True
 
-    Attributes
-    ----------
-    scaler_type : str
-        The type of scaling being used
-    tail : float
-        The tail probability for robust scaling
-    adjust_outliers : bool
-        Whether outliers are adjusted
+    Notes
+    -----
+    All scaling operations support both fitting to the entire dataset and
+    transforming specific indices of features, allowing for flexible scaling
+    strategies.
     """
 
-    def __init__(
-        self,
-        scaler_type: str = "standardize",
-        tail: float = 0.05,
-        adjust_outliers: bool = True,
-    ) -> None:
-        self.scaler_type: str = scaler_type
-        self.tail: float = tail
-        self.adjust_outliers: bool = adjust_outliers
+    def __init__(self, adjust_outliers: bool = True) -> None:
+        self.adjust_outliers = adjust_outliers
 
-        if self.scaler_type not in ["standardize", "minmax", "robminmax", "id", "none"]:
-            raise ValueError("Undefined scaler type!")
-
+    @abstractmethod
     def fit(self, X: NDArray) -> None:
-        """Fit the scaler to the data.
+        """Compute the parameters needed for scaling.
 
         Parameters
         ----------
-        X : np.ndarray
-            Input data to fit the scaler
+        X : NDArray
+            Training data to fit the scaler on, shape (n_samples, n_features)
         """
-        if self.scaler_type == "standardize":
-            self.m: NDArray = np.mean(X, axis=0)
-            self.s: NDArray = np.std(X, axis=0)
 
-        elif self.scaler_type == "minmax":
-            self.min: NDArray = np.min(X, axis=0)
-            self.max: NDArray = np.max(X, axis=0)
-
-        elif self.scaler_type == "robminmax":
-            self.min = np.zeros(X.shape[1])
-            self.max = np.zeros(X.shape[1])
-            for i in range(X.shape[1]):
-                self.min[i] = np.median(
-                    np.sort(X[:, i])[0 : int(np.round(X.shape[0] * self.tail))]
-                )
-                self.max[i] = np.median(
-                    np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)) :]
-                )
-
-        elif self.scaler_type in ["id", "none"]:
-            pass
-
+    @abstractmethod
     def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
         """Transform the data using the fitted scaler.
 
         Parameters
         ----------
-        X : np.ndarray
-            Data to transform
-        index : np.ndarray, optional
-            Indices for partial transformation, by default None
+        X : NDArray
+            Data to transform, shape (n_samples, n_features)
+        index : Optional[NDArray], optional
+            Indices of features to transform, by default None (transform all)
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Transformed data
+
+        Raises
+        ------
+        ValueError
+            If the scaler has not been fitted
         """
-        if self.scaler_type == "standardize":
-            if index is None:
-                X = (X - self.m) / self.s
-            else:
-                X = (X - self.m[index]) / self.s[index]
 
-        elif self.scaler_type in ["minmax", "robminmax"]:
-            if index is None:
-                X = (X - self.min) / (self.max - self.min)
-            else:
-                X = (X - self.min[index]) / (self.max[index] - self.min[index])
-
-            if self.adjust_outliers:
-                X[X < 0] = 0
-                X[X > 1] = 1
-
-        elif self.scaler_type in ["id", "none"]:
-            X = X + 0
-
-        return X
-
+    @abstractmethod
     def inverse_transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
         """Inverse transform scaled data back to original scale.
 
         Parameters
         ----------
-        X : np.ndarray
-            Scaled data to inverse transform
-        index : np.ndarray, optional
-            Indices for partial transformation, by default None
+        X : NDArray
+            Data to inverse transform, shape (n_samples, n_features)
+        index : Optional[NDArray], optional
+            Indices of features to inverse transform, by default None (transform all)
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Inverse transformed data
+
+        Raises
+        ------
+        ValueError
+            If the scaler has not been fitted
         """
-        if self.scaler_type == "standardize":
-            if index is None:
-                X = X * self.s + self.m
-            else:
-                X = X * self.s[index] + self.m[index]
-
-        elif self.scaler_type in ["minmax", "robminmax"]:
-            if index is None:
-                X = X * (self.max - self.min) + self.min
-            else:
-                X = X * (self.max[index] - self.min[index]) + self.min[index]
-
-        elif self.scaler_type in ["id", "none"]:
-            X = X + 0
-
-        return X
 
     def fit_transform(self, X: NDArray) -> NDArray:
         """Fit the scaler and transform the data in one step.
 
         Parameters
         ----------
-        X : np.ndarray
-            Input data to fit and transform
+        X : NDArray
+            Data to fit and transform, shape (n_samples, n_features)
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Transformed data
         """
-        if self.scaler_type == "standardize":
-            self.m = np.mean(X, axis=0)
-            self.s = np.std(X, axis=0)
-            X = (X - self.m) / self.s
+        self.fit(X)
+        return self.transform(X)
 
-        elif self.scaler_type == "minmax":
-            self.min = np.min(X, axis=0)
-            self.max = np.max(X, axis=0)
-            X = (X - self.min) / (self.max - self.min)
-
-        elif self.scaler_type == "robminmax":
-            reshape = False
-            if len(X.shape) == 1:
-                reshape = True
-                X = X.reshape(-1, 1)
-
-            self.min = np.zeros(X.shape[1])
-            self.max = np.zeros(X.shape[1])
-
-            for i in range(X.shape[1]):
-                self.min[i] = np.median(
-                    np.sort(X[:, i])[0 : int(np.round(X.shape[0] * self.tail))]
-                )
-                self.max[i] = np.median(
-                    np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)) :]
-                )
-
-            X = (X - self.min) / (self.max - self.min)
-
-            if self.adjust_outliers:
-                X[X < 0] = 0
-                X[X > 1] = 1
-
-            if reshape:
-                X = X.reshape(-1)
-
-        elif self.scaler_type in ["id", "none"]:
-            X = X + 0
-
-        return X
-
+    @abstractmethod
     def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
-        """Convert scaler instance to dictionary.
-
-        Returns
-        -------
-        Dict[str, Union[bool, str, float, List[float]]]
-            Dictionary containing the scaler parameters
-        """
-        my_dict = {
-            "adjust_outliers": self.adjust_outliers,
-            "scaler_type": self.scaler_type,
-            "tail": self.tail,
-        }
-
-        if self.scaler_type == "standardize":
-            return my_dict | {"m": self.m.tolist(), "s": self.s.tolist()}
-        elif self.scaler_type in ["minmax", "robinmax"]:
-            return my_dict | {"min": self.min.tolist(), "max": self.max.tolist()}
-        else:
-            return my_dict
+        """Convert scaler instance to dictionary."""
 
     @classmethod
     def from_dict(
@@ -226,28 +163,329 @@ class Scaler:
         Parameters
         ----------
         my_dict : Dict[str, Union[bool, str, float, List[float]]]
-            Dictionary containing scaler parameters
+            Dictionary containing scaler parameters. Must include 'scaler_type' key.
 
         Returns
         -------
         Scaler
-            New scaler instance with the specified parameters
-        """
-        scaler_type = my_dict.pop("scaler_type")
-        adjust_outliers = my_dict.pop("adjust_outliers")
-        tail = my_dict.pop("tail")
+            Instance of the appropriate scaler subclass
 
-        instance = cls(
-            scaler_type=scaler_type, tail=tail, adjust_outliers=adjust_outliers
-        )
-        if scaler_type == "standardize":
-            m = np.array(my_dict.pop("m"))
-            s = np.array(my_dict.pop("s"))
-            instance.m = m
-            instance.s = s
-        elif scaler_type in ["minmax", "robinmax"]:
-            min = np.array(my_dict.pop("min"))
-            max = np.array(my_dict.pop("max"))
-            instance.min = min
-            instance.max = max
+        Raises
+        ------
+        ValueError
+            If scaler_type is missing or invalid
+        """
+        if "scaler_type" not in my_dict:
+            raise ValueError("Dictionary must contain 'scaler_type' key")
+
+        scaler_type: str = my_dict["scaler_type"]  # type: ignore
+        scalers: Dict[str, Type[Scaler]] = {
+            "standardize": StandardScaler,
+            "minmax": MinMaxScaler,
+            "robminmax": RobustMinMaxScaler,
+            "id": IdentityScaler,
+            "none": IdentityScaler,
+        }
+
+        if scaler_type not in scalers:
+            raise ValueError(f"Undefined scaler type: {scaler_type}")
+
+        return scalers[scaler_type].from_dict(my_dict)
+
+    @staticmethod
+    def from_string(scaler_type: str, **kwargs: Any) -> "Scaler":
+        """Create a scaler instance from a string identifier.
+
+        Parameters
+        ----------
+        scaler_type : str
+            The type of scaling to apply. Options are:
+            - "standardize": zero mean, unit variance
+            - "minmax": scale to range [0,1]
+            - "robminmax": robust minmax scaling using percentiles
+            - "id" or "none": no scaling
+        **kwargs : dict
+            Additional arguments to pass to the scaler constructor
+
+        Returns
+        -------
+        Scaler
+            Instance of the appropriate scaler class
+        """
+        scalers: Dict[str, Type[Scaler]] = {
+            "standardize": StandardScaler,
+            "minmax": MinMaxScaler,
+            "robminmax": RobustMinMaxScaler,
+            "id": IdentityScaler,
+            "none": IdentityScaler,
+        }
+
+        if scaler_type not in scalers:
+            raise ValueError(f"Undefined scaler type: {scaler_type}")
+
+        return scalers[scaler_type](**kwargs)
+
+
+class StandardScaler(Scaler):
+    """Standardize features by removing the mean and scaling to unit variance.
+
+    This scaler transforms the data to have zero mean and unit variance:
+    z = (x - μ) / σ
+
+    Parameters
+    ----------
+    adjust_outliers : bool, optional
+        Whether to clip extreme values, by default True
+
+    Attributes
+    ----------
+    m : Optional[NDArray]
+        Mean of the training data
+    s : Optional[NDArray]
+        Standard deviation of the training data
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pcntoolkit.dataio.scaler import StandardScaler
+    >>> X = np.array([[1, 2], [3, 4], [5, 6]])
+    >>> scaler = StandardScaler()
+    >>> X_scaled = scaler.fit_transform(X)
+    >>> print(X_scaled.mean(axis=0))  # approximately [0, 0]
+    >>> print(X_scaled.std(axis=0))   # approximately [1, 1]
+    """
+
+    def __init__(self, adjust_outliers: bool = True) -> None:
+        super().__init__(adjust_outliers)
+        self.m: Optional[NDArray] = None
+        self.s: Optional[NDArray] = None
+
+    def fit(self, X: NDArray) -> None:
+        self.m = np.mean(X, axis=0)
+        self.s = np.std(X, axis=0)
+
+    def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        if self.m is None or self.s is None:
+            raise ValueError("Scaler must be fitted before transform")
+        if index is None:
+            return (X - self.m) / self.s
+        return (X - self.m[index]) / self.s[index]
+
+    def inverse_transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        if self.m is None or self.s is None:
+            raise ValueError("Scaler must be fitted before inverse_transform")
+        if index is None:
+            return X * self.s + self.m
+        return X * self.s[index] + self.m[index]
+
+    def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
+        if self.m is None or self.s is None:
+            raise ValueError("Scaler must be fitted before serialization")
+        return {
+            "scaler_type": "standardize",
+            "adjust_outliers": self.adjust_outliers,
+            "m": self.m.tolist(),
+            "s": self.s.tolist(),
+        }
+
+    @classmethod
+    def from_dict(
+        cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
+    ) -> "StandardScaler":
+        instance = cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
+        instance.m = np.array(my_dict["m"])
+        instance.s = np.array(my_dict["s"])
         return instance
+
+
+class MinMaxScaler(Scaler):
+    """Scale features to a fixed range [0, 1].
+
+    Transforms features by scaling each feature to a given range (default [0, 1]):
+    X_scaled = (X - X_min) / (X_max - X_min)
+
+    Parameters
+    ----------
+    adjust_outliers : bool, optional
+        Whether to clip transformed values to [0, 1], by default True
+
+    Attributes
+    ----------
+    min : Optional[NDArray]
+        Minimum value for each feature from training data
+    max : Optional[NDArray]
+        Maximum value for each feature from training data
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pcntoolkit.dataio.scaler import MinMaxScaler
+    >>> X = np.array([[1, 2], [3, 4], [5, 6]])
+    >>> scaler = MinMaxScaler()
+    >>> X_scaled = scaler.fit_transform(X)
+    >>> print(X_scaled.min(axis=0))  # [0, 0]
+    >>> print(X_scaled.max(axis=0))  # [1, 1]
+    """
+
+    def __init__(self, adjust_outliers: bool = True) -> None:
+        super().__init__(adjust_outliers)
+        self.min: Optional[NDArray] = None
+        self.max: Optional[NDArray] = None
+
+    def fit(self, X: NDArray) -> None:
+        self.min = np.min(X, axis=0)
+        self.max = np.max(X, axis=0)
+
+    def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        if self.min is None or self.max is None:
+            raise ValueError("Scaler must be fitted before transform")
+        if index is None:
+            X_scaled = (X - self.min) / (self.max - self.min)
+        else:
+            X_scaled = (X - self.min[index]) / (self.max[index] - self.min[index])
+
+        if self.adjust_outliers:
+            X_scaled = np.clip(X_scaled, 0, 1)
+        return X_scaled
+
+    def inverse_transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        if self.min is None or self.max is None:
+            raise ValueError("Scaler must be fitted before inverse_transform")
+        if index is None:
+            return X * (self.max - self.min) + self.min
+        return X * (self.max[index] - self.min[index]) + self.min[index]
+
+    def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
+        if self.min is None or self.max is None:
+            raise ValueError("Scaler must be fitted before serialization")
+        return {
+            "scaler_type": "minmax",
+            "adjust_outliers": self.adjust_outliers,
+            "min": self.min.tolist(),
+            "max": self.max.tolist(),
+        }
+
+    @classmethod
+    def from_dict(
+        cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
+    ) -> "MinMaxScaler":
+        instance = cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
+        instance.min = np.array(my_dict["min"])
+        instance.max = np.array(my_dict["max"])
+        return instance
+
+
+class RobustMinMaxScaler(MinMaxScaler):
+    """Scale features using robust statistics based on percentiles.
+
+    Similar to MinMaxScaler but uses percentile-based statistics to be
+    robust to outliers.
+
+    Parameters
+    ----------
+    adjust_outliers : bool, optional
+        Whether to clip transformed values to [0, 1], by default True
+    tail : float, optional
+        The percentile to use for computing robust min/max, by default 0.05
+        (5th and 95th percentiles)
+
+    Attributes
+    ----------
+    min : Optional[NDArray]
+        Robust minimum for each feature from training data
+    max : Optional[NDArray]
+        Robust maximum for each feature from training data
+    tail : float
+        The percentile value used for robust statistics
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pcntoolkit.dataio.scaler import RobustMinMaxScaler
+    >>> X = np.array([[1, 2], [3, 4], [100, 6]])  # with outlier
+    >>> scaler = RobustMinMaxScaler(tail=0.1)
+    >>> X_scaled = scaler.fit_transform(X)
+    """
+
+    def __init__(self, adjust_outliers: bool = True, tail: float = 0.05) -> None:
+        super().__init__(adjust_outliers)
+        self.tail = tail
+
+    def fit(self, X: NDArray) -> None:
+        reshape = len(X.shape) == 1
+        if reshape:
+            X = X.reshape(-1, 1)
+
+        self.min = np.zeros(X.shape[1])
+        self.max = np.zeros(X.shape[1])
+
+        for i in range(X.shape[1]):
+            sorted_vals = np.sort(X[:, i])
+            lower_idx = int(np.round(X.shape[0] * self.tail))
+            upper_idx = -int(np.round(X.shape[0] * self.tail))
+            self.min[i] = np.median(sorted_vals[0:lower_idx])
+            self.max[i] = np.median(sorted_vals[upper_idx:])
+
+    def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
+        if self.min is None or self.max is None:
+            raise ValueError("Scaler must be fitted before serialization")
+        return {
+            "scaler_type": "robminmax",
+            "adjust_outliers": self.adjust_outliers,
+            "tail": self.tail,
+            "min": self.min.tolist(),
+            "max": self.max.tolist(),
+        }
+
+    @classmethod
+    def from_dict(
+        cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
+    ) -> "RobustMinMaxScaler":
+        instance = cls(
+            adjust_outliers=bool(my_dict["adjust_outliers"]),
+            tail=float(my_dict["tail"]),  # type: ignore
+        )
+        instance.min = np.array(my_dict["min"])
+        instance.max = np.array(my_dict["max"])
+        return instance
+
+
+class IdentityScaler(Scaler):
+    """A scaler that returns the input unchanged.
+
+    This scaler is useful as a placeholder when no scaling is desired
+    but a scaler object is required by the API.
+
+    Parameters
+    ----------
+    adjust_outliers : bool, optional
+        Has no effect for this scaler, included for API compatibility
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pcntoolkit.dataio.scaler import IdentityScaler
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> scaler = IdentityScaler()
+    >>> X_scaled = scaler.fit_transform(X)
+    >>> np.array_equal(X, X_scaled)
+    True
+    """
+
+    def fit(self, X: NDArray) -> None:
+        pass
+
+    def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        return X.copy()
+
+    def inverse_transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
+        return X.copy()
+
+    def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
+        return {"scaler_type": "id", "adjust_outliers": self.adjust_outliers}
+
+    @classmethod
+    def from_dict(
+        cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
+    ) -> "IdentityScaler":
+        return cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
