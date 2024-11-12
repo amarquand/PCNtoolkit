@@ -11,25 +11,38 @@
 #  Written by A. Marquand
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
-import os
-import sys
-import numpy as np
 import argparse
-import pickle
 import glob
-
-from sklearn.model_selection import KFold
+import os
+import pickle
+import sys
+import warnings
 from pathlib import Path
+
+import numpy as np
+from sklearn.model_selection import KFold
+
+try:
+    import nutpie
+except ImportError:
+    warnings.warn("Nutpie not installed. For sampling with the nutpie backend, install it with `conda install nutpie numba`")
+
+
 
 try:  # run as a package if installed
     from pcntoolkit import configs
     from pcntoolkit.dataio import fileio
     from pcntoolkit.normative_model.norm_utils import norm_init
-    from pcntoolkit.util.utils import compute_pearsonr, CustomCV, explained_var
-    from pcntoolkit.util.utils import compute_MSLL, scaler, get_package_versions
+    from pcntoolkit.util.utils import (
+        CustomCV,
+        compute_MSLL,
+        compute_pearsonr,
+        explained_var,
+        get_package_versions,
+        scaler,
+    )
 except ImportError:
     pass
 
@@ -41,10 +54,15 @@ except ImportError:
 
     import configs
     from dataio import fileio
-
-    from util.utils import compute_pearsonr, CustomCV, explained_var, compute_MSLL
-    from util.utils import scaler, get_package_versions
     from normative_model.norm_utils import norm_init
+    from util.utils import (
+        CustomCV,
+        compute_MSLL,
+        compute_pearsonr,
+        explained_var,
+        get_package_versions,
+        scaler,
+    )
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
@@ -953,14 +971,14 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         return
     # testing should not be obligatory for HBR,
     # but should be for BLR (since it doesn't produce transfer models)
-    elif (not 'model_path' in list(kwargs.keys())) or \
-            (not 'trbefile' in list(kwargs.keys())):
+    elif ('model_path' not in list(kwargs.keys())) or \
+            ('trbefile' not in list(kwargs.keys())):
         print(f'{kwargs=}')
         print('InputError: Some general mandatory arguments are missing.')
         return
     # hbr has one additional mandatory arguments
     elif alg == 'hbr':
-        if (not 'output_path' in list(kwargs.keys())):
+        if ('output_path' not in list(kwargs.keys())):
             print('InputError: Some mandatory arguments for hbr are missing.')
             return
         else:
@@ -972,7 +990,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     # or (testresp==None)
     elif alg == 'blr':
         if (testcov == None) or \
-                (not 'tsbefile' in list(kwargs.keys())):
+                ('tsbefile' not in list(kwargs.keys())):
             print('InputError: Some mandatory arguments for blr are missing.')
             return
     # general arguments
@@ -1208,9 +1226,9 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     if alg != 'hbr':
         print('Model extention is only possible for HBR models.')
         return
-    elif (not 'model_path' in list(kwargs.keys())) or \
-        (not 'output_path' in list(kwargs.keys())) or \
-            (not 'trbefile' in list(kwargs.keys())):
+    elif ('model_path' not in list(kwargs.keys())) or \
+        ('output_path' not in list(kwargs.keys())) or \
+            ('trbefile' not in list(kwargs.keys())):
         print('InputError: Some mandatory arguments are missing.')
         return
     else:
@@ -1319,9 +1337,9 @@ def tune(covfile, respfile, maskfile=None, **kwargs):
     if alg != 'hbr':
         print('Model extention is only possible for HBR models.')
         return
-    elif (not 'model_path' in list(kwargs.keys())) or \
-        (not 'output_path' in list(kwargs.keys())) or \
-            (not 'trbefile' in list(kwargs.keys())):
+    elif ('model_path' not in list(kwargs.keys())) or \
+        ('output_path' not in list(kwargs.keys())) or \
+            ('trbefile' not in list(kwargs.keys())):
         print('InputError: Some mandatory arguments are missing.')
         return
     else:
@@ -1427,9 +1445,9 @@ def merge(covfile=None, respfile=None, **kwargs):
     if alg != 'hbr':
         print('Merging models is only possible for HBR models.')
         return
-    elif (not 'model_path1' in list(kwargs.keys())) or \
-        (not 'model_path2' in list(kwargs.keys())) or \
-            (not 'output_path' in list(kwargs.keys())):
+    elif ('model_path1' not in list(kwargs.keys())) or \
+        ('model_path2' not in list(kwargs.keys())) or \
+            ('output_path' not in list(kwargs.keys())):
         print('InputError: Some mandatory arguments are missing.')
         return
     else:
