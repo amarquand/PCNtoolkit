@@ -27,7 +27,7 @@ from sklearn.model_selection import KFold
 try:
     import nutpie
 except ImportError:
-    warnings.warn("Nutpie not installed. For sampling with the nutpie backend, install it with `conda install nutpie numba`")
+    warnings.warn("Nutpie not installed. For fitting HBR models with the nutpie backend, install it with `conda install nutpie numba`")
 
 
 
