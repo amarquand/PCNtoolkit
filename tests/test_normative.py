@@ -4,12 +4,11 @@ Created on Wed Jan 18 14:34:06 2017
 
 @author: andmar
 """
-# import pcntoolkit
-from normative import estimate
+from pcntoolkit.normative import estimate
 import os
 import sys
 # from pcntoolkit.normative import estimate
-sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
+# sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 
 # wdir = '/home/mrstats/andmar/py.sandbox/normative_nimg'
 # wdir = '/Users/andre/data/normative_nimg'
@@ -26,7 +25,7 @@ respfile = os.path.join(wdir, 'shoot_data_3mm_n500.nii.gz')
 covfile = os.path.join(wdir, 'covariates_basic_n500.txt')
 testresp = os.path.join(wdir, 'shoot_data_3mm_last100.nii.gz')
 testcov = os.path.join(wdir, 'covariates_basic_last100.txt')
-estimate(covfile, respfile, maskfile=maskfile, testresp=testresp,
+estimate(covfile=covfile, respfile=respfile, maskfile=maskfile, testresp=testresp,
          testcov=testcov, alg="blr")  # , configparam=4)
 # cvfolds = 2
 

@@ -126,7 +126,7 @@ def create_design_matrix(X, intercept=True, basis='bspline',
 
     N = X.shape[0]
 
-    if type(X) is pd.DataFrame:
+    if isinstance(X, pd.DataFrame):
         X = X.to_numpy()
 
     # add intercept column
@@ -149,7 +149,7 @@ def create_design_matrix(X, intercept=True, basis='bspline',
     else:
         # site ids are defined
         # make sure the data are in pandas format
-        if type(site_ids) is not pd.Series:
+        if not isinstance(site_ids, pd.Series):
             site_ids = pd.Series(data=site_ids)
         # site_ids = pd.Series(data=site_ids)
 
