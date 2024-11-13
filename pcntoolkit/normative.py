@@ -110,71 +110,62 @@ def get_args(*args):
     :returns configparam: Parameters controlling the estimation algorithm
     :returns kw_args: Additional keyword arguments
     """
-
+    args = args[0][0]
+    print(args)
     # parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
-    parser.add_argument("responses")
-    parser.add_argument("-f", help="Function to call", dest="func",
-                        default="estimate")
+    parser.add_argument("respfile", help="Response variables for the normative model")
+    parser.add_argument("-f", help="Function to call", dest="func", default="estimate")
     parser.add_argument("-m", help="mask file", dest="maskfile", default=None)
-    parser.add_argument("-c", help="covariates file", dest="covfile",
-                        default=None)
-    parser.add_argument("-k", help="cross-validation folds", dest="cvfolds",
-                        default=None)
-    parser.add_argument("-t", help="covariates (test data)", dest="testcov",
-                        default=None)
-    parser.add_argument("-r", help="responses (test data)", dest="testresp",
-                        default=None)
+    parser.add_argument("-c", help="covariates file", dest="covfile", default=None)
+    parser.add_argument("-k", help="cross-validation folds", dest="cvfolds", default=None)
+    parser.add_argument("-t", help="covariates (test data)", dest="testcov", default=None)
+    parser.add_argument("-r", help="responses (test data)", dest="testresp", default=None)
     parser.add_argument("-a", help="algorithm", dest="alg", default="gpr")
-    parser.add_argument("-x", help="algorithm specific config options",
-                        dest="configparam", default=None)
-    # parser.add_argument('-s', action='store_false',
-    #                 help="Flag to skip standardization.", dest="standardize")
-    parser.add_argument("keyword_args", nargs=argparse.REMAINDER)
+    parser.add_argument("-x", help="algorithm specific config options", dest="configparam", default=None)
+    parsed_args, keyword_args = parser.parse_known_args(args)
 
-    args = parser.parse_args()
-
-    # Process required  arguemnts
+    # Process required arguments
     wdir = os.path.realpath(os.path.curdir)
-    respfile = os.path.join(wdir, args.responses)
-    if args.covfile is None:
+    respfile = os.path.join(wdir, parsed_args.respfile)
+    if parsed_args.covfile is None:
         raise ValueError("No covariates specified")
     else:
-        covfile = args.covfile
+        covfile = parsed_args.covfile
 
     # Process optional arguments
-    if args.maskfile is None:
+    if parsed_args.maskfile is None:
         maskfile = None
     else:
-        maskfile = os.path.join(wdir, args.maskfile)
-    if args.testcov is None and args.cvfolds is not None:
+        maskfile = os.path.join(wdir, parsed_args.maskfile)
+    if parsed_args.testcov is None and parsed_args.cvfolds is not None:
         testcov = None
         testresp = None
-        cvfolds = int(args.cvfolds)
+        cvfolds = int(parsed_args.cvfolds)
         print("Running under " + str(cvfolds) + " fold cross-validation.")
     else:
         print("Test covariates specified")
-        testcov = args.testcov
+        testcov = parsed_args.testcov
         cvfolds = None
-        if args.testresp is None:
+        if parsed_args.testresp is None:
             testresp = None
             print("No test response variables specified")
         else:
-            testresp = args.testresp
-        if args.cvfolds is not None:
+            testresp = parsed_args.testresp
+        if parsed_args.cvfolds is not None:
             print("Ignoring cross-valdation specification (test data given)")
 
     # Process addtional keyword arguments. These are always added as strings
     kw_args = {}
-    for kw in args.keyword_args:
+    for kw in keyword_args:
         kw_arg = kw.split('=')
 
         exec("kw_args.update({'" + kw_arg[0] + "' : " +
              "'" + str(kw_arg[1]) + "'" + "})")
 
     return respfile, maskfile, covfile, cvfolds, \
-        testcov, testresp, args.func, args.alg, \
-        args.configparam, kw_args
+        testcov, testresp, parsed_args.func, parsed_args.alg, \
+        parsed_args.configparam, kw_args
 
 
 def evaluate(Y, Yhat, S2=None, mY=None, sY=None, nlZ=None, nm=None, Xz_tr=None, alg=None,
@@ -387,7 +378,9 @@ def estimate(covfile, respfile, **kwargs):
     # '_' is in the outputsuffix to
     # avoid file name parsing problem.
     inscaler = kwargs.pop('inscaler', 'None')
+    print(f"inscaler: {inscaler}")
     outscaler = kwargs.pop('outscaler', 'None')
+    print(f"outscaler: {outscaler}")
     warp = kwargs.get('warp', None)
 
     # convert from strings if necessary
@@ -670,6 +663,8 @@ def fit(covfile, respfile, **kwargs):
     outputsuffix = "_" + outputsuffix.replace("_", "")
     inscaler = kwargs.pop('inscaler', 'None')
     outscaler = kwargs.pop('outscaler', 'None')
+    print(f"inscaler: {inscaler}")
+    print(f"outscaler: {outscaler}")
 
     if savemodel and not os.path.isdir('Models'):
         os.mkdir('Models')
@@ -1545,6 +1540,9 @@ def main(*args):
 
     # Executing the target function
     exec(func + '(' + all_args + ')')
+
+def entrypoint():
+    main(sys.argv[1:])
 
 
 # For running from the command line:
