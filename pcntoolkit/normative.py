@@ -111,7 +111,6 @@ def get_args(*args):
     :returns kw_args: Additional keyword arguments
     """
     args = args[0][0]
-    print(args)
     # parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("respfile", help="Response variables for the normative model")
