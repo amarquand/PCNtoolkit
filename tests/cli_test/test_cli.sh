@@ -2,7 +2,7 @@
 export testdir=$(pwd)
 export tempdir="$testdir/temp"
 mkdir $tempdir
-echo $tempdir
+chmod -R 766 $tempdir
 export data_name="fcon1000"
 export model_config="-a blr warp=WarpSinArcsinh optimizer=l-bfgs-b warp_reparam=True"
 echo "Downloading the data..."
