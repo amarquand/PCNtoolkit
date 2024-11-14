@@ -14,7 +14,7 @@ using the download here: https://www.anaconda.com/download
 
 #### Create environment 
 ```
-conda create <env_name>
+conda create <env_name> python==3.12
 ```
 
 #### Activate environment
@@ -57,7 +57,7 @@ conda --version
 #### Create a conda environment in a shared location
 
 ```
-conda create -y python==3.10 numpy mkl blas --prefix=/shared/conda/<env_name>
+conda create -y python==3.12 numpy mkl blas --prefix=/shared/conda/<env_name>
 ```
 
 #### Activate the conda environment 

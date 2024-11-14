@@ -18,7 +18,6 @@ import glob
 import os
 import pickle
 import sys
-import warnings
 from pathlib import Path
 
 import numpy as np
@@ -27,8 +26,8 @@ from sklearn.model_selection import KFold
 try:
     import nutpie
 except ImportError:
-    warnings.warn("Nutpie not installed. For fitting HBR models with the nutpie backend, install it with `conda install nutpie numba`")
-
+    # warnings.warn("Nutpie not installed. For fitting HBR models with the nutpie backend, install it with `conda install nutpie numba`")
+    pass
 
 
 try:  # run as a package if installed

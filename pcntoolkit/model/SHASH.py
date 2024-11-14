@@ -6,7 +6,6 @@ See: Jones et al. (2009), Sinh-Arcsinh distributions.
 from functools import lru_cache
 
 import numpy as np
-import pytensor as pt
 from pymc import floatX
 from pymc.distributions import Continuous
 from pytensor.tensor import as_tensor_variable
@@ -71,7 +70,7 @@ def C(x, epsilon, delta):
 ##### SHASH Distributions #####
 
 
-class SHASH(RandomVariable):
+class SHASHrv(RandomVariable):
     """SHASH RV, described by Jones et al., based on a standard normal distribution."""
 
     name = "shash"
@@ -97,7 +96,7 @@ class SHASH(RandomVariable):
         )
 
 
-shash = SHASH()
+shash = SHASHrv()
 
 
 class SHASH(Continuous):
@@ -208,9 +207,9 @@ class SHASH(Continuous):
             Log-probability of the SHASH distribution
         """
         this_S = S(value, epsilon, delta)
-        this_S_sqr = pt.sqr(this_S)
+        this_S_sqr = np.log(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac2 = pt.log(delta) + pt.log(this_C_sqr) / 2 - pt.log(1 + pt.sqr(value)) / 2
+        frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.log(value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp
 
@@ -288,15 +287,15 @@ class SHASHo(Continuous):
         """
         remapped_value = (value - mu) / sigma
         this_S = S(remapped_value, epsilon, delta)
-        this_S_sqr = pt.sqr(this_S)
+        this_S_sqr = np.log(this_S)
         this_C_sqr = 1 + this_S_sqr
         frac2 = (
-            pt.log(delta)
-            + pt.log(this_C_sqr) / 2
-            - pt.log(1 + pt.sqr(remapped_value)) / 2
+            np.log(delta)
+            + np.log(this_C_sqr) / 2
+            - np.log(1 + np.log(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return CONST2 + frac2 + exp - pt.log(sigma)
+        return CONST2 + frac2 + exp - np.log(sigma)
 
 
 class SHASHo2RV(RandomVariable):
@@ -381,15 +380,15 @@ class SHASHo2(Continuous):
         sigma_d = sigma / delta
         remapped_value = (value - mu) / sigma_d
         this_S = S(remapped_value, epsilon, delta)
-        this_S_sqr = pt.sqr(this_S)
+        this_S_sqr = np.log(this_S)
         this_C_sqr = 1 + this_S_sqr
         frac2 = (
-            pt.log(delta)
-            + pt.log(this_C_sqr) / 2
-            - pt.log(1 + pt.sqr(remapped_value)) / 2
+            np.log(delta)
+            + np.log(this_C_sqr) / 2
+            - np.log(1 + np.log(remapped_value)) / 2
         )
         exp = -this_S_sqr / 2
-        return CONST2 + frac2 + exp - pt.log(sigma_d)
+        return CONST2 + frac2 + exp - np.log(sigma_d)
 
 
 class SHASHbRV(RandomVariable):
