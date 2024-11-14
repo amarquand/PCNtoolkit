@@ -19,3 +19,4 @@ normative $tempdir/Y_te_$data_name.pkl -c $tempdir/X_te_$data_name.pkl -f predic
 echo "Also doing estimate..."
 normative $tempdir/Y_tr_$data_name.pkl -c $tempdir/X_tr_$data_name.pkl -f estimate $model_config -t $tempdir/X_te_$data_name.pkl -r $tempdir/Y_te_$data_name.pkl outputsuffix=estimate
 echo "Done!"
+rm -R $tempdir
