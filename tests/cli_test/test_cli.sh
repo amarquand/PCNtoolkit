@@ -1,3 +1,6 @@
+#! /bin/bash
+set -x
+
 # Assign the current directory to a variable
 export testdir=$(pwd)
 export tempdir="$testdir/temp"
