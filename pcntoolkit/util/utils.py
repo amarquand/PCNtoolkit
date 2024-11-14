@@ -1,26 +1,26 @@
 from __future__ import print_function
 
 import os
+import pickle
+import re
+import subprocess
 import sys
-import numpy as np
-from scipy import stats
+from abc import ABCMeta, abstractmethod
+from io import StringIO
 from subprocess import call
+
+import bspline
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pymc as pm
+import scipy.special as spp
+from bspline import splinelab
+from scipy import stats
 from scipy.stats import genextreme, norm, skewnorm
 from six import with_metaclass
-from abc import ABCMeta, abstractmethod
-import pickle
-import matplotlib.pyplot as plt
-import pandas as pd
-import bspline
-from bspline import splinelab
 from sklearn.datasets import make_regression
-import pymc as pm
-from io import StringIO
-import subprocess
-import re
 from sklearn.metrics import roc_auc_score
-import scipy.special as spp
-
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -175,8 +175,8 @@ def create_design_matrix(X, intercept=True, basis='bspline',
         Phi = np.concatenate(
             (Phi, np.array([B(i) for i in X[:, basis_column]])), axis=1)
     elif basis == 'poly':
-        Phi = np.concatenate(Phi, create_poly_basis(
-            X[:, basis_column], **kwargs))
+        Phi = np.concatenate((Phi, create_poly_basis(
+            X[:, basis_column], **kwargs)), axis=1)
 
     return Phi
 
