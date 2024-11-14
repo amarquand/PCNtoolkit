@@ -49,11 +49,6 @@ def main():
     Phi_te = create_design_matrix(cov[test_idx], basis=mean_basis, intercept=False, site_ids=be_ids[test_idx])
     Phi_var_te = create_design_matrix(cov[test_idx], basis=var_basis)
 
-    print(f"{Phi_tr.shape=}")
-    print(f"{Phi_var_tr.shape=}")
-    print(f"{Phi_te.shape=}")
-    print(f"{Phi_var_te.shape=}")
-
     # Save everything
     pd.to_pickle(pd.DataFrame(Phi_tr), os.path.join(args.output_dir, f'X_tr_{infile}.pkl'))
     pd.to_pickle(pd.DataFrame(Phi_var_tr), os.path.join(args.output_dir, f'X_var_tr_{infile}.pkl'))

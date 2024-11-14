@@ -15,6 +15,7 @@ scikit-learn = "^1.5.2"         # Prefer Conda
 seaborn = "^0.13.2"             # Prefer conda
 six = "^1.16.0"                 # Prefer conda
 scipy = "^1.12"
+matplotlib = "^3.8.1"
 
 [tool.poetry.group.dev.dependencies]
 sphinx-tabs = "^3.4.7"

@@ -35,7 +35,7 @@ n_grps = 3  # Number of batches in data
 n_samples = 500  # Number of samples in each group (use a list for different
 # sample numbers across different batches)
 
-model_type = "bspline"  # modelto try 'linear, ''polynomial', 'bspline'
+model_type = "linear"  # modelto try 'linear, ''polynomial', 'bspline'
 
 
 ############################## Data Simulation ################################
@@ -62,9 +62,9 @@ nm = norm_init(
     likelihood="SHASHb",
     linear_sigma="True",
     random_slope_mu="False",
-    linear_epsilon="True",
-    linear_delta="True",
-    nuts_sampler="pymc",
+    linear_epsilon="False",
+    linear_delta="False",
+    nuts_sampler="nutpie",
 )
 
 nm.estimate(X_train, Y_train, trbefile=working_dir + "trbefile.pkl")
