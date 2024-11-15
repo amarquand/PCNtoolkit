@@ -1078,14 +1078,14 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
                 data = dict()
 
                 a = pd.read_csv(data_path + sub + '/stats/lh.aparc.a2009s.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 temp = dict(zip(a[0], a[col]))
                 for key in list(temp.keys()):
                     temp['L_'+key] = temp.pop(key)
                 data.update(temp)
 
                 a = pd.read_csv(data_path + sub + '/stats/rh.aparc.a2009s.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 temp = dict(zip(a[0], a[col]))
                 for key in list(temp.keys()):
                     temp['R_'+key] = temp.pop(key)
@@ -1137,7 +1137,7 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
                 else:
                     tiv = a[' ICV']
                 a = pd.read_csv(data_path + sub + '/stats/aseg.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 data_vol = dict(zip(a[4]+'_mm3', a[3]))
                 for key in data_vol.keys():
                     data_vol[key] = data_vol[key]/tiv

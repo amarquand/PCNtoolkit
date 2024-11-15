@@ -87,3 +87,18 @@ version 0.29
 - Addedd functionality to compute SHASH z-scores from normative.py
 - Updated requirements
 - Basic pytest continuous integration framework implemented
+
+version 0.30.0
+- Minor bug fixes
+
+version 0.31.0
+- Major changes:
+    - Move to Poetry for dependency management in pyproject.toml.
+    - PCNToolkit must now be installed using python -m pip install .. See the README for complete instructions.
+    - A CLI command normative is automatically created, and can be used instead of python normative.py.
+    - Nutpie can be used as a sampler for HBR by setting `nuts_sampler='nutpie''. Nutpie and numba must first be installed using conda.
+- Minor changes
+    - torque jobs now support multicore jobs via the keyword 'n_cores_per_batch'
+    - Backwards compatibilty improved by using pd.read_pickle instead of pickle.load
+    - SHASH classes have been refactored and improved
+    - HBR priors improved

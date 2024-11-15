@@ -30,7 +30,7 @@ Use the command that you get from the command builder here: https://pytorch.org/
 ### Install nutpie using conda 
 
 ```
-conda install nutpie
+conda install nutpie numba -c conda-forge
 ```
 
 #### Install PCNtoolkit
@@ -79,7 +79,7 @@ If your shared resource has no GPU, make sure you select the 'CPU' field in the 
 ### Install nutpie using conda 
 
 ```
-conda install nutpie
+conda install nutpie numba -c conda-forge
 ```
 
 #### Clone the repo
