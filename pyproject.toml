@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pcntoolkit"
-version = "0.30.2"
+version = "0.31.0"
 description = "Predictive Clinical Neuroscience Toolkit"
 authors = ["Andre Marquand"]
 license = "GNU GPLv3"
@@ -10,7 +10,7 @@ readme = "README.md"
 python = ">=3.10,<3.13"
 bspline = "^0.1.1"              # Install with pip
 nibabel = "^5.3.1"              # Prefer Conda
-pymc = "^5.17.0"                # Prefer Conda
+pymc = "^5.18.0"                # Prefer Conda
 scikit-learn = "^1.5.2"         # Prefer Conda
 seaborn = "^0.13.2"             # Prefer conda
 six = "^1.16.0"                 # Prefer conda
