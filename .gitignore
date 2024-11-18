@@ -93,3 +93,7 @@ build/*
 tests/cli_test/*
 !tests/cli_test/test_cli.sh
 !tests/cli_test/split_data.py
+
+docs/autoapi/*
+docs/_build/*
+docs
