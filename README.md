@@ -14,7 +14,7 @@ using the download here: https://www.anaconda.com/download
 
 #### Create environment 
 ```
-conda create <env_name> python==3.12
+conda create -n <env_name> python==3.12
 ```
 
 #### Activate environment
