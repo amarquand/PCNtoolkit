@@ -23,7 +23,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Braincharts: transfer" href="apply_normative_models.html" />
+    <link rel="next" title="Using lifespan models to make predictions on new data" href="apply_normative_models.html" />
     <link rel="prev" title="DEMO ON NORMATIVE MODELING" href="normative_modelling_walkthrough.html" /> 
 </head>
 
@@ -80,7 +80,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Using lifespan models to make predictions on new data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
@@ -150,105 +150,6 @@ onto unseen sites.</p>
 <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>nutpie
 </pre></div>
 </div>
-<pre class="literal-block">Collecting <a class="reference external" href="https://github.com/amarquand/PCNtoolkit/archive/dev.zip">https://github.com/amarquand/PCNtoolkit/archive/dev.zip</a>
-  Downloading <a class="reference external" href="https://github.com/amarquand/PCNtoolkit/archive/dev.zip">https://github.com/amarquand/PCNtoolkit/archive/dev.zip</a>
-[2K     [32m[0m [32m64.9 MB[0m [31m15.9 MB/s[0m [33m0:00:05[0m
-[?25h  Installing build dependencies ... [?25l[?25hdone
-  Getting requirements to build wheel ... [?25l[?25hdone
-  Preparing metadata (pyproject.toml) ... [?25l[?25hdone
-Collecting bspline&lt;0.2.0,&gt;=0.1.1 (from pcntoolkit==0.31.0)
-  Downloading bspline-0.1.1.tar.gz (84 kB)
-[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m84.2/84.2 kB[0m [31m2.3 MB/s[0m eta [36m0:00:00[0m
-[?25h  Preparing metadata (setup.py) ... [?25l[?25hdone
-Collecting matplotlib&lt;4.0.0,&gt;=3.9.2 (from pcntoolkit==0.31.0)
-  Downloading matplotlib-3.9.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
-Requirement already satisfied: nibabel&lt;6.0.0,&gt;=5.3.1 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (5.3.2)
-Requirement already satisfied: numpy&lt;2.0,&gt;=1.26 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (1.26.4)
-Requirement already satisfied: pymc&lt;6.0.0,&gt;=5.18.0 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (5.18.0)
-Requirement already satisfied: scikit-learn&lt;2.0.0,&gt;=1.5.2 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (1.5.2)
-Requirement already satisfied: scipy&lt;2.0,&gt;=1.12 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (1.13.1)
-Requirement already satisfied: seaborn&lt;0.14.0,&gt;=0.13.2 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (0.13.2)
-Requirement already satisfied: six&lt;2.0.0,&gt;=1.16.0 in /usr/local/lib/python3.10/dist-packages (from pcntoolkit==0.31.0) (1.16.0)
-Requirement already satisfied: contourpy&gt;=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (1.3.1)
-Requirement already satisfied: cycler&gt;=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (0.12.1)
-Requirement already satisfied: fonttools&gt;=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (4.54.1)
-Requirement already satisfied: kiwisolver&gt;=1.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (1.4.7)
-Requirement already satisfied: packaging&gt;=20.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (24.2)
-Requirement already satisfied: pillow&gt;=8 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (11.0.0)
-Requirement already satisfied: pyparsing&gt;=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (3.2.0)
-Requirement already satisfied: python-dateutil&gt;=2.7 in /usr/local/lib/python3.10/dist-packages (from matplotlib&lt;4.0.0,&gt;=3.9.2-&gt;pcntoolkit==0.31.0) (2.8.2)
-Requirement already satisfied: importlib-resources&gt;=5.12 in /usr/local/lib/python3.10/dist-packages (from nibabel&lt;6.0.0,&gt;=5.3.1-&gt;pcntoolkit==0.31.0) (6.4.5)
-Requirement already satisfied: typing-extensions&gt;=4.6 in /usr/local/lib/python3.10/dist-packages (from nibabel&lt;6.0.0,&gt;=5.3.1-&gt;pcntoolkit==0.31.0) (4.12.2)
-Requirement already satisfied: arviz&gt;=0.13.0 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.20.0)
-Requirement already satisfied: cachetools&gt;=4.2.1 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (5.5.0)
-Requirement already satisfied: cloudpickle in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (3.1.0)
-Requirement already satisfied: pandas&gt;=0.24.0 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2.2.2)
-Requirement already satisfied: pytensor&lt;2.26,&gt;=2.25.1 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2.25.5)
-Requirement already satisfied: rich&gt;=13.7.1 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (13.9.4)
-Requirement already satisfied: threadpoolctl&lt;4.0.0,&gt;=3.1.0 in /usr/local/lib/python3.10/dist-packages (from pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (3.5.0)
-Requirement already satisfied: joblib&gt;=1.2.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn&lt;2.0.0,&gt;=1.5.2-&gt;pcntoolkit==0.31.0) (1.4.2)
-Requirement already satisfied: setuptools&gt;=60.0.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.13.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (75.1.0)
-Requirement already satisfied: xarray&gt;=2022.6.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.13.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2024.10.0)
-Requirement already satisfied: h5netcdf&gt;=1.0.2 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.13.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (1.4.1)
-Requirement already satisfied: xarray-einstats&gt;=0.3 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.13.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.8.0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=0.24.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2024.2)
-Requirement already satisfied: tzdata&gt;=2022.7 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=0.24.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2024.2)
-Requirement already satisfied: filelock&gt;=3.15 in /usr/local/lib/python3.10/dist-packages (from pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (3.16.1)
-Requirement already satisfied: etuples in /usr/local/lib/python3.10/dist-packages (from pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.3.9)
-Requirement already satisfied: logical-unification in /usr/local/lib/python3.10/dist-packages (from pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.4.6)
-Requirement already satisfied: miniKanren in /usr/local/lib/python3.10/dist-packages (from pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (1.0.3)
-Requirement already satisfied: cons in /usr/local/lib/python3.10/dist-packages (from pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.4.6)
-Requirement already satisfied: markdown-it-py&gt;=2.2.0 in /usr/local/lib/python3.10/dist-packages (from rich&gt;=13.7.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (3.0.0)
-Requirement already satisfied: pygments&lt;3.0.0,&gt;=2.13.0 in /usr/local/lib/python3.10/dist-packages (from rich&gt;=13.7.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (2.18.0)
-Requirement already satisfied: h5py in /usr/local/lib/python3.10/dist-packages (from h5netcdf&gt;=1.0.2-&gt;arviz&gt;=0.13.0-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (3.12.1)
-Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/dist-packages (from markdown-it-py&gt;=2.2.0-&gt;rich&gt;=13.7.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.1.2)
-Requirement already satisfied: toolz in /usr/local/lib/python3.10/dist-packages (from logical-unification-&gt;pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (0.12.1)
-Requirement already satisfied: multipledispatch in /usr/local/lib/python3.10/dist-packages (from logical-unification-&gt;pytensor&lt;2.26,&gt;=2.25.1-&gt;pymc&lt;6.0.0,&gt;=5.18.0-&gt;pcntoolkit==0.31.0) (1.0.0)
-Downloading matplotlib-3.9.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (8.3 MB)
-[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m8.3/8.3 MB[0m [31m55.1 MB/s[0m eta [36m0:00:00[0m
-[?25hBuilding wheels for collected packages: pcntoolkit, bspline
-  Building wheel for pcntoolkit (pyproject.toml) ... [?25l[?25hdone
-  Created wheel for pcntoolkit: filename=pcntoolkit-0.31.0-py3-none-any.whl size=114835 sha256=40635c10c24ccf2c319ee965aaf1038272cd5578f14d9cb3dd14598ddab31d00
-  Stored in directory: /tmp/pip-ephem-wheel-cache-f502unec/wheels/9e/c4/29/3bca3a5facf8ef69b8622461d8520d24a19d3745aefa093d1e
-  Building wheel for bspline (setup.py) ... [?25l[?25hdone
-  Created wheel for bspline: filename=bspline-0.1.1-py3-none-any.whl size=84482 sha256=150d24f295ccda92c9789d421e52c3858d43c66874deec4a463a87b4e5533448
-  Stored in directory: /root/.cache/pip/wheels/3c/ab/0a/70927853a6d9166bc777922736063a6f99c43a327c802f9326
-Successfully built pcntoolkit bspline
-Installing collected packages: bspline, matplotlib, pcntoolkit
-  Attempting uninstall: matplotlib
-    Found existing installation: matplotlib 3.8.0
-    Uninstalling matplotlib-3.8.0:
-      Successfully uninstalled matplotlib-3.8.0
-Successfully installed bspline-0.1.1 matplotlib-3.9.2 pcntoolkit-0.31.0
-Collecting nutpie
-  Downloading nutpie-0.13.2-cp310-cp310-manylinux_2_28_x86_64.whl.metadata (5.4 kB)
-Requirement already satisfied: pyarrow&gt;=12.0.0 in /usr/local/lib/python3.10/dist-packages (from nutpie) (17.0.0)
-Requirement already satisfied: pandas&gt;=2.0 in /usr/local/lib/python3.10/dist-packages (from nutpie) (2.2.2)
-Requirement already satisfied: xarray&gt;=2023.6.0 in /usr/local/lib/python3.10/dist-packages (from nutpie) (2024.10.0)
-Requirement already satisfied: arviz&gt;=0.15.0 in /usr/local/lib/python3.10/dist-packages (from nutpie) (0.20.0)
-Requirement already satisfied: setuptools&gt;=60.0.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (75.1.0)
-Requirement already satisfied: matplotlib&gt;=3.5 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (3.9.2)
-Requirement already satisfied: numpy&gt;=1.23.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (1.26.4)
-Requirement already satisfied: scipy&gt;=1.9.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (1.13.1)
-Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (24.2)
-Requirement already satisfied: h5netcdf&gt;=1.0.2 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (1.4.1)
-Requirement already satisfied: typing-extensions&gt;=4.1.0 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (4.12.2)
-Requirement already satisfied: xarray-einstats&gt;=0.3 in /usr/local/lib/python3.10/dist-packages (from arviz&gt;=0.15.0-&gt;nutpie) (0.8.0)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=2.0-&gt;nutpie) (2.8.2)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=2.0-&gt;nutpie) (2024.2)
-Requirement already satisfied: tzdata&gt;=2022.7 in /usr/local/lib/python3.10/dist-packages (from pandas&gt;=2.0-&gt;nutpie) (2024.2)
-Requirement already satisfied: h5py in /usr/local/lib/python3.10/dist-packages (from h5netcdf&gt;=1.0.2-&gt;arviz&gt;=0.15.0-&gt;nutpie) (3.12.1)
-Requirement already satisfied: contourpy&gt;=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (1.3.1)
-Requirement already satisfied: cycler&gt;=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (0.12.1)
-Requirement already satisfied: fonttools&gt;=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (4.54.1)
-Requirement already satisfied: kiwisolver&gt;=1.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (1.4.7)
-Requirement already satisfied: pillow&gt;=8 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (11.0.0)
-Requirement already satisfied: pyparsing&gt;=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib&gt;=3.5-&gt;arviz&gt;=0.15.0-&gt;nutpie) (3.2.0)
-Requirement already satisfied: six&gt;=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=2.0-&gt;nutpie) (1.16.0)
-Downloading nutpie-0.13.2-cp310-cp310-manylinux_2_28_x86_64.whl (1.5 MB)
-[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.5/1.5 MB[0m [31m16.5 MB/s[0m eta [36m0:00:00[0m
-[?25hInstalling collected packages: nutpie
-Successfully installed nutpie-0.13.2</pre>
 <p>For this tutorial we will use data from the <a class="reference external" href="http://fcon_1000.projects.nitrc.org/">Functional Connectom
 Project FCON1000</a> to create a
 multi-site dataset.</p>
@@ -263,7 +164,7 @@ Freesurfer 6.0, and some covariates (eg age, site, gender).</p>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">processing_dir</span> <span class="o">=</span> <span class="s2">&quot;HBR_demo&quot;</span>    <span class="c1"># replace with desired working directory</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">processing_dir</span> <span class="o">=</span> <span class="s2">&quot;HBR_demo&quot;</span>  <span class="c1"># replace with desired working directory</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">)</span>
 <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">)</span>
@@ -276,402 +177,35 @@ Freesurfer 6.0, and some covariates (eg age, site, gender).</p>
 assign some site id to the different scanner sites and print an overview
 of the left hemisphere mean raw cortical thickness as a function of age,
 color coded by the various sites:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fcon</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000.csv&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fcon</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000.csv&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># extract the ICBM site for transfer</span>
-<span class="n">icbm</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ICBM&#39;</span><span class="p">]</span>
-<span class="n">icbm</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">icbm</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ICBM&quot;</span><span class="p">]</span>
+<span class="n">icbm</span><span class="p">[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="c1"># remove from the training set (also Pittsburgh because it only has 3 samples)</span>
-<span class="n">fcon</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;ICBM&#39;</span><span class="p">]</span>
-<span class="n">fcon</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;Pittsburgh&#39;</span><span class="p">]</span>
+<span class="n">fcon</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;ICBM&quot;</span><span class="p">]</span>
+<span class="n">fcon</span> <span class="o">=</span> <span class="n">fcon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;Pittsburgh&quot;</span><span class="p">]</span>
 
-<span class="n">sites</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
-<span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">sites</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
-    <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span><span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">fcon</span><span class="p">[</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">fcon</span><span class="p">[</span><span class="s2">&quot;lh_MeanThickness_thickness&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
 
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;LH mean cortical thickness [mm]&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;LH mean cortical thickness [mm]&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<pre class="literal-block">&lt;ipython-input-4-a7d14b9f2beb&gt;:5: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame.
-Try using .loc[row_indexer,col_indexer] = value instead
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  icbm['sitenum'] = 0
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
-You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
-A typical example is when you are setting values in a column of a DataFrame, like:
-
-df[&quot;col&quot;][row_indexer] = value
-
-Use <cite>df.loc[row_indexer, &quot;col&quot;] = values</cite> instead, to perform the assignment in a single step and ensure this keeps updating the original <cite>df</cite>.
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-
-  fcon['sitenum'].loc[idx] = i
-&lt;ipython-input-4-a7d14b9f2beb&gt;:18: SettingWithCopyWarning:
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy">https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy</a>
-  fcon['sitenum'].loc[idx] = i</pre>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>site AnnArbor_a 24
-site AnnArbor_b 32
-site Atlanta 28
-site Baltimore 23
-site Bangor 20
-site Beijing_Zang 198
-site Berlin_Margulies 26
-site Cambridge_Buckner 198
-site Cleveland 31
-site Leiden_2180 12
-site Leiden_2200 19
-site Milwaukee_b 46
-site Munchen 15
-site NewYork_a 83
-site NewYork_a_ADHD 25
-site Newark 19
-site Oulu 102
-site Oxford 22
-site PaloAlto 17
-site Queensland 19
-site SaintLouis 31
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 0, &#39;age&#39;)
-</pre></div>
-</div>
-<img alt="../_images/HBR_NormativeModel_FCONdata_Tutorial_10_3.png" src="../_images/HBR_NormativeModel_FCONdata_Tutorial_10_3.png" />
 </section>
 </section>
 <section id="step-1-prepare-training-and-testing-sets">
@@ -694,48 +228,24 @@ then displayed.</p>
 <span class="n">icbm_tr</span> <span class="o">=</span> <span class="n">icbm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tr</span><span class="p">]</span>
 <span class="n">icbm_te</span> <span class="o">=</span> <span class="n">icbm</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">te</span><span class="p">]</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sample size check&#39;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
-    <span class="n">idxte</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idxte</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sample size check&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sites</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="n">idxte</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idxte</span><span class="p">))</span>
 
-<span class="n">fcon_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_tr.csv&#39;</span><span class="p">)</span>
-<span class="n">fcon_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_te.csv&#39;</span><span class="p">)</span>
-<span class="n">icbm_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_icbm_tr.csv&#39;</span><span class="p">)</span>
-<span class="n">icbm_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s1">&#39;/fcon1000_icbm_te.csv&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>sample size check
-0 AnnArbor_a 10 14
-1 AnnArbor_b 19 13
-2 Atlanta 12 16
-3 Baltimore 12 11
-4 Bangor 10 10
-5 Beijing_Zang 91 107
-6 Berlin_Margulies 9 17
-7 Cambridge_Buckner 96 102
-8 Cleveland 13 18
-9 Leiden_2180 5 7
-10 Leiden_2200 11 8
-11 Milwaukee_b 18 28
-12 Munchen 9 6
-13 NewYork_a 38 45
-14 NewYork_a_ADHD 15 10
-15 Newark 9 10
-16 Oulu 50 52
-17 Oxford 9 13
-18 PaloAlto 8 9
-19 Queensland 10 9
-20 SaintLouis 18 13
+<span class="n">fcon_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s2">&quot;/fcon1000_tr.csv&quot;</span><span class="p">)</span>
+<span class="n">fcon_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s2">&quot;/fcon1000_te.csv&quot;</span><span class="p">)</span>
+<span class="n">icbm_tr</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s2">&quot;/fcon1000_icbm_tr.csv&quot;</span><span class="p">)</span>
+<span class="n">icbm_te</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">processing_dir</span> <span class="o">+</span> <span class="s2">&quot;/fcon1000_icbm_te.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Otherwise you can just load these pre defined subsets:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optional</span>
-<span class="c1">#fcon_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv&#39;)</span>
-<span class="c1">#fcon_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv&#39;)</span>
-<span class="c1">#icbm_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv&#39;)</span>
-<span class="c1">#icbm_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;)</span>
+<span class="c1"># fcon_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_tr.csv&#39;)</span>
+<span class="c1"># fcon_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_te.csv&#39;)</span>
+<span class="c1"># icbm_tr = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_tr.csv&#39;)</span>
+<span class="c1"># icbm_te = pd.read_csv(&#39;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/main/data/fcon1000_icbm_te.csv&#39;)</span>
 </pre></div>
 </div>
 </section>
@@ -743,7 +253,7 @@ then displayed.</p>
 <h3>Step 2: Configure HBR inputs: covariates, measures and batch effects<a class="headerlink" href="#step-2-configure-hbr-inputs-covariates-measures-and-batch-effects" title="Link to this heading"></a></h3>
 <p>We will here only use the mean cortical thickness for the Right and Left
 hemisphere: two idps.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rh_MeanThickness_thickness&#39;</span><span class="p">,</span><span class="s1">&#39;lh_MeanThickness_thickness&#39;</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idps</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rh_MeanThickness_thickness&quot;</span><span class="p">,</span> <span class="s2">&quot;lh_MeanThickness_thickness&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>As input to the model, we need covariates (used to describe predictable
@@ -755,584 +265,77 @@ variability, here ‘scanner site’ and ‘sex’).</p>
 <p><code class="docutils literal notranslate"><span class="pre">batch_effects</span></code> to the random effects</p>
 <p>We need these values both for the training (<code class="docutils literal notranslate"><span class="pre">_train</span></code>) and for the
 testing set (<code class="docutils literal notranslate"><span class="pre">_test</span></code>).</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_tr</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_tr</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">Y_train</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
 <span class="c1"># configure batch effects for site and sex</span>
-<span class="c1">#batch_effects_train = fcon_tr[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
+<span class="c1"># batch_effects_train = fcon_tr[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
 
 <span class="c1"># or only site</span>
-<span class="n">batch_effects_train</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">batch_effects_train</span> <span class="o">=</span> <span class="n">fcon_tr</span><span class="p">[[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_train.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;X_train.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Y_train.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;trbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;trbefile.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_train</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
 
 
-<span class="n">X_test</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_te</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="p">(</span><span class="n">fcon_te</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">Y_test</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-<span class="c1">#batch_effects_test = fcon_te[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
-<span class="n">batch_effects_test</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># batch_effects_test = fcon_te[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
+<span class="n">batch_effects_test</span> <span class="o">=</span> <span class="n">fcon_te</span><span class="p">[[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_test.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;X_test.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_test.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Y_test.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tsbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;tsbefile.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_test</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
+
 
 <span class="c1"># a simple function to quickly load pickle files</span>
 <span class="k">def</span> <span class="nf">ldpkl</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch_effects_test</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>array([[ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 0],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 1],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 2],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 3],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 4],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 5],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 6],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 7],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 8],
-       [ 9],
-       [ 9],
-       [ 9],
-       [ 9],
-       [ 9],
-       [ 9],
-       [ 9],
-       [10],
-       [10],
-       [10],
-       [10],
-       [10],
-       [10],
-       [10],
-       [10],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [11],
-       [12],
-       [12],
-       [12],
-       [12],
-       [12],
-       [12],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [13],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [14],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [15],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [16],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [17],
-       [18],
-       [18],
-       [18],
-       [18],
-       [18],
-       [18],
-       [18],
-       [18],
-       [18],
-       [19],
-       [19],
-       [19],
-       [19],
-       [19],
-       [19],
-       [19],
-       [19],
-       [19],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20],
-       [20]])
-</pre></div>
-</div>
 </section>
 <section id="step-3-files-and-folders-grooming">
 <h3>Step 3: Files and Folders grooming<a class="headerlink" href="#step-3-files-and-folders-grooming" title="Link to this heading"></a></h3>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_train.pkl&#39;</span><span class="p">)</span>       <span class="c1"># measurements  (eg cortical thickness) of the training samples (columns: the various features/ROIs, rows: observations or subjects)</span>
-<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_train.pkl&#39;</span><span class="p">)</span>        <span class="c1"># covariates (eg age) the training samples (columns: covariates, rows: observations or subjects)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Y_train.pkl&quot;</span>
+<span class="p">)</span>  <span class="c1"># measurements  (eg cortical thickness) of the training samples (columns: the various features/ROIs, rows: observations or subjects)</span>
+<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;X_train.pkl&quot;</span>
+<span class="p">)</span>  <span class="c1"># covariates (eg age) the training samples (columns: covariates, rows: observations or subjects)</span>
 
-<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_test.pkl&#39;</span><span class="p">)</span>       <span class="c1"># measurements  for the testing samples</span>
-<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_test.pkl&#39;</span><span class="p">)</span>        <span class="c1"># covariate file for the testing samples</span>
+<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Y_test.pkl&quot;</span>
+<span class="p">)</span>  <span class="c1"># measurements  for the testing samples</span>
+<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;X_test.pkl&quot;</span>
+<span class="p">)</span>  <span class="c1"># covariate file for the testing samples</span>
 
-<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;trbefile.pkl&#39;</span><span class="p">)</span>      <span class="c1"># training batch effects file (eg scanner_id, gender)  (columns: the various batch effects, rows: observations or subjects)</span>
-<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;tsbefile.pkl&#39;</span><span class="p">)</span>      <span class="c1"># testing batch effects file</span>
+<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;trbefile.pkl&quot;</span>
+<span class="p">)</span>  <span class="c1"># training batch effects file (eg scanner_id, gender)  (columns: the various batch effects, rows: observations or subjects)</span>
+<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;tsbefile.pkl&quot;</span><span class="p">)</span>  <span class="c1"># testing batch effects file</span>
 
-<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models/&#39;</span><span class="p">)</span>    <span class="c1">#  output path, where the models will be written</span>
-<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;log/&#39;</span><span class="p">)</span>           <span class="c1">#</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Models/&quot;</span>
+<span class="p">)</span>  <span class="c1">#  output path, where the models will be written</span>
+<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;log/&quot;</span><span class="p">)</span>  <span class="c1">#</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
 
-<span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_estimate&#39;</span>      <span class="c1"># a string to name the output files, of use only to you, so adapt it for your needs.</span>
+<span class="n">outputsuffix</span> <span class="o">=</span> <span class="s2">&quot;_estimate&quot;</span>  <span class="c1"># a string to name the output files, of use only to you, so adapt it for your needs.</span>
 </pre></div>
 </div>
 </section>
@@ -1345,320 +348,26 @@ obviously specify <code class="docutils literal notranslate"><span class="pre">a
 regression method, well suited for the multi sites datasets. The
 remaining arguments are basic data management: where the models, logs,
 and output files will be written and how they will be named.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
-                       <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
-                       <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
-                       <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
-                       <span class="n">inscaler</span><span class="o">=</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span>
-                       <span class="n">outscaler</span><span class="o">=</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span>
-                       <span class="n">linear_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                       <span class="n">random_intercept_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                       <span class="n">centered_intercept_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                       <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;hbr&#39;</span><span class="p">,</span>
-                       <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
-                       <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
-                       <span class="n">testcov</span><span class="o">=</span> <span class="n">testcovfile_path</span><span class="p">,</span>
-                       <span class="n">testresp</span> <span class="o">=</span> <span class="n">testrespfile_path</span><span class="p">,</span>
-                       <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span>
-                       <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">nuts_sampler</span><span class="o">=</span><span class="s1">&#39;nutpie&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>inscaler: standardize
-outscaler: standardize
-Processing data in /content/HBR_demo/Y_train.pkl
-Estimating model  1 of 2
-</pre></div>
-</div>
-<style>
-    :root {
-        --column-width-1: 40%; /* Progress column width */
-        --column-width-2: 15%; /* Chain column width */
-        --column-width-3: 15%; /* Divergences column width */
-        --column-width-4: 15%; /* Step Size column width */
-        --column-width-5: 15%; /* Gradients/Draw column width */
-    }
-
-    .nutpie {
-        max-width: 800px;
-        margin: 10px auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        //color: #333;
-        //background-color: #fff;
-        padding: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        font-size: 14px; /* Smaller font size for a more compact look */
-    }
-    .nutpie table {
-        width: 100%;
-        border-collapse: collapse; /* Remove any extra space between borders */
-    }
-    .nutpie th, .nutpie td {
-        padding: 8px 10px; /* Reduce padding to make table more compact */
-        text-align: left;
-        border-bottom: 1px solid #888;
-    }
-    .nutpie th {
-        //background-color: #f0f0f0;
-    }
-
-    .nutpie th:nth-child(1) { width: var(--column-width-1); }
-    .nutpie th:nth-child(2) { width: var(--column-width-2); }
-    .nutpie th:nth-child(3) { width: var(--column-width-3); }
-    .nutpie th:nth-child(4) { width: var(--column-width-4); }
-    .nutpie th:nth-child(5) { width: var(--column-width-5); }
-
-    .nutpie progress {
-        width: 100%;
-        height: 15px; /* Smaller progress bars */
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-bar {
-        background-color: #eee;
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-value {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    progress::-moz-progress-bar {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    .nutpie .progress-cell {
-        width: 100%;
-    }
-
-    .nutpie p strong { font-size: 16px; font-weight: bold; }
-
-    @media (prefers-color-scheme: dark) {
-        .nutpie {
-            //color: #ddd;
-            //background-color: #1e1e1e;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .nutpie table, .nutpie th, .nutpie td {
-            border-color: #555;
-            color: #ccc;
-        }
-        .nutpie th {
-            background-color: #2a2a2a;
-        }
-        .nutpie progress::-webkit-progress-bar {
-            background-color: #444;
-        }
-        .nutpie progress::-webkit-progress-value {
-            background-color: #3178c6;
-        }
-        .nutpie progress::-moz-progress-bar {
-            background-color: #3178c6;
-        }
-    }
-</style><div class="nutpie">
-    <p><strong>Sampler Progress</strong></p>
-    <p>Total Chains: <span id="total-chains">1</span></p>
-    <p>Active Chains: <span id="active-chains">0</span></p>
-    <p>
-        Finished Chains:
-        <span id="active-chains">1</span>
-    </p>
-    <p>Sampling for now</p>
-    <p>
-        Estimated Time to Completion:
-        <span id="eta">now</span>
-    </p>
-
-    <progress
-        id="total-progress-bar"
-        max="1500"
-        value="1500">
-    </progress>
-    <table>
-        <thead>
-            <tr>
-                <th>Progress</th>
-                <th>Draws</th>
-                <th>Divergences</th>
-                <th>Step Size</th>
-                <th>Gradients/Draw</th>
-            </tr>
-        </thead>
-        <tbody id="chain-details">
-
-                <tr>
-                    <td class="progress-cell">
-                        <progress
-                            max="1500"
-                            value="1500">
-                        </progress>
-                    </td>
-                    <td>1500</td>
-                    <td>0</td>
-                    <td>0.34</td>
-                    <td>15</td>
-                </tr>
-
-            </tr>
-        </tbody>
-    </table>
-</div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Normal
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Estimating model  2 of 2
-</pre></div>
-</div>
-<style>
-    :root {
-        --column-width-1: 40%; /* Progress column width */
-        --column-width-2: 15%; /* Chain column width */
-        --column-width-3: 15%; /* Divergences column width */
-        --column-width-4: 15%; /* Step Size column width */
-        --column-width-5: 15%; /* Gradients/Draw column width */
-    }
-
-    .nutpie {
-        max-width: 800px;
-        margin: 10px auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        //color: #333;
-        //background-color: #fff;
-        padding: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        font-size: 14px; /* Smaller font size for a more compact look */
-    }
-    .nutpie table {
-        width: 100%;
-        border-collapse: collapse; /* Remove any extra space between borders */
-    }
-    .nutpie th, .nutpie td {
-        padding: 8px 10px; /* Reduce padding to make table more compact */
-        text-align: left;
-        border-bottom: 1px solid #888;
-    }
-    .nutpie th {
-        //background-color: #f0f0f0;
-    }
-
-    .nutpie th:nth-child(1) { width: var(--column-width-1); }
-    .nutpie th:nth-child(2) { width: var(--column-width-2); }
-    .nutpie th:nth-child(3) { width: var(--column-width-3); }
-    .nutpie th:nth-child(4) { width: var(--column-width-4); }
-    .nutpie th:nth-child(5) { width: var(--column-width-5); }
-
-    .nutpie progress {
-        width: 100%;
-        height: 15px; /* Smaller progress bars */
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-bar {
-        background-color: #eee;
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-value {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    progress::-moz-progress-bar {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    .nutpie .progress-cell {
-        width: 100%;
-    }
-
-    .nutpie p strong { font-size: 16px; font-weight: bold; }
-
-    @media (prefers-color-scheme: dark) {
-        .nutpie {
-            //color: #ddd;
-            //background-color: #1e1e1e;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .nutpie table, .nutpie th, .nutpie td {
-            border-color: #555;
-            color: #ccc;
-        }
-        .nutpie th {
-            background-color: #2a2a2a;
-        }
-        .nutpie progress::-webkit-progress-bar {
-            background-color: #444;
-        }
-        .nutpie progress::-webkit-progress-value {
-            background-color: #3178c6;
-        }
-        .nutpie progress::-moz-progress-bar {
-            background-color: #3178c6;
-        }
-    }
-</style><div class="nutpie">
-    <p><strong>Sampler Progress</strong></p>
-    <p>Total Chains: <span id="total-chains">1</span></p>
-    <p>Active Chains: <span id="active-chains">0</span></p>
-    <p>
-        Finished Chains:
-        <span id="active-chains">1</span>
-    </p>
-    <p>Sampling for now</p>
-    <p>
-        Estimated Time to Completion:
-        <span id="eta">now</span>
-    </p>
-
-    <progress
-        id="total-progress-bar"
-        max="1500"
-        value="1500">
-    </progress>
-    <table>
-        <thead>
-            <tr>
-                <th>Progress</th>
-                <th>Draws</th>
-                <th>Divergences</th>
-                <th>Step Size</th>
-                <th>Gradients/Draw</th>
-            </tr>
-        </thead>
-        <tbody id="chain-details">
-
-                <tr>
-                    <td class="progress-cell">
-                        <progress
-                            max="1500"
-                            value="1500">
-                        </progress>
-                    </td>
-                    <td>1500</td>
-                    <td>0</td>
-                    <td>0.33</td>
-                    <td>15</td>
-                </tr>
-
-            </tr>
-        </tbody>
-    </table>
-</div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Normal
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Saving model meta-data...
-Evaluating the model ...
-Writing outputs ...
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span>
+    <span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
+    <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
+    <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
+    <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
+    <span class="n">inscaler</span><span class="o">=</span><span class="s2">&quot;standardize&quot;</span><span class="p">,</span>
+    <span class="n">outscaler</span><span class="o">=</span><span class="s2">&quot;standardize&quot;</span><span class="p">,</span>
+    <span class="n">linear_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">random_intercept_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">centered_intercept_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;hbr&quot;</span><span class="p">,</span>
+    <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
+    <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+    <span class="n">testcov</span><span class="o">=</span><span class="n">testcovfile_path</span><span class="p">,</span>
+    <span class="n">testresp</span><span class="o">=</span><span class="n">testrespfile_path</span><span class="p">,</span>
+    <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span>
+    <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">nuts_sampler</span><span class="o">=</span><span class="s2">&quot;nutpie&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Here some analyses can be done, there are also some error metrics that
@@ -1671,365 +380,80 @@ on Normative Modelling.</p>
 <p>Similarly to what was done before for the FCON data, we also need to
 prepare the ICBM specific data, in order to run the transfer function:
 training and testing set of covariates, measures and batch effects:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_adapt</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_tr</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_adapt</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_tr</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">Y_adapt</span> <span class="o">=</span> <span class="n">icbm_tr</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-<span class="c1">#batch_effects_adapt = icbm_tr[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
-<span class="n">batch_effects_adapt</span> <span class="o">=</span> <span class="n">icbm_tr</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># batch_effects_adapt = icbm_tr[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
+<span class="n">batch_effects_adapt</span> <span class="o">=</span> <span class="n">icbm_tr</span><span class="p">[[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_adaptation.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;X_adaptation.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_adaptation.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Y_adaptation.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;adbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;adbefile.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_adapt</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
 
 <span class="c1"># Test data (new dataset)</span>
-<span class="n">X_test_txfr</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_te</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">X_test_txfr</span> <span class="o">=</span> <span class="p">(</span><span class="n">icbm_te</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">Y_test_txfr</span> <span class="o">=</span> <span class="n">icbm_te</span><span class="p">[</span><span class="n">idps</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-<span class="c1">#batch_effects_test_txfr = icbm_te[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
-<span class="n">batch_effects_test_txfr</span> <span class="o">=</span> <span class="n">icbm_te</span><span class="p">[[</span><span class="s1">&#39;sitenum&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="c1"># batch_effects_test_txfr = icbm_te[[&#39;sitenum&#39;,&#39;sex&#39;]].to_numpy(dtype=int)</span>
+<span class="n">batch_effects_test_txfr</span> <span class="o">=</span> <span class="n">icbm_te</span><span class="p">[[</span><span class="s2">&quot;sitenum&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;X_test_txfr.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;X_test_txfr.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;Y_test_txfr.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Y_test_txfr.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">Y_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;txbefile.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;txbefile.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">batch_effects_test_txfr</span><span class="p">),</span> <span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_adaptation.pkl&#39;</span><span class="p">)</span>
-<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_adaptation.pkl&#39;</span><span class="p">)</span>
-<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Y_test_txfr.pkl&#39;</span><span class="p">)</span>
-<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;X_test_txfr.pkl&#39;</span><span class="p">)</span>
-<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;adbefile.pkl&#39;</span><span class="p">)</span>
-<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;txbefile.pkl&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">respfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Y_adaptation.pkl&quot;</span><span class="p">)</span>
+<span class="n">covfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;X_adaptation.pkl&quot;</span><span class="p">)</span>
+<span class="n">testrespfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Y_test_txfr.pkl&quot;</span><span class="p">)</span>
+<span class="n">testcovfile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;X_test_txfr.pkl&quot;</span><span class="p">)</span>
+<span class="n">trbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;adbefile.pkl&quot;</span><span class="p">)</span>
+<span class="n">tsbefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;txbefile.pkl&quot;</span><span class="p">)</span>
 
-<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;log_transfer/&#39;</span><span class="p">)</span>
-<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Transfer/&#39;</span><span class="p">)</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s1">&#39;Models/&#39;</span><span class="p">)</span>  <span class="c1"># path to the previously trained models</span>
-<span class="n">outputsuffix</span> <span class="o">=</span> <span class="s1">&#39;_transfer&#39;</span>  <span class="c1"># suffix added to the output files from the transfer function</span>
+<span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;log_transfer/&quot;</span><span class="p">)</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Transfer/&quot;</span><span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">processing_dir</span><span class="p">,</span> <span class="s2">&quot;Models/&quot;</span>
+<span class="p">)</span>  <span class="c1"># path to the previously trained models</span>
+<span class="n">outputsuffix</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;_transfer&quot;</span>  <span class="c1"># suffix added to the output files from the transfer function</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Here, the difference is that the transfer function needs a model path,
 which points to the models we just trained, and new site data (training
 and testing). That is basically the only difference.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">z_scores</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
-                                            <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
-                                            <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
-                                            <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
-                                            <span class="n">inscaler</span><span class="o">=</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span>
-                                            <span class="n">outscaler</span><span class="o">=</span><span class="s1">&#39;standardize&#39;</span><span class="p">,</span>
-                                            <span class="n">linear_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                                            <span class="n">random_intercept_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                                            <span class="n">centered_intercept_mu</span><span class="o">=</span><span class="s1">&#39;True&#39;</span><span class="p">,</span>
-                                            <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_path</span><span class="p">,</span>
-                                            <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;hbr&#39;</span><span class="p">,</span>
-                                            <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
-                                            <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                            <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
-                                            <span class="n">testcov</span><span class="o">=</span> <span class="n">testcovfile_path</span><span class="p">,</span>
-                                            <span class="n">testresp</span> <span class="o">=</span> <span class="n">testrespfile_path</span><span class="p">,</span>
-                                            <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span>
-                                            <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                            <span class="n">nuts_sampler</span><span class="o">=</span><span class="s1">&#39;nutpie&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Loading data ...
-Using HBR transform...
-Transferring model  1 of 2
-</pre></div>
-</div>
-<style>
-    :root {
-        --column-width-1: 40%; /* Progress column width */
-        --column-width-2: 15%; /* Chain column width */
-        --column-width-3: 15%; /* Divergences column width */
-        --column-width-4: 15%; /* Step Size column width */
-        --column-width-5: 15%; /* Gradients/Draw column width */
-    }
-
-    .nutpie {
-        max-width: 800px;
-        margin: 10px auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        //color: #333;
-        //background-color: #fff;
-        padding: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        font-size: 14px; /* Smaller font size for a more compact look */
-    }
-    .nutpie table {
-        width: 100%;
-        border-collapse: collapse; /* Remove any extra space between borders */
-    }
-    .nutpie th, .nutpie td {
-        padding: 8px 10px; /* Reduce padding to make table more compact */
-        text-align: left;
-        border-bottom: 1px solid #888;
-    }
-    .nutpie th {
-        //background-color: #f0f0f0;
-    }
-
-    .nutpie th:nth-child(1) { width: var(--column-width-1); }
-    .nutpie th:nth-child(2) { width: var(--column-width-2); }
-    .nutpie th:nth-child(3) { width: var(--column-width-3); }
-    .nutpie th:nth-child(4) { width: var(--column-width-4); }
-    .nutpie th:nth-child(5) { width: var(--column-width-5); }
-
-    .nutpie progress {
-        width: 100%;
-        height: 15px; /* Smaller progress bars */
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-bar {
-        background-color: #eee;
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-value {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    progress::-moz-progress-bar {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    .nutpie .progress-cell {
-        width: 100%;
-    }
-
-    .nutpie p strong { font-size: 16px; font-weight: bold; }
-
-    @media (prefers-color-scheme: dark) {
-        .nutpie {
-            //color: #ddd;
-            //background-color: #1e1e1e;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .nutpie table, .nutpie th, .nutpie td {
-            border-color: #555;
-            color: #ccc;
-        }
-        .nutpie th {
-            background-color: #2a2a2a;
-        }
-        .nutpie progress::-webkit-progress-bar {
-            background-color: #444;
-        }
-        .nutpie progress::-webkit-progress-value {
-            background-color: #3178c6;
-        }
-        .nutpie progress::-moz-progress-bar {
-            background-color: #3178c6;
-        }
-    }
-</style><div class="nutpie">
-    <p><strong>Sampler Progress</strong></p>
-    <p>Total Chains: <span id="total-chains">1</span></p>
-    <p>Active Chains: <span id="active-chains">0</span></p>
-    <p>
-        Finished Chains:
-        <span id="active-chains">1</span>
-    </p>
-    <p>Sampling for now</p>
-    <p>
-        Estimated Time to Completion:
-        <span id="eta">now</span>
-    </p>
-
-    <progress
-        id="total-progress-bar"
-        max="1500"
-        value="1500">
-    </progress>
-    <table>
-        <thead>
-            <tr>
-                <th>Progress</th>
-                <th>Draws</th>
-                <th>Divergences</th>
-                <th>Step Size</th>
-                <th>Gradients/Draw</th>
-            </tr>
-        </thead>
-        <tbody id="chain-details">
-
-                <tr>
-                    <td class="progress-cell">
-                        <progress
-                            max="1500"
-                            value="1500">
-                        </progress>
-                    </td>
-                    <td>1500</td>
-                    <td>2</td>
-                    <td>0.47</td>
-                    <td>7</td>
-                </tr>
-
-            </tr>
-        </tbody>
-    </table>
-</div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Using HBR transform...
-Transferring model  2 of 2
-</pre></div>
-</div>
-<style>
-    :root {
-        --column-width-1: 40%; /* Progress column width */
-        --column-width-2: 15%; /* Chain column width */
-        --column-width-3: 15%; /* Divergences column width */
-        --column-width-4: 15%; /* Step Size column width */
-        --column-width-5: 15%; /* Gradients/Draw column width */
-    }
-
-    .nutpie {
-        max-width: 800px;
-        margin: 10px auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        //color: #333;
-        //background-color: #fff;
-        padding: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        font-size: 14px; /* Smaller font size for a more compact look */
-    }
-    .nutpie table {
-        width: 100%;
-        border-collapse: collapse; /* Remove any extra space between borders */
-    }
-    .nutpie th, .nutpie td {
-        padding: 8px 10px; /* Reduce padding to make table more compact */
-        text-align: left;
-        border-bottom: 1px solid #888;
-    }
-    .nutpie th {
-        //background-color: #f0f0f0;
-    }
-
-    .nutpie th:nth-child(1) { width: var(--column-width-1); }
-    .nutpie th:nth-child(2) { width: var(--column-width-2); }
-    .nutpie th:nth-child(3) { width: var(--column-width-3); }
-    .nutpie th:nth-child(4) { width: var(--column-width-4); }
-    .nutpie th:nth-child(5) { width: var(--column-width-5); }
-
-    .nutpie progress {
-        width: 100%;
-        height: 15px; /* Smaller progress bars */
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-bar {
-        background-color: #eee;
-        border-radius: 5px;
-    }
-    progress::-webkit-progress-value {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    progress::-moz-progress-bar {
-        background-color: #5cb85c;
-        border-radius: 5px;
-    }
-    .nutpie .progress-cell {
-        width: 100%;
-    }
-
-    .nutpie p strong { font-size: 16px; font-weight: bold; }
-
-    @media (prefers-color-scheme: dark) {
-        .nutpie {
-            //color: #ddd;
-            //background-color: #1e1e1e;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .nutpie table, .nutpie th, .nutpie td {
-            border-color: #555;
-            color: #ccc;
-        }
-        .nutpie th {
-            background-color: #2a2a2a;
-        }
-        .nutpie progress::-webkit-progress-bar {
-            background-color: #444;
-        }
-        .nutpie progress::-webkit-progress-value {
-            background-color: #3178c6;
-        }
-        .nutpie progress::-moz-progress-bar {
-            background-color: #3178c6;
-        }
-    }
-</style><div class="nutpie">
-    <p><strong>Sampler Progress</strong></p>
-    <p>Total Chains: <span id="total-chains">1</span></p>
-    <p>Active Chains: <span id="active-chains">0</span></p>
-    <p>
-        Finished Chains:
-        <span id="active-chains">1</span>
-    </p>
-    <p>Sampling for now</p>
-    <p>
-        Estimated Time to Completion:
-        <span id="eta">now</span>
-    </p>
-
-    <progress
-        id="total-progress-bar"
-        max="1500"
-        value="1500">
-    </progress>
-    <table>
-        <thead>
-            <tr>
-                <th>Progress</th>
-                <th>Draws</th>
-                <th>Divergences</th>
-                <th>Step Size</th>
-                <th>Gradients/Draw</th>
-            </tr>
-        </thead>
-        <tbody id="chain-details">
-
-                <tr>
-                    <td class="progress-cell">
-                        <progress
-                            max="1500"
-                            value="1500">
-                        </progress>
-                    </td>
-                    <td>1500</td>
-                    <td>1</td>
-                    <td>0.40</td>
-                    <td>15</td>
-                </tr>
-
-            </tr>
-        </tbody>
-    </table>
-</div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Output()
-</pre></div>
-</div>
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Evaluating the model ...
-Writing outputs ...
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">yhat</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">z_scores</span> <span class="o">=</span> <span class="n">ptk</span><span class="o">.</span><span class="n">normative</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+    <span class="n">covfile</span><span class="o">=</span><span class="n">covfile</span><span class="p">,</span>
+    <span class="n">respfile</span><span class="o">=</span><span class="n">respfile</span><span class="p">,</span>
+    <span class="n">tsbefile</span><span class="o">=</span><span class="n">tsbefile</span><span class="p">,</span>
+    <span class="n">trbefile</span><span class="o">=</span><span class="n">trbefile</span><span class="p">,</span>
+    <span class="n">inscaler</span><span class="o">=</span><span class="s2">&quot;standardize&quot;</span><span class="p">,</span>
+    <span class="n">outscaler</span><span class="o">=</span><span class="s2">&quot;standardize&quot;</span><span class="p">,</span>
+    <span class="n">linear_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">random_intercept_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">centered_intercept_mu</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span>
+    <span class="n">alg</span><span class="o">=</span><span class="s2">&quot;hbr&quot;</span><span class="p">,</span>
+    <span class="n">log_path</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span>
+    <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+    <span class="n">testcov</span><span class="o">=</span><span class="n">testcovfile_path</span><span class="p">,</span>
+    <span class="n">testresp</span><span class="o">=</span><span class="n">testrespfile_path</span><span class="p">,</span>
+    <span class="n">outputsuffix</span><span class="o">=</span><span class="n">outputsuffix</span><span class="p">,</span>
+    <span class="n">savemodel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">nuts_sampler</span><span class="o">=</span><span class="s2">&quot;nutpie&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&#39;/content/HBR_demo/Transfer/&#39;
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EV</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s1">&#39;EXPV_estimate.pkl&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EV</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s2">&quot;EXPV_estimate.pkl&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">EV</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>          0
-0  0.438215
-1  0.439181
 </pre></div>
 </div>
 <p>And that is it, you now have models that benefited from prior knowledge
@@ -2054,7 +478,7 @@ loss * See page 23 in
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="normative_modelling_walkthrough.html" class="btn btn-neutral float-left" title="DEMO ON NORMATIVE MODELING" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="apply_normative_models.html" class="btn btn-neutral float-right" title="Braincharts: transfer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="apply_normative_models.html" class="btn btn-neutral float-right" title="Using lifespan models to make predictions on new data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
