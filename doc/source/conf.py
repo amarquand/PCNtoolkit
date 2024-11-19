@@ -133,7 +133,6 @@ def setup(app):
 html_logo = "pcn-logo.png"
 html_theme_options = {
     'logo_only': True,
-    'display_version': False,
 }
 
 # Output file base name for HTML help builder.

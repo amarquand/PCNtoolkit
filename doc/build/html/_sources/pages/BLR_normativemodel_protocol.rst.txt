@@ -1,27 +1,22 @@
-.. title:: BLR tutorial
+`Predictive Clinical Neuroscience Toolkit <https://github.com/amarquand/PCNtoolkit>`__
+======================================================================================
 
-Bayesian Linear Regression
+The Normative Modeling Framework for Computational Psychiatry Protocol
 ======================================================================
 
-The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://www.nature.com/articles/s41596-022-00696-5.
+Using Bayesian Linear Regression and Multi-Site Cortical Thickness Data
+-----------------------------------------------------------------------
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
-Using Multi-Site Cortical Thickness Data
-
-.. image:: https://colab.research.google.com/assets/colab-badge.svg 
-    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/BLR_normativemodel_protocol.ipynb 
-
-
-.. figure:: ./blr_fig2.png
-   :height: 400px
-   :align: center
-
 Data Preparation
----------------------------------------------
+================
 
 Install necessary libraries & grab data files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
+
+Step 1.
+~~~~~~~
 
 Begin by cloning the GitHub repository using the following commands.
 This repository contains the necessary code and example data. Then
@@ -33,33 +28,28 @@ your computer).
 
     ! git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
 
-
-.. parsed-literal::
-
-    Cloning into 'PCNtoolkit-demo'...
-    remote: Enumerating objects: 855, done.[K
-    remote: Counting objects: 100% (855/855), done.[K
-    remote: Compressing objects: 100% (737/737), done.[K
-    remote: Total 855 (delta 278), reused 601 (delta 101), pack-reused 0[K
-    Receiving objects: 100% (855/855), 18.07 MiB | 13.53 MiB/s, done.
-    Resolving deltas: 100% (278/278), done.
-
-
 .. code:: ipython3
 
     import os
     
     # set this path to the git cloned PCNtoolkit-demo repository --> Uncomment whichever line you need for either running on your own computer or on Google Colab.
-    #os.chdir('/Users/PCNtoolkit-demo/tutorials/BLR_protocol') # if running on your own computer, use this line (change the path to match where you cloned the repository)
-    os.chdir('/content/PCNtoolkit-demo/tutorials/BLR_protocol') # if running on Google Colab, use this line
+    #wdir = '<path-to-your>/PCNtoolkit-demo' # if running on your own computer, use this line (change the path to match where you cloned the repository)
+    wdir ='/content/PCNtoolkit-demo' # if running on Google Colab, use this line
+    
+    os.chdir(os.path.join(wdir,'tutorials','BLR_protocol'))
+
 
 .. code:: ipython3
 
+    ! pip install nutpie
+    ! pip install pcntoolkit
     ! pip install -r requirements.txt
 
-
 Prepare covariate data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------
+
+Step 2.
+~~~~~~~
 
 The data set (downloaded in Step 1) includes a multi-site dataset from
 the `Human Connectome Project Young Adult
@@ -88,8 +78,8 @@ depending on the research question.
 .. code:: ipython3
 
     # if running in Google colab, remove the "data/" folder from the path
-    hcp = pd.read_csv('/content/PCNtoolkit-demo/data/HCP1200_age_gender.csv')
-    ixi = pd.read_csv('/content/PCNtoolkit-demo/data/IXI_age_gender.csv')
+    hcp = pd.read_csv(os.path.join(wdir,'data','HCP1200_age_gender.csv'))
+    ixi = pd.read_csv(os.path.join(wdir,'data','IXI_age_gender.csv'))
 
 .. code:: ipython3
 
@@ -98,8 +88,8 @@ depending on the research question.
 
 .. parsed-literal::
 
-    /usr/local/lib/python3.7/dist-packages/pandas/core/reshape/merge.py:1218: UserWarning: You are merging on int and float columns where the float values are not equal to their int representation
-      UserWarning,
+    <ipython-input-4-d7fe6256fd2e>:1: UserWarning: You are merging on int and float columns where the float values are not equal to their int representation.
+      cov = pd.merge(hcp, ixi, on=["participant_id", "age", "sex", "site"], how='outer')
 
 
 .. code:: ipython3
@@ -108,19 +98,11 @@ depending on the research question.
 
 .. code:: ipython3
 
-    sns.displot(cov, x="age", hue="site", multiple="stack", height=6)
+    sns.displot(cov, x="age", hue="site", multiple="stack", height=6);
 
 
 
-
-.. parsed-literal::
-
-    <seaborn.axisgrid.FacetGrid at 0x7ff321c7af90>
-
-
-
-
-.. image:: BLR_normativemodel_protocol_files/BLR_normativemodel_protocol_15_1.png
+.. image:: BLR_normativemodel_protocol_files/BLR_normativemodel_protocol_16_0.png
 
 
 .. code:: ipython3
@@ -129,8 +111,335 @@ depending on the research question.
 
 
 
-Prepare brain data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. raw:: html
+
+    
+      <div id="df-afa4b29e-caf9-4ab2-b9d9-544f18d0367e" class="colab-df-container">
+        <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead tr th {
+            text-align: left;
+        }
+    
+        .dataframe thead tr:last-of-type th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr>
+          <th></th>
+          <th colspan="8" halign="left">age</th>
+          <th colspan="8" halign="left">sex</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>count</th>
+          <th>mean</th>
+          <th>std</th>
+          <th>min</th>
+          <th>25%</th>
+          <th>50%</th>
+          <th>75%</th>
+          <th>max</th>
+          <th>count</th>
+          <th>mean</th>
+          <th>std</th>
+          <th>min</th>
+          <th>25%</th>
+          <th>50%</th>
+          <th>75%</th>
+          <th>max</th>
+        </tr>
+        <tr>
+          <th>site</th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>hcp</th>
+          <td>1206.0</td>
+          <td>28.837479</td>
+          <td>3.690534</td>
+          <td>22.000000</td>
+          <td>26.000000</td>
+          <td>29.00000</td>
+          <td>32.000000</td>
+          <td>37.00000</td>
+          <td>1206.0</td>
+          <td>1.543947</td>
+          <td>0.498272</td>
+          <td>1.0</td>
+          <td>1.0</td>
+          <td>2.0</td>
+          <td>2.0</td>
+          <td>2.0</td>
+        </tr>
+        <tr>
+          <th>ixi</th>
+          <td>590.0</td>
+          <td>49.476531</td>
+          <td>16.720864</td>
+          <td>19.980835</td>
+          <td>34.027721</td>
+          <td>50.61191</td>
+          <td>63.413415</td>
+          <td>86.31896</td>
+          <td>590.0</td>
+          <td>1.555932</td>
+          <td>0.497283</td>
+          <td>1.0</td>
+          <td>1.0</td>
+          <td>2.0</td>
+          <td>2.0</td>
+          <td>2.0</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+        <div class="colab-df-buttons">
+    
+      <div class="colab-df-container">
+        <button class="colab-df-convert" onclick="convertToInteractive('df-afa4b29e-caf9-4ab2-b9d9-544f18d0367e')"
+                title="Convert this dataframe to an interactive table."
+                style="display:none;">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+        <path d="M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z"/>
+      </svg>
+        </button>
+    
+      <style>
+        .colab-df-container {
+          display:flex;
+          gap: 12px;
+        }
+    
+        .colab-df-convert {
+          background-color: #E8F0FE;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: none;
+          fill: #1967D2;
+          height: 32px;
+          padding: 0 0 0 0;
+          width: 32px;
+        }
+    
+        .colab-df-convert:hover {
+          background-color: #E2EBFA;
+          box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
+          fill: #174EA6;
+        }
+    
+        .colab-df-buttons div {
+          margin-bottom: 4px;
+        }
+    
+        [theme=dark] .colab-df-convert {
+          background-color: #3B4455;
+          fill: #D2E3FC;
+        }
+    
+        [theme=dark] .colab-df-convert:hover {
+          background-color: #434B5C;
+          box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+          filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+          fill: #FFFFFF;
+        }
+      </style>
+    
+        <script>
+          const buttonEl =
+            document.querySelector('#df-afa4b29e-caf9-4ab2-b9d9-544f18d0367e button.colab-df-convert');
+          buttonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+    
+          async function convertToInteractive(key) {
+            const element = document.querySelector('#df-afa4b29e-caf9-4ab2-b9d9-544f18d0367e');
+            const dataTable =
+              await google.colab.kernel.invokeFunction('convertToInteractive',
+                                                        [key], {});
+            if (!dataTable) return;
+    
+            const docLinkHtml = 'Like what you see? Visit the ' +
+              '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
+              + ' to learn more about interactive tables.';
+            element.innerHTML = '';
+            dataTable['output_type'] = 'display_data';
+            await google.colab.output.renderOutput(dataTable, element);
+            const docLink = document.createElement('div');
+            docLink.innerHTML = docLinkHtml;
+            element.appendChild(docLink);
+          }
+        </script>
+      </div>
+    
+    
+    <div id="df-57e3370c-8d71-4e3b-b944-b6215d489958">
+      <button class="colab-df-quickchart" onclick="quickchart('df-57e3370c-8d71-4e3b-b944-b6215d489958')"
+                title="Suggest charts"
+                style="display:none;">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+         width="24px">
+        <g>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </g>
+    </svg>
+      </button>
+    
+    <style>
+      .colab-df-quickchart {
+          --bg-color: #E8F0FE;
+          --fill-color: #1967D2;
+          --hover-bg-color: #E2EBFA;
+          --hover-fill-color: #174EA6;
+          --disabled-fill-color: #AAA;
+          --disabled-bg-color: #DDD;
+      }
+    
+      [theme=dark] .colab-df-quickchart {
+          --bg-color: #3B4455;
+          --fill-color: #D2E3FC;
+          --hover-bg-color: #434B5C;
+          --hover-fill-color: #FFFFFF;
+          --disabled-bg-color: #3B4455;
+          --disabled-fill-color: #666;
+      }
+    
+      .colab-df-quickchart {
+        background-color: var(--bg-color);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none;
+        fill: var(--fill-color);
+        height: 32px;
+        padding: 0;
+        width: 32px;
+      }
+    
+      .colab-df-quickchart:hover {
+        background-color: var(--hover-bg-color);
+        box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        fill: var(--button-hover-fill-color);
+      }
+    
+      .colab-df-quickchart-complete:disabled,
+      .colab-df-quickchart-complete:disabled:hover {
+        background-color: var(--disabled-bg-color);
+        fill: var(--disabled-fill-color);
+        box-shadow: none;
+      }
+    
+      .colab-df-spinner {
+        border: 2px solid var(--fill-color);
+        border-color: transparent;
+        border-bottom-color: var(--fill-color);
+        animation:
+          spin 1s steps(1) infinite;
+      }
+    
+      @keyframes spin {
+        0% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+          border-left-color: var(--fill-color);
+        }
+        20% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        30% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+          border-right-color: var(--fill-color);
+        }
+        40% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        60% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+        }
+        80% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-bottom-color: var(--fill-color);
+        }
+        90% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+        }
+      }
+    </style>
+    
+      <script>
+        async function quickchart(key) {
+          const quickchartButtonEl =
+            document.querySelector('#' + key + ' button');
+          quickchartButtonEl.disabled = true;  // To prevent multiple clicks.
+          quickchartButtonEl.classList.add('colab-df-spinner');
+          try {
+            const charts = await google.colab.kernel.invokeFunction(
+                'suggestCharts', [key], {});
+          } catch (error) {
+            console.error('Error during call to suggestCharts:', error);
+          }
+          quickchartButtonEl.classList.remove('colab-df-spinner');
+          quickchartButtonEl.classList.add('colab-df-quickchart-complete');
+        }
+        (() => {
+          let quickchartButtonEl =
+            document.querySelector('#df-57e3370c-8d71-4e3b-b944-b6215d489958 button');
+          quickchartButtonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+        })();
+      </script>
+    </div>
+    
+        </div>
+      </div>
+
+
+
+
+Preprare brain data
+-------------------
+
+Step 3.
+~~~~~~~
 
 Next, format and combine the MRI data using the following commands. The
 example data contains cortical thickness maps estimated by running
@@ -139,7 +448,7 @@ was reduced by using ROIs from the Desikan-Killiany atlas. Including the
 Euler number as a covariate is also recommended, as this is a proxy
 metric for data quality. The `Euler
 number <https://mathworld.wolfram.com/EulerCharacteristic.html>`__ from
-each subjects recon-all output folder was extracted into a text file
+each subject’s recon-all output folder was extracted into a text file
 and is merged into the cortical thickness data frame. The Euler number
 is site-specific, thus, to use the same exclusion threshold across sites
 it is important to center the site by subtracting the site median from
@@ -147,7 +456,7 @@ all subjects at a site. Then take the square root and multiply by
 negative one and exclude any subjects with a square root above 10.
 
 Here is some psuedo-code (run from a terminal in the folder that has all
-subjects recon-all output folders) that was used to extract these ROIs:
+subject’s recon-all output folders) that was used to extract these ROIs:
 
 ``export SUBJECTS_DIR=/path/to/study/freesurfer_data/``
 
@@ -157,14 +466,14 @@ subjects recon-all output folders) that was used to extract these ROIs:
 
 .. code:: ipython3
 
-    hcpya = pd.read_csv('/content/PCNtoolkit-demo/data/HCP1200_aparc_thickness.csv')
-    ixi = pd.read_csv('/content/PCNtoolkit-demo/data/IXI_aparc_thickness.csv')
+    hcpya = pd.read_csv(os.path.join(wdir,'data','HCP1200_aparc_thickness.csv'))
+    ixi = pd.read_csv(os.path.join(wdir,'data','IXI_aparc_thickness.csv'))
 
 .. code:: ipython3
 
     brain_all = pd.merge(ixi, hcpya, how='outer')
 
-We extracted the euler number from each subjects recon-all output
+We extracted the euler number from each subject’s recon-all output
 folder into a text file and we now need to format and combine these into
 our brain dataframe.
 
@@ -173,12 +482,12 @@ recon-all.log for each subject. Run this from the terminal in the folder
 where your subjects recon-all output folders are located. This assumes
 that all of your subject IDs start with “sub-” prefix.
 
-:literal:`for i in sub-*; do if [[ -e ${i}/scripts/recon-all.log ]]; then cat ${i}/scripts/recon-all.log | grep -A 1 "Computing euler" > temp_log; lh_en=$(cat temp_log | head -2 | tail -1 | awk -F '=' '{print $2}' | awk -F ',' '{print $1}'); rh_en=$(cat temp_log | head -2 | tail -1 | awk -F '=' '{print $3}'); echo "${i}, ${lh_en}, ${rh_en}" >> euler.csv; echo ${i}; fi; done`
+:literal:`for i in sub-\*; do if [[ -e ${i}/scripts/recon-all.log ]]; then cat ${i}/scripts/recon-all.log | grep -A 1 "Computing euler" > temp_log; lh_en=`cat temp_log | head -2 | tail -1 | awk -F '=' '{print $2}' | awk -F ',' '{print $1}'\`; rh_en=`cat temp_log | head -2 | tail -1 | awk -F '=' '{print $3}'\`; echo "${i}, ${lh_en}, ${rh_en}" >> euler.csv; echo ${i}; fi; done`
 
 .. code:: ipython3
 
-    hcp_euler = pd.read_csv('/content/PCNtoolkit-demo/data/hcp-ya_euler.csv')
-    ixi_euler = pd.read_csv('/content/PCNtoolkit-demo/data/ixi_euler.csv')
+    hcp_euler = pd.read_csv(os.path.join(wdir,'data','hcp-ya_euler.csv'))
+    ixi_euler = pd.read_csv(os.path.join(wdir,'data','ixi_euler.csv'))
 
 .. code:: ipython3
 
@@ -221,7 +530,7 @@ inclusion is not too strict or too lenient.
 
 .. code:: ipython3
 
-    df_euler.groupby(by='site').median()
+    df_euler.groupby(by='site')[['lh_euler', 'rh_euler', 'avg_euler']].median()
 
 
 
@@ -229,9 +538,8 @@ inclusion is not too strict or too lenient.
 .. raw:: html
 
     
-      <div id="df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497">
-        <div class="colab-df-container">
-          <div>
+      <div id="df-86d4758b-0477-4e06-a354-485692c15879" class="colab-df-container">
+        <div>
     <style scoped>
         .dataframe tbody tr th:only-of-type {
             vertical-align: middle;
@@ -276,21 +584,21 @@ inclusion is not too strict or too lenient.
       </tbody>
     </table>
     </div>
-          <button class="colab-df-convert" onclick="convertToInteractive('df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497')"
-                  title="Convert this dataframe to an interactive table."
-                  style="display:none;">
+        <div class="colab-df-buttons">
     
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
-           width="24px">
-        <path d="M0 0h24v24H0V0z" fill="none"/>
-        <path d="M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z"/><path d="M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z"/>
+      <div class="colab-df-container">
+        <button class="colab-df-convert" onclick="convertToInteractive('df-86d4758b-0477-4e06-a354-485692c15879')"
+                title="Convert this dataframe to an interactive table."
+                style="display:none;">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+        <path d="M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z"/>
       </svg>
-          </button>
+        </button>
     
       <style>
         .colab-df-container {
           display:flex;
-          flex-wrap:wrap;
           gap: 12px;
         }
     
@@ -312,6 +620,10 @@ inclusion is not too strict or too lenient.
           fill: #174EA6;
         }
     
+        .colab-df-buttons div {
+          margin-bottom: 4px;
+        }
+    
         [theme=dark] .colab-df-convert {
           background-color: #3B4455;
           fill: #D2E3FC;
@@ -325,30 +637,160 @@ inclusion is not too strict or too lenient.
         }
       </style>
     
-          <script>
-            const buttonEl =
-              document.querySelector('#df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497 button.colab-df-convert');
-            buttonEl.style.display =
-              google.colab.kernel.accessAllowed ? 'block' : 'none';
+        <script>
+          const buttonEl =
+            document.querySelector('#df-86d4758b-0477-4e06-a354-485692c15879 button.colab-df-convert');
+          buttonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
     
-            async function convertToInteractive(key) {
-              const element = document.querySelector('#df-db4b3c2a-9d36-4913-a1fc-804fe1d5c497');
-              const dataTable =
-                await google.colab.kernel.invokeFunction('convertToInteractive',
-                                                         [key], {});
-              if (!dataTable) return;
+          async function convertToInteractive(key) {
+            const element = document.querySelector('#df-86d4758b-0477-4e06-a354-485692c15879');
+            const dataTable =
+              await google.colab.kernel.invokeFunction('convertToInteractive',
+                                                        [key], {});
+            if (!dataTable) return;
     
-              const docLinkHtml = 'Like what you see? Visit the ' +
-                '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
-                + ' to learn more about interactive tables.';
-              element.innerHTML = '';
-              dataTable['output_type'] = 'display_data';
-              await google.colab.output.renderOutput(dataTable, element);
-              const docLink = document.createElement('div');
-              docLink.innerHTML = docLinkHtml;
-              element.appendChild(docLink);
-            }
-          </script>
+            const docLinkHtml = 'Like what you see? Visit the ' +
+              '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
+              + ' to learn more about interactive tables.';
+            element.innerHTML = '';
+            dataTable['output_type'] = 'display_data';
+            await google.colab.output.renderOutput(dataTable, element);
+            const docLink = document.createElement('div');
+            docLink.innerHTML = docLinkHtml;
+            element.appendChild(docLink);
+          }
+        </script>
+      </div>
+    
+    
+    <div id="df-b3887f96-79db-487a-b3a5-c6aca3b4bd4a">
+      <button class="colab-df-quickchart" onclick="quickchart('df-b3887f96-79db-487a-b3a5-c6aca3b4bd4a')"
+                title="Suggest charts"
+                style="display:none;">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+         width="24px">
+        <g>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </g>
+    </svg>
+      </button>
+    
+    <style>
+      .colab-df-quickchart {
+          --bg-color: #E8F0FE;
+          --fill-color: #1967D2;
+          --hover-bg-color: #E2EBFA;
+          --hover-fill-color: #174EA6;
+          --disabled-fill-color: #AAA;
+          --disabled-bg-color: #DDD;
+      }
+    
+      [theme=dark] .colab-df-quickchart {
+          --bg-color: #3B4455;
+          --fill-color: #D2E3FC;
+          --hover-bg-color: #434B5C;
+          --hover-fill-color: #FFFFFF;
+          --disabled-bg-color: #3B4455;
+          --disabled-fill-color: #666;
+      }
+    
+      .colab-df-quickchart {
+        background-color: var(--bg-color);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none;
+        fill: var(--fill-color);
+        height: 32px;
+        padding: 0;
+        width: 32px;
+      }
+    
+      .colab-df-quickchart:hover {
+        background-color: var(--hover-bg-color);
+        box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        fill: var(--button-hover-fill-color);
+      }
+    
+      .colab-df-quickchart-complete:disabled,
+      .colab-df-quickchart-complete:disabled:hover {
+        background-color: var(--disabled-bg-color);
+        fill: var(--disabled-fill-color);
+        box-shadow: none;
+      }
+    
+      .colab-df-spinner {
+        border: 2px solid var(--fill-color);
+        border-color: transparent;
+        border-bottom-color: var(--fill-color);
+        animation:
+          spin 1s steps(1) infinite;
+      }
+    
+      @keyframes spin {
+        0% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+          border-left-color: var(--fill-color);
+        }
+        20% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        30% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+          border-right-color: var(--fill-color);
+        }
+        40% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        60% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+        }
+        80% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-bottom-color: var(--fill-color);
+        }
+        90% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+        }
+      }
+    </style>
+    
+      <script>
+        async function quickchart(key) {
+          const quickchartButtonEl =
+            document.querySelector('#' + key + ' button');
+          quickchartButtonEl.disabled = true;  // To prevent multiple clicks.
+          quickchartButtonEl.classList.add('colab-df-spinner');
+          try {
+            const charts = await google.colab.kernel.invokeFunction(
+                'suggestCharts', [key], {});
+          } catch (error) {
+            console.error('Error during call to suggestCharts:', error);
+          }
+          quickchartButtonEl.classList.remove('colab-df-spinner');
+          quickchartButtonEl.classList.add('colab-df-quickchart-complete');
+        }
+        (() => {
+          let quickchartButtonEl =
+            document.querySelector('#df-b3887f96-79db-487a-b3a5-c6aca3b4bd4a button');
+          quickchartButtonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+        })();
+      </script>
+    </div>
+    
         </div>
       </div>
 
@@ -362,6 +804,13 @@ inclusion is not too strict or too lenient.
 .. code:: ipython3
 
     df_euler['site_median'] = df_euler['site_median'].replace({'hcp':-43,'ixi':-56})
+
+
+.. parsed-literal::
+
+    <ipython-input-19-0f8461b95f1f>:1: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      df_euler['site_median'] = df_euler['site_median'].replace({'hcp':-43,'ixi':-56})
+
 
 .. code:: ipython3
 
@@ -383,18 +832,19 @@ inclusion is not too strict or too lenient.
 
     brain_good = brain.query('avg_euler_centered_neg_sqrt < 10')
 
-.. warning::
-    **CRITICAL STEP:** If possible, data should be visually inspected to
-    verify that the data inclusion is not too strict or too lenient.
-    Subjects above the Euler number threshold should be manually checked to
-    verify and justify their exclusion due to poor data quality. This is
-    just one approach for automated QC used by the developers of the
-    PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
-    Biobanks QC pipeline are also viable options for automated QC.
+**CRITICAL STEP:** If possible, data should be visually inspected to
+verify that the data inclusion is not too strict or too lenient.
+Subjects above the Euler number threshold should be manually checked to
+verify and justify their exclusion due to poor data quality. This is
+just one approach for automated QC used by the developers of the
+PCNtoolkit. Other approaches such as the ENIGMA QC pipeline or UK
+Biobank’s QC pipeline are also viable options for automated QC.
 
 Combine covariate & cortical thickness dataframes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------------
 
+Step 4.
+~~~~~~~
 
 The normative modeling function requires the covariate predictors and
 brain features to be in separate text files. However, it is important to
@@ -407,7 +857,7 @@ their own dataframes, using the commands below.
 
 .. code:: ipython3
 
-    # make sure to use how="inner" so that we only include subjects that have data in both the covariate and the cortical thickness files 
+    # make sure to use how="inner" so that we only include subjects that have data in both the covariate and the cortical thickness files
     all_data = pd.merge(brain_good, cov, how='inner')
 
 .. code:: ipython3
@@ -433,13 +883,15 @@ their own dataframes, using the commands below.
 
     all_data_covariates = all_data[['age','sex','site']]
 
-.. warning::
-    **CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
-    areas will be modeled and can be used to select subsets of the data
-    frame if you do not wish to run models for the whole brain.
+**CRITICAL STEP:** ``roi_ids`` is a variable that represents which brain
+areas will be modeled and can be used to select subsets of the data
+frame if you do not wish to run models for the whole brain.
 
 Add variable to model site/scanner effects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------
+
+Step 5.
+~~~~~~~
 
 Currently, the different sites are coded in a single column (named
 ‘site’) and are represented as a string data type. However, the
@@ -451,17 +903,689 @@ variables (0=not in this site, 1=present in this site).
 
 .. code:: ipython3
 
-    all_data_covariates = pd.get_dummies(all_data_covariates, columns=['site'])
+    all_data_covariates = pd.get_dummies(all_data_covariates, columns=['site'], dtype=int)
+
+.. code:: ipython3
+
+    all_data_covariates.head()
+
+
+
+
+.. raw:: html
+
+    
+      <div id="df-ecef1bbf-3141-4511-b40e-16df031c5e3e" class="colab-df-container">
+        <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>age</th>
+          <th>sex</th>
+          <th>site_hcp</th>
+          <th>site_ixi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>27.0</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>1</th>
+          <td>27.0</td>
+          <td>2</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>2</th>
+          <td>33.0</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>3</th>
+          <td>27.0</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>4</th>
+          <td>35.0</td>
+          <td>2</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+        <div class="colab-df-buttons">
+    
+      <div class="colab-df-container">
+        <button class="colab-df-convert" onclick="convertToInteractive('df-ecef1bbf-3141-4511-b40e-16df031c5e3e')"
+                title="Convert this dataframe to an interactive table."
+                style="display:none;">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+        <path d="M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z"/>
+      </svg>
+        </button>
+    
+      <style>
+        .colab-df-container {
+          display:flex;
+          gap: 12px;
+        }
+    
+        .colab-df-convert {
+          background-color: #E8F0FE;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: none;
+          fill: #1967D2;
+          height: 32px;
+          padding: 0 0 0 0;
+          width: 32px;
+        }
+    
+        .colab-df-convert:hover {
+          background-color: #E2EBFA;
+          box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
+          fill: #174EA6;
+        }
+    
+        .colab-df-buttons div {
+          margin-bottom: 4px;
+        }
+    
+        [theme=dark] .colab-df-convert {
+          background-color: #3B4455;
+          fill: #D2E3FC;
+        }
+    
+        [theme=dark] .colab-df-convert:hover {
+          background-color: #434B5C;
+          box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+          filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+          fill: #FFFFFF;
+        }
+      </style>
+    
+        <script>
+          const buttonEl =
+            document.querySelector('#df-ecef1bbf-3141-4511-b40e-16df031c5e3e button.colab-df-convert');
+          buttonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+    
+          async function convertToInteractive(key) {
+            const element = document.querySelector('#df-ecef1bbf-3141-4511-b40e-16df031c5e3e');
+            const dataTable =
+              await google.colab.kernel.invokeFunction('convertToInteractive',
+                                                        [key], {});
+            if (!dataTable) return;
+    
+            const docLinkHtml = 'Like what you see? Visit the ' +
+              '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
+              + ' to learn more about interactive tables.';
+            element.innerHTML = '';
+            dataTable['output_type'] = 'display_data';
+            await google.colab.output.renderOutput(dataTable, element);
+            const docLink = document.createElement('div');
+            docLink.innerHTML = docLinkHtml;
+            element.appendChild(docLink);
+          }
+        </script>
+      </div>
+    
+    
+    <div id="df-f464f1ca-06c2-4bc0-84ba-9792c4adc7e9">
+      <button class="colab-df-quickchart" onclick="quickchart('df-f464f1ca-06c2-4bc0-84ba-9792c4adc7e9')"
+                title="Suggest charts"
+                style="display:none;">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+         width="24px">
+        <g>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </g>
+    </svg>
+      </button>
+    
+    <style>
+      .colab-df-quickchart {
+          --bg-color: #E8F0FE;
+          --fill-color: #1967D2;
+          --hover-bg-color: #E2EBFA;
+          --hover-fill-color: #174EA6;
+          --disabled-fill-color: #AAA;
+          --disabled-bg-color: #DDD;
+      }
+    
+      [theme=dark] .colab-df-quickchart {
+          --bg-color: #3B4455;
+          --fill-color: #D2E3FC;
+          --hover-bg-color: #434B5C;
+          --hover-fill-color: #FFFFFF;
+          --disabled-bg-color: #3B4455;
+          --disabled-fill-color: #666;
+      }
+    
+      .colab-df-quickchart {
+        background-color: var(--bg-color);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none;
+        fill: var(--fill-color);
+        height: 32px;
+        padding: 0;
+        width: 32px;
+      }
+    
+      .colab-df-quickchart:hover {
+        background-color: var(--hover-bg-color);
+        box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        fill: var(--button-hover-fill-color);
+      }
+    
+      .colab-df-quickchart-complete:disabled,
+      .colab-df-quickchart-complete:disabled:hover {
+        background-color: var(--disabled-bg-color);
+        fill: var(--disabled-fill-color);
+        box-shadow: none;
+      }
+    
+      .colab-df-spinner {
+        border: 2px solid var(--fill-color);
+        border-color: transparent;
+        border-bottom-color: var(--fill-color);
+        animation:
+          spin 1s steps(1) infinite;
+      }
+    
+      @keyframes spin {
+        0% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+          border-left-color: var(--fill-color);
+        }
+        20% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        30% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+          border-right-color: var(--fill-color);
+        }
+        40% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        60% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+        }
+        80% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-bottom-color: var(--fill-color);
+        }
+        90% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+        }
+      }
+    </style>
+    
+      <script>
+        async function quickchart(key) {
+          const quickchartButtonEl =
+            document.querySelector('#' + key + ' button');
+          quickchartButtonEl.disabled = true;  // To prevent multiple clicks.
+          quickchartButtonEl.classList.add('colab-df-spinner');
+          try {
+            const charts = await google.colab.kernel.invokeFunction(
+                'suggestCharts', [key], {});
+          } catch (error) {
+            console.error('Error during call to suggestCharts:', error);
+          }
+          quickchartButtonEl.classList.remove('colab-df-spinner');
+          quickchartButtonEl.classList.add('colab-df-quickchart-complete');
+        }
+        (() => {
+          let quickchartButtonEl =
+            document.querySelector('#df-f464f1ca-06c2-4bc0-84ba-9792c4adc7e9 button');
+          quickchartButtonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+        })();
+      </script>
+    </div>
+    
+        </div>
+      </div>
+
+
+
+
+.. code:: ipython3
+
+    all_data_covariates
+
+
+
+
+.. raw:: html
+
+    
+      <div id="df-5028969e-f845-4921-a214-125bcdb1c0f1" class="colab-df-container">
+        <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>age</th>
+          <th>sex</th>
+          <th>site_hcp</th>
+          <th>site_ixi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>27.000000</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>1</th>
+          <td>27.000000</td>
+          <td>2</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>2</th>
+          <td>33.000000</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>3</th>
+          <td>27.000000</td>
+          <td>1</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>4</th>
+          <td>35.000000</td>
+          <td>2</td>
+          <td>1</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>...</th>
+          <td>...</td>
+          <td>...</td>
+          <td>...</td>
+          <td>...</td>
+        </tr>
+        <tr>
+          <th>1687</th>
+          <td>47.723477</td>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>1688</th>
+          <td>50.395619</td>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>1689</th>
+          <td>42.989733</td>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>1690</th>
+          <td>46.220397</td>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>1691</th>
+          <td>41.741273</td>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>1692 rows × 4 columns</p>
+    </div>
+        <div class="colab-df-buttons">
+    
+      <div class="colab-df-container">
+        <button class="colab-df-convert" onclick="convertToInteractive('df-5028969e-f845-4921-a214-125bcdb1c0f1')"
+                title="Convert this dataframe to an interactive table."
+                style="display:none;">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+        <path d="M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z"/>
+      </svg>
+        </button>
+    
+      <style>
+        .colab-df-container {
+          display:flex;
+          gap: 12px;
+        }
+    
+        .colab-df-convert {
+          background-color: #E8F0FE;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: none;
+          fill: #1967D2;
+          height: 32px;
+          padding: 0 0 0 0;
+          width: 32px;
+        }
+    
+        .colab-df-convert:hover {
+          background-color: #E2EBFA;
+          box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
+          fill: #174EA6;
+        }
+    
+        .colab-df-buttons div {
+          margin-bottom: 4px;
+        }
+    
+        [theme=dark] .colab-df-convert {
+          background-color: #3B4455;
+          fill: #D2E3FC;
+        }
+    
+        [theme=dark] .colab-df-convert:hover {
+          background-color: #434B5C;
+          box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+          filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+          fill: #FFFFFF;
+        }
+      </style>
+    
+        <script>
+          const buttonEl =
+            document.querySelector('#df-5028969e-f845-4921-a214-125bcdb1c0f1 button.colab-df-convert');
+          buttonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+    
+          async function convertToInteractive(key) {
+            const element = document.querySelector('#df-5028969e-f845-4921-a214-125bcdb1c0f1');
+            const dataTable =
+              await google.colab.kernel.invokeFunction('convertToInteractive',
+                                                        [key], {});
+            if (!dataTable) return;
+    
+            const docLinkHtml = 'Like what you see? Visit the ' +
+              '<a target="_blank" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'
+              + ' to learn more about interactive tables.';
+            element.innerHTML = '';
+            dataTable['output_type'] = 'display_data';
+            await google.colab.output.renderOutput(dataTable, element);
+            const docLink = document.createElement('div');
+            docLink.innerHTML = docLinkHtml;
+            element.appendChild(docLink);
+          }
+        </script>
+      </div>
+    
+    
+    <div id="df-6abac9f6-f6ef-4ef1-b551-afa184043246">
+      <button class="colab-df-quickchart" onclick="quickchart('df-6abac9f6-f6ef-4ef1-b551-afa184043246')"
+                title="Suggest charts"
+                style="display:none;">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+         width="24px">
+        <g>
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </g>
+    </svg>
+      </button>
+    
+    <style>
+      .colab-df-quickchart {
+          --bg-color: #E8F0FE;
+          --fill-color: #1967D2;
+          --hover-bg-color: #E2EBFA;
+          --hover-fill-color: #174EA6;
+          --disabled-fill-color: #AAA;
+          --disabled-bg-color: #DDD;
+      }
+    
+      [theme=dark] .colab-df-quickchart {
+          --bg-color: #3B4455;
+          --fill-color: #D2E3FC;
+          --hover-bg-color: #434B5C;
+          --hover-fill-color: #FFFFFF;
+          --disabled-bg-color: #3B4455;
+          --disabled-fill-color: #666;
+      }
+    
+      .colab-df-quickchart {
+        background-color: var(--bg-color);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none;
+        fill: var(--fill-color);
+        height: 32px;
+        padding: 0;
+        width: 32px;
+      }
+    
+      .colab-df-quickchart:hover {
+        background-color: var(--hover-bg-color);
+        box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+        fill: var(--button-hover-fill-color);
+      }
+    
+      .colab-df-quickchart-complete:disabled,
+      .colab-df-quickchart-complete:disabled:hover {
+        background-color: var(--disabled-bg-color);
+        fill: var(--disabled-fill-color);
+        box-shadow: none;
+      }
+    
+      .colab-df-spinner {
+        border: 2px solid var(--fill-color);
+        border-color: transparent;
+        border-bottom-color: var(--fill-color);
+        animation:
+          spin 1s steps(1) infinite;
+      }
+    
+      @keyframes spin {
+        0% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+          border-left-color: var(--fill-color);
+        }
+        20% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        30% {
+          border-color: transparent;
+          border-left-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+          border-right-color: var(--fill-color);
+        }
+        40% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-top-color: var(--fill-color);
+        }
+        60% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+        }
+        80% {
+          border-color: transparent;
+          border-right-color: var(--fill-color);
+          border-bottom-color: var(--fill-color);
+        }
+        90% {
+          border-color: transparent;
+          border-bottom-color: var(--fill-color);
+        }
+      }
+    </style>
+    
+      <script>
+        async function quickchart(key) {
+          const quickchartButtonEl =
+            document.querySelector('#' + key + ' button');
+          quickchartButtonEl.disabled = true;  // To prevent multiple clicks.
+          quickchartButtonEl.classList.add('colab-df-spinner');
+          try {
+            const charts = await google.colab.kernel.invokeFunction(
+                'suggestCharts', [key], {});
+          } catch (error) {
+            console.error('Error during call to suggestCharts:', error);
+          }
+          quickchartButtonEl.classList.remove('colab-df-spinner');
+          quickchartButtonEl.classList.add('colab-df-quickchart-complete');
+        }
+        (() => {
+          let quickchartButtonEl =
+            document.querySelector('#df-6abac9f6-f6ef-4ef1-b551-afa184043246 button');
+          quickchartButtonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+        })();
+      </script>
+    </div>
+    
+      <div id="id_3b1bc070-4335-45dd-b4b0-a7286a108c5f">
+        <style>
+          .colab-df-generate {
+            background-color: #E8F0FE;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            fill: #1967D2;
+            height: 32px;
+            padding: 0 0 0 0;
+            width: 32px;
+          }
+    
+          .colab-df-generate:hover {
+            background-color: #E2EBFA;
+            box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);
+            fill: #174EA6;
+          }
+    
+          [theme=dark] .colab-df-generate {
+            background-color: #3B4455;
+            fill: #D2E3FC;
+          }
+    
+          [theme=dark] .colab-df-generate:hover {
+            background-color: #434B5C;
+            box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+            fill: #FFFFFF;
+          }
+        </style>
+        <button class="colab-df-generate" onclick="generateWithVariable('all_data_covariates')"
+                title="Generate code using this dataframe."
+                style="display:none;">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px"viewBox="0 0 24 24"
+           width="24px">
+        <path d="M7,19H8.4L18.45,9,17,7.55,7,17.6ZM5,21V16.75L18.45,3.32a2,2,0,0,1,2.83,0l1.4,1.43a1.91,1.91,0,0,1,.58,1.4,1.91,1.91,0,0,1-.58,1.4L9.25,21ZM18.45,9,17,7.55Zm-12,3A5.31,5.31,0,0,0,4.9,8.1,5.31,5.31,0,0,0,1,6.5,5.31,5.31,0,0,0,4.9,4.9,5.31,5.31,0,0,0,6.5,1,5.31,5.31,0,0,0,8.1,4.9,5.31,5.31,0,0,0,12,6.5,5.46,5.46,0,0,0,6.5,12Z"/>
+      </svg>
+        </button>
+        <script>
+          (() => {
+          const buttonEl =
+            document.querySelector('#id_3b1bc070-4335-45dd-b4b0-a7286a108c5f button.colab-df-generate');
+          buttonEl.style.display =
+            google.colab.kernel.accessAllowed ? 'block' : 'none';
+    
+          buttonEl.onclick = () => {
+            google.colab.notebook.generateWithVariable('all_data_covariates');
+          }
+          })();
+        </script>
+      </div>
+    
+        </div>
+      </div>
+
+
+
 
 .. code:: ipython3
 
     all_data['Average_Thickness'] = all_data[['lh_MeanThickness_thickness','rh_MeanThickness_thickness']].mean(axis=1)
 
-
-
 Train/test split
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------
 
+Step 6.
+~~~~~~~
 
 In this example, we use 80% of the data for training and 20% for
 testing. Please carefully read the experimental design section on
@@ -501,11 +1625,12 @@ Verify that your train & test arrays are the same size
     Test response size is:  (339, 6)
 
 
-.. warning::
-    **CRITICAL STEP:** The model would not learn the site effects if all the
-    data from one site was only in the test set. Therefore, we stratify the
-    train/test split using the site variable.
+**CRITICAL STEP:** The model would not learn the site effects if all the
+data from one site was only in the test set. Therefore, we stratify the
+train/test split using the site variable.
 
+Step 7.
+~~~~~~~
 
 When the data were split into train and test sets, the row index was not
 reset. This means that the row index in the train and test data frames
@@ -540,9 +1665,11 @@ which sites to evaluate model performance for, as follows:
     # Create a list with sites names to use in evaluating per-site metrics
     site_names = ['hcp', 'ixi']
 
-
 Setup output directories
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
+
+Step 8.
+-------
 
 Save each brain region to its own text file (organized in separate
 directories) using the following commands, because for each response
@@ -556,6 +1683,7 @@ variable, Y (e.g., brain region) we fit a separate normative model.
 .. code:: ipython3
 
     X_train.to_csv('cov_tr.txt', sep = '\t', header=False, index = False)
+
 
 .. code:: ipython3
 
@@ -580,12 +1708,25 @@ variable, Y (e.g., brain region) we fit a separate normative model.
 
 .. code:: ipython3
 
+    # Note: please change the path in the following to wdir (depending on whether you are running on colab or not)
+    
     ! for i in `cat /content/PCNtoolkit-demo/data/roi_dir_names`; do if [[ -e resp_tr_${i}.txt ]]; then cd ROI_models; mkdir ${i}; cd ../; cp resp_tr_${i}.txt ROI_models/${i}/resp_tr.txt; cp resp_te_${i}.txt ROI_models/${i}/resp_te.txt; cp cov_tr.txt ROI_models/${i}/cov_tr.txt; cp cov_te.txt ROI_models/${i}/cov_te.txt; fi; done
+
+
+.. parsed-literal::
+
+    mkdir: cannot create directory ‘lh_MeanThickness_thickness’: File exists
+    mkdir: cannot create directory ‘lh_bankssts_thickness’: File exists
+    mkdir: cannot create directory ‘lh_caudalanteriorcingulate_thickness’: File exists
+    mkdir: cannot create directory ‘lh_superiorfrontal_thickness’: File exists
+    mkdir: cannot create directory ‘rh_MeanThickness_thickness’: File exists
+    mkdir: cannot create directory ‘rh_superiorfrontal_thickness’: File exists
+
 
 .. code:: ipython3
 
     # clean up files
-    ! rm resp_*.txt 
+    ! rm resp_*.txt
 
 .. code:: ipython3
 
@@ -593,11 +1734,13 @@ variable, Y (e.g., brain region) we fit a separate normative model.
     ! rm cov_t*.txt
 
 Algorithm & Modeling
--------------------------------
+====================
 
 Basis expansion using B-Splines
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
+Step 9.
+~~~~~~~
 
 Now, set up a B-spline basis set that allows us to perform nonlinear
 regression using a linear model, using the following commands. This
@@ -615,29 +1758,29 @@ al <https://pubmed.ncbi.nlm.nih.gov/34798518/>`__.
 .. code:: ipython3
 
     # set this path to wherever your ROI_models folder is located (where you copied all of the covariate & response text files to in Step 4)
-    data_dir = '/content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/'
+    data_dir = os.path.join(wdir,'tutorials','BLR_protocol','ROI_models')
     
     # Create a cubic B-spline basis (used for regression)
     xmin = 10#16 # xmin & xmax are the boundaries for ages of participants in the dataset
     xmax = 95#90
     B = create_bspline_basis(xmin, xmax)
-    # create the basis expansion for the covariates for each of the 
-    for roi in roi_ids: 
+    # create the basis expansion for the covariates for each of the
+    for roi in roi_ids:
         print('Creating basis expansion for ROI:', roi)
         roi_dir = os.path.join(data_dir, roi)
         os.chdir(roi_dir)
-        # create output dir 
+        # create output dir
         os.makedirs(os.path.join(roi_dir,'blr'), exist_ok=True)
         # load train & test covariate data matrices
         X_tr = np.loadtxt(os.path.join(roi_dir, 'cov_tr.txt'))
         X_te = np.loadtxt(os.path.join(roi_dir, 'cov_te.txt'))
-        # add intercept column 
+        # add intercept column
         X_tr = np.concatenate((X_tr, np.ones((X_tr.shape[0],1))), axis=1)
         X_te = np.concatenate((X_te, np.ones((X_te.shape[0],1))), axis=1)
         np.savetxt(os.path.join(roi_dir, 'cov_int_tr.txt'), X_tr)
         np.savetxt(os.path.join(roi_dir, 'cov_int_te.txt'), X_te)
-        
-        # create Bspline basis set 
+    
+        # create Bspline basis set
         Phi = np.array([B(i) for i in X_tr[:,0]])
         Phis = np.array([B(i) for i in X_te[:,0]])
         X_tr = np.concatenate((X_tr, Phi), axis=1)
@@ -657,8 +1800,10 @@ al <https://pubmed.ncbi.nlm.nih.gov/34798518/>`__.
 
 
 Estimate normative model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
+Step 10.
+~~~~~~~~
 
 Set up a variable (``data_dir``) that specifies the path to the ROI
 directories that were created in Step 7. Initiate two empty pandas data
@@ -674,6 +1819,8 @@ these data frames will be saved as individual csv files.
     blr_metrics = pd.DataFrame(columns = ['ROI', 'MSLL', 'EV', 'SMSE', 'RMSE', 'Rho'])
     blr_site_metrics = pd.DataFrame(columns = ['ROI', 'site', 'MSLL', 'EV', 'SMSE', 'RMSE', 'Rho'])
 
+Step 11.
+~~~~~~~~
 
 Estimate the normative models using a for loop to iterate over brain
 regions. An important consideration is whether to re-scale or
@@ -693,70 +1840,69 @@ arguments that are worthy of commenting on:
 ::
 
    - alg = 'blr': specifies we should use Bayesian Linear Regression.  
-   - optimizer = 'powell': use Powell's derivative-free optimization method (faster in this case than L-BFGS) 
-   - savemodel = False: do not write out the final estimated model to disk 
+   - optimizer = 'powell': use Powell's derivative-free optimization method (faster in this case than L-BFGS)
+   - savemodel = False: do not write out the final estimated model to disk
    - saveoutput = False: return the outputs directly rather than writing them to disk
    - standardize = False: Do not standardize the covariates or response variables
 
-.. warning::
-    **CRITICAL STEP:** This code fragment will loop through each region of
-    interest in the ``roi_ids`` list (created in step 4) using Bayesian
-    Linear Regression and evaluate the model on the independent test set. In
-    principle, we could estimate the normative models on the whole data
-    matrix at once (e.g., with the response variables stored in a
-    ``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
-    instead of saved out into separate directories). However, running the
-    models iteratively gives some extra flexibility in that it does not
-    require that the included subjects are the same for each of the brain
-    measures.
+**CRITICAL STEP:** This code fragment will loop through each region of
+interest in the ``roi_ids`` list (created in step 4) using Bayesian
+Linear Regression and evaluate the model on the independent test set. In
+principle, we could estimate the normative models on the whole data
+matrix at once (e.g., with the response variables stored in a
+``n_subjects`` by ``n_brain_measures`` NumPy array or a text file
+instead of saved out into separate directories). However, running the
+models iteratively gives some extra flexibility in that it does not
+require that the included subjects are the same for each of the brain
+measures.
 
 .. code:: ipython3
 
     # Loop through ROIs
-    for roi in roi_ids: 
+    for roi in roi_ids:
         print('Running ROI:', roi)
         roi_dir = os.path.join(data_dir, roi)
         os.chdir(roi_dir)
-         
-        # configure the covariates to use. Change *_bspline_* to *_int_* to 
+    
+        # configure the covariates to use. Change *_bspline_* to *_int_* to
         cov_file_tr = os.path.join(roi_dir, 'cov_bspline_tr.txt')
         cov_file_te = os.path.join(roi_dir, 'cov_bspline_te.txt')
-        
+    
         # load train & test response files
         resp_file_tr = os.path.join(roi_dir, 'resp_tr.txt')
-        resp_file_te = os.path.join(roi_dir, 'resp_te.txt') 
-        
+        resp_file_te = os.path.join(roi_dir, 'resp_te.txt')
+    
         # run a basic model
-        yhat_te, s2_te, nm, Z, metrics_te = estimate(cov_file_tr, 
-                                                     resp_file_tr, 
-                                                     testresp=resp_file_te, 
-                                                     testcov=cov_file_te, 
-                                                     alg = 'blr', 
-                                                     optimizer = 'powell', 
-                                                     savemodel = True, 
+        yhat_te, s2_te, nm, Z, metrics_te = estimate(cov_file_tr,
+                                                     resp_file_tr,
+                                                     testresp=resp_file_te,
+                                                     testcov=cov_file_te,
+                                                     alg = 'blr',
+                                                     optimizer = 'powell',
+                                                     savemodel = True,
                                                      saveoutput = False,
                                                      standardize = False)
         # save metrics
         blr_metrics.loc[len(blr_metrics)] = [roi, metrics_te['MSLL'][0], metrics_te['EXPV'][0], metrics_te['SMSE'][0], metrics_te['RMSE'][0], metrics_te['Rho'][0]]
-        
+    
         # Compute metrics per site in test set, save to pandas df
         # load true test data
         X_te = np.loadtxt(cov_file_te)
         y_te = np.loadtxt(resp_file_te)
         y_te = y_te[:, np.newaxis] # make sure it is a 2-d array
-        
+    
         # load training data (required to compute the MSLL)
         y_tr = np.loadtxt(resp_file_tr)
         y_tr = y_tr[:, np.newaxis]
-        
-        for num, site in enumerate(sites):     
+    
+        for num, site in enumerate(sites):
             y_mean_te_site = np.array([[np.mean(y_te[site])]])
             y_var_te_site = np.array([[np.var(y_te[site])]])
             yhat_mean_te_site = np.array([[np.mean(yhat_te[site])]])
             yhat_var_te_site = np.array([[np.var(yhat_te[site])]])
-            
+    
             metrics_te_site = evaluate(y_te[site], yhat_te[site], s2_te[site], y_mean_te_site, y_var_te_site)
-            
+    
             site_name = site_names[num]
             blr_site_metrics.loc[len(blr_site_metrics)] = [roi, site_names[num], metrics_te_site['MSLL'][0], metrics_te_site['EXPV'][0], metrics_te_site['SMSE'][0], metrics_te_site['RMSE'][0], metrics_te_site['Rho'][0]]
 
@@ -764,40 +1910,54 @@ arguments that are worthy of commenting on:
 .. parsed-literal::
 
     Running ROI: lh_MeanThickness_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_MeanThickness_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
     Using default hyperparameters
+
+
+.. parsed-literal::
+
+    /usr/local/lib/python3.10/dist-packages/pcntoolkit/model/bayesreg.py:196: LinAlgWarning: Ill-conditioned matrix (rcond=1.15485e-18): result may not be accurate.
+      invAXt = linalg.solve(self.A, X.T, check_finite=False)
+
+
+.. parsed-literal::
+
     Optimization terminated successfully.
              Current function value: -1162.792820
              Iterations: 2
-             Function evaluations: 47
+             Function evaluations: 43
     Saving model meta-data...
     Evaluating the model ...
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/pcntoolkit/model/bayesreg.py:187: LinAlgWarning: Ill-conditioned matrix (rcond=1.15485e-18): result may not be accurate.
-      invAXt = linalg.solve(self.A, X.T, check_finite=False)
-    /usr/local/lib/python3.7/dist-packages/pcntoolkit/model/bayesreg.py:187: LinAlgWarning: Ill-conditioned matrix (rcond=4.51813e-19): result may not be accurate.
-      invAXt = linalg.solve(self.A, X.T, check_finite=False)
-
-
-.. parsed-literal::
-
     Running ROI: rh_MeanThickness_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/rh_MeanThickness_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
     Using default hyperparameters
+
+
+.. parsed-literal::
+
+    /usr/local/lib/python3.10/dist-packages/pcntoolkit/model/bayesreg.py:196: LinAlgWarning: Ill-conditioned matrix (rcond=4.51813e-19): result may not be accurate.
+      invAXt = linalg.solve(self.A, X.T, check_finite=False)
+
+
+.. parsed-literal::
+
     Optimization terminated successfully.
              Current function value: -1187.621858
              Iterations: 2
-             Function evaluations: 47
+             Function evaluations: 43
     Saving model meta-data...
     Evaluating the model ...
     Running ROI: lh_bankssts_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_bankssts_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
@@ -805,10 +1965,12 @@ arguments that are worthy of commenting on:
     Optimization terminated successfully.
              Current function value: -578.945257
              Iterations: 2
-             Function evaluations: 46
+             Function evaluations: 42
     Saving model meta-data...
     Evaluating the model ...
     Running ROI: lh_caudalanteriorcingulate_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_caudalanteriorcingulate_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
@@ -816,10 +1978,12 @@ arguments that are worthy of commenting on:
     Optimization terminated successfully.
              Current function value: -235.509099
              Iterations: 3
-             Function evaluations: 75
+             Function evaluations: 69
     Saving model meta-data...
     Evaluating the model ...
     Running ROI: lh_superiorfrontal_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/lh_superiorfrontal_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
@@ -827,10 +1991,12 @@ arguments that are worthy of commenting on:
     Optimization terminated successfully.
              Current function value: -716.547377
              Iterations: 3
-             Function evaluations: 91
+             Function evaluations: 84
     Saving model meta-data...
     Evaluating the model ...
     Running ROI: rh_superiorfrontal_thickness
+    inscaler: None
+    outscaler: None
     Processing data in /content/PCNtoolkit-demo/tutorials/BLR_protocol/ROI_models/rh_superiorfrontal_thickness/resp_tr.txt
     Estimating model  1 of 1
     configuring BLR ( order 1 )
@@ -838,17 +2004,19 @@ arguments that are worthy of commenting on:
     Optimization terminated successfully.
              Current function value: -730.639309
              Iterations: 2
-             Function evaluations: 45
+             Function evaluations: 41
     Saving model meta-data...
     Evaluating the model ...
 
 
 Evaluation & Interpretation
-----------------------------------------
+===========================
 
 Describe the normative model performance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------
 
+Step 12.
+~~~~~~~~
 
 In step 11, when we looped over each region of interest in the
 ``roi_ids`` list (created in step 4) and evaluated the normative model
@@ -917,7 +2085,7 @@ can organize them into a single file, and merge the deviation scores
 into the original data file.
 
 Visualize normative model outputs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 Figure 4A viz
 ~~~~~~~~~~~~~
@@ -937,29 +2105,21 @@ Figure 4A viz
     plt.figure(dpi=380)
     fig, axes = joypy.joyplot(blr_site_metrics, column=['EV'], overlap=2.5, by="site", ylim='own', fill=True, figsize=(8,8)
                               , legend=False, xlabels=True, ylabels=True, colormap=lambda x: color_gradient(x, start=(.08, .45, .8),stop=(.8, .34, .44))
-                              , alpha=0.6, linewidth=.5, linecolor='w', fade=True)
+                              , alpha=0.6, linewidth=.5, linecolor='w', fade=True);
     plt.title('Test Set Explained Variance', fontsize=18, color='black', alpha=1)
     plt.xlabel('Explained Variance', fontsize=14, color='black', alpha=1)
     plt.ylabel('Site', fontsize=14, color='black', alpha=1)
-    plt.show
-
-
-
-
-.. parsed-literal::
-
-    <function matplotlib.pyplot.show>
-
+    plt.show()
 
 
 
 .. parsed-literal::
 
-    <Figure size 2280x1520 with 0 Axes>
+    <Figure size 2432x1824 with 0 Axes>
 
 
 
-.. image:: BLR_normativemodel_protocol_files/BLR_normativemodel_protocol_93_2.png
+.. image:: BLR_normativemodel_protocol_files/BLR_normativemodel_protocol_97_1.png
 
 
 The code used to create the visualizations shown in Figure 4 panels B-F,
@@ -967,7 +2127,8 @@ can be found in this
 `notebook <https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/visualizations.ipynb>`__.
 
 Post-Hoc analysis ideas
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
+
 
 The code for running SVM classification and classical case vs. control
 t-testing on the outputs of normative modeling can be found in this

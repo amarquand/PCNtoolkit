@@ -1,11 +1,12 @@
 # NOTE: must be run with kernprof (otherwise the inmports get screwed up)
 
 # import pcntoolkit
+import os
+import sys
+
 from bayesreg import BLR
 from line_profiler import LineProfiler
 from trendsurf import estimate
-import os
-import sys
 
 sys.path.append('/home/preclineu/andmar/sfw/PCNtoolkit/pcntoolkit')
 

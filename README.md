@@ -8,64 +8,94 @@ Methods for normative modelling, spatial statistics and pattern recognition. Doc
 
 ## Basic installation (on a local machine)
 
-i) install anaconda3 ii) create enviornment with "conda create --name <env_name>" iii) activate environment by "source activate <env_name>" iv) install required conda packages
+#### Install anaconda3 
+
+using the download here: https://www.anaconda.com/download
+
+#### Create environment 
+```
+conda create -n <env_name> python==3.12
+```
+
+#### Activate environment
 
 ```
-conda install pip pandas scipy
+source activate <env_name>
 ```
 
-v) install PCNtoolkit (plus dependencies)
+### Install nutpie and numba from conda-forge
 
+```
+conda install nutpie numba -c conda-forge
+```
+
+#### Install torch from pytorch.org
+
+Use the command that you get from the command builder here: https://pytorch.org/get-started/locally/. This will ensure you do not install the CUDA version of torch if your pc does not have a GPU. We also recommend that you use the `conda` option. 
+
+
+#### Install PCNtoolkit
+
+Using pip:
 ```
 pip install pcntoolkit
 ```
 
+Using a local clone of the repo:
+```
+python -m pip install .
+```
+
 ## Alternative installation (on a shared resource)
-Make sure conda is available on the system.
+
+#### Make sure conda is available on the system.
 Otherwise install it first from https://www.anaconda.com/ 
 
 ```
 conda --version
 ```
 
-Create a conda environment in a shared location
+#### Create a conda environment in a shared location
 
 ```
-conda create -y python==3.8.3 numpy mkl blas --prefix=/shared/conda/<env_name>
+conda create -y python==3.12 numpy mkl blas --prefix=/shared/conda/<env_name>
 ```
 
-Activate the conda environment 
+#### Activate the conda environment 
 
 ```
 conda activate /shared/conda/<env_name>
 ```
 
-Install other dependencies
+### Install nutpie using conda 
 
 ```
-conda install -y pandas scipy 
+conda install nutpie numba -c conda-forge
 ```
 
-Install pip dependencies
+#### install torch 
+
+Using the command that you get from the command builder here:
 
 ```
-pip --no-cache-dir install nibabel scikit-learn torch glob3 
+https://pytorch.org/get-started/locally/
 ```
 
-Clone the repo
+If your shared resource has no GPU, make sure you select the 'CPU' field in the 'Compute Platform' row. Here we also prefer conda over pip.
+
+#### Clone the repo
 
 ```
 git clone https://github.com/amarquand/PCNtoolkit.git
 ```
 
-install in the conda environment
+### Install in the conda environment
 
 ```
 cd PCNtoolkit/
-python3 setup.py install
+python -m pip install .
 ```
-
-Test 
+### Test 
 ```
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```

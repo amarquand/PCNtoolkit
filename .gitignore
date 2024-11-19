@@ -83,3 +83,17 @@ dist/pcntoolkit-0.27-py3.11.egg
 # Basic test functions for SHASH
 tests/test_SHASH.ipynb
 
+# Dist folder
+dist/pcntoolkit-0.30.post2-py3.12.egg
+dist/*
+dist
+build/*
+
+# CLI test folder
+tests/cli_test/*
+!tests/cli_test/test_cli.sh
+!tests/cli_test/split_data.py
+
+docs/autoapi/*
+docs/_build/*
+docs

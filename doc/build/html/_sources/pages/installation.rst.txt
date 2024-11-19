@@ -20,13 +20,19 @@ Basic installation (on a local machine)
 
 	source activate <env_name>
 
-4. Install required conda packages
+4. Install torch using the torch instructions.	
+
+.. code-block:: bash
+
+	# Command found on the torch website: https://pytorch.org/get-started/locally/
+
+5. Install required conda packages
 	
 .. code-block:: bash
 
-	conda install pip pandas scipy
+	conda install numba nutpie -c conda-forge
 	
-5. Install PCNtoolkit (plus dependencies)
+6. Install PCNtoolkit (plus dependencies)
 	
 .. code-block:: bash
 
@@ -60,7 +66,8 @@ Alternative installation (on a shared resource)
 	
 .. code-block:: bash
 
-	conda install -y pandas scipy 
+	# Command found on the torch website: https://pytorch.org/get-started/locally/
+	conda install numba nutpie -c conda-forge
 
 	
 5. Install pip dependencies
