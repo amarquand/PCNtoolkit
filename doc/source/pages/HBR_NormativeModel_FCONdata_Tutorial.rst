@@ -17,8 +17,6 @@ Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 adapted/edited by Andre Marquand and Pierre Berthet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. container::
-
 Step 0: Install necessary libraries & grab data files
 -----------------------------------------------------
 
