@@ -9,8 +9,6 @@ Using Bayesian Linear Regression and Multi-Site Cortical Thickness Data
 
 Created by `Saige Rutherford <https://twitter.com/being_saige>`__
 
-.. container::
-
 Data Preparation
 ================
 
@@ -2088,8 +2086,6 @@ into the original data file.
 
 Visualize normative model outputs
 ---------------------------------
-
-.. container::
 
 Figure 4A viz
 ~~~~~~~~~~~~~
