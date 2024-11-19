@@ -1,24 +1,23 @@
-.. title:: Predictive modeling tutorial
-
-Predictive modeling using deviation scores
-=============================================
-
-The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://www.nature.com/articles/s41596-022-00696-5.
-
-Created by `Saige Rutherford <https://twitter.com/being_saige>`__
-
-
-.. image:: https://colab.research.google.com/assets/colab-badge.svg 
-    :target: https://colab.research.google.com/github/predictive-clinical-neuroscience/PCNtoolkit-demo/blob/main/tutorials/BLR_protocol/other_predictive_models.ipynb
-
-
 .. code:: ipython3
 
     ! git clone https://github.com/predictive-clinical-neuroscience/PCNtoolkit-demo.git
 
 
+.. parsed-literal::
+
+    Cloning into 'PCNtoolkit-demo'...
+    remote: Enumerating objects: 1237, done.[K
+    remote: Counting objects: 100% (360/360), done.[K
+    remote: Compressing objects: 100% (185/185), done.[K
+    remote: Total 1237 (delta 200), reused 306 (delta 172), pack-reused 877 (from 1)[K
+    Receiving objects: 100% (1237/1237), 141.45 MiB | 10.83 MiB/s, done.
+    Resolving deltas: 100% (562/562), done.
+    Updating files: 100% (70/70), done.
+
+
 .. code:: ipython3
 
+    
     import os
 
 .. code:: ipython3
@@ -42,7 +41,7 @@ Created by `Saige Rutherford <https://twitter.com/being_saige>`__
     import numpy as np
     from matplotlib import pyplot as plt
     from scipy import stats, linalg
-    from sklearn import preprocessing, decomposition, linear_model, metrics 
+    from sklearn import preprocessing, decomposition, linear_model, metrics
     import warnings
 
 .. code:: ipython3
@@ -62,7 +61,7 @@ Created by `Saige Rutherford <https://twitter.com/being_saige>`__
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 Load Data
------------------------------
+=========
 
 .. code:: ipython3
 
@@ -85,7 +84,7 @@ Load Data
 
 
 Create Train/Test Splits
---------------------------------------
+========================
 
 .. code:: ipython3
 
@@ -117,7 +116,7 @@ Create Train/Test Splits
     test_mu_centered_ct = (test_data_ct - train_data_ct.mean(axis=0))
 
 Principal Component Regression (BBS)
---------------------------------------
+====================================
 
 .. code:: ipython3
 
@@ -131,7 +130,7 @@ Principal Component Regression (BBS)
 
 .. code:: ipython3
 
-    print(f'First PC explains {pca_model_z.explained_variance_ratio_[0]*100:.2f}% of the total variance.')
+    print(f'First PC explains {pca_model_z.explained_variance_ratio_[0]*100:.2f}% of the total variance.\nThis is an artifact of zero inflated data')
     plt.figure(figsize=(10, 7))
     plt.bar(range(1, 51), pca_model_z.explained_variance_ratio_[1:51])
     plt.title('Deviations model Variance Explained Ratio\nPCs 1-50', fontsize=25)
@@ -141,15 +140,16 @@ Principal Component Regression (BBS)
 .. parsed-literal::
 
     First PC explains 23.41% of the total variance.
+    This is an artifact of zero inflated data
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_16_1.png
+.. image:: other_predictive_models_files/other_predictive_models_17_1.png
 
 
 .. code:: ipython3
 
-    print(f'First PC explains {pca_model_ct.explained_variance_ratio_[0]*100:.2f}% of the total variance.')
+    print(f'First PC explains {pca_model_ct.explained_variance_ratio_[0]*100:.2f}% of the total variance.\nThis is an artifact of zero inflated data')
     plt.figure(figsize=(10, 7))
     plt.bar(range(1, 51), pca_model_ct.explained_variance_ratio_[1:51])
     plt.title('Cortical Thickness model Variance Explained Ratio\nPCs 1-50', fontsize=25)
@@ -159,10 +159,11 @@ Principal Component Regression (BBS)
 .. parsed-literal::
 
     First PC explains 24.28% of the total variance.
+    This is an artifact of zero inflated data
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_17_1.png
+.. image:: other_predictive_models_files/other_predictive_models_18_1.png
 
 
 .. code:: ipython3
@@ -176,7 +177,7 @@ Principal Component Regression (BBS)
     test_transformed_ct = pca_model_ct.transform(test_data_ct)
 
 Fit Linear Regression Model
---------------------------------------
+---------------------------
 
 .. code:: ipython3
 
@@ -184,14 +185,14 @@ Fit Linear Regression Model
     # we will check that this matches sklearn results later
     
     # fit ols model on dimension reduced train data
-    train_features_z = np.hstack([np.ones((train_transformed_z.shape[0], 1)), 
+    train_features_z = np.hstack([np.ones((train_transformed_z.shape[0], 1)),
                                 train_transformed_z])
-    train_features_inv_z = linalg.pinv2(train_features_z)
+    train_features_inv_z = linalg.pinv(train_features_z)
     train_betas_z = np.dot(train_features_inv_z, train_phen)
     train_pred_phen_z = np.dot(train_features_z, train_betas_z)
     
     # fit ols model on dimension reduced test data
-    test_features_z = np.hstack([np.ones((test_transformed_z.shape[0], 1)), 
+    test_features_z = np.hstack([np.ones((test_transformed_z.shape[0], 1)),
                                test_transformed_z])
     test_pred_phen_z = np.dot(test_features_z, train_betas_z)
 
@@ -201,14 +202,14 @@ Fit Linear Regression Model
     # we will check that this matches sklearn results later
     
     # fit ols model on dimension reduced train data
-    train_features_ct = np.hstack([np.ones((train_transformed_ct.shape[0], 1)), 
+    train_features_ct = np.hstack([np.ones((train_transformed_ct.shape[0], 1)),
                                 train_transformed_ct])
-    train_features_inv_ct = linalg.pinv2(train_features_ct)
+    train_features_inv_ct = linalg.pinv(train_features_ct)
     train_betas_ct = np.dot(train_features_inv_ct, train_phen)
     train_pred_phen_ct = np.dot(train_features_ct, train_betas_ct)
     
     # fit ols model on dimension reduced test data
-    test_features_ct = np.hstack([np.ones((test_transformed_ct.shape[0], 1)), 
+    test_features_ct = np.hstack([np.ones((test_transformed_ct.shape[0], 1)),
                                test_transformed_ct])
     test_pred_phen_ct = np.dot(test_features_ct, train_betas_ct)
 
@@ -216,33 +217,19 @@ Fit Linear Regression Model
 
     # OLS using sklearn
     
-    lr_model_z = linear_model.LinearRegression(fit_intercept=True, normalize=False)
+    lr_model_z = linear_model.LinearRegression(fit_intercept=True)
     lr_model_z.fit(train_transformed_z, train_phen)
     train_pred_phen_lr_model_z = lr_model_z.predict(train_transformed_z)
     test_pred_phen_lr_model_z = lr_model_z.predict(test_transformed_z)
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
     # OLS using sklearn
     
-    lr_model_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False)
+    lr_model_ct = linear_model.LinearRegression(fit_intercept=True)
     lr_model_ct.fit(train_transformed_ct, train_phen)
     train_pred_phen_lr_model_ct = lr_model_ct.predict(train_transformed_ct)
     test_pred_phen_lr_model_ct = lr_model_ct.predict(test_transformed_ct)
-
-
-.. parsed-literal::
-
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
-
 
 .. code:: ipython3
 
@@ -270,8 +257,8 @@ Fit Linear Regression Model
     Passed
 
 
-Mean Squared/Absolute Error of Predictions
------------------------------------------------
+Accuracy of Predictions
+-----------------------
 
 .. code:: ipython3
 
@@ -326,18 +313,18 @@ BBS Cross Validation
 
     def bbs(X, y, n_components, n_cv_splits, pred_summary_function, verbose=False):
         assert X.shape[0] == y.shape[0]
-        
+    
         fold_accs_train = []
         fold_accs_test = []
         np.random.seed(42)
         shuffled_idxs = np.random.choice(range(X.shape[0]), size=X.shape[0], replace=False)
         for fold_i, test_idxs in enumerate(np.array_split(shuffled_idxs, n_cv_splits)):
-            train_mask = np.ones(X.shape[0], np.bool)
+            train_mask = np.ones(X.shape[0], bool)
             train_mask[test_idxs] = 0
     
             # create train/text X, y
             train_X, test_X = X[train_mask, :], X[test_idxs, :]
-            train_y, test_y = y[train_mask], y[test_idxs]  
+            train_y, test_y = y[train_mask], y[test_idxs]
     
             # mean center columns using train data only
             train_X_mu = train_X.mean(axis=0)
@@ -356,7 +343,7 @@ BBS Cross Validation
             # fit OLS model
             if verbose:
                 print(f'CV Fold: {fold_i+1:<10} Fitting Linear Regression model...')
-            lr_model = linear_model.LinearRegression(fit_intercept=True, normalize=False)
+            lr_model = linear_model.LinearRegression(fit_intercept=True)
             lr_model.fit(train_X, train_y)
     
             train_pred = lr_model.predict(train_X)
@@ -364,11 +351,11 @@ BBS Cross Validation
     
             fold_accs_train.append(pred_summary_function(train_y, train_pred))
             fold_accs_test.append(pred_summary_function(test_y, test_pred))
-            
-            if verbose:
-                print(f'CV Fold: {fold_i+1:<10} Train MAE: {round(fold_accs_train[-1], 3):<10} Test MAE: {round(fold_accs_test[-1], 3):<10}')
     
-        
+            if verbose:
+                print(f'CV Fold: {fold_i+1:<10} Train Accuracy: {round(fold_accs_train[-1], 3):<10} Test Accuracy: {round(fold_accs_test[-1], 3):<10}')
+    
+    
         plt.figure(figsize=(13, 7))
         plt.plot(range(1, len(fold_accs_train)+1), fold_accs_train, linestyle='-', marker='o', color='C0', label='Train CV Performance')
         plt.plot(range(1, len(fold_accs_test)+1), fold_accs_test, linestyle='-', marker='o', color='C1', label='Test CV Performance')
@@ -377,7 +364,7 @@ BBS Cross Validation
         plt.xlabel('CV Fold')
         plt.legend(fontsize=20)
         plt.show()
-        
+    
         return fold_accs_train, fold_accs_test
 
 .. code:: ipython3
@@ -389,23 +376,23 @@ BBS Cross Validation
 
     CV Fold: 1          Fitting PCA model...
     CV Fold: 1          Fitting Linear Regression model...
-    CV Fold: 1          Train MAE: 0.599      Test MAE: 0.619     
+    CV Fold: 1          Train Accuracy: 0.599      Test Accuracy: 0.619     
     CV Fold: 2          Fitting PCA model...
     CV Fold: 2          Fitting Linear Regression model...
-    CV Fold: 2          Train MAE: 0.572      Test MAE: 0.713     
+    CV Fold: 2          Train Accuracy: 0.572      Test Accuracy: 0.713     
     CV Fold: 3          Fitting PCA model...
     CV Fold: 3          Fitting Linear Regression model...
-    CV Fold: 3          Train MAE: 0.577      Test MAE: 0.687     
+    CV Fold: 3          Train Accuracy: 0.577      Test Accuracy: 0.687     
     CV Fold: 4          Fitting PCA model...
     CV Fold: 4          Fitting Linear Regression model...
-    CV Fold: 4          Train MAE: 0.604      Test MAE: 0.608     
+    CV Fold: 4          Train Accuracy: 0.604      Test Accuracy: 0.608     
     CV Fold: 5          Fitting PCA model...
     CV Fold: 5          Fitting Linear Regression model...
-    CV Fold: 5          Train MAE: 0.581      Test MAE: 0.687     
+    CV Fold: 5          Train Accuracy: 0.581      Test Accuracy: 0.687     
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_32_3.png
+.. image:: other_predictive_models_files/other_predictive_models_33_1.png
 
 
 .. code:: ipython3
@@ -417,41 +404,43 @@ BBS Cross Validation
 
     CV Fold: 1          Fitting PCA model...
     CV Fold: 1          Fitting Linear Regression model...
-    CV Fold: 1          Train MAE: 0.622      Test MAE: 0.643     
+    CV Fold: 1          Train Accuracy: 0.622      Test Accuracy: 0.643     
     CV Fold: 2          Fitting PCA model...
     CV Fold: 2          Fitting Linear Regression model...
-    CV Fold: 2          Train MAE: 0.605      Test MAE: 0.723     
+    CV Fold: 2          Train Accuracy: 0.605      Test Accuracy: 0.723     
     CV Fold: 3          Fitting PCA model...
     CV Fold: 3          Fitting Linear Regression model...
-    CV Fold: 3          Train MAE: 0.604      Test MAE: 0.701     
+    CV Fold: 3          Train Accuracy: 0.604      Test Accuracy: 0.701     
     CV Fold: 4          Fitting PCA model...
     CV Fold: 4          Fitting Linear Regression model...
-    CV Fold: 4          Train MAE: 0.624      Test MAE: 0.646     
+    CV Fold: 4          Train Accuracy: 0.624      Test Accuracy: 0.646     
     CV Fold: 5          Fitting PCA model...
     CV Fold: 5          Fitting Linear Regression model...
-    CV Fold: 5          Train MAE: 0.614      Test MAE: 0.722     
+    CV Fold: 5          Train Accuracy: 0.614      Test Accuracy: 0.722     
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_33_3.png
+.. image:: other_predictive_models_files/other_predictive_models_34_1.png
 
 
 Connectome Predictive Modelling
---------------------------------------
+===============================
 
 .. code:: ipython3
 
     # correlation train_brain with train_phenotype
     train_z_pheno_corr_p = [stats.pearsonr(train_data_z[:, i], train_phen) for i in range(train_data_z.shape[1])]  # train_pheno_corr_p: (259200, )
+    # there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)
 
 .. code:: ipython3
 
     # correlation train_brain with train_phenotype
     train_ct_pheno_corr_p = [stats.pearsonr(train_data_ct[:, i], train_phen) for i in range(train_data_ct.shape[1])]  # train_pheno_corr_p: (259200, )
+    # there are some nan correlations if brain data is poorly cropped (ie: some columns are always 0)
 
 .. code:: ipython3
 
-    # split into positive and negative correlations 
+    # split into positive and negative correlations
     # and keep edges with p values below threshold
     pval_threshold = 0.01
     
@@ -495,15 +484,13 @@ Connectome Predictive Modelling
 
 .. code:: ipython3
 
-    fit_pos_z = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_pos_edges_sum_z.reshape(-1, 1), train_phen)
-    fit_neg_z = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_neg_edges_sum_z.reshape(-1, 1), train_phen)
-
+    fit_pos_z = linear_model.LinearRegression(fit_intercept=True).fit(train_pos_edges_sum_z.reshape(-1, 1), train_phen)
+    fit_neg_z = linear_model.LinearRegression(fit_intercept=True).fit(train_neg_edges_sum_z.reshape(-1, 1), train_phen)
 
 .. code:: ipython3
 
-    fit_pos_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_pos_edges_sum_ct.reshape(-1, 1), train_phen)
-    fit_neg_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_neg_edges_sum_ct.reshape(-1, 1), train_phen)
-
+    fit_pos_ct = linear_model.LinearRegression(fit_intercept=True).fit(train_pos_edges_sum_ct.reshape(-1, 1), train_phen)
+    fit_neg_ct = linear_model.LinearRegression(fit_intercept=True).fit(train_neg_edges_sum_ct.reshape(-1, 1), train_phen)
 
 .. code:: ipython3
 
@@ -512,52 +499,48 @@ Connectome Predictive Modelling
     pos_error_ct = metrics.mean_absolute_error(train_phen, fit_pos_ct.predict(train_pos_edges_sum_ct.reshape(-1, 1)))
     neg_error_ct = metrics.mean_absolute_error(train_phen, fit_neg_ct.predict(train_neg_edges_sum_ct.reshape(-1, 1)))
     
-    print(f'Training Error (MAE) (Positive Z Features Model) = {pos_error_z:.3f}')
-    print(f'Training Error (MAE) (Negative Z Features Model) = {neg_error_z:.3f}')
-    print(f'Training Error (MAE) (Positive CT Features Model) = {pos_error_ct:.3f}')
-    print(f'Training Error (MAE) (Negative CT Features Model) = {neg_error_ct:.3f}')
+    print(f'Training Error (Positive Z Features Model) = {pos_error_z:.3f}')
+    print(f'Training Error (Negative Z Features Model) = {neg_error_z:.3f}')
+    print(f'Training Error (Positive CT Features Model) = {pos_error_ct:.3f}')
+    print(f'Training Error (Negative CT Features Model) = {neg_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Training Error (MAE) (Positive Z Features Model) = 0.631
-    Training Error (MAE) (Negative Z Features Model) = 0.666
-    Training Error (MAE) (Positive CT Features Model) = 0.662
-    Training Error (MAE) (Negative CT Features Model) = 0.665
+    Training Error (Positive Z Features Model) = 0.631
+    Training Error (Negative Z Features Model) = 0.666
+    Training Error (Positive CT Features Model) = 0.662
+    Training Error (Negative CT Features Model) = 0.665
 
 
 .. code:: ipython3
 
     # combine positive/negative edges in one linear regression model
-    fit_pos_neg_z = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(np.stack((train_pos_edges_sum_z, train_neg_edges_sum_z)).T, train_phen)
-
-
+    fit_pos_neg_z = linear_model.LinearRegression(fit_intercept=True).fit(np.stack((train_pos_edges_sum_z, train_neg_edges_sum_z)).T, train_phen)
 
 .. code:: ipython3
 
     # combine positive/negative edges in one linear regression model
-    fit_pos_neg_ct = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(np.stack((train_pos_edges_sum_ct, train_neg_edges_sum_ct)).T, train_phen)
-
-
+    fit_pos_neg_ct = linear_model.LinearRegression(fit_intercept=True).fit(np.stack((train_pos_edges_sum_ct, train_neg_edges_sum_ct)).T, train_phen)
 
 .. code:: ipython3
 
     pos_neg_error_z = metrics.mean_absolute_error(train_phen, fit_pos_neg_z.predict(np.stack((train_pos_edges_sum_z, train_neg_edges_sum_z)).T))
     pos_neg_error_ct = metrics.mean_absolute_error(train_phen, fit_pos_neg_ct.predict(np.stack((train_pos_edges_sum_ct, train_neg_edges_sum_ct)).T))
     
-    print(f'Training Error (MAE) (Positive/Negative Z Features Model) = {pos_neg_error_z:.3f}')
-    print(f'Training Error (MAE) (Positive/Negative CT Features Model) = {pos_neg_error_ct:.3f}')
+    print(f'Training Error (Positive/Negative Z Features Model) = {pos_neg_error_z:.3f}')
+    print(f'Training Error (Positive/Negative CT Features Model) = {pos_neg_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Training Error (MAE) (Positive/Negative Z Features Model) = 0.620
-    Training Error (MAE) (Positive/Negative CT Features Model) = 0.642
+    Training Error (Positive/Negative Z Features Model) = 0.620
+    Training Error (Positive/Negative CT Features Model) = 0.642
 
 
 .. code:: ipython3
 
-    # evaluate out of sample performance 
+    # evaluate out of sample performance
     test_pos_edges_sum_z = test_data_z[:, keep_edges_pos_z].sum(1)
     test_neg_edges_sum_z = test_data_z[:, keep_edges_neg_z].sum(1)
     
@@ -572,44 +555,44 @@ Connectome Predictive Modelling
     neg_test_error_ct = metrics.mean_absolute_error(test_phen, fit_neg_ct.predict(test_neg_edges_sum_ct.reshape(-1, 1)))
     pos_neg_test_error_ct = metrics.mean_absolute_error(test_phen, fit_pos_neg_ct.predict(np.stack((test_pos_edges_sum_ct, test_neg_edges_sum_ct)).T))
     
-    print(f'Testing Error (MAE) (Positive Z Features Model) = {pos_test_error_z:.3f}')
-    print(f'Testing Error (MAE) (Negative Z Features Model) = {neg_test_error_z:.3f}')
-    print(f'Testing Error (MAE) (Positive/Negative Z Features Model) = {pos_neg_test_error_z:.3f}')
-    print(f'Testing Error (MAE) (Positive CT Features Model) = {pos_test_error_ct:.3f}')
-    print(f'Testing Error (MAE) (Negative CT Features Model) = {neg_test_error_ct:.3f}')
-    print(f'Testing Error (MAE) (Positive/Negative CT Features Model) = {pos_neg_test_error_ct:.3f}')
+    print(f'Testing Error (Positive Z Features Model) = {pos_test_error_z:.3f}')
+    print(f'Testing Error (Negative Z Features Model) = {neg_test_error_z:.3f}')
+    print(f'Testing Error (Positive/Negative Z Features Model) = {pos_neg_test_error_z:.3f}')
+    print(f'Testing Error (Positive CT Features Model) = {pos_test_error_ct:.3f}')
+    print(f'Testing Error (Negative CT Features Model) = {neg_test_error_ct:.3f}')
+    print(f'Testing Error (Positive/Negative CT Features Model) = {pos_neg_test_error_ct:.3f}')
 
 
 .. parsed-literal::
 
-    Testing Error (MAE) (Positive Z Features Model) = 0.705
-    Testing Error (MAE) (Negative Z Features Model) = 0.696
-    Testing Error (MAE) (Positive/Negative Z Features Model) = 0.697
-    Testing Error (MAE) (Positive CT Features Model) = 0.710
-    Testing Error (MAE) (Negative CT Features Model) = 0.695
-    Testing Error (MAE) (Positive/Negative CT Features Model) = 0.701
+    Testing Error (Positive Z Features Model) = 0.705
+    Testing Error (Negative Z Features Model) = 0.696
+    Testing Error (Positive/Negative Z Features Model) = 0.697
+    Testing Error (Positive CT Features Model) = 0.710
+    Testing Error (Negative CT Features Model) = 0.695
+    Testing Error (Positive/Negative CT Features Model) = 0.701
 
 
 CPM Cross Validation
---------------------------------------
+--------------------
 
 .. code:: ipython3
 
     def cpm(X, y, p_threshold, n_cv_splits, pred_summary_function, verbose=False):
         assert X.shape[0] == y.shape[0]
-        
+    
         fold_accs_train = []
         fold_accs_test = []
         np.random.seed(42)
         shuffled_idxs = np.random.choice(range(X.shape[0]), size=X.shape[0], replace=False)
         for fold_i, test_idxs in enumerate(np.array_split(shuffled_idxs, n_cv_splits)):
-            train_mask = np.ones(X.shape[0], np.bool)
+            train_mask = np.ones(X.shape[0], bool)
             train_mask[test_idxs] = 0
     
             # create train/text X, y
             train_X, test_X = X[train_mask, :], X[test_idxs, :]
-            train_y, test_y = y[train_mask], y[test_idxs]  
-            
+            train_y, test_y = y[train_mask], y[test_idxs]
+    
             # create correlation matrix between train_X and train_y
             if verbose:
                 print(f'CV Fold: {fold_i+1:<10} Computing correlations between train_X and train_y...')
@@ -622,18 +605,18 @@ CPM Cross Validation
                 # create masks for edges below p-threshold and split pos/neg correlations
                 keep_edges_pos = (train_corrs > 0) & (train_pvals < p_threshold)
                 keep_edges_neg = (train_corrs < 0) & (train_pvals < p_threshold)
-            
+    
             # sum X entries with significant correlations with y
             train_pos_edges_sum = train_X[:, keep_edges_pos].sum(1)
             train_neg_edges_sum = train_X[:, keep_edges_neg].sum(1)
             test_pos_edges_sum = test_X[:, keep_edges_pos].sum(1)
             test_neg_edges_sum = test_X[:, keep_edges_neg].sum(1)
-            
+    
             # fit linear regression models based on summed values
-            fit_pos = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_pos_edges_sum.reshape(-1, 1), train_y)
-            fit_neg = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(train_neg_edges_sum.reshape(-1, 1), train_y)
-            fit_pos_neg = linear_model.LinearRegression(fit_intercept=True, normalize=False).fit(np.stack((train_pos_edges_sum, train_neg_edges_sum)).T, train_y)
-            
+            fit_pos = linear_model.LinearRegression(fit_intercept=True).fit(train_pos_edges_sum.reshape(-1, 1), train_y)
+            fit_neg = linear_model.LinearRegression(fit_intercept=True).fit(train_neg_edges_sum.reshape(-1, 1), train_y)
+            fit_pos_neg = linear_model.LinearRegression(fit_intercept=True).fit(np.stack((train_pos_edges_sum, train_neg_edges_sum)).T, train_y)
+    
             # compute train errors
             train_pos_error = pred_summary_function(train_y, fit_pos.predict(train_pos_edges_sum.reshape(-1, 1)))
             train_neg_error = pred_summary_function(train_y, fit_neg.predict(train_neg_edges_sum.reshape(-1, 1)))
@@ -646,27 +629,27 @@ CPM Cross Validation
     
             fold_accs_train.append((train_pos_error, train_neg_error, train_posneg_error))
             fold_accs_test.append((test_pos_error, test_neg_error, test_posneg_error))
-            
-            if verbose:
-                print(f'CV Fold: {fold_i+1:<10} Train Pos-Edges Model MAE: {round(train_pos_error, 3):<10} Train Neg-Edges Model Accuracy: {round(train_neg_error, 3):<10} Train Pos/Neg-Edges Model Accuracy: {round(train_posneg_error, 3):<10}')
-                print(f'CV Fold: {fold_i+1:<10} Test  Pos-Edges Model MAE: {round(test_pos_error, 3):<10} Test  Neg-Edges Model Accuracy: {round(test_neg_error, 3):<10} Test  Pos/Neg-Edges Model Accuracy: {round(test_posneg_error, 3):<10}')
     
-        
+            if verbose:
+                print(f'CV Fold: {fold_i+1:<10} Train Pos-Edges Model Accuracy: {round(train_pos_error, 3):<10} Train Neg-Edges Model Accuracy: {round(train_neg_error, 3):<10} Train Pos/Neg-Edges Model Accuracy: {round(train_posneg_error, 3):<10}')
+                print(f'CV Fold: {fold_i+1:<10} Test  Pos-Edges Model Accuracy: {round(test_pos_error, 3):<10} Test  Neg-Edges Model Accuracy: {round(test_neg_error, 3):<10} Test  Pos/Neg-Edges Model Accuracy: {round(test_posneg_error, 3):<10}')
+    
+    
         plt.figure(figsize=(13, 7))
         plt.plot(range(1, len(fold_accs_train)+1), [x[0] for x in fold_accs_train], linestyle='--', marker='o', color='C0', label='Train Pos-Edges Model')
         plt.plot(range(1, len(fold_accs_train)+1), [x[1] for x in fold_accs_train], linestyle='--', marker='o', color='C1', label='Train Neg-Edges Model')
         plt.plot(range(1, len(fold_accs_train)+1), [x[2] for x in fold_accs_train], linestyle='--', marker='o', color='C2', label='Train Pos/Neg-Edges Model')
-        
+    
         plt.plot(range(1, len(fold_accs_test)+1), [x[0] for x in fold_accs_test], linestyle='-', marker='o', color='C0', label='Test  Pos-Edges Model')
         plt.plot(range(1, len(fold_accs_test)+1), [x[1] for x in fold_accs_test], linestyle='-', marker='o', color='C1', label='Test  Neg-Edges Model')
         plt.plot(range(1, len(fold_accs_test)+1), [x[2] for x in fold_accs_test], linestyle='-', marker='o', color='C2', label='Test  Pos/Neg-Edges Model')
-        
+    
         plt.title(pred_summary_function.__name__, fontsize=20)
         plt.xticks(range(1, len(fold_accs_test)+1))
         plt.xlabel('CV Fold')
         plt.legend(fontsize=10)
         plt.show()
-        
+    
         return fold_accs_train, fold_accs_test
 
 .. code:: ipython3
@@ -674,32 +657,27 @@ CPM Cross Validation
     fold_accs_train_z, fold_accs_test_z = cpm(hcp_z, gscores, p_threshold=0.01, n_cv_splits=5, pred_summary_function=metrics.mean_absolute_error, verbose=True)
 
 
-
 .. parsed-literal::
 
     CV Fold: 1          Computing correlations between train_X and train_y...
-    CV Fold: 1          Train Pos-Edges Model MAE: 0.652      Train Neg-Edges Model MAE: 0.673      Train Pos/Neg-Edges Model MAE: 0.644     
-    CV Fold: 1          Test  Pos-Edges Model MAE: 0.636      Test  Neg-Edges Model MAE: 0.671      Test  Pos/Neg-Edges Model MAE: 0.632     
+    CV Fold: 1          Train Pos-Edges Model Accuracy: 0.652      Train Neg-Edges Model Accuracy: 0.673      Train Pos/Neg-Edges Model Accuracy: 0.644     
+    CV Fold: 1          Test  Pos-Edges Model Accuracy: 0.636      Test  Neg-Edges Model Accuracy: 0.671      Test  Pos/Neg-Edges Model Accuracy: 0.632     
     CV Fold: 2          Computing correlations between train_X and train_y...
-    CV Fold: 2          Train Pos-Edges Model MAE: 0.648      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.636     
-    CV Fold: 2          Test  Pos-Edges Model MAE: 0.651      Test  Neg-Edges Model MAE: 0.659      Test  Pos/Neg-Edges Model MAE: 0.662     
+    CV Fold: 2          Train Pos-Edges Model Accuracy: 0.648      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.636     
+    CV Fold: 2          Test  Pos-Edges Model Accuracy: 0.651      Test  Neg-Edges Model Accuracy: 0.659      Test  Pos/Neg-Edges Model Accuracy: 0.662     
     CV Fold: 3          Computing correlations between train_X and train_y...
-    CV Fold: 3          Train Pos-Edges Model MAE: 0.644      Train Neg-Edges Model MAE: 0.662      Train Pos/Neg-Edges Model MAE: 0.636     
-    CV Fold: 3          Test  Pos-Edges Model MAE: 0.65       Test  Neg-Edges Model MAE: 0.708      Test  Pos/Neg-Edges Model MAE: 0.646     
+    CV Fold: 3          Train Pos-Edges Model Accuracy: 0.644      Train Neg-Edges Model Accuracy: 0.662      Train Pos/Neg-Edges Model Accuracy: 0.636     
+    CV Fold: 3          Test  Pos-Edges Model Accuracy: 0.65       Test  Neg-Edges Model Accuracy: 0.708      Test  Pos/Neg-Edges Model Accuracy: 0.646     
     CV Fold: 4          Computing correlations between train_X and train_y...
-    CV Fold: 4          Train Pos-Edges Model MAE: 0.653      Train Neg-Edges Model MAE: 0.676      Train Pos/Neg-Edges Model MAE: 0.648     
-    CV Fold: 4          Test  Pos-Edges Model MAE: 0.626      Test  Neg-Edges Model MAE: 0.659      Test  Pos/Neg-Edges Model MAE: 0.625     
+    CV Fold: 4          Train Pos-Edges Model Accuracy: 0.653      Train Neg-Edges Model Accuracy: 0.676      Train Pos/Neg-Edges Model Accuracy: 0.648     
+    CV Fold: 4          Test  Pos-Edges Model Accuracy: 0.626      Test  Neg-Edges Model Accuracy: 0.659      Test  Pos/Neg-Edges Model Accuracy: 0.625     
     CV Fold: 5          Computing correlations between train_X and train_y...
-
-
-.. parsed-literal::
-
-    CV Fold: 5          Train Pos-Edges Model MAE: 0.631      Train Neg-Edges Model MAE: 0.666      Train Pos/Neg-Edges Model MAE: 0.62      
-    CV Fold: 5          Test  Pos-Edges Model MAE: 0.704      Test  Neg-Edges Model MAE: 0.696      Test  Pos/Neg-Edges Model MAE: 0.697     
+    CV Fold: 5          Train Pos-Edges Model Accuracy: 0.631      Train Neg-Edges Model Accuracy: 0.666      Train Pos/Neg-Edges Model Accuracy: 0.62      
+    CV Fold: 5          Test  Pos-Edges Model Accuracy: 0.704      Test  Neg-Edges Model Accuracy: 0.696      Test  Pos/Neg-Edges Model Accuracy: 0.697     
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_50_4.png
+.. image:: other_predictive_models_files/other_predictive_models_51_1.png
 
 
 .. code:: ipython3
@@ -710,51 +688,61 @@ CPM Cross Validation
 .. parsed-literal::
 
     CV Fold: 1          Computing correlations between train_X and train_y...
-    CV Fold: 1          Train Pos-Edges Model MAE: 0.675      Train Neg-Edges Model MAE: 0.673      Train Pos/Neg-Edges Model MAE: 0.659     
-    CV Fold: 1          Test  Pos-Edges Model MAE: 0.659      Test  Neg-Edges Model MAE: 0.67       Test  Pos/Neg-Edges Model MAE: 0.653     
+    CV Fold: 1          Train Pos-Edges Model Accuracy: 0.675      Train Neg-Edges Model Accuracy: 0.673      Train Pos/Neg-Edges Model Accuracy: 0.659     
+    CV Fold: 1          Test  Pos-Edges Model Accuracy: 0.659      Test  Neg-Edges Model Accuracy: 0.67       Test  Pos/Neg-Edges Model Accuracy: 0.653     
     CV Fold: 2          Computing correlations between train_X and train_y...
-    CV Fold: 2          Train Pos-Edges Model MAE: 0.674      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.636     
-    CV Fold: 2          Test  Pos-Edges Model MAE: 0.661      Test  Neg-Edges Model MAE: 0.657      Test  Pos/Neg-Edges Model MAE: 0.668     
+    CV Fold: 2          Train Pos-Edges Model Accuracy: 0.674      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.636     
+    CV Fold: 2          Test  Pos-Edges Model Accuracy: 0.661      Test  Neg-Edges Model Accuracy: 0.657      Test  Pos/Neg-Edges Model Accuracy: 0.668     
     CV Fold: 3          Computing correlations between train_X and train_y...
-    CV Fold: 3          Train Pos-Edges Model MAE: 0.659      Train Neg-Edges Model MAE: 0.665      Train Pos/Neg-Edges Model MAE: 0.644     
-    CV Fold: 3          Test  Pos-Edges Model MAE: 0.699      Test  Neg-Edges Model MAE: 0.704      Test  Pos/Neg-Edges Model MAE: 0.684     
+    CV Fold: 3          Train Pos-Edges Model Accuracy: 0.659      Train Neg-Edges Model Accuracy: 0.665      Train Pos/Neg-Edges Model Accuracy: 0.644     
+    CV Fold: 3          Test  Pos-Edges Model Accuracy: 0.699      Test  Neg-Edges Model Accuracy: 0.704      Test  Pos/Neg-Edges Model Accuracy: 0.684     
     CV Fold: 4          Computing correlations between train_X and train_y...
-    CV Fold: 4          Train Pos-Edges Model MAE: 0.674      Train Neg-Edges Model MAE: 0.678      Train Pos/Neg-Edges Model MAE: 0.658     
-    CV Fold: 4          Test  Pos-Edges Model MAE: 0.653      Test  Neg-Edges Model MAE: 0.656      Test  Pos/Neg-Edges Model MAE: 0.638     
+    CV Fold: 4          Train Pos-Edges Model Accuracy: 0.674      Train Neg-Edges Model Accuracy: 0.678      Train Pos/Neg-Edges Model Accuracy: 0.658     
+    CV Fold: 4          Test  Pos-Edges Model Accuracy: 0.653      Test  Neg-Edges Model Accuracy: 0.656      Test  Pos/Neg-Edges Model Accuracy: 0.638     
     CV Fold: 5          Computing correlations between train_X and train_y...
-    CV Fold: 5          Train Pos-Edges Model MAE: 0.662      Train Neg-Edges Model MAE: 0.666      Train Pos/Neg-Edges Model MAE: 0.642     
-    CV Fold: 5          Test  Pos-Edges Model MAE: 0.709      Test  Neg-Edges Model MAE: 0.698      Test  Pos/Neg-Edges Model MAE: 0.708     
+    CV Fold: 5          Train Pos-Edges Model Accuracy: 0.662      Train Neg-Edges Model Accuracy: 0.666      Train Pos/Neg-Edges Model Accuracy: 0.642     
+    CV Fold: 5          Test  Pos-Edges Model Accuracy: 0.709      Test  Neg-Edges Model Accuracy: 0.698      Test  Pos/Neg-Edges Model Accuracy: 0.708     
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_51_2.png
+.. image:: other_predictive_models_files/other_predictive_models_52_1.png
 
 
 Lasso (Linear Regression + L1 Regularization)
------------------------------------------------------
+=============================================
 
 .. code:: ipython3
 
-    # LassoCV uses coordinate descent to select hyperparameter alpha 
+    # LassoCV uses coordinate descent to select hyperparameter alpha
     alpha_grid = np.array([10**a for a in np.arange(-3, 3, 0.25)])
-    lassoCV_model_z = linear_model.LassoCV(cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, fit_intercept=True, normalize=False, random_state=42, verbose=True, n_jobs=5).fit(train_data_z, train_phen)
-
-
-
-.. code:: ipython3
-
-    # LassoCV uses coordinate descent to select hyperparameter alpha 
-    alpha_grid = np.array([10**a for a in np.arange(-3, 3, 0.25)])
-    lassoCV_model_ct = linear_model.LassoCV(cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, fit_intercept=True, normalize=False, random_state=42, verbose=True, n_jobs=5).fit(train_data_ct, train_phen)
+    lassoCV_model_z = linear_model.LassoCV(cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, fit_intercept=True, random_state=42, verbose=True, n_jobs=5).fit(train_data_z, train_phen)
 
 
 .. parsed-literal::
 
     [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
-    ...................................................................................................................[Parallel(n_jobs=5)]: Done   2 out of   5 | elapsed:    0.3s remaining:    0.5s
-    .....[Parallel(n_jobs=5)]: Done   5 out of   5 | elapsed:    0.3s finished
-    /usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_base.py:155: FutureWarning: 'normalize' was deprecated in version 1.0 and will be removed in 1.2. Please leave the normalize parameter to its default value to silence this warning. The default behavior of this estimator is to not do any normalization. If normalization is needed please use sklearn.preprocessing.StandardScaler instead.
-      FutureWarning,
+    .....................................................................................................................[Parallel(n_jobs=5)]: Done   2 out of   5 | elapsed:    0.5s remaining:    0.7s
+    /usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07308221069854426, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15375414865695802, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.10611096508367268, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    .[Parallel(n_jobs=5)]: Done   5 out of   5 | elapsed:    0.5s finished
+
+
+.. code:: ipython3
+
+    # LassoCV uses coordinate descent to select hyperparameter alpha
+    alpha_grid = np.array([10**a for a in np.arange(-3, 3, 0.25)])
+    lassoCV_model_ct = linear_model.LassoCV(cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, fit_intercept=True,  random_state=42, verbose=True, n_jobs=5).fit(train_data_ct, train_phen)
+
+
+.. parsed-literal::
+
+    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
+    ....................................................................................................................[Parallel(n_jobs=5)]: Done   2 out of   5 | elapsed:    0.2s remaining:    0.3s
+    ....[Parallel(n_jobs=5)]: Done   5 out of   5 | elapsed:    0.3s finished
 
 
 .. code:: ipython3
@@ -770,7 +758,7 @@ Lasso (Linear Regression + L1 Regularization)
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_55_0.png
+.. image:: other_predictive_models_files/other_predictive_models_56_0.png
 
 
 .. code:: ipython3
@@ -786,22 +774,18 @@ Lasso (Linear Regression + L1 Regularization)
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_56_0.png
+.. image:: other_predictive_models_files/other_predictive_models_57_0.png
 
 
 .. code:: ipython3
 
     # based on cv results above, set alpha=100
-    lasso_model_z = linear_model.Lasso(alpha=lassoCV_model_z.alpha_, fit_intercept=True, normalize=False).fit(train_data_z, train_phen)
-
-
+    lasso_model_z = linear_model.Lasso(alpha=lassoCV_model_z.alpha_, fit_intercept=True).fit(train_data_z, train_phen)
 
 .. code:: ipython3
 
     # based on cv results above, set alpha=100
-    lasso_model_ct = linear_model.Lasso(alpha=lassoCV_model_ct.alpha_, fit_intercept=True, normalize=False).fit(train_data_ct, train_phen)
-
-
+    lasso_model_ct = linear_model.Lasso(alpha=lassoCV_model_ct.alpha_, fit_intercept=True).fit(train_data_ct, train_phen)
 
 .. code:: ipython3
 
@@ -832,23 +816,23 @@ Lasso (Linear Regression + L1 Regularization)
 
 
 Ridge (Linear Regression + L2 Regularization)
---------------------------------------------------------
+=============================================
 
 .. code:: ipython3
 
-    # RidgeCV uses generalized cross validation to select hyperparameter alpha 
+    # RidgeCV uses generalized cross validation to select hyperparameter alpha
     with warnings.catch_warnings():
         # ignore matrix decomposition errors
         warnings.simplefilter("ignore")
-        ridgeCV_model_z = linear_model.RidgeCV(alphas=(0.1, 1.0, 10.0), fit_intercept=True, normalize=False, cv=5).fit(train_data_z, train_phen)
+        ridgeCV_model_z = linear_model.RidgeCV(alphas=(0.1, 1.0, 10.0), fit_intercept=True, cv=5).fit(train_data_z, train_phen)
 
 .. code:: ipython3
 
-    # RidgeCV uses generalized cross validation to select hyperparameter alpha 
+    # RidgeCV uses generalized cross validation to select hyperparameter alpha
     with warnings.catch_warnings():
         # ignore matrix decomposition errors
         warnings.simplefilter("ignore")
-        ridgeCV_model_ct = linear_model.RidgeCV(alphas=(0.1, 1.0, 10.0), fit_intercept=True, normalize=False, cv=5).fit(train_data_ct, train_phen)
+        ridgeCV_model_ct = linear_model.RidgeCV(alphas=(0.1, 1.0, 10.0), fit_intercept=True,  cv=5).fit(train_data_ct, train_phen)
 
 .. code:: ipython3
 
@@ -874,14 +858,11 @@ Ridge (Linear Regression + L2 Regularization)
 
 .. code:: ipython3
 
-    ridge_model_z = linear_model.Ridge(alpha=ridge_alpha_z, fit_intercept=True, normalize=False).fit(train_data_z, train_phen)
-
-
+    ridge_model_z = linear_model.Ridge(alpha=ridge_alpha_z, fit_intercept=True).fit(train_data_z, train_phen)
 
 .. code:: ipython3
 
-    ridge_model_ct = linear_model.Ridge(alpha=ridge_alpha_ct, fit_intercept=True, normalize=False).fit(train_data_ct, train_phen)
-
+    ridge_model_ct = linear_model.Ridge(alpha=ridge_alpha_ct, fit_intercept=True).fit(train_data_ct, train_phen)
 
 .. code:: ipython3
 
@@ -912,20 +893,80 @@ Ridge (Linear Regression + L2 Regularization)
 
 
 Elastic Net (Linear Regression + L1/L2 Regularization)
-------------------------------------------------------------
+======================================================
 
 .. code:: ipython3
 
-    # RidgeCV uses generalized cross validation to select hyperparameter alpha 
+    # RidgeCV uses generalized cross validation to select hyperparameter alpha
     elasticnetCV_model_z = linear_model.ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, random_state=42, verbose=True, n_jobs=5).fit(train_data_z, train_phen)
 
 
+.. parsed-literal::
+
+    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
+    ............................................................................................................./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.21318694590257792, tolerance: 0.0423918944559644
+      model = cd_fast.enet_coordinate_descent_gram(
+    ./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.17936527851907158, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    .../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.8618322913218321, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 11.57867990423236, tolerance: 0.0423918944559644
+      model = cd_fast.enet_coordinate_descent_gram(
+    ./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 10.2273489799189, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.4036642558553467, tolerance: 0.04401109832998077
+      model = cd_fast.enet_coordinate_descent_gram(
+    .................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 8.073063075099014, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    ../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 18.227358858718446, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............................................/usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 14.883650580549045, tolerance: 0.04401109832998077
+      model = cd_fast.enet_coordinate_descent_gram(
+    ....................................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.18805636326129616, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.0544661418971657, tolerance: 0.0423918944559644
+      model = cd_fast.enet_coordinate_descent_gram(
+    ........................................................................................................./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.1788130249701112, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............/usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.13839227040918445, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ........................................................................................................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15009167262110168, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    ........................................./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.20204581109658193, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............................/usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.09891903798924773, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ......................................................................./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.13078279402705562, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    ../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.18265009272980137, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ..../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.0877297694903234, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............................................................................................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.11087317503455552, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    ...................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.16051209546739642, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ..................................../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07594686106816084, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ............................................................./usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.10611096508367268, tolerance: 0.04382929483334259
+      model = cd_fast.enet_coordinate_descent_gram(
+    ...../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.15375414865695802, tolerance: 0.03970345334827422
+      model = cd_fast.enet_coordinate_descent_gram(
+    ../usr/local/lib/python3.10/dist-packages/sklearn/linear_model/_coordinate_descent.py:683: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations. Duality gap: 0.07308221069854426, tolerance: 0.04611195889050071
+      model = cd_fast.enet_coordinate_descent_gram(
+    ..[Parallel(n_jobs=5)]: Done  35 out of  35 | elapsed:    6.3s finished
+
 
 .. code:: ipython3
 
-    # RidgeCV uses generalized cross validation to select hyperparameter alpha 
+    # RidgeCV uses generalized cross validation to select hyperparameter alpha
     elasticnetCV_model_ct = linear_model.ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], cv=5, n_alphas=len(alpha_grid), alphas=alpha_grid, random_state=42, verbose=True, n_jobs=5).fit(train_data_ct, train_phen)
 
+
+.. parsed-literal::
+
+    [Parallel(n_jobs=5)]: Using backend ThreadingBackend with 5 concurrent workers.
+    ........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................[Parallel(n_jobs=5)]: Done  35 out of  35 | elapsed:    1.8s finished
 
 
 .. code:: ipython3
@@ -958,7 +999,7 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_72_0.png
+.. image:: other_predictive_models_files/other_predictive_models_73_0.png
 
 
 .. code:: ipython3
@@ -975,12 +1016,12 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
 
 
 
-.. image:: other_predictive_models_files/other_predictive_models_73_0.png
+.. image:: other_predictive_models_files/other_predictive_models_74_0.png
 
 
 .. code:: ipython3
 
-    elasticnet_model_z = linear_model.ElasticNet(alpha=elasticnetCV_model_z.alpha_, l1_ratio=elasticnetCV_model_z.l1_ratio_, fit_intercept=True, normalize=False, random_state=42).fit(train_data_z, train_phen)
+    elasticnet_model_z = linear_model.ElasticNet(alpha=elasticnetCV_model_z.alpha_, l1_ratio=elasticnetCV_model_z.l1_ratio_, fit_intercept=True,  random_state=42).fit(train_data_z, train_phen)
     
     train_preds_en_model_z = elasticnet_model_z.predict(train_data_z)
     test_preds_en_model_z = elasticnet_model_z.predict(test_data_z)
@@ -988,7 +1029,7 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
     train_mae_z = metrics.mean_absolute_error(train_phen, train_preds_en_model_z)
     test_mae_z = metrics.mean_absolute_error(test_phen, test_preds_en_model_z)
     
-    elasticnet_model_ct = linear_model.ElasticNet(alpha=elasticnetCV_model_ct.alpha_, l1_ratio=elasticnetCV_model_ct.l1_ratio_, fit_intercept=True, normalize=False, random_state=42).fit(train_data_ct, train_phen)
+    elasticnet_model_ct = linear_model.ElasticNet(alpha=elasticnetCV_model_ct.alpha_, l1_ratio=elasticnetCV_model_ct.l1_ratio_, fit_intercept=True, random_state=42).fit(train_data_ct, train_phen)
     
     train_preds_en_model_ct = elasticnet_model_ct.predict(train_data_ct)
     test_preds_en_model_ct = elasticnet_model_ct.predict(test_data_ct)
@@ -1008,3 +1049,5 @@ Elastic Net (Linear Regression + L1/L2 Regularization)
     Test MAE Z model: 0.680
     Train MAE CT model: 0.633
     Test MAE CT model: 0.692
+
+

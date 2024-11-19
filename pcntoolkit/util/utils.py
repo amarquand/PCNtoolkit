@@ -1,26 +1,26 @@
 from __future__ import print_function
 
 import os
-import sys
-import numpy as np
-from scipy import stats
-from subprocess import call
-from scipy.stats import genextreme, norm
-from six import with_metaclass
-from abc import ABCMeta, abstractmethod
 import pickle
-import matplotlib.pyplot as plt
-import pandas as pd
-import bspline
-from bspline import splinelab
-from sklearn.datasets import make_regression
-import pymc as pm
-from io import StringIO
-import subprocess
 import re
-from sklearn.metrics import roc_auc_score
-import scipy.special as spp
+import subprocess
+import sys
+from abc import ABCMeta, abstractmethod
+from io import StringIO
+from subprocess import call
 
+import bspline
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pymc as pm
+import scipy.special as spp
+from bspline import splinelab
+from scipy import stats
+from scipy.stats import genextreme, norm, skewnorm
+from six import with_metaclass
+from sklearn.datasets import make_regression
+from sklearn.metrics import roc_auc_score
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -126,7 +126,7 @@ def create_design_matrix(X, intercept=True, basis='bspline',
 
     N = X.shape[0]
 
-    if type(X) is pd.DataFrame:
+    if isinstance(X, pd.DataFrame):
         X = X.to_numpy()
 
     # add intercept column
@@ -149,7 +149,7 @@ def create_design_matrix(X, intercept=True, basis='bspline',
     else:
         # site ids are defined
         # make sure the data are in pandas format
-        if type(site_ids) is not pd.Series:
+        if not isinstance(site_ids, pd.Series):
             site_ids = pd.Series(data=site_ids)
         # site_ids = pd.Series(data=site_ids)
 
@@ -175,8 +175,8 @@ def create_design_matrix(X, intercept=True, basis='bspline',
         Phi = np.concatenate(
             (Phi, np.array([B(i) for i in X[:, basis_column]])), axis=1)
     elif basis == 'poly':
-        Phi = np.concatenate(Phi, create_poly_basis(
-            X[:, basis_column], **kwargs))
+        Phi = np.concatenate((Phi, create_poly_basis(
+            X[:, basis_column], **kwargs)), axis=1)
 
     return Phi
 
@@ -350,7 +350,7 @@ def calibration_descriptives(x):
     s1 = np.std(x, axis=0)
     skew = n*m3/(n-1)/(n-2)/s1**3
     sdskew = np.sqrt(6*n*(n-1) / ((n-2)*(n+1)*(n+3)))
-    kurtosis = (n*(n+1)*m4 - 3*m2**2*(n-1)) / ((n-1)*(n-2)*(n-3)*s1**4)
+    kurtosis = (n * (n+1) * m4) / ((n-1) * (n-2) * (n-3) * s1**4) - (3 * (n-1)**2) / ((n-2) * (n-3))
     sdkurtosis = np.sqrt(4*(n**2-1) * sdskew**2 / ((n-3)*(n+5)))
     semean = np.sqrt(np.var(x)/n)
     sesd = s1/np.sqrt(2*(n-1))
@@ -469,7 +469,8 @@ class WarpAffine(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise ValueError('number of parameters must be ' + str(self.n_params))
+            raise ValueError(
+                'number of parameters must be ' + str(self.n_params))
         return param[0], np.exp(param[1])
 
     def f(self, x, params):
@@ -570,7 +571,8 @@ class WarpSinArcsinh(WarpBase):
 
     def _get_params(self, param):
         if len(param) != self.n_params:
-            raise ValueError('number of parameters must be ' + str(self.n_params))
+            raise ValueError(
+                'number of parameters must be ' + str(self.n_params))
 
         epsilon = param[0]
         b = np.exp(param[1])
@@ -879,90 +881,92 @@ def calibration_error(Y, m, s, cal_levels):
 
 def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
                   working_dir=None, plot=False, random_state=None, noise=None):
-    """ This function simulates linear synthetic data for testing pcntoolkit methods.
+    """
+    Simulates synthetic data for testing purposes, with options for linear, non-linear, 
+    or combined data generation methods, and various noise types.
 
-        :param method: simulate 'linear' or 'non-linear' function.
-        :param n_samples: number of samples in each group of the training and test sets. 
-            If it is an int then the same sample number will be used for all groups. 
-            It can be also a list of size of n_grps that decides the number of samples 
-            in each group (default=100).
-        :param n_features: A positive integer that decides the number of features 
-            (default=1).
-        :param n_grps: A positive integer that decides the number of groups in data
-            (default=1).
-        :param working_dir: Directory to save data (default=None). 
-        :param plot: Boolean to plot the simulated training data (default=False).
-        :param random_state: random state for generating random numbers (Default=None).
-        :param noise: Type of added noise to the data. The options are 'gaussian', 
-            'exponential', and 'hetero_gaussian' (The defauls is None.). 
+    :param method: Method to simulate ('linear', 'non-linear', or 'combined').
+    :param n_samples: Number of samples per group, either an int or a list for each group (default=100).
+    :param n_features: Number of features to simulate (default=1).
+    :param n_grps: Number of groups in the data (default=1).
+    :param working_dir: Directory to save the data (default=None).
+    :param plot: Boolean flag to plot the simulated training data (default=False).
+    :param random_state: Seed for random number generation (default=None).
+    :param noise: Type of noise to add ('homoscedastic_gaussian', 'heteroscedastic_gaussian',
+                                         'homoscedastic_nongaussian', 'heteroscedastic_nongaussian', default=None).
 
-        :returns:
-            X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
-
+    :returns: Tuple of (X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef)
     """
 
+    np.random.seed(random_state)
+
     if isinstance(n_samples, int):
-        n_samples = [n_samples for i in range(n_grps)]
+        n_samples = [n_samples for _ in range(n_grps)]
 
     X_train, Y_train, X_test, Y_test = [], [], [], []
     grp_id_train, grp_id_test = [], []
     coef = []
+
     for i in range(n_grps):
         bias = np.random.randint(-10, high=10)
 
         if method == 'linear':
-            X_temp, Y_temp, coef_temp = make_regression(n_samples=n_samples[i]*2,
-                                                        n_features=n_features, n_targets=1,
-                                                        noise=10 * np.random.rand(), bias=bias,
-                                                        n_informative=1, coef=True,
-                                                        random_state=random_state)
+            X_temp, Y_temp, coef_temp = make_regression(
+                n_samples=n_samples[i] * 2, n_features=n_features, n_targets=1,
+                noise=10 * np.random.rand(), bias=bias, n_informative=1, coef=True,
+            )
         elif method == 'non-linear':
-            X_temp = np.random.randint(-2, 6, [2*n_samples[i], n_features]) \
-                + np.random.randn(2*n_samples[i], n_features)
+            X_temp = np.random.randint(-2, 6, [2 * n_samples[i], n_features]) \
+                + np.random.randn(2 * n_samples[i], n_features)
             Y_temp = X_temp[:, 0] * 20 * np.random.rand() + np.random.randint(10, 100) \
                 * np.sin(2 * np.random.rand() + 2 * np.pi / 5 * X_temp[:, 0])
             coef_temp = 0
         elif method == 'combined':
-            X_temp = np.random.randint(-2, 6, [2*n_samples[i], n_features]) \
-                + np.random.randn(2*n_samples[i], n_features)
+            X_temp = np.random.randint(-2, 6, [2 * n_samples[i], n_features]) \
+                + np.random.randn(2 * n_samples[i], n_features)
             Y_temp = (X_temp[:, 0]**3) * np.random.uniform(0, 0.5) \
                 + X_temp[:, 0] * 20 * np.random.rand() \
                 + np.random.randint(10, 100)
             coef_temp = 0
         else:
-            raise ValueError("Unknow method. Please specify valid method among \
-                             'linear' or  'non-linear'.")
-        coef.append(coef_temp/100)
-        X_train.append(X_temp[:X_temp.shape[0]//2])
-        Y_train.append(Y_temp[:X_temp.shape[0]//2]/100)
-        X_test.append(X_temp[X_temp.shape[0]//2:])
-        Y_test.append(Y_temp[X_temp.shape[0]//2:]/100)
-        grp_id = np.repeat(i, X_temp.shape[0])
-        grp_id_train.append(grp_id[:X_temp.shape[0]//2])
-        grp_id_test.append(grp_id[X_temp.shape[0]//2:])
+            raise ValueError(
+                "Unknown method. Please specify 'linear', 'non-linear', or 'combined'.")
 
-        if noise == 'hetero_gaussian':
-            t = np.random.randint(5, 10)
-            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
-                * np.log(1 + np.exp(X_train[i][:, 0]))
-            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
-                * np.log(1 + np.exp(X_test[i][:, 0]))
-        elif noise == 'gaussian':
-            t = np.random.randint(3, 10)
-            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0])/t
-            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0])/t
-        elif noise == 'exponential':
-            t = np.random.randint(1, 3)
-            Y_train[i] = Y_train[i] + \
-                np.random.exponential(1, Y_train[i].shape[0]) / t
-            Y_test[i] = Y_test[i] + \
-                np.random.exponential(1, Y_test[i].shape[0]) / t
-        elif noise == 'hetero_gaussian_smaller':
-            t = np.random.randint(5, 10)
-            Y_train[i] = Y_train[i] + np.random.randn(Y_train[i].shape[0]) / t \
-                * np.log(1 + np.exp(0.3 * X_train[i][:, 0]))
-            Y_test[i] = Y_test[i] + np.random.randn(Y_test[i].shape[0]) / t \
-                * np.log(1 + np.exp(0.3 * X_test[i][:, 0]))
+        coef.append(coef_temp / 100)
+        X_train.append(X_temp[:n_samples[i]])
+        Y_train.append(Y_temp[:n_samples[i]] / 100)
+        X_test.append(X_temp[n_samples[i]:])
+        Y_test.append(Y_temp[n_samples[i]:] / 100)
+        grp_id = np.repeat(i, n_samples[i] * 2)
+        grp_id_train.append(grp_id[:n_samples[i]])
+        grp_id_test.append(grp_id[n_samples[i]:])
+
+        t = np.random.randint(1, 5)
+        # Add noise to the data
+        if noise == 'homoscedastic_gaussian':
+            Y_train[i] += np.random.normal(loc=0,
+                                           scale=0.2, size=Y_train[i].shape[0]) / t
+            Y_test[i] += np.random.normal(loc=0,
+                                          scale=0.2, size=Y_test[i].shape[0]) / t
+
+        elif noise == 'heteroscedastic_gaussian':
+            Y_train[i] += np.random.normal(loc=0, scale=np.log(
+                1 + np.exp(X_train[i][:, 0])), size=Y_train[i].shape[0])
+            Y_test[i] += np.random.normal(loc=0, scale=np.log(
+                1 + np.exp(X_test[i][:, 0])), size=Y_test[i].shape[0])
+
+        elif noise == 'homoscedastic_nongaussian':
+            Y_train[i] += skewnorm.rvs(a=10, loc=0,
+                                       scale=0.2, size=Y_train[i].shape[0]) / t
+            Y_test[i] += skewnorm.rvs(a=10, loc=0,
+                                      scale=0.2, size=Y_test[i].shape[0]) / t
+
+        elif noise == 'heteroscedastic_nongaussian':
+            Y_train[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(
+                1 + np.exp(0.3 * X_train[i][:, 0])), size=Y_train[i].shape[0])
+            Y_test[i] += skewnorm.rvs(a=10, loc=0, scale=np.log(1 +
+                                      np.exp(0.3 * X_test[i][:, 0])), size=Y_test[i].shape[0])
+
     X_train = np.vstack(X_train)
     X_test = np.vstack(X_test)
     Y_train = np.concatenate(Y_train)
@@ -970,32 +974,39 @@ def simulate_data(method='linear', n_samples=100, n_features=1, n_grps=1,
     grp_id_train = np.expand_dims(np.concatenate(grp_id_train), axis=1)
     grp_id_test = np.expand_dims(np.concatenate(grp_id_test), axis=1)
 
-    for i in range(n_features):
-        plt.figure()
-        for j in range(n_grps):
-            plt.scatter(X_train[grp_id_train[:, 0] == j, i],
-                        Y_train[grp_id_train[:, 0] == j,], label='Group ' + str(j))
-        plt.xlabel('X' + str(i))
-        plt.ylabel('Y')
-        plt.legend()
+    if plot:
+        for i in range(n_features):
+            plt.figure()
+            for j in range(n_grps):
+                plt.scatter(X_train[grp_id_train[:, 0] == j, i],
+                            Y_train[grp_id_train[:, 0] == j], label='Group ' + str(j))
+            plt.xlabel(f'X{i}')
+            plt.ylabel('Y')
+            plt.legend()
+            plt.show()
 
-    if working_dir is not None:
+    if working_dir:
         if not os.path.isdir(working_dir):
             os.mkdir(working_dir)
+
         with open(os.path.join(working_dir, 'trbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_train),
-                        file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(grp_id_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'tsbefile.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(grp_id_test),
-                        file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(grp_id_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'X_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_train), file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(X_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'X_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(X_test), file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(X_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'Y_train.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_train), file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(Y_train), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(working_dir, 'Y_test.pkl'), 'wb') as file:
-            pickle.dump(pd.DataFrame(Y_test), file, protocol=PICKLE_PROTOCOL)
+            pickle.dump(pd.DataFrame(Y_test), file,
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
     return X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef
 
@@ -1067,14 +1078,14 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
                 data = dict()
 
                 a = pd.read_csv(data_path + sub + '/stats/lh.aparc.a2009s.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 temp = dict(zip(a[0], a[col]))
                 for key in list(temp.keys()):
                     temp['L_'+key] = temp.pop(key)
                 data.update(temp)
 
                 a = pd.read_csv(data_path + sub + '/stats/rh.aparc.a2009s.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 temp = dict(zip(a[0], a[col]))
                 for key in list(temp.keys()):
                     temp['R_'+key] = temp.pop(key)
@@ -1126,7 +1137,7 @@ def load_freesurfer_measure(measure, data_path, subjects_list):
                 else:
                     tiv = a[' ICV']
                 a = pd.read_csv(data_path + sub + '/stats/aseg.stats',
-                                delimiter='\s+', comment='#', header=None)
+                                delimiter=r'\s+', comment='#', header=None)
                 data_vol = dict(zip(a[4]+'_mm3', a[3]))
                 for key in data_vol.keys():
                     data_vol[key] = data_vol[key]/tiv
@@ -1464,7 +1475,7 @@ def anomaly_detection_auc(abn_p, labels, n_permutation=None):
             p_values[i] = (np.sum(auc_perm > aucs[i]) + 1) / \
                 (n_permutation + 1)
             print('Feature %d of %d is done: p_value=%f' %
-                  (i, n_permutation, p_values[i]))
+                  (i, p, p_values[i]))
 
     return aucs, p_values
 
