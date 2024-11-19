@@ -83,8 +83,6 @@ https://pytorch.org/get-started/locally/
 
 If your shared resource has no GPU, make sure you select the 'CPU' field in the 'Compute Platform' row. Here we also prefer conda over pip.
 
-
-
 #### Clone the repo
 
 ```
