@@ -35,13 +35,6 @@ Using a local clone of the repo:
 python -m pip install .
 ```
 
-#### Install nutpie (optional)
-Users who want to use the nutpie sampler for HBR models should install it from conda-forge:
-
-```
-conda install nutpie -c conda-forge
-```
-
 #### Test installation  
 ```
 python -c "import pcntoolkit as pk;print(pk.__file__)"
@@ -79,13 +72,6 @@ git clone https://github.com/amarquand/PCNtoolkit.git
 ```
 cd PCNtoolkit/
 python -m pip install .
-```
-
-#### Install nutpie (optional)
-Users who want to use the nutpie sampler for HBR models should install it from conda-forge:
-
-```
-conda install nutpie -c conda-forge
 ```
 
 #### Test installation  
