@@ -23,7 +23,6 @@ Step 0: Install necessary libraries & grab data files
 .. code:: ipython3
 
     !pip install pcntoolkit
-    !pip install nutpie
 
 For this tutorial we will use data from the `Functional Connectom
 Project FCON1000 <http://fcon_1000.projects.nitrc.org/>`__ to create a

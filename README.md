@@ -23,17 +23,6 @@ conda create -n <env_name> python==3.12
 source activate <env_name>
 ```
 
-### Install nutpie and numba from conda-forge
-
-```
-conda install nutpie numba -c conda-forge
-```
-
-#### Install torch from pytorch.org
-
-Use the command that you get from the command builder here: https://pytorch.org/get-started/locally/. This will ensure you do not install the CUDA version of torch if your pc does not have a GPU. We also recommend that you use the `conda` option. 
-
-
 #### Install PCNtoolkit
 
 Using pip:
@@ -44,6 +33,11 @@ pip install pcntoolkit
 Using a local clone of the repo:
 ```
 python -m pip install .
+```
+
+#### Test installation  
+```
+python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```
 
 ## Alternative installation (on a shared resource)
@@ -58,7 +52,7 @@ conda --version
 #### Create a conda environment in a shared location
 
 ```
-conda create -y python==3.12 numpy mkl blas --prefix=/shared/conda/<env_name>
+conda create -y python==3.12 --prefix=/shared/conda/<env_name>
 ```
 
 #### Activate the conda environment 
@@ -67,35 +61,20 @@ conda create -y python==3.12 numpy mkl blas --prefix=/shared/conda/<env_name>
 conda activate /shared/conda/<env_name>
 ```
 
-### Install nutpie using conda 
-
-```
-conda install nutpie numba -c conda-forge
-```
-
-#### install torch 
-
-Using the command that you get from the command builder here:
-
-```
-https://pytorch.org/get-started/locally/
-```
-
-If your shared resource has no GPU, make sure you select the 'CPU' field in the 'Compute Platform' row. Here we also prefer conda over pip.
-
 #### Clone the repo
 
 ```
 git clone https://github.com/amarquand/PCNtoolkit.git
 ```
 
-### Install in the conda environment
+#### Install in the conda environment
 
 ```
 cd PCNtoolkit/
 python -m pip install .
 ```
-### Test 
+
+#### Test installation  
 ```
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```

@@ -39,7 +39,6 @@ bad if you cannot complete everything during the tutorial.
 .. code:: ipython3
 
     !pip install pcntoolkit
-    !pip install nutpie
 
 
 **Option 1:** Connect your Google Drive account, and load data from
