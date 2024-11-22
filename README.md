@@ -1,5 +1,7 @@
 # Predictive Clinical Neuroscience Toolkit
-[![Gitter](https://badges.gitter.im/predictive-clinical-neuroscience/community.svg)](https://gitter.im/predictive-clinical-neuroscience/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Documentation Status](https://readthedocs.org/projects/pcntoolkit/badge/?version=latest)](https://pcntoolkit.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5207839.svg)](https://doi.org/10.5281/zenodo.5207839)
+[![Documentation Status](https://readthedocs.org/projects/pcntoolkit/badge/?version=latest)](https://pcntoolkit.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5207839.svg)](https://doi.org/10.5281/zenodo.5207839)
+
+[Github](https://github.com/amarquand/PCNtoolkit)
 
 
 Predictive Clinical Neuroscience software toolkit (formerly nispat). 
@@ -38,6 +40,18 @@ python -m pip install .
 #### Test installation  
 ```
 python -c "import pcntoolkit as pk;print(pk.__file__)"
+```
+
+### Troubleshooting
+
+#### Nutpie installation failure
+On some older architectures, the installation of nutpie may fail due to a missing Rust compiler. If this is the case, you can install it manually using conda prior to installing PCNtoolkit:
+
+```
+# install nutpie
+conda install -c conda-forge nutpie
+# install PCNtoolkit
+pip install pcntoolkit
 ```
 
 ## Alternative installation (on a shared resource)
