@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 # Combine all installation and cleanup steps into a single layer
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget unzip && \
+    apt-get install -y --no-install-recommends wget unzip tk libhdf5-dev pkg-config gcc g++&& \
     wget https://github.com/amarquand/PCNtoolkit/archive/dev.zip && \
     unzip dev.zip && \
     cd PCNtoolkit-dev && python -m pip install . && cd .. && \
