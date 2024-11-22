@@ -42,6 +42,18 @@ python -m pip install .
 python -c "import pcntoolkit as pk;print(pk.__file__)"
 ```
 
+### Troubleshooting
+
+#### Nutpie installation failure
+On some older architectures, the installation of nutpie may fail due to a missing Rust compiler. If this is the case, you can install it manually using conda prior to installing PCNtoolkit:
+
+```
+# install nutpie
+conda install -c conda-forge nutpie
+# install PCNtoolkit
+pip install pcntoolkit
+```
+
 ## Alternative installation (on a shared resource)
 
 #### Make sure conda is available on the system.
