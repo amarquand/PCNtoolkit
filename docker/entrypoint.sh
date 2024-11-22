@@ -5,4 +5,4 @@ func="$1"
 shift
 
 # run using all remaining arguments
-/opt/ptk/${func} "$@"
+${func} "$@"
