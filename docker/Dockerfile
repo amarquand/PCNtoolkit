@@ -1,39 +1,19 @@
-# Installs software and cleans up unnecessary memory: the smaller, the less downtime
-FROM continuumio/miniconda3:latest
-RUN apt-get update
-RUN apt-get install -y libhdf5-dev \
-                        pkg-config \
-                        gcc \
-                        g++ \
-                        zip
+FROM python:3.10-slim
 
-# Make sure we have the right version of numpy                         
-RUN conda install numpy=1.21
+# Combine all installation and cleanup steps into a single layer
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget unzip && \
+    wget https://github.com/amarquand/PCNtoolkit/archive/dev.zip && \
+    unzip dev.zip && \
+    cd PCNtoolkit-dev && python -m pip install . && cd .. && \
+    # Cleanup
+    rm -rf PCNtoolkit-dev dev.zip && \
+    pip cache purge && \
+    apt-get remove -y wget unzip && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install directly from GitHub (master branch)
-#RUN pip install scikit-learn 
-#RUN pip install pcntoolkit==0.26
-
-# This is an alternative method that pulls from the dev branch
-RUN wget https://github.com/amarquand/PCNtoolkit/archive/dev.zip 
-RUN unzip dev.zip
-RUN pip install scikit-learn
-RUN cd PCNtoolkit-dev; pip install . ; cd ..
-
-# Add command line links
-RUN ln -s /opt/conda/lib/python3.10/site-packages/pcntoolkit /opt/ptk
-RUN chmod 755 /opt/ptk/normative.py
-RUN chmod 755 /opt/ptk/normative_parallel.py
-RUN chmod 755 /opt/ptk/trendsurf.py
-RUN echo "export PATH=${PATH}:/opt/ptk" >> ~/.bashrc
-
-# clean up
-RUN rm -rf PCNtoolkit-dev dev.zip
-RUN conda clean -a 
-RUN pip cache purge
-RUN apt-get clean
-
-# execute entrypoint
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT [ "./entrypoint.sh" ]
