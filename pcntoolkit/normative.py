@@ -1097,7 +1097,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             if meta_data:
                 my_meta_data['scaler_cov'] = scaler_cov[0]
                 my_meta_data['scaler_resp'] = scaler_resp[0]
-                pickle.dump(my_meta_data, open(os.path.join(output_path, 'meta_data.md'), 'wb'))
+                pickle.dump(my_meta_data, open(os.path.join(output_path, f'meta_data{outputsuffix}.md'), 'wb'))
             if batch_size is not None:
                 nm.save(os.path.join(output_path, 'NM_0_' +
                                      str(job_id*batch_size+i) + outputsuffix + '.pkl'))
