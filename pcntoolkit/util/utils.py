@@ -1184,9 +1184,10 @@ class scaler:
     def fit(self, X):
 
         if self.scaler_type == 'standardize':
-
-            self.m = np.mean(X, axis=0)
-            self.s = np.std(X, axis=0)
+            self.w = Welford()
+            self.w.consume(X)
+            self.m = self.w.mean
+            self.s = self.w.std
 
         elif self.scaler_type == 'minmax':
             self.min = np.min(X, axis=0)
@@ -1200,6 +1201,22 @@ class scaler:
                     np.sort(X[:, i])[0:int(np.round(X.shape[0] * self.tail))])
                 self.max[i] = np.median(
                     np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)):])
+                
+
+    def extend(self, X):
+        if self.scaler_type == 'standardize':
+            self.w.consume(X)
+            self.m = self.w.mean
+            self.s = self.w.std
+
+        elif self.scaler_type in ['minmax']:
+            self.min = min(self.min, np.min(X, axis=0))
+            self.max = max(self.max, np.max(X, axis=0))
+
+        elif self.scaler_type in ['robminmax']:
+            for i in range(X.shape[1]):
+                self.min[i] = min(self.min[i], np.median(np.sort(X[:, i])[0:int(np.round(X.shape[0] * self.tail))]))
+                self.max[i] = max(self.max[i], np.median(np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)):]))
 
     def transform(self, X, index=None):
 
@@ -1240,9 +1257,10 @@ class scaler:
     def fit_transform(self, X):
 
         if self.scaler_type == 'standardize':
-
-            self.m = np.mean(X, axis=0)
-            self.s = np.std(X, axis=0)
+            self.w = Welford()
+            self.w.consume(X)
+            self.m = self.w.mean
+            self.s = self.w.std
             X = (X - self.m) / self.s
 
         elif self.scaler_type == 'minmax':
@@ -1596,3 +1614,83 @@ def expand_all(*args):
         else:
             return a
     return [expand(x) for x in args]
+
+
+
+
+class Welford(object):
+    """Implements Welford's algorithm for computing a running mean
+    and standard deviation as described at:
+        http://www.johndcook.com/standard_deviation.html
+    Taken from: https://gist.github.com/alexalemi/2151722#file-welford-py
+    Adapted to work with numpy arrays.
+
+    can take single values or iterables
+
+    Properties:
+        mean    - returns the mean
+        std     - returns the std
+        meanfull- returns the mean and std of the mean
+
+    Usage:
+        >>> foo = Welford()
+        >>> foo(range(100))
+        >>> foo
+        <Welford: 49.5 +- 29.0114919759>
+        >>> foo([1]*1000)
+        >>> foo
+        <Welford: 5.40909090909 +- 16.4437417146>
+        >>> foo.mean
+        5.409090909090906
+        >>> foo.std
+        16.44374171455467
+        >>> foo.meanfull
+        (5.409090909090906, 0.4957974674244838)
+    """
+
+    def __init__(self, lst=None):
+        self.k = np.array([0])
+        self.M = np.array([0])
+        self.S = np.array([0])
+
+        self.__call__(lst)
+
+    def update(self, x):
+        if self.k == 0:
+            if isinstance(x, np.ndarray):
+                self.M = np.zeros_like(x)
+                self.S = np.zeros_like(x)
+        if x is None:
+            return
+        self.k += 1
+        newM = self.M + (x - self.M) * 1.0 / self.k
+        newS = self.S + (x - self.M) * (x - newM)
+        self.M, self.S = newM, newS
+
+    def consume(self, lst):
+        lst = iter(lst)
+        for x in lst:
+            self.update(x)
+
+    def __call__(self, x):
+        if hasattr(x, "__iter__"):
+            self.consume(x)
+        else:
+            self.update(x)
+
+    @property
+    def mean(self) -> np.ndarray:
+        return self.M
+
+    @property
+    def meanfull(self) -> tuple[np.ndarray, np.ndarray]:
+        return self.mean, self.std / np.sqrt(self.k)
+
+    @property
+    def std(self) -> np.ndarray:
+        if self.k == 1:
+            return np.zeros_like(self.M)
+        return np.sqrt(self.S / (self.k - 1))
+
+    def __repr__(self):
+        return "<Welford: {} +- {}>".format(self.mean, self.std)
