@@ -50,7 +50,7 @@ class NormBLR(NormBase):
             reg_conf = BLRConf()
         self.default_reg_conf: BLRConf = reg_conf
         self.regression_model_type: Type[BLR] = BLR
-        self.current_regression_model: BLR = None  # type:ignore
+        # self.current_regression_model: BLR = None  # type:ignore
 
     @classmethod
     def from_args(cls, args: Any) -> "NormBLR":
@@ -61,12 +61,12 @@ class NormBLR(NormBase):
 
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         blrdata = self.normdata_to_blrdata(data)
-        self.current_regression_model.fit(blrdata)
-        assert self.current_regression_model.is_fitted
+        self.focused_model.fit(blrdata)  # type: ignore
+        assert self.focused_model.is_fitted
 
     def _predict(self, data: NormData) -> None:
         blrdata = self.normdata_to_blrdata(data)
-        self.current_regression_model.predict(blrdata)
+        self.focused_model.predict(blrdata)  # type: ignore
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         raise NotImplementedError(
@@ -95,7 +95,7 @@ class NormBLR(NormBase):
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         blrdata = self.normdata_to_blrdata(data)
-        centiles = self.current_regression_model.centiles(blrdata, cdf)
+        centiles = self.focused_model.centiles(blrdata, cdf)  # type: ignore
         return xr.DataArray(
             centiles,
             dims=["cdf", "datapoints"],
@@ -104,7 +104,7 @@ class NormBLR(NormBase):
 
     def _zscores(self, data: NormData) -> xr.DataArray:
         blrdata = self.normdata_to_blrdata(data)
-        zscores = self.current_regression_model.zscores(blrdata)
+        zscores = self.focused_model.zscores(blrdata)  # type: ignore
         return xr.DataArray(
             zscores,
             dims=["datapoints"],
@@ -190,7 +190,7 @@ class NormBLR(NormBase):
         ValueError
             If regression configuration is not of type BLRConf.
         """
-        reg_conf: RegConf = self.current_regression_model.reg_conf
+        reg_conf: RegConf = self.focused_model.reg_conf  # type: ignore
         if not isinstance(reg_conf, BLRConf):
             raise ValueError(
                 f"Regression configuration is not of type BLRConf, got {type(reg_conf)}"
@@ -202,13 +202,13 @@ class NormBLR(NormBase):
             intercept=reg_conf.intercept,
             random_intercept=reg_conf.random_intercept,
         )
-
-        this_var_X = self.create_design_matrix(
-            data,
-            linear=reg_conf.heteroskedastic,
-            intercept=reg_conf.intercept_var,
-            random_intercept=reg_conf.random_intercept_var,
-        )
+        if self.focused_model.models_variance:
+            this_var_X = self.create_design_matrix(
+                data,
+                linear=reg_conf.heteroskedastic,
+                intercept=reg_conf.intercept_var,
+                random_intercept=reg_conf.random_intercept_var,
+            )
 
         if hasattr(data, "scaled_y") and data.scaled_y is not None:
             this_y = data.scaled_y.to_numpy()

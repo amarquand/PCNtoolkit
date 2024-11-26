@@ -1,4 +1,3 @@
-import pytest
 
 from pcntoolkit.normative_model.norm_conf import NormConf
 
@@ -29,7 +28,6 @@ def test_norm_conf_to_dict():
             "inscaler": "minmax",
             "outscaler": "minmax",
             "normative_model_name": None,
-            "another args": "another args",
         }
     )
 

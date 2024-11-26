@@ -126,23 +126,23 @@ class NormHBR(NormBase):
 
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         hbrdata = self.normdata_to_hbrdata(data)
-        self.current_regression_model.fit(hbrdata, make_new_model)
+        self.focused_model.fit(hbrdata, make_new_model) # type: ignore
 
     def _predict(self, data: NormData) -> None:
         hbrdata = self.normdata_to_hbrdata(data)
-        self.current_regression_model.predict(hbrdata)
+        self.focused_model.predict(hbrdata) # type: ignore
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         fit_hbrdata = self.normdata_to_hbrdata(fit_data)
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
-        self.current_regression_model.fit_predict(fit_hbrdata, predict_hbrdata)
+        self.focused_model.fit_predict(fit_hbrdata, predict_hbrdata) # type: ignore
 
     def _transfer(self, data: NormData, **kwargs: Any) -> HBR:
         freedom = kwargs.get("freedom", 1)
         transferdata = self.normdata_to_hbrdata(data)
-        if not self.current_regression_model.is_fitted:
+        if not self.focused_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
-        new_hbr_model = self.current_regression_model.transfer(
+        new_hbr_model = self.focused_model.transfer( # type: ignore
             self.default_reg_conf, transferdata, freedom
         )
         return new_hbr_model
@@ -163,18 +163,18 @@ class NormHBR(NormBase):
         )
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
-        resample = kwargs.get("resample", False)
+        resample = kwargs.get("resample", True)
         hbrdata = self.normdata_to_hbrdata(data)
 
-        return self.current_regression_model.centiles(hbrdata, cdf, resample)
+        return self.focused_model.centiles(hbrdata, cdf, resample) # type: ignore
 
     def _zscores(self, data: NormData, resample: bool = False) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
-        return self.current_regression_model.zscores(hbrdata, resample)
+        return self.focused_model.zscores(hbrdata, resample) # type: ignore
 
     def n_params(self) -> int:
         return sum(
-            [i.size.eval() for i in self.current_regression_model.pymc_model.free_RVs]
+            [i.size.eval() for i in self.focused_model.pymc_model.free_RVs] # type: ignore
         )
 
     @classmethod

@@ -1,15 +1,12 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
-from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.norm_data_fixtures import *
-
+from pytest_tests.fixtures.path_fixtures import *
 
 """
 This file contains tests for the NormBase class in the PCNtoolkit.
@@ -90,7 +87,7 @@ def assert_minmax_scaled(data):
 )
 def test_polynomial(
     train_dataframe,
-    new_norm_hbr_model,
+    new_norm_hbr_model:NormBase,
     n_train_datapoints,
     n_response_vars,
     n_covariates,
@@ -110,8 +107,7 @@ def test_polynomial(
     object.__setattr__(new_norm_hbr_model._norm_conf, "order", degree)
 
     new_norm_hbr_model.scale_forward(norm_data)
-    new_norm_hbr_model.expand_basis_new(norm_data, "scaled_X", intercept=intercept)
-    # norm_data.expand_basis("polynomial", order=degree, intercept=intercept)
+    new_norm_hbr_model.expand_basis(norm_data, "scaled_X", intercept=intercept)
     assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + degree + 1 * intercept,
@@ -125,7 +121,7 @@ def test_polynomial(
 def test_bspline(
     train_dataframe,
     n_response_vars,
-    new_norm_hbr_model,
+    new_norm_hbr_model:NormBase,
     n_train_datapoints,
     n_covariates,
     nknots,
@@ -146,7 +142,7 @@ def test_bspline(
     object.__setattr__(new_norm_hbr_model._norm_conf, "order", order)
 
     new_norm_hbr_model.scale_forward(norm_data)
-    new_norm_hbr_model.expand_basis_new(norm_data, "scaled_X", intercept=intercept)
+    new_norm_hbr_model.expand_basis(norm_data, "scaled_X", intercept=intercept)
     assert norm_data.Phi.shape == (
         n_train_datapoints,
         n_covariates + nknots + order - 1 + 1 * intercept,

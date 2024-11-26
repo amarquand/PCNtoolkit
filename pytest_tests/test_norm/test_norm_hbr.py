@@ -5,6 +5,7 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.plotting.plotter import plot_centiles
 from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
 from pytest_tests.fixtures.norm_data_fixtures import *
@@ -195,9 +196,11 @@ def test_transfer(
 
 
 def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data_from_arrays: NormData):
-    fitted_norm_hbr_model.plot_centiles(
+    plot_centiles(
+        model=fitted_norm_hbr_model,
         data=test_norm_data_from_arrays,
         covariate="covariate_0",
         batch_effects={"batch_effect_1": [0]},
         show_data=True,
+        resample=True,
     )

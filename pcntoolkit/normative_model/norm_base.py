@@ -77,7 +77,7 @@ from typing import Any, List, Optional
 import numpy as np
 import xarray as xr
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis
+from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import Scaler
 
@@ -971,30 +971,9 @@ class NormBase(ABC):
         - Memory usage increases with basis expansion complexity
         """
         self.scale_forward(data)
-
-        if self.norm_conf.basis_function == "bspline":
-            if not hasattr(self, "bspline_basis"):
-                source_array = data.X.isel(covariates=self.norm_conf.basis_column)
-                self.bspline_basis = create_bspline_basis(
-                    source_array.min(),
-                    source_array.max(),
-                    self.norm_conf.order,
-                    self.norm_conf.nknots,
-                )
-            data.expand_basis(
-                "scaled_X",
-                self.norm_conf.basis_function,
-                self.norm_conf.basis_column,
-                linear_component=True,
-                bspline_basis=self.bspline_basis,
-            )
-        else:
-            data.expand_basis(
-                "scaled_X",
-                self.norm_conf.basis_function,
-                self.norm_conf.basis_column,
-                linear_component=False,
-            )
+        # TODO: pass kwargs from config to expand_basis
+        self.expand_basis(data, "scaled_X", True)
+       
 
     def postprocess(self, data: NormData) -> None:
         """Apply postprocessing to the data.
@@ -1156,6 +1135,102 @@ class NormBase(ABC):
         - Should be used only on data scaled with corresponding forward scalers
         """
         data.scale_backward(self.inscalers, self.outscalers)
+
+
+    def expand_basis(
+        self, data: NormData, source_array: str, intercept: bool = False
+    ):
+        """Expand the basis of a source array using a specified basis function.
+
+        Parameters
+        ----------
+        source_array_name : str
+            The name of the source array to expand ('X' or 'scaled_X')
+        basis_function : str
+            The basis function to use ('polynomial', 'bspline', 'linear', or 'none')
+        basis_column : int, optional
+            The column index to apply the basis function, by default 0
+        linear_component : bool, optional
+            Whether to include a linear component, by default True
+        **kwargs : dict
+            Additional arguments for basis functions
+
+        Raises
+        ------
+        ValueError
+            If the source array does not exist or if required parameters are missing
+        """
+
+        # Expand the basis of the source array
+        if source_array == "scaled_X":
+            if "scaled_X" not in data.data_vars:
+                raise ValueError(
+                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
+                )
+            source_array = data.scaled_X
+        elif source_array == "X":
+            source_array = data.X
+
+        # Every basis expansion has a linear component, so we always include the original data
+        all_arrays = [source_array.data]
+
+        # Get the original named dimensions of the data
+        all_dims = list(data.covariates.to_numpy())
+
+        # Create a new array with the expanded basis
+        basis_expansion = self.norm_conf.basis_function
+        basis_column = self.norm_conf.basis_column
+        if basis_expansion == "polynomial":
+            # Expand the basis with polynomial basis functions
+            expanded_basis = create_poly_basis(
+                source_array.data[:, basis_column], self.norm_conf.order
+            )
+            # Add the expanded basis to the list of arrays
+            all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
+            all_dims.extend(
+                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
+            )
+        elif basis_expansion == "bspline":
+            # Expand the basis with bspline basis functions
+            if self.bspline_basis is None:
+                order = self.norm_conf.order
+                nknots = self.norm_conf.nknots
+                xmin = np.min(source_array.data[:, basis_column])
+                xmax = np.max(source_array.data[:, basis_column])
+                diff = xmax - xmin
+                xmin = xmin - 0.2 * diff
+                xmax = xmax + 0.2 * diff
+                self.bspline_basis = create_bspline_basis(
+                    xmin=xmin,
+                    xmax=xmax,
+                    p=order,
+                    nknots=nknots,
+                )
+            expanded_basis = np.array(
+                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
+            )
+            # Add the expanded basis to the list of arrays
+            all_arrays.append(expanded_basis)
+            # Add the names of the new dimensions to the list of dimensions
+            all_dims.extend(
+                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
+            )
+        elif basis_expansion in ["none", "linear"]:
+            # Do not expand the basis
+            pass
+
+        if intercept:
+            all_dims.append("intercept")
+            all_arrays.append(np.ones((source_array.to_numpy().shape[0], 1)))
+
+        Phi = np.concatenate(all_arrays, axis=1)
+        data["Phi"] = xr.DataArray(
+            Phi,
+            coords={"basis_functions": all_dims},
+            dims=["datapoints", "basis_functions"],
+        )
+        pass
 
     def save(self, path: Optional[str] = None) -> None:
         """
@@ -1455,7 +1530,6 @@ class NormBase(ABC):
             self.regression_models[responsevar] = self.regression_model_type(
                 responsevar, self.get_reg_conf(responsevar)
             )
-        self.focused_model = self.regression_models.get(responsevar, None)  # type: ignore
 
     def get_reg_conf(self, responsevar: str) -> RegConf:
         """
@@ -1862,3 +1936,6 @@ class NormBase(ABC):
         """Returns the regression model that is currently focused on."""
         return self[self.focused_var]
 
+    @focused_model.setter
+    def focused_model(self, value: str) -> None:
+        self.focused_var = value

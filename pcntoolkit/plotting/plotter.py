@@ -2,7 +2,7 @@
 
 # TODO move all plotting functions to this file
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,6 +24,7 @@ def plot_centiles(
     plt_kwargs: dict | None = None,
     hue_data: str = "site",
     markers_data: str = "sex",
+    **kwargs: Any,
 ) -> None:
     """Generate centile plots for response variables with optional data overlay.
 
@@ -130,7 +131,7 @@ def plot_centiles(
         if batch_effects
         else None,
     )
-    model.compute_centiles(synth_data, cdf=cummul_densities)
+    model.compute_centiles(synth_data, cdf=cummul_densities, **kwargs)
     for response_var in data.coords["response_vars"].to_numpy():
         _plot_centiles(
             data=data,
