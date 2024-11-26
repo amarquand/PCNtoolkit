@@ -1210,13 +1210,15 @@ class scaler:
             self.s = self.w.std
 
         elif self.scaler_type in ['minmax']:
-            self.min = min(self.min, np.min(X, axis=0))
-            self.max = max(self.max, np.max(X, axis=0))
+            self.min = np.min(np.stack([self.min, np.min(X, axis=0)], axis=0), axis=0)
+            self.max = np.max(np.stack([self.max, np.max(X, axis=0)], axis=0), axis=0)
 
         elif self.scaler_type in ['robminmax']:
             for i in range(X.shape[1]):
-                self.min[i] = min(self.min[i], np.median(np.sort(X[:, i])[0:int(np.round(X.shape[0] * self.tail))]))
-                self.max[i] = max(self.max[i], np.median(np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)):]))
+                med1 = np.median(np.sort(X[:, i])[0:int(np.round(X.shape[0] * self.tail))])
+                med2 = np.median(np.sort(X[:, i])[-int(np.round(X.shape[0] * self.tail)):])
+                self.min[i] = np.min(np.stack([self.min[i], med1], axis=0), axis=0)
+                self.max[i] = np.max(np.stack([self.max[i], med2], axis=0), axis=0)
 
     def transform(self, X, index=None):
 
