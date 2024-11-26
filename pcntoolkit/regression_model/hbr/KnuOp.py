@@ -3,9 +3,8 @@ from typing import Any, List, Sequence, Union
 
 import scipy.special as spp  # type: ignore
 from pytensor.gradient import grad_not_implemented
-from pytensor.graph.basic import Apply
+from pytensor.graph.basic import Apply, Variable
 from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
-from pytensor.tensor.var import Variable
 
 
 class KnuOp(BinaryScalarOp):

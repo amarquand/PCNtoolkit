@@ -4,19 +4,16 @@ from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_factory import (
     create_normative_model,
-    load_normative_model,
 )
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.regression_model.blr.blr import BLR
-from pcntoolkit.regression_model.blr.blr_conf import BLRConf
-from pcntoolkit.regression_model.gpr.gpr import GPR
-from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
+
+# from pcntoolkit.regression_model.gpr.gpr import GPR
+# from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.reg_conf import RegConf
-from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
-
+from pytest_tests.fixtures.path_fixtures import *
 
 """This file contains tests for the NormFactory class in the PCNtoolkit.
 

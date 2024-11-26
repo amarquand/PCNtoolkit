@@ -143,7 +143,7 @@ class BLRConf(RegConf):
 
     @classmethod
     def from_args(cls, args:dict[str, Any]) -> "BLRConf":
-        args_filt:dict[str, Any] = {k: v for k, v in args.items() if k in fields(cls)}
+        args_filt:dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
 
         return cls(
             n_iter=args_filt.get("n_iter", N_ITER),

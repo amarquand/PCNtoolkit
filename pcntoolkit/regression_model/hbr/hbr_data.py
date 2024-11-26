@@ -106,9 +106,12 @@ class HBRData:
         )
 
         # Create covariate dims if they are not provided
-        self.covariate_dims = covariate_dims or [
-            "covariate_" + str(i) for i in range(self._n_covariates)
-        ]
+        if covariate_dims is None:
+            self.covariate_dims = [
+                "covariate_" + str(i) for i in range(self._n_covariates)
+            ]
+        else:
+            self.covariate_dims = covariate_dims
         assert (
             len(self.covariate_dims) == self._n_covariates
         ), "The number of covariate dimensions must match the number of covariates"

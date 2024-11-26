@@ -1,16 +1,13 @@
 import pytest
 
+from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_blr import NormBLR
 from pcntoolkit.normative_model.norm_conf import NormConf
-from pcntoolkit.normative_model.norm_factory import (
-    create_normative_model,
-    load_normative_model,
-)
 from pcntoolkit.regression_model.blr.blr import BLR
 from pcntoolkit.regression_model.blr.blr_conf import BLRConf
-from pcntoolkit.dataio.norm_data import NormData
 from pytest_tests.fixtures.norm_data_fixtures import *
 from pytest_tests.fixtures.path_fixtures import *
+
 
 @pytest.fixture
 def cvfolds():
@@ -44,7 +41,9 @@ def blrconf():
                    optimizer="l-bfgs-b", 
                    l_bfgs_b_l=0.1, 
                    l_bfgs_b_epsilon=0.1, 
-                   l_bfgs_b_norm="l2")
+                   l_bfgs_b_norm="l2",
+                   heteroskedastic=True,
+                   intercept=True)
 
 @pytest.fixture
 def blr(blrconf):

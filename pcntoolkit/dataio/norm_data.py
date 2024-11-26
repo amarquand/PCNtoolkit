@@ -35,8 +35,6 @@ from sklearn.model_selection import StratifiedKFold, train_test_split  # type: i
 # import datavars from xarray
 from xarray.core.types import DataVars
 
-from pcntoolkit.dataio.basis_expansions import create_poly_basis
-
 
 class NormData(xr.Dataset):
     """A class for handling normative modeling data, extending xarray.Dataset.
@@ -187,69 +185,69 @@ class NormData(xr.Dataset):
             attrs=attrs,
         )
 
-    def expand_basis(
-        self,
-        source_array_name: str,
-        basis_function: str,
-        basis_column: int = 0,
-        linear_component: bool = True,
-        **kwargs: Any,
-    ) -> None:
-        """Expand the basis of a source array using a specified basis function.
+    # def expand_basis(
+    #     self,
+    #     source_array_name: str,
+    #     basis_function: str,
+    #     basis_column: int = 0,
+    #     linear_component: bool = True,
+    #     **kwargs: Any,
+    # ) -> None:
+    #     """Expand the basis of a source array using a specified basis function.
 
-        Parameters
-        ----------
-        source_array_name : str
-            The name of the source array to expand ('X' or 'scaled_X')
-        basis_function : str
-            The basis function to use ('polynomial', 'bspline', 'linear', or 'none')
-        basis_column : int, optional
-            The column index to apply the basis function, by default 0
-        linear_component : bool, optional
-            Whether to include a linear component, by default True
-        **kwargs : dict
-            Additional arguments for basis functions
+    #     Parameters
+    #     ----------
+    #     source_array_name : str
+    #         The name of the source array to expand ('X' or 'scaled_X')
+    #     basis_function : str
+    #         The basis function to use ('polynomial', 'bspline', 'linear', or 'none')
+    #     basis_column : int, optional
+    #         The column index to apply the basis function, by default 0
+    #     linear_component : bool, optional
+    #         Whether to include a linear component, by default True
+    #     **kwargs : dict
+    #         Additional arguments for basis functions
 
-        Raises
-        ------
-        ValueError
-            If the source array does not exist or if required parameters are missing
-        """
-        all_arrays = []
-        all_dims = self.X.dims()
-        source_array: xr.DataArray = None  # type: ignore
-        if source_array_name == "scaled_X":
-            if self.scaled_X is None:
-                raise ValueError(
-                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
-                )
-            source_array = self.scaled_X
-        elif source_array_name == "X":
-            source_array = self.X
+    #     Raises
+    #     ------
+    #     ValueError
+    #         If the source array does not exist or if required parameters are missing
+    #     """
+    #     all_arrays = []
+    #     all_dims = self.X.dims
+    #     source_array: xr.DataArray = None  # type: ignore
+    #     if source_array_name == "scaled_X":
+    #         if self.scaled_X is None:
+    #             raise ValueError(
+    #                 "scaled_X does not exist. Please scale the data first using the scale_forward method."
+    #             )
+    #         source_array = self.scaled_X
+    #     elif source_array_name == "X":
+    #         source_array = self.X
 
-        if basis_function == "polynomial":
-            expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], self.norm_conf.order
-            )
-            all_arrays.append(expanded_basis)
-            all_dims.extend([f"poly_{i}" for i in range(expanded_basis.shape[1])])
-        elif basis_function == "bspline":
-            bspline_basis = kwargs["bspline_basis"]
-            if bspline_basis is None:
-                raise ValueError(
-                    "bspline_basis is not defined. Please provide a bspline basis function."
-                )
-            expanded_basis = np.array(
-                [bspline_basis(c) for c in source_array.data[:, basis_column]]  # type: ignore
-            )
-            all_arrays.append(expanded_basis)
-            all_dims.extend([f"bspline_{i}" for i in range(expanded_basis.shape[1])])
-        elif basis_function == "linear" or linear_component:
-            all_arrays.append(source_array.data)
-            all_dims.extend([f"linear_{i}" for i in range(source_array.data.shape[1])])
-        elif basis_function in ["none"]:
-            # Do not expand the basis
-            pass
+    #     if basis_function == "polynomial":
+    #         expanded_basis = create_poly_basis(
+    #             source_array.data[:, basis_column], self.norm_conf.order
+    #         )
+    #         all_arrays.append(expanded_basis)
+    #         all_dims.extend([f"poly_{i}" for i in range(expanded_basis.shape[1])])
+    #     elif basis_function == "bspline":
+    #         bspline_basis = kwargs["bspline_basis"]
+    #         if bspline_basis is None:
+    #             raise ValueError(
+    #                 "bspline_basis is not defined. Please provide a bspline basis function."
+    #             )
+    #         expanded_basis = np.array(
+    #             [bspline_basis(c) for c in source_array.data[:, basis_column]]  # type: ignore
+    #         )
+    #         all_arrays.append(expanded_basis)
+    #         all_dims.extend([f"bspline_{i}" for i in range(expanded_basis.shape[1])])
+    #     elif basis_function == "linear" or linear_component:
+    #         all_arrays.append(source_array.data)
+    #         all_dims.extend([f"linear_{i}" for i in range(source_array.data.shape[1])])
+    #     elif basis_function in ["none"]:
+    #         # Do not expand the basis
+    #         pass
 
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
@@ -490,7 +488,7 @@ class NormData(xr.Dataset):
             k: [list(v.keys())[0]] for k, v in self.attrs["batch_effects_maps"].items()
         }
 
-    def concatenate_string_arrays(self, arrays: List[np.ndarray]) -> np.ndarray:
+    def concatenate_string_arrays(self, *arrays: Any) -> np.ndarray:
         """
         Concatenate arrays of strings.
 
@@ -613,7 +611,7 @@ class NormData(xr.Dataset):
         ).astype(bool)
         same_batch_effects_maps: bool = (
             self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
-        ).astype(bool)
+        )
         return same_covariates and same_batch_effect_dims and same_batch_effects_maps
 
     def scale_forward(

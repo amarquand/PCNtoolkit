@@ -13,7 +13,7 @@ and supports both homoskedastic and heteroskedastic noise models.
 
 from __future__ import annotations
 
-from typing import Literal, cast
+from typing import Literal, Optional, cast
 
 import numpy as np
 from scipy import linalg, optimize, stats  # type: ignore
@@ -237,7 +237,7 @@ class BLR(RegressionModel):
         return ys, s2
 
     def parse_hyps(
-        self, hyp: np.ndarray, X: np.ndarray, var_X: np.ndarray
+        self, hyp: np.ndarray, X: np.ndarray, var_X: Optional[np.ndarray] = None
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Parse hyperparameters into model parameters.
@@ -248,7 +248,7 @@ class BLR(RegressionModel):
             Hyperparameter vector.
         X : np.ndarray
             Covariates.
-        var_X : np.ndarray
+        var_X : np.ndarray (Optional)
             Variance of covariates.
 
         Returns
@@ -260,6 +260,8 @@ class BLR(RegressionModel):
         beta: np.ndarray = None  # type: ignore
         # Noise precision
         if self.models_variance:
+            if var_X is None:
+                raise ValueError("Variance of covariates (var_X) is required for models with variance.")
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -279,7 +281,7 @@ class BLR(RegressionModel):
         return alpha, beta
 
     def post(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
     ) -> None:
         """
         Compute the posterior distribution.
@@ -326,7 +328,7 @@ class BLR(RegressionModel):
         self.m = (invAXt * self.lambda_n_vec).dot(y)
 
     def loglik(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
     ) -> float:
         """
         Compute the negative log likelihood.
@@ -394,7 +396,7 @@ class BLR(RegressionModel):
         hyp: np.ndarray,
         X: np.ndarray,
         y: np.ndarray,
-        var_X: np.ndarray,
+        var_X: Optional[np.ndarray] = None,
         regularizer_strength: float = 0.1,
         norm: Literal["L1", "L2"] = "L1",
     ) -> float:
