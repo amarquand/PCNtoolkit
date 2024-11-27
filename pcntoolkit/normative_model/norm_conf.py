@@ -65,8 +65,6 @@ class NormConf:
     nknots: int = 5
     inscaler: str = "none"
     outscaler: str = "none"
-    perform_cv: bool = False
-    cv_folds: int = 0
     normative_model_name: Optional[str] = None
 
     def __post_init__(self) -> None:
