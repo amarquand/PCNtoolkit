@@ -18,21 +18,20 @@
 # S Rutherford, AF Marquand
 # -----------------------------------------------------------------------------
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
-import os
-import sys
-import glob
-import shutil
-import pickle
 import fileinput
+import glob
+import os
+import pickle
+import shutil
+import sys
 import time
+from datetime import datetime
+from subprocess import check_output, run
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from subprocess import run, check_output
-
 
 try:
     import pcntoolkit as ptk
@@ -45,8 +44,8 @@ except ImportError:
     ptkpath = os.path.abspath(os.path.dirname(__file__))
     if ptkpath not in sys.path:
         sys.path.append(ptkpath)
-    import dataio.fileio as fileio
     import configs
+    import dataio.fileio as fileio
     from util.utils import yes_or_no
 
 
@@ -1405,3 +1404,14 @@ def check_jobs(jobs, cluster_spec, start_time=None, delay=60):
             print('All jobs are completed!')
             break
         time.sleep(delay)
+
+
+def entrypoint(*args):
+    main(*args) 
+
+def main(*args):
+    execute_nm(*args)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
