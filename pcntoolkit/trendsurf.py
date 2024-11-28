@@ -7,14 +7,14 @@
 #  Written by A. Marquand
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
+import argparse
 import os
 import sys
-import numpy as np
+
 import nibabel as nib
-import argparse
+import numpy as np
 
 try:  # Run as a package if installed
     from pcntoolkit.dataio import fileio
@@ -300,6 +300,8 @@ def estimate(filename, maskfile, basis, ard=False, outputall=False,
             out.append(bs2)
         return out
 
+def entrypoint(*args):
+    main(*args)
 
 def main(*args):
     np.seterr(invalid='ignore')
