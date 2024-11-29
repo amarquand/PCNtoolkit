@@ -1014,11 +1014,11 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     else:
         if os.path.exists(os.path.join(model_path, 'meta_data.md')):
             with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
-                meta_data = pickle.load(file)
-            inscaler = meta_data['inscaler']
-            outscaler = meta_data['outscaler']
-            scaler_cov = meta_data['scaler_cov']
-            scaler_resp = meta_data['scaler_resp']
+                my_meta_data = pickle.load(file)
+            inscaler = my_meta_data['inscaler']
+            outscaler = my_meta_data['outscaler']
+            scaler_cov = my_meta_data['scaler_cov']
+            scaler_resp = my_meta_data['scaler_resp']
             meta_data = True
         else:
             print("No meta-data file is found!")
@@ -1036,6 +1036,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         X = X[:, np.newaxis]
 
     if inscaler in ['standardize', 'minmax', 'robminmax']:
+        scaler_cov[0].extend(X)
         X = scaler_cov[0].transform(X)
 
     feature_num = Y.shape[1]
@@ -1043,6 +1044,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     sY = np.std(Y, axis=0)
 
     if outscaler in ['standardize', 'minmax', 'robminmax']:
+        scaler_resp[0].extend(Y)
         Y = scaler_resp[0].transform(Y)
 
     batch_effects_train = fileio.load(trbefile)
@@ -1092,6 +1094,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                                           inputsuffix + '.pkl'))
 
             nm = nm.estimate_on_new_sites(X, Y[:, i], batch_effects_train)
+            if meta_data:
+                my_meta_data['scaler_cov'] = scaler_cov[0]
+                my_meta_data['scaler_resp'] = scaler_resp[0]
+                pickle.dump(my_meta_data, open(os.path.join(output_path, 'meta_data.md'), 'wb'))
             if batch_size is not None:
                 nm.save(os.path.join(output_path, 'NM_0_' +
                                      str(job_id*batch_size+i) + outputsuffix + '.pkl'))
@@ -1247,11 +1253,15 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     else:
         if os.path.exists(os.path.join(model_path, 'meta_data.md')):
             with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
-                meta_data = pickle.load(file)
-            if (meta_data['inscaler'] != 'None' or
-                    meta_data['outscaler'] != 'None'):
+                my_meta_data = pickle.load(file)
+            if (my_meta_data['inscaler'] != 'None' or
+                    my_meta_data['outscaler'] != 'None'):
                 print('Models extention on scaled data is not possible!')
                 return
+            meta_data = True
+        else:
+            print("No meta-data file is found!")
+            meta_data = False
 
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
