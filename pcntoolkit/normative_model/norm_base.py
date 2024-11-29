@@ -293,11 +293,11 @@ class NormBase(ABC):
         """
         self.preprocess(data)
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
-        print(os.getpid(),f"Going to fit {len(self.response_vars)} models")
+        print(f"{os.getpid()} - Going to fit {len(self.response_vars)} models\n")
         for responsevar in self.response_vars:
             resp_fit_data = data.sel(response_vars=responsevar)
             self.focus(responsevar)
-            print(os.getpid(),f"Fitting model for {responsevar}")
+            print(f"{os.getpid()} - Fitting model for {responsevar}\n")
             self._fit(resp_fit_data)
             self.reset()
         if self.norm_conf.savemodel:

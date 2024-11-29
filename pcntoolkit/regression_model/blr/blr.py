@@ -13,7 +13,6 @@ and supports both homoskedastic and heteroskedastic noise models.
 
 from __future__ import annotations
 
-import os
 from typing import Literal, Optional, cast
 
 import numpy as np
@@ -331,16 +330,8 @@ class BLR(RegressionModel):
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
         self.A = XtLambda_n.dot(X) + self.Lambda_a
-        print(os.getpid(), "A")
-
-        import uuid
-        a = uuid.uuid4()
-        np.save(f"A_{a}.npy", self.A, allow_pickle=False)
-        np.save(f"X_T_{a}.npy", X.T, allow_pickle=False)
         invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
         self.m = (invAXt * self.lambda_n_vec).dot(y)
-
-        print(os.getpid(), "post done")
 
     def loglik(
         self,

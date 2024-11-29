@@ -33,5 +33,6 @@ def main():
     return results
 
 if __name__ == "__main__":
+    mp.freeze_support()
     results = main()
     print(results)
