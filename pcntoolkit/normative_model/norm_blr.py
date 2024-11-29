@@ -209,6 +209,8 @@ class NormBLR(NormBase):
                 intercept=reg_conf.intercept_var,
                 random_intercept=reg_conf.random_intercept_var,
             )
+        else:
+            this_var_X = None
 
         if hasattr(data, "scaled_y") and data.scaled_y is not None:
             this_y = data.scaled_y.to_numpy()
