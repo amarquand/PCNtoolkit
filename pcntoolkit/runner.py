@@ -3,13 +3,12 @@ import warnings
 from copy import deepcopy
 from typing import Any, Callable, Generator
 
-import multiprocess as mp
-from multiprocess import Pool
+# mp.set_start_method("spawn")
+# from multiprocess import Pool
+from joblib import Parallel, delayed
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
-
-mp.set_start_method("spawn")
 
 
 class Runner:
@@ -43,50 +42,34 @@ class Runner:
 
     def get_fit_chunk_fn(self) -> Callable:
         if self.cross_validate:
-            conf = self.normative_model.norm_conf
-            def fn(chunk: NormData):
-                for i_fold, (train_data, _) in enumerate(
-                    chunk.kfold_split(self.cv_folds)
-                ):
-                    # Create a new normative model and update the configuration
-                    fold_norm_model: NormBase = deepcopy(self.normative_model)
-                    fold_norm_model.norm_conf.set_log_dir(
-                        os.path.join(conf.log_dir, "folds", f"fold_{i_fold}")
-                    )
-                    fold_norm_model.norm_conf.set_save_dir(
-                        os.path.join(conf.save_dir, "folds", f"fold_{i_fold}")
-                    )
-                    fold_norm_model.fit(train_data)
-
-            return fn
+            return self.kfold_fit_chunk_fn
         else:
-            def fn(chunk: NormData):
-                self.normative_model.fit(chunk)
-            return fn
+            return self.fit_chunk_fn
+
+    def kfold_fit_chunk_fn(self, chunk: NormData):
+        conf = self.normative_model.norm_conf
+        for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
+            fold_norm_model: NormBase = deepcopy(self.normative_model)
+            fold_norm_model.norm_conf.set_log_dir(
+                os.path.join(conf.log_dir, "folds", f"fold_{i_fold}")
+            )
+            fold_norm_model.norm_conf.set_save_dir(
+                os.path.join(conf.save_dir, "folds", f"fold_{i_fold}")
+            )
+            fold_norm_model.fit(train_data)
+
+    def fit_chunk_fn(self, chunk: NormData):
+        self.normative_model.fit(chunk)
 
     def submit_jobs(self, fn: Callable, data: NormData) -> None:
         if self.parallelize:
             chunks = data.chunk(self.n_jobs)
-            pool = Pool(self.n_jobs)
-            pool.map_async(fn, chunks)
+            Parallel(n_jobs=self.n_jobs)(delayed(fn)(chunk) for chunk in chunks)
+            # pool = Pool(self.n_jobs)
+            # print(fn)
+            # pool.map_async(fn, chunks)
         else:
             fn(data)
-
-    # def run_fit_chunk_fns(self, fit_chunk_fns: list[Callable]) -> None:
-    #     logging.info(f"Starting to process {len(fit_chunk_fns)} chunks")
-    #     if not self.parallelize:
-    #         for fn in fit_chunk_fns:
-    #             fn()
-    #     else:
-    #         if self.cluster_type == "local":
-    #             self.run_local_jobs(fit_chunk_fns)
-    #         else:
-    #             raise ValueError(f"Cluster type {self.cluster_type} not supported")
-
-    def run_local_jobs(self, fit_chunk_fns: list[Callable]) -> None:
-        p = Pool(self.n_jobs)
-        p.map_async(lambda fn: fn(), fit_chunk_fns)
-        # result.wait()
 
     def predict(self, data: NormData) -> NormData:
         pass
