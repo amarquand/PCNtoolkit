@@ -102,3 +102,10 @@ version 0.31.0
     - Backwards compatibilty improved by using pd.read_pickle instead of pickle.load
     - SHASH classes have been refactored and improved
     - HBR priors improved
+
+
+version 0.32.0
+- Update Dockerfile
+- Add scaler.transfer, using Welford's algorithm to compute running mean and std for standardizers.
+- Correctly save metadata of transfered models.
+
