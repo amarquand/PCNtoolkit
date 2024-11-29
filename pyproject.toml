@@ -19,6 +19,8 @@ seaborn = "^0.13.2"
 numba = "^0.60.0"
 torch = ">=2.1.1"
 nutpie = "^0.13.2"
+multiprocess = "^0.70.17"
+dill = "^0.3.9"
 
 
 [tool.poetry.group.dev.dependencies]

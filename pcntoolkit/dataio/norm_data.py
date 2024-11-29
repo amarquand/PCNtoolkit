@@ -503,6 +503,23 @@ class NormData(xr.Dataset):
             A single concatenated numpy array of strings.
         """
         return reduce(np.char.add, arrays)
+    
+    def chunk(self, n_chunks: int) -> Generator[NormData]:
+        """
+        Split the data into n_chunks with roughly equal number of response variables
+
+        Parameters
+        ----------
+        n_chunks : int
+            The number of chunks to split the data into.
+
+        Returns
+        -------
+        Generator[NormData]
+            A generator of NormData instances.
+        """
+        for i in range(n_chunks):
+            yield self.isel(response_vars=slice(i, None, n_chunks))
 
     def train_test_split(
         self,

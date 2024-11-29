@@ -13,6 +13,7 @@ and supports both homoskedastic and heteroskedastic noise models.
 
 from __future__ import annotations
 
+import os
 from typing import Literal, Optional, cast
 
 import numpy as np
@@ -157,7 +158,6 @@ class BLR(RegressionModel):
 
         # Initialize hyperparameters if not provided
         hyp0 = self.init_hyp(data)
-
         args = (data.X, data.y, data.var_X)
 
         match self.blr_conf.optimizer.lower():
@@ -204,7 +204,6 @@ class BLR(RegressionModel):
                         approx_grad=True,
                         epsilon=self.epsilon,
                     )
-
             case _:
                 raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
         self.hyp = out[0]
@@ -260,8 +259,10 @@ class BLR(RegressionModel):
         beta: np.ndarray = None  # type: ignore
         # Noise precision
         if self.models_variance:
-            if var_X is None:
-                raise ValueError("Variance of covariates (var_X) is required for models with variance.")
+            if var_X is None or (var_X == 0).all():
+                raise ValueError(
+                    "Variance of covariates (var_X) is required for models with variance."
+                )
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -281,7 +282,11 @@ class BLR(RegressionModel):
         return alpha, beta
 
     def post(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
+        self,
+        hyp: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        var_X: Optional[np.ndarray] = None,
     ) -> None:
         """
         Compute the posterior distribution.
@@ -314,6 +319,7 @@ class BLR(RegressionModel):
         # Parse hyperparameters
         alpha, _ = self.parse_hyps(self.hyp, X, var_X)
 
+
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
@@ -321,14 +327,27 @@ class BLR(RegressionModel):
         else:
             raise ValueError("hyperparameter vector has invalid length")
 
+
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
         self.A = XtLambda_n.dot(X) + self.Lambda_a
+        print(os.getpid(), "A")
+
+        import uuid
+        a = uuid.uuid4()
+        np.save(f"A_{a}.npy", self.A, allow_pickle=False)
+        np.save(f"X_T_{a}.npy", X.T, allow_pickle=False)
         invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
         self.m = (invAXt * self.lambda_n_vec).dot(y)
 
+        print(os.getpid(), "post done")
+
     def loglik(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
+        self,
+        hyp: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        var_X: Optional[np.ndarray] = None,
     ) -> float:
         """
         Compute the negative log likelihood.
@@ -350,6 +369,7 @@ class BLR(RegressionModel):
             Negative log likelihood.
         """
         _, _ = self.parse_hyps(hyp, X, var_X)
+
 
         something_big: float = float(np.finfo(np.float64).max)
 
@@ -433,13 +453,14 @@ class BLR(RegressionModel):
                 np.abs(hyp)
             )
         elif norm.upper() == "L2":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(
                 np.square(hyp)
-            )
+            ))
         else:
             raise ValueError(
                 "Requested penalty not recognized, choose between 'L1' or 'L2'."
             )
+        
 
     def dloglik(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
@@ -560,7 +581,7 @@ class BLR(RegressionModel):
         Returns
         -------
         np.ndarray
-            Array of shape (len(cdf), n_samples) containing the predicted centile 
+            Array of shape (len(cdf), n_samples) containing the predicted centile
             values for each CDF value and sample
         """
         if resample:

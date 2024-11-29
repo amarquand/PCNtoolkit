@@ -293,13 +293,15 @@ class NormBase(ABC):
         """
         self.preprocess(data)
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
-        print(f"Going to fit {len(self.response_vars)} models")
+        print(os.getpid(),f"Going to fit {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             resp_fit_data = data.sel(response_vars=responsevar)
             self.focus(responsevar)
-            print(f"Fitting model for {responsevar}")
+            print(os.getpid(),f"Fitting model for {responsevar}")
             self._fit(resp_fit_data)
             self.reset()
+        if self.norm_conf.savemodel:
+            self.save()
 
     def predict(self, data: NormData) -> NormData:
         """
@@ -445,9 +447,9 @@ class NormBase(ABC):
             self.focus(responsevar)
             print(f"Fitting and predicting model for {responsevar}")
             self._fit_predict(resp_fit_data, resp_predict_data)
-
             self.reset()
-
+        if self.norm_conf.savemodel:
+            self.save()
         # Get the results
         self.evaluate(predict_data)
         return predict_data
@@ -570,6 +572,8 @@ class NormBase(ABC):
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_normative_model.regression_models = transfered_models
+        if transfered_normative_model.norm_conf.savemodel:
+            transfered_normative_model.save()
         return transfered_normative_model
 
     def extend(self, data: NormData) -> None:
@@ -973,7 +977,6 @@ class NormBase(ABC):
         self.scale_forward(data)
         # TODO: pass kwargs from config to expand_basis
         self.expand_basis(data, "scaled_X", True)
-       
 
     def postprocess(self, data: NormData) -> None:
         """Apply postprocessing to the data.
@@ -1064,7 +1067,9 @@ class NormBase(ABC):
 
         for responsevar in data.response_vars.to_numpy():
             if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = Scaler.from_string(self.norm_conf.outscaler)
+                self.outscalers[responsevar] = Scaler.from_string(
+                    self.norm_conf.outscaler
+                )
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
                 )
@@ -1136,10 +1141,7 @@ class NormBase(ABC):
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
-
-    def expand_basis(
-        self, data: NormData, source_array: str, intercept: bool = False
-    ):
+    def expand_basis(self, data: NormData, source_array: str, intercept: bool = False):
         """Expand the basis of a source array using a specified basis function.
 
         Parameters
@@ -1322,6 +1324,8 @@ class NormBase(ABC):
 
         if path is not None:
             self.norm_conf.set_save_dir(path)
+        os.makedirs(self.norm_conf.save_dir, exist_ok=True)
+        print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
         with open(
             os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"),
             mode="w",

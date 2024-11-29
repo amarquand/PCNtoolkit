@@ -140,7 +140,6 @@ class NormConf:
 
         self.detect_dir_problem(add_problem, "log_dir")
         self.detect_dir_problem(add_problem, "save_dir")
-        self.detect_cv_problem(add_problem)
         self.detect_basis_function_problem(add_problem)
         self.detect_scaler_problem(add_problem, "inscaler")
         self.detect_scaler_problem(add_problem, "outscaler")
@@ -175,34 +174,6 @@ class NormConf:
                     f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you"
                 )
                 os.makedirs(dir_attr)
-
-    def detect_cv_problem(self, add_problem: Callable[[str], None]) -> None:
-        """Detect problems with cross-validation configuration.
-
-        Validates that:
-        - perform_cv is a boolean
-        - cv_folds is an integer
-        - If perform_cv is True, cv_folds must be >= 2
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        performisbool: bool = isinstance(self.perform_cv, bool)
-        foldsisint: bool = isinstance(self.cv_folds, int)
-        if not performisbool:
-            add_problem(
-                f"perform_cv is not a boolean, but {type(self.perform_cv).__name__}"
-            )
-        if not foldsisint:
-            add_problem(
-                f"cv_folds is not an integer, but {type(self.cv_folds).__name__}"
-            )
-        if performisbool and foldsisint:
-            if self.perform_cv and self.cv_folds < 2:
-                add_problem(f"cv_folds must be at least 2, but is {self.cv_folds}")
-
     def detect_basis_function_problem(self, add_problem: Callable[[str], None]) -> None:
         """Detect problems with basis function configuration.
 

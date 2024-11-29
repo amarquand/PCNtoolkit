@@ -130,3 +130,9 @@ def test_split_with_stratify(
         # Check if the dimensions are preserved
         for split in splits:
             assert list(split.dims) == list(norm_data_from_arrays.dims)
+
+
+def test_chunk(norm_data_from_arrays):
+    chunks = norm_data_from_arrays.chunk(n_chunks=2)
+    for i, chunk in enumerate(chunks):
+        assert chunk.response_vars == ['response_var_{}'.format(i)]
