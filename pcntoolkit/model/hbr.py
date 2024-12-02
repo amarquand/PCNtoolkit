@@ -31,6 +31,7 @@ from bspline import splinelab
 from util.utils import create_poly_basis
 from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
+from pcntoolkit.util.bspline import BSplineBasis
 from pcntoolkit.model.SHASH import *
 
 
@@ -392,20 +393,29 @@ class HBR:
         """
         return hbr
 
-    def transform_X(self, X):
+    def transform_X(self, X, adapt=False):
         """
         Transform the covariates according to the model type
 
         :param X: N-by-P input matrix of P features for N subjects
         :return: transformed covariates
+        :adapt: Set to true when range adaptation for bspline is needed (for example in the 
+        transfer scenario)
         """
         if self.model_type == "polynomial":
             Phi = create_poly_basis(X, self.configs["order"])
         elif self.model_type == "bspline":
             if self.bsp is None:
-                self.bsp = bspline_fit(
-                    X, self.configs["order"], self.configs["nknots"])
-            bspline = bspline_transform(X, self.bsp)
+                self.bsp = BSplineBasis(order=self.configs["order"], 
+                                        nknots=self.configs["nknots"])
+                self.bsp.fit(X)
+                #self.bsp = bspline_fit(
+                #    X, self.configs["order"], self.configs["nknots"])
+            elif adapt:
+                self.bsp.adapt(X)
+                
+            bspline = self.bsp.transform(X)
+            #bspline = bspline_transform(X, self.bsp)
             Phi = np.concatenate((X, bspline), axis=1)
         else:
             Phi = X
@@ -560,7 +570,7 @@ class HBR:
         :return: An inferencedata object containing samples from the posterior distribution.
         """
         X, y, batch_effects = expand_all(X, y, batch_effects)
-        X = self.transform_X(X)
+        X = self.transform_X(X, adapt=True)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.configs, idata=self.idata) as m:
             self.idata = pm.sample(
@@ -1147,7 +1157,8 @@ def get_design_matrix(X, nm, basis="linear"):
     :param basis: String representing the basis to use. Default is "linear".
     """
     if basis == "bspline":
-        Phi = bspline_transform(X, nm.hbr.bsp)
+        Phi = nm.hbr.bsp.transform(X)
+        #Phi = bspline_transform(X, nm.hbr.bsp)
     elif basis == "polynomial":
         Phi = create_poly_basis(X, 3)
     else:
