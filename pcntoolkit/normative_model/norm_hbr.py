@@ -111,8 +111,9 @@ class NormHBR(NormBase):
         but higher values like 0.9 or 0.95 often work better for problematic posteriors.
     :param order: String that defines the order of bspline or polynomial model.
         The defauls is '3'.
-    :param nknots: String that defines the numbers of knots for the bspline model.
-        The defauls is '5'. Higher values increase the model complexity with negative
+    :param nknots: String that defines the numbers of interior knots for the bspline model.
+        The defauls is '3'. Two knots will be added to this number for boundries. So final 
+        number of knots will be nknots+2. Higher values increase the model complexity with negative
         effect on the spped of estimations.
     :param nn_hidden_layers_num: String the specifies the number of hidden layers
         in neural network model. It can be either '1' or '2'. The default is set to '2'.
@@ -158,7 +159,7 @@ class NormHBR(NormBase):
 
         if self.configs["type"] == "bspline":
             self.configs["order"] = int(kwargs.get("order", "3"))
-            self.configs["nknots"] = int(kwargs.get("nknots", "5"))
+            self.configs["nknots"] = int(kwargs.get("nknots", "3"))
         elif self.configs["type"] == "polynomial":
             self.configs["order"] = int(kwargs.get("order", "3"))
         elif self.configs["type"] == "nn":
