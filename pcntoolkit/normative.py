@@ -967,12 +967,12 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     elif ('model_path' not in list(kwargs.keys())) or \
             ('trbefile' not in list(kwargs.keys())):
         print(f'{kwargs=}')
-        print('InputError: Some general mandatory arguments are missing.')
+        print('InputError: model_path or trbefile are missing.')
         return
     # hbr has one additional mandatory arguments
     elif alg == 'hbr':
         if ('output_path' not in list(kwargs.keys())):
-            print('InputError: Some mandatory arguments for hbr are missing.')
+            print('InputError: output_path is missing.')
             return
         else:
             output_path = kwargs.pop('output_path', None)
@@ -1006,7 +1006,11 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
     if batch_size is not None:
         batch_size = int(batch_size)
+    
+    if batch_size is not None:
         job_id = int(job_id) - 1
+    else:
+        job_id = 0
 
     if not os.path.isdir(model_path):
         print('Models directory does not exist!')
@@ -1039,14 +1043,17 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         scaler_cov[0].extend(X)
         X = scaler_cov[0].transform(X)
 
+    if outscaler in ['standardize', 'minmax', 'robminmax']:
+        scaler_resp[job_id][0].extend(Y)
+        Y = scaler_resp[job_id][0].transform(Y)
+        
     feature_num = Y.shape[1]
     mY = np.mean(Y, axis=0)
     sY = np.std(Y, axis=0)
 
-    if outscaler in ['standardize', 'minmax', 'robminmax']:
-        scaler_resp[0].extend(Y)
-        Y = scaler_resp[0].transform(Y)
-
+    my_meta_data['mean_resp'] = mY
+    my_meta_data['std_resp'] = sY
+    
     batch_effects_train = fileio.load(trbefile)
 
     # load test data
@@ -1076,9 +1083,10 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     Yhat = np.zeros([ts_sample_num, feature_num])
     S2 = np.zeros([ts_sample_num, feature_num])
     Z = np.zeros([ts_sample_num, feature_num])
-
+        
     # estimate the models for all subjects
     for i in range(feature_num):
+        
 
         if alg == 'hbr':
             print("Using HBR transform...")
@@ -1092,12 +1100,13 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 print("Transferring model ", i+1, "of", feature_num)
                 nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) +
                                           inputsuffix + '.pkl'))
-
+                
+            if meta_data: # This is necessary for parallel module.
+                my_meta_data['scaler_resp'] = scaler_resp[job_id]
+                pickle.dump(my_meta_data, open(os.path.join('Models', 'meta_data.md'), 'wb'))
+                
             nm = nm.estimate_on_new_sites(X, Y[:, i], batch_effects_train)
-            if meta_data:
-                my_meta_data['scaler_cov'] = scaler_cov[0]
-                my_meta_data['scaler_resp'] = scaler_resp[0]
-                pickle.dump(my_meta_data, open(os.path.join(output_path, 'meta_data.md'), 'wb'))
+            
             if batch_size is not None:
                 nm.save(os.path.join(output_path, 'NM_0_' +
                                      str(job_id*batch_size+i) + outputsuffix + '.pkl'))
@@ -1136,13 +1145,13 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
         if testcov is not None:
             if outscaler == 'standardize':
-                Yhat[:, i] = scaler_resp[0].inverse_transform(
+                Yhat[:, i] = scaler_resp[job_id][0].inverse_transform(
                     yhat.squeeze(), index=i)
-                S2[:, i] = s2.squeeze() * sY[i]**2
+                S2[:, i] = s2.squeeze() * scaler_resp[job_id][0].s[i]**2 #sY[i]**2
             elif outscaler in ['minmax', 'robminmax']:
-                Yhat[:, i] = scaler_resp[0].inverse_transform(yhat, index=i)
-                S2[:, i] = s2 * (scaler_resp[0].max[i] -
-                                 scaler_resp[0].min[i])**2
+                Yhat[:, i] = scaler_resp[job_id][0].inverse_transform(yhat, index=i)
+                S2[:, i] = s2 * (scaler_resp[job_id][0].max[i] -
+                                 scaler_resp[job_id][0].min[i])**2
             else:
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
