@@ -997,7 +997,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     trbefile = kwargs.pop('trbefile', None)
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
-    fold = kwargs.pop('fold', 0)
+    fold = kwargs.pop('fold', 0) # This is almost always 0 in the transfer scenario.
 
     # for PCNonline automated parallel jobs loop
     count_jobsdone = kwargs.pop('count_jobsdone', 'False')
@@ -1007,9 +1007,11 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     if batch_size is not None:
         batch_size = int(batch_size)
     
-    if batch_size is not None:
+    if job_id is not None:
         job_id = int(job_id) - 1
+        parallel = True
     else:
+        parallel = False
         job_id = 0
 
     if not os.path.isdir(model_path):
@@ -1040,19 +1042,28 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         X = X[:, np.newaxis]
 
     if inscaler in ['standardize', 'minmax', 'robminmax']:
-        scaler_cov[0].extend(X)
-        X = scaler_cov[0].transform(X)
+        if parallel:
+            scaler_cov[job_id][fold].extend(X)
+            X = scaler_cov[job_id][fold].transform(X)
+        else:
+            scaler_cov[fold].extend(X)
+            X = scaler_cov[fold].transform(X)
+    
 
     if outscaler in ['standardize', 'minmax', 'robminmax']:
-        scaler_resp[job_id][0].extend(Y)
-        Y = scaler_resp[job_id][0].transform(Y)
+        if parallel:
+            scaler_resp[job_id][fold].extend(Y)
+            Y = scaler_resp[job_id][fold].transform(Y)
+        else:
+            scaler_resp[fold].extend(Y)
+            Y = scaler_resp[fold].transform(Y)
         
     feature_num = Y.shape[1]
+    
+    # mean and std of training data only used for calculating the MSLL
     mY = np.mean(Y, axis=0)
     sY = np.std(Y, axis=0)
-
-    my_meta_data['mean_resp'] = mY
-    my_meta_data['std_resp'] = sY
+            
     
     batch_effects_train = fileio.load(trbefile)
 
@@ -1063,8 +1074,12 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         if len(Xte.shape) == 1:
             Xte = Xte[:, np.newaxis]
         ts_sample_num = Xte.shape[0]
+        
         if inscaler in ['standardize', 'minmax', 'robminmax']:
-            Xte = scaler_cov[0].transform(Xte)
+            if parallel:
+                Xte = scaler_cov[job_id][fold].transform(Xte)
+            else:
+                Xte = scaler_cov[fold].transform(Xte)            
 
         if testresp is not None:
             Yte, testmask = load_response_vars(testresp, maskfile)
@@ -1083,11 +1098,22 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     Yhat = np.zeros([ts_sample_num, feature_num])
     S2 = np.zeros([ts_sample_num, feature_num])
     Z = np.zeros([ts_sample_num, feature_num])
-        
+    
+    if meta_data:
+        my_meta_data['mean_resp'] = mY
+        my_meta_data['std_resp'] = sY
+        if inscaler not in ['None']: 
+            my_meta_data['scaler_cov'] = scaler_cov
+        if outscaler not in ['None']: 
+            my_meta_data['scaler_resp'] = scaler_resp
+        if parallel:
+            pickle.dump(my_meta_data, open(os.path.join('Models', 'meta_data.md'), 'wb'))
+        else:
+            pickle.dump(my_meta_data, open(os.path.join(output_path, 'meta_data.md'), 'wb'))
+    
     # estimate the models for all subjects
     for i in range(feature_num):
         
-
         if alg == 'hbr':
             print("Using HBR transform...")
             nm = norm_init(X)
@@ -1100,10 +1126,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 print("Transferring model ", i+1, "of", feature_num)
                 nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) +
                                           inputsuffix + '.pkl'))
-                
-            if meta_data: # This is necessary for parallel module.
-                my_meta_data['scaler_resp'] = scaler_resp[job_id]
-                pickle.dump(my_meta_data, open(os.path.join('Models', 'meta_data.md'), 'wb'))
                 
             nm = nm.estimate_on_new_sites(X, Y[:, i], batch_effects_train)
             
@@ -1145,13 +1167,24 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
         if testcov is not None:
             if outscaler == 'standardize':
-                Yhat[:, i] = scaler_resp[job_id][0].inverse_transform(
-                    yhat.squeeze(), index=i)
-                S2[:, i] = s2.squeeze() * scaler_resp[job_id][0].s[i]**2 #sY[i]**2
+                if parallel:
+                    Yhat[:, i] = scaler_resp[job_id][fold].inverse_transform(
+                        yhat.squeeze(), index=i)
+                    S2[:, i] = s2.squeeze() * scaler_resp[job_id][fold].s[i]**2 
+                else:
+                    Yhat[:, i] = scaler_resp[fold].inverse_transform(
+                        yhat.squeeze(), index=i)
+                    S2[:, i] = s2.squeeze() * scaler_resp[fold].s[i]**2 
+                    
             elif outscaler in ['minmax', 'robminmax']:
-                Yhat[:, i] = scaler_resp[job_id][0].inverse_transform(yhat, index=i)
-                S2[:, i] = s2 * (scaler_resp[job_id][0].max[i] -
-                                 scaler_resp[job_id][0].min[i])**2
+                if parallel:
+                    Yhat[:, i] = scaler_resp[job_id][fold].inverse_transform(yhat, index=i)
+                    S2[:, i] = s2 * (scaler_resp[job_id][fold].max[i] -
+                                    scaler_resp[job_id][fold].min[i])**2
+                else:
+                    Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
+                    S2[:, i] = s2 * (scaler_resp[fold].max[i] -
+                                    scaler_resp[fold].min[i])**2
             else:
                 Yhat[:, i] = yhat.squeeze()
                 S2[:, i] = s2.squeeze()
