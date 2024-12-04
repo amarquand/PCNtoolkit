@@ -878,11 +878,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Y = Y[:, models]
             if meta_data:
                 # are we using cross-validation?
-                if type(mY) is list:
+                if isinstance(mY[0], list):
                     mY = mY[job_id][models]
                 else:
                     mY = mY[models]
-                if type(sY) is list:
+                if isinstance(sY[0], list):
                     sY = sY[job_id][models]
                 else:
                     sY = sY[models]
