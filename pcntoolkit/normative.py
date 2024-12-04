@@ -676,19 +676,14 @@ def fit(covfile, respfile, **kwargs):
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
 
-    # find and remove bad variables from the response variables
-    # note: the covariates are assumed to have already been checked
-    nz = np.where(np.bitwise_and(np.isfinite(Y).any(axis=0),
-                                 np.var(Y, axis=0) != 0))[0]
-
     scaler_resp = []
     scaler_cov = []
     mean_resp = []  # this is just for computing MSLL
     std_resp = []   # this is just for computing MSLL
 
     # standardize responses and covariates, ignoring invalid entries
-    mY = np.mean(Y[:, nz], axis=0)
-    sY = np.std(Y[:, nz], axis=0)
+    mY = np.mean(Y, axis=0)
+    sY = np.std(Y, axis=0)
     mean_resp.append(mY)
     std_resp.append(sY)
 
@@ -702,27 +697,26 @@ def fit(covfile, respfile, **kwargs):
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         Yz = np.zeros_like(Y)
         Y_scaler = scaler(outscaler)
-        Yz[:, nz] = Y_scaler.fit_transform(Y[:, nz])
+        Yz= Y_scaler.fit_transform(Y)
         scaler_resp.append(Y_scaler)
     else:
         Yz = Y
 
     # estimate the models for all subjects
-    for i in range(0, len(nz)):
-        print("Estimating model ", i+1, "of", len(nz))
-        nm = norm_init(Xz, Yz[:, nz[i]], alg=alg, **kwargs)
-        nm = nm.estimate(Xz, Yz[:, nz[i]], **kwargs)
+    for i in range(Y.shape[1]):
+        print("Estimating model ", i+1, "of", Y.shape[1])
+        nm = norm_init(Xz, Yz[:, i], alg=alg, **kwargs)
+        nm = nm.estimate(Xz, Yz[:, i], **kwargs)
 
         if savemodel:
-            nm.save('Models/NM_' + str(0) + '_' + str(nz[i]) + outputsuffix +
+            nm.save('Models/NM_' + str(i) + outputsuffix +
                     '.pkl')
 
     if savemodel:
         print('Saving model meta-data...')
         v = get_package_versions()
         with open('Models/meta_data.md', 'wb') as file:
-            pickle.dump({'valid_voxels': nz,
-                         'mean_resp': mean_resp, 'std_resp': std_resp,
+            pickle.dump({'mean_resp': mean_resp, 'std_resp': std_resp,
                          'scaler_cov': scaler_cov, 'scaler_resp': scaler_resp,
                          'regressor': alg, 'inscaler': inscaler,
                          'outscaler': outscaler, 'versions': v},
@@ -752,7 +746,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
      automatically decided.
     :param outputsuffix: Text string to add to the output filenames
     :param batch_size: batch size (for use with normative_parallel)
-    :param job_id: batch id
+    :param job_id: batch id, 'None' when non-parallel module is used.
     :param fold: which cross-validation fold to use (default = 0)
     :param fold: list of model IDs to predict (if not specified all are computed)
     :param return_y: return the (transformed) response variable (default = False)
@@ -770,10 +764,9 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     batch_size = kwargs.pop('batch_size', None)
     outputsuffix = kwargs.pop('outputsuffix', 'predict')
     outputsuffix = "_" + outputsuffix.replace("_", "")
-    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = kwargs.pop('inputsuffix', 'fit')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
-    fold = kwargs.pop('fold', 0)
     models = kwargs.pop('models', None)
     return_y = kwargs.pop('return_y', False)
 
@@ -805,7 +798,14 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
 
     if batch_size is not None:
         batch_size = int(batch_size)
+    
+    if job_id is not None:
         job_id = int(job_id) - 1
+        parallel = True
+    else:
+        parallel = False
+        job_id = 0
+
 
     # load data
     print("Loading data ...")
@@ -821,8 +821,8 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     if models is not None:
         feature_num = len(models)
     else:
-        feature_num = len(glob.glob(os.path.join(model_path, 'NM_' + str(fold) +
-                                                 '_*' + inputsuffix + '.pkl')))
+        feature_num = len(glob.glob(os.path.join(model_path, 'NM_' +
+                                                 '*' + inputsuffix + '.pkl')))
         models = range(feature_num)
 
     Yhat = np.zeros([sample_num, feature_num])
@@ -830,35 +830,34 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     Z = np.zeros([sample_num, feature_num])
 
     if inscaler in ['standardize', 'minmax', 'robminmax']:
-        Xz = scaler_cov[fold].transform(X)
+        Xz = scaler_cov[job_id].transform(X)
     else:
         Xz = X
     if respfile is not None:
         if outscaler in ['standardize', 'minmax', 'robminmax']:
-            Yz = scaler_resp[fold].transform(Y)
+            Yz = scaler_resp[job_id].transform(Y)
         else:
             Yz = Y
 
-    # estimate the models for all variabels
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)
         nm = norm_init(Xz)
-        nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' +
+        nm = nm.load(os.path.join(model_path, 'NM_' +
                                   str(m) + inputsuffix + '.pkl'))
         if (alg != 'hbr' or nm.configs['transferred'] == False):
             yhat, s2 = nm.predict(Xz, **kwargs)
-        else:
+        else: # only for hbr and in the transfer scenario
             tsbefile = kwargs.get('tsbefile')
             batch_effects_test = fileio.load(tsbefile)
             yhat, s2 = nm.predict_on_new_sites(Xz, batch_effects_test)
 
         if outscaler == 'standardize':
-            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
-            S2[:, i] = s2.squeeze() * sY[fold][i]**2
+            Yhat[:, i] = scaler_resp[job_id].inverse_transform(yhat, index=i)
+            S2[:, i] = s2.squeeze() * scaler_resp[job_id].s[i]**2 
         elif outscaler in ['minmax', 'robminmax']:
-            Yhat[:, i] = scaler_resp[fold].inverse_transform(yhat, index=i)
-            S2[:, i] = s2 * (scaler_resp[fold].max[i] -
-                             scaler_resp[fold].min[i])**2
+            Yhat[:, i] = scaler_resp[job_id].inverse_transform(yhat, index=i)
+            S2[:, i] = s2 * (scaler_resp[job_id].max[i] -
+                             scaler_resp[job_id].min[i])**2
         else:
             Yhat[:, i] = yhat.squeeze()
             S2[:, i] = s2.squeeze()
@@ -866,7 +865,9 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             if alg == 'hbr':
                 # Z scores for HBR must be computed independently for each model
                 Z[:, i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
-
+            else:
+                Z[:, i] = (Yz[:, i:i+1] - Yhat[:, i:i+1]) / np.sqrt(S2[:, i:i+1])
+                
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
 
@@ -878,11 +879,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             if meta_data:
                 # are we using cross-validation?
                 if type(mY) is list:
-                    mY = mY[fold][models]
+                    mY = mY[job_id][models]
                 else:
                     mY = mY[models]
                 if type(sY) is list:
-                    sY = sY[fold][models]
+                    sY = sY[job_id][models]
                 else:
                     sY = sY[models]
 
@@ -895,7 +896,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Yw = np.zeros_like(Y)
             for i, m in enumerate(models):
                 nm = norm_init(Xz)
-                nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' +
+                nm = nm.load(os.path.join(model_path, 'NM_' +
                                           str(m) + inputsuffix + '.pkl'))
 
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1]
@@ -966,7 +967,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
     # but should be for BLR (since it doesn't produce transfer models)
     elif ('model_path' not in list(kwargs.keys())) or \
             ('trbefile' not in list(kwargs.keys())):
-        print(f'{kwargs=}')
         print('InputError: model_path or trbefile are missing.')
         return
     # hbr has one additional mandatory arguments
@@ -1048,7 +1048,6 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
         else:
             scaler_cov[fold].extend(X)
             X = scaler_cov[fold].transform(X)
-    
 
     if outscaler in ['standardize', 'minmax', 'robminmax']:
         if parallel:
@@ -1085,6 +1084,12 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             Yte, testmask = load_response_vars(testresp, maskfile)
             if len(Yte.shape) == 1:
                 Yte = Yte[:, np.newaxis]
+            if outscaler in ['standardize', 'minmax', 'robminmax']:
+                if parallel:
+                    Yte = scaler_resp[job_id][fold].transform(Yte)
+                else:
+                    Yte = scaler_resp[fold].transform(Yte)
+            
         else:
             Yte = np.zeros([ts_sample_num, feature_num])
 
@@ -1138,6 +1143,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
             if testcov is not None:
                 yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
+                if testresp is not None:
+                    Z[:, i] = nm.get_mcmc_zscores(Xte, Yte[:, i:i+1], **kwargs)
 
         # We basically use normative.predict script here.
         if alg == 'blr':
@@ -1207,9 +1214,9 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             Yte = Yw
         else:
             warp = False
-
-        # TODO Z-scores adaptation for SHASH HBR
-        Z = (Yte - Yhat) / np.sqrt(S2)
+        # For HBR the Z scores are already computed
+        if alg != 'hbr':
+            Z = (Yte - Yhat) / np.sqrt(S2)
 
         print("Evaluating the model ...")
         if meta_data and not warp:
@@ -1270,7 +1277,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     elif ('model_path' not in list(kwargs.keys())) or \
         ('output_path' not in list(kwargs.keys())) or \
             ('trbefile' not in list(kwargs.keys())):
-        print('InputError: Some mandatory arguments are missing.')
+        print('InputError: Please specify model_path, output_path, and trbefile.')
         return
     else:
         model_path = kwargs.pop('model_path')
@@ -1285,9 +1292,16 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
+    
     if batch_size is not None:
         batch_size = int(batch_size)
+    
+    if job_id is not None:
         job_id = int(job_id) - 1
+        parallel = True
+    else:
+        parallel = False
+        job_id = 0
 
     if not os.path.isdir(model_path):
         print('Models directory does not exist!')
