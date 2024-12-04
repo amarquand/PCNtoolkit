@@ -68,10 +68,9 @@ class NormBLR(NormBase):
         blrdata = self.normdata_to_blrdata(data)
         self.focused_model.predict(blrdata)  # type: ignore
 
-    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
-        raise NotImplementedError(
-            f"Fit-predict method not implemented for {self.__class__.__name__}"
-        )
+    def _fit_predict(self, fit_data: NormData, predict_data:NormData) -> None:
+        self._fit(fit_data)
+        self._predict(predict_data)
 
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
         raise NotImplementedError(
