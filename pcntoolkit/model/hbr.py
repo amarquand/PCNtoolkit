@@ -100,7 +100,7 @@ def create_poly_basis(X, order):
     return Phi
 
 
-def from_posterior(param, samples, shape,  distribution=None, half=False, freedom=1):
+def from_posterior(param, samples, shape,  distribution=None, dims=None, half=False, freedom=1):
     """
     Create a PyMC distribution from posterior samples
 
@@ -108,10 +108,13 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
     :param samples: samples from the posterior
     :param shape: shape of the parameter
     :param distribution: distribution to use for the parameter
+    :param dims: dims of the parameter
     :param half: if true, the distribution is assumed to be defined on the positive real line 
     :param freedom: freedom parameter for the distribution
     :return: a PyMC distribution
     """
+    if dims == []:
+        dims = None
     if distribution is None:
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
@@ -127,25 +130,25 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
         if shape is None:
             return pm.distributions.Interpolated(param, x, y)
         else:
-            return pm.distributions.Interpolated(param, x, y, shape=shape)
+            return pm.distributions.Interpolated(param, x, y, shape=shape, dims=dims)
     elif distribution == "normal":
         temp = stats.norm.fit(samples)
         if shape is None:
             return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1])
         else:
-            return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1], shape=shape)
+            return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "hnormal":
         temp = stats.halfnorm.fit(samples)
         if shape is None:
             return pm.HalfNormal(param, sigma=freedom * temp[1])
         else:
-            return pm.HalfNormal(param, sigma=freedom * temp[1], shape=shape)
+            return pm.HalfNormal(param, sigma=freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "hcauchy":
         temp = stats.halfcauchy.fit(samples)
         if shape is None:
             return pm.HalfCauchy(param, freedom * temp[1])
         else:
-            return pm.HalfCauchy(param, freedom * temp[1], shape=shape)
+            return pm.HalfCauchy(param, freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "uniform":
         upper_bound = np.percentile(samples, 95)
         lower_bound = np.percentile(samples, 5)
@@ -160,6 +163,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
                 lower=lower_bound - freedom * r,
                 upper=upper_bound + freedom * r,
                 shape=shape,
+                dims=dims,
             )
     elif distribution == "huniform":
         upper_bound = np.percentile(samples, 95)
@@ -169,7 +173,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
             return pm.Uniform(param, lower=0, upper=upper_bound + freedom * r)
         else:
             return pm.Uniform(
-                param, lower=0, upper=upper_bound + freedom * r, shape=shape
+                param, lower=0, upper=upper_bound + freedom * r, shape=shape, dims=dims
             )
 
     elif distribution == "gamma":
@@ -184,6 +188,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
                 alpha=freedom * alpha_fit,
                 beta=freedom / invbeta_fit,
                 shape=shape,
+                dims=dims,
             )
 
     elif distribution == "igamma":
@@ -194,7 +199,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
             )
         else:
             return pm.InverseGamma(
-                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape
+                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape, dims=dims   
             )
 
 
@@ -806,11 +811,18 @@ class Prior:
                     new_shape = None
                 else:
                     new_shape = new_shape[:-1]
+
+                dims = []
+                if self.has_random_effect:
+                    dims = dims + pb.batch_effect_dim_names
+                if self.name.startswith("slope") or self.name.startswith("offset_slope"):
+                    dims = dims + ["basis_functions"]
                 self.dist = from_posterior(
                     param=self.name,
                     samples=samples.to_numpy(),
                     shape=new_shape,
                     distribution=dist,
+                    dims=dims,
                     freedom=pb.configs["freedom"],
                 )
 
