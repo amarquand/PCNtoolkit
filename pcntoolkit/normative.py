@@ -876,11 +876,12 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     else:
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
+            # TODO: Needs simplification 
             if meta_data:
-                if parallel:
+                if type(mY) is list: # This happens when non-parallel or when using meta data from batches
                     mY = mY[0][models]
                     sY = sY[0][models]
-                else:
+                else: # This happens when parallel on collected metadata
                     mY = mY[models]
                     sY = sY[models]
 
