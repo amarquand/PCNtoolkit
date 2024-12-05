@@ -877,14 +877,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
         if models is not None and len(Y.shape) > 1:
             Y = Y[:, models]
             if meta_data:
-                # are we using cross-validation?
-                if isinstance(mY[0], list):
-                    mY = mY[job_id][models]
+                if parallel:
+                    mY = mY[0][models]
+                    sY = sY[0][models]
                 else:
                     mY = mY[models]
-                if isinstance(sY[0], list):
-                    sY = sY[job_id][models]
-                else:
                     sY = sY[models]
 
         if len(Y.shape) == 1:
