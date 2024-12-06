@@ -1131,7 +1131,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
                 nm = nm.load(os.path.join(model_path, 'NM_0_' + str(i) +
                                           inputsuffix + '.pkl'))
                 
-            nm = nm.estimate_on_new_sites(X, Y[:, i], batch_effects_train)
+            nm = nm.transfer(X, Y[:, i], batch_effects_train)
             
             if batch_size is not None:
                 nm.save(os.path.join(output_path, 'NM_0_' +
