@@ -11,75 +11,20 @@ from __future__ import print_function
 from __future__ import division
 from collections import OrderedDict
 
-from ast import Param
-from tkinter.font import names
-
 import numpy as np
 import pymc as pm
 import pytensor
 import arviz as az
 import xarray
-
 from itertools import product
 from functools import reduce
-
-from pymc import Metropolis, NUTS, Slice, HamiltonianMC
 from scipy import stats
-import bspline
-from bspline import splinelab
 
 from util.utils import create_poly_basis
 from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
 from pcntoolkit.util.bspline import BSplineBasis
 from pcntoolkit.model.SHASH import *
-
-
-def bspline_fit(X, order, nknots):
-    """
-    Fit a B-spline to the data
-    :param X: [N×P] array of clinical covariates
-    :param order: order of the spline
-    :param nknots: number of knots
-    :return: a list of B-spline basis functions
-    """
-    feature_num = X.shape[1]
-    bsp_basis = []
-
-    for i in range(feature_num):
-        minx = np.min(X[:, i])
-        maxx = np.max(X[:, i])
-        delta = maxx - minx
-        # Expand range by 20% (10% on both sides)
-        splinemin = minx - 0.1 * delta
-        splinemax = maxx + 0.1 * delta
-        knots = np.linspace(splinemin, splinemax, nknots)
-        k = splinelab.augknt(knots, order)
-        bsp_basis.append(bspline.Bspline(k, order))
-
-    return bsp_basis
-
-
-def bspline_transform(X, bsp_basis):
-    """
-    Transform the data using the B-spline basis functions
-    :param X: [N×P] array of clinical covariates
-    :param bsp_basis: a list of B-spline basis functions
-    :return: a [N×(P×nknots)] array of transformed data
-    """
-
-    if type(bsp_basis) != list:
-        temp = []
-        temp.append(bsp_basis)
-        bsp_basis = temp
-
-    feature_num = len(bsp_basis)
-    X_transformed = []
-    for f in range(feature_num):
-        X_transformed.append(np.array([bsp_basis[f](i) for i in X[:, f]]))
-    X_transformed = np.concatenate(X_transformed, axis=1)
-
-    return X_transformed
 
 
 def create_poly_basis(X, order):
@@ -562,12 +507,12 @@ class HBR:
 
         return pred_mean, pred_var
 
-    def estimate_on_new_site(self, X, y, batch_effects):
+    def transfer(self, X, y, batch_effects):
+        
         """
-        Estimate the model parameters using the provided data for a new site.
-
-        This function transforms the input data, then uses the modeler to estimate the model parameters. 
-        The results are stored in the instance variable `idata`.
+        This function is used to transfer a reference model (i.e. the source model that is estimated on source big datasets) 
+        to data from new sites (i.e. target data). It uses the posterior
+        of the reference model as a prior for the target model.
 
         :param X: Covariates. This is the input data for the model.
         :param y: Outputs. This is the target data for the model.
@@ -588,32 +533,28 @@ class HBR:
                 cores=self.configs["cores"],
                 nuts_sampler=self.configs["nuts_sampler"],
             )
+          
+        self.vars_to_sample = ['y_like']
+        
+        # This part is for data privacy
+        if self.configs['remove_datapoints_from_posterior']:
+            chain = self.idata.posterior.coords['chain'].data
+            draw = self.idata.posterior.coords['draw'].data
+            for j in self.idata.posterior.variables.mapping.keys():
+                if j.endswith('_samples'):
+                    dummy_array = xarray.DataArray(data=np.zeros((len(chain), len(draw), 1)), coords={
+                                                'chain': chain, 'draw': draw, 'empty': np.array([0])}, name=j)
+                    self.idata.posterior[j] = dummy_array
+                    self.vars_to_sample.append(j)
+
+            # zero-out all data
+            for i in self.idata.constant_data.data_vars:
+                self.idata.constant_data[i] *= 0
+            for i in self.idata.observed_data.data_vars:
+                self.idata.observed_data[i] *= 0
+                
         return self.idata
 
-    def predict_on_new_site(self, X, batch_effects):
-        """
-        Make predictions from the model for a new site.
-
-        This function transforms the input data, then uses the modeler to make predictions. 
-        The results are stored in the instance variable `idata`.
-
-        :param X: Covariates. This is the input data for the model.
-        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
-        :return: A tuple containing the mean and variance of the predictions. The results are also stored in the instance variable `self.idata`.
-        """
-        X, batch_effects = expand_all(X, batch_effects)
-        samples = self.configs["n_samples"]
-        y = np.zeros([X.shape[0], 1])
-        X = self.transform_X(X)
-        modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.configs, idata=self.idata):
-            self.idata = pm.sample_posterior_predictive(
-                self.idata, extend_inferencedata=True, progressbar=True, var_names=self.vars_to_sample
-            )
-        pred_mean = self.idata.posterior_predictive["y_like"].mean(axis=(0, 1))
-        pred_var = self.idata.posterior_predictive["y_like"].var(axis=(0, 1))
-
-        return pred_mean, pred_var
 
     def generate(self, X, batch_effects, samples):
         """
@@ -645,6 +586,7 @@ class HBR:
         if len(batch_effects.shape) == 1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         return X, batch_effects, generated_samples
+
 
     def sample_prior_predictive(self, X, batch_effects, samples, y=None, idata=None):
         """
