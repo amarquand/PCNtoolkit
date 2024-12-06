@@ -709,7 +709,7 @@ def fit(covfile, respfile, **kwargs):
         nm = nm.estimate(Xz, Yz[:, i], **kwargs)
 
         if savemodel:
-            nm.save('Models/NM_' + str(i) + outputsuffix +
+            nm.save('Models/NM_' + str(0) + '_' + str(i) + outputsuffix +
                     '.pkl')
 
     if savemodel:
@@ -764,10 +764,11 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     batch_size = kwargs.pop('batch_size', None)
     outputsuffix = kwargs.pop('outputsuffix', 'predict')
     outputsuffix = "_" + outputsuffix.replace("_", "")
-    inputsuffix = kwargs.pop('inputsuffix', 'fit')
+    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
     models = kwargs.pop('models', None)
+    fold = kwargs.pop('fold', 0)
     return_y = kwargs.pop('return_y', False)
 
     if alg == 'gpr':
@@ -821,7 +822,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     if models is not None:
         feature_num = len(models)
     else:
-        feature_num = len(glob.glob(os.path.join(model_path, 'NM_' +
+        feature_num = len(glob.glob(os.path.join(model_path, 'NM_' + str(fold) + '_' +
                                                  '*' + inputsuffix + '.pkl')))
         models = range(feature_num)
 
@@ -842,7 +843,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     for i, m in enumerate(models):
         print("Prediction by model ", i+1, "of", feature_num)
         nm = norm_init(Xz)
-        nm = nm.load(os.path.join(model_path, 'NM_' +
+        nm = nm.load(os.path.join(model_path, 'NM_' + str(fold) + '_' +
                                   str(m) + inputsuffix + '.pkl'))
         if (alg != 'hbr' or nm.configs['transferred'] == False):
             yhat, s2 = nm.predict(Xz, **kwargs)
@@ -894,7 +895,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
             Yw = np.zeros_like(Y)
             for i, m in enumerate(models):
                 nm = norm_init(Xz)
-                nm = nm.load(os.path.join(model_path, 'NM_' +
+                nm = nm.load(os.path.join(model_path, 'NM_0_' +
                                           str(m) + inputsuffix + '.pkl'))
 
                 warp_param = nm.blr.hyp[1:nm.blr.warp.get_n_params()+1]
