@@ -371,7 +371,7 @@ class NormHBR(NormBase):
         X_dummy_ranges=[[0.1, 0.9, 0.01]],
         merge_batch_dim=0,
         samples=10,
-        informative_prior=False,
+        informative_prior=False
     ):
         """
         Extend the Hierarchical Bayesian Regression model using data sampled from the posterior predictive distribution.
@@ -389,11 +389,11 @@ class NormHBR(NormBase):
         :param informative_prior: Whether to use the adapt method for estimation. Default is False.
         :return: The instance of the NormHBR object.
         """
-        X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(
-            X_dummy_ranges)
-
+        
+        X_dummy, batch_effects_dummy = self.hbr.create_dummy_inputs(X)
+        
         X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(
-            X_dummy, batch_effects_dummy, samples
+            X_dummy, batch_effects_dummy, samples, batch_effects_maps=self.batch_effects_maps
         )
 
         batch_effects[:, merge_batch_dim] = (
@@ -402,19 +402,20 @@ class NormHBR(NormBase):
             + 1
         )
 
+        X = np.concatenate((X_dummy, X))
+        y = np.concatenate((Y_dummy, y))
+        batch_effects = np.concatenate((batch_effects_dummy, batch_effects))
+        
+        self.batch_effects_maps = [ {v: i for i, v in enumerate(np.unique(batch_effects[:, j]))}
+                                            for j in range(batch_effects.shape[1])
+                                    ]
+            
         if informative_prior:
-            raise NotImplementedError("The extension with informaitve prior is not implemented yet.")
-            #self.hbr.adapt(
-            #    np.concatenate((X_dummy, X)),
-            #    np.concatenate((Y_dummy, y)),
-            #    np.concatenate((batch_effects_dummy, batch_effects)),
-            #)
+            #raise NotImplementedError("The extension with informaitve prior is not implemented yet.")
+            self.hbr.transfer(X, y, batch_effects)
         else:
-            self.hbr.estimate(
-                np.concatenate((X_dummy, X)),
-                np.concatenate((Y_dummy, y)),
-                np.concatenate((batch_effects_dummy, batch_effects)),
-            )
+            
+            self.hbr.estimate(X, y, batch_effects)
 
         return self
 
