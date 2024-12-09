@@ -7,26 +7,21 @@ Created on Thu Jul 25 17:01:24 2019
 @author: augub
 """
 
-from __future__ import print_function
-from __future__ import division
-from sys import exit
-
-from itertools import product
+from __future__ import division, print_function
 
 import os
-import warnings
 import sys
+from sys import exit
 
-import xarray
 import arviz as az
 import numpy as np
+import xarray
 from scipy import special as spp
-from ast import literal_eval as make_tuple
 
 try:
     from pcntoolkit.dataio import fileio
-    from pcntoolkit.normative_model.norm_base import NormBase
     from pcntoolkit.model.hbr import HBR
+    from pcntoolkit.normative_model.norm_base import NormBase
 except ImportError:
     pass
 
@@ -314,18 +309,18 @@ class NormHBR(NormBase):
 
         pred_type = self.configs["pred_type"]
 
-        if self.configs["transferred"] == False:
-            yhat, s2 = self.hbr.predict(
-                X=Xs,
-                batch_effects=batch_effects_test,
-                batch_effects_maps=self.batch_effects_maps,
-                pred=pred_type,
-                **kwargs,
-            )
-        else:
-            raise ValueError(
-                "This is a transferred model. Please use predict_on_new_sites function."
-            )
+        # if self.configs["transferred"] == False:
+        yhat, s2 = self.hbr.predict(
+            X=Xs,
+            batch_effects=batch_effects_test,
+            batch_effects_maps=self.batch_effects_maps,
+            pred=pred_type,
+            **kwargs,
+        )
+        # else:
+        #     raise ValueError(
+        #         "This is a transferred model. Please use predict_on_new_sites function."
+        #     )
 
         return yhat.squeeze(), s2.squeeze()
 
