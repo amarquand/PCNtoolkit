@@ -526,27 +526,31 @@ class NormHBR(NormBase):
         """
         # Set batch effects to zero if none are provided
         if batch_effects is None:
-            batch_effects = batch_effects_test = np.zeros([X.shape[0], 1])
+            batch_effects = np.zeros([X.shape[0], 1])
 
         # Set the z_scores for which the quantiles are computed
         if z_scores is None:
             z_scores = np.arange(-3, 4)
-        likelihood = self.configs["likelihood"]
+        elif len(z_scores.shape) == 2:
+            if not z_scores.shape[0] == X.shape[0]:
+                raise ValueError("The number of columns in z_scores must match the number of columns in X")
+            z_scores = z_scores.T
 
         # Determine the variables to predict
-        if self.configs["likelihood"] == "Normal":
-            var_names = ["mu_samples", "sigma_samples", "sigma_plus_samples"]
-        elif self.configs["likelihood"].startswith("SHASH"):
-            var_names = [
-                "mu_samples",
-                "sigma_samples",
-                "sigma_plus_samples",
-                "epsilon_samples",
-                "delta_samples",
-                "delta_plus_samples",
-            ]
-        else:
-            exit("Unknown likelihood: " + self.configs["likelihood"])
+        match self.configs["likelihood"]:   
+            case "Normal":
+                var_names = ["mu_samples", "sigma_samples", "sigma_plus_samples"]
+            case  "SHASHo" | "SHASHo2" | "SHASHb":
+                var_names = [
+                    "mu_samples",
+                    "sigma_samples",
+                    "sigma_plus_samples",
+                    "epsilon_samples",
+                    "delta_samples",
+                    "delta_plus_samples",
+                ]
+            case _:
+                exit("Unknown likelihood: " + self.configs["likelihood"])
 
         # Delete the posterior predictive if it already exists
         if "posterior_predictive" in self.hbr.idata.groups():
@@ -579,8 +583,12 @@ class NormHBR(NormBase):
             (z_scores.shape[0], len_synth_data, n_mcmc_samples))
 
         # Compute the quantile iteratively for each z-score
+
         for i, j in enumerate(z_scores):
-            zs = np.full((len_synth_data, n_mcmc_samples), j, dtype=float)
+            if len(z_scores.shape) == 1:
+                zs = np.full((len_synth_data, n_mcmc_samples), j, dtype=float)
+            else:
+                zs = np.repeat(j[:,None], n_mcmc_samples, axis=1)
             quantiles[i] = xarray.apply_ufunc(
                 quantile,
                 *array_of_vars,
