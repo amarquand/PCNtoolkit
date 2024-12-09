@@ -12,14 +12,14 @@ This script tests HBR models with default configs on toy data.
 """
 
 import os
+from warnings import filterwarnings
+
+import matplotlib.pyplot as plt
 import numpy as np
+
+from pcntoolkit.normative import estimate
 from pcntoolkit.normative_model.norm_utils import norm_init
 from pcntoolkit.util.utils import simulate_data
-import matplotlib.pyplot as plt
-from pcntoolkit.normative import estimate
-from warnings import filterwarnings
-from pcntoolkit.util.utils import scaler
-import xarray
 
 filterwarnings('ignore')
 
@@ -39,29 +39,29 @@ n_samples = 500     # Number of samples in each group (use a list for different
 # sample numbers across different batches)
 n_transfer_samples = 100
 
-model_types = ['linear']  # models to try
+model_types = ['bspline']  # models to try
 
 ############################## Data Simulation ################################
 
 
 X_train, Y_train, grp_id_train, X_test, Y_test, grp_id_test, coef = \
     simulate_data(simulation_method, n_samples, n_features, n_grps,
-                  working_dir=working_dir, plot=True)
+                  working_dir=working_dir, plot=True, noise='heteroscedastic_gaussian')
 
 X_train_transfer, Y_train_transfer, grp_id_train_transfer, X_test_transfer, Y_test_transfer, grp_id_test_transfer, coef = simulate_data(
-    simulation_method, n_transfer_samples, n_features=n_features, n_grps=n_transfer_groups, plot=True)
+    simulation_method, n_transfer_samples, n_features=n_features, n_grps=n_transfer_groups, plot=True, noise='heteroscedastic_gaussian')
 
 ################################# Methods Tests ###############################
 
 
 for model_type in model_types:
-    nm = norm_init(X_train, Y_train, alg='hbr', likelihood='Normal', model_type=model_type,
-                   n_chains=4, cores=4, n_samples=100, n_tuning=50, freedom=5, nknots=8, target_accept="0.99", nuts_sampler='nutpie')
+    nm = norm_init(X_train, Y_train, alg='hbr', likelihood='Normal', model_type=model_type, linear_sigma="True",
+                   n_chains=4, cores=4, n_samples=1500, n_tuning=500, freedom=1, nknots=8, target_accept="0.99", nuts_sampler='nutpie')
 
     print("Now Estimating on original train data ==============================================")
     nm.estimate(X_train, Y_train, trbefile=working_dir+'trbefile.pkl')
     print("Now Predicting on original test data ==============================================")
-    yhat, ys2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
+    yhat, s2 = nm.predict(X_test, tsbefile=working_dir+'tsbefile.pkl')
 
     for i in range(n_features):
         sorted_idx = X_test[:, i].argsort(axis=0).squeeze()
@@ -69,7 +69,7 @@ for model_type in model_types:
         temp_Y = Y_test[sorted_idx,]
         temp_be = grp_id_test[sorted_idx, :].squeeze()
         temp_yhat = yhat[sorted_idx,]
-        temp_s2 = ys2[sorted_idx,]
+        temp_s2 = s2[sorted_idx,]
 
         plt.figure()
         for j in range(n_grps):
@@ -86,10 +86,10 @@ for model_type in model_types:
         plt.show()
 
     print("Now Estimating on transfer train data ==============================================")
-    nm.estimate_on_new_sites(
+    nm.transfer(
         X_train_transfer, Y_train_transfer, grp_id_train_transfer)
     print("Now Predicting on transfer test data ==============================================")
-    yhat, s2 = nm.predict_on_new_sites(X_test_transfer, grp_id_test_transfer)
+    yhat, s2 = nm.predict_on_new_sites(X = X_test_transfer, batch_effects = grp_id_test_transfer)
 
     for i in range(n_features):
         sorted_idx = X_test_transfer[:, i].argsort(axis=0).squeeze()
@@ -97,7 +97,7 @@ for model_type in model_types:
         temp_Y = Y_test_transfer[sorted_idx,]
         temp_be = grp_id_test_transfer[sorted_idx, :].squeeze()
         temp_yhat = yhat[sorted_idx,]
-        temp_s2 = ys2[sorted_idx,]
+        temp_s2 = s2[sorted_idx,]
 
         for j in range(n_transfer_groups):
             plt.scatter(temp_X[temp_be == j,], temp_Y[temp_be == j,],
