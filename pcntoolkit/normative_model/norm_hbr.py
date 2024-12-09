@@ -33,7 +33,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Type
 
 import numpy as np
 import xarray as xr
@@ -44,6 +44,7 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
+from pcntoolkit.regression_model.regression_model import RegressionModel
 
 
 class NormHBR(NormBase):
@@ -116,12 +117,12 @@ class NormHBR(NormBase):
     >>> predictions = model._predict(data)
     """
 
-    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf = None): # type: ignore
+    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf = None, regression_model_type: Type[RegressionModel]=HBR): # type: ignore
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = HBRConf()
         self.default_reg_conf: HBRConf = reg_conf
-        self.regression_model_type = HBR
+        self.regression_model_type = regression_model_type
         self.current_regression_model: HBR = None  # type: ignore
 
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
