@@ -937,17 +937,19 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
     Basic usage::
 
-        transfer(covfile, respfile [extra_arguments])
+        transfer(covfile, respfile, trbefile, model_path, output_path, inputsuffix [extra_arguments])
 
     where the variables are defined below.
 
     :param covfile: transfer covariates used to predict the response variable
     :param respfile: transfer response variables for the normative model
     :param maskfile: mask used to apply to the data (nifti only)
+    :param trbefile: Training batch effects file
     :param testcov: Test covariates
     :param testresp: Test responses
     :param model_path: Directory containing the normative model and metadata
-    :param trbefile: Training batch effects file
+    :param output_path: Address to output directory to save the transferred models
+    :param inputsuffix: The suffix for the inout models (default='estimate')
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
 
@@ -1246,7 +1248,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
 
     Basic usage::
 
-        extend(covfile, respfile [extra_arguments])
+        transfer(covfile, respfile, trbefile, model_path, output_path, inputsuffix [extra_arguments])
 
     where the variables are defined below.
 
@@ -1258,10 +1260,9 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id
     :param output_path: the path for saving the  the extended model
+    :param inputsuffix: The suffix for the input models (default='extend')
     :param informative_prior: use initial model prior or learn from scratch (default is False).
-    :param generation_factor: see below
-
-    generation factor refers to the number of samples generated for each 
+    :param generation_factor: generation factor refers to the number of samples generated for each 
     combination of covariates and batch effects. Default is 10.
 
 
@@ -1285,12 +1286,15 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
 
     outputsuffix = kwargs.pop('outputsuffix', 'extend')
     outputsuffix = "_" + outputsuffix.replace("_", "")
-    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = kwargs.pop('inputsuffix', 'extend')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     informative_prior = kwargs.pop('informative_prior', 'False') == 'True'
     generation_factor = int(kwargs.pop('generation_factor', '10'))
     job_id = kwargs.pop('job_id', None)
     batch_size = kwargs.pop('batch_size', None)
+    fold = kwargs.pop('fold', 0) # This is almost always 0 in the extend scenario.
+
+
     
     if batch_size is not None:
         batch_size = int(batch_size)
@@ -1309,13 +1313,15 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         if os.path.exists(os.path.join(model_path, 'meta_data.md')):
             with open(os.path.join(model_path, 'meta_data.md'), 'rb') as file:
                 my_meta_data = pickle.load(file)
-            if (my_meta_data['inscaler'] != 'None' or
-                    my_meta_data['outscaler'] != 'None'):
-                print('Models extention on scaled data is not possible!')
-                return
+            inscaler = my_meta_data['inscaler']
+            outscaler = my_meta_data['outscaler']
+            scaler_cov = my_meta_data['scaler_cov']
+            scaler_resp = my_meta_data['scaler_resp']
             meta_data = True
         else:
             print("No meta-data file is found!")
+            inscaler = 'None'
+            outscaler = 'None'
             meta_data = False
 
     if not os.path.isdir(output_path):
@@ -1331,13 +1337,41 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
         Y = Y[:, np.newaxis]
     if len(X.shape) == 1:
         X = X[:, np.newaxis]
+        
+    if inscaler in ['standardize', 'minmax', 'robminmax']:
+        if parallel:
+            scaler_cov[job_id][fold].extend(X)
+            X = scaler_cov[job_id][fold].transform(X)
+        else:
+            scaler_cov[fold].extend(X)
+            X = scaler_cov[fold].transform(X)
+
+    if outscaler in ['standardize', 'minmax', 'robminmax']:
+        if parallel:
+            scaler_resp[job_id][fold].extend(Y)
+            Y = scaler_resp[job_id][fold].transform(Y)
+        else:
+            scaler_resp[fold].extend(Y)
+            Y = scaler_resp[fold].transform(Y)    
+    
     feature_num = Y.shape[1]
 
+    if meta_data:
+        if inscaler not in ['None']: 
+            my_meta_data['scaler_cov'] = scaler_cov
+        if outscaler not in ['None']: 
+            my_meta_data['scaler_resp'] = scaler_resp
+        if parallel:
+            pickle.dump(my_meta_data, open(os.path.join('Models', 'meta_data.md'), 'wb'))
+        else:
+            pickle.dump(my_meta_data, open(os.path.join(output_path, 'meta_data.md'), 'wb'))
+    
+    
     # estimate the models for all subjects
     for i in range(feature_num):
 
         nm = norm_init(X)
-        if batch_size is not None:  # when using nirmative_parallel
+        if parallel:  # when using normative_parallel
             print("Extending model ", job_id*batch_size+i)
             nm = nm.load(os.path.join(model_path, 'NM_0_' +
                                       str(job_id*batch_size+i) + inputsuffix +
@@ -1351,7 +1385,7 @@ def extend(covfile, respfile, maskfile=None, **kwargs):
                        samples=generation_factor,
                        informative_prior=informative_prior)
 
-        if batch_size is not None:
+        if parallel: # The model is save into both output_path and temporary parallel folders
             nm.save(os.path.join(output_path, 'NM_0_' +
                                  str(job_id*batch_size+i) + outputsuffix + '.pkl'))
             nm.save(os.path.join('Models', 'NM_0_' +

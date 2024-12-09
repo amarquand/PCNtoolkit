@@ -407,6 +407,10 @@ class HBR:
         :return: idata. The results are also stored in the instance variable `self.idata`.
         """
         X, y, batch_effects = expand_all(X, y, batch_effects)
+        
+        self.batch_effects_num = batch_effects.shape[1]
+        self.batch_effects_size = [len(np.unique(batch_effects[:,i])) for i in range(self.batch_effects_num)] 
+        
         X = self.transform_X(X)
         modeler = self.get_modeler()
         if hasattr(self, 'idata'):
@@ -498,7 +502,7 @@ class HBR:
                 trace=self.idata,
                 extend_inferencedata=True,
                 progressbar=True,
-                var_names=var_names,
+                var_names=var_names
             )
         pred_mean = self.idata.posterior_predictive["y_like"].to_numpy().mean(
             axis=(0, 1))
@@ -520,6 +524,11 @@ class HBR:
         :return: An inferencedata object containing samples from the posterior distribution.
         """
         X, y, batch_effects = expand_all(X, y, batch_effects)
+        
+        self.batch_effects_num = batch_effects.shape[1]
+        self.batch_effects_size = [len(np.unique(batch_effects[:,i])) for i in range(self.batch_effects_num)] 
+    
+        
         X = self.transform_X(X, adapt=True)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.configs, idata=self.idata) as m:
@@ -556,7 +565,7 @@ class HBR:
         return self.idata
 
 
-    def generate(self, X, batch_effects, samples):
+    def generate(self, X, batch_effects, samples, batch_effects_maps, var_names=None):
         """
         Generate samples from the posterior predictive distribution.
 
@@ -568,18 +577,41 @@ class HBR:
         :return: A tuple containing the expanded and repeated X, batch_effects, and the generated samples.
         """
         X, batch_effects = expand_all(X, batch_effects)
-
+    
         y = np.zeros([X.shape[0], 1])
 
-        X = self.transform_X(X)
+        X_transformed = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.configs):
-            ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
-        generated_samples = np.reshape(
-            ppc.posterior_predictive["y_like"].squeeze().T, [
-                X.shape[0] * samples, 1]
-        )
-        X = np.repeat(X, samples)
+        
+        # See if a list of var_names is provided, set to self.vars_to_sample otherwise
+        if (var_names is None) or (var_names == ['y_like']):
+            var_names = self.vars_to_sample
+
+        # Need to delete self.idata.posterior_predictive, otherwise, if it exists, it will not be overwritten
+        if hasattr(self.idata, 'posterior_predictive'):
+            del self.idata.posterior_predictive
+
+        with modeler(X_transformed, y, batch_effects, self.configs):
+            # For each batch effect dim
+            for i in range(batch_effects.shape[1]):
+                # Make a map that maps batch effect values to their index
+                valmap = batch_effects_maps[i]
+                # Compute those indices for the test data
+                indices = list(map(lambda x: valmap[x], batch_effects[:, i]))
+                # Those indices need to be used by the model
+                pm.set_data({f"batch_effect_{i}_data": indices})
+
+            self.idata = pm.sample_posterior_predictive(
+                trace=self.idata,
+                extend_inferencedata=True,
+                progressbar=True,
+                var_names=var_names
+            )
+            
+        generated_samples = np.reshape(self.idata.posterior_predictive["y_like"].to_numpy()[0,0:samples,:].T, 
+                                       [X.shape[0] * samples, 1])
+        
+        X = np.repeat(X, samples, axis=0)
         if len(X.shape) == 1:
             X = np.expand_dims(X, axis=1)
         batch_effects = np.repeat(batch_effects, samples, axis=0)
@@ -628,34 +660,38 @@ class HBR:
         idata = self.idata if hasattr(self, "idata") else None
         return modeler(X, y, batch_effects, self.configs, idata=idata)
 
-    def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
+    def create_dummy_inputs(self, X, step_size=0.05):
         """
-        Create dummy inputs for the model.
+        Create dummy inputs for the model based on the input covariates.
 
-        This function generates a Cartesian product of the provided covariate ranges and repeats it for each batch effect. 
+        This function generates a Cartesian product of the covariate ranges determined from the input X 
+        (min and max values of each covariate). It repeats this for each batch effect. 
         It also generates a Cartesian product of the batch effect indices and repeats it for each input sample.
 
-        :param covariate_ranges: List of lists, where each inner list represents the range and step size of a covariate. Default is [[0.1, 0.9, 0.01]].
+        :param X: 2D numpy array, where rows are samples and columns are covariates.
+        :param step_size: Step size for generating ranges for each covariate. Default is 0.05.
         :return: A tuple containing the dummy input data and the dummy batch effects.
         """
         arrays = []
-        for i in range(len(covariate_ranges)):
-            arrays.append(
-                np.arange(
-                    covariate_ranges[i][0],
-                    covariate_ranges[i][1],
-                    covariate_ranges[i][2],
-                )
-            )
-        X = cartesian_product(arrays)
+        for i in range(X.shape[1]):
+            cov_min = np.min(X[:, i])
+            cov_max = np.max(X[:, i])
+            arrays.append(np.arange(cov_min, cov_max + step_size, step_size))
+        
+        X_dummy = cartesian_product(arrays)
         X_dummy = np.concatenate(
-            [X for i in range(np.prod(self.batch_effects_size))])
+            [X_dummy for _ in range(np.prod(self.batch_effects_size))]
+        )
+        
         arrays = []
         for i in range(self.batch_effects_num):
             arrays.append(np.arange(0, self.batch_effects_size[i]))
+        
         batch_effects = cartesian_product(arrays)
-        batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
+        batch_effects_dummy = np.repeat(batch_effects, X_dummy.shape[0] // np.prod(self.batch_effects_size), axis=0)
+        
         return X_dummy, batch_effects_dummy
+
 
     def Rhats(self, var_names=None, thin=1, resolution=100):
         """
