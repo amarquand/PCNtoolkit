@@ -10,6 +10,7 @@ from pcntoolkit.regression_model.blr.blr import BLR
 from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 from pcntoolkit.regression_model.blr.blr_data import BLRData
 from pcntoolkit.regression_model.reg_conf import RegConf
+from pcntoolkit.regression_model.regression_model import RegressionModel
 
 
 class NormBLR(NormBase):
@@ -44,12 +45,12 @@ class NormBLR(NormBase):
     - Computation of centiles and z-scores
     """
 
-    def __init__(self, norm_conf: NormConf, reg_conf: Optional[BLRConf] = None) -> None:
+    def __init__(self, norm_conf: NormConf, reg_conf: Optional[BLRConf] = None, regression_model_type: Type[RegressionModel]=BLR) -> None:
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = BLRConf()
         self.default_reg_conf: BLRConf = reg_conf
-        self.regression_model_type: Type[BLR] = BLR
+        self.regression_model_type: Type[RegressionModel] = regression_model_type
         # self.current_regression_model: BLR = None  # type:ignore
 
     @classmethod
