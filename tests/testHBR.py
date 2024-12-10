@@ -32,7 +32,7 @@ working_dir = "/Users/stijndeboer/temp/HBR/"  # Specify a working directory to s
 simulation_method = "linear"
 n_features = 1  # The number of input features of X
 n_grps = 3  # Number of batches in data
-n_samples = 500  # Number of samples in each group (use a list for different
+n_samples = 10  # Number of samples in each group (use a list for different
 # sample numbers across different batches)
 
 model_type = "linear"  # modelto try 'linear, ''polynomial', 'bspline'
@@ -65,6 +65,8 @@ nm = norm_init(
     linear_epsilon="False",
     linear_delta="False",
     nuts_sampler="nutpie",
+    n_samples=10,
+    n_tuning=10,
 )
 
 nm.estimate(X_train, Y_train, trbefile=working_dir + "trbefile.pkl")
