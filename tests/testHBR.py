@@ -27,7 +27,7 @@ filterwarnings("ignore")
 
 
 random_state = 40
-working_dir = "/Users/andmar/tmp/"  # Specify a working directory to save data and results.
+working_dir = "/Users/stijndeboer/tmp/"  # Specify a working directory to save data and results.
 
 simulation_method = "linear"
 n_features = 1  # The number of input features of X
@@ -141,7 +141,7 @@ for i in range(n_features):
 
 ###############################################################################
 
-# %%
+ # %%
 
 for j in range(n_grps):
     # Showing the quantiles
