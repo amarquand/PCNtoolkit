@@ -4,12 +4,14 @@ import sys
 from pcntoolkit.normative_parallel import execute_nm
 
 
-def execute_nm_wrapper(*args, **kwargs):
-    func = kwargs.get('func')
-    covfile_path = kwargs.get('covfile_path',None)
-    respfile_path = kwargs.get('respfile_path',None)
-    testcovfile_path = kwargs.get('testcovfile_path',None)
-    testrespfile_path = kwargs.get('testrespfile_path',None) 
+def execute_nm_wrapper(*args):
+    args_dict = {k:v for k,v in [arg.split('=') for arg in args]}
+
+    func = args_dict.get('func')
+    covfile_path = args_dict.get('covfile_path',None)
+    respfile_path = args_dict.get('respfile_path',None)
+    testcovfile_path = args_dict.get('testcovfile_path',None)
+    testrespfile_path = args_dict.get('testrespfile_path',None) 
 
     execute_nm(
         python_path='/home/preclineu/stijdboe/.conda/envs/pcntk_dev/bin/python',
@@ -35,8 +37,8 @@ def execute_nm_wrapper(*args, **kwargs):
         )
 
 
-def main(*args, **kwargs):
-    execute_nm_wrapper(*args, **kwargs)
+def main(*args):
+    execute_nm_wrapper(*args)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
