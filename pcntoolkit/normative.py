@@ -867,7 +867,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
                 # Z scores for HBR must be computed independently for each model
                 Z[:, i] = nm.get_mcmc_zscores(Xz, Yz[:, i:i+1], **kwargs)
             else:
-                Z[:, i] = (Yz[:, i:i+1] - Yhat[:, i:i+1]) / np.sqrt(S2[:, i:i+1])
+                Z[:, i] = np.squeeze((Yz[:, i:i+1] - Yhat[:, i:i+1]) / np.sqrt(S2[:, i:i+1]))
                 
     if respfile is None:
         save_results(None, Yhat, S2, None, outputsuffix=outputsuffix)
