@@ -57,7 +57,6 @@ class NormConf:
 
     savemodel: bool = False
     saveresults: bool = False
-    log_dir: str = "./logs"
     save_dir: str = "./saves"
     basis_function: str = "linear"
     basis_column: int = 0
@@ -94,7 +93,6 @@ class NormConf:
         NormConf
             New configuration instance
         """
-        print(fields(cls))
         norm_args:dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
         return cls(**norm_args)
 
@@ -138,7 +136,6 @@ class NormConf:
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
-        self.detect_dir_problem(add_problem, "log_dir")
         self.detect_dir_problem(add_problem, "save_dir")
         self.detect_basis_function_problem(add_problem)
         self.detect_scaler_problem(add_problem, "inscaler")
@@ -301,19 +298,7 @@ class NormConf:
         """
         object.__setattr__(self, "save_dir", path)
 
-    def set_log_dir(self, path: str) -> None:
-        """Set the log directory path.
-
-        Since this is a frozen dataclass, uses object.__setattr__ to modify
-        the log_dir attribute.
-
-        Parameters
-        ----------
-        path : str
-            New path for logging output
-        """
-        object.__setattr__(self, "log_dir", path)
-
+  
     def copy(self) -> "NormConf":
         """Create a deep copy of the configuration.
 
