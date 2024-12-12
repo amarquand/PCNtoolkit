@@ -91,6 +91,8 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
 
+from pcntoolkit.plotting.plotter import plot_centiles, plot_qq
+
 from .norm_conf import NormConf
 
 
@@ -170,35 +172,6 @@ class NormBase(ABC):
     The NormBase class implements the Template Method pattern, where the main workflow
     is defined in the base class, but specific implementations are delegated to
     subclasses through abstract methods.
-
-    Abstract Methods
-    ---------------
-    _fit(data: NormData) -> NormData
-        Internal fitting implementation.
-
-    _predict(data: NormData) -> NormData
-        Internal prediction implementation.
-
-    _fit_predict(fit_data: NormData, predict_data: NormData) -> NormData
-        Internal fit-predict implementation.
-
-    _transfer(data: NormData, **kwargs: Any) -> RegressionModel
-        Internal transfer learning implementation.
-
-    _extend(data: NormData) -> NormBase
-        Internal model extension implementation.
-
-    _tune(data: NormData) -> NormBase
-        Internal parameter tuning implementation.
-
-    _merge(other: NormBase) -> NormBase
-        Internal model merging implementation.
-
-    _centiles(data: NormData, centiles: np.ndarray) -> xr.DataArray
-        Internal centile computation implementation.
-
-    _zscores(data: NormData) -> xr.DataArray
-        Internal z-score computation implementation.
 
     Examples
     --------
@@ -449,6 +422,8 @@ class NormBase(ABC):
             self.save()
         # Get the results
         self.evaluate(predict_data)
+        if self.norm_conf.saveresults:
+            self.save_results(predict_data) 
         return predict_data
 
     def transfer(self, data: NormData, *args: Any, **kwargs: Any) -> "NormBase":
@@ -1235,6 +1210,8 @@ class NormBase(ABC):
         if path is not None:
             self.norm_conf.set_save_dir(path)
 
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "model"), exist_ok=True)
+
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
             "regression_model_type": self.regression_model_type.__name__,
@@ -1258,7 +1235,7 @@ class NormBase(ABC):
         print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
 
         with open(
-            os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"),
+            os.path.join(self.norm_conf.save_dir, "model","normative_model_dict.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
@@ -1268,14 +1245,30 @@ class NormBase(ABC):
             reg_model_dict = {}
             reg_model_dict["model"] = model.to_dict()
             reg_model_dict['outscaler'] = self.outscalers[responsevar].to_dict()
-            with open(os.path.join(self.norm_conf.save_dir, f"reg_model_{responsevar}.json"), "w", encoding="utf-8") as f:
+            with open(os.path.join(self.norm_conf.save_dir, "model",f"reg_model_{responsevar}.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
+    def save_results(self, data: NormData) -> None:
+        # save the zscores and centiles
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "results"), exist_ok=True)
+        zdf = data.zscores.to_dataframe().unstack(level="response_vars")
+        zdf.columns=zdf.columns.droplevel(0)
+        zdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "zscores.csv")) 
+        cdf = data.centiles.to_dataframe().unstack(level="response_vars")
+        cdf.columns=cdf.columns.droplevel(0)
+        cdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "centiles.csv"))
+        mdf = data.measures.to_dataframe().unstack(level="statistics")
+        mdf.columns=mdf.columns.droplevel(0)
+        mdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "measures.csv"))
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
+        plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
+        plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
+        
 
     @classmethod
     def load(cls, path: str) -> NormBase:
         with open(
-            os.path.join(path, "normative_model_dict.json"), mode="r", encoding="utf-8"
+            os.path.join(path, "model", "normative_model_dict.json"), mode="r", encoding="utf-8"
         ) as f:
             metadata = json.load(f)
 
@@ -1284,7 +1277,7 @@ class NormBase(ABC):
         self.response_vars = []
         self.outscalers ={}
         self.regression_models = {}
-        reg_models_path = os.path.join(path, "reg_model_*.json")
+        reg_models_path = os.path.join(path, "model","reg_model_*.json")
         for path in glob.glob(reg_models_path):
             with open(path, mode="r", encoding="utf-8") as f:
                 reg_model_dict = json.load(f)
