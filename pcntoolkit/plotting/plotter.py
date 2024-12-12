@@ -2,7 +2,7 @@
 
 # TODO move all plotting functions to this file
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,11 +11,14 @@ import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_base import NormBase
 
+if TYPE_CHECKING:
+    from pcntoolkit.normative_model.norm_base import NormBase
+
+import os
 
 def plot_centiles(
-    model: NormBase,
+    model: "NormBase",
     data: NormData,
     covariate: str | None = None,
     cummul_densities: list | None = None,
@@ -24,6 +27,7 @@ def plot_centiles(
     plt_kwargs: dict | None = None,
     hue_data: str = "site",
     markers_data: str = "sex",
+    save_dir: str | None = None,
     **kwargs: Any,
 ) -> None:
     """Generate centile plots for response variables with optional data overlay.
@@ -144,6 +148,7 @@ def plot_centiles(
             hue_data=hue_data,
             markers_data=markers_data,
             palette=palette,
+            save_dir=save_dir,
         )
 
 
@@ -158,6 +163,7 @@ def _plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     palette: str = "viridis",
+    save_dir: str | None = None,
 ) -> None:
     """Plot centile curves for a single response variable.
 
@@ -303,8 +309,10 @@ def _plot_centiles(
     plt.title(f"Centiles of {response_var}")
     plt.xlabel(covariate)
     plt.ylabel(response_var)
-
-    plt.show()
+    if save_dir:
+        plt.savefig(os.path.join(save_dir, f"centiles_{response_var}.png"))
+    else:
+        plt.show()
 
 def plot_qq(
     data: NormData,
@@ -315,6 +323,7 @@ def plot_qq(
     markers_data: str | None = None,
     split_data: str | None = None,
     seed: int = 42,
+    save_dir: str | None = None,
 ) -> None:
     """
     Plot QQ plots for each response variable in the data.
@@ -358,6 +367,7 @@ def plot_qq(
             markers_data,
             split_data,
             seed,
+            save_dir,
         )
 
 def _plot_qq(
@@ -370,6 +380,7 @@ def _plot_qq(
     markers_data: str | None = None,
     split_data: str | None = None,
     seed: int = 42,
+    save_dir: str | None = None,
 ) -> None:
     """
     Plot a QQ plot for a single response variable.
@@ -394,6 +405,7 @@ def _plot_qq(
         Column to use for splitting data. Defaults to None. All split data will be offset by 1.
     seed : int, optional
         Random seed for reproducibility. Defaults to 42.
+    save_dir: str | None = None,    
 
     Returns
     -------
@@ -458,4 +470,7 @@ def _plot_qq(
 
     if bound != 0:
         plt.axis((-bound, bound, -bound, bound))
-    plt.show()
+    if save_dir:
+        plt.savefig(os.path.join(save_dir, f"qq_{response_var}.png"))
+    else:
+        plt.show()
