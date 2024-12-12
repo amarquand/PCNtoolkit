@@ -4,6 +4,10 @@ import sys
 import warnings
 from copy import deepcopy
 from typing import Any, Callable, Generator, Optional, Dict, List
+import re
+from dataclasses import dataclass
+from datetime import datetime
+import time
 
 import xarray as xr
 
@@ -14,6 +18,14 @@ from joblib import Parallel, delayed
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 import dill
+
+@dataclass
+class JobStatus:
+    job_id: str
+    name: str
+    state: str
+    time: str
+    nodes: str
 
 class Runner:
     def __init__(
@@ -41,6 +53,7 @@ class Runner:
         self.n_cores = n_cores
         self.walltime = walltime
         self.memory = memory
+        self.active_job_ids: Dict[str, str] = {}
         
         # Get Python path if not provided
         if not python_path:
@@ -75,10 +88,12 @@ class Runner:
     def fit(self, data: NormData) -> None:
         fn = self.get_fit_chunk_fn()
         self.submit_fit_jobs(fn, data)
+        self.wait_for_jobs()
 
     def fit_predict(self, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
         fn = self.get_fit_predict_chunk_fn()
         self.submit_fit_predict_jobs(fn, fit_data, predict_data)
+        self.wait_for_jobs()
 
     def get_fit_chunk_fn(self) -> Callable:
         """ Returns a callable that fits a chunk of data """
@@ -143,9 +158,21 @@ class Runner:
                 chunks = data.chunk(self.n_jobs)
                 for i, chunk in enumerate(chunks):
                     job_path = self.wrap_in_slurm_job(i, fn, chunk)
-                    #execute the job
-                    subprocess.run(["sbatch", job_path])
-                 
+                    # Capture the output of sbatch to get job ID
+                    process = subprocess.Popen(
+                        ["sbatch", job_path], 
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    stdout, stderr = process.communicate()
+                    
+                    # Parse job ID from output (typically "Submitted batch job 123456")
+                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
+                    if job_id:
+                        self.active_job_ids[f"job_{i}"] = job_id.group(1)
+                    elif stderr:
+                        print(f"Error submitting job {i}: {stderr}")
         else:
             fn(data)
 
@@ -164,7 +191,21 @@ class Runner:
             elif self.job_type == "slurm":
                 for i, (fit_chunk, predict_chunk) in enumerate(zip(fit_chunks, predict_chunks)):
                     job_path = self.wrap_in_slurm_job(i, fn, (fit_chunk, predict_chunk))
-                    subprocess.run(["sbatch", job_path])
+                    # Use Popen instead of run
+                    process = subprocess.Popen(
+                        ["sbatch", job_path], 
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    stdout, stderr = process.communicate()
+                    
+                    # Parse job ID from output (typically "Submitted batch job 123456")
+                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
+                    if job_id:
+                        self.active_job_ids[f"job_{i}"] = job_id.group(1)
+                    elif stderr:
+                        print(f"Error submitting job {i}: {stderr}")
         else:
             fn(fit_data, predict_data)
 
@@ -210,6 +251,129 @@ class Runner:
 """)
         return job_path
         
+    def get_job_statuses(self) -> List[JobStatus]:
+        """Get status of all tracked jobs."""
+        if not self.active_job_ids:
+            return []
+
+        # Get all job statuses at once
+        process = subprocess.Popen(
+            ["squeue", "--format=%i|%j|%T|%M|%N", "--noheader"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        stdout, stderr = process.communicate()
+
+        statuses = []
+        if process.returncode is None or process.returncode == 0:
+            # Split output into lines and filter out empty lines
+            lines = [line.strip() for line in stdout.split('\n') if line.strip()]
+            for line in lines:
+                try:
+                    job_id, name, state, time, nodes = line.split('|')
+                    if job_id in list(self.active_job_ids.values()):
+                        statuses.append(JobStatus(
+                            job_id=job_id,
+                            name=name,
+                            state=state,
+                            time=time,
+                            nodes=nodes
+                    ))
+                except ValueError as e:
+                    print(f"Error parsing job status line: {line}")
+                    print(f"Error details: {e}")
+        elif stderr:
+            print(f"Error getting job statuses: {stderr}")
+
+        return statuses
+
+
+    def wait_for_jobs(self, check_interval=5):
+        """Wait for all submitted jobs to complete.
+        
+        Args:
+            check_interval (int): Time in seconds between job status checks
+        """
+        # Detect if we're running in a Jupyter notebook
+        in_notebook = True
+        try:
+            shell = get_ipython().__class__.__name__
+            if shell not in ['ZMQInteractiveShell', 'Shell']:
+                in_notebook = False
+        except NameError:
+            in_notebook = False
+            
+        if in_notebook:
+            # Notebook-friendly display without ANSI codes
+            from IPython.display import clear_output
+            
+            while self.active_job_ids:
+                clear_output(wait=True)
+                print("Job Status Monitor:")
+                print("-" * 60)
+                print("Job ID     Name     State     Time     Nodes")
+                print("-" * 60)
+                
+                # Get and display current statuses
+                statuses = self.get_job_statuses()
+                for status in statuses:
+                    print("{:<10} {:<8} {:<9} {:<8} {:<8}".format(
+                        status.job_id, status.name, status.state, status.time, status.nodes
+                    ))
+                
+                # Check for completed jobs
+                completed_jobs = []
+                for job_name, job_id in list(self.active_job_ids.items()):
+                    if not any(s.job_id == job_id for s in statuses) or \
+                       any(s.job_id == job_id and s.state in ['COMPLETED', 'FAILED', 'CANCELLED'] for s in statuses):
+                        completed_jobs.append(job_name)
+                
+                # Remove completed jobs
+                for job_name in completed_jobs:
+                    del self.active_job_ids[job_name]
+                    
+                if self.active_job_ids:
+                    time.sleep(check_interval)
+            
+            print("\nAll jobs completed!")
+            
+        else:
+            # Terminal display with ANSI codes
+            # Keep existing terminal implementation
+            print("\033[2K\r", end="")  # Clear current line
+            print("Job Status Monitor:")
+            print("-" * 60)
+            print("Job ID     Name     State     Time     Nodes")
+            print("-" * 60)
+            
+            prev_lines = 0
+            
+            while self.active_job_ids:
+                print(f"\033[{prev_lines + 5}A", end="")
+                
+                statuses = self.get_job_statuses()
+                
+                for status in statuses:
+                    print("\033[2K\r{:<10} {:<8} {:<9} {:<8} {:<8}".format(
+                        status.job_id, status.name, status.state, status.time, status.nodes
+                    ))
+                
+                prev_lines = len(statuses)
+                
+                completed_jobs = []
+                for job_name, job_id in list(self.active_job_ids.items()):
+                    if not any(s.job_id == job_id for s in statuses) or \
+                       any(s.job_id == job_id and s.state in ['COMPLETED', 'FAILED', 'CANCELLED'] for s in statuses):
+                        completed_jobs.append(job_name)
+                
+                for job_name in completed_jobs:
+                    del self.active_job_ids[job_name]
+                    
+                if self.active_job_ids:
+                    time.sleep(check_interval)
+            
+            print("\033[2K\r\nAll jobs completed!")
 
 def load_and_execute(args):
     print(args)
