@@ -178,6 +178,7 @@ class BLRConf(RegConf):
             intercept_var=dct["intercept_var"],
             random_intercept_var=dct["random_intercept_var"],
         )
+    
     def to_dict(self, path:str|None="") -> dict[str, Any]:
         return {
             "n_iter": self.n_iter,

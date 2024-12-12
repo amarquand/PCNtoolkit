@@ -69,6 +69,7 @@ pcntoolkit.dataio : Package for data input/output operations
 
 from __future__ import annotations
 
+import glob
 import json
 import os
 from abc import ABC, abstractmethod
@@ -373,13 +374,11 @@ class NormBase(ABC):
         Parameters
         ----------
         fit_data : NormData
-            Training data containing covariates (X) and response variables (y)
-            for model fitting. Must be a valid NormData object with dimensions:
-            - X: (n_train_samples, n_covariates)
-            - y: (n_train_samples, n_response_vars)
+            Training data containing covariates and response variables
+            for model fitting.
 
         predict_data : NormData
-            Test data containing covariates (X) for prediction. Must have the same
+            Test data containing covariates for prediction. Must have the same
             covariate structure as fit_data with dimensions:
             - X: (n_test_samples, n_covariates)
 
@@ -396,7 +395,6 @@ class NormBase(ABC):
         Notes
         -----
         - Performs compatibility check between fit_data and predict_data
-        - More memory efficient than separate fit() and predict() calls
         - Automatically handles preprocessing and postprocessing
         - Computes evaluation metrics after prediction
 
@@ -407,10 +405,9 @@ class NormBase(ABC):
         >>> results = model.fit_predict(train_data, test_data)
         >>>
         >>> # Access predictions
-        >>> predictions = results.yhat
-        >>> variances = results.ys2
         >>> zscores = results.zscores
         >>> centiles = results.centiles
+        >>> measures = results.measures
 
         Raises
         ------
@@ -1235,80 +1232,17 @@ class NormBase(ABC):
         pass
 
     def save(self, path: Optional[str] = None) -> None:
-        """
-        Save the normative model to disk.
+        if path is not None:
+            self.norm_conf.set_save_dir(path)
 
-        This method serializes the entire normative model, including configuration,
-        fitted regression models, scalers, and basis functions (if applicable).
-
-        Parameters
-        ----------
-        path : str , optional
-            Directory path where the model should be saved. If None, uses the
-            path specified in norm_conf.save_dir. Default is None.
-
-        Returns
-        -------
-        None
-            Saves files to disk but doesn't return any value.
-
-        Notes
-        -----
-        The method saves the following components:
-        1. Metadata JSON file ('normative_model_dict.json') containing:
-            - Normative model configuration
-            - Response variable names
-            - Regression model type
-            - Default regression configuration
-            - B-spline basis parameters (if used)
-            - Input/output scaler configurations
-
-        2. Individual regression model files:
-            - One JSON file per response variable
-            - Named as 'model_{response_var}.json'
-            - Contains model-specific parameters and states
-
-        File Structure
-        -------------
-        save_dir/
-        ├── normative_model_dict.json
-        ├── model_response1.json
-        ├── model_response2.json
-        └── ...
-
-        Examples
-        --------
-        >>> # Save model to default location
-        >>> model.save()
-        >>>
-        >>> # Save model to specific path
-        >>> model.save("/path/to/save/directory")
-
-        See Also
-        --------
-        load : Class method for loading a saved model
-        set_save_dir : Method to change the save directory
-
-        Notes
-        -----
-        - Ensures thread-safety when multiple models save to same directory
-        - Maintains backward compatibility with older saved models
-        - Handles complex nested objects through JSON serialization
-        - Preserves all necessary information for model reconstruction
-
-        Warnings
-        --------
-        - Ensure sufficient disk space before saving large models
-        - Avoid modifying saved files manually to prevent corruption
-        - Consider backup strategies for important models
-        """
-        # TODO save the model in such a format that parallel models with identical save dirs result in a single model
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
-            "response_vars": self.response_vars,
             "regression_model_type": self.regression_model_type.__name__,
             "default_reg_conf": self.default_reg_conf.to_dict(),
+            "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
         }
+
+        # TODO make this cleaner and more general
         if self.norm_conf.basis_function == "bspline" and hasattr(
             self, "bspline_basis"
         ):
@@ -1319,145 +1253,54 @@ class NormBase(ABC):
                 "nknots": self.norm_conf.nknots,
                 "p": self.norm_conf.order,
             }
-        metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
-        metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
 
-        if path is not None:
-            self.norm_conf.set_save_dir(path)
         os.makedirs(self.norm_conf.save_dir, exist_ok=True)
         print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
+
         with open(
             os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
             json.dump(metadata, f, indent=4)
+
         for responsevar, model in self.regression_models.items():
-            model_dict = model.to_dict(self.norm_conf.save_dir)
-            with open(
-                os.path.join(self.norm_conf.save_dir, f"model_{responsevar}.json"),
-                mode="w",
-                encoding="utf-8",
-            ) as f:
-                json.dump(model_dict, f, indent=4)
+            reg_model_dict = {}
+            reg_model_dict["model"] = model.to_dict()
+            reg_model_dict['outscaler'] = self.outscalers[responsevar].to_dict()
+            with open(os.path.join(self.norm_conf.save_dir, f"reg_model_{responsevar}.json"), "w", encoding="utf-8") as f:
+                json.dump(reg_model_dict, f, indent=4)
+
 
     @classmethod
     def load(cls, path: str) -> NormBase:
-        """
-        Load a normative model from disk.
-
-        This class method reconstructs a normative model from saved files, including model
-        configuration, regression models, scalers, and basis functions.
-
-        Parameters
-        ----------
-        path : str
-            Directory path containing the saved model files. Must contain:
-            - normative_model_dict.json: Model metadata and configuration
-            - model_{response_var}.json: Individual regression model files
-            - Additional model-specific files referenced in the JSONs
-
-        Returns
-        -------
-        NormBase
-            Reconstructed normative model instance with:
-            - Loaded configuration settings
-            - Reconstructed regression models
-            - Restored preprocessing transformations
-            - Recreated basis functions (if applicable)
-
-        Notes
-        -----
-        Loading process:
-        1. Reads model metadata from normative_model_dict.json
-        2. Reconstructs configuration objects
-        3. Loads individual regression models
-        4. Recreates preprocessing transformations
-        5. Rebuilds basis functions if used
-
-        The method expects a specific directory structure and file format:
-        ```
-        path/
-        ├── normative_model_dict.json
-        ├── model_response1.json
-        ├── model_response2.json
-        └── ...
-        ```
-
-        Examples
-        --------
-        >>> # Save model
-        >>> original_model.save("./saved_model")
-        >>>
-        >>> # Load model
-        >>> loaded_model = NormBase.load("./saved_model")
-        >>>
-        >>> # Use loaded model
-        >>> predictions = loaded_model.predict(test_data)
-
-        Raises
-        ------
-        FileNotFoundError
-            If required model files are missing
-        JSONDecodeError
-            If model files are corrupted or improperly formatted
-        ValueError
-            If model configuration is invalid or incompatible
-        ImportError
-            If required model classes cannot be imported
-
-        See Also
-        --------
-        save : Method for saving model to disk
-        NormConf : Configuration class for normative models
-        RegressionModel : Base class for regression models
-
-        Notes
-        -----
-        Loaded components:
-        - Model configuration (NormConf)
-        - Response variables list
-        - Regression model type and instances
-        - Input/output scalers
-        - B-spline basis (if used)
-        - Default regression configuration
-
-        The method supports loading:
-        - Different regression model types (BLR, GPR, HBR)
-        - Various preprocessing configurations
-        - Multiple response variables
-        - Custom basis functions
-
-        Compatibility considerations:
-        - Python version compatibility
-        - Package version compatibility
-        - Hardware/platform independence
-        - Backward compatibility with older saved models
-        """
         with open(
             os.path.join(path, "normative_model_dict.json"), mode="r", encoding="utf-8"
         ) as f:
             metadata = json.load(f)
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
-        self.response_vars = metadata["response_vars"]
+
+        self.response_vars = []
+        self.outscalers ={}
+        self.regression_models = {}
+        reg_models_path = os.path.join(path, "reg_model_*.json")
+        for path in glob.glob(reg_models_path):
+            with open(path, mode="r", encoding="utf-8") as f:
+                reg_model_dict = json.load(f)
+                responsevar = reg_model_dict["model"]["name"]
+                self.response_vars.append(responsevar)
+                self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
+                self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
+
+        
         self.regression_model_type = globals()[metadata["regression_model_type"]]
+
         if "bspline_basis" in metadata:
             self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
         self.inscalers = {
             k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }
-        self.outscalers = {
-            k: Scaler.from_dict(v) for k, v in metadata["outscalers"].items()
-        }
-        self.regression_models = {}
-        for responsevar in self.response_vars:
-            model_path = os.path.join(path, f"model_{responsevar}.json")
-            with open(model_path, mode="r", encoding="utf-8") as f:
-                model_dict = json.load(f)
-            self.regression_models[responsevar] = self.regression_model_type.from_dict(
-                model_dict, path
-            )
         self.default_reg_conf = type(
             self.regression_models[self.response_vars[0]].reg_conf
         ).from_dict(metadata["default_reg_conf"])
