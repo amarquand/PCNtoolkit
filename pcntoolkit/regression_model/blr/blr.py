@@ -603,6 +603,7 @@ class BLR(RegressionModel):
 
     def to_dict(self, path: str | None = None) -> dict:
         my_dict = super().to_dict()
+        my_dict["name"] = self.name
         my_dict["hyp"] = self.hyp.tolist()
         my_dict["nlZ"] = self.nlZ
         my_dict["N"] = self.N
@@ -621,9 +622,10 @@ class BLR(RegressionModel):
         Creates a configuration from a dictionary.
         """
         name = my_dict["name"]
-        conf = BLRConf.from_dict(my_dict["reg_conf"])
         is_fitted = my_dict["is_fitted"]
         is_from_dict = True
+        
+        conf = BLRConf.from_dict(my_dict["reg_conf"])
         self = cls(name, conf, is_fitted, is_from_dict)
         self.hyp = np.array(my_dict["hyp"])
         self.nlZ = my_dict["nlZ"]
