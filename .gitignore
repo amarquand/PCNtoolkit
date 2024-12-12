@@ -97,3 +97,12 @@ tests/cli_test/*
 docs/autoapi/*
 docs/_build/*
 docs
+tests/cli_test_parallel_kfold/temp/be_te_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/be_tr_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/fcon1000
+tests/cli_test_parallel_kfold/temp/X_te_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/X_tr_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/X_var_te_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/X_var_tr_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/Y_te_fcon1000.pkl
+tests/cli_test_parallel_kfold/temp/Y_tr_fcon1000.pkl

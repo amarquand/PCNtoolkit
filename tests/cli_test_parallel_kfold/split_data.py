@@ -34,6 +34,10 @@ def main():
     # Standardize the covariates and responses
     cov = StandardScaler().fit_transform(cov.to_numpy()[:,np.newaxis])
     resp = StandardScaler().fit_transform(resp.to_numpy())
+    
+    xmin = cov.min()
+    xmax = cov.max()
+
 
     # Map the batch effects to integers
     be_ids = np.unique(be, return_inverse=True)[1]
@@ -44,16 +48,24 @@ def main():
     # Create the design matrices
     mean_basis = 'linear'
     var_basis = 'linear'
-    Phi_tr = create_design_matrix(cov[train_idx], basis=mean_basis, intercept=False, site_ids=be_ids[train_idx])
-    Phi_var_tr = create_design_matrix(cov[train_idx], basis=var_basis)
-    Phi_te = create_design_matrix(cov[test_idx], basis=mean_basis, intercept=False, site_ids=be_ids[test_idx])
-    Phi_var_te = create_design_matrix(cov[test_idx], basis=var_basis)
+    # Phi_tr = create_design_matrix(cov[train_idx], basis=mean_basis, intercept=False, site_ids=be_ids[train_idx])
+    # Phi_var_tr = create_design_matrix(cov[train_idx], basis=var_basis)
+    # Phi_te = create_design_matrix(cov[test_idx], basis=mean_basis, intercept=False, site_ids=be_ids[test_idx])
+    # Phi_var_te = create_design_matrix(cov[test_idx], basis=var_basis)
+
+    Phi_tr = create_design_matrix(cov[train_idx],  basis=mean_basis, intercept=True, xmin=xmin, xmax=xmax)
+    # Phi_var_tr = create_design_matrix(cov[train_idx], basis=var_basis, xmin=xmin, xmax=xmax)
+    Phi_var_tr = cov[train_idx]
+    Phi_te = create_design_matrix(cov[test_idx], basis=mean_basis, intercept=True, xmin=xmin, xmax=xmax)
+    # Phi_var_te = create_design_matrix(cov[test_idx], basis=var_basis, xmin=xmin, xmax=xmax)
+    Phi_var_te = cov[test_idx]
+    print(f"{Phi_var_te.shape=}")
 
     # Save everything
     pd.to_pickle(pd.DataFrame(Phi_tr), os.path.join(args.output_dir, f'X_tr_{infile}.pkl'))
-    pd.to_pickle(pd.DataFrame(Phi_var_tr), os.path.join(args.output_dir, f'X_var_tr_{infile}.pkl'))
+    pd.to_pickle(Phi_var_tr, os.path.join(args.output_dir, f'X_var_tr_{infile}.pkl'))
     pd.to_pickle(pd.DataFrame(Phi_te), os.path.join(args.output_dir, f'X_te_{infile}.pkl'))
-    pd.to_pickle(pd.DataFrame(Phi_var_te), os.path.join(args.output_dir, f'X_var_te_{infile}.pkl'))
+    pd.to_pickle(Phi_var_te, os.path.join(args.output_dir, f'X_var_te_{infile}.pkl'))
     pd.to_pickle(pd.DataFrame(resp[train_idx]), os.path.join(args.output_dir, f'Y_tr_{infile}.pkl'))
     pd.to_pickle(pd.DataFrame(resp[test_idx]), os.path.join(args.output_dir, f'Y_te_{infile}.pkl'))
     pd.to_pickle(be[train_idx], os.path.join(args.output_dir, f'be_tr_{infile}.pkl'))
