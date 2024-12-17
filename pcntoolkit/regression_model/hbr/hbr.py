@@ -165,7 +165,7 @@ class HBR(RegressionModel):
             )
         self.is_fitted = True
 
-    def predict(self, hbrdata: HBRData) -> None:
+    def predict(self, hbrdata: HBRData, extend_inferencedata: bool = True) -> az.InferenceData | dict[str, np.ndarray[Any, Any] ] :
         """
         Generate predictions for new data.
 
@@ -182,14 +182,16 @@ class HBR(RegressionModel):
         if not self.pymc_model:
             self.compile_model(hbrdata)
         hbrdata.set_data_in_existing_model(self.pymc_model)
-        if hasattr(self.idata, "posterior_predictive"):
-            del self.idata.posterior_predictive
+        if extend_inferencedata and hasattr(self.idata, "predictions"):
+            del self.idata.predictions
         with self.pymc_model:
-            pm.sample_posterior_predictive(
+            idata = pm.sample_posterior_predictive(
                 self.idata,
-                extend_inferencedata=True,
+                extend_inferencedata=extend_inferencedata,
                 var_names=self.get_var_names() + ["y_pred"],
+                predictions=True,
             )
+        return idata
 
     def fit_predict(self, fit_hbrdata: HBRData, predict_hbrdata: HBRData) -> None:
         """
@@ -225,6 +227,7 @@ class HBR(RegressionModel):
                 self.idata,
                 extend_inferencedata=True,
                 var_names=self.get_var_names() + ["y_pred"],
+                predictions=True,
             )
 
     def transfer(self, hbrconf: HBRConf, transferdata: HBRData, freedom: float) -> HBR:
@@ -280,12 +283,10 @@ class HBR(RegressionModel):
             Calculated centile values
         """
         var_names = self.get_var_names()
-
-        if resample:
-            self.predict(hbrdata)
+        centiles_idata = self.predict(hbrdata, extend_inferencedata=False)
         post_pred = az.extract(
-            self.idata,
-            "posterior_predictive",
+            centiles_idata,
+            "predictions",
             var_names=var_names,
         )
         array_of_vars = [self.likelihood] + list(
@@ -325,21 +326,11 @@ class HBR(RegressionModel):
             Calculated z-scores
         """
         var_names = self.get_var_names()
-        if resample:
-            if self.pymc_model is None:
-                self.compile_model(hbrdata)
-            hbrdata.set_data_in_existing_model(self.pymc_model)
-            if hasattr(self.idata, "posterior_predictive"):
-                del self.idata.posterior_predictive
-            with self.pymc_model:  # type: ignore
-                pm.sample_posterior_predictive(
-                    self.idata,
-                    extend_inferencedata=True,
-                    var_names=var_names + ["y_pred"],
-                )
+
+        zscores_idata = self.predict(hbrdata, extend_inferencedata=False)
         post_pred = az.extract(
-            self.idata,
-            "posterior_predictive",
+            zscores_idata,
+            "predictions",
             var_names=var_names,
         )
         array_of_vars = [self.likelihood] + list(
@@ -595,7 +586,7 @@ class HBR(RegressionModel):
         """
         my_dict = super().to_dict()
         if self.is_fitted and (path is not None):
-            idata_path = os.path.join(path, f"idata_{self.name}.nc")
+            idata_path = os.path.join(path, "idata.nc")
             self.save_idata(idata_path)
         return my_dict
 
@@ -622,7 +613,7 @@ class HBR(RegressionModel):
         is_from_dict = True
         self = cls(name, conf, is_fitted, is_from_dict)
         if is_fitted and (path is not None):
-            idata_path = os.path.join(path, f"idata_{name}.nc")
+            idata_path = os.path.join(path, "idata.nc")
             self.load_idata(idata_path)
         return self
 
@@ -669,7 +660,7 @@ class HBR(RegressionModel):
         """
         if self.is_fitted:
             if hasattr(self, "idata"):
-                self.remove_samples_from_idata_posterior()
+                # self.remove_samples_from_idata_posterior()
                 self.idata.to_netcdf(path, groups=["posterior"])
             else:
                 raise RuntimeError(
@@ -699,7 +690,7 @@ class HBR(RegressionModel):
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
                 raise RuntimeError(f"Could not load idata from {path}.") from exc
-            self.replace_samples_in_idata_posterior()
+            # self.replace_samples_in_idata_posterior()
 
     def remove_samples_from_idata_posterior(self) -> None:
         """
