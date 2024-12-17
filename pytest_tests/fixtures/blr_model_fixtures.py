@@ -21,11 +21,8 @@ def savemodel():
 @pytest.fixture
 def norm_conf_for_blr_test_model(cvfolds, savemodel, save_dir, log_dir):
     return NormConf(
-        perform_cv=False,
-        cv_folds=cvfolds,
         savemodel=savemodel,
         save_dir=save_dir + "/blr",
-        log_dir=log_dir + "/blr",
         basis_function="none",
         inscaler="standardize",
         outscaler="standardize",

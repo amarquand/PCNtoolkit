@@ -1,9 +1,14 @@
 import os
-from turtle import pd
+from tempfile import gettempdir
+
 import numpy as np
 import pytest
-from tempfile import gettempdir
-from pytest_tests.fixtures.data_fixtures import *
+
+from pytest_tests.fixtures.data_fixtures import (
+    generate_batch_effects,
+    generate_covariates,
+    generate_response_vars,
+)
 
 """This file contains pytest fixtures for file paths in the PCNtoolkit.
 

@@ -1,11 +1,14 @@
 import pytest
 
 from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_blr import NormBLR
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_factory import (
     create_normative_model,
 )
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.regression_model.blr.blr import BLR
+from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 
 # from pcntoolkit.regression_model.gpr.gpr import GPR
 # from pcntoolkit.regression_model.gpr.gpr_conf import GPRConf
@@ -23,12 +26,12 @@ The tests cover the following aspects:
 
 
 @pytest.mark.parametrize(
-    "norm_subclass, reg_conf, reg_model", [(NormHBR, HBRConf, HBR)]
+    "norm_subclass, reg_conf, reg_model", [(NormHBR, HBRConf, HBR), (NormBLR, BLRConf, BLR)]
 )
 def test_create_normative_model(
-    norm_subclass: NormBase,
+    norm_subclass: type[NormBase],
     norm_conf_for_generic_model: NormConf,
-    reg_conf: RegConf,
+    reg_conf: type[RegConf],
     reg_model,
 ):
     norm_model: NormBase = create_normative_model(

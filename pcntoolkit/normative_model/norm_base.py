@@ -69,6 +69,7 @@ pcntoolkit.dataio : Package for data input/output operations
 
 from __future__ import annotations
 
+import copy
 import glob
 import json
 import os
@@ -81,6 +82,7 @@ import xarray as xr
 from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.dataio.scaler import Scaler
+from pcntoolkit.plotting.plotter import plot_centiles, plot_qq
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
@@ -90,8 +92,6 @@ from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
-
-from pcntoolkit.plotting.plotter import plot_centiles, plot_qq
 
 from .norm_conf import NormConf
 
@@ -334,6 +334,8 @@ class NormBase(ABC):
             self._predict(resp_predict_data)
             self.reset()
         self.evaluate(data)
+        if self.norm_conf.saveresults:
+            self.save_results(data)
         return data
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
@@ -531,7 +533,6 @@ class NormBase(ABC):
 
         transfered_norm_conf_dict = self.norm_conf.to_dict()
         transfered_norm_conf_dict["save_dir"] = self.norm_conf.save_dir + "_transfer"
-        transfered_norm_conf_dict["log_dir"] = self.norm_conf.log_dir + "_transfer"
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
 
         # pylint: disable=too-many-function-args
@@ -539,14 +540,30 @@ class NormBase(ABC):
             transfered_norm_conf,
             self.default_reg_conf,  # type: ignore
         )
-
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_normative_model.regression_models = transfered_models
+        self.transfer_basis_expansion(transfered_normative_model)
+        self.transfer_scalers(transfered_normative_model)
         if transfered_normative_model.norm_conf.savemodel:
             transfered_normative_model.save()
         return transfered_normative_model
+    
+    def transfer_basis_expansion(self, transfered_normative_model: "NormBase") -> None:
+        """
+        Transfers the basis expansion from the original model to the transferred model.
+        """
+        if hasattr(self, "bspline_basis"):
+            transfered_normative_model.bspline_basis = copy.deepcopy(self.bspline_basis)
+
+    def transfer_scalers(self, transfered_normative_model: "NormBase") -> None:
+        """
+        Transfers the scalers from the original model to the transferred model.
+        """
+        transfered_normative_model.inscalers = copy.deepcopy(self.inscalers)
+        transfered_normative_model.outscalers = copy.deepcopy(self.outscalers)
+
 
     def extend(self, data: NormData) -> None:
         """Extends the normative model with new data.
@@ -1234,8 +1251,9 @@ class NormBase(ABC):
         os.makedirs(self.norm_conf.save_dir, exist_ok=True)
         print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
 
+        model_save_path = os.path.join(self.norm_conf.save_dir, "model")
         with open(
-            os.path.join(self.norm_conf.save_dir, "model","normative_model_dict.json"),
+            os.path.join(model_save_path,"normative_model.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
@@ -1243,10 +1261,49 @@ class NormBase(ABC):
 
         for responsevar, model in self.regression_models.items():
             reg_model_dict = {}
-            reg_model_dict["model"] = model.to_dict()
+            reg_model_save_path = os.path.join(model_save_path, f"{responsevar}")
+            os.makedirs(reg_model_save_path, exist_ok=True)
+            reg_model_dict["model"] = model.to_dict(reg_model_save_path)
             reg_model_dict['outscaler'] = self.outscalers[responsevar].to_dict()
-            with open(os.path.join(self.norm_conf.save_dir, "model",f"reg_model_{responsevar}.json"), "w", encoding="utf-8") as f:
+            with open(os.path.join(reg_model_save_path,"regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
+
+        
+
+    @classmethod
+    def load(cls, path: str) -> NormBase:
+        model_path = os.path.join(path, "model", "normative_model.json")   
+        with open(model_path, mode="r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+        self = cls(NormConf.from_dict(metadata["norm_conf"]))
+
+        self.response_vars = []
+        self.outscalers ={}
+        self.regression_models = {}
+        reg_models_path = os.path.join(path, "model","*")
+        for path in glob.glob(reg_models_path):
+            if os.path.isdir(path):
+                with open(os.path.join(path,"regression_model.json"), mode="r", encoding="utf-8") as f:
+                    reg_model_dict = json.load(f)
+                    responsevar = reg_model_dict["model"]["name"]
+                    self.response_vars.append(responsevar)
+                    self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
+                    self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
+
+        
+        self.regression_model_type = globals()[metadata["regression_model_type"]]
+
+        if "bspline_basis" in metadata:
+            self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
+        self.inscalers = {
+            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
+        }
+        self.default_reg_conf = type(
+            self.regression_models[self.response_vars[0]].reg_conf
+        ).from_dict(metadata["default_reg_conf"])
+        return self
+
 
     def save_results(self, data: NormData) -> None:
         # save the zscores and centiles
@@ -1263,41 +1320,7 @@ class NormBase(ABC):
         os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
         plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"), show_data=True)
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
-        
 
-    @classmethod
-    def load(cls, path: str) -> NormBase:
-        with open(
-            os.path.join(path, "model", "normative_model_dict.json"), mode="r", encoding="utf-8"
-        ) as f:
-            metadata = json.load(f)
-
-        self = cls(NormConf.from_dict(metadata["norm_conf"]))
-
-        self.response_vars = []
-        self.outscalers ={}
-        self.regression_models = {}
-        reg_models_path = os.path.join(path, "model","reg_model_*.json")
-        for path in glob.glob(reg_models_path):
-            with open(path, mode="r", encoding="utf-8") as f:
-                reg_model_dict = json.load(f)
-                responsevar = reg_model_dict["model"]["name"]
-                self.response_vars.append(responsevar)
-                self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
-                self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
-
-        
-        self.regression_model_type = globals()[metadata["regression_model_type"]]
-
-        if "bspline_basis" in metadata:
-            self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
-        self.inscalers = {
-            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
-        }
-        self.default_reg_conf = type(
-            self.regression_models[self.response_vars[0]].reg_conf
-        ).from_dict(metadata["default_reg_conf"])
-        return self
 
     def focus(self, responsevar: str) -> None:
         """

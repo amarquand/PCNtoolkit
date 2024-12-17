@@ -124,14 +124,14 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     fitted_norm_hbr_model.save()
     for i in fitted_norm_hbr_model.response_vars:
         assert os.path.exists(
-            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"idata_{i}.nc")
+            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "idata.nc")
         )
         assert os.path.exists(
-            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, f"model_{i}.json")
+            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "regression_model.json")
         )
     assert os.path.exists(
         os.path.join(
-            fitted_norm_hbr_model.norm_conf.save_dir, "normative_model_dict.json"
+            fitted_norm_hbr_model.norm_conf.save_dir, "model", "normative_model.json"
         )
     )
 
@@ -147,9 +147,9 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
 
     # remove the files
     for i in hbr.response_vars:
-        os.remove(os.path.join(load_path, f"idata_{i}.nc"))
-        os.remove(os.path.join(load_path, f"model_{i}.json"))
-    os.remove(os.path.join(load_path, "normative_model_dict.json"))
+        os.remove(os.path.join(load_path, "model", f"{i}", "idata.nc"))
+        os.remove(os.path.join(load_path, "model", f"{i}", "regression_model.json"))
+    os.remove(os.path.join(load_path, "model", "normative_model.json"))
 
     # Assert the following throws an error
     with pytest.raises(FileNotFoundError):
@@ -164,7 +164,7 @@ def test_predict(
     fitted_norm_hbr_model.predict(test_norm_data_from_arrays)
     for model in fitted_norm_hbr_model.regression_models.values():
         assert model.is_fitted
-        assert model.idata.posterior_predictive.y_pred.datapoints.shape == (
+        assert model.idata.predictions.y_pred.datapoints.shape == (
             n_test_datapoints,
         )
 
@@ -178,7 +178,7 @@ def test_fit_predict(
     new_norm_hbr_model.fit_predict(norm_data_from_arrays, test_norm_data_from_arrays)
     for model in new_norm_hbr_model.regression_models.values():
         assert model.is_fitted
-        assert model.idata.posterior_predictive.y_pred.datapoints.shape == (
+        assert model.idata.predictions.y_pred.datapoints.shape == (
             n_test_datapoints,
         )
 
@@ -188,7 +188,7 @@ def test_transfer(
     transfer_norm_data_from_arrays: NormData,
     n_mcmc_samples,
 ):
-    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays)
+    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10)
     for model in hbr_transfered.regression_models.values():
         assert model.pymc_model.coords["batch_effect_1"] == (3,)
         assert model.is_fitted

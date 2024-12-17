@@ -17,10 +17,7 @@ def test_norm_conf_to_dict():
         {
             "savemodel": True,
             "saveresults": True,
-            "log_dir": "wow",
             "save_dir": "wow",
-            "perform_cv": False,
-            "cv_folds": 4,
             "basis_function": "polynomial",
             "basis_column": 10,
             "order": 3,
@@ -34,10 +31,7 @@ def test_norm_conf_to_dict():
     assert norm_conf_from_args.to_dict() == {
         "savemodel": True,
         "saveresults": True,
-        "log_dir": "wow",
         "save_dir": "wow",
-        "perform_cv": False,
-        "cv_folds": 4,
         "basis_function": "polynomial",
         "basis_column": 10,
         "order": 3,
@@ -50,10 +44,7 @@ def test_norm_conf_to_dict():
     norm_conf = NormConf(
         savemodel=True,
         saveresults=True,
-        log_dir="wow",
         save_dir="wow",
-        perform_cv=False,
-        cv_folds=4,
         basis_function="polynomial",
         basis_column=10,
         order=3,
@@ -66,10 +57,7 @@ def test_norm_conf_to_dict():
     assert norm_conf.to_dict() == {
         "savemodel": True,
         "saveresults": True,
-        "log_dir": "wow",
         "save_dir": "wow",
-        "perform_cv": False,
-        "cv_folds": 4,
         "basis_function": "polynomial",
         "basis_column": 10,
         "order": 3,

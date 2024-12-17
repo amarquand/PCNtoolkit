@@ -1,14 +1,13 @@
 import pytest
 
+from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
-from pytest_tests.fixtures.path_fixtures import *
 from pytest_tests.fixtures.data_fixtures import *
-
+from pytest_tests.fixtures.path_fixtures import *
 
 """
 This file contains pytest fixtures used for model generation and testing in the PCNtoolkit.
@@ -65,12 +64,11 @@ def norm_conf_dict_for_generic_model(log_dir, save_dir):
 
 @pytest.fixture
 def norm_conf_for_generic_model(log_dir, save_dir):
-    return NormConf(log_dir=log_dir, save_dir=save_dir)
+    return NormConf(save_dir=save_dir)
 
 
 @pytest.fixture
 def norm_conf_dict_for_hbr_test_model(
-    cvfolds,
     alg,
     responsefile,
     maskfile,
@@ -81,13 +79,11 @@ def norm_conf_dict_for_hbr_test_model(
     trbefile,
     tsbefile,
     save_dir,
-    log_dir,
 ):
     return {
         "responses": responsefile,
         "maskfile": maskfile,
         "covfile": covfile,
-        "cvfolds": cvfolds,
         "testcov": testcov,
         "testresp": testresp,
         "alg": alg,
@@ -95,14 +91,12 @@ def norm_conf_dict_for_hbr_test_model(
         "trbefile": trbefile,
         "tsbefile": tsbefile,
         "save_dir": save_dir + "/hbr",
-        "log_dir": log_dir + "/hbr",
     }
 
 
 @pytest.fixture
 def hbr_conf_dict(
     save_dir,
-    log_dir,
     responsefile,
     maskfile,
     covfile,
@@ -115,7 +109,6 @@ def hbr_conf_dict(
         "responses": responsefile,
         "maskfile": maskfile,
         "covfile": covfile,
-        "cvfolds": None,
         "testcov": testcov,
         "testresp": testresp,
         "alg": "hbr",
@@ -123,7 +116,6 @@ def hbr_conf_dict(
         "trbefile": trbefile,
         "tsbefile": tsbefile,
         "save_dir": save_dir + "/hbr",
-        "log_dir": log_dir + "/hbr",
         "basis_function": "bspline",
         "linear_mu": True,
         "linear_sigma": True,
@@ -136,13 +128,10 @@ def hbr_conf_dict(
 
 
 @pytest.fixture
-def norm_conf_for_hbr_test_model(cvfolds, savemodel, save_dir, log_dir):
+def norm_conf_for_hbr_test_model( savemodel, save_dir):
     return NormConf(
-        perform_cv=False,
-        cv_folds=cvfolds,
         savemodel=savemodel,
         save_dir=save_dir + "/hbr",
-        log_dir=log_dir + "/hbr",
         basis_function="bspline",
         order=3,
         nknots=10,
@@ -186,8 +175,8 @@ def hbrconf(mu, sigma, n_mcmc_samples):
 
 
 @pytest.fixture
-def hbr(hbrconf):
-    return HBR(hbrconf)
+def hbr(hbrconf: HBRConf):
+    return HBR("test_hbr", reg_conf=hbrconf)
 
 
 @pytest.fixture

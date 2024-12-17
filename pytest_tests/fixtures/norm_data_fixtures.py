@@ -1,7 +1,7 @@
 import pytest
 
-from pytest_tests.fixtures.data_fixtures import *
 from pcntoolkit.dataio.norm_data import NormData
+from pytest_tests.fixtures.data_fixtures import *
 
 """
 This file contains pytest fixtures for generating NormData objects in the PCNtoolkit.
