@@ -313,6 +313,7 @@ def _plot_centiles(
         plt.savefig(os.path.join(save_dir, f"centiles_{response_var}.png"))
     else:
         plt.show()
+    plt.close()
 
 def plot_qq(
     data: NormData,
@@ -474,3 +475,4 @@ def _plot_qq(
         plt.savefig(os.path.join(save_dir, f"qq_{response_var}.png"))
     else:
         plt.show()
+    plt.close()

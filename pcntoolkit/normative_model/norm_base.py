@@ -1257,11 +1257,11 @@ class NormBase(ABC):
         cdf = data.centiles.to_dataframe().unstack(level="response_vars")
         cdf.columns=cdf.columns.droplevel(0)
         cdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "centiles.csv"))
-        mdf = data.measures.to_dataframe().unstack(level="statistics")
+        mdf = data.measures.to_dataframe().unstack(level="response_vars")
         mdf.columns=mdf.columns.droplevel(0)
         mdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "measures.csv"))
         os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
-        plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
+        plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"), show_data=True)
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
         
 
