@@ -44,12 +44,12 @@ def savemodel():
 
 @pytest.fixture
 def n_mcmc_samples():
-    return 10
+    return 1500
 
 
 @pytest.fixture
 def sample_args():
-    return {"draws": 10, "tune": 10, "cores": 1}
+    return {"draws": 1500, "tune": 500, "cores": 1}
 
 
 @pytest.fixture
@@ -133,8 +133,7 @@ def norm_conf_for_hbr_test_model( savemodel, save_dir):
         savemodel=savemodel,
         save_dir=save_dir + "/hbr",
         basis_function="bspline",
-        order=3,
-        nknots=10,
+        basis_function_kwargs={"order": 3, "nknots": 10},
         inscaler="standardize",
         outscaler="standardize",
         saveresults=True,
@@ -171,6 +170,7 @@ def hbrconf(mu, sigma, n_mcmc_samples):
         likelihood="Normal",
         mu=mu,
         sigma=sigma,
+        nuts_sampler="nutpie"
     )
 
 
