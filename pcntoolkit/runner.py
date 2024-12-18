@@ -71,6 +71,9 @@ class Runner:
             raise ValueError(
                 "If cross-validation is enabled, cv_folds must be greater than 1"
             )
+        if not self.cross_validate and self.cv_folds > 1:
+            warnings.warn("cv_folds is greater than 1, but cross-validation is disabled. This is likely unintended.")
+
         if not self.normative_model.norm_conf.savemodel:
             warnings.warn("Model saving is disabled. Results will not be saved.")
 
