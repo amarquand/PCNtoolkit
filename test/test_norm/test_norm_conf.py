@@ -10,6 +10,8 @@ The tests cover the following aspects:
 3. Creating NormConf objects from dictionaries
 """
 
+import os
+
 
 def test_norm_conf_to_dict():
 
@@ -62,3 +64,5 @@ def test_norm_conf_to_dict():
     norm_conf2 = NormConf.from_dict(norm_conf.to_dict())
 
     assert norm_conf2.to_dict() == norm_conf.to_dict()
+
+    os.rmdir("wow")

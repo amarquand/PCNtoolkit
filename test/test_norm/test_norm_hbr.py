@@ -6,10 +6,10 @@ from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.util.plotter import plot_centiles
-from pytest_tests.fixtures.data_fixtures import *
-from pytest_tests.fixtures.hbr_model_fixtures import *
-from pytest_tests.fixtures.norm_data_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
+from test.fixtures.data_fixtures import *
+from test.fixtures.hbr_model_fixtures import *
+from test.fixtures.norm_data_fixtures import *
+from test.fixtures.path_fixtures import *
 
 """
 This file contains tests for the NormHBR class in the PCNtoolkit.

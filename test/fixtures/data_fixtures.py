@@ -45,11 +45,20 @@ def batch_effect_values():
 
 
 def generate_covariates(n_datapoints, n_covariates):
-    return np.random.randn(n_datapoints, n_covariates)
+    return np.random.rand(n_datapoints, n_covariates)
 
 
-def generate_response_vars(n_datapoints, n_response_vars):
-    return np.random.randn(n_datapoints, n_response_vars)
+def generate_response_vars(n_datapoints, n_response_vars, X, seed=42):
+    out = np.random.randn(n_datapoints, n_response_vars)
+
+    noise_coef = np.array([2.3, 1.5])
+    slope_coefs = np.array([[1, 0.5, 0.3], [1, 0.5, 0.3]])
+    for i in range(n_response_vars):
+        out[:, i] = out[:, i] * noise_coef[i] * X[:, 0]
+
+    for i in range(n_response_vars):
+        out[:, i] = out[:, i] + slope_coefs[i, 0] + X[:, 0] * slope_coefs[i, 1] + 0.3*X[:, 0]**2 * slope_coefs[i, 2]
+    return out
 
 
 def generate_batch_effects(n_datapoints, batch_effect_values):
@@ -62,7 +71,7 @@ def generate_batch_effects(n_datapoints, batch_effect_values):
 def np_arrays(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
     np.random.seed(42)
     X = generate_covariates(n_datapoints, n_covariates)
-    y = generate_response_vars(n_datapoints, n_response_vars)
+    y = generate_response_vars(n_datapoints, n_response_vars, X)
     batch_effects = generate_batch_effects(n_datapoints, batch_effect_values)
     return X, y, batch_effects
 

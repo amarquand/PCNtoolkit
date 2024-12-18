@@ -1,7 +1,7 @@
 import pytest
 
 from pcntoolkit.util.basis_function import create_basis_function
-from pytest_tests.fixtures.norm_data_fixtures import *
+from test.fixtures.norm_data_fixtures import *
 
 
 @pytest.mark.parametrize("basis_function_name, basis_function_class", [("polynomial", "PolynomialBasisFunction"), ("bspline", "BsplineBasisFunction"), ("linear", "LinearBasisFunction")])

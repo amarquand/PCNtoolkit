@@ -3,18 +3,16 @@ from __future__ import annotations
 import json
 import logging
 
-import arviz as az
 import numpy as np
 import pymc as pm
 import pytest
 import xarray as xr
 
-
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import Param
-from pytest_tests.fixtures.data_fixtures import *
-from pytest_tests.fixtures.norm_data_fixtures import *
+from test.fixtures.data_fixtures import *
+from test.fixtures.norm_data_fixtures import *
 
 logging.basicConfig(level=logging.INFO)
 

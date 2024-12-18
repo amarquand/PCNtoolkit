@@ -608,10 +608,8 @@ class BLR(RegressionModel):
         my_dict["nlZ"] = self.nlZ
         my_dict["N"] = self.N
         my_dict["D"] = self.D
-        my_dict["lambda_n_vec"] = self.lambda_n_vec.tolist()
         my_dict["Sigma_a"] = self.Sigma_a.tolist()
         my_dict["Lambda_a"] = self.Lambda_a.tolist()
-        my_dict["beta"] = self.beta.tolist()
         my_dict["m"] = self.m.tolist()
         my_dict["A"] = self.A.tolist()
         return my_dict
@@ -631,10 +629,8 @@ class BLR(RegressionModel):
         self.nlZ = my_dict["nlZ"]
         self.N = my_dict["N"]
         self.D = my_dict["D"]
-        self.lambda_n_vec = np.array(my_dict["lambda_n_vec"])
         self.Sigma_a = np.array(my_dict["Sigma_a"])
         self.Lambda_a = np.array(my_dict["Lambda_a"])
-        self.beta = np.array(my_dict["beta"])
         self.m = np.array(my_dict["m"])
         self.A = np.array(my_dict["A"])
         return self

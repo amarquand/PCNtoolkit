@@ -4,9 +4,9 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.regression_model.blr.blr import BLR
 from pcntoolkit.regression_model.blr.blr_conf import BLRConf
-from pytest_tests.fixtures.blr_model_fixtures import *
-from pytest_tests.fixtures.norm_data_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
+from test.fixtures.blr_model_fixtures import *
+from test.fixtures.norm_data_fixtures import *
+from test.fixtures.path_fixtures import *
 
 
 @pytest.mark.parametrize("n_iter,tol,ard", [(100, 1e-3, False), (1, 1e-6, True)])

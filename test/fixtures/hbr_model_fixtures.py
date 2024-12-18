@@ -6,8 +6,8 @@ from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.param import Param
-from pytest_tests.fixtures.data_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
+from test.fixtures.data_fixtures import *
+from test.fixtures.path_fixtures import *
 
 """
 This file contains pytest fixtures used for model generation and testing in the PCNtoolkit.
@@ -17,8 +17,8 @@ The fixtures defined here include:
 2. MCMC sampling parameters (n_mcmc_samples, sample_args)
 3. Normative model configuration (norm_args, norm_conf_dict_for_generic_model, norm_conf_for_generic_model)
 4. Specific configuration for HBR (Hierarchical Bayesian Regression) models
-5. File paths for various resources (imported from pytest_tests.fixtures.paths)
-6. Data-related fixtures (imported from pytest_tests.fixtures.data)
+5. File paths for various resources (imported from test.fixtures.paths)
+6. Data-related fixtures (imported from test.fixtures.data)
 
 These fixtures are used to set up consistent testing environments and configurations
 across different test files in the PCNtoolkit testing suite. They provide reusable
