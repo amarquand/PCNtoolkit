@@ -41,7 +41,9 @@ def blrconf():
                    l_bfgs_b_norm="l1",
                    heteroskedastic=True,
                    intercept=True,
-                   random_intercept=True)
+                   random_intercept=True,
+                   warp="WarpSinhArcsinh",
+                   warp_reparam=True)
 
 @pytest.fixture
 def blr(blrconf):

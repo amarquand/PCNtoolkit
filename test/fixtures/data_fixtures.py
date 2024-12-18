@@ -58,7 +58,7 @@ def generate_response_vars(n_datapoints, n_response_vars, X, seed=42):
 
     for i in range(n_response_vars):
         out[:, i] = out[:, i] + slope_coefs[i, 0] + X[:, 0] * slope_coefs[i, 1] + 0.3*X[:, 0]**2 * slope_coefs[i, 2]
-    return out
+    return np.square(out)
 
 
 def generate_batch_effects(n_datapoints, batch_effect_values):
