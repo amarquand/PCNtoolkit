@@ -107,7 +107,8 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path = kwargs.get('testrespfile_path', None)
-    outputsuffix = kwargs.get('outputsuffix', '_estimate')
+    outputsuffix = kwargs.get('outputsuffix', 'estimate')
+    outputsuffix = "_" + outputsuffix.replace("_", "")
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
     binary = kwargs.pop('binary', False)
@@ -473,7 +474,7 @@ def collect_nm(processing_dir,
                collect=False,
                binary=False,
                batch_size=None,
-               outputsuffix='_estimate'):
+               outputsuffix='estimate'):
     '''Function to checks and collects all batches.
 
     Basic usage::
@@ -493,6 +494,8 @@ def collect_nm(processing_dir,
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
     '''
 
+    outputsuffix = "_" + outputsuffix.replace("_", "")
+    
     if binary:
         file_extentions = '.pkl'
     else:
