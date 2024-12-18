@@ -69,10 +69,9 @@ class NormBLR(NormBase):
         blrdata = self.normdata_to_blrdata(data)
         self.focused_model.predict(blrdata)  # type: ignore
 
-    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
-        raise NotImplementedError(
-            f"Fit-predict method not implemented for {self.__class__.__name__}"
-        )
+    def _fit_predict(self, fit_data: NormData, predict_data:NormData) -> None:
+        self._fit(fit_data)
+        self._predict(predict_data)
 
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
         raise NotImplementedError(
@@ -210,6 +209,8 @@ class NormBLR(NormBase):
                 intercept=reg_conf.intercept_var,
                 random_intercept=reg_conf.random_intercept_var,
             )
+        else:
+            this_var_X = None
 
         if hasattr(data, "scaled_y") and data.scaled_y is not None:
             this_y = data.scaled_y.to_numpy()

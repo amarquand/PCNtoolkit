@@ -69,6 +69,8 @@ pcntoolkit.dataio : Package for data input/output operations
 
 from __future__ import annotations
 
+import copy
+import glob
 import json
 import os
 from abc import ABC, abstractmethod
@@ -77,9 +79,7 @@ from typing import Any, List, Optional
 import numpy as np
 import xarray as xr
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.dataio.scaler import Scaler
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
@@ -88,7 +88,10 @@ from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.basis_function import BasisFunction, create_basis_function
 from pcntoolkit.util.evaluator import Evaluator
+from pcntoolkit.util.plotter import plot_centiles, plot_qq
+from pcntoolkit.util.scaler import Scaler
 
 from .norm_conf import NormConf
 
@@ -170,35 +173,6 @@ class NormBase(ABC):
     is defined in the base class, but specific implementations are delegated to
     subclasses through abstract methods.
 
-    Abstract Methods
-    ---------------
-    _fit(data: NormData) -> NormData
-        Internal fitting implementation.
-
-    _predict(data: NormData) -> NormData
-        Internal prediction implementation.
-
-    _fit_predict(fit_data: NormData, predict_data: NormData) -> NormData
-        Internal fit-predict implementation.
-
-    _transfer(data: NormData, **kwargs: Any) -> RegressionModel
-        Internal transfer learning implementation.
-
-    _extend(data: NormData) -> NormBase
-        Internal model extension implementation.
-
-    _tune(data: NormData) -> NormBase
-        Internal parameter tuning implementation.
-
-    _merge(other: NormBase) -> NormBase
-        Internal model merging implementation.
-
-    _centiles(data: NormData, centiles: np.ndarray) -> xr.DataArray
-        Internal centile computation implementation.
-
-    _zscores(data: NormData) -> xr.DataArray
-        Internal z-score computation implementation.
-
     Examples
     --------
     Example of implementing a concrete normative model:
@@ -247,7 +221,8 @@ class NormBase(ABC):
         self.evaluator = Evaluator()
         self.inscalers: dict = {}
         self.outscalers: dict = {}
-        self.bspline_basis: Any = None
+        self.basis_function: BasisFunction
+        self.basis_column:Optional[int] = None
 
     def fit(self, data: NormData) -> None:
         """
@@ -293,13 +268,15 @@ class NormBase(ABC):
         """
         self.preprocess(data)
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
-        print(f"Going to fit {len(self.response_vars)} models")
+        print(f"{os.getpid()} - Going to fit {len(self.response_vars)} models\n")
         for responsevar in self.response_vars:
             resp_fit_data = data.sel(response_vars=responsevar)
             self.focus(responsevar)
-            print(f"Fitting model for {responsevar}")
+            print(f"{os.getpid()} - Fitting model for {responsevar}\n")
             self._fit(resp_fit_data)
             self.reset()
+        if self.norm_conf.savemodel:
+            self.save()
 
     def predict(self, data: NormData) -> NormData:
         """
@@ -358,6 +335,8 @@ class NormBase(ABC):
             self._predict(resp_predict_data)
             self.reset()
         self.evaluate(data)
+        if self.norm_conf.saveresults:
+            self.save_results(data)
         return data
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
@@ -371,13 +350,11 @@ class NormBase(ABC):
         Parameters
         ----------
         fit_data : NormData
-            Training data containing covariates (X) and response variables (y)
-            for model fitting. Must be a valid NormData object with dimensions:
-            - X: (n_train_samples, n_covariates)
-            - y: (n_train_samples, n_response_vars)
+            Training data containing covariates and response variables
+            for model fitting.
 
         predict_data : NormData
-            Test data containing covariates (X) for prediction. Must have the same
+            Test data containing covariates for prediction. Must have the same
             covariate structure as fit_data with dimensions:
             - X: (n_test_samples, n_covariates)
 
@@ -394,7 +371,6 @@ class NormBase(ABC):
         Notes
         -----
         - Performs compatibility check between fit_data and predict_data
-        - More memory efficient than separate fit() and predict() calls
         - Automatically handles preprocessing and postprocessing
         - Computes evaluation metrics after prediction
 
@@ -405,10 +381,9 @@ class NormBase(ABC):
         >>> results = model.fit_predict(train_data, test_data)
         >>>
         >>> # Access predictions
-        >>> predictions = results.yhat
-        >>> variances = results.ys2
         >>> zscores = results.zscores
         >>> centiles = results.centiles
+        >>> measures = results.measures
 
         Raises
         ------
@@ -445,11 +420,13 @@ class NormBase(ABC):
             self.focus(responsevar)
             print(f"Fitting and predicting model for {responsevar}")
             self._fit_predict(resp_fit_data, resp_predict_data)
-
             self.reset()
-
+        if self.norm_conf.savemodel:
+            self.save()
         # Get the results
         self.evaluate(predict_data)
+        if self.norm_conf.saveresults:
+            self.save_results(predict_data) 
         return predict_data
 
     def transfer(self, data: NormData, *args: Any, **kwargs: Any) -> "NormBase":
@@ -557,7 +534,6 @@ class NormBase(ABC):
 
         transfered_norm_conf_dict = self.norm_conf.to_dict()
         transfered_norm_conf_dict["save_dir"] = self.norm_conf.save_dir + "_transfer"
-        transfered_norm_conf_dict["log_dir"] = self.norm_conf.log_dir + "_transfer"
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
 
         # pylint: disable=too-many-function-args
@@ -565,12 +541,31 @@ class NormBase(ABC):
             transfered_norm_conf,
             self.default_reg_conf,  # type: ignore
         )
-
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_normative_model.regression_models = transfered_models
+        self.transfer_basis_function(transfered_normative_model)
+        self.transfer_scalers(transfered_normative_model)
+        if transfered_normative_model.norm_conf.savemodel:
+            transfered_normative_model.save()
         return transfered_normative_model
+    
+    def transfer_basis_function(self, transfered_normative_model: "NormBase") -> None:
+        """
+        Transfers the basis expansion from the original model to the transferred model.
+        """
+        transfered_normative_model.basis_function = copy.deepcopy(self.basis_function)
+        transfered_normative_model.basis_function.compute_max = False
+        transfered_normative_model.basis_function.compute_min = False
+
+    def transfer_scalers(self, transfered_normative_model: "NormBase") -> None:
+        """
+        Transfers the scalers from the original model to the transferred model.
+        """
+        transfered_normative_model.inscalers = copy.deepcopy(self.inscalers)
+        transfered_normative_model.outscalers = copy.deepcopy(self.outscalers)
+
 
     def extend(self, data: NormData) -> None:
         """Extends the normative model with new data.
@@ -972,8 +967,7 @@ class NormBase(ABC):
         """
         self.scale_forward(data)
         # TODO: pass kwargs from config to expand_basis
-        self.expand_basis(data, "scaled_X", True)
-       
+        self.expand_basis(data, "scaled_X")
 
     def postprocess(self, data: NormData) -> None:
         """Apply postprocessing to the data.
@@ -1064,7 +1058,9 @@ class NormBase(ABC):
 
         for responsevar in data.response_vars.to_numpy():
             if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = Scaler.from_string(self.norm_conf.outscaler)
+                self.outscalers[responsevar] = Scaler.from_string(
+                    self.norm_conf.outscaler
+                )
                 self.outscalers[responsevar].fit(
                     data.y.sel(response_vars=responsevar).data
                 )
@@ -1136,10 +1132,7 @@ class NormBase(ABC):
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
-
-    def expand_basis(
-        self, data: NormData, source_array: str, intercept: bool = False
-    ):
+    def expand_basis(self, data: NormData, source_array: str):
         """Expand the basis of a source array using a specified basis function.
 
         Parameters
@@ -1160,304 +1153,104 @@ class NormBase(ABC):
         ValueError
             If the source array does not exist or if required parameters are missing
         """
-
-        # Expand the basis of the source array
-        if source_array == "scaled_X":
-            if "scaled_X" not in data.data_vars:
-                raise ValueError(
-                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
-                )
-            source_array = data.scaled_X
-        elif source_array == "X":
-            source_array = data.X
-
-        # Every basis expansion has a linear component, so we always include the original data
-        all_arrays = [source_array.data]
-
-        # Get the original named dimensions of the data
-        all_dims = list(data.covariates.to_numpy())
-
-        # Create a new array with the expanded basis
-        basis_expansion = self.norm_conf.basis_function
-        basis_column = self.norm_conf.basis_column
-        if basis_expansion == "polynomial":
-            # Expand the basis with polynomial basis functions
-            expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], self.norm_conf.order
-            )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion == "bspline":
-            # Expand the basis with bspline basis functions
-            if self.bspline_basis is None:
-                order = self.norm_conf.order
-                nknots = self.norm_conf.nknots
-                xmin = np.min(source_array.data[:, basis_column])
-                xmax = np.max(source_array.data[:, basis_column])
-                diff = xmax - xmin
-                xmin = xmin - 0.2 * diff
-                xmax = xmax + 0.2 * diff
-                self.bspline_basis = create_bspline_basis(
-                    xmin=xmin,
-                    xmax=xmax,
-                    p=order,
-                    nknots=nknots,
-                )
-            expanded_basis = np.array(
-                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
-            )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion in ["none", "linear"]:
-            # Do not expand the basis
-            pass
-
-        if intercept:
-            all_dims.append("intercept")
-            all_arrays.append(np.ones((source_array.to_numpy().shape[0], 1)))
-
-        Phi = np.concatenate(all_arrays, axis=1)
-        data["Phi"] = xr.DataArray(
-            Phi,
-            coords={"basis_functions": all_dims},
-            dims=["datapoints", "basis_functions"],
-        )
-        pass
-
+        if not hasattr(self, "basis_function"):
+            self.basis_function = create_basis_function(self.norm_conf.basis_function, source_array, **self.norm_conf.basis_function_kwargs)
+        if not self.basis_function.is_fitted:
+            self.basis_function.fit(data)
+        self.basis_function.transform(data)
+       
     def save(self, path: Optional[str] = None) -> None:
-        """
-        Save the normative model to disk.
+        if path is not None:
+            self.norm_conf.set_save_dir(path)
 
-        This method serializes the entire normative model, including configuration,
-        fitted regression models, scalers, and basis functions (if applicable).
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "model"), exist_ok=True)
 
-        Parameters
-        ----------
-        path : str , optional
-            Directory path where the model should be saved. If None, uses the
-            path specified in norm_conf.save_dir. Default is None.
-
-        Returns
-        -------
-        None
-            Saves files to disk but doesn't return any value.
-
-        Notes
-        -----
-        The method saves the following components:
-        1. Metadata JSON file ('normative_model_dict.json') containing:
-            - Normative model configuration
-            - Response variable names
-            - Regression model type
-            - Default regression configuration
-            - B-spline basis parameters (if used)
-            - Input/output scaler configurations
-
-        2. Individual regression model files:
-            - One JSON file per response variable
-            - Named as 'model_{response_var}.json'
-            - Contains model-specific parameters and states
-
-        File Structure
-        -------------
-        save_dir/
-        ├── normative_model_dict.json
-        ├── model_response1.json
-        ├── model_response2.json
-        └── ...
-
-        Examples
-        --------
-        >>> # Save model to default location
-        >>> model.save()
-        >>>
-        >>> # Save model to specific path
-        >>> model.save("/path/to/save/directory")
-
-        See Also
-        --------
-        load : Class method for loading a saved model
-        set_save_dir : Method to change the save directory
-
-        Notes
-        -----
-        - Ensures thread-safety when multiple models save to same directory
-        - Maintains backward compatibility with older saved models
-        - Handles complex nested objects through JSON serialization
-        - Preserves all necessary information for model reconstruction
-
-        Warnings
-        --------
-        - Ensure sufficient disk space before saving large models
-        - Avoid modifying saved files manually to prevent corruption
-        - Consider backup strategies for important models
-        """
-        # TODO save the model in such a format that parallel models with identical save dirs result in a single model
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
-            "response_vars": self.response_vars,
             "regression_model_type": self.regression_model_type.__name__,
             "default_reg_conf": self.default_reg_conf.to_dict(),
+            "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
         }
+
+        # TODO make this cleaner and more general
         if self.norm_conf.basis_function == "bspline" and hasattr(
             self, "bspline_basis"
         ):
-            knots = self.bspline_basis.knot_vector
-            metadata["bspline_basis"] = {
-                "xmin": knots[0],
-                "xmax": knots[-1],
-                "nknots": self.norm_conf.nknots,
-                "p": self.norm_conf.order,
-            }
-        metadata["inscalers"] = {k: v.to_dict() for k, v in self.inscalers.items()}
-        metadata["outscalers"] = {k: v.to_dict() for k, v in self.outscalers.items()}
+            metadata["basis_function"] = copy.deepcopy(self.basis_function)
 
-        if path is not None:
-            self.norm_conf.set_save_dir(path)
+        os.makedirs(self.norm_conf.save_dir, exist_ok=True)
+        print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
+
+        model_save_path = os.path.join(self.norm_conf.save_dir, "model")
         with open(
-            os.path.join(self.norm_conf.save_dir, "normative_model_dict.json"),
+            os.path.join(model_save_path,"normative_model.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
             json.dump(metadata, f, indent=4)
+
         for responsevar, model in self.regression_models.items():
-            model_dict = model.to_dict(self.norm_conf.save_dir)
-            with open(
-                os.path.join(self.norm_conf.save_dir, f"model_{responsevar}.json"),
-                mode="w",
-                encoding="utf-8",
-            ) as f:
-                json.dump(model_dict, f, indent=4)
+            reg_model_dict = {}
+            reg_model_save_path = os.path.join(model_save_path, f"{responsevar}")
+            os.makedirs(reg_model_save_path, exist_ok=True)
+            reg_model_dict["model"] = model.to_dict(reg_model_save_path)
+            reg_model_dict['outscaler'] = self.outscalers[responsevar].to_dict()
+            with open(os.path.join(reg_model_save_path,"regression_model.json"), "w", encoding="utf-8") as f:
+                json.dump(reg_model_dict, f, indent=4)
+
+        
 
     @classmethod
     def load(cls, path: str) -> NormBase:
-        """
-        Load a normative model from disk.
-
-        This class method reconstructs a normative model from saved files, including model
-        configuration, regression models, scalers, and basis functions.
-
-        Parameters
-        ----------
-        path : str
-            Directory path containing the saved model files. Must contain:
-            - normative_model_dict.json: Model metadata and configuration
-            - model_{response_var}.json: Individual regression model files
-            - Additional model-specific files referenced in the JSONs
-
-        Returns
-        -------
-        NormBase
-            Reconstructed normative model instance with:
-            - Loaded configuration settings
-            - Reconstructed regression models
-            - Restored preprocessing transformations
-            - Recreated basis functions (if applicable)
-
-        Notes
-        -----
-        Loading process:
-        1. Reads model metadata from normative_model_dict.json
-        2. Reconstructs configuration objects
-        3. Loads individual regression models
-        4. Recreates preprocessing transformations
-        5. Rebuilds basis functions if used
-
-        The method expects a specific directory structure and file format:
-        ```
-        path/
-        ├── normative_model_dict.json
-        ├── model_response1.json
-        ├── model_response2.json
-        └── ...
-        ```
-
-        Examples
-        --------
-        >>> # Save model
-        >>> original_model.save("./saved_model")
-        >>>
-        >>> # Load model
-        >>> loaded_model = NormBase.load("./saved_model")
-        >>>
-        >>> # Use loaded model
-        >>> predictions = loaded_model.predict(test_data)
-
-        Raises
-        ------
-        FileNotFoundError
-            If required model files are missing
-        JSONDecodeError
-            If model files are corrupted or improperly formatted
-        ValueError
-            If model configuration is invalid or incompatible
-        ImportError
-            If required model classes cannot be imported
-
-        See Also
-        --------
-        save : Method for saving model to disk
-        NormConf : Configuration class for normative models
-        RegressionModel : Base class for regression models
-
-        Notes
-        -----
-        Loaded components:
-        - Model configuration (NormConf)
-        - Response variables list
-        - Regression model type and instances
-        - Input/output scalers
-        - B-spline basis (if used)
-        - Default regression configuration
-
-        The method supports loading:
-        - Different regression model types (BLR, GPR, HBR)
-        - Various preprocessing configurations
-        - Multiple response variables
-        - Custom basis functions
-
-        Compatibility considerations:
-        - Python version compatibility
-        - Package version compatibility
-        - Hardware/platform independence
-        - Backward compatibility with older saved models
-        """
-        with open(
-            os.path.join(path, "normative_model_dict.json"), mode="r", encoding="utf-8"
-        ) as f:
+        model_path = os.path.join(path, "model", "normative_model.json")   
+        with open(model_path, mode="r", encoding="utf-8") as f:
             metadata = json.load(f)
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
-        self.response_vars = metadata["response_vars"]
+
+        self.response_vars = []
+        self.outscalers ={}
+        self.regression_models = {}
+        reg_models_path = os.path.join(path, "model","*")
+        for path in glob.glob(reg_models_path):
+            if os.path.isdir(path):
+                with open(os.path.join(path,"regression_model.json"), mode="r", encoding="utf-8") as f:
+                    reg_model_dict = json.load(f)
+                    responsevar = reg_model_dict["model"]["name"]
+                    self.response_vars.append(responsevar)
+                    self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
+                    self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
+
+        
         self.regression_model_type = globals()[metadata["regression_model_type"]]
-        if "bspline_basis" in metadata:
-            self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
+
+        if "basis_function" in metadata:
+            self.basis_function = create_basis_function(metadata["basis_function"])
         self.inscalers = {
             k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }
-        self.outscalers = {
-            k: Scaler.from_dict(v) for k, v in metadata["outscalers"].items()
-        }
-        self.regression_models = {}
-        for responsevar in self.response_vars:
-            model_path = os.path.join(path, f"model_{responsevar}.json")
-            with open(model_path, mode="r", encoding="utf-8") as f:
-                model_dict = json.load(f)
-            self.regression_models[responsevar] = self.regression_model_type.from_dict(
-                model_dict, path
-            )
         self.default_reg_conf = type(
             self.regression_models[self.response_vars[0]].reg_conf
         ).from_dict(metadata["default_reg_conf"])
         return self
+
+
+    def save_results(self, data: NormData) -> None:
+        # save the zscores and centiles
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "results"), exist_ok=True)
+        zdf = data.zscores.to_dataframe().unstack(level="response_vars")
+        zdf.columns=zdf.columns.droplevel(0)
+        zdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "zscores.csv")) 
+        cdf = data.centiles.to_dataframe().unstack(level="response_vars")
+        cdf.columns=cdf.columns.droplevel(0)
+        cdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "centiles.csv"))
+        mdf = data.measures.to_dataframe().unstack(level="response_vars")
+        mdf.columns=mdf.columns.droplevel(0)
+        mdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "measures.csv"))
+        os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
+        plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"), show_data=True)
+        plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
+
 
     def focus(self, responsevar: str) -> None:
         """

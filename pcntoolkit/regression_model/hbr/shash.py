@@ -61,9 +61,9 @@ CONST2 = -np.log(2 * np.pi) / 2
 
 def S(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
     """Apply the Sinh-arcsinh transformation.
-    
+
     This transformation allows for flexible modeling of skewness and kurtosis.
-    
+
     Parameters
     ----------
     x : array_like
@@ -72,12 +72,12 @@ def S(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
         Skewness parameter. Positive values give positive skewness
     delta : float
         Kurtosis parameter. Values < 1 give heavier tails than normal
-        
+
     Returns
     -------
     NDArray[np.float64]
         Transformed values
-        
+
     Examples
     --------
     >>> S(0.0, epsilon=0.0, delta=1.0)
@@ -90,7 +90,7 @@ def S(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
 
 def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
     """Apply the inverse sinh-arcsinh transformation.
-    
+
     Parameters
     ----------
     x : array_like
@@ -99,17 +99,17 @@ def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
         Skewness parameter controlling asymmetry
     delta : float
         Kurtosis parameter controlling tail weight
-        
+
     Returns
     -------
     NDArray[np.float64]
         Inverse transformed values
-        
+
     Notes
     -----
     This is the inverse of the S() transformation function.
     Used primarily in sampling from SHASH distributions.
-    
+
     Examples
     --------
     >>> x = 1.0
@@ -121,7 +121,7 @@ def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
 
 def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
     """Apply the cosh-arcsinh transformation.
-    
+
     Parameters
     ----------
     x : array_like
@@ -130,18 +130,18 @@ def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
         Skewness parameter controlling asymmetry
     delta : float
         Kurtosis parameter controlling tail weight
-        
+
     Returns
     -------
     NDArray[np.float64]
         Transformed values
-        
+
     Notes
     -----
     This function computes C(x) = sqrt(1 + S(x)^2), where S is the
     sinh-arcsinh transformation. It is used in computing probability
     densities of SHASH distributions.
-    
+
     Examples
     --------
     >>> C(0.0, epsilon=0.0, delta=1.0)
@@ -155,10 +155,10 @@ def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
 
 class SHASHrv(RandomVariable):
     """Random variable class for the base SHASH distribution.
-    
+
     This class implements sampling from the basic SHASH distribution
     without location and scale parameters.
-    
+
     Notes
     -----
     The base SHASH distribution is obtained by applying the sinh-arcsinh
@@ -212,23 +212,23 @@ shash = SHASHrv()
 
 class SHASH(Continuous):
     """Sinh-arcsinh distribution based on standard normal.
-    
+
     A flexible distribution family that extends the normal distribution by adding
     skewness and kurtosis parameters while maintaining many desirable properties.
-    
+
     Parameters
     ----------
     epsilon : float
         Skewness parameter controlling asymmetry
     delta : float
         Kurtosis parameter controlling tail weight
-        
+
     Notes
     -----
     The distribution reduces to standard normal when epsilon=0 and delta=1.
     Positive epsilon produces positive skewness.
     Delta < 1 produces heavier tails than normal.
-    
+
     Examples
     --------
     >>> import pymc as pm
@@ -299,7 +299,7 @@ class SHASH(Continuous):
     def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
         """Compute both first and second moments of the SHASH distribution.
 
-        This method efficiently calculates both moments together to avoid redundant 
+        This method efficiently calculates both moments together to avoid redundant
         computations of the P function.
 
         Parameters
@@ -365,7 +365,7 @@ class SHASH(Continuous):
         delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
-    def logp(self, value: ArrayLike, epsilon: float, delta: float) -> float:
+    def logp(value: ArrayLike, epsilon: float, delta: float) -> float:  # type: ignore
         """Calculate the log probability density of the SHASH distribution.
 
         Parameters
@@ -462,10 +462,10 @@ shasho = SHASHoRV()
 
 class SHASHo(Continuous):
     """Location-scale variant of the SHASH distribution.
-    
+
     This distribution extends the base SHASH distribution by adding
     location (mu) and scale (sigma) parameters.
-    
+
     Parameters
     ----------
     mu : float
@@ -476,12 +476,12 @@ class SHASHo(Continuous):
         Skewness parameter controlling asymmetry
     delta : float
         Kurtosis parameter controlling tail weight
-        
+
     Notes
     -----
     The distribution is obtained by applying the transformation
     Y = mu + sigma * X where X follows the base SHASH distribution.
-    
+
     Examples
     --------
     >>> import pymc as pm
@@ -527,8 +527,8 @@ class SHASHo(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
-    ) -> float:
+        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
+    ) -> float: 
         """Calculate the log probability density of the SHASHo distribution.
 
         Parameters
@@ -700,7 +700,7 @@ class SHASHo2(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
+        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
     ) -> float:
         """Calculate the log probability density of the SHASHo2 distribution.
 
@@ -932,7 +932,7 @@ class SHASHb(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        self, value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float
+        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
     ) -> float:
         """Calculate the log probability density of the SHASHb distribution.
 

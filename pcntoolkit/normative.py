@@ -252,17 +252,17 @@ def main() -> None:
 
     """
     conf_dict = {
-        "responses": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/responses.csv",
+        "responses": "/home/stijn/Projects/PCNtoolkit/test/resources/data/responses.csv",
         "func": "predict",
         "maskfile": None,
-        "covfile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/covariates.csv",
+        "covfile": "/home/stijn/Projects/PCNtoolkit/test/resources/data/covariates.csv",
         "cvfolds": None,
         "testcov": None,
         "testresp": None,
         "alg": "hbr",
-        "trbefile": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/data/batch_effects.csv",
-        "save_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/hbr/save_load_test",
-        "log_dir": "/home/stijn/Projects/PCNtoolkit/pytest_tests/resources/hbr/log_test",
+        "trbefile": "/home/stijn/Projects/PCNtoolkit/test/resources/data/batch_effects.csv",
+        "save_dir": "/home/stijn/Projects/PCNtoolkit/test/resources/hbr/save_load_test",
+        "log_dir": "/home/stijn/Projects/PCNtoolkit/test/resources/hbr/log_test",
         "basis_function": "bspline",
     }
 

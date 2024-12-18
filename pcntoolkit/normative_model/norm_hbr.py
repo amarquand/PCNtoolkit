@@ -143,8 +143,16 @@ class NormHBR(NormBase):
         transferdata = self.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
+        reg_conf_dict: dict[str, Any] = self.default_reg_conf.to_dict()
+        reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
+        reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
+        reg_conf_dict["cores"] = kwargs.get("cores", reg_conf_dict["cores"])
+        reg_conf_dict["nuts_sampler"] = kwargs.get("nuts_sampler", reg_conf_dict["nuts_sampler"])
+        reg_conf_dict["init"] = kwargs.get("init", reg_conf_dict["init"])
+        reg_conf_dict["chains"] = kwargs.get("chains", reg_conf_dict["chains"])
+        reg_conf = HBRConf.from_dict(reg_conf_dict)
         new_hbr_model = self.focused_model.transfer( # type: ignore
-            self.default_reg_conf, transferdata, freedom
+            reg_conf, transferdata, freedom
         )
         return new_hbr_model
 
