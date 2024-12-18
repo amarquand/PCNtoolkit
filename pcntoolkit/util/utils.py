@@ -1515,7 +1515,7 @@ def cartesian_product(arrays):
     la = len(arrays)
     dtype = np.result_type(arrays[0])
     arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
-    for i, a in enumerate(np.ix_(arrays)):
+    for i, a in enumerate(np.ix_(*arrays)):
         arr[..., i] = a
 
     return arr.reshape(-1, la)

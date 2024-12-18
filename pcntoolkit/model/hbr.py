@@ -11,74 +11,20 @@ from __future__ import print_function
 from __future__ import division
 from collections import OrderedDict
 
-from ast import Param
-from tkinter.font import names
-
 import numpy as np
 import pymc as pm
 import pytensor
 import arviz as az
 import xarray
-
 from itertools import product
 from functools import reduce
-
-from pymc import Metropolis, NUTS, Slice, HamiltonianMC
 from scipy import stats
-import bspline
-from bspline import splinelab
 
 from util.utils import create_poly_basis
 from util.utils import expand_all
 from pcntoolkit.util.utils import cartesian_product
+from pcntoolkit.util.bspline import BSplineBasis
 from pcntoolkit.model.SHASH import *
-
-
-def bspline_fit(X, order, nknots):
-    """
-    Fit a B-spline to the data
-    :param X: [N×P] array of clinical covariates
-    :param order: order of the spline
-    :param nknots: number of knots
-    :return: a list of B-spline basis functions
-    """
-    feature_num = X.shape[1]
-    bsp_basis = []
-
-    for i in range(feature_num):
-        minx = np.min(X[:, i])
-        maxx = np.max(X[:, i])
-        delta = maxx - minx
-        # Expand range by 20% (10% on both sides)
-        splinemin = minx - 0.1 * delta
-        splinemax = maxx + 0.1 * delta
-        knots = np.linspace(splinemin, splinemax, nknots)
-        k = splinelab.augknt(knots, order)
-        bsp_basis.append(bspline.Bspline(k, order))
-
-    return bsp_basis
-
-
-def bspline_transform(X, bsp_basis):
-    """
-    Transform the data using the B-spline basis functions
-    :param X: [N×P] array of clinical covariates
-    :param bsp_basis: a list of B-spline basis functions
-    :return: a [N×(P×nknots)] array of transformed data
-    """
-
-    if type(bsp_basis) != list:
-        temp = []
-        temp.append(bsp_basis)
-        bsp_basis = temp
-
-    feature_num = len(bsp_basis)
-    X_transformed = []
-    for f in range(feature_num):
-        X_transformed.append(np.array([bsp_basis[f](i) for i in X[:, f]]))
-    X_transformed = np.concatenate(X_transformed, axis=1)
-
-    return X_transformed
 
 
 def create_poly_basis(X, order):
@@ -99,7 +45,7 @@ def create_poly_basis(X, order):
     return Phi
 
 
-def from_posterior(param, samples, shape,  distribution=None, half=False, freedom=1):
+def from_posterior(param, samples, shape,  distribution=None, dims=None, half=False, freedom=1):
     """
     Create a PyMC distribution from posterior samples
 
@@ -107,10 +53,13 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
     :param samples: samples from the posterior
     :param shape: shape of the parameter
     :param distribution: distribution to use for the parameter
+    :param dims: dims of the parameter
     :param half: if true, the distribution is assumed to be defined on the positive real line 
     :param freedom: freedom parameter for the distribution
     :return: a PyMC distribution
     """
+    if dims == []:
+        dims = None
     if distribution is None:
         smin, smax = np.min(samples), np.max(samples)
         width = smax - smin
@@ -126,25 +75,25 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
         if shape is None:
             return pm.distributions.Interpolated(param, x, y)
         else:
-            return pm.distributions.Interpolated(param, x, y, shape=shape)
+            return pm.distributions.Interpolated(param, x, y, shape=shape, dims=dims)
     elif distribution == "normal":
         temp = stats.norm.fit(samples)
         if shape is None:
             return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1])
         else:
-            return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1], shape=shape)
+            return pm.Normal(param, mu=temp[0], sigma=freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "hnormal":
         temp = stats.halfnorm.fit(samples)
         if shape is None:
             return pm.HalfNormal(param, sigma=freedom * temp[1])
         else:
-            return pm.HalfNormal(param, sigma=freedom * temp[1], shape=shape)
+            return pm.HalfNormal(param, sigma=freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "hcauchy":
         temp = stats.halfcauchy.fit(samples)
         if shape is None:
             return pm.HalfCauchy(param, freedom * temp[1])
         else:
-            return pm.HalfCauchy(param, freedom * temp[1], shape=shape)
+            return pm.HalfCauchy(param, freedom * temp[1], shape=shape, dims=dims)
     elif distribution == "uniform":
         upper_bound = np.percentile(samples, 95)
         lower_bound = np.percentile(samples, 5)
@@ -159,6 +108,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
                 lower=lower_bound - freedom * r,
                 upper=upper_bound + freedom * r,
                 shape=shape,
+                dims=dims,
             )
     elif distribution == "huniform":
         upper_bound = np.percentile(samples, 95)
@@ -168,7 +118,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
             return pm.Uniform(param, lower=0, upper=upper_bound + freedom * r)
         else:
             return pm.Uniform(
-                param, lower=0, upper=upper_bound + freedom * r, shape=shape
+                param, lower=0, upper=upper_bound + freedom * r, shape=shape, dims=dims
             )
 
     elif distribution == "gamma":
@@ -183,6 +133,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
                 alpha=freedom * alpha_fit,
                 beta=freedom / invbeta_fit,
                 shape=shape,
+                dims=dims,
             )
 
     elif distribution == "igamma":
@@ -193,7 +144,7 @@ def from_posterior(param, samples, shape,  distribution=None, half=False, freedo
             )
         else:
             return pm.InverseGamma(
-                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape
+                param, alpha=freedom * alpha_fit, beta=freedom * beta_fit, shape=shape, dims=dims   
             )
 
 
@@ -392,20 +343,29 @@ class HBR:
         """
         return hbr
 
-    def transform_X(self, X):
+    def transform_X(self, X, adapt=False):
         """
         Transform the covariates according to the model type
 
         :param X: N-by-P input matrix of P features for N subjects
         :return: transformed covariates
+        :adapt: Set to true when range adaptation for bspline is needed (for example in the 
+        transfer scenario)
         """
         if self.model_type == "polynomial":
             Phi = create_poly_basis(X, self.configs["order"])
         elif self.model_type == "bspline":
             if self.bsp is None:
-                self.bsp = bspline_fit(
-                    X, self.configs["order"], self.configs["nknots"])
-            bspline = bspline_transform(X, self.bsp)
+                self.bsp = BSplineBasis(order=self.configs["order"], 
+                                        nknots=self.configs["nknots"])
+                self.bsp.fit(X)
+                #self.bsp = bspline_fit(
+                #    X, self.configs["order"], self.configs["nknots"])
+            elif adapt:
+                self.bsp.adapt(X)
+                
+            bspline = self.bsp.transform(X)
+            #bspline = bspline_transform(X, self.bsp)
             Phi = np.concatenate((X, bspline), axis=1)
         else:
             Phi = X
@@ -447,6 +407,10 @@ class HBR:
         :return: idata. The results are also stored in the instance variable `self.idata`.
         """
         X, y, batch_effects = expand_all(X, y, batch_effects)
+        
+        self.batch_effects_num = batch_effects.shape[1]
+        self.batch_effects_size = [len(np.unique(batch_effects[:,i])) for i in range(self.batch_effects_num)] 
+        
         X = self.transform_X(X)
         modeler = self.get_modeler()
         if hasattr(self, 'idata'):
@@ -538,7 +502,7 @@ class HBR:
                 trace=self.idata,
                 extend_inferencedata=True,
                 progressbar=True,
-                var_names=var_names,
+                var_names=var_names
             )
         pred_mean = self.idata.posterior_predictive["y_like"].to_numpy().mean(
             axis=(0, 1))
@@ -547,12 +511,12 @@ class HBR:
 
         return pred_mean, pred_var
 
-    def estimate_on_new_site(self, X, y, batch_effects):
+    def transfer(self, X, y, batch_effects):
+        
         """
-        Estimate the model parameters using the provided data for a new site.
-
-        This function transforms the input data, then uses the modeler to estimate the model parameters. 
-        The results are stored in the instance variable `idata`.
+        This function is used to transfer a reference model (i.e. the source model that is estimated on source big datasets) 
+        to data from new sites (i.e. target data). It uses the posterior
+        of the reference model as a prior for the target model.
 
         :param X: Covariates. This is the input data for the model.
         :param y: Outputs. This is the target data for the model.
@@ -560,7 +524,12 @@ class HBR:
         :return: An inferencedata object containing samples from the posterior distribution.
         """
         X, y, batch_effects = expand_all(X, y, batch_effects)
-        X = self.transform_X(X)
+        
+        self.batch_effects_num = batch_effects.shape[1]
+        self.batch_effects_size = [len(np.unique(batch_effects[:,i])) for i in range(self.batch_effects_num)] 
+    
+        
+        X = self.transform_X(X, adapt=True)
         modeler = self.get_modeler()
         with modeler(X, y, batch_effects, self.configs, idata=self.idata) as m:
             self.idata = pm.sample(
@@ -573,34 +542,30 @@ class HBR:
                 cores=self.configs["cores"],
                 nuts_sampler=self.configs["nuts_sampler"],
             )
+          
+        self.vars_to_sample = ['y_like']
+        
+        # This part is for data privacy
+        if self.configs['remove_datapoints_from_posterior']:
+            chain = self.idata.posterior.coords['chain'].data
+            draw = self.idata.posterior.coords['draw'].data
+            for j in self.idata.posterior.variables.mapping.keys():
+                if j.endswith('_samples'):
+                    dummy_array = xarray.DataArray(data=np.zeros((len(chain), len(draw), 1)), coords={
+                                                'chain': chain, 'draw': draw, 'empty': np.array([0])}, name=j)
+                    self.idata.posterior[j] = dummy_array
+                    self.vars_to_sample.append(j)
+
+            # zero-out all data
+            for i in self.idata.constant_data.data_vars:
+                self.idata.constant_data[i] *= 0
+            for i in self.idata.observed_data.data_vars:
+                self.idata.observed_data[i] *= 0
+                
         return self.idata
 
-    def predict_on_new_site(self, X, batch_effects):
-        """
-        Make predictions from the model for a new site.
 
-        This function transforms the input data, then uses the modeler to make predictions. 
-        The results are stored in the instance variable `idata`.
-
-        :param X: Covariates. This is the input data for the model.
-        :param batch_effects: Batch effects corresponding to X. This represents the batch effects to be considered in the model.
-        :return: A tuple containing the mean and variance of the predictions. The results are also stored in the instance variable `self.idata`.
-        """
-        X, batch_effects = expand_all(X, batch_effects)
-        samples = self.configs["n_samples"]
-        y = np.zeros([X.shape[0], 1])
-        X = self.transform_X(X)
-        modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.configs, idata=self.idata):
-            self.idata = pm.sample_posterior_predictive(
-                self.idata, extend_inferencedata=True, progressbar=True, var_names=self.vars_to_sample
-            )
-        pred_mean = self.idata.posterior_predictive["y_like"].mean(axis=(0, 1))
-        pred_var = self.idata.posterior_predictive["y_like"].var(axis=(0, 1))
-
-        return pred_mean, pred_var
-
-    def generate(self, X, batch_effects, samples):
+    def generate(self, X, batch_effects, samples, batch_effects_maps, var_names=None):
         """
         Generate samples from the posterior predictive distribution.
 
@@ -612,24 +577,48 @@ class HBR:
         :return: A tuple containing the expanded and repeated X, batch_effects, and the generated samples.
         """
         X, batch_effects = expand_all(X, batch_effects)
-
+    
         y = np.zeros([X.shape[0], 1])
 
-        X = self.transform_X(X)
+        X_transformed = self.transform_X(X)
         modeler = self.get_modeler()
-        with modeler(X, y, batch_effects, self.configs):
-            ppc = pm.sample_posterior_predictive(self.idata, progressbar=True)
-        generated_samples = np.reshape(
-            ppc.posterior_predictive["y_like"].squeeze().T, [
-                X.shape[0] * samples, 1]
-        )
-        X = np.repeat(X, samples)
+        
+        # See if a list of var_names is provided, set to self.vars_to_sample otherwise
+        if (var_names is None) or (var_names == ['y_like']):
+            var_names = self.vars_to_sample
+
+        # Need to delete self.idata.posterior_predictive, otherwise, if it exists, it will not be overwritten
+        if hasattr(self.idata, 'posterior_predictive'):
+            del self.idata.posterior_predictive
+
+        with modeler(X_transformed, y, batch_effects, self.configs):
+            # For each batch effect dim
+            for i in range(batch_effects.shape[1]):
+                # Make a map that maps batch effect values to their index
+                valmap = batch_effects_maps[i]
+                # Compute those indices for the test data
+                indices = list(map(lambda x: valmap[x], batch_effects[:, i]))
+                # Those indices need to be used by the model
+                pm.set_data({f"batch_effect_{i}_data": indices})
+
+            self.idata = pm.sample_posterior_predictive(
+                trace=self.idata,
+                extend_inferencedata=True,
+                progressbar=True,
+                var_names=var_names
+            )
+            
+        generated_samples = np.reshape(self.idata.posterior_predictive["y_like"].to_numpy()[0,0:samples,:].T, 
+                                       [X.shape[0] * samples, 1])
+        
+        X = np.repeat(X, samples, axis=0)
         if len(X.shape) == 1:
             X = np.expand_dims(X, axis=1)
         batch_effects = np.repeat(batch_effects, samples, axis=0)
         if len(batch_effects.shape) == 1:
             batch_effects = np.expand_dims(batch_effects, axis=1)
         return X, batch_effects, generated_samples
+
 
     def sample_prior_predictive(self, X, batch_effects, samples, y=None, idata=None):
         """
@@ -671,34 +660,38 @@ class HBR:
         idata = self.idata if hasattr(self, "idata") else None
         return modeler(X, y, batch_effects, self.configs, idata=idata)
 
-    def create_dummy_inputs(self, covariate_ranges=[[0.1, 0.9, 0.01]]):
+    def create_dummy_inputs(self, X, step_size=0.05):
         """
-        Create dummy inputs for the model.
+        Create dummy inputs for the model based on the input covariates.
 
-        This function generates a Cartesian product of the provided covariate ranges and repeats it for each batch effect. 
+        This function generates a Cartesian product of the covariate ranges determined from the input X 
+        (min and max values of each covariate). It repeats this for each batch effect. 
         It also generates a Cartesian product of the batch effect indices and repeats it for each input sample.
 
-        :param covariate_ranges: List of lists, where each inner list represents the range and step size of a covariate. Default is [[0.1, 0.9, 0.01]].
+        :param X: 2D numpy array, where rows are samples and columns are covariates.
+        :param step_size: Step size for generating ranges for each covariate. Default is 0.05.
         :return: A tuple containing the dummy input data and the dummy batch effects.
         """
         arrays = []
-        for i in range(len(covariate_ranges)):
-            arrays.append(
-                np.arange(
-                    covariate_ranges[i][0],
-                    covariate_ranges[i][1],
-                    covariate_ranges[i][2],
-                )
-            )
-        X = cartesian_product(arrays)
+        for i in range(X.shape[1]):
+            cov_min = np.min(X[:, i])
+            cov_max = np.max(X[:, i])
+            arrays.append(np.arange(cov_min, cov_max + step_size, step_size))
+        
+        X_dummy = cartesian_product(arrays)
         X_dummy = np.concatenate(
-            [X for i in range(np.prod(self.batch_effects_size))])
+            [X_dummy for _ in range(np.prod(self.batch_effects_size))]
+        )
+        
         arrays = []
         for i in range(self.batch_effects_num):
             arrays.append(np.arange(0, self.batch_effects_size[i]))
+        
         batch_effects = cartesian_product(arrays)
-        batch_effects_dummy = np.repeat(batch_effects, X.shape[0], axis=0)
+        batch_effects_dummy = np.repeat(batch_effects, X_dummy.shape[0] // np.prod(self.batch_effects_size), axis=0)
+        
         return X_dummy, batch_effects_dummy
+
 
     def Rhats(self, var_names=None, thin=1, resolution=100):
         """
@@ -796,11 +789,18 @@ class Prior:
                     new_shape = None
                 else:
                     new_shape = new_shape[:-1]
+
+                dims = []
+                if self.has_random_effect:
+                    dims = dims + pb.batch_effect_dim_names
+                if self.name.startswith("slope") or self.name.startswith("offset_slope"):
+                    dims = dims + ["basis_functions"]
                 self.dist = from_posterior(
                     param=self.name,
                     samples=samples.to_numpy(),
                     shape=new_shape,
                     distribution=dist,
+                    dims=dims,
                     freedom=pb.configs["freedom"],
                 )
 
@@ -1147,7 +1147,8 @@ def get_design_matrix(X, nm, basis="linear"):
     :param basis: String representing the basis to use. Default is "linear".
     """
     if basis == "bspline":
-        Phi = bspline_transform(X, nm.hbr.bsp)
+        Phi = nm.hbr.bsp.transform(X)
+        #Phi = bspline_transform(X, nm.hbr.bsp)
     elif basis == "polynomial":
         Phi = create_poly_basis(X, 3)
     else:
