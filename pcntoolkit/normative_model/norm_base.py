@@ -93,6 +93,8 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.evaluator import Evaluator
 
+from pcntoolkit.util.basis_function import BasisFunction, PolynomialBasisFunction
+
 from .norm_conf import NormConf
 
 
@@ -221,7 +223,7 @@ class NormBase(ABC):
         self.evaluator = Evaluator()
         self.inscalers: dict = {}
         self.outscalers: dict = {}
-        self.bspline_basis: Any = None
+        self.basis_function: BasisFunction = None
 
     def fit(self, data: NormData) -> None:
         """
@@ -1151,6 +1153,9 @@ class NormBase(ABC):
         ValueError
             If the source array does not exist or if required parameters are missing
         """
+        if not hasattr(self, "basis_function"):
+            self.basis_function = create_basis_function(self.norm_conf.basis_function, self.norm_conf.order, self.norm_conf.nknots)
+        self.basis_function.expand(data, source_array)
 
         # Expand the basis of the source array
         if source_array == "scaled_X":
