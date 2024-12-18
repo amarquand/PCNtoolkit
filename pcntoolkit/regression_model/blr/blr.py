@@ -98,7 +98,6 @@ class BLR(RegressionModel):
         self.lambda_n_vec: np.ndarray = None  # type: ignore  # precision matrix
         self.Sigma_a: np.ndarray = None  # type: ignore  # prior covariance
         self.Lambda_a: np.ndarray = None  # type: ignore # prior precision
-        self.warp: bool = None  # type: ignore
         self.hyp0: np.ndarray = None  # type: ignore
         self.n_hyp: int = 0
         self.var_D: int = 0
@@ -111,8 +110,11 @@ class BLR(RegressionModel):
         # ? Do we need ys and s2?
         self.ys: np.ndarray = None  # type: ignore
         self.s2: np.ndarray = None  # type: ignore
-
-        # self.gamma = None # Not used if warp is not used
+        self.warp = self.blr_conf.get_warp()
+        self.warp_reparam = self.blr_conf.warp_reparam
+        self.warp_params = 0 if not self.warp else self.warp.get_n_params()
+        self.n_gamma = self.warp_params
+        self.gamma: np.ndarray = None  # type: ignore
 
     def init_hyp(self, data: BLRData) -> np.ndarray:  # type:ignore
         """
@@ -139,7 +141,7 @@ class BLR(RegressionModel):
             n_beta = 1
 
         n_alpha = self.D
-        n_gamma = 0
+        n_gamma = self.n_gamma
         self.n_hyp = n_beta + n_alpha + n_gamma  # type: ignore
         return np.zeros(self.n_hyp)
 
@@ -207,7 +209,7 @@ class BLR(RegressionModel):
                 raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
-        _, self.beta = self.parse_hyps(self.hyp, data.X, data.var_X)
+        _, self.beta,self.gamma = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.is_fitted = True
 
     def predict(self, data: BLRData) -> tuple[np.ndarray, np.ndarray]:
@@ -224,7 +226,7 @@ class BLR(RegressionModel):
         tuple[np.ndarray, np.ndarray]
             Predictive mean and variance.
         """
-        _, beta = self.parse_hyps(self.hyp, data.X, data.var_X)
+        _, beta, self.gamma = self.parse_hyps(self.hyp, data.X, data.var_X)
         ys = data.X.dot(self.m)
         s2n = 1 / beta
         s2 = s2n + np.sum(data.X * linalg.solve(self.A, data.X.T).T, axis=1)
@@ -236,7 +238,7 @@ class BLR(RegressionModel):
 
     def parse_hyps(
         self, hyp: np.ndarray, X: np.ndarray, var_X: Optional[np.ndarray] = None
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Parse hyperparameters into model parameters.
 
@@ -251,8 +253,8 @@ class BLR(RegressionModel):
 
         Returns
         -------
-        tuple[np.ndarray, np.ndarray]
-            Parsed alpha and beta parameters.
+        tuple[np.ndarray, np.ndarray, np.ndarray]
+            Parsed alpha, beta and gamma parameters.
         """
         N = X.shape[0]
         beta: np.ndarray = None  # type: ignore
@@ -272,13 +274,23 @@ class BLR(RegressionModel):
             n_lik_param = len(beta)
             self.lambda_n_vec = np.ones(N) * beta
 
+        if self.warp:
+            gamma = hyp[n_lik_param : (n_lik_param + self.n_gamma)]
+            n_lik_param += self.n_gamma
+            if self.warp_reparam:
+                delta = np.exp(gamma[1])
+                beta = beta/(delta**2)
+        else:
+            gamma = None # type: ignore
+
         # Coefficients precision
         if isinstance(beta, list) or isinstance(beta, np.ndarray):
             alpha = np.exp(hyp[n_lik_param:])
         else:
             alpha = np.exp(hyp[1:])
 
-        return alpha, beta
+
+        return alpha, beta, gamma # type: ignore
 
     def post(
         self,
@@ -316,8 +328,7 @@ class BLR(RegressionModel):
             self.hyp = hyp
 
         # Parse hyperparameters
-        alpha, _ = self.parse_hyps(self.hyp, X, var_X)
-
+        alpha, _ , _= self.parse_hyps(self.hyp, X, var_X)
 
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
@@ -325,7 +336,6 @@ class BLR(RegressionModel):
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
             raise ValueError("hyperparameter vector has invalid length")
-
 
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
@@ -359,8 +369,11 @@ class BLR(RegressionModel):
         float
             Negative log likelihood.
         """
-        _, _ = self.parse_hyps(hyp, X, var_X)
+        _, _, gamma = self.parse_hyps(hyp, X, var_X)
 
+        if self.warp:
+            y_unwarped = y
+            y = self.warp.f(y, gamma)
 
         something_big: float = float(np.finfo(np.float64).max)
 
@@ -394,6 +407,9 @@ class BLR(RegressionModel):
             - self.m.T.dot(self.Lambda_a).dot(self.m)
             - logdetA
         )
+
+        if self.warp:
+            nlZ = nlZ - np.sum(np.log(self.warp.df(y_unwarped, gamma)))
 
         # make sure the output is finite to stop the minimizer getting upset
         if not np.isfinite(nlZ):
@@ -444,14 +460,13 @@ class BLR(RegressionModel):
                 np.abs(hyp)
             )
         elif norm.upper() == "L2":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(
-                np.square(hyp)
-            ))
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(
+                np.sum(np.square(hyp))
+            )
         else:
             raise ValueError(
                 "Requested penalty not recognized, choose between 'L1' or 'L2'."
             )
-        
 
     def dloglik(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
@@ -459,7 +474,12 @@ class BLR(RegressionModel):
         """Function to compute derivatives"""
 
         # hyperparameters
-        alpha, beta = self.parse_hyps(hyp, X, var_X)
+        alpha, beta, gamma = self.parse_hyps(hyp, X, var_X)
+
+
+        if self.warp:
+            raise ValueError('optimization with derivatives is not yet ' +
+                             'supported for warped liklihood')
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
@@ -580,6 +600,8 @@ class BLR(RegressionModel):
         centiles = np.zeros((cdf.shape[0], data.X.shape[0]))
         for i, cdf in enumerate(cdf):
             centiles[i, :] = self.ys + stats.norm.ppf(cdf) * np.sqrt(self.s2)
+        if self.warp:
+            centiles = self.warp.invf(centiles, self.gamma)
         return centiles
 
     def zscores(self, data: BLRData, resample: bool = True) -> np.ndarray:
@@ -599,7 +621,11 @@ class BLR(RegressionModel):
         """
         if resample:
             self.predict(data)
-        return (data.y - self.ys) / np.sqrt(self.s2)
+        if self.warp:
+            warped_y = self.warp.f(data.y, self.gamma)
+            return (warped_y - self.ys) / np.sqrt(self.s2)
+        else:
+            return (data.y - self.ys) / np.sqrt(self.s2)
 
     def to_dict(self, path: str | None = None) -> dict:
         my_dict = super().to_dict()
@@ -622,7 +648,7 @@ class BLR(RegressionModel):
         name = my_dict["name"]
         is_fitted = my_dict["is_fitted"]
         is_from_dict = True
-        
+
         conf = BLRConf.from_dict(my_dict["reg_conf"])
         self = cls(name, conf, is_fitted, is_from_dict)
         self.hyp = np.array(my_dict["hyp"])

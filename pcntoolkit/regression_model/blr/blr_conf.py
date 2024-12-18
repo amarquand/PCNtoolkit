@@ -29,6 +29,13 @@ from __future__ import annotations
 from dataclasses import dataclass, fields
 from typing import Any, Optional
 
+from pcntoolkit.regression_model.blr.warp import (
+    WarpAffine,
+    WarpBase,
+    WarpBoxCox,
+    WarpLog,
+    WarpSinhArcsinh,
+)
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 # Default configuration values
@@ -204,3 +211,18 @@ class BLRConf(RegConf):
     @property
     def has_random_effect(self) -> bool:
         return self.random_intercept or self.random_intercept_var
+
+
+    def get_warp(self) -> Optional[WarpBase]:
+        if self.warp is None:
+            return None
+        if self.warp.lower() == "warpboxcox":
+            return WarpBoxCox()
+        elif self.warp.lower() == "warpaffine":
+            return WarpAffine()
+        elif self.warp.lower() == "warpsinharcsinh":
+            return WarpSinhArcsinh()
+        elif self.warp.lower() == "warplog":
+            return WarpLog()
+        else:
+            raise ValueError(f"Warp {self.warp} not recognized.")

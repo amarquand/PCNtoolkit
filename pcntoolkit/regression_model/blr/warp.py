@@ -90,7 +90,7 @@ class WarpBase(ABC):
         self,
         mu: NDArray[np.float64],
         s2: NDArray[np.float64],
-        param: List[float],
+        param: NDArray[np.float64],
         percentiles: List[float] | None= None,
     ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Compute warped predictions from a Gaussian predictive distribution.
@@ -101,7 +101,7 @@ class WarpBase(ABC):
             Gaussian predictive mean
         s2 : NDArray[np.float64]
             Predictive variance
-        param : List[float]
+        param : NDArray[np.float64]
             Warping parameters
         percentiles : List[float], optional
             Desired percentiles of the warped likelihood, by default [0.025, 0.975]
@@ -131,7 +131,7 @@ class WarpBase(ABC):
         return median, pred_interval
 
     @abstractmethod
-    def f(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Evaluate the warping function.
 
         Maps non-Gaussian response variables to Gaussian variables.
@@ -140,7 +140,7 @@ class WarpBase(ABC):
         ----------
         x : NDArray[np.float64]
             Input values to warp
-        param : List[float]
+        param : NDArray[np.float64]
             Warping parameters
 
         Returns
@@ -150,7 +150,7 @@ class WarpBase(ABC):
         """
 
     @abstractmethod
-    def invf(self, y: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def invf(self, y: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Evaluate the inverse warping function.
 
         Maps Gaussian latent variables to non-Gaussian response variables.
@@ -159,7 +159,7 @@ class WarpBase(ABC):
         ----------
         y : NDArray[np.float64]
             Input values to inverse warp
-        param : List[float]
+        param : NDArray[np.float64]
             Warping parameters
 
         Returns
@@ -169,14 +169,14 @@ class WarpBase(ABC):
         """
 
     @abstractmethod
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Return the derivative of the warp, dw(x)/dx.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        param : List[float]
+        param : NDArray[np.float64]
             Warping parameters
 
         Returns
@@ -197,7 +197,7 @@ class WarpLog(WarpBase):
         self.n_params = 0
 
     def f(
-        self, x: NDArray[np.float64], param: Optional[List[float]] = None
+        self, x: NDArray[np.float64], param: Optional[NDArray[np.float64]] = None
     ) -> NDArray[np.float64]:
         """Apply logarithmic warping.
 
@@ -205,7 +205,7 @@ class WarpLog(WarpBase):
         ----------
         x : NDArray[np.float64]
             Input values
-        params : Optional[List[float]], optional
+        params : Optional[NDArray[np.float64]], optional
             Not used for logarithmic warp, by default None
 
         Returns
@@ -216,7 +216,7 @@ class WarpLog(WarpBase):
         return np.log(x)
 
     def invf(
-        self, y: NDArray[np.float64], param: Optional[List[float]] = None
+        self, y: NDArray[np.float64], param: Optional[NDArray[np.float64]] = None
     ) -> NDArray[np.float64]:
         """Apply inverse logarithmic warping.
 
@@ -224,7 +224,7 @@ class WarpLog(WarpBase):
         ----------
         y : NDArray[np.float64]
             Input values
-        params : Optional[List[float]], optional
+        params : Optional[NDArray[np.float64]], optional
             Not used for logarithmic warp, by default None
 
         Returns
@@ -234,14 +234,14 @@ class WarpLog(WarpBase):
         """
         return np.exp(y)
 
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute derivative of logarithmic warp.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Not used for logarithmic warp
 
         Returns
@@ -264,13 +264,13 @@ class WarpAffine(WarpBase):
         super().__init__()
         self.n_params = 2
 
-    def _get_params(self, param: List[float]) -> Tuple[float, float]:
+    def _get_params(self, param: NDArray[np.float64]) -> Tuple[float, float]:
         """Extract and transform the affine parameters.
 
         Parameters
         ----------
-        param : List[float]
-            List containing [a, log(b)] where:
+        param : NDArray[np.float64]
+            Array containing [a, log(b)] where:
                 a: offset parameter
                 log(b): log of scale parameter
 
@@ -288,14 +288,14 @@ class WarpAffine(WarpBase):
             raise ValueError("number of parameters must be " + str(self.n_params))
         return param[0], np.exp(param[1])
 
-    def f(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply affine warping.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Affine parameters [a, log(b)]
 
         Returns
@@ -307,14 +307,14 @@ class WarpAffine(WarpBase):
         y = a + b * x
         return y
 
-    def invf(self, y: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def invf(self, y: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply inverse affine warping.
 
         Parameters
         ----------
         y : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Affine parameters [a, log(b)]
 
         Returns
@@ -326,14 +326,14 @@ class WarpAffine(WarpBase):
         x = (y - a) / b
         return x
 
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute derivative of affine warp.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Affine parameters [a, log(b)]
 
         Returns
@@ -365,13 +365,13 @@ class WarpBoxCox(WarpBase):
         super().__init__()
         self.n_params = 1
 
-    def _get_params(self, param: List[float]) -> NDArray[np.float64]:
+    def _get_params(self, param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Extract and transform the Box-Cox parameter.
 
         Parameters
         ----------
-        param : List[float]
-            List containing [log(lambda)]
+        param : NDArray[np.float64]
+            Array containing [log(lambda)]
 
         Returns
         -------
@@ -380,14 +380,14 @@ class WarpBoxCox(WarpBase):
         """
         return np.exp(np.array(param))
 
-    def f(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply Box-Cox warping.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Box-Cox parameter [log(lambda)]
 
         Returns
@@ -403,14 +403,14 @@ class WarpBoxCox(WarpBase):
             y = (np.sign(x) * np.abs(x) ** lam - 1) / lam
         return y
 
-    def invf(self, y: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def invf(self, y: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply inverse Box-Cox warping.
 
         Parameters
         ----------
         y : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Box-Cox parameter [log(lambda)]
 
         Returns
@@ -426,14 +426,14 @@ class WarpBoxCox(WarpBase):
             x = np.sign(lam * y + 1) * np.abs(lam * y + 1) ** (1 / lam)
         return x
 
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute derivative of Box-Cox warp.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+            params : NDArray[np.float64]
             Box-Cox parameter [log(lambda)]
 
         Returns
@@ -446,7 +446,7 @@ class WarpBoxCox(WarpBase):
         return dx
 
 
-class WarpSinArcsinh(WarpBase):
+class WarpSinhArcsinh(WarpBase):
     """Sin-hyperbolic arcsin warping function.
 
     Implements warping function y = sinh(b * arcsinh(x) - a) with two parameters:
@@ -476,13 +476,13 @@ class WarpSinArcsinh(WarpBase):
         super().__init__()
         self.n_params = 2
 
-    def _get_params(self, param: List[float]) -> Tuple[float, float]:
+    def _get_params(self, param: NDArray[np.float64]) -> Tuple[float, float]:
         """Extract and transform the sinh-arcsinh parameters.
 
         Parameters
         ----------
-        param : List[float]
-            List containing [epsilon, log(b)]
+        param : NDArray[np.float64]
+            Array containing [epsilon, log(b)]
 
         Returns
         -------
@@ -503,14 +503,14 @@ class WarpSinArcsinh(WarpBase):
 
         return a, b
 
-    def f(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply sinh-arcsinh warping.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Parameters [epsilon, log(b)]
 
         Returns
@@ -522,14 +522,14 @@ class WarpSinArcsinh(WarpBase):
         y = np.sinh(b * np.arcsinh(x) - a)
         return y
 
-    def invf(self, y: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def invf(self, y: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply inverse sinh-arcsinh warping.
 
         Parameters
         ----------
         y : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Parameters [epsilon, log(b)]
 
         Returns
@@ -541,14 +541,14 @@ class WarpSinArcsinh(WarpBase):
         x = np.sinh((np.arcsinh(y) + a) / b)
         return x
 
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute derivative of sinh-arcsinh warp.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        params : List[float]
+        params : NDArray[np.float64]
             Parameters [epsilon, log(b)]
 
         Returns
@@ -600,14 +600,14 @@ class WarpCompose(WarpBase):
             self.n_params += warp.get_n_params()
             self.warps.append(warp)
 
-    def f(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply composed warping functions.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        param : List[float]
+        param : NDArray[np.float64]
             Combined parameters for all warps
 
         Returns
@@ -622,7 +622,7 @@ class WarpCompose(WarpBase):
             print("begin composition")
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
-            theta_c = [theta[c] for c in range(theta_offset, theta_offset + n_params_c)]
+            theta_c = np.array([theta[c] for c in range(theta_offset, theta_offset + n_params_c)])
             theta_offset += n_params_c
 
             if self.debugwarp:
@@ -634,14 +634,14 @@ class WarpCompose(WarpBase):
                 fw = warp.f(fw, theta_c)
         return fw
 
-    def invf(self, y: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def invf(self, y: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply inverse composed warping functions.
 
         Parameters
         ----------
         y : NDArray[np.float64]
             Input values
-        param : List[float]
+        param : NDArray[np.float64]
             Combined parameters for all warps
 
         Returns
@@ -663,7 +663,7 @@ class WarpCompose(WarpBase):
         for ci, warp in reversed(list(enumerate(self.warps))):
             n_params_c = warp.get_n_params()
             theta_offset -= n_params_c
-            theta_c = [theta[c] for c in range(theta_offset, theta_offset + n_params_c)]
+            theta_c = np.array([theta[c] for c in range(theta_offset, theta_offset + n_params_c)])
 
             if self.debugwarp:
                 print("invf:", theta_c, warp)
@@ -675,14 +675,14 @@ class WarpCompose(WarpBase):
 
         return finvw
 
-    def df(self, x: NDArray[np.float64], param: List[float]) -> NDArray[np.float64]:
+    def df(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute derivative of composed warping functions.
 
         Parameters
         ----------
         x : NDArray[np.float64]
             Input values
-        param : List[float]
+        param : NDArray[np.float64]
             Combined parameters for all warps
 
         Returns
@@ -697,7 +697,7 @@ class WarpCompose(WarpBase):
         for ci, warp in enumerate(self.warps):
             n_params_c = warp.get_n_params()
 
-            theta_c = [theta[c] for c in range(theta_offset, theta_offset + n_params_c)]
+            theta_c = np.array([theta[c] for c in range(theta_offset, theta_offset + n_params_c)])
             theta_offset += n_params_c
 
             if self.debugwarp:
