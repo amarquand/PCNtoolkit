@@ -5,7 +5,7 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.plotting.plotter import plot_centiles
+from pcntoolkit.util.plotter import plot_centiles
 from pytest_tests.fixtures.data_fixtures import *
 from pytest_tests.fixtures.hbr_model_fixtures import *
 from pytest_tests.fixtures.norm_data_fixtures import *
@@ -75,9 +75,9 @@ def test_normhbr_from_args(
     norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]
 ):
     hbr = NormHBR.from_args(norm_args | sample_args | args)
-    assert hbr.default_reg_conf.draws == 10
-    assert hbr.default_reg_conf.tune == 10
-    assert hbr.default_reg_conf.cores == 1
+    assert hbr.default_reg_conf.draws == sample_args.get("draws")
+    assert hbr.default_reg_conf.tune == sample_args.get("tune")
+    assert hbr.default_reg_conf.cores == sample_args.get("cores")
     assert hbr.default_reg_conf.likelihood == "Normal"
     assert hbr.default_reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):

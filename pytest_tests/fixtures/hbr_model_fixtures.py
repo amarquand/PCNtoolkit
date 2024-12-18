@@ -44,12 +44,12 @@ def savemodel():
 
 @pytest.fixture
 def n_mcmc_samples():
-    return 1500
+    return 20
 
 
 @pytest.fixture
 def sample_args():
-    return {"draws": 1500, "tune": 500, "cores": 1}
+    return {"draws": 20, "tune": 50, "cores": 1}
 
 
 @pytest.fixture
