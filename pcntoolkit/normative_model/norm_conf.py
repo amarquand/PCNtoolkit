@@ -14,7 +14,7 @@ directory creation when needed.
 
 import os
 import warnings
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import Any, Callable, Dict, List, Optional
 
 from pcntoolkit.util.utils import get_type_of_object
@@ -37,12 +37,10 @@ class NormConf:
     basis_function : str, optional
         Type of basis function to use ('linear', 'polynomial', 'bspline', 'none'),
         by default "linear"
-    basis_column : int, optional
-        Column index for basis expansion, by default 0
-    order : int, optional
-        Order of polynomial or bspline basis functions, by default 3
-    nknots : int, optional
-        Number of knots for bspline basis functions, by default 5
+    basis_function_kwargs : dict, optional
+        Keyword arguments for basis function, by default {}
+        For polynomial basis: order
+        For bspline basis: order, nknots, left_expand, right_expand, knot_method
     inscaler : str, optional
         Input data scaling method ('none', 'standardize', 'minmax'), by default "none"
     outscaler : str, optional
@@ -57,16 +55,11 @@ class NormConf:
 
     savemodel: bool = False
     saveresults: bool = False
-    log_dir: str = "./logs"
     save_dir: str = "./saves"
     basis_function: str = "linear"
-    basis_column: int = 0
-    order: int = 3
-    nknots: int = 5
+    basis_function_kwargs: dict=field(default_factory=dict)
     inscaler: str = "none"
     outscaler: str = "none"
-    perform_cv: bool = False
-    cv_folds: int = 0
     normative_model_name: Optional[str] = None
 
     def __post_init__(self) -> None:
@@ -96,7 +89,6 @@ class NormConf:
         NormConf
             New configuration instance
         """
-        print(fields(cls))
         norm_args:dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
         return cls(**norm_args)
 
@@ -140,9 +132,7 @@ class NormConf:
             nonlocal configuration_problems
             configuration_problems.append(f"{problem}")
 
-        self.detect_dir_problem(add_problem, "log_dir")
         self.detect_dir_problem(add_problem, "save_dir")
-        self.detect_cv_problem(add_problem)
         self.detect_basis_function_problem(add_problem)
         self.detect_scaler_problem(add_problem, "inscaler")
         self.detect_scaler_problem(add_problem, "outscaler")
@@ -177,34 +167,6 @@ class NormConf:
                     f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you"
                 )
                 os.makedirs(dir_attr)
-
-    def detect_cv_problem(self, add_problem: Callable[[str], None]) -> None:
-        """Detect problems with cross-validation configuration.
-
-        Validates that:
-        - perform_cv is a boolean
-        - cv_folds is an integer
-        - If perform_cv is True, cv_folds must be >= 2
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        performisbool: bool = isinstance(self.perform_cv, bool)
-        foldsisint: bool = isinstance(self.cv_folds, int)
-        if not performisbool:
-            add_problem(
-                f"perform_cv is not a boolean, but {type(self.perform_cv).__name__}"
-            )
-        if not foldsisint:
-            add_problem(
-                f"cv_folds is not an integer, but {type(self.cv_folds).__name__}"
-            )
-        if performisbool and foldsisint:
-            if self.perform_cv and self.cv_folds < 2:
-                add_problem(f"cv_folds must be at least 2, but is {self.cv_folds}")
-
     def detect_basis_function_problem(self, add_problem: Callable[[str], None]) -> None:
         """Detect problems with basis function configuration.
 
@@ -228,67 +190,6 @@ class NormConf:
                 add_problem(
                     f"basis_function_type is not one of the possible values: {acceptable_basis_functions}"
                 )
-
-            if self.basis_function == "polynomial":
-                self.detect_polynomial_basis_expansion_problem(add_problem)
-
-            if self.basis_function == "bspline":
-                self.detect_bspline_basis_expansion_problem(add_problem)
-
-    def detect_bspline_basis_expansion_problem(
-        self, add_problem: Callable[[str], None]
-    ) -> None:
-        """Detect problems with B-spline basis expansion configuration.
-
-        Validates that:
-        - nknots is an integer >= 2
-        - order is an integer >= 1
-        - order is less than nknots
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        nknotsisint = isinstance(self.nknots, int)
-        orderisint = isinstance(self.order, int)
-        if not nknotsisint:
-            add_problem(f"nknots is not an integer, but {type(self.nknots).__name__}")
-        else:
-            if self.nknots < 2:
-                add_problem(f"nknots must be at least 2, but is {self.nknots}")
-
-        if not orderisint:
-            add_problem(f"order is not an integer, but {type(self.order).__name__}")
-
-        else:
-            if self.order < 1:
-                add_problem(f"order must be at least 1, but is {self.order}")
-            if nknotsisint:
-                if self.order > self.nknots:
-                    add_problem(
-                        f"order must be smaller than nknots, but order is {self.order} and nknots is {self.nknots}"
-                    )
-
-    def detect_polynomial_basis_expansion_problem(
-        self, add_problem: Callable[[str], None]
-    ) -> None:
-        """Detect problems with polynomial basis expansion configuration.
-
-        Validates that:
-        - order is an integer >= 1
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        orderisint = isinstance(self.order, int)
-        if not orderisint:
-            add_problem(f"order is not an integer, but {type(self.order).__name__}")
-        else:
-            if self.order < 1:
-                add_problem(f"order must be at least 1, but is {self.order}")
 
     def detect_scaler_problem(
         self, add_problem: Callable[[str], None], scaler_attr_str: str
@@ -332,19 +233,7 @@ class NormConf:
         """
         object.__setattr__(self, "save_dir", path)
 
-    def set_log_dir(self, path: str) -> None:
-        """Set the log directory path.
-
-        Since this is a frozen dataclass, uses object.__setattr__ to modify
-        the log_dir attribute.
-
-        Parameters
-        ----------
-        path : str
-            New path for logging output
-        """
-        object.__setattr__(self, "log_dir", path)
-
+  
     def copy(self) -> "NormConf":
         """Create a deep copy of the configuration.
 

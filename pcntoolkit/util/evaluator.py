@@ -41,6 +41,7 @@ class Evaluator:
             Data container updated with evaluation measures
         """
         data["Yhat"] = data.centiles.sel(cdf=0.5, method="nearest")
+        # ! For asymmetric distributions, this is not correct.
         data["S2"] = (
             data.centiles.sel(cdf=0.1587, method="nearest") - data["Yhat"]
         ) ** 2

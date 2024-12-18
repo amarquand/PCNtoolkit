@@ -89,14 +89,14 @@ covariates.csv
 covariates_test.csv
 responses.csv
 responses_test.csv
-pytest_tests/resources/save_load_test
-pytest_tests/resources/save_load_test/normative_model_dict.json
-pytest_tests/resources/save_load_test/idata_response_var_1.nc
-pytest_tests/resources/save_load_test/idata_response_var_0.nc
-pytest_tests/resources/hbr/save_load_test/idata_response_var_0.nc
-pytest_tests/resources/hbr/save_load_test/idata_response_var_1.nc
-pytest_tests/resources/hbr/save_load_test_without_idata/normative_model_dict.json
-pytest_tests/resources/hbr/save_load_test/normative_model_dict.json
+test/resources/save_load_test
+test/resources/save_load_test/normative_model_dict.json
+test/resources/save_load_test/idata_response_var_1.nc
+test/resources/save_load_test/idata_response_var_0.nc
+test/resources/hbr/save_load_test/idata_response_var_0.nc
+test/resources/hbr/save_load_test/idata_response_var_1.nc
+test/resources/hbr/save_load_test_without_idata/normative_model_dict.json
+test/resources/hbr/save_load_test/normative_model_dict.json
 prof/*
 dist/pcntoolkit-0.3-py3.11.egg
 example_notebooks/resources/*
@@ -108,3 +108,4 @@ example_notebooks/resources
 # Sphinx documentation
 docs/_build/
 docs/autoapi/
+example_notebooks/save_dir/*

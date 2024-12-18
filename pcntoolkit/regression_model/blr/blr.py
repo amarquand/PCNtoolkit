@@ -157,7 +157,6 @@ class BLR(RegressionModel):
 
         # Initialize hyperparameters if not provided
         hyp0 = self.init_hyp(data)
-
         args = (data.X, data.y, data.var_X)
 
         match self.blr_conf.optimizer.lower():
@@ -204,7 +203,6 @@ class BLR(RegressionModel):
                         approx_grad=True,
                         epsilon=self.epsilon,
                     )
-
             case _:
                 raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
         self.hyp = out[0]
@@ -260,8 +258,10 @@ class BLR(RegressionModel):
         beta: np.ndarray = None  # type: ignore
         # Noise precision
         if self.models_variance:
-            if var_X is None:
-                raise ValueError("Variance of covariates (var_X) is required for models with variance.")
+            if var_X is None or (var_X == 0).all():
+                raise ValueError(
+                    "Variance of covariates (var_X) is required for models with variance."
+                )
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -281,7 +281,11 @@ class BLR(RegressionModel):
         return alpha, beta
 
     def post(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
+        self,
+        hyp: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        var_X: Optional[np.ndarray] = None,
     ) -> None:
         """
         Compute the posterior distribution.
@@ -314,12 +318,14 @@ class BLR(RegressionModel):
         # Parse hyperparameters
         alpha, _ = self.parse_hyps(self.hyp, X, var_X)
 
+
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
             raise ValueError("hyperparameter vector has invalid length")
+
 
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
@@ -328,7 +334,11 @@ class BLR(RegressionModel):
         self.m = (invAXt * self.lambda_n_vec).dot(y)
 
     def loglik(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: Optional[np.ndarray] = None
+        self,
+        hyp: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        var_X: Optional[np.ndarray] = None,
     ) -> float:
         """
         Compute the negative log likelihood.
@@ -350,6 +360,7 @@ class BLR(RegressionModel):
             Negative log likelihood.
         """
         _, _ = self.parse_hyps(hyp, X, var_X)
+
 
         something_big: float = float(np.finfo(np.float64).max)
 
@@ -433,13 +444,14 @@ class BLR(RegressionModel):
                 np.abs(hyp)
             )
         elif norm.upper() == "L2":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(
                 np.square(hyp)
-            )
+            ))
         else:
             raise ValueError(
                 "Requested penalty not recognized, choose between 'L1' or 'L2'."
             )
+        
 
     def dloglik(
         self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
@@ -560,7 +572,7 @@ class BLR(RegressionModel):
         Returns
         -------
         np.ndarray
-            Array of shape (len(cdf), n_samples) containing the predicted centile 
+            Array of shape (len(cdf), n_samples) containing the predicted centile
             values for each CDF value and sample
         """
         if resample:
@@ -591,14 +603,13 @@ class BLR(RegressionModel):
 
     def to_dict(self, path: str | None = None) -> dict:
         my_dict = super().to_dict()
+        my_dict["name"] = self.name
         my_dict["hyp"] = self.hyp.tolist()
         my_dict["nlZ"] = self.nlZ
         my_dict["N"] = self.N
         my_dict["D"] = self.D
-        my_dict["lambda_n_vec"] = self.lambda_n_vec.tolist()
         my_dict["Sigma_a"] = self.Sigma_a.tolist()
         my_dict["Lambda_a"] = self.Lambda_a.tolist()
-        my_dict["beta"] = self.beta.tolist()
         my_dict["m"] = self.m.tolist()
         my_dict["A"] = self.A.tolist()
         return my_dict
@@ -609,18 +620,17 @@ class BLR(RegressionModel):
         Creates a configuration from a dictionary.
         """
         name = my_dict["name"]
-        conf = BLRConf.from_dict(my_dict["reg_conf"])
         is_fitted = my_dict["is_fitted"]
         is_from_dict = True
+        
+        conf = BLRConf.from_dict(my_dict["reg_conf"])
         self = cls(name, conf, is_fitted, is_from_dict)
         self.hyp = np.array(my_dict["hyp"])
         self.nlZ = my_dict["nlZ"]
         self.N = my_dict["N"]
         self.D = my_dict["D"]
-        self.lambda_n_vec = np.array(my_dict["lambda_n_vec"])
         self.Sigma_a = np.array(my_dict["Sigma_a"])
         self.Lambda_a = np.array(my_dict["Lambda_a"])
-        self.beta = np.array(my_dict["beta"])
         self.m = np.array(my_dict["m"])
         self.A = np.array(my_dict["A"])
         return self

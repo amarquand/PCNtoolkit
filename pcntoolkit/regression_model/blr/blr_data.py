@@ -12,7 +12,6 @@ BLRData
     An object to store the data used in Bayesian linear regression.
 """
 
-import warnings
 from typing import Any, Optional, Tuple
 
 import numpy as np
@@ -79,21 +78,21 @@ class BLRData:
             self.X = X
 
         if y is None:
-            warnings.warn("y is not provided, setting self.y to zeros")
+            # warnings.warn("y is not provided, setting self.y to zeros")
             self.y = np.zeros((X.shape[0], 1))
         else:
             self.y = y
 
         if var_X is None:
-            warnings.warn("var_X is not provided, setting self.var_X to zeros")
+            # warnings.warn("var_X is not provided, setting self.var_X to zeros")
             self.var_X = np.zeros((X.shape[0], 1))
         else:
             self.var_X = var_X
 
         if batch_effects is None:
-            warnings.warn(
-                "batch_effects is not provided, setting self.batch_effects to zeros"
-            )
+            # warnings.warn(
+            #     "batch_effects is not provided, setting self.batch_effects to zeros"
+            # )
             self.batch_effects = np.zeros((X.shape[0], 1))
         else:
             self.batch_effects = batch_effects

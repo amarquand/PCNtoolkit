@@ -21,6 +21,7 @@ from typing import (
     Hashable,
     List,
     Mapping,
+    Optional,
     Sequence,
     Tuple,
     Union,
@@ -134,7 +135,7 @@ class NormData(xr.Dataset):
         name: str,
         X: np.ndarray,
         y: np.ndarray,
-        batch_effects: np.ndarray,
+        batch_effects: Optional[np.ndarray] = None,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """Create a NormData object from numpy arrays.
@@ -165,8 +166,11 @@ class NormData(xr.Dataset):
             X = X[:, None]
         if y.ndim == 1:
             y = y[:, None]
-        if batch_effects.ndim == 1:
-            batch_effects = batch_effects[:, None]
+        if batch_effects is not None:   
+            if batch_effects.ndim == 1:
+                batch_effects = batch_effects[:, None]
+        else:
+            batch_effects = np.zeros((X.shape[0], 1))
         return cls(
             name,
             {
@@ -503,6 +507,23 @@ class NormData(xr.Dataset):
             A single concatenated numpy array of strings.
         """
         return reduce(np.char.add, arrays)
+    
+    def chunk(self, n_chunks: int) -> Generator[NormData]:
+        """
+        Split the data into n_chunks with roughly equal number of response variables
+
+        Parameters
+        ----------
+        n_chunks : int
+            The number of chunks to split the data into.
+
+        Returns
+        -------
+        Generator[NormData]
+            A generator of NormData instances.
+        """
+        for i in range(n_chunks):
+            yield self.isel(response_vars=slice(i, None, n_chunks))
 
     def train_test_split(
         self,
