@@ -108,3 +108,4 @@ example_notebooks/resources
 # Sphinx documentation
 docs/_build/
 docs/autoapi/
+example_notebooks/save_dir/*
