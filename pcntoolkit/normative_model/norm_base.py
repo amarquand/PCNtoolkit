@@ -79,9 +79,7 @@ from typing import Any, List, Optional
 import numpy as np
 import xarray as xr
 
-from pcntoolkit.dataio.basis_expansions import create_bspline_basis, create_poly_basis
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.dataio.scaler import Scaler
 from pcntoolkit.plotting.plotter import plot_centiles, plot_qq
 
 # pylint: disable=unused-import
@@ -91,9 +89,9 @@ from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.hbr.hbr import HBR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.basis_function import BasisFunction, create_basis_function
 from pcntoolkit.util.evaluator import Evaluator
-
-from pcntoolkit.util.basis_function import BasisFunction, PolynomialBasisFunction
+from pcntoolkit.util.scaler import Scaler
 
 from .norm_conf import NormConf
 
@@ -223,7 +221,8 @@ class NormBase(ABC):
         self.evaluator = Evaluator()
         self.inscalers: dict = {}
         self.outscalers: dict = {}
-        self.basis_function: BasisFunction = None
+        self.basis_function: BasisFunction
+        self.basis_column:Optional[int] = None
 
     def fit(self, data: NormData) -> None:
         """
@@ -546,18 +545,19 @@ class NormBase(ABC):
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_normative_model.regression_models = transfered_models
-        self.transfer_basis_expansion(transfered_normative_model)
+        self.transfer_basis_function(transfered_normative_model)
         self.transfer_scalers(transfered_normative_model)
         if transfered_normative_model.norm_conf.savemodel:
             transfered_normative_model.save()
         return transfered_normative_model
     
-    def transfer_basis_expansion(self, transfered_normative_model: "NormBase") -> None:
+    def transfer_basis_function(self, transfered_normative_model: "NormBase") -> None:
         """
         Transfers the basis expansion from the original model to the transferred model.
         """
-        if hasattr(self, "bspline_basis"):
-            transfered_normative_model.bspline_basis = copy.deepcopy(self.bspline_basis)
+        transfered_normative_model.basis_function = copy.deepcopy(self.basis_function)
+        transfered_normative_model.basis_function.compute_max = False
+        transfered_normative_model.basis_function.compute_min = False
 
     def transfer_scalers(self, transfered_normative_model: "NormBase") -> None:
         """
@@ -967,7 +967,7 @@ class NormBase(ABC):
         """
         self.scale_forward(data)
         # TODO: pass kwargs from config to expand_basis
-        self.expand_basis(data, "scaled_X", True)
+        self.expand_basis(data, "scaled_X")
 
     def postprocess(self, data: NormData) -> None:
         """Apply postprocessing to the data.
@@ -1132,7 +1132,7 @@ class NormBase(ABC):
         """
         data.scale_backward(self.inscalers, self.outscalers)
 
-    def expand_basis(self, data: NormData, source_array: str, intercept: bool = False):
+    def expand_basis(self, data: NormData, source_array: str):
         """Expand the basis of a source array using a specified basis function.
 
         Parameters
@@ -1154,80 +1154,11 @@ class NormBase(ABC):
             If the source array does not exist or if required parameters are missing
         """
         if not hasattr(self, "basis_function"):
-            self.basis_function = create_basis_function(self.norm_conf.basis_function, self.norm_conf.order, self.norm_conf.nknots)
-        self.basis_function.expand(data, source_array)
-
-        # Expand the basis of the source array
-        if source_array == "scaled_X":
-            if "scaled_X" not in data.data_vars:
-                raise ValueError(
-                    "scaled_X does not exist. Please scale the data first using the scale_forward method."
-                )
-            source_array = data.scaled_X
-        elif source_array == "X":
-            source_array = data.X
-
-        # Every basis expansion has a linear component, so we always include the original data
-        all_arrays = [source_array.data]
-
-        # Get the original named dimensions of the data
-        all_dims = list(data.covariates.to_numpy())
-
-        # Create a new array with the expanded basis
-        basis_expansion = self.norm_conf.basis_function
-        basis_column = self.norm_conf.basis_column
-        if basis_expansion == "polynomial":
-            # Expand the basis with polynomial basis functions
-            expanded_basis = create_poly_basis(
-                source_array.data[:, basis_column], self.norm_conf.order
-            )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion == "bspline":
-            # Expand the basis with bspline basis functions
-            if self.bspline_basis is None:
-                order = self.norm_conf.order
-                nknots = self.norm_conf.nknots
-                xmin = np.min(source_array.data[:, basis_column])
-                xmax = np.max(source_array.data[:, basis_column])
-                diff = xmax - xmin
-                xmin = xmin - 0.2 * diff
-                xmax = xmax + 0.2 * diff
-                self.bspline_basis = create_bspline_basis(
-                    xmin=xmin,
-                    xmax=xmax,
-                    p=order,
-                    nknots=nknots,
-                )
-            expanded_basis = np.array(
-                [self.bspline_basis(c) for c in source_array.data[:, basis_column]]
-            )
-            # Add the expanded basis to the list of arrays
-            all_arrays.append(expanded_basis)
-            # Add the names of the new dimensions to the list of dimensions
-            all_dims.extend(
-                [f"{basis_expansion}_{i}" for i in range(expanded_basis.shape[1])]
-            )
-        elif basis_expansion in ["none", "linear"]:
-            # Do not expand the basis
-            pass
-
-        if intercept:
-            all_dims.append("intercept")
-            all_arrays.append(np.ones((source_array.to_numpy().shape[0], 1)))
-
-        Phi = np.concatenate(all_arrays, axis=1)
-        data["Phi"] = xr.DataArray(
-            Phi,
-            coords={"basis_functions": all_dims},
-            dims=["datapoints", "basis_functions"],
-        )
-        pass
-
+            self.basis_function = create_basis_function(self.norm_conf.basis_function, source_array, **self.norm_conf.basis_function_kwargs)
+        if not self.basis_function.is_fitted:
+            self.basis_function.fit(data)
+        self.basis_function.transform(data)
+       
     def save(self, path: Optional[str] = None) -> None:
         if path is not None:
             self.norm_conf.set_save_dir(path)
@@ -1245,13 +1176,7 @@ class NormBase(ABC):
         if self.norm_conf.basis_function == "bspline" and hasattr(
             self, "bspline_basis"
         ):
-            knots = self.bspline_basis.knot_vector
-            metadata["bspline_basis"] = {
-                "xmin": knots[0],
-                "xmax": knots[-1],
-                "nknots": self.norm_conf.nknots,
-                "p": self.norm_conf.order,
-            }
+            metadata["basis_function"] = copy.deepcopy(self.basis_function)
 
         os.makedirs(self.norm_conf.save_dir, exist_ok=True)
         print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
@@ -1299,8 +1224,8 @@ class NormBase(ABC):
         
         self.regression_model_type = globals()[metadata["regression_model_type"]]
 
-        if "bspline_basis" in metadata:
-            self.bspline_basis = create_bspline_basis(**metadata["bspline_basis"])
+        if "basis_function" in metadata:
+            self.basis_function = create_basis_function(metadata["basis_function"])
         self.inscalers = {
             k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
         }

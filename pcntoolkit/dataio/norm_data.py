@@ -21,6 +21,7 @@ from typing import (
     Hashable,
     List,
     Mapping,
+    Optional,
     Sequence,
     Tuple,
     Union,
@@ -134,7 +135,7 @@ class NormData(xr.Dataset):
         name: str,
         X: np.ndarray,
         y: np.ndarray,
-        batch_effects: np.ndarray,
+        batch_effects: Optional[np.ndarray] = None,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """Create a NormData object from numpy arrays.
@@ -165,8 +166,11 @@ class NormData(xr.Dataset):
             X = X[:, None]
         if y.ndim == 1:
             y = y[:, None]
-        if batch_effects.ndim == 1:
-            batch_effects = batch_effects[:, None]
+        if batch_effects is not None:   
+            if batch_effects.ndim == 1:
+                batch_effects = batch_effects[:, None]
+        else:
+            batch_effects = np.zeros((X.shape[0], 1))
         return cls(
             name,
             {

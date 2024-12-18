@@ -188,11 +188,16 @@ def test_transfer(
     transfer_norm_data_from_arrays: NormData,
     n_mcmc_samples,
 ):
-    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10)
+    transfer_samples = 10
+    transfer_tune = 5
+    transfer_cores = 1
+    transfer_init = "jitter+adapt_diag_grad"
+    transfer_chains = 2
+    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10, draws=transfer_samples, tune=transfer_tune, cores=transfer_cores, nuts_sampler="nutpie", init=transfer_init, chains=transfer_chains)
     for model in hbr_transfered.regression_models.values():
         assert model.pymc_model.coords["batch_effect_1"] == (3,)
         assert model.is_fitted
-        assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)
+        assert model.idata.posterior.mu_samples.shape[:2] == (transfer_chains, transfer_samples)
 
 
 def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data_from_arrays: NormData):

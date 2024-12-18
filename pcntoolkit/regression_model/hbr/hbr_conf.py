@@ -61,7 +61,7 @@ CHAINS = 2
 CORES = 1
 LIKELIHOOD = "Normal"
 NUTS_SAMPLER = "pymc"
-INIT = "jitter+adapt_diag"
+INIT = "jitter+adapt_diag_grad"
 
 
 @dataclass(frozen=True)
@@ -231,6 +231,8 @@ class HBRConf(RegConf):
         if likelihood == "Normal":
             args_filt["mu"] = Param.from_dict(dct["mu"])
             args_filt["sigma"] = Param.from_dict(dct["sigma"])
+            args_filt["epsilon"] = None
+            args_filt["delta"] = None
         elif likelihood.startswith("SHASH"):
             args_filt["mu"] = Param.from_dict(dct["mu"])
             args_filt["sigma"] = Param.from_dict(dct["sigma"])
@@ -257,6 +259,8 @@ class HBRConf(RegConf):
             "cores": self.cores,
             "likelihood": self.likelihood,
             "nuts_sampler": self.nuts_sampler,
+            "init": self.init,
+            "chains": self.chains,
         }
         if self.mu:
             conf_dict["mu"] = self.mu.to_dict()

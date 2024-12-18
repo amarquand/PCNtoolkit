@@ -14,7 +14,7 @@ directory creation when needed.
 
 import os
 import warnings
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import Any, Callable, Dict, List, Optional
 
 from pcntoolkit.util.utils import get_type_of_object
@@ -37,12 +37,10 @@ class NormConf:
     basis_function : str, optional
         Type of basis function to use ('linear', 'polynomial', 'bspline', 'none'),
         by default "linear"
-    basis_column : int, optional
-        Column index for basis expansion, by default 0
-    order : int, optional
-        Order of polynomial or bspline basis functions, by default 3
-    nknots : int, optional
-        Number of knots for bspline basis functions, by default 5
+    basis_function_kwargs : dict, optional
+        Keyword arguments for basis function, by default {}
+        For polynomial basis: order
+        For bspline basis: order, nknots, left_expand, right_expand, knot_method
     inscaler : str, optional
         Input data scaling method ('none', 'standardize', 'minmax'), by default "none"
     outscaler : str, optional
@@ -59,9 +57,7 @@ class NormConf:
     saveresults: bool = False
     save_dir: str = "./saves"
     basis_function: str = "linear"
-    basis_column: int = 0
-    order: int = 3
-    nknots: int = 5
+    basis_function_kwargs: dict=field(default_factory=dict)
     inscaler: str = "none"
     outscaler: str = "none"
     normative_model_name: Optional[str] = None
@@ -194,67 +190,6 @@ class NormConf:
                 add_problem(
                     f"basis_function_type is not one of the possible values: {acceptable_basis_functions}"
                 )
-
-            if self.basis_function == "polynomial":
-                self.detect_polynomial_basis_expansion_problem(add_problem)
-
-            if self.basis_function == "bspline":
-                self.detect_bspline_basis_expansion_problem(add_problem)
-
-    def detect_bspline_basis_expansion_problem(
-        self, add_problem: Callable[[str], None]
-    ) -> None:
-        """Detect problems with B-spline basis expansion configuration.
-
-        Validates that:
-        - nknots is an integer >= 2
-        - order is an integer >= 1
-        - order is less than nknots
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        nknotsisint = isinstance(self.nknots, int)
-        orderisint = isinstance(self.order, int)
-        if not nknotsisint:
-            add_problem(f"nknots is not an integer, but {type(self.nknots).__name__}")
-        else:
-            if self.nknots < 2:
-                add_problem(f"nknots must be at least 2, but is {self.nknots}")
-
-        if not orderisint:
-            add_problem(f"order is not an integer, but {type(self.order).__name__}")
-
-        else:
-            if self.order < 1:
-                add_problem(f"order must be at least 1, but is {self.order}")
-            if nknotsisint:
-                if self.order > self.nknots:
-                    add_problem(
-                        f"order must be smaller than nknots, but order is {self.order} and nknots is {self.nknots}"
-                    )
-
-    def detect_polynomial_basis_expansion_problem(
-        self, add_problem: Callable[[str], None]
-    ) -> None:
-        """Detect problems with polynomial basis expansion configuration.
-
-        Validates that:
-        - order is an integer >= 1
-
-        Parameters
-        ----------
-        add_problem : Callable[[str], None]
-            Function to add problem description to the list of configuration problems
-        """
-        orderisint = isinstance(self.order, int)
-        if not orderisint:
-            add_problem(f"order is not an integer, but {type(self.order).__name__}")
-        else:
-            if self.order < 1:
-                add_problem(f"order must be at least 1, but is {self.order}")
 
     def detect_scaler_problem(
         self, add_problem: Callable[[str], None], scaler_attr_str: str
