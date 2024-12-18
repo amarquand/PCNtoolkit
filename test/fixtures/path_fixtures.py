@@ -4,7 +4,7 @@ from tempfile import gettempdir
 import numpy as np
 import pytest
 
-from pytest_tests.fixtures.data_fixtures import (
+from test.fixtures.data_fixtures import (
     generate_batch_effects,
     generate_covariates,
     generate_response_vars,

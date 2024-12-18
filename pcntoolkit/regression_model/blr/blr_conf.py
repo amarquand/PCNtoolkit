@@ -27,7 +27,7 @@ BLRConf(param1=value1, param2=value2)
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, Optional
 
 from pcntoolkit.regression_model.reg_conf import RegConf
 
@@ -44,7 +44,8 @@ RANDOM_INTERCEPT = False
 HETEROSKEDASTIC = False
 INTERCEPT_VAR = False
 RANDOM_INTERCEPT_VAR = False
-
+WARP = None
+WARP_REPARAM = False
 
 @dataclass(frozen=True)
 class BLRConf(RegConf):
@@ -115,15 +116,14 @@ class BLRConf(RegConf):
     random_intercept_var: bool = RANDOM_INTERCEPT_VAR
 
     # TODO implement warp
-    # warp: WarpBase = None
-    # warp_reparam: bool = Falses
+    warp: Optional[str] = WARP
+    warp_reparam: bool = WARP_REPARAM
 
     def detect_configuration_problems(self) -> list[str]:
         """
         Detects problems in the configuration and returns them as a list of strings.
         The super class will throw an exception if the configuration is invalid, and show the problems.
         """
-
         configuration_problems = []
 
         def add_problem(problem: str) -> None:
@@ -160,6 +160,8 @@ class BLRConf(RegConf):
             random_intercept_var=args_filt.get(
                 "random_intercept_var", RANDOM_INTERCEPT_VAR
             ),
+            warp=args_filt.get("warp", WARP),
+            warp_reparam=args_filt.get("warp_reparam", WARP_REPARAM),
         )
 
     @classmethod
@@ -177,6 +179,8 @@ class BLRConf(RegConf):
             heteroskedastic=dct["heteroskedastic"],
             intercept_var=dct["intercept_var"],
             random_intercept_var=dct["random_intercept_var"],
+            warp=dct["warp"],
+            warp_reparam=dct["warp_reparam"],
         )
     
     def to_dict(self, path:str|None="") -> dict[str, Any]:
@@ -193,6 +197,8 @@ class BLRConf(RegConf):
             "heteroskedastic": self.heteroskedastic,
             "intercept_var": self.intercept_var,
             "random_intercept_var": self.random_intercept_var,
+            "warp": self.warp,
+            "warp_reparam": self.warp_reparam,
         }
 
     @property

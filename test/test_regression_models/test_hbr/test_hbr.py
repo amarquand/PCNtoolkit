@@ -1,9 +1,9 @@
 import pytest
 
 from pcntoolkit.regression_model.hbr.hbr import HBR
-from pytest_tests.fixtures.data_fixtures import *
-from pytest_tests.fixtures.hbr_model_fixtures import *
-from pytest_tests.fixtures.path_fixtures import *
+from test.fixtures.data_fixtures import *
+from test.fixtures.hbr_model_fixtures import *
+from test.fixtures.path_fixtures import *
 
 """
 This file contains tests for the HBR class in the PCNtoolkit.

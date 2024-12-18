@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pytest_tests.fixtures.norm_data_fixtures import *
+from test.fixtures.norm_data_fixtures import *
 
 """
 This file contains tests for the NormData class in the PCNtoolkit.
