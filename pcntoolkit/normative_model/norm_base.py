@@ -80,7 +80,6 @@ import numpy as np
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.plotting.plotter import plot_centiles, plot_qq
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr.blr import BLR  # noqa: F401 # type: ignore
@@ -91,6 +90,7 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.basis_function import BasisFunction, create_basis_function
 from pcntoolkit.util.evaluator import Evaluator
+from pcntoolkit.util.plotter import plot_centiles, plot_qq
 from pcntoolkit.util.scaler import Scaler
 
 from .norm_conf import NormConf
