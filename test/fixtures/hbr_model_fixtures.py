@@ -26,9 +26,9 @@ components for creating and configuring normative models, particularly focusing 
 the Hierarchical Bayesian Regression (HBR) approach.
 """
 
-N_SAMPLES = 1500
-N_TUNES = 500
-N_CORES = 4
+N_SAMPLES = 15
+N_TUNES = 5
+N_PYMC_CORES = 4
 
 
 @pytest.fixture
@@ -57,8 +57,8 @@ def n_tunes():
 
 
 @pytest.fixture
-def n_cores():
-    return N_CORES
+def n_pymc_cores():
+    return N_PYMC_CORES
 
 
 @pytest.fixture
@@ -68,7 +68,7 @@ def n_mcmc_chains():
 
 @pytest.fixture
 def sample_args():
-    return {"draws": N_SAMPLES, "tune": N_TUNES, "cores": N_CORES}
+    return {"draws": N_SAMPLES, "tune": N_TUNES, "pymc_cores": N_PYMC_CORES}
 
 
 @pytest.fixture
@@ -89,26 +89,24 @@ def norm_conf_for_generic_model(log_dir, save_dir):
 @pytest.fixture
 def norm_conf_dict_for_hbr_test_model(
     alg,
-    responsefile,
+    fit_files,
     maskfile,
-    covfile,
-    testcov,
-    testresp,
+    test_files,
     savemodel,
-    trbefile,
-    tsbefile,
     save_dir,
 ):
+    responsefile, covfile, trbefile = fit_files
+    testcov, testresp, tsbefile = test_files
     return {
-        "responses": responsefile,
+        "resp": responsefile,
         "maskfile": maskfile,
-        "covfile": covfile,
-        "testcov": testcov,
-        "testresp": testresp,
+        "cov": covfile,
+        "t_resp": testresp,
+        "t_cov": testcov,
         "alg": alg,
         "savemodel": savemodel,
-        "trbefile": trbefile,
-        "tsbefile": tsbefile,
+        "be": trbefile,
+        "t_be": tsbefile,
         "save_dir": save_dir + "/hbr",
     }
 
@@ -116,30 +114,28 @@ def norm_conf_dict_for_hbr_test_model(
 @pytest.fixture
 def hbr_conf_dict(
     save_dir,
-    responsefile,
-    maskfile,
-    covfile,
-    testcov,
-    testresp,
-    trbefile,
-    tsbefile,
+    fit_files,
+    test_files,
+    maskfile  
 ):
+    responsefile, covfile, trbefile = fit_files
+    testcov, testresp, tsbefile = test_files
     return {
-        "responses": responsefile,
+        "resp": responsefile,
         "maskfile": maskfile,
-        "covfile": covfile,
-        "testcov": testcov,
-        "testresp": testresp,
+        "cov": covfile,
+        "t_resp": testresp,
+        "t_cov": testcov,
         "alg": "hbr",
         "savemodel": True,
-        "trbefile": trbefile,
-        "tsbefile": tsbefile,
+        "be": trbefile,
+        "t_be": tsbefile,
         "save_dir": save_dir + "/hbr",
         "basis_function": "bspline",
         "linear_mu": True,
         "linear_sigma": True,
         "mapping_sigma": "softplus",
-        "cores": 2,
+        "pymc_cores": 2,
         "draws": 10,
         "tune": 10,
         "chains": 2,
@@ -183,7 +179,7 @@ def hbrconf(mu, sigma, n_mcmc_samples):
         draws=n_mcmc_samples,
         tune=10,
         chains=2,
-        cores=2,
+        pymc_cores=2,
         likelihood="SHASHb",
         mu=mu,
         sigma=sigma,

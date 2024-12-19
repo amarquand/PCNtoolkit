@@ -65,7 +65,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     hbr = HBR.from_args("test_name", sample_args | args)
     assert hbr.reg_conf.draws == sample_args.get("draws")
     assert hbr.reg_conf.tune == sample_args.get("tune")
-    assert hbr.reg_conf.cores == sample_args.get("cores")
+    assert hbr.reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.reg_conf.likelihood == "Normal"
     assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
@@ -84,7 +84,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     hbr_dict = hbr.to_dict()
     assert hbr_dict["reg_conf"]["draws"] == sample_args.get("draws")
     assert hbr_dict["reg_conf"]["tune"] == sample_args.get("tune")
-    assert hbr_dict["reg_conf"]["cores"] == sample_args.get("cores")
+    assert hbr_dict["reg_conf"]["pymc_cores"] == sample_args.get("pymc_cores")
     assert hbr_dict["reg_conf"]["likelihood"] == "Normal"
     assert hbr_dict["reg_conf"]["mu"]["linear"] == args.get("linear_mu", False)
     if args.get("linear_mu", False):
@@ -108,7 +108,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     hbr = HBR.from_dict(hbr_dict)
     assert hbr.reg_conf.draws == sample_args.get("draws")
     assert hbr.reg_conf.tune == sample_args.get("tune")
-    assert hbr.reg_conf.cores == sample_args.get("cores")
+    assert hbr.reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.reg_conf.likelihood == "Normal"
     assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):

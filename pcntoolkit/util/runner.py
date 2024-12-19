@@ -153,8 +153,8 @@ class Runner:
                     fold_model.predict(predict_data)
             return kfold_predict_chunk_fn
         else:
-            def predict_chunk_fn(model: NormBase, data: NormData):
-                model.predict(data)
+            def predict_chunk_fn(chunk: NormData):
+                model.predict(chunk)
             return predict_chunk_fn
         
     # ? Do we need to implement this?

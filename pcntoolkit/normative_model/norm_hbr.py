@@ -146,7 +146,7 @@ class NormHBR(NormBase):
         reg_conf_dict: dict[str, Any] = self.default_reg_conf.to_dict()
         reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
         reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
-        reg_conf_dict["cores"] = kwargs.get("cores", reg_conf_dict["cores"])
+        reg_conf_dict["pymc_cores"] = kwargs.get("pymc_cores", reg_conf_dict["pymc_cores"])
         reg_conf_dict["nuts_sampler"] = kwargs.get("nuts_sampler", reg_conf_dict["nuts_sampler"])
         reg_conf_dict["init"] = kwargs.get("init", reg_conf_dict["init"])
         reg_conf_dict["chains"] = kwargs.get("chains", reg_conf_dict["chains"])
