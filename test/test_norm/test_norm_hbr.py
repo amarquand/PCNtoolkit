@@ -77,7 +77,7 @@ def test_normhbr_from_args(
     hbr = NormHBR.from_args(norm_args | sample_args | args)
     assert hbr.default_reg_conf.draws == sample_args.get("draws")
     assert hbr.default_reg_conf.tune == sample_args.get("tune")
-    assert hbr.default_reg_conf.cores == sample_args.get("cores")
+    assert hbr.default_reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.default_reg_conf.likelihood == "Normal"
     assert hbr.default_reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
@@ -193,7 +193,7 @@ def test_transfer(
     transfer_cores = 1
     transfer_init = "jitter+adapt_diag_grad"
     transfer_chains = 2
-    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10, draws=transfer_samples, tune=transfer_tune, cores=transfer_cores, nuts_sampler="nutpie", init=transfer_init, chains=transfer_chains)
+    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10, draws=transfer_samples, tune=transfer_tune, pymc_cores=transfer_cores, nuts_sampler="nutpie", init=transfer_init, chains=transfer_chains)
     for model in hbr_transfered.regression_models.values():
         assert model.pymc_model.coords["batch_effect_1"] == (3,)
         assert model.is_fitted

@@ -256,7 +256,7 @@ class HBR(RegressionModel):
             new_hbr_model.idata = pm.sample(
                 hbrconf.draws,
                 tune=hbrconf.tune,
-                cores=hbrconf.cores,
+                cores=hbrconf.pymc_cores,
                 chains=hbrconf.chains,
                 nuts_sampler=hbrconf.nuts_sampler,  # type: ignore
             )
