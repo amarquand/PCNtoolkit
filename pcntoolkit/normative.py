@@ -13,6 +13,7 @@ from pcntoolkit.normative_model.norm_factory import (
     create_normative_model_from_args,
     load_normative_model,
 )
+from pcntoolkit.util.runner import Runner
 
 
 def fit(conf_dict: dict) -> None:
@@ -22,11 +23,10 @@ def fit(conf_dict: dict) -> None:
     :param conf_dict: Dictionary containing configuration options
     """
 
+    runner = Runner.from_args(conf_dict)
     fit_data = load_data(conf_dict)
     normative_model: NormBase = create_normative_model_from_args(conf_dict)
-    normative_model.fit(fit_data)
-    if normative_model.norm_conf.savemodel:
-        normative_model.save()
+    runner.fit(normative_model, fit_data)
 
 
 def predict(conf_dict: dict) -> None:
@@ -35,10 +35,10 @@ def predict(conf_dict: dict) -> None:
 
     :param conf_dict: Dictionary containing configuration options
     """
-
+    runner = Runner.from_args(conf_dict)
     predict_data = load_data(conf_dict)
     normative_model = load_normative_model(conf_dict["save_dir"])
-    normative_model.predict(predict_data)
+    runner.predict(normative_model, predict_data)
 
 
 def fit_predict(conf_dict: dict) -> None:
@@ -48,6 +48,7 @@ def fit_predict(conf_dict: dict) -> None:
     :param conf_dict: Dictionary containing configuration options
     """
 
+    runner = Runner.from_args(conf_dict)
     fit_data = load_data(conf_dict)
     predict_data = load_test_data(conf_dict)
 
@@ -56,18 +57,7 @@ def fit_predict(conf_dict: dict) -> None:
     ), "Fit and predict data are not compatible."
 
     normative_model: NormBase = create_normative_model_from_args(conf_dict)
-    normative_model.fit_predict(fit_data, predict_data)
-    if normative_model.norm_conf.savemodel:
-        normative_model.save()
-
-
-def estimate(conf_dict: dict) -> None:
-    """Legacy function signature. Calls fit_predict.
-
-    Args:
-        conf_dict (dict): Dictionary containing configuration options
-    """
-    fit_predict(conf_dict)
+    runner.fit_predict(normative_model, fit_data, predict_data)
 
 
 def load_data(conf_dict: dict) -> NormData:
@@ -76,13 +66,13 @@ def load_data(conf_dict: dict) -> NormData:
     Returns:
         NormData: NormData object containing the data
     """
-    respfile = conf_dict.pop("responses")
-    covfile = conf_dict.pop("covfile")
-    maskfile = conf_dict.pop("maskfile", None)
+    respfile = conf_dict.pop("resp")
+    covfile = conf_dict.pop("cov")
+    maskfile = conf_dict.pop("mask", None)
 
     X = fileio.load(covfile)
     Y, _ = load_response_vars(respfile, maskfile=maskfile)
-    batch_effects = conf_dict.pop("trbefile", None)
+    batch_effects = conf_dict.pop("be", None)
     if batch_effects:
         batch_effects = fileio.load(batch_effects)
     else:
@@ -101,13 +91,13 @@ def load_test_data(conf_dict: dict) -> NormData:
     Returns:
         NormData: NormData object containing the test data
     """
-    respfile = conf_dict.pop("testresp")
-    covfile = conf_dict.pop("testcov")
-    maskfile = conf_dict.pop("maskfile", None)
+    respfile = conf_dict.pop("t_resp")
+    covfile = conf_dict.pop("t_cov")
+    maskfile = conf_dict.pop("mask", None)
 
     X = fileio.load(covfile)
     Y, _ = load_response_vars(respfile, maskfile=maskfile)
-    batch_effects = conf_dict.pop("tsbefile", None)
+    batch_effects = conf_dict.pop("t_be", None)
     if batch_effects:
         batch_effects = fileio.load(batch_effects)
     else:
@@ -155,26 +145,34 @@ def get_argparser() -> argparse.ArgumentParser:
     """
     #  parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
-    parser.add_argument("responses")
+    parser.add_argument("-a", "--alg", help="algorithm", dest="alg", default="gpr")
     parser.add_argument(
         "-f", "--func", help="Function to call", dest="func", default="estimate"
     )
     parser.add_argument(
-        "-m", "--maskfile", help="mask file", dest="maskfile", default=None
+        "-r", "--responses", help="responses file", dest="resp", default=None
     )
     parser.add_argument(
-        "-c", "--covariates", help="covariates file", dest="covfile", default=None
+        "-c", "--covariates", help="covariates file", dest="cov", default=None
     )
+    parser.add_argument(
+        "-t",
+        "--test_responses",
+        help="responses (test data)",
+        dest="t_resp",
+        default=None,
+    )
+    parser.add_argument(
+        "-e",
+        "--test_covariates",
+        help="covariates (test data)",
+        dest="t_cov",
+        default=None,
+    )
+    parser.add_argument("-m", "--mask", help="mask file", dest="mask", default=None)
     parser.add_argument(
         "-k", "--cvfolds", help="cross-validation folds", dest="cvfolds", default=None
     )
-    parser.add_argument(
-        "-t", "--testcov", help="covariates (test data)", dest="testcov", default=None
-    )
-    parser.add_argument(
-        "-r", "--testresp", help="responses (test data)", dest="testresp", default=None
-    )
-    parser.add_argument("-a", "--alg", help="algorithm", dest="alg", default="gpr")
     return parser
 
 
@@ -244,38 +242,27 @@ def make_synthetic_data() -> None:
     np.savetxt("batch_effects_test.csv", batch_effects)
 
 
-def main() -> None:
+def main(*args) -> None:
     """Main function to run the normative modeling functions.
 
     Raises:
         ValueError: If the function specified in the configuration dictionary is unknown.
 
     """
-    conf_dict = {
-        "responses": "/home/stijn/Projects/PCNtoolkit/test/resources/data/responses.csv",
-        "func": "predict",
-        "maskfile": None,
-        "covfile": "/home/stijn/Projects/PCNtoolkit/test/resources/data/covariates.csv",
-        "cvfolds": None,
-        "testcov": None,
-        "testresp": None,
-        "alg": "hbr",
-        "trbefile": "/home/stijn/Projects/PCNtoolkit/test/resources/data/batch_effects.csv",
-        "save_dir": "/home/stijn/Projects/PCNtoolkit/test/resources/hbr/save_load_test",
-        "log_dir": "/home/stijn/Projects/PCNtoolkit/test/resources/hbr/log_test",
-        "basis_function": "bspline",
-    }
-
-    func = conf_dict.pop("func")
-    if func == "fit":
-        fit(conf_dict)
-    elif func == "predict":
-        predict(conf_dict)
-    elif func == "estimate":
-        estimate(conf_dict)
+    parsed_args = get_conf_dict_from_args() 
+    if parsed_args['func'] == "fit":
+        fit(parsed_args)    
+    elif parsed_args['func'] == "predict":
+        predict(parsed_args)
+    elif parsed_args['func'] == "fit_predict":
+        fit_predict(parsed_args)
     else:
-        raise ValueError(f"Unknown function {func}.")
+        raise ValueError(f"Unknown function {parsed_args['func']}.")
+
+def entrypoint(*args):
+    main(*args[1:])
 
 
 if __name__ == "__main__":
     main()
+

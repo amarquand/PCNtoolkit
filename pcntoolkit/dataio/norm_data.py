@@ -189,70 +189,6 @@ class NormData(xr.Dataset):
             attrs=attrs,
         )
 
-    # def expand_basis(
-    #     self,
-    #     source_array_name: str,
-    #     basis_function: str,
-    #     basis_column: int = 0,
-    #     linear_component: bool = True,
-    #     **kwargs: Any,
-    # ) -> None:
-    #     """Expand the basis of a source array using a specified basis function.
-
-    #     Parameters
-    #     ----------
-    #     source_array_name : str
-    #         The name of the source array to expand ('X' or 'scaled_X')
-    #     basis_function : str
-    #         The basis function to use ('polynomial', 'bspline', 'linear', or 'none')
-    #     basis_column : int, optional
-    #         The column index to apply the basis function, by default 0
-    #     linear_component : bool, optional
-    #         Whether to include a linear component, by default True
-    #     **kwargs : dict
-    #         Additional arguments for basis functions
-
-    #     Raises
-    #     ------
-    #     ValueError
-    #         If the source array does not exist or if required parameters are missing
-    #     """
-    #     all_arrays = []
-    #     all_dims = self.X.dims
-    #     source_array: xr.DataArray = None  # type: ignore
-    #     if source_array_name == "scaled_X":
-    #         if self.scaled_X is None:
-    #             raise ValueError(
-    #                 "scaled_X does not exist. Please scale the data first using the scale_forward method."
-    #             )
-    #         source_array = self.scaled_X
-    #     elif source_array_name == "X":
-    #         source_array = self.X
-
-    #     if basis_function == "polynomial":
-    #         expanded_basis = create_poly_basis(
-    #             source_array.data[:, basis_column], self.norm_conf.order
-    #         )
-    #         all_arrays.append(expanded_basis)
-    #         all_dims.extend([f"poly_{i}" for i in range(expanded_basis.shape[1])])
-    #     elif basis_function == "bspline":
-    #         bspline_basis = kwargs["bspline_basis"]
-    #         if bspline_basis is None:
-    #             raise ValueError(
-    #                 "bspline_basis is not defined. Please provide a bspline basis function."
-    #             )
-    #         expanded_basis = np.array(
-    #             [bspline_basis(c) for c in source_array.data[:, basis_column]]  # type: ignore
-    #         )
-    #         all_arrays.append(expanded_basis)
-    #         all_dims.extend([f"bspline_{i}" for i in range(expanded_basis.shape[1])])
-    #     elif basis_function == "linear" or linear_component:
-    #         all_arrays.append(source_array.data)
-    #         all_dims.extend([f"linear_{i}" for i in range(source_array.data.shape[1])])
-    #     elif basis_function in ["none"]:
-    #         # Do not expand the basis
-    #         pass
-
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
         """
@@ -527,7 +463,7 @@ class NormData(xr.Dataset):
 
     def train_test_split(
         self,
-        splits: Tuple[float, ...],
+        splits: Tuple[float, ...] | List[float] | float = 0.8,
         split_names: Tuple[str, ...] | None = None,  # type: ignore
     ) -> Tuple[NormData, ...]:
         """
@@ -535,8 +471,8 @@ class NormData(xr.Dataset):
 
         Parameters
         ----------
-        splits : Tuple[float, ...]
-            A tuple specifying the proportion of data for each split.
+        splits : Tuple[float, ...] | List[float] | float
+            A tuple specifying the proportion of data for each split. Or a float specifying the proportion of data for the train set.
         split_names : Tuple[str, ...] | None, optional
             Names for the splits, by default None.
 
@@ -545,6 +481,10 @@ class NormData(xr.Dataset):
         Tuple[NormData, ...]
             A tuple containing the training and testing NormData instances.
         """
+        if isinstance(splits, float):
+            splits = (splits, 1 - splits)
+        elif isinstance(splits, list):
+            splits = tuple(splits)
         batch_effects_stringified = self.concatenate_string_arrays(
             *[
                 self.batch_effects[:, i].astype(str)
@@ -724,7 +664,21 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def select_batch_effects(self, batch_effects: Dict[str, List[str]]) -> NormData:
+    def split_batch_effects(self, batch_effects: Dict[str, List[str]], names: Tuple[str, str] | None = None) -> Tuple[NormData, NormData]:
+        """
+        Split the data into two datasets, one with the specified batch effects and one without.
+        """
+        A = self.select_batch_effects(batch_effects)
+        B = self.select_batch_effects(batch_effects, invert=True)
+        A.create_batch_effects_maps()
+        B.create_batch_effects_maps()
+        if names is not None:
+            A.name = names[0]
+            B.name = names[1]
+        return A, B
+
+
+    def select_batch_effects(self, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
         """
         Select only the specified batch effects.
 
@@ -743,6 +697,8 @@ class NormData(xr.Dataset):
             this_batch_effect = self.batch_effects.sel(batch_effect_dims=key)
             for value in values:
                 mask = np.logical_or(mask, this_batch_effect == value)
+        if invert:
+            mask = ~mask
 
         to_return = self.where(mask).dropna(dim="datapoints", how="all")
         if isinstance(to_return, xr.Dataset):
@@ -750,6 +706,7 @@ class NormData(xr.Dataset):
                 f"{self.attrs['name']}_selected", to_return
             )
         to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
+
         return to_return
 
     def to_dataframe(self, dim_order: Sequence[Hashable] | None = None) -> pd.DataFrame:
@@ -842,6 +799,10 @@ class NormData(xr.Dataset):
             The name of the dataset.
         """
         return self.attrs["name"]
+    
+    @name.setter
+    def name(self, name: str) -> None:
+        self.attrs["name"] = name
     
     @property
     def response_var_list(self) -> xr.DataArray:
