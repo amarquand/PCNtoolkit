@@ -537,7 +537,9 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
 
 def load(filename, mask=None, text=False, vol=True):
     """
-    Load a numpy array from a file
+    Load array from a file.
+
+    A beautiful waterfall of errors.
 
     Basic usage::
 
@@ -548,17 +550,29 @@ def load(filename, mask=None, text=False, vol=True):
     :param text: whether to write out a text file
     :param vol: whether to load the image as a volume
     """
-
-    if file_type(filename) == 'cifti':
-        x = load_cifti(filename, vol=vol)
-    elif file_type(filename) == 'nifti':
-        x = load_nifti(filename, mask, vol=vol)
-    elif text or file_type(filename) == 'text':
-        x = load_ascii(filename)
-    elif file_type(filename) == 'binary':
+    try:
         x = pd.read_pickle(filename)
-        x = x.to_numpy()
-    return x
+        return x.to_numpy()
+    except Exception:
+        try:
+            x = np.loadtxt(filename)
+            return x
+        except Exception:
+            try:
+                x = load_ascii(filename)
+                return x
+            except Exception:
+                try:
+                    x = load_nifti(filename, mask, vol=vol)
+                    return x
+                except Exception:
+                    try:
+                        x = load_cifti(filename, vol=vol)
+                        return x
+                    except Exception:
+                        raise ValueError("Unknown file type")
+
+
 
 # -------------------
 # sorting routines for batched in normative parallel

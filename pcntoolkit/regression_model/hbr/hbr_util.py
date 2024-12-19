@@ -152,9 +152,9 @@ def centile(
     likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal"],
     mu: NDArray[np.float64],
     sigma: NDArray[np.float64],
-    zs: NDArray[np.float64],
     epsilon: NDArray[np.float64] = None,  # type: ignore
     delta: NDArray[np.float64] = None,  # type: ignore
+    **kwargs,
 ) -> NDArray[np.float64]:
     """Compute centiles for different likelihood models.
 
@@ -178,9 +178,7 @@ def centile(
     NDArray[np.float64]
         Computed quantiles
     """
-    if zs is None:
-        zs = 0
-
+    zs = kwargs.get("zs", 0)
     if likelihood == "SHASHo":
         quantiles = S_inv(zs, epsilon, delta) * sigma + mu
     elif likelihood == "SHASHo2":
@@ -202,9 +200,9 @@ def zscore(
     likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal"],
     mu: NDArray[np.float64],
     sigma: NDArray[np.float64],
-    y: NDArray[np.float64],
     epsilon: NDArray[np.float64] = None,  # type: ignore
     delta: NDArray[np.float64] = None,  # type: ignore
+    **kwargs,
 ) -> NDArray[np.float64]:
     """Compute z-scores for different likelihood models.
 
@@ -233,6 +231,9 @@ def zscore(
     ValueError
         If likelihood is not one of the supported types
     """
+    y = kwargs.get("y", None)
+    if y is None:
+        raise ValueError("y must be provided for z-score computation")
     if likelihood == "SHASHo":
         SHASH = (y - mu) / sigma
         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)

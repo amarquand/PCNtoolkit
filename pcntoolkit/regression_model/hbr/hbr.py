@@ -158,14 +158,16 @@ class HBR(RegressionModel):
             self.idata = pm.sample(
                 self.draws,
                 tune=self.tune,
-                cores=self.cores,
+                cores=self.pymc_cores,
                 chains=self.chains,
                 nuts_sampler=self.nuts_sampler,  # type: ignore
                 init=self.init,
             )
         self.is_fitted = True
 
-    def predict(self, hbrdata: HBRData, extend_inferencedata: bool = True) -> az.InferenceData | dict[str, np.ndarray[Any, Any] ] :
+    def predict(
+        self, hbrdata: HBRData, extend_inferencedata: bool = True
+    ) -> az.InferenceData | dict[str, np.ndarray[Any, Any]]:
         """
         Generate predictions for new data.
 
@@ -215,7 +217,7 @@ class HBR(RegressionModel):
             self.idata = pm.sample(
                 self.draws,
                 tune=self.tune,
-                cores=self.cores,
+                cores=self.pymc_cores,
                 chains=self.chains,
                 nuts_sampler=self.nuts_sampler,  # type: ignore
                 init=self.init,
@@ -781,8 +783,8 @@ class HBR(RegressionModel):
         return self.reg_conf.tune  # type: ignore
 
     @property
-    def cores(self) -> int:
-        return self.reg_conf.cores  # type: ignore
+    def pymc_cores(self) -> int:
+        return self.reg_conf.pymc_cores  # type: ignore
 
     @property
     def chains(self) -> int:

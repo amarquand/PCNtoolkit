@@ -26,6 +26,10 @@ components for creating and configuring normative models, particularly focusing 
 the Hierarchical Bayesian Regression (HBR) approach.
 """
 
+N_SAMPLES = 1500
+N_TUNES = 500
+N_CORES = 4
+
 
 @pytest.fixture
 def cvfolds():
@@ -44,12 +48,27 @@ def savemodel():
 
 @pytest.fixture
 def n_mcmc_samples():
-    return 20
+    return N_SAMPLES
+
+
+@pytest.fixture
+def n_tunes():
+    return N_TUNES
+
+
+@pytest.fixture
+def n_cores():
+    return N_CORES
+
+
+@pytest.fixture
+def n_mcmc_chains():
+    return 2
 
 
 @pytest.fixture
 def sample_args():
-    return {"draws": 20, "tune": 50, "cores": 1}
+    return {"draws": N_SAMPLES, "tune": N_TUNES, "cores": N_CORES}
 
 
 @pytest.fixture
@@ -128,7 +147,7 @@ def hbr_conf_dict(
 
 
 @pytest.fixture
-def norm_conf_for_hbr_test_model( savemodel, save_dir):
+def norm_conf_for_hbr_test_model(savemodel, save_dir):
     return NormConf(
         savemodel=savemodel,
         save_dir=save_dir + "/hbr",
@@ -143,20 +162,18 @@ def norm_conf_for_hbr_test_model( savemodel, save_dir):
 @pytest.fixture
 def mu():
     return Param(
-        name="mu",
         linear=True,
-        intercept=Param(name="intercept_mu", random=True, centered=False),
-        slope=Param(name="slope_mu", dims=("covariates",), random=False),
+        intercept=Param(random=True, centered=False),
+        slope=Param(dims=("covariates",), random=False),
     )
 
 
 @pytest.fixture
 def sigma():
     return Param(
-        name="sigma",
         linear=False,
-        mu=Param(name="mu_sigma", random=True, centered=True),
-        sigma=Param(name="sigma_sigma", random=False),
+        mu=Param(random=True, centered=True),
+        sigma=Param(random=False),
     )
 
 
@@ -167,10 +184,10 @@ def hbrconf(mu, sigma, n_mcmc_samples):
         tune=10,
         chains=2,
         cores=2,
-        likelihood="Normal",
+        likelihood="SHASHb",
         mu=mu,
         sigma=sigma,
-        nuts_sampler="nutpie"
+        nuts_sampler="nutpie",
     )
 
 

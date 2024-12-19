@@ -70,6 +70,7 @@ pcntoolkit.dataio : Package for data input/output operations
 from __future__ import annotations
 
 import copy
+import fcntl
 import glob
 import json
 import os
@@ -77,6 +78,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -1198,6 +1200,9 @@ class NormBase(ABC):
             with open(os.path.join(reg_model_save_path,"regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
+        abspath = os.path.abspath(self.norm_conf.save_dir)
+        print(f"Model saved to {abspath}/model")
+
         
 
     @classmethod
@@ -1236,21 +1241,74 @@ class NormBase(ABC):
 
 
     def save_results(self, data: NormData) -> None:
-        # save the zscores and centiles
         os.makedirs(os.path.join(self.norm_conf.save_dir, "results"), exist_ok=True)
-        zdf = data.zscores.to_dataframe().unstack(level="response_vars")
-        zdf.columns=zdf.columns.droplevel(0)
-        zdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "zscores.csv")) 
-        cdf = data.centiles.to_dataframe().unstack(level="response_vars")
-        cdf.columns=cdf.columns.droplevel(0)
-        cdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "centiles.csv"))
-        mdf = data.measures.to_dataframe().unstack(level="response_vars")
-        mdf.columns=mdf.columns.droplevel(0)
-        mdf.to_csv(os.path.join(self.norm_conf.save_dir, "results", "measures.csv"))
+        self.save_zscores(data)
+        self.save_centiles(data)
+        self.save_measures(data)
         os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
         plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"), show_data=True)
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
+        abspath = os.path.abspath(self.norm_conf.save_dir)
+        print(f"Results and plots saved to {abspath}/results and {abspath}/plots")
 
+    def save_zscores(self, data: NormData) -> None:
+        zdf = data.zscores.to_dataframe().unstack(level="response_vars")
+        zdf.columns=zdf.columns.droplevel(0)
+        res_path = os.path.join(self.norm_conf.save_dir, "results", "zscores.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try: 
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    new_results = pd.concat([old_results, zdf], axis=1)
+                else:
+                    new_results = zdf
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    
+
+    def save_centiles(self, data: NormData) -> None:
+        cdf = data.centiles.to_dataframe().unstack(level="response_vars")
+        cdf.columns=cdf.columns.droplevel(0)
+        res_path = os.path.join(self.norm_conf.save_dir, "results", "centiles.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try: 
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f, index_col=[0,1]) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    new_results = pd.concat([old_results, cdf], axis=1)
+                else:
+                    new_results = cdf
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+
+    def save_measures(self, data: NormData) -> None:
+        mdf = data.measures.to_dataframe().unstack(level="response_vars")
+        mdf.columns=mdf.columns.droplevel(0)
+        res_path = os.path.join(self.norm_conf.save_dir, "results", "measures.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try: 
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    new_results = pd.concat([old_results, mdf], axis=1)
+                else:
+                    new_results = mdf
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
     def focus(self, responsevar: str) -> None:
         """
@@ -1375,14 +1433,6 @@ class NormBase(ABC):
             save_dir (str): New save directory.
         """
         self.norm_conf.set_save_dir(save_dir)
-
-    def set_log_dir(self, log_dir: str) -> None:
-        """Override the log_dir in the norm_conf.
-
-        Args:
-            log_dir (str): New log directory.
-        """
-        self.norm_conf.set_log_dir(log_dir)
 
     def reset(self) -> None:
         """Does nothing. Can be overridden by subclasses."""

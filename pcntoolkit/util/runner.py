@@ -14,13 +14,26 @@ from joblib import Parallel, delayed
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
+from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.util.job_observer import JobObserver
 
 
 class Runner:
+    
+    cross_validate: bool = False
+    cv_folds: int = 5
+    parallelize: bool = False
+    job_type: str = "local"
+    n_jobs: int = 1
+    n_cores: int = 1
+    python_path: Optional[str] = None
+    walltime: str = "00:05:00"
+    memory: str = "5GB"
+    log_dir: Optional[str] = None
+    temp_dir: Optional[str] = None
+
     def __init__(
         self,
-        normative_model: NormBase,
         cross_validate: bool = False,
         cv_folds: int = 5,
         parallelize: bool = False,
@@ -33,7 +46,6 @@ class Runner:
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
-        self.normative_model = normative_model
         self.cross_validate = cross_validate
         self.cv_folds = cv_folds
         self.parallelize = parallelize
@@ -71,56 +83,56 @@ class Runner:
             raise ValueError(
                 "If cross-validation is enabled, cv_folds must be greater than 1"
             )
-        if not self.cross_validate and self.cv_folds > 1:
+        if (not self.cross_validate) and self.cv_folds > 1:
             warnings.warn("cv_folds is greater than 1, but cross-validation is disabled. This is likely unintended.")
 
-        if not self.normative_model.norm_conf.savemodel:
-            warnings.warn("Model saving is disabled. Results will not be saved.")
 
-
-    def fit(self, data: NormData) -> None:
-        fn = self.get_fit_chunk_fn()
+    def fit(self, model: NormBase, data: NormData) -> None:
+        self.save_dir = model.norm_conf.save_dir
+        fn = self.get_fit_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def fit_predict(self, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
-        fn = self.get_fit_predict_chunk_fn()
+    def fit_predict(self, model: NormBase, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
+        self.save_dir = model.norm_conf.save_dir
+        fn = self.get_fit_predict_chunk_fn(model)
         self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def predict(self, data: NormData) -> None:
-        fn = self.get_predict_chunk_fn()
+    def predict(self, model: NormBase, data: NormData) -> None:
+        self.save_dir = model.norm_conf.save_dir
+        fn = self.get_predict_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def get_fit_chunk_fn(self) -> Callable:
+    def get_fit_chunk_fn(self, model: NormBase) -> Callable:
         """ Returns a callable that fits a chunk of data """
         if self.cross_validate:
             def kfold_fit_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    fold_norm_model: NormBase = deepcopy(self.normative_model)
+                    fold_norm_model: NormBase = deepcopy(model)
                     fold_norm_model.norm_conf.set_save_dir(
-                        os.path.join(self.normative_model.norm_conf.save_dir, "folds", f"fold_{i_fold}")
+                        os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}")
                     )
                     fold_norm_model.fit(train_data)
             return kfold_fit_chunk_fn
         else:
             def fit_chunk_fn(chunk: NormData):
-                self.normative_model.fit(chunk)
+                model.fit(chunk)
             return fit_chunk_fn
         
-    def get_fit_predict_chunk_fn(self) -> Callable:
+    def get_fit_predict_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
             def kfold_fit_predict_chunk_fn(all_data: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     warnings.warn("predict_data is not used in kfold cross-validation")
                 for i_fold, (fit_data, predict_data) in enumerate(all_data.kfold_split(self.cv_folds)):
-                    fold_norm_model: NormBase = deepcopy(self.normative_model)
+                    fold_norm_model: NormBase = deepcopy(model)
                     fold_norm_model.norm_conf.set_save_dir(
-                        os.path.join(self.normative_model.norm_conf.save_dir, "folds", f"fold_{i_fold}")
+                        os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}")
                     )
                     fold_norm_model.fit_predict(fit_data, predict_data)
             return kfold_fit_predict_chunk_fn
@@ -128,21 +140,21 @@ class Runner:
             def fit_predict_chunk_fn(fit_data: NormData, predict_data: Optional[NormData]):
                 if predict_data is None:
                     raise ValueError("predict_data is required for fit_predict without cross-validation")
-                self.normative_model.fit_predict(fit_data, predict_data)
+                model.fit_predict(fit_data, predict_data)
             return fit_predict_chunk_fn
         
-    def get_predict_chunk_fn(self) -> Callable:
+    def get_predict_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
             def kfold_predict_chunk_fn(chunk: NormData):
-                conf = self.normative_model.norm_conf
+                conf = model.norm_conf
                 for i_fold, (_, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
                     with open(os.path.join(conf.save_dir, "folds", f"fold_{i_fold}"), "rb") as f:
                         fold_model:NormBase = dill.load(f)
                     fold_model.predict(predict_data)
             return kfold_predict_chunk_fn
         else:
-            def predict_chunk_fn(data: NormData):
-                self.normative_model.predict(data)
+            def predict_chunk_fn(model: NormBase, data: NormData):
+                model.predict(data)
             return predict_chunk_fn
         
     # ? Do we need to implement this?
@@ -270,10 +282,17 @@ class Runner:
 {self.python_path} {current_file_path} {executable_path} {data_path}
 """)
         return job_path
+    
+    def load_fold_model(self, fold_index: int) -> NormBase:
+        path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
+        return load_normative_model(path)
 
+    @classmethod    
+    def from_args(cls, args: dict) -> "Runner":
+        filtered_args = {k:v for k,v in args.items() if k in list(cls.__dict__.keys())}
+        return cls(**filtered_args)
 
 def load_and_execute(args):
-    print(args)
     with open(args[0], "rb") as executable_path:
         fn = dill.load(executable_path)
     with open(args[1], "rb") as data_path:

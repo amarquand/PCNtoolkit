@@ -58,7 +58,7 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 DRAWS = 1000
 TUNE = 1000
 CHAINS = 2
-CORES = 1
+PYMC_CORES = 1
 LIKELIHOOD = "Normal"
 NUTS_SAMPLER = "pymc"
 INIT = "jitter+adapt_diag_grad"
@@ -129,7 +129,7 @@ class HBRConf(RegConf):
     draws: int = DRAWS
     tune: int = TUNE
     chains: int = CHAINS
-    cores: int = CORES
+    pymc_cores: int = PYMC_CORES
 
     nuts_sampler: str = NUTS_SAMPLER
     init: str = INIT
@@ -145,6 +145,17 @@ class HBRConf(RegConf):
 
     # Add class variable for dataclass fields
     __dataclass_fields__: ClassVar[Dict[str, Any]]
+
+    def __post_init__(self) -> None:
+        self.detect_configuration_problems()
+        if self.mu:
+            self.mu.set_name("mu")
+        if self.sigma:
+            self.sigma.set_name("sigma")
+        if self.epsilon:
+            self.epsilon.set_name("epsilon")
+        if self.delta:
+            self.delta.set_name("delta")
 
     def detect_configuration_problems(self) -> List[str]:
         """
@@ -256,7 +267,7 @@ class HBRConf(RegConf):
         conf_dict = {
             "draws": self.draws,
             "tune": self.tune,
-            "cores": self.cores,
+            "pymc_cores": self.pymc_cores,
             "likelihood": self.likelihood,
             "nuts_sampler": self.nuts_sampler,
             "init": self.init,

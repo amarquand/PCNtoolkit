@@ -42,9 +42,9 @@ def model_and_data(data: HBRData) ->  tuple[pm.Model ,HBRData]:
 
 def test_normal_fixed_param(model_and_data):
     model, data = model_and_data
-    param = Param("fixed")
+    param = Param()
     param.create_graph(model)
-    assert param.name == "fixed"
+    assert param.name == "theta"
     assert param.dims is None
     assert param.dist_name == "Normal"
     assert param.dist_params == (0, 10)
@@ -78,7 +78,7 @@ def test_normal_fixed_param_with_covariate_dim(model_and_data):
 
 def test_random_centered_param(model_and_data):
     model, data = model_and_data
-    param = Param("mu", random=True, centered=True)
+    param = Param(name="mu",random=True, centered=True)
     param.create_graph(model)
     assert param.name == "mu"
     assert param.dims is None
@@ -126,6 +126,9 @@ def test_linear_param_with_random_slope(model_and_data):
     param = Param("test_linear2", linear=True, slope=slope)
     param.create_graph(model)
     samples = param.get_samples(data)
+    sl = slope.get_samples(data)
+    print(slope.dist.shape.eval())
+    assert tuple(sl.shape.eval()) == (data.n_datapoints, data.n_covariates)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 

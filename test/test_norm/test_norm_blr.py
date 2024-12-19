@@ -25,8 +25,8 @@ def test_fit_predict(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormDat
 
 def test_save_load(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormData, test_norm_data_from_arrays: NormData):
     new_norm_blr_model.fit(norm_data_from_arrays)
-    new_norm_blr_model.save("test_save_load")
-    loaded_norm_blr_model = NormBLR.load("test_save_load")
+    new_norm_blr_model.save("test/test_save_load")
+    loaded_norm_blr_model = NormBLR.load("test/test_save_load")
     try:
         loaded_norm_blr_model.predict(test_norm_data_from_arrays)
     except Exception as e:
