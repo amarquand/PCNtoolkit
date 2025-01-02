@@ -450,7 +450,7 @@ class NormHBR(NormBase):
             ]
 
         X_dummy, batch_effects_dummy, Y_dummy = self.hbr.generate(
-            X_dummy, batch_effects_dummy, samples
+            X_dummy, batch_effects_dummy, samples, self.batch_effects_maps
         )
 
         if informative_prior:
@@ -488,7 +488,7 @@ class NormHBR(NormBase):
             X_dummy_ranges)
 
         X_dummy1, batch_effects_dummy1, Y_dummy1 = self.hbr.generate(
-            X_dummy1, batch_effects_dummy1, samples
+            X_dummy1, batch_effects_dummy1, samples, self.batch_effects_maps
         )
         X_dummy2, batch_effects_dummy2, Y_dummy2 = nm.hbr.generate(
             X_dummy2, batch_effects_dummy2, samples
@@ -510,7 +510,7 @@ class NormHBR(NormBase):
 
     def generate(self, X, batch_effects, samples=10):
         X, batch_effects, generated_samples = self.hbr.generate(
-            X, batch_effects, samples
+            X, batch_effects, samples, self.batch_effects_maps
         )
         return X, batch_effects, generated_samples
 
