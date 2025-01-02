@@ -317,10 +317,6 @@ class NormHBR(NormBase):
             pred=pred_type,
             **kwargs,
         )
-        # else:
-        #     raise ValueError(
-        #         "This is a transferred model. Please use predict_on_new_sites function."
-        #     )
 
         return yhat.squeeze(), s2.squeeze()
 
@@ -339,6 +335,8 @@ class NormHBR(NormBase):
         :return: The instance of the NormHBR object.
         """
         self.hbr.transfer(X, y, batch_effects)
+        self.batch_effects_maps = [{v: i for i, v in enumerate(np.unique(batch_effects[:, j]))}
+                                        for j in range(batch_effects.shape[1])]
         self.configs["transferred"] = True
         return self
 
