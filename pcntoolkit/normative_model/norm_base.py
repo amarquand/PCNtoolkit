@@ -25,7 +25,6 @@ It provides a comprehensive interface for:
 
 The class supports multiple regression model types including:
 - Bayesian Linear Regression (BLR)
-- Gaussian Process Regression (GPR)
 - Hierarchical Bayesian Regression (HBR)
 
 The class structure of a normative model (using BLR in this example) is:
@@ -148,12 +147,6 @@ class NormBase(ABC):
 
     extend(data: NormData) -> None
         Extend the model with additional data.
-
-    tune(data: NormData) -> None
-        Tune model parameters using validation data.
-
-    merge(other: NormBase) -> None
-        Merge current model with another normative model.
 
     evaluate(data: NormData) -> None
         Evaluate model performance.
@@ -577,26 +570,6 @@ class NormBase(ABC):
         """
         self._extend(data)
 
-    def tune(self, data: NormData) -> None:
-        """Tunes the normative model with new data.
-
-        Args:
-            data (NormData): Data containing the covariates and response variables to tune the model with.
-        """
-        self._tune(data)
-
-    def merge(self, other: "NormBase") -> None:
-        """Merges the current normative model with another normative model.
-
-        Args:
-            other (NormBase): The other normative model to merge with.
-
-        Raises:
-            ValueError: Error if the models are not of the same type.
-        """
-        if not self.__class__ == other.__class__:
-            raise ValueError("Attempted to merge normative models of different types.")
-        self._merge(other)
 
     def evaluate(self, data: NormData) -> None:
         """

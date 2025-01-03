@@ -83,16 +83,6 @@ class NormBLR(NormBase):
             f"Extend method not implemented for {self.__class__.__name__}"
         )
 
-    def _tune(self, data: NormData) -> "NormBLR":
-        raise NotImplementedError(
-            f"Tune method not implemented for {self.__class__.__name__}"
-        )
-
-    def _merge(self, other: NormBase) -> "NormBLR":
-        raise NotImplementedError(
-            f"Merge method not implemented for {self.__class__.__name__}"
-        )
-
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         blrdata = self.normdata_to_blrdata(data)
         centiles = self.focused_model.centiles(blrdata, cdf)  # type: ignore

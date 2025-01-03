@@ -157,19 +157,11 @@ class NormHBR(NormBase):
         return new_hbr_model
 
     def _extend(self, data: NormData) -> NormHBR:
-        raise NotImplementedError(
-            f"Extend method not implemented for {self.__class__.__name__}"
-        )
+        extend_covariate_span = (0, 100)
+        
 
-    def _tune(self, data: NormData) -> NormHBR:
-        raise NotImplementedError(
-            f"Tune method not implemented for {self.__class__.__name__}"
-        )
 
-    def _merge(self, other: NormBase) -> NormHBR:
-        raise NotImplementedError(
-            f"Merge method not implemented for {self.__class__.__name__}"
-        )
+ 
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         resample = kwargs.get("resample", True)
