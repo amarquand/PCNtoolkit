@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Tuple, Union
 
 import arviz as az
+import numpy as np
 import pymc as pm
 import scipy.stats as stats
 import xarray as xr
@@ -127,7 +128,7 @@ class FixedParam(Param):
         mapping: str = "identity",
         mapping_params: tuple[float, ...] = (0.0, 1.0),
         dist_name: str = "Normal",
-        dist_params: Tuple[float | int, ...] = (0, 10.0),
+        dist_params: Tuple[float | int | list[float | int], ...] = (0, 10.0),
     ):
         super().__init__(name, dims, mapping, mapping_params)
         self.dist_name = dist_name
@@ -139,8 +140,11 @@ class FixedParam(Param):
     ):
         with model:
             if idata is not None:
-                self.approximate_marginal(
-                    model, self.dist_name, az.extract(idata, var_names=self.name), freedom
+                self.approximate_posterior(
+                    model,
+                    self.dist_name,
+                    az.extract(idata, var_names=self.name),
+                    freedom,
                 )
             self.dist = PM_DISTMAP[self.dist_name](
                 self.name, *self.dist_params, dims=self.dims
@@ -149,7 +153,7 @@ class FixedParam(Param):
     def _sample(self, data: HBRData):
         return self.dist
 
-    def approximate_marginal(
+    def approximate_posterior(
         self,
         model: Any,
         dist_name: str,
@@ -157,34 +161,43 @@ class FixedParam(Param):
         freedom: float | int = 1,
     ) -> None:
         # TODO At some point, we want to flatten over all dimensions except the covariate dimension."""
-        samples_flat = samples.to_numpy().flatten()
-        with model:
-            if dist_name == "Normal":
-                temp = stats.norm.fit(samples_flat)
-                self.dist_params = (temp[0], freedom * temp[1])
-            elif dist_name == "HalfNormal":
-                temp = stats.halfnorm.fit(samples_flat)
-                self.dist_params = (freedom * temp[1],)
-            elif dist_name == "LogNormal":
-                temp = stats.lognorm.fit(samples_flat)
-                self.dist_params = (temp[0], freedom * temp[1])
-            elif dist_name == "Cauchy":
-                temp = stats.cauchy.fit(samples_flat)
-                self.dist_params = (temp[0], freedom * temp[1])
-            elif dist_name == "HalfCauchy":
-                temp = stats.halfcauchy.fit(samples_flat)
-                self.dist_params = (freedom * temp[1],)
-            elif dist_name == "Uniform":
-                temp = stats.uniform.fit(samples_flat)
-                self.dist_params = (temp[0], temp[1])
-            elif dist_name == "Gamma":
-                temp = stats.gamma.fit(samples_flat)
-                self.dist_params = (temp[0], temp[1], freedom * temp[2])
-            elif dist_name == "InvGamma":
-                temp = stats.invgamma.fit(samples_flat)
-                self.dist_params = (temp[0], temp[1], freedom * temp[2])
-            else:
-                raise ValueError(f"Unknown distribution name {dist_name}")
+        def infer_params(s):
+            with model:
+                if dist_name == "Normal":
+                    temp = stats.norm.fit(s)
+                    return (temp[0], freedom * temp[1])
+                elif dist_name == "HalfNormal":
+                    temp = stats.halfnorm.fit(s)
+                    return (freedom * temp[1],)
+                elif dist_name == "LogNormal":
+                    temp = stats.lognorm.fit(s)
+                    return (temp[0], freedom * temp[1])
+                elif dist_name == "Cauchy":
+                    temp = stats.cauchy.fit(s)
+                    return (temp[0], freedom * temp[1])
+                elif dist_name == "HalfCauchy":
+                    temp = stats.halfcauchy.fit(s)
+                    return (freedom * temp[1],)
+                elif dist_name == "Uniform":
+                    temp = stats.uniform.fit(s)
+                    return (temp[0], temp[1])
+                elif dist_name == "Gamma":
+                    temp = stats.gamma.fit(s)
+                    return (temp[0], temp[1], freedom * temp[2])
+                elif dist_name == "InvGamma":
+                    temp = stats.invgamma.fit(s)
+                    return (temp[0], temp[1], freedom * temp[2])
+                else:
+                    raise ValueError(f"Unknown distribution name {dist_name}")
+
+        if "covariates" in samples.dims:
+            params = [
+                infer_params(samples.sel(covariates=i))
+                for i in samples.coords["covariates"]
+            ]
+            self.dist_params = [i.tolist() for i in np.array(params).T]
+        else:
+            self.dist_params = infer_params(samples)
 
     @property
     def has_random_effect(self):
@@ -263,9 +276,20 @@ class RandomParam(Param):
             acc = self.mu.sample(data)
             for k in self.sigmas.keys():
                 if not hasattr(self.model_reference, f"scaled_{k}_offset_{self.name}"):
-                    self.scaled_offsets[k] = pm.Deterministic(f"scaled_{k}_offset_{self.name}", self.sigmas[k].sample(data) * self.offsets[k][data.pm_batch_effect_indices[k]], dims=("datapoints",))
+                    self.scaled_offsets[k] = pm.Deterministic(
+                        f"scaled_{k}_offset_{self.name}",
+                        self.sigmas[k].sample(data)
+                        * self.offsets[k][data.pm_batch_effect_indices[k]],
+                        dims=("datapoints",),
+                    )
                 acc += self.scaled_offsets[k]
-            return pm.Deterministic(self.name, acc, dims=("datapoints",) if self.dims is None or self.dims == () else self.dims)
+            return pm.Deterministic(
+                self.name,
+                acc,
+                dims=("datapoints",)
+                if self.dims is None or self.dims == ()
+                else self.dims,
+            )
 
     @property
     def has_random_effect(self):
@@ -274,7 +298,7 @@ class RandomParam(Param):
     def to_dict(self):
         dct = super().to_dict()
         if hasattr(self, "model_reference"):
-            del dct['model_reference']
+            del dct["model_reference"]
         dct["mu"] = self.mu.to_dict()
         dct["sigma"] = self.sigma.to_dict()
         if hasattr(self, "sigmas"):
@@ -293,7 +317,7 @@ class RandomParam(Param):
     def from_dict(cls, dct):
         mu = Param.from_dict(dct["mu"])
         sigma = Param.from_dict(dct["sigma"])
-        instance = cls( 
+        instance = cls(
             mu=mu,
             sigma=sigma,
             **{
@@ -302,7 +326,9 @@ class RandomParam(Param):
                 if k in ["name", "dims", "mapping", "mapping_params"]
             },
         )
-        instance.sigmas = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")}
+        instance.sigmas = {
+            k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")
+        }
         # instance.scaled_offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
         return instance
 
@@ -319,9 +345,13 @@ class LinearParam(Param):
     ):
         super().__init__(name, dims, mapping, mapping_params)
         self.slope = slope or get_default_slope()
-        self.slope.dims = ('covariates',) if self.slope.dims is None else self.slope.dims
+        self.slope.dims = (
+            ("covariates",) if self.slope.dims is None else self.slope.dims
+        )
         self.intercept = intercept or get_default_intercept()
-        self.intercept.dims = dims if self.intercept.dims is None else self.intercept.dims
+        self.intercept.dims = (
+            dims if self.intercept.dims is None else self.intercept.dims
+        )
         self.sample_dims = ("datapoints",)
         self.set_name(self.name)
 
@@ -413,6 +443,7 @@ def get_default_delta() -> Param:
         mapping_params=(0.0, 3.0, 0.3),
     )
 
+
 def get_default_sub_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
     return FixedParam(
         dims=dims,
@@ -430,7 +461,6 @@ def get_default_sub_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) ->
         dist_name="LogNormal",
         dist_params=(2.0,),
     )
-
 
 
 def get_default_slope(
