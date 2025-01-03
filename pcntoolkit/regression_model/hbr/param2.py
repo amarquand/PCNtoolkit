@@ -243,6 +243,7 @@ class RandomParam(Param):
             self.mu.create_graph(model, idata, freedom)
             self.sigmas: dict[str, Param] = {}
             self.offsets = {}
+            self.scaled_offsets = {}
             for be in model.custom_batch_effect_dims:  # type:ignore
                 self.sigmas[be] = copy.deepcopy(self.sigma)
                 self.sigmas[be].set_name(f"{be}_sigma_{self.name}")
@@ -261,10 +262,9 @@ class RandomParam(Param):
         with self.model_reference:
             acc = self.mu.sample(data)
             for k in self.sigmas.keys():
-                acc += (
-                    self.sigmas[k].sample(data)
-                    * self.offsets[k][data.pm_batch_effect_indices[k]]
-                )
+                if not hasattr(self.model_reference, f"scaled_{k}_offset_{self.name}"):
+                    self.scaled_offsets[k] = pm.Deterministic(f"scaled_{k}_offset_{self.name}", self.sigmas[k].sample(data) * self.offsets[k][data.pm_batch_effect_indices[k]], dims=("datapoints",))
+                acc += self.scaled_offsets[k]
             return pm.Deterministic(self.name, acc, dims=("datapoints",) if self.dims is None or self.dims == () else self.dims)
 
     @property
@@ -280,8 +280,13 @@ class RandomParam(Param):
         if hasattr(self, "sigmas"):
             for k, v in self.sigmas.items():
                 dct[f"{k}_sigma"] = v.to_dict()
+        # if hasattr(self, "scaled_offsets"):
+        #     for k, v in self.scaled_offsets.items():
+        #         dct[f"scaled_{k}_offset"] = v.to_dict()
+
         del dct["sigmas"]
         del dct["offsets"]
+        del dct["scaled_offsets"]
         return dct
 
     @classmethod
@@ -298,7 +303,7 @@ class RandomParam(Param):
             },
         )
         instance.sigmas = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")}
-        # instance.offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
+        # instance.scaled_offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
         return instance
 
 

@@ -183,7 +183,8 @@ class HBR(RegressionModel):
         """
         if not self.pymc_model:
             self.compile_model(hbrdata)
-        hbrdata.set_data_in_existing_model(self.pymc_model)
+        else:
+            hbrdata.set_data_in_existing_model(self.pymc_model) # Model already compiled, only need to update the data
         if extend_inferencedata and hasattr(self.idata, "predictions"):
             del self.idata.predictions
         with self.pymc_model:
@@ -400,7 +401,8 @@ class HBR(RegressionModel):
             Creates and stores PyMC model in instance
         """
         self.pymc_model = pm.Model(coords=data.coords)
-        data.add_to_graph(self.pymc_model)
+        data.set_data_in_new_model(self.pymc_model)
+        self.set_batch_effect_priors(data, idata)
         if self.likelihood == "Normal":
             self.compile_normal(data, idata, freedom)
         elif self.likelihood == "SHASHb":
@@ -571,6 +573,13 @@ class HBR(RegressionModel):
                 observed=data.pm_y,
                 dims=("datapoints",),
             )
+
+    def set_batch_effect_priors(self, data: HBRData, idata: Optional[az.InferenceData] = None) -> None:
+        for i, k in enumerate(data.batch_effect_dims):
+            with self.pymc_model:
+                pass
+                dir = pm.Dirichlet(k + "_dirichlet", a=np.ones(len(self.pymc_model.coords[k])), dims=(k,))
+                cat = pm.Categorical(k, p=dir, observed=data.pm_batch_effect_indices[k], dims=("datapoints",))
 
     def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """

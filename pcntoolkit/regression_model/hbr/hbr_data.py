@@ -205,7 +205,7 @@ class HBRData:
             ), "y can only have one column, or it must be a 1D array"
             self.y = np.squeeze(self.y)
 
-    def add_to_graph(self, model: pm.Model) -> None:
+    def set_data_in_new_model(self, model: pm.Model) -> None:
         """
         Add data variables to a PyMC model graph.
 
@@ -222,14 +222,16 @@ class HBRData:
         with model:
             self.pm_X = pm.Data("X", self.X, dims=("datapoints", "covariates"))
             self.pm_y = pm.Data("y", self.y, dims=("datapoints",))
-            self.pm_batch_effect_indices = {k:
-                pm.Data(
+
+            # Create batch effect indices
+            self.pm_batch_effect_indices = {}
+            for i, k in enumerate(self.batch_effect_dims):
+                self.pm_batch_effect_indices[k] = pm.Data(
                     k + "_data",
                     self.batch_effect_indices[i],
                     dims=("datapoints",),
                 )
-                for i, k in enumerate(self.batch_effect_dims)
-            }
+
             model.custom_batch_effect_dims = self.batch_effect_dims  # type: ignore
 
     def set_data_in_existing_model(self, model: pm.Model) -> None:
