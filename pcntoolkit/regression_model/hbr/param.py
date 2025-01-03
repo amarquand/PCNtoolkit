@@ -283,11 +283,7 @@ class Param:
             self.mu = Param.default_sub_mu(self.dims)
         if not self.sigma:
             self.sigma = Param.default_sub_sigma(self.dims)
-            self.sigma = Param(
-                dims=self.dims,
-                dist_name="LogNormal",
-                dist_params=(2.0,),
-            )
+
 
     def set_centered_random_params(self) -> None:
         """
