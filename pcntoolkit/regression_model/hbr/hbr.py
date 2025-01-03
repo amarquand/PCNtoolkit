@@ -68,7 +68,7 @@ import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
-from pcntoolkit.regression_model.hbr.param import Param
+from pcntoolkit.regression_model.hbr.param2 import Param
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
 
@@ -440,12 +440,12 @@ class HBR(RegressionModel):
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.mu.get_samples(data),
+                self.mu.sample(data),
                 dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.sigma.get_samples(data),
+                self.sigma.sample(data),
                 dims=self.sigma.sample_dims,
             )
             pm.Normal(
@@ -486,22 +486,22 @@ class HBR(RegressionModel):
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.mu.get_samples(data),
+                self.mu.sample(data),
                 dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.sigma.get_samples(data),
+                self.sigma.sample(data),
                 dims=self.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
-                self.epsilon.get_samples(data),
+                self.epsilon.sample(data),
                 dims=self.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
-                self.delta.get_samples(data),
+                self.delta.sample(data),
                 dims=self.delta.sample_dims,
             )
             SHASHb(
@@ -544,22 +544,22 @@ class HBR(RegressionModel):
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
-                self.mu.get_samples(data),
+                self.mu.sample(data),
                 dims=self.mu.sample_dims,
             )
             sigma_samples = pm.Deterministic(
                 "sigma_samples",
-                self.sigma.get_samples(data),
+                self.sigma.sample(data),
                 dims=self.sigma.sample_dims,
             )
             epsilon_samples = pm.Deterministic(
                 "epsilon_samples",
-                self.epsilon.get_samples(data),
+                self.epsilon.sample(data),
                 dims=self.epsilon.sample_dims,
             )
             delta_samples = pm.Deterministic(
                 "delta_samples",
-                self.delta.get_samples(data),
+                self.delta.sample(data),
                 dims=self.delta.sample_dims,
             )
             SHASHo(

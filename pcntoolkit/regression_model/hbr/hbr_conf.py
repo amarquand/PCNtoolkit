@@ -51,7 +51,15 @@ pcntoolkit.regression_model.hbr.hbr : HBR model implementation
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Dict, List, Optional
 
-from pcntoolkit.regression_model.hbr.param import Param
+from pcntoolkit.regression_model.hbr.param2 import (
+    LinearParam,
+    Param,
+    get_default_delta,
+    get_default_epsilon,
+    get_default_mu,
+    get_default_sigma,
+    param_from_args,
+)
 from pcntoolkit.regression_model.reg_conf import RegConf
 
 # Default configuration values
@@ -138,10 +146,10 @@ class HBRConf(RegConf):
     likelihood: str = LIKELIHOOD
 
     # prior config with defaults
-    mu: Param = field(default_factory=Param.default_mu)
-    sigma: Param = field(default_factory=Param.default_sigma)
-    epsilon: Param = field(default_factory=Param.default_epsilon)
-    delta: Param = field(default_factory=Param.default_delta)
+    mu: Param = field(default_factory=get_default_mu)
+    sigma: Param = field(default_factory=get_default_sigma)
+    epsilon: Param = field(default_factory=get_default_epsilon)
+    delta: Param = field(default_factory=get_default_delta)
 
     # Add class variable for dataclass fields
     __dataclass_fields__: ClassVar[Dict[str, Any]]
@@ -182,7 +190,7 @@ class HBRConf(RegConf):
 
         # Check positivity of sigma
         if self.sigma:
-            if self.sigma.linear:
+            if isinstance(self.sigma, LinearParam):
                 if self.sigma.mapping == "identity":
                     add_problem(
                         """Sigma must be strictly positive. As it's derived from a linear regression, it could 
@@ -192,7 +200,7 @@ class HBRConf(RegConf):
         # Check positivity of delta
         if self.likelihood.startswith("SHASH"):
             if self.delta:
-                if self.delta.linear:
+                if isinstance(self.delta, LinearParam):
                     if self.delta.mapping == "identity":
                         add_problem(
                             """Delta must be strictly positive. As it's derived from a linear regression, it could 
@@ -221,13 +229,13 @@ class HBRConf(RegConf):
         args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
         likelihood = args_filt.get("likelihood", "Normal")
         if likelihood == "Normal":
-            args_filt["mu"] = Param.from_args("mu", args)
-            args_filt["sigma"] = Param.from_args("sigma", args)
+            args_filt["mu"] = param_from_args("mu", args)
+            args_filt["sigma"] = param_from_args("sigma", args)
         elif likelihood.startswith("SHASH"):
-            args_filt["mu"] = Param.from_args("mu", args)
-            args_filt["sigma"] = Param.from_args("sigma", args)
-            args_filt["epsilon"] = Param.from_args("epsilon", args)
-            args_filt["delta"] = Param.from_args("delta", args)
+            args_filt["mu"] = param_from_args("mu", args)
+            args_filt["sigma"] = param_from_args("sigma", args)
+            args_filt["epsilon"] = param_from_args("epsilon", args)
+            args_filt["delta"] = param_from_args("delta", args)
         self = cls(**args_filt)
         return self
 

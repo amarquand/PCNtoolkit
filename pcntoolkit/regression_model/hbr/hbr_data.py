@@ -135,7 +135,7 @@ class HBRData:
 
         self.pm_X: pm.Data = None  # type: ignore
         self.pm_y: pm.Data = None  # type:ignore
-        self.pm_batch_effect_indices: Tuple[pm.Data, ...] = None  # type: ignore
+        self.pm_batch_effect_indices: dict[str, pm.Data] = None  # type: ignore
 
         self.create_batch_effect_indices()
 
@@ -222,17 +222,14 @@ class HBRData:
         with model:
             self.pm_X = pm.Data("X", self.X, dims=("datapoints", "covariates"))
             self.pm_y = pm.Data("y", self.y, dims=("datapoints",))
-            self.pm_batch_effect_indices = tuple(
-                [
-                    pm.Data(
-                        str(self.batch_effect_dims[i]) + "_data",
-                        self.batch_effect_indices[i],
-                        dims=("datapoints",),
-                    )
-                    for i in range(self._n_batch_effect_columns)
-                ]
-            )
-
+            self.pm_batch_effect_indices = {k:
+                pm.Data(
+                    k + "_data",
+                    self.batch_effect_indices[i],
+                    dims=("datapoints",),
+                )
+                for i, k in enumerate(self.batch_effect_dims)
+            }
             model.custom_batch_effect_dims = self.batch_effect_dims  # type: ignore
 
     def set_data_in_existing_model(self, model: pm.Model) -> None:
@@ -257,13 +254,13 @@ class HBRData:
         self.pm_X = model["X"]
         model.set_data("y", self.y)
         self.pm_y = model["y"]
-        be_acc = []
+        be_acc = {}
         for i in range(self._n_batch_effect_columns):
             model.set_data(
                 str(self.batch_effect_dims[i]) + "_data", self.batch_effect_indices[i]
             )
-            be_acc.append(model[self.batch_effect_dims[i] + "_data"])
-        self.pm_batch_effect_indices = tuple(be_acc)
+            be_acc[self.batch_effect_dims[i]] = model[self.batch_effect_dims[i] + "_data"]
+        self.pm_batch_effect_indices = be_acc
 
     def expand_all(self, *args: str) -> Tuple[np.ndarray, ...]:
         """
