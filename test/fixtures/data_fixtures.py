@@ -31,7 +31,7 @@ def n_transfer_datapoints():
 
 @pytest.fixture
 def n_covariates():
-    return 2
+    return 5
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def generate_response_vars(n_datapoints, n_response_vars, X, seed=42):
 def generate_batch_effects(n_datapoints, batch_effect_values):
     batch_effects = []
     for batch_effect in batch_effect_values:
-        batch_effects.append(np.random.choice(batch_effect, (n_datapoints, 1)))
+        batch_effects.append(np.random.choice(batch_effect, (n_datapoints, 1)).astype(int))
     return np.concatenate(batch_effects, axis=1)
 
 
@@ -89,7 +89,7 @@ def dataframe(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
     if len(y.shape) == 1:
         y = y[:, None]
     return pd.DataFrame(
-        np.concatenate([X, y, batch_effects], axis=1), columns=all_columns
+        np.concatenate([X, y, batch_effects.astype(object)], axis=1), columns=all_columns
     )
 
 

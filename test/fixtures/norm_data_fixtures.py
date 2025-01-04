@@ -33,11 +33,12 @@ def transfer_norm_data_from_arrays(transfer_arrays):
 
 
 @pytest.fixture
-def norm_data_from_dataframe(train_dataframe, n_response_vars):
+def norm_data_from_dataframe(train_dataframe, n_covariates, batch_effect_values, n_response_vars):
     return NormData.from_dataframe(
         "from_dataframe",
         train_dataframe,
-        covariates=["covariate_0", "covariate_1"],
-        batch_effects=["batch_effect_0", "batch_effect_1"],
+        covariates=[f"covariate_{i}" for i in range(n_covariates)],
+        batch_effects=[f"batch_effect_{i}" for i in range(len(batch_effect_values))],
         response_vars=[f"response_var_{i}" for i in range(n_response_vars)],
     )
+

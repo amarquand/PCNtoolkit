@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -19,7 +19,7 @@ def create_basis_function_from_dict(basis_function_dict: dict) -> BasisFunction:
 def create_basis_function(
     basis_type: str | dict,
     source_array_name: str = "scaled_X",
-    basis_column: Optional[int] = None,
+    basis_column: Optional[Union[int, list[int]]] = None,
     **kwargs,
 ) -> BasisFunction:
     if isinstance(basis_type, dict):
@@ -147,7 +147,7 @@ class PolynomialBasisFunction(BasisFunction):
     def __init__(
         self,
         source_array_name: str = "scaled_X",
-        basis_column: Optional[int] = None,
+        basis_column: Optional[Union[int, list[int]]] = None,
         **kwargs,
     ):
         super().__init__(source_array_name, basis_column, **kwargs)
@@ -166,7 +166,7 @@ class BsplineBasisFunction(BasisFunction):
     def __init__(
         self,
         source_array_name: str = "scaled_X",
-        basis_column: Optional[int] = None,
+        basis_column: Optional[Union[int, list[int]]] = None,
         **kwargs,
     ):
         super().__init__(source_array_name, basis_column, **kwargs)
@@ -201,7 +201,7 @@ class BsplineBasisFunction(BasisFunction):
 
 class LinearBasisFunction(BasisFunction):
     def __init__(
-        self, source_array_name: str = "scaled_X", basis_column: Optional[int] = None
+        self, source_array_name: str = "scaled_X", basis_column: Optional[Union[int, list[int]]] = None
     ):
         super().__init__(source_array_name, basis_column)
         self.basis_name = "linear"

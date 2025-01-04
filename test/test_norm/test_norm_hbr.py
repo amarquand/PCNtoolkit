@@ -5,6 +5,10 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.regression_model.hbr.param import (  # pylint: disable=E0611
+    LinearParam,
+    RandomParam,
+)
 from pcntoolkit.util.plotter import plot_centiles
 from test.fixtures.data_fixtures import *
 from test.fixtures.hbr_model_fixtures import *
@@ -34,7 +38,6 @@ The tests cover the following aspects:
             "likelihood": "Normal",
             "linear_mu": False,
             "random_mu": True,
-            "centered_mu": True,
         },
         {
             "likelihood": "Normal",
@@ -52,7 +55,6 @@ The tests cover the following aspects:
             "likelihood": "Normal",
             "linear_mu": True,
             "random_slope_mu": True,
-            "centered_slope_mu": True,
             "random_intercept_mu": False,
         },
         {
@@ -65,9 +67,7 @@ The tests cover the following aspects:
             "likelihood": "Normal",
             "linear_mu": True,
             "random_slope_mu": True,
-            "centered_slope_mu": True,
             "random_intercept_mu": True,
-            "centered_intercept_mu": True,
         },
     ],
 )
@@ -79,39 +79,26 @@ def test_normhbr_from_args(
     assert hbr.default_reg_conf.tune == sample_args.get("tune")
     assert hbr.default_reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.default_reg_conf.likelihood == "Normal"
-    assert hbr.default_reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
-        assert hbr.default_reg_conf.mu.slope.random == args.get(
-            "random_slope_mu", False
-        )
-        assert hbr.default_reg_conf.mu.intercept.random == args.get(
-            "random_intercept_mu", False
-        )
-        assert hbr.default_reg_conf.mu.slope.centered == args.get(
-            "centered_slope_mu", False
-        )
-        assert hbr.default_reg_conf.mu.intercept.centered == args.get(
-            "centered_intercept_mu", False
-        )
-    assert not hbr.default_reg_conf.sigma.linear
+        if args.get("random_slope_mu", False):
+            assert isinstance(hbr.default_reg_conf.mu.slope, RandomParam)
+        if args.get("random_intercept_mu", False):  
+            assert isinstance(hbr.default_reg_conf.mu.intercept, RandomParam)
+    assert not isinstance(hbr.default_reg_conf.sigma, RandomParam) and not isinstance(hbr.default_reg_conf.sigma, LinearParam)
 
 
-def test_normdata_to_hbrdata(norm_data_from_arrays: NormData, n_train_datapoints):
+def test_normdata_to_hbrdata(norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates):
     single_response_var = norm_data_from_arrays.sel(response_vars="response_var_0")
     hbrdata = NormHBR.normdata_to_hbrdata(single_response_var)
 
-    assert hbrdata.X.shape == (n_train_datapoints, 2)
-    assert hbrdata.y.shape == (n_train_datapoints,)
+    assert hbrdata.X.shape == (n_train_datapoints, n_covariates)
+    assert hbrdata.y.shape == (n_train_datapoints, )
     assert hbrdata.response_var == "response_var_0"
 
-    assert hbrdata.batch_effects.shape == (n_train_datapoints, 2)
-    assert tuple(hbrdata.covariate_dims) == ("covariate_0", "covariate_1")
-    assert tuple(hbrdata.batch_effect_dims) == ("batch_effect_0", "batch_effect_1")
-    assert hbrdata.batch_effects_maps == {
-        "batch_effect_0": {0: 0, 1: 1},
-        "batch_effect_1": {0: 0, 1: 1, 2: 2},
-    }
-
+    assert hbrdata.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
+    assert tuple(hbrdata.covariate_dims) == tuple(f"covariate_{i}" for i in range(n_covariates))
+    assert tuple(hbrdata.batch_effect_dims) == tuple(f"batch_effect_{i}" for i in range(len(batch_effect_values)))
+    assert hbrdata.batch_effects_maps == {f"batch_effect_{i}":{str(k):j for j, k in enumerate(sorted(batch_effect_values)[i])} for i in range(len(batch_effect_values))}
 
 def test_fit(fitted_norm_hbr_model, n_mcmc_samples):
     for model in fitted_norm_hbr_model.regression_models.values():
@@ -195,7 +182,7 @@ def test_transfer(
     transfer_chains = 2
     hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10, draws=transfer_samples, tune=transfer_tune, pymc_cores=transfer_cores, nuts_sampler="nutpie", init=transfer_init, chains=transfer_chains)
     for model in hbr_transfered.regression_models.values():
-        assert model.pymc_model.coords["batch_effect_1"] == (3,)
+        assert model.pymc_model.coords["batch_effect_1"] == ('3',)
         assert model.is_fitted
         assert model.idata.posterior.mu_samples.shape[:2] == (transfer_chains, transfer_samples)
 
@@ -205,7 +192,7 @@ def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data_from_arrays: No
         model=fitted_norm_hbr_model,
         data=test_norm_data_from_arrays,
         covariate="covariate_0",
-        batch_effects={"batch_effect_1": [0]},
+        batch_effects={"batch_effect_1": ['0']},
         show_data=True,
         resample=True,
     )

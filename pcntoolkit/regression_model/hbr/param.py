@@ -34,20 +34,53 @@ def make_param(name: str = "theta", **kwargs) -> Param:
         return FixedParam(name, **kwargs)
 
 
-def param_from_args(name: str, args: Dict[str, Any]) -> Param:
-    dims = args.get(f"dims_{name}", None)
+def param_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
+    dims = args.get(f"dims_{name}", dims)
+
     mapping = args.get(f"mapping_{name}", "identity")
     mapping_params = args.get(f"mapping_params_{name}", (0, 1))
+    if name.split("_")[0] in ["sigma", "delta"]:
+        dist_name = args.get(f"dist_name_{name}", "HalfNormal")
+        dist_params = args.get(f"dist_params_{name}", (1.,))
+        if args.get(f"linear_{name}", False) or args.get(f"random_{name}", False):
+        
+            assert (
+                mapping != "identity"
+            ), "Sigma and delta need a mapping if they are linear or random"
+        else:
+           
+            assert (
+                args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"]
+                or (
+                    args.get(f"dist_name_{name}", None) == "Uniform"
+                    and args.get(f"dist_params_{name}", None)[0] > 0
+                )
+            ), "Sigma and delta need a positive distribution if they are not linear or random"
+    else:
+        dist_name = args.get(f"dist_name_{name}", "Normal")
+        dist_params = args.get(f"dist_params_{name}", (0, 1))
+
     if args.get(f"linear_{name}", False):
-        slope = param_from_args(f"slope_{name}", args)
-        intercept = param_from_args(f"intercept_{name}", args)
+        slope = param_from_args(f"slope_{name}", args, dims=dims)
+        intercept = param_from_args(f"intercept_{name}", args, dims=dims)
         return LinearParam(name, dims, mapping, mapping_params, slope, intercept)
     elif args.get(f"random_{name}", False):
-        mu = param_from_args(f"mu_{name}", args)
-        sigma = param_from_args(f"sigma_{name}", args)
+        mu = param_from_args(f"mu_{name}", args, dims=dims)
+        if not args.get(f"mapping_sigma_{name}", None):
+            assert (
+                (args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"])
+                or (
+                        args.get(f"dist_name_sigma_{name}", None) == "Uniform"
+                        and args.get(f"dist_params_sigma_{name}", None)[0] > 0
+                    )
+                ), "Sigma needs a positive distribution if it is not linear or random"
+
+            sigma = param_from_args(f"sigma_{name}", args, dims=dims)
+        else:
+            sigma = get_default_sigma(dims)
         return RandomParam(name, dims, mapping, mapping_params, mu, sigma)
     else:
-        return FixedParam(name, dims, mapping, mapping_params)
+        return FixedParam(name, dims, mapping, mapping_params, dist_name, dist_params)
 
 
 class Param(ABC):
@@ -59,7 +92,7 @@ class Param(ABC):
         mapping_params: tuple = (0, 1),
     ):
         self.name = name
-        self.dims = dims
+        self._dims = dims
         has_covariate_dim = False if not self.dims else "covariates" in self.dims
         if self.name.startswith("slope") and not has_covariate_dim:
             if self.dims is None:
@@ -69,6 +102,14 @@ class Param(ABC):
         self.mapping = mapping
         self.mapping_params = mapping_params
         self.sample_dims = ()
+
+    @property
+    def dims(self):
+        return self._dims
+    
+    @dims.setter
+    def dims(self, value):
+        self._dims = value
 
     def sample(self, data) -> Any:
         samples = self._sample(data)
@@ -90,7 +131,10 @@ class Param(ABC):
 
     @abstractmethod
     def create_graph(
-        self, model: pm.Model, idata: Optional[az.InferenceData], freedom: float = 1
+        self,
+        model: pm.Model,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
     ):
         pass
 
@@ -109,6 +153,7 @@ class Param(ABC):
 
     def to_dict(self):
         dct = copy.deepcopy(self.__dict__)
+        dct["dims"] = self.dims
         del dct["sample_dims"]
         return dct | {"type": self.__class__.__name__}
 
@@ -136,7 +181,10 @@ class FixedParam(Param):
         self.sample_dims = ()
 
     def create_graph(
-        self, model: pm.Model, idata: Optional[az.InferenceData], freedom: float = 1
+        self,
+        model: pm.Model,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
     ):
         with model:
             if idata is not None:
@@ -242,24 +290,42 @@ class RandomParam(Param):
         sigma: Optional[Param] = None,
     ):
         super().__init__(name, dims, mapping, mapping_params)
-        self.mu = mu or get_default_sub_mu()
+        self.mu = mu or get_default_sub_mu(dims)
         self.mu.set_name(f"mu_{self.name}")
-        self.sigma = sigma or get_default_sub_sigma()
+        self.sigma = sigma or get_default_sub_sigma(dims)
         self.sigma.set_name(f"sigma_{self.name}")
         self.sample_dims = ("datapoints",)
 
+    @property
+    def dims(self):
+        return self._dims
+    
+    @dims.setter
+    def dims(self, value):
+        if hasattr(self, "mu"):
+            self.mu.dims = value
+        if hasattr(self, "sigma"):
+            self.sigma.dims = value
+        self._dims = value
+
     def create_graph(
-        self, model: pm.Model, idata: Optional[az.InferenceData], freedom: float = 1
+        self,
+        model: pm.Model,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
     ):
-        outdims = "datapoints" if not self.dims else (*self.dims, "datapoints")
+        outdims = "datapoints" if not self.dims else ("datapoints", *self.dims)
         with model:
             self.mu.create_graph(model, idata, freedom)
-            acc = self.mu.dist
+            if self.dims:
+                acc = self.mu.dist[None,:]
+            else:
+                acc = self.mu.dist
             self.sigmas: dict[str, Param] = {}
             self.offsets = {}
             self.scaled_offsets = {}
             for be in model.custom_batch_effect_dims:  # type:ignore
-                be_dims = be if not self.dims else (*self.dims, be)
+                be_dims = be if not self.dims else (be,*self.dims)
                 self.sigmas[be] = copy.deepcopy(self.sigma)
                 self.sigmas[be].set_name(f"{be}_sigma_{self.name}")
                 self.sigmas[be].create_graph(model, idata, freedom)
@@ -267,9 +333,13 @@ class RandomParam(Param):
                     f"{be}_offset_{self.name}",
                     dims=be_dims,  # type:ignore
                 )
+                if self.dims:
+                    be_sigma = self.sigmas[be].dist[None,:]
+                else:
+                    be_sigma = self.sigmas[be].dist  # type: ignore
                 self.scaled_offsets[be] = pm.Deterministic(
                     f"scaled_{be}_offset_{self.name}",
-                    self.sigmas[be].dist  # type: ignore
+                    be_sigma  # type: ignore
                     * self.offsets[be][model[f"{be}_data"]],
                     dims=outdims,
                 )
@@ -296,11 +366,9 @@ class RandomParam(Param):
             for k, v in self.sigmas.items():
                 dct[f"{k}_sigma"] = v.to_dict()
 
-        # Offsets, scaled offsets and dist do not need to be saved, because their graph can be fully reconstructed from mu and sigma
-        del dct["sigmas"]
-        del dct["offsets"]
-        del dct["scaled_offsets"]
-        del dct["dist"]
+        for thing in ["sigmas", "offsets", "scaled_offsets", "dist"]:
+            if hasattr(self, thing):
+                del dct[thing]
         return dct
 
     @classmethod
@@ -345,15 +413,30 @@ class LinearParam(Param):
         self.sample_dims = ("datapoints",)
         self.set_name(self.name)
 
+    @property
+    def dims(self):
+        return self._dims
+    
+    @dims.setter
+    def dims(self, value):
+        if hasattr(self, "slope"):
+            self.slope.dims = value
+        if hasattr(self, "intercept"):
+            self.intercept.dims = value
+        self._dims = value
+
     def create_graph(
-        self, model: pm.Model, idata: az.InferenceData | None, freedom: float = 1
+        self,
+        model: pm.Model,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
     ):
         self.slope.create_graph(model, idata, freedom)
         self.intercept.create_graph(model, idata, freedom)
 
     def _sample(self, data: HBRData):
         return math.sum(
-            self.slope.sample(data)* data.pm_X, axis=1, keepdims=False
+            self.slope.sample(data) * data.pm_X, axis=1, keepdims=False
         ) + self.intercept.sample(data)
 
     def to_dict(self):

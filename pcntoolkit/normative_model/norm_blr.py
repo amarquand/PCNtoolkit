@@ -73,6 +73,11 @@ class NormBLR(NormBase):
         self._fit(fit_data)
         self._predict(predict_data)
 
+    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
+        raise NotImplementedError(
+            f"Generate synthetic data method not implemented for {self.__class__.__name__}"
+        )
+
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
         raise NotImplementedError(
             f"Transfer method not implemented for {self.__class__.__name__}"

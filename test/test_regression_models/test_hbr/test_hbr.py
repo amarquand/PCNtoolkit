@@ -1,6 +1,7 @@
 import pytest
 
 from pcntoolkit.regression_model.hbr.hbr import HBR
+from pcntoolkit.regression_model.hbr.param import FixedParam, LinearParam, RandomParam
 from test.fixtures.data_fixtures import *
 from test.fixtures.hbr_model_fixtures import *
 from test.fixtures.path_fixtures import *
@@ -67,18 +68,17 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.reg_conf.tune == sample_args.get("tune")
     assert hbr.reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.reg_conf.likelihood == "Normal"
-    assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
-        assert hbr.reg_conf.mu.slope.random == args.get("random_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.random == args.get(
-            "random_intercept_mu", False
-        )
-        assert hbr.reg_conf.mu.slope.centered == args.get("centered_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.centered == args.get(
-            "centered_intercept_mu", False
-        )
+        if args.get("random_slope_mu", False):
+            assert isinstance(hbr.reg_conf.mu.slope, RandomParam)   
+        else:
+            assert isinstance(hbr.reg_conf.mu.slope, FixedParam)
+        if args.get("random_intercept_mu", False):
+            assert isinstance(hbr.reg_conf.mu.intercept, RandomParam)
+        else:
+            assert isinstance(hbr.reg_conf.mu.intercept, FixedParam)
     assert hbr.is_from_dict
-    assert not hbr.reg_conf.sigma.linear
+    assert not isinstance(hbr.reg_conf.sigma, LinearParam) and not isinstance(hbr.reg_conf.sigma, RandomParam)
 
     # Testing to_dict
     hbr_dict = hbr.to_dict()
@@ -86,22 +86,13 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr_dict["reg_conf"]["tune"] == sample_args.get("tune")
     assert hbr_dict["reg_conf"]["pymc_cores"] == sample_args.get("pymc_cores")
     assert hbr_dict["reg_conf"]["likelihood"] == "Normal"
-    assert hbr_dict["reg_conf"]["mu"]["linear"] == args.get("linear_mu", False)
+    assert args.get("linear_mu", False) == (hbr_dict["reg_conf"]["mu"]["type"] == "LinearParam")
     if args.get("linear_mu", False):
-        assert hbr_dict["reg_conf"]["mu"]["slope"]["random"] == args.get(
-            "random_slope_mu", False
-        )
-        assert hbr_dict["reg_conf"]["mu"]["intercept"]["random"] == args.get(
-            "random_intercept_mu", False
-        )
-        assert hbr_dict["reg_conf"]["mu"]["slope"]["centered"] == args.get(
-            "centered_slope_mu", False
-        )
-        assert hbr_dict["reg_conf"]["mu"]["intercept"]["centered"] == args.get(
-            "centered_intercept_mu", False
-        )
+        assert hbr_dict["reg_conf"]["mu"]["type"] == "LinearParam"
+        assert (hbr_dict["reg_conf"]["mu"]["slope"]["type"] == "RandomParam") == args.get("random_slope_mu", False)
+        assert (hbr_dict["reg_conf"]["mu"]["intercept"]["type"] == "RandomParam") == args.get("random_intercept_mu", False)
     assert hbr.is_from_dict
-    assert not hbr_dict["reg_conf"]["sigma"]["linear"]
+    assert not hbr_dict["reg_conf"]["sigma"]["type"] == "LinearParam"
 
     # Testing from_dict
     del hbr
@@ -110,14 +101,15 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.reg_conf.tune == sample_args.get("tune")
     assert hbr.reg_conf.pymc_cores == sample_args.get("pymc_cores")
     assert hbr.reg_conf.likelihood == "Normal"
-    assert hbr.reg_conf.mu.linear == args.get("linear_mu", False)
     if args.get("linear_mu", False):
-        assert hbr.reg_conf.mu.slope.random == args.get("random_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.random == args.get(
-            "random_intercept_mu", False
-        )
-        assert hbr.reg_conf.mu.slope.centered == args.get("centered_slope_mu", False)
-        assert hbr.reg_conf.mu.intercept.centered == args.get(
-            "centered_intercept_mu", False
-        )
+        assert isinstance(hbr.reg_conf.mu, LinearParam)
+        if args.get("random_slope_mu", False):    
+            assert isinstance(hbr.reg_conf.mu.slope, RandomParam)
+        else:
+            assert isinstance(hbr.reg_conf.mu.slope, FixedParam)
+        if args.get("random_intercept_mu", False):
+            assert isinstance(hbr.reg_conf.mu.intercept, RandomParam)
+        else:
+            assert isinstance(hbr.reg_conf.mu.intercept, FixedParam)
+   
     assert hbr.is_from_dict

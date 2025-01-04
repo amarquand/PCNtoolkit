@@ -127,6 +127,7 @@ class NormData(xr.Dataset):
             attrs = {}
         attrs["name"] = name  # type: ignore
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
+        self['batch_effects'] = self['batch_effects'].astype(str)
         self.create_batch_effects_maps()
 
     @classmethod
@@ -546,9 +547,10 @@ class NormData(xr.Dataset):
         for train_idx, test_idx in stratified_kfold_split.split(
             self.X, batch_effects_stringified
         ):
-            split1 = self.isel(datapoints=train_idx)
+            split1 = self.isel(datapoints=train_idx)    
             split2 = self.isel(datapoints=test_idx)
             yield split1, split2
+            
 
     def create_batch_effects_maps(self) -> None:
         """
@@ -557,6 +559,7 @@ class NormData(xr.Dataset):
         # create a dictionary with for each column in the batch effects, a dict from value to int
         batch_effects_maps = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
+
             batch_effects_maps[dim] = {
                 value: j for j, value in enumerate(np.unique(self.batch_effects[:, i]))
             }
@@ -576,10 +579,8 @@ class NormData(xr.Dataset):
         bool
             True if compatible, False otherwise.
         """
-        same_covariates: bool = np.all(self.covariates == other.covariates).astype(bool)
-        same_batch_effect_dims: bool = np.all(
-            self.batch_effect_dims == other.batch_effect_dims
-        ).astype(bool)
+        same_covariates: bool = len(self.covariates) == len(other.covariates) and np.all(self.covariates == other.covariates).astype(bool)
+        same_batch_effect_dims: bool = len(self.batch_effect_dims) == len(other.batch_effect_dims) and np.all(self.batch_effect_dims == other.batch_effect_dims).astype(bool)
         same_batch_effects_maps: bool = (
             self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
         )
