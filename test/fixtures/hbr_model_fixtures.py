@@ -29,7 +29,7 @@ the Hierarchical Bayesian Regression (HBR) approach.
 N_SAMPLES = 15
 N_TUNES = 5
 N_PYMC_CORES = 4
-
+N_CHAINS = 2
 
 @pytest.fixture
 def cvfolds():
@@ -119,7 +119,7 @@ def hbr_conf_dict(
     maskfile  
 ):
     responsefile, covfile, trbefile = fit_files
-    testcov, testresp, tsbefile = test_files
+    testresp, testcov, tsbefile = test_files
     return {
         "resp": responsefile,
         "maskfile": maskfile,
@@ -135,10 +135,10 @@ def hbr_conf_dict(
         "linear_mu": True,
         "linear_sigma": True,
         "mapping_sigma": "softplus",
-        "pymc_cores": 2,
-        "draws": 10,
-        "tune": 10,
-        "chains": 2,
+        "pymc_cores": N_PYMC_CORES,
+        "draws": N_SAMPLES,
+        "tune": N_TUNES,
+        "chains": N_CHAINS,
     }
 
 
@@ -176,12 +176,12 @@ def sigma():
 
 
 @pytest.fixture
-def hbrconf(mu, sigma, n_mcmc_samples):
+def hbrconf(mu, sigma):
     return HBRConf(
-        draws=n_mcmc_samples,
-        tune=10,
-        chains=2,
-        pymc_cores=2,
+        draws=N_SAMPLES,
+        tune=N_TUNES,
+        chains=N_CHAINS,
+        pymc_cores=N_PYMC_CORES,
         likelihood="SHASHb",
         mu=mu,
         sigma=sigma,

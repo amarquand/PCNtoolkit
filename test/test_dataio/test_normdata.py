@@ -27,17 +27,18 @@ def test_norm_data_creation(
     n_batch_effect_dims,
     n_covariates,
     n_train_datapoints,
+    batch_effect_values,
     n_response_vars,
 ):
     norm_data = request.getfixturevalue(norm_data_fixture)
 
     assert norm_data.X.shape == (n_train_datapoints, n_covariates)
     assert norm_data.y.shape == (n_train_datapoints, n_response_vars)
-    assert norm_data.batch_effects.shape == (n_train_datapoints, n_covariates)
+    assert norm_data.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
     assert norm_data.covariates.shape == (n_covariates,)
     assert norm_data.batch_effect_dims.shape == (n_batch_effect_dims,)
-    assert norm_data.attrs["batch_effects_maps"]["batch_effect_0"] == {0: 0, 1: 1}
-    assert norm_data.attrs["batch_effects_maps"]["batch_effect_1"] == {0: 0, 1: 1, 2: 2}
+    assert norm_data.attrs["batch_effects_maps"]["batch_effect_0"] == {'0': 0, '1': 1}
+    assert norm_data.attrs["batch_effects_maps"]["batch_effect_1"] == {'0': 0, '1': 1, '2': 2}
     assert norm_data.coords["datapoints"].shape == (n_train_datapoints,)
     assert norm_data.coords["covariates"].shape == (n_covariates,)
     assert norm_data.coords["batch_effect_dims"].shape == (n_batch_effect_dims,)
@@ -50,6 +51,7 @@ def test_split_with_stratify(
     n_train_datapoints,
     n_response_vars,
     split_ratio,
+    batch_effect_values,
 ):
     splits = norm_data_from_arrays.train_test_split(
         splits=split_ratio, split_names=("train", "val")
@@ -67,28 +69,39 @@ def test_split_with_stratify(
         expected_samples = int(n_train_datapoints * split_ratio[i])
         assert split.X.shape == (expected_samples, n_covariates)
         assert split.y.shape == (expected_samples, n_response_vars)
-        assert split.batch_effects.shape == (expected_samples, n_covariates)
+        assert split.batch_effects.shape == (expected_samples, len(batch_effect_values))
         assert split.covariates.shape == (n_covariates,)
-        assert split.batch_effect_dims.shape == (n_covariates,)
-        assert split.batch_effects_maps["batch_effect_0"] == {0: 0, 1: 1}
-        assert split.batch_effects_maps["batch_effect_1"] == {0: 0, 1: 1, 2: 2}
+        assert split.batch_effect_dims.shape == (len(batch_effect_values),)
+        assert split.batch_effects_maps == {f"batch_effect_{i}":{str(k):j for j, k in enumerate(sorted(batch_effect_values)[i])} for i in range(len(batch_effect_values))}
         assert split.coords["datapoints"].shape == (expected_samples,)
-        assert split.coords["covariates"].to_numpy().tolist() == [
-            "covariate_0",
-            "covariate_1",
-        ]
-        assert split.coords["batch_effect_dims"].to_numpy().tolist() == [
-            "batch_effect_0",
-            "batch_effect_1",
-        ]
+        assert split.coords["covariates"].to_numpy().tolist() == [f"covariate_{i}" for i in range(n_covariates)]
+        assert split.coords["batch_effect_dims"].to_numpy().tolist() == [f"batch_effect_{i}" for i in range(len(batch_effect_values))]
 
     # Check if stratification worked
     original_batch_effects = norm_data_from_arrays.batch_effects.data
-    original_proportions = np.mean(original_batch_effects, axis=0)
 
-    for split in splits:
-        split_proportions = np.mean(split.batch_effects.data, axis=0)
-        np.testing.assert_allclose(split_proportions, original_proportions, atol=0.1)
+    # Check column-wise value distributions
+    for col_idx in range(original_batch_effects.shape[1]):
+        original_values, original_counts = np.unique(original_batch_effects[:, col_idx], return_counts=True)
+        original_frequencies = original_counts / len(original_batch_effects)
+        
+        for split in splits:
+            split_values, split_counts = np.unique(split.batch_effects.data[:, col_idx], return_counts=True)
+            split_frequencies = split_counts / len(split.batch_effects.data)
+            
+            # Check if all unique values from original exist in split
+            assert np.all(np.isin(original_values, split_values)), \
+                f"Split missing some values from column {col_idx}"
+            
+            # Check if frequencies are approximately equal (within 10% tolerance)
+            for val, orig_freq in zip(original_values, original_frequencies):
+                split_freq = split_frequencies[split_values == val][0]
+                np.testing.assert_allclose(
+                    split_freq, 
+                    orig_freq, 
+                    atol=0.1,
+                    err_msg=f"Frequency mismatch for value {val} in column {col_idx}"
+                )
 
     # Check if all unique batch effects are present in both splits
     original_unique_batch_effects = np.unique(original_batch_effects, axis=0)

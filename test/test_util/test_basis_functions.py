@@ -24,9 +24,9 @@ def test_poly_fit_and_transform(norm_data_from_arrays, basis_column):
         assert norm_data_from_arrays.Phi.shape == (norm_data_from_arrays.X.data.shape[0], len(norm_data_from_arrays.X.coords["covariates"])*degree)
     else:
         if isinstance(basis_column, int):
-            assert norm_data_from_arrays.Phi.shape == (norm_data_from_arrays.X.data.shape[0], degree + 1)
+            assert norm_data_from_arrays.Phi.shape == (norm_data_from_arrays.X.data.shape[0], degree + norm_data_from_arrays.X.data.shape[1] - 1)
         else:
-            assert norm_data_from_arrays.Phi.shape == (norm_data_from_arrays.X.data.shape[0], len(basis_column) * degree + (2-len(basis_column)))
+            assert norm_data_from_arrays.Phi.shape == (norm_data_from_arrays.X.data.shape[0], degree*len(basis_column) + (norm_data_from_arrays.X.data.shape[1] - len(basis_column)))
 
 @pytest.mark.parametrize("nknots, degree", [(8, 4), (10, 4), (10, 3)])
 def test_bspline_fit_and_transform(norm_data_from_arrays, nknots, degree):
