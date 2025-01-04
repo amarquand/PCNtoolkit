@@ -66,7 +66,6 @@ from pcntoolkit.util.basis_function import BasisFunction, create_basis_function
 from pcntoolkit.util.evaluator import Evaluator
 from pcntoolkit.util.plotter import plot_centiles, plot_qq
 from pcntoolkit.util.scaler import Scaler
-from pcntoolkit.util.utils import open_file
 
 from .norm_conf import NormConf
 
@@ -209,8 +208,6 @@ class NormBase(ABC):
         self.evaluate(data)
         if self.norm_conf.saveresults:
             self.save_results(data)
-        if self.norm_conf.saveresults or self.norm_conf.savemodel:
-            open_file(self.norm_conf.save_dir)
         return data
 
     def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
@@ -275,8 +272,6 @@ class NormBase(ABC):
         self.evaluate(predict_data)
         if self.norm_conf.saveresults:
             self.save_results(predict_data)
-        if self.norm_conf.saveresults or self.norm_conf.savemodel:
-            open_file(self.norm_conf.save_dir)
         return predict_data
 
     def transfer(self, data: NormData, *args: Any, **kwargs: Any) -> "NormBase":
@@ -342,8 +337,6 @@ class NormBase(ABC):
         transfered_normative_model.estimate_batch_effects_distribution(data)
         if transfered_normative_model.norm_conf.savemodel:
             transfered_normative_model.save()
-        if self.norm_conf.saveresults or self.norm_conf.savemodel:
-            open_file(self.norm_conf.save_dir)
         return transfered_normative_model
 
     def transfer_predict(self, fit_data:NormData, predict_data:NormData, *args:Any, **kwargs:Any) -> NormBase:
@@ -638,7 +631,7 @@ class NormBase(ABC):
             self.be_distributions[be] = {}
             for value, count in zip(*np.unique(data.batch_effects.values[:, i], return_counts=True)):
                 self.be_distributions[be][value] = count/data.batch_effects.shape[0]
-        self.data_size = int(data.batch_effects.shape[0])
+        self.data_size = data.batch_effects.values.shape[0]
 
     def sample_batch_effects(self, n_samples: int) -> pd.DataFrame:
         """
