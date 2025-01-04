@@ -36,6 +36,7 @@ from __future__ import annotations
 from typing import Any, Type
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -155,13 +156,47 @@ class NormHBR(NormBase):
             reg_conf, transferdata, freedom
         )
         return new_hbr_model
+    
 
-    def _extend(self, data: NormData) -> NormHBR:
-        extend_covariate_span = (0, 100)
-        
+    def _extend(self, data: NormData) -> NormBase:
+        hbrdata = self.normdata_to_hbrdata(data)
+        return self.focused_model.extend(hbrdata) # type: ignore
 
 
- 
+    def _generate_synthetic_data(self, data:NormData, n_synthetic_samples: int = 1000) -> NormData:
+
+        df = pd.DataFrame()
+        for c in data.X.coords["covariates"].values:
+            c_min = self.inscalers[c].min
+            c_max = self.inscalers[c].max
+            df[c] = np.random.rand(n_synthetic_samples) * (c_max - c_min) + c_min
+
+        for responsevar in self.response_vars:
+            df[responsevar] = np.zeros(n_synthetic_samples)
+
+        bes = self.sample_batch_effects(n_synthetic_samples)
+        df = pd.concat([df, bes], axis=1)
+
+        synthetic_data = NormData.from_dataframe(
+            name="synthetic_data",
+            dataframe=df,
+            covariates=data.covariates.values,
+            batch_effects=data.batch_effect_dims.values,
+            response_vars=self.response_vars,
+        )
+
+        self.preprocess(synthetic_data)
+
+        for responsevar in self.response_vars:
+            resp_synthetic_data = synthetic_data.sel(response_vars=responsevar)
+            self.focus(responsevar)
+            hbr_data = self.normdata_to_hbrdata(resp_synthetic_data)
+            self.focused_model.generate_synthetic_data(hbr_data) # type: ignore
+            synthetic_data.scaled_y.loc[{"response_vars": responsevar}] = hbr_data.y
+
+        self.scale_backward(synthetic_data)
+        return synthetic_data
+
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         resample = kwargs.get("resample", True)

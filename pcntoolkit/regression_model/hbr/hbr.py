@@ -68,7 +68,7 @@ import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
-from pcntoolkit.regression_model.hbr.param2 import Param
+from pcntoolkit.regression_model.hbr.param import Param
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
 
@@ -187,6 +187,7 @@ class HBR(RegressionModel):
             hbrdata.set_data_in_existing_model(self.pymc_model) # Model already compiled, only need to update the data
         if extend_inferencedata and hasattr(self.idata, "predictions"):
             del self.idata.predictions
+            del self.idata.predictions_constant_data
         with self.pymc_model:
             idata = pm.sample_posterior_predictive(
                 self.idata,
@@ -264,6 +265,28 @@ class HBR(RegressionModel):
             new_hbr_model.is_fitted = True
 
         return new_hbr_model
+
+    def generate_synthetic_data(self, hbrdata: HBRData) -> HBRData:
+        if not self.pymc_model:
+            self.compile_model(hbrdata)
+        else:
+            hbrdata.set_data_in_existing_model(self.pymc_model)
+
+        with self.pymc_model:
+            pred_idata = pm.sample_posterior_predictive(
+                self.idata,
+                extend_inferencedata=False,
+                var_names=['y_pred'],
+                predictions=True,
+            )
+        preds = az.extract(pred_idata, "predictions", var_names=['y_pred'])
+        datapoints, sample = preds.shape
+        replace = datapoints > sample
+        selected_idx = np.random.choice(sample, size=datapoints, replace=replace)
+        hbrdata.y = np.diag(preds.values[:,selected_idx])
+        return hbrdata
+    
+    
 
     def centiles(
         self, hbrdata: HBRData, cdf: np.ndarray, resample: bool = True
@@ -402,7 +425,6 @@ class HBR(RegressionModel):
         """
         self.pymc_model = pm.Model(coords=data.coords)
         data.set_data_in_new_model(self.pymc_model)
-        self.set_batch_effect_priors(data, idata)
         if self.likelihood == "Normal":
             self.compile_normal(data, idata, freedom)
         elif self.likelihood == "SHASHb":
@@ -573,13 +595,6 @@ class HBR(RegressionModel):
                 observed=data.pm_y,
                 dims=("datapoints",),
             )
-
-    def set_batch_effect_priors(self, data: HBRData, idata: Optional[az.InferenceData] = None) -> None:
-        for i, k in enumerate(data.batch_effect_dims):
-            with self.pymc_model:
-                pass
-                dir = pm.Dirichlet(k + "_dirichlet", a=np.ones(len(self.pymc_model.coords[k])), dims=(k,))
-                cat = pm.Categorical(k, p=dir, observed=data.pm_batch_effect_indices[k], dims=("datapoints",))
 
     def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """
