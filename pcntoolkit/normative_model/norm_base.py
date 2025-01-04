@@ -320,7 +320,7 @@ class NormBase(ABC):
             self.reset()
 
         transfered_norm_conf_dict = copy.deepcopy(self.norm_conf.to_dict())
-        transfered_norm_conf_dict["save_dir"] = self.norm_conf.save_dir + "_transfer"
+        transfered_norm_conf_dict["save_dir"] = kwargs.get("save_dir", self.norm_conf.save_dir + "_transfer")
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
 
         # pylint: disable=too-many-function-args
@@ -396,7 +396,7 @@ class NormBase(ABC):
 
         reg_conf_copy = copy.deepcopy(self.default_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
-        norm_conf_copy.set_save_dir(self.norm_conf.save_dir+"_extend")
+        norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir+"_extend"))
         extended_model = self.__class__(norm_conf_copy, reg_conf_copy) #type: ignore
         extended_model.fit(merged)
         return extended_model
