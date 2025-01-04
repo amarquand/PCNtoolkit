@@ -50,7 +50,6 @@ pcntoolkit.normative_model : Uses scalers for data preprocessing
 pcntoolkit.dataio.basis_expansions : Complementary data transformations
 """
 
-
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Type, Union
 
@@ -261,6 +260,8 @@ class StandardScaler(Scaler):
         self.s: Optional[NDArray] = None
 
     def fit(self, X: NDArray) -> None:
+        self.min = np.min(X, axis=0)
+        self.max = np.max(X, axis=0)
         self.m = np.mean(X, axis=0)
         self.s = np.std(X, axis=0)
 
@@ -286,6 +287,8 @@ class StandardScaler(Scaler):
             "adjust_outliers": self.adjust_outliers,
             "m": self.m.tolist(),
             "s": self.s.tolist(),
+            "min": self.min.tolist(),
+            "max": self.max.tolist(),
         }
 
     @classmethod
@@ -295,6 +298,8 @@ class StandardScaler(Scaler):
         instance = cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
         instance.m = np.array(my_dict["m"])
         instance.s = np.array(my_dict["s"])
+        instance.min = np.array(my_dict["min"])
+        instance.max = np.array(my_dict["max"])
         return instance
 
 
@@ -473,6 +478,8 @@ class IdentityScaler(Scaler):
     """
 
     def fit(self, X: NDArray) -> None:
+        self.min = np.min(X)
+        self.max = np.max(X)
         pass
 
     def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
@@ -482,10 +489,18 @@ class IdentityScaler(Scaler):
         return X.copy()
 
     def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
-        return {"scaler_type": "id", "adjust_outliers": self.adjust_outliers}
+        return {
+            "scaler_type": "id",
+            "adjust_outliers": self.adjust_outliers,
+            "min": self.min.tolist(),
+            "max": self.max.tolist(),
+        }
 
     @classmethod
     def from_dict(
         cls, my_dict: Dict[str, Union[bool, str, float, List[float]]]
     ) -> "IdentityScaler":
-        return cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
+        instance = cls(adjust_outliers=bool(my_dict["adjust_outliers"]))
+        instance.min = np.array(my_dict["min"])
+        instance.max = np.array(my_dict["max"])
+        return instance

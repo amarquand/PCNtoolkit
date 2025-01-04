@@ -51,7 +51,7 @@ pcntoolkit.regression_model.hbr.hbr : HBR model implementation
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Dict, List, Optional
 
-from pcntoolkit.regression_model.hbr.param2 import (
+from pcntoolkit.regression_model.hbr.param import (
     LinearParam,
     Param,
     get_default_delta,

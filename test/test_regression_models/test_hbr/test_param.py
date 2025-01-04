@@ -10,7 +10,7 @@ import xarray as xr
 
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
-from pcntoolkit.regression_model.hbr.param import Param
+from pcntoolkit.regression_model.hbr.param import Param, make_param
 from test.fixtures.data_fixtures import *
 from test.fixtures.norm_data_fixtures import *
 
@@ -36,13 +36,13 @@ def data(norm_data_from_arrays):
 @pytest.fixture
 def model_and_data(data: HBRData) ->  tuple[pm.Model ,HBRData]:
     model = pm.Model(coords=data.coords)
-    data.add_to_graph(model)
+    data.set_data_in_new_model(model)
     return model, data
 
 
 def test_normal_fixed_param(model_and_data):
     model, data = model_and_data
-    param = Param()
+    param = make_param("theta", dist_name="Normal", dist_params=(0, 10))
     param.create_graph(model)
     assert param.name == "theta"
     assert param.dims is None

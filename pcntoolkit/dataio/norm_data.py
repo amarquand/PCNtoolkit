@@ -325,7 +325,17 @@ class NormData(xr.Dataset):
             },
             attrs=attrs,
         )
+    
+    def merge(self, other: NormData) -> NormData:
+        """
+        Merge two NormData objects.
+        """
+        new_X = np.concatenate([self.X.values, other.X.values], axis=0)
+        new_y = np.concatenate([self.y.values, other.y.values], axis=0)
+        new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
 
+        new_normdata = NormData(name=self.attrs["name"], data_vars={"X": (["datapoints", "covariates"], new_X), "y": (["datapoints", "response_vars"], new_y), "batch_effects": (["datapoints", "batch_effect_dims"], new_batch_effects)}, coords={"datapoints": list(np.arange(new_X.shape[0])), "response_vars": self.response_vars.to_numpy(), "covariates": self.covariates.to_numpy(), "batch_effect_dims": self.batch_effect_dims.to_numpy()}, attrs=self.attrs)
+        return new_normdata
     # pylint: enable=arguments-differ
 
     def create_synthetic_data(
@@ -664,14 +674,15 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def split_batch_effects(self, batch_effects: Dict[str, List[str]], names: Tuple[str, str] | None = None) -> Tuple[NormData, NormData]:
+    def split_batch_effects(self, batch_effects: Dict[str, List[str]], names: Tuple[str, str] | None = None, recreate_batch_effects_maps: bool = True) -> Tuple[NormData, NormData]:
         """
         Split the data into two datasets, one with the specified batch effects and one without.
         """
         A = self.select_batch_effects(batch_effects)
         B = self.select_batch_effects(batch_effects, invert=True)
-        A.create_batch_effects_maps()
-        B.create_batch_effects_maps()
+        if recreate_batch_effects_maps:
+            A.create_batch_effects_maps()
+            B.create_batch_effects_maps()
         if names is not None:
             A.name = names[0]
             B.name = names[1]
