@@ -8,7 +8,6 @@ import pymc as pm
 import pytest
 import xarray as xr
 
-from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.param import (  # noqa: F401, F403
     FixedParam,
@@ -19,6 +18,7 @@ from pcntoolkit.regression_model.hbr.param import (  # noqa: F401, F403
     param_from_args,
 )
 from test.fixtures.data_fixtures import *
+from test.fixtures.hbr_model_fixtures import *
 from test.fixtures.norm_data_fixtures import *
 
 logging.basicConfig(level=logging.INFO)
@@ -34,9 +34,10 @@ The tests cover:
 
 
 @pytest.fixture
-def data(norm_data_from_arrays):
+def data(new_norm_hbr_model:NormHBR, norm_data_from_arrays):
+    new_norm_hbr_model.register_batch_effects(norm_data_from_arrays)
     single_respvar = norm_data_from_arrays.sel(response_vars="response_var_1")
-    data = NormHBR.normdata_to_hbrdata(single_respvar)
+    data = new_norm_hbr_model.normdata_to_hbrdata(single_respvar)
     return data
 
 

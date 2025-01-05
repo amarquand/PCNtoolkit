@@ -83,8 +83,6 @@ class Runner:
             raise ValueError(
                 "If cross-validation is enabled, cv_folds must be greater than 1"
             )
-        if (not self.cross_validate) and self.cv_folds > 1:
-            warnings.warn("cv_folds is greater than 1, but cross-validation is disabled. This is likely unintended.")
 
 
     def fit(self, model: NormBase, data: NormData) -> None:
@@ -93,7 +91,7 @@ class Runner:
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
-
+        
     def fit_predict(self, model: NormBase, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
         self.save_dir = model.norm_conf.save_dir
         fn = self.get_fit_predict_chunk_fn(model)
@@ -115,10 +113,10 @@ class Runner:
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def transfer_predict(self, model: NormBase, data: NormData) -> None:
+    def transfer_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData) -> None:
         self.save_dir = model.norm_conf.save_dir
         fn = self.get_transfer_predict_chunk_fn(model)
-        self.submit_binary_jobs(fn, data)
+        self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
@@ -129,10 +127,10 @@ class Runner:
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def extend_predict(self, model: NormBase, data: NormData) -> None:
+    def extend_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData) -> None:
         self.save_dir = model.norm_conf.save_dir
         fn = self.get_extend_predict_chunk_fn(model)
-        self.submit_binary_jobs(fn, data)
+        self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 

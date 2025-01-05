@@ -46,6 +46,7 @@ import fcntl
 import glob
 import json
 import os
+import warnings
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
@@ -147,9 +148,8 @@ class NormBase(ABC):
         - Preprocessing includes scaling and basis expansion based on norm_conf settings
 
         """
+        self.register_batch_effects(data)
         self.preprocess(data)
-        self.estimate_batch_effects_distribution(data)
-        self.batch_effect_maps = data.attrs['batch_effects_maps']
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
         print(f"{os.getpid()} - Going to fit {len(self.response_vars)} models\n")
         for responsevar in self.response_vars:
@@ -194,6 +194,7 @@ class NormBase(ABC):
 
         """
         self.preprocess(data)
+        assert self.check_compatibility(data), "Data is not compatible with the model!"
         print(f"Going to predict {len(self.response_vars)} models")
         for responsevar in self.response_vars:
             resp_predict_data = data.sel(response_vars=responsevar)
@@ -246,12 +247,12 @@ class NormBase(ABC):
         - Computes evaluation metrics after prediction
         """
 
-        assert fit_data.is_compatible_with(
-            predict_data
+        assert predict_data.check_compatibility(
+            fit_data
         ), "Fit data and predict data are not compatible!"
 
         self.preprocess(fit_data)
-        self.estimate_batch_effects_distribution(fit_data)
+        self.register_batch_effects(fit_data)
         self.preprocess(predict_data)
         self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
         print(f"Going to fit and predict {len(self.response_vars)} models")
@@ -304,23 +305,12 @@ class NormBase(ABC):
         4. Maintains original model's configuration with transfer-specific adjustments
         """
         self.preprocess(data)
-        transfered_models = {}
-        print(f"Going to transfer {len(self.response_vars)} models")
-        for responsevar in self.response_vars:
-            resp_transfer_data = data.sel(response_vars=responsevar)
-            if responsevar not in self.regression_models:
-                raise ValueError(
-                    "Attempted to transfer a model that has not been fitted."
-                )
-            self.focus(responsevar)
-            print(f"Transferring model for {responsevar}")
-            transfered_models[responsevar] = self._transfer(
-                resp_transfer_data, *args, **kwargs
-            )
-            self.reset()
+     
 
         transfered_norm_conf_dict = copy.deepcopy(self.norm_conf.to_dict())
-        transfered_norm_conf_dict["save_dir"] = kwargs.get("save_dir", self.norm_conf.save_dir + "_transfer")
+        transfered_norm_conf_dict["save_dir"] = kwargs.get(
+            "save_dir", self.norm_conf.save_dir + "_transfer"
+        )
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
 
         # pylint: disable=too-many-function-args
@@ -328,18 +318,35 @@ class NormBase(ABC):
             transfered_norm_conf,
             self.default_reg_conf,  # type: ignore
         )
+
+        transfered_normative_model.register_batch_effects(data)
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
         )
+        transfered_models = {}
+        print(f"Going to transfer {len(self.response_vars)} models")
+        for responsevar in data.response_vars.values:
+            if responsevar not in self.response_vars:
+                print(f"Skipping {responsevar} because it is not in the original model")
+                continue
+            resp_transfer_data = data.sel(response_vars=responsevar)
+            self.focus(responsevar)
+            print(f"Transferring model for {responsevar}")
+            transfered_models[responsevar] = self._transfer(
+                transfered_normative_model, resp_transfer_data, *args, **kwargs
+            )
+            self.reset()
         transfered_normative_model.regression_models = transfered_models
         self.transfer_basis_function(transfered_normative_model)
         self.transfer_scalers(transfered_normative_model)
-        transfered_normative_model.estimate_batch_effects_distribution(data)
+        transfered_normative_model.batch_effects_counts = data.batch_effects_counts
         if transfered_normative_model.norm_conf.savemodel:
             transfered_normative_model.save()
         return transfered_normative_model
 
-    def transfer_predict(self, fit_data:NormData, predict_data:NormData, *args:Any, **kwargs:Any) -> NormBase:
+    def transfer_predict(
+        self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any
+    ) -> NormBase:
         """Transfer the normative model to new data and make predictions.
 
         Parameters
@@ -354,6 +361,9 @@ class NormBase(ABC):
         NormBase
             The transferred model.
         """
+        assert fit_data.check_compatibility(
+            predict_data
+        ), "Fit data and predict data are not compatible!"
         transfered_model = self.transfer(fit_data, *args, **kwargs)
         transfered_model.predict(predict_data)
         return transfered_model
@@ -387,21 +397,21 @@ class NormBase(ABC):
             The extended normative model.
         """
 
-        # Generate synthetic data
         synthetic_data = self._generate_synthetic_data(data)
-
         self.postprocess(synthetic_data)
-
         merged = synthetic_data.merge(data)
-
         reg_conf_copy = copy.deepcopy(self.default_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
-        norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir+"_extend"))
-        extended_model = self.__class__(norm_conf_copy, reg_conf_copy) #type: ignore
+        norm_conf_copy.set_save_dir(
+            kwargs.get("save_dir", self.norm_conf.save_dir + "_extend")
+        )
+        extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
         extended_model.fit(merged)
         return extended_model
 
-    def extend_predict(self, fit_data:NormData, predict_data:NormData, *args:Any, **kwargs:Any) -> NormBase:
+    def extend_predict(
+        self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any
+    ) -> NormBase:
         """Extend the normative model with new data and make predictions.
 
         Parameters
@@ -416,9 +426,16 @@ class NormBase(ABC):
         NormBase
             The extended normative model.
         """
-
-        extended_model = self.extend(fit_data, *args, **kwargs)
-        extended_model.predict(predict_data)
+        synthetic_data = self._generate_synthetic_data(fit_data)
+        self.postprocess(synthetic_data)
+        merged = synthetic_data.merge(fit_data)
+        reg_conf_copy = copy.deepcopy(self.default_reg_conf)
+        norm_conf_copy = copy.deepcopy(self._norm_conf)
+        norm_conf_copy.set_save_dir(
+            kwargs.get("save_dir", self.norm_conf.save_dir + "_extend")
+        )
+        extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
+        extended_model.fit_predict(merged, predict_data)
         return extended_model
 
     def evaluate(self, data: NormData) -> None:
@@ -622,24 +639,85 @@ class NormBase(ABC):
         """
         self.scale_backward(data)
 
-    def estimate_batch_effects_distribution(self, data: NormData) -> None:
+    def check_compatibility(self, data: NormData) -> bool:
         """
-        Estimate the distribution of the batch effects.
+        Check if the data is compatible with the model.
+
+        Parameters
+        ----------
+        data : NormData
+            Data to check compatibility with.
+
+        Returns
+        -------
+        bool
+            True if compatible, False otherwise
         """
-        self.be_distributions = {}
-        for i, be in enumerate(data.batch_effect_dims.to_numpy()):
-            self.be_distributions[be] = {}
-            for value, count in zip(*np.unique(data.batch_effects.values[:, i], return_counts=True)):
-                self.be_distributions[be][value] = count/data.batch_effects.shape[0]
-        self.data_size = data.batch_effects.values.shape[0]
+        missing_covariates = [
+            i for i in self.inscalers.keys() if i not in data.covariates.values
+        ]
+        if len(missing_covariates) > 0:
+            warnings.warn(
+                f"The dataset {data.name} is missing the following covariates: {missing_covariates}"
+            )
+
+        extra_covariates = [
+            i for i in data.covariates.values if i not in self.inscalers.keys()
+        ]
+        if len(extra_covariates) > 0:
+            warnings.warn(
+                f"The dataset {data.name} has too many covariates: {extra_covariates}"
+            )
+
+        extra_response_vars = [
+            i for i in data.response_vars.values if i not in self.outscalers.keys()
+        ]
+        if len(extra_response_vars) > 0:
+            warnings.warn(
+                f"The dataset {data.name} has too many response variables: {extra_response_vars}"
+            )
+
+        compatible = True
+        unknown_batch_effects = {
+            be: [u for u in unique if u not in self.unique_batch_effects[be]]
+            for be, unique in data.unique_batch_effects.items()
+        }
+        compatible = sum([len(l) for l in unknown_batch_effects.values()]) == 0
+        return (
+            (len(missing_covariates) == 0)
+            and (len(extra_covariates) == 0)
+            and (len(extra_response_vars) == 0)
+            and (compatible)
+        )
+
+    def register_batch_effects(self, data: NormData) -> None:
+        self.unique_batch_effects = copy.deepcopy(data.unique_batch_effects)
+        self.batch_effects_maps = {
+            be: {k: i for i, k in enumerate(self.unique_batch_effects[be])}
+            for be in self.unique_batch_effects.keys()
+        }
+        self.batch_effects_counts = data.batch_effects_counts
+
+    def map_batch_effects(self, data: NormData) -> np.ndarray:
+        mapped_batch_effects = np.zeros(data.batch_effects.values.shape)
+        for i, be in enumerate(self.unique_batch_effects.keys()):
+            for j, v in enumerate(data.batch_effects.values[:, i]):
+                mapped_batch_effects[j, i] = self.batch_effects_maps[be][v]
+        return mapped_batch_effects.astype(int)
+
 
     def sample_batch_effects(self, n_samples: int) -> pd.DataFrame:
         """
         Sample the batch effects from the estimated distribution.
         """
         bes = pd.DataFrame()
-        for be in self.be_distributions.keys():
-            bes[be] = np.random.choice(list(self.be_distributions[be].keys()), size=n_samples, p=list(self.be_distributions[be].values()))
+        for be in self.batch_effects_counts.keys():
+            countsum = np.sum(list(self.batch_effects_counts[be].values()))
+            bes[be] = np.random.choice(
+                list(self.batch_effects_counts[be].keys()),
+                size=n_samples,
+                p=[c / countsum for c in list(self.batch_effects_counts[be].values())],
+            )
         return bes
 
     def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
@@ -733,41 +811,46 @@ class NormBase(ABC):
     def save(self, path: Optional[str] = None) -> None:
         if path is not None:
             self.norm_conf.set_save_dir(path)
-
-        os.makedirs(os.path.join(self.norm_conf.save_dir, "model"), exist_ok=True)
-
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
             "regression_model_type": self.regression_model_type.__name__,
             "default_reg_conf": self.default_reg_conf.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
+            "response_vars": self.response_vars,
+            "unique_batch_effects": self.unique_batch_effects,
         }
 
-        # TODO make this cleaner and more general
-        if self.norm_conf.basis_function == "bspline" and hasattr(
-            self, "bspline_basis"
-        ):
+        if hasattr(self, "bspline_basis"):
             metadata["basis_function"] = copy.deepcopy(self.basis_function)
-
-        os.makedirs(self.norm_conf.save_dir, exist_ok=True)
-        print(os.getpid(), f"Saving model to {self.norm_conf.save_dir}")
 
         # JSON keys are always string, so we have use a trick to save the batch effects distributions, which may have string or int keys.
         # We invert the map, so that the original keys are stored as the values
-        # The original integer values are then converted to strings by json, but we can safely convert them back to ints when loading  
-        if hasattr(self, "be_distributions"):
-            metadata["inverse_be_distributions"] = {be:{k:v for v, k in mp.items()} for be, mp in self.be_distributions.items()}
-        if hasattr(self, "data_size"):
-            metadata["data_size"] = self.data_size
+        # The original integer values are then converted to strings by json, but we can safely convert them back to ints when loading
+        # We also add an index to the keys to make sure they are unique
+        if hasattr(self, "batch_effects_counts"):
+            metadata["inverse_batch_effects_counts"] = {
+                be: {
+                    f"{i}_{k}": v
+                    for i, (v, k) in enumerate(self.batch_effects_counts[be].items())
+                }
+                for be, mp in self.batch_effects_counts.items()
+            }
+        if hasattr(self, "batch_effects_maps"):
+            metadata["batch_effects_maps"] = {
+                be: {
+                    f"{i}_{k}": v
+                    for i, (v, k) in enumerate(self.batch_effects_maps[be].items())
+                }
+                for be in self.batch_effects_maps.keys()
+            }
 
         model_save_path = os.path.join(self.norm_conf.save_dir, "model")
-
+        os.makedirs(model_save_path, exist_ok=True)
         with open(
             os.path.join(model_save_path, "normative_model.json"),
             mode="w",
             encoding="utf-8",
         ) as f:
-            
             json.dump(metadata, f, indent=4)
 
         for responsevar, model in self.regression_models.items():
@@ -776,11 +859,8 @@ class NormBase(ABC):
             os.makedirs(reg_model_save_path, exist_ok=True)
             reg_model_dict["model"] = model.to_dict(reg_model_save_path)
             reg_model_dict["outscaler"] = self.outscalers[responsevar].to_dict()
-            with open(
-                os.path.join(reg_model_save_path, "regression_model.json"),
-                "w",
-                encoding="utf-8",
-            ) as f:
+            json_save_path = os.path.join(reg_model_save_path, "regression_model.json")
+            with open(json_save_path, "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
         abspath = os.path.abspath(self.norm_conf.save_dir)
@@ -794,6 +874,27 @@ class NormBase(ABC):
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
 
+
+        if "basis_function" in metadata:
+            self.basis_function = create_basis_function(metadata["basis_function"])
+        self.inscalers = {
+            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
+        }
+        if "batch_effects_maps" in metadata:
+            self.batch_effects_maps = {
+                be: {v: int(k.split("_")[1]) for k, v in mp.items()}
+                for be, mp in metadata["batch_effects_maps"].items()
+            }
+        if "inverse_batch_effects_counts" in metadata:
+            self.batch_effects_counts = {
+                be: {v: int(k.split("_")[1]) for k, v in mp.items()}
+                for be, mp in metadata["inverse_batch_effects_counts"].items()
+            }
+        if "unique_batch_effects" in metadata:
+            self.unique_batch_effects = metadata["unique_batch_effects"]
+
+     
+        self.regression_model_type = globals()[metadata["regression_model_type"]]
         self.response_vars = []
         self.outscalers = {}
         self.regression_models = {}
@@ -816,24 +917,10 @@ class NormBase(ABC):
                     self.outscalers[responsevar] = Scaler.from_dict(
                         reg_model_dict["outscaler"]
                     )
-
-        self.regression_model_type = globals()[metadata["regression_model_type"]]
-
-        if "basis_function" in metadata:
-            self.basis_function = create_basis_function(metadata["basis_function"])
-        self.inscalers = {
-            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
-        }
-
-        if "data_size" in metadata:
-            self.data_size = metadata["data_size"]
-
-        if "inverse_be_distributions" in metadata:
-            self.be_distributions = {be:{k:float(v) for v, k in mp.items()} for be, mp in metadata['inverse_be_distributions'].items()}
-
         self.default_reg_conf = type(
             self.regression_models[self.response_vars[0]].reg_conf
         ).from_dict(metadata["default_reg_conf"])
+        
         return self
 
     def save_results(self, data: NormData) -> None:
@@ -1079,7 +1166,7 @@ class NormBase(ABC):
         """
 
     @abstractmethod
-    def _transfer(self, data: NormData, **kwargs: Any) -> RegressionModel:
+    def _transfer(self, model: NormBase, data: NormData, **kwargs: Any) -> RegressionModel:
         """
         Transfers the current regression model to new data.
 
@@ -1133,7 +1220,9 @@ class NormBase(ABC):
         """
 
     @abstractmethod
-    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
+    def _generate_synthetic_data(
+        self, data: NormData, n_synthetic_samples: int = 1000
+    ) -> NormData:
         """
         Generates synthetic data from the model. Required for model extension.
 

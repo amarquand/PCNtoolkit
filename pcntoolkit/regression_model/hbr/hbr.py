@@ -137,7 +137,7 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None  # type: ignore
         self.pymc_model: pm.Model = None  # type: ignore
 
-    def fit(self, hbrdata: HBRData, make_new_model: bool = True) -> None:
+    def fit(self, hbrdata: HBRData, make_new_model: bool = True, progressbar: bool = True) -> None:
         """
         Fit the model to training data using MCMC sampling.
 
@@ -162,11 +162,12 @@ class HBR(RegressionModel):
                 chains=self.chains,
                 nuts_sampler=self.nuts_sampler,  # type: ignore
                 init=self.init,
+                progressbar=progressbar,
             )
         self.is_fitted = True
 
     def predict(
-        self, hbrdata: HBRData, extend_inferencedata: bool = True
+        self, hbrdata: HBRData, extend_inferencedata: bool = True, progressbar: bool = True
     ) -> az.InferenceData | dict[str, np.ndarray[Any, Any]]:
         """
         Generate predictions for new data.
@@ -194,6 +195,7 @@ class HBR(RegressionModel):
                 extend_inferencedata=extend_inferencedata,
                 var_names=self.get_var_names() + ["y_pred"],
                 predictions=True,
+                progressbar=progressbar,
             )
         return idata
 
@@ -234,7 +236,7 @@ class HBR(RegressionModel):
                 predictions=True,
             )
 
-    def transfer(self, hbrconf: HBRConf, transferdata: HBRData, freedom: float) -> HBR:
+    def transfer(self, hbrconf: HBRConf, transferdata: HBRData, freedom: float, progressbar: bool = True) -> HBR:
         """
         Perform transfer learning using existing model as prior.
 
@@ -261,12 +263,13 @@ class HBR(RegressionModel):
                 cores=hbrconf.pymc_cores,
                 chains=hbrconf.chains,
                 nuts_sampler=hbrconf.nuts_sampler,  # type: ignore
+                progressbar=progressbar,
             )
             new_hbr_model.is_fitted = True
 
         return new_hbr_model
 
-    def generate_synthetic_data(self, hbrdata: HBRData) -> HBRData:
+    def generate_synthetic_data(self, hbrdata: HBRData, progressbar: bool = True) -> HBRData:
         if not self.pymc_model:
             self.compile_model(hbrdata)
         else:
@@ -278,6 +281,7 @@ class HBR(RegressionModel):
                 extend_inferencedata=False,
                 var_names=['y_pred'],
                 predictions=True,
+                progressbar=progressbar,
             )
         preds = az.extract(pred_idata, "predictions", var_names=['y_pred'])
         datapoints, sample = preds.shape
@@ -289,7 +293,7 @@ class HBR(RegressionModel):
     
 
     def centiles(
-        self, hbrdata: HBRData, cdf: np.ndarray, resample: bool = True
+        self, hbrdata: HBRData, cdf: np.ndarray
     ) -> xr.DataArray:
         """
         Calculate centile values for given cumulative densities.
@@ -300,8 +304,6 @@ class HBR(RegressionModel):
             Data to calculate centiles for
         cdf : np.ndarray
             Array of cumulative density values
-        resample : bool, optional
-            Whether to generate new posterior samples, by default True
 
         Returns
         -------
@@ -309,7 +311,7 @@ class HBR(RegressionModel):
             Calculated centile values
         """
         var_names = self.get_var_names()
-        centiles_idata = self.predict(hbrdata, extend_inferencedata=False)
+        centiles_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
         post_pred = az.extract(
             centiles_idata,
             "predictions",
@@ -335,7 +337,7 @@ class HBR(RegressionModel):
             coords={"cdf": cdf},
         ).mean(dim="sample")
 
-    def zscores(self, hbrdata: HBRData, resample: bool = False) -> xr.DataArray:
+    def zscores(self, hbrdata: HBRData) -> xr.DataArray:
         """
         Calculate z-scores for observations.
 
@@ -343,8 +345,6 @@ class HBR(RegressionModel):
         ----------
         hbrdata : HBRData
             Data containing observations to calculate z-scores for
-        resample : bool, optional
-            Whether to generate new posterior samples, by default False
 
         Returns
         -------
@@ -352,8 +352,7 @@ class HBR(RegressionModel):
             Calculated z-scores
         """
         var_names = self.get_var_names()
-
-        zscores_idata = self.predict(hbrdata, extend_inferencedata=False)
+        zscores_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
         post_pred = az.extract(
             zscores_idata,
             "predictions",

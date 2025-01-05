@@ -80,13 +80,14 @@ class HBRData:
     def __init__(
         self,
         X: np.ndarray,
-        y: Optional[np.ndarray] = None,
-        batch_effects: Optional[np.ndarray] = None,
+        y: np.ndarray,
+        batch_effects: np.ndarray,
+        unique_batch_effects: Dict[str, List[str]],
         response_var: Optional[str] = None,
         covariate_dims: Optional[List[str]] = None,
-        batch_effect_dims: Optional[List[str]] = None,
         datapoint_coords: Optional[List[Any]] = None,
     ) -> None:
+        
         self.check_and_set_data(X, y, batch_effects)
 
         # Set the response var
@@ -117,27 +118,20 @@ class HBRData:
         ), "The number of covariate dimensions must match the number of covariates"
         self._coords["covariates"] = self.covariate_dims
 
-        # Create batch_effect dims if they are not provided
-        self.batch_effect_dims = batch_effect_dims or [
-            "batch_effect_" + str(i) for i in range(self._n_batch_effect_columns)
-        ]
+
+        self.batch_effect_dims = list(unique_batch_effects.keys())
+
         assert (
             len(self.batch_effect_dims) == self._n_batch_effect_columns
         ), "The number of batch effect dimensions must match the number of batch effect columns"
         self._coords["batch_effects"] = self.batch_effect_dims
 
-        # This will be used to index the batch effects in the pymc model
-        self._batch_effects_maps = {}
-        for i, v in enumerate(self.batch_effect_dims):
-            be_values = np.unique(self.batch_effects[:, i])
-            self._batch_effects_maps[v] = {w: j for j, w in enumerate(be_values)}
-            self._coords[v] = be_values
+        self._coords = self._coords | unique_batch_effects
 
         self.pm_X: pm.Data = None  # type: ignore
         self.pm_y: pm.Data = None  # type:ignore
         self.pm_batch_effect_indices: dict[str, pm.Data] = None  # type: ignore
 
-        self.create_batch_effect_indices()
 
     def check_and_set_data(
         self,
@@ -228,7 +222,7 @@ class HBRData:
             for i, k in enumerate(self.batch_effect_dims):
                 self.pm_batch_effect_indices[k] = pm.Data(
                     k + "_data",
-                    self.batch_effect_indices[i],
+                    self.batch_effects[:,i],
                     dims=("datapoints",),
                 )
 
@@ -259,7 +253,7 @@ class HBRData:
         be_acc = {}
         for i in range(self._n_batch_effect_columns):
             model.set_data(
-                str(self.batch_effect_dims[i]) + "_data", self.batch_effect_indices[i]
+                str(self.batch_effect_dims[i]) + "_data", self.batch_effects[:,i]
             )
             be_acc[self.batch_effect_dims[i]] = model[self.batch_effect_dims[i] + "_data"]
         self.pm_batch_effect_indices = be_acc
@@ -309,44 +303,6 @@ class HBRData:
         assert len(data_attr.shape) == 2, f"{data_attr_str} must be a 1D or 2D array"
         return data_attr
 
-    def set_batch_effects_maps(
-        self, batch_effects_maps: Dict[str, Dict[Any, int]]
-    ) -> None:
-        """
-        Set the mapping between batch effect values and their indices.
-
-        Parameters
-        ----------
-        batch_effects_maps : Dict[str, Dict[Any, int]]
-            Mapping from batch effect names to value-index dictionaries
-
-        Notes
-        -----
-        Updates the batch effect indices after setting the new maps.
-        """
-        self._batch_effects_maps = batch_effects_maps
-        self.create_batch_effect_indices()
-
-    def create_batch_effect_indices(self) -> None:
-        """
-        Create numerical indices for batch effects.
-
-        Creates a list of arrays where each array contains the numerical indices
-        corresponding to the categorical batch effect values. These indices are
-        used for indexing in the PyMC model.
-
-        Notes
-        -----
-        The indices are created based on the current batch_effects_maps.
-        """
-        self.batch_effect_indices = []
-        for i, v in enumerate(self.batch_effect_dims):
-            self.batch_effect_indices.append(
-                np.array(
-                    [self._batch_effects_maps[v][w] for w in self.batch_effects[:, i]]
-                )
-            )
-
     # pylint: disable=C0116
 
     @property
@@ -364,7 +320,3 @@ class HBRData:
     @property
     def coords(self) -> OrderedDict:
         return self._coords
-
-    @property
-    def batch_effects_maps(self) -> Dict[str, Dict[Any, int]]:
-        return self._batch_effects_maps

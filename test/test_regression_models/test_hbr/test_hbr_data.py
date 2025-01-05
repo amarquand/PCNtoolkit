@@ -31,16 +31,20 @@ def test_create_data(
         y = None
 
     if n_batch_effects == 0:
-        batch_effects = None
-    else:
-        batch_effects_list = []
-        for i in range(n_batch_effects):
-            batch_effects_list.append(
-                np.random.choice(n_values_per_batch_effect[i], size=(n_datapoints, 1))
-            )
-        batch_effects = np.concatenate(batch_effects_list, axis=1)
+        n_batch_effects = 1
+        n_values_per_batch_effect = (1,)
+    batch_effects_list = []
+    for i in range(n_batch_effects):
+        batch_effects_list.append(
+            np.random.choice(n_values_per_batch_effect[i], size=(n_datapoints, 1))
+        )
+    batch_effects = np.concatenate(batch_effects_list, axis=1)
+    unique_batch_effects = {}
+    for i in range(n_batch_effects):
+        unique_batch_effects[f"batch_effect_{i}"] = np.unique(batch_effects[:, i])
 
-    data = HBRData(X, y, batch_effects)
+
+    data = HBRData(X, y, batch_effects, unique_batch_effects)
     assert data.n_datapoints == n_datapoints
     assert data.n_covariates == n_covariates
     assert data.X.shape == (n_datapoints, n_covariates)
