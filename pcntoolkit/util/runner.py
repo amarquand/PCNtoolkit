@@ -85,50 +85,50 @@ class Runner:
             )
 
 
-    def fit(self, model: NormBase, data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
         
-    def fit_predict(self, model: NormBase, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def fit_predict(self, model: NormBase, fit_data: NormData, predict_data: Optional[NormData] = None, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_predict_chunk_fn(model)
         self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def predict(self, model: NormBase, data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_predict_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def transfer(self, model: NormBase, data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_transfer"
         fn = self.get_transfer_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def transfer_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def transfer_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_transfer"
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def extend(self, model: NormBase, data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_extend"
         fn = self.get_extend_chunk_fn(model)
         self.submit_unary_jobs(fn, data)
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def extend_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData) -> None:
-        self.save_dir = model.norm_conf.save_dir
+    def extend_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData, save_dir: Optional[str] = None) -> None:
+        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_extend"
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_binary_jobs(fn, fit_data, predict_data)
         self.job_observer = JobObserver(self.active_job_ids)
@@ -190,55 +190,59 @@ class Runner:
     def get_transfer_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
             def kfold_transfer_chunk_fn(chunk: NormData):
-                conf = model.norm_conf
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    transfered_model = model.transfer(train_data, save_dir=os.path.join(conf.save_dir+"_transfer", "folds", f"fold_{i_fold}"))
+                    transfered_model = model.transfer(train_data, save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"))
                     transfered_model.save()
             return kfold_transfer_chunk_fn
         else:
             def transfer_chunk_fn(data: NormData):
-                transfered_model = model.transfer(data)
+                transfered_model = model.transfer(data, save_dir=self.save_dir)
                 transfered_model.save()
             return transfer_chunk_fn
         
     def get_transfer_predict_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
-            def kfold_transfer_predict_chunk_fn(chunk: NormData):
-                conf = model.norm_conf
+            def kfold_transfer_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
+                if unused_predict_data is not None:
+                    warnings.warn("predict_data is not used in kfold cross-validation")
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    transfered_model = model.transfer_predict(train_data, predict_data, save_dir=os.path.join(conf.save_dir+"_transfer", "folds", f"fold_{i_fold}"))
+                    transfered_model = model.transfer_predict(train_data, predict_data, save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"))
                     transfered_model.save()
             return kfold_transfer_predict_chunk_fn
         else:
             def transfer_predict_chunk_fn(train_data: NormData, predict_data: NormData):
-                model.transfer_predict(train_data, predict_data)
+                if predict_data is None:
+                    raise ValueError("predict_data is required for transfer_predict without cross-validation")
+                model.transfer_predict(train_data, predict_data, save_dir=self.save_dir)
             return transfer_predict_chunk_fn
         
     def get_extend_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
             def kfold_extend_chunk_fn(chunk: NormData):
-                conf = model.norm_conf
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    extended_model = model.extend(train_data, save_dir=os.path.join(conf.save_dir+"_extend", "folds", f"fold_{i_fold}"))    
+                    extended_model = model.extend(train_data, save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"))    
                     extended_model.save()
             return kfold_extend_chunk_fn    
         else:
             def extend_chunk_fn(data: NormData):
-                extended_model = model.extend(data)
+                extended_model = model.extend(data, save_dir=self.save_dir)
                 extended_model.save()
             return extend_chunk_fn
         
     def get_extend_predict_chunk_fn(self, model: NormBase) -> Callable:
         if self.cross_validate:
-            def kfold_extend_predict_chunk_fn(chunk: NormData):
-                conf = model.norm_conf  
+            def kfold_extend_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
+                if unused_predict_data is not None:
+                    warnings.warn("predict_data is not used in kfold cross-validation")
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    extended_model = model.extend_predict(train_data, predict_data, save_dir=os.path.join(conf.save_dir+"_extend", "folds", f"fold_{i_fold}"))
+                    extended_model = model.extend_predict(train_data, predict_data, save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"))
                     extended_model.save()
             return kfold_extend_predict_chunk_fn
         else:
             def extend_predict_chunk_fn(train_data: NormData, predict_data: NormData):
-                extended_model = model.extend_predict(train_data, predict_data)
+                if predict_data is None:
+                    raise ValueError("predict_data is required for extend_predict without cross-validation")
+                extended_model = model.extend_predict(train_data, predict_data, save_dir=self.save_dir)
                 extended_model.save()
             return extend_predict_chunk_fn
 
@@ -322,9 +326,9 @@ class Runner:
         data_path = os.path.join(self.temp_dir, f"slurm_data_{job_name}.pkl")
         os.makedirs(os.path.dirname(executable_path), exist_ok=True)
         with open(executable_path, "wb") as f:
-            dill.dump(fn, f)
+            pickle.dump(fn, f)
         with open(data_path, "wb") as f:
-            dill.dump(chunk, f)
+            pickle.dump(chunk, f)
 
         # Get the current file path. We use this script (runner.py) as the entrypoint for the job.
         current_file_path = os.path.abspath(__file__)
@@ -358,9 +362,9 @@ class Runner:
 
 def load_and_execute(args):
     with open(args[0], "rb") as executable_path:
-        fn = dill.load(executable_path)
+        fn = pickle.load(executable_path)
     with open(args[1], "rb") as data_path:
-        data = dill.load(data_path)
+        data = pickle.load(data_path)
     if isinstance(data, tuple):
         fn(data[0], data[1])
     else:
