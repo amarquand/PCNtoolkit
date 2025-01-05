@@ -76,7 +76,7 @@ class Scaler(ABC):
     strategies.
     """
 
-    def __init__(self, adjust_outliers: bool = True) -> None:
+    def __init__(self, adjust_outliers: bool = False) -> None:
         self.adjust_outliers = adjust_outliers
 
     @abstractmethod
@@ -254,7 +254,7 @@ class StandardScaler(Scaler):
     >>> print(X_scaled.std(axis=0))   # approximately [1, 1]
     """
 
-    def __init__(self, adjust_outliers: bool = True) -> None:
+    def __init__(self, adjust_outliers: bool = False) -> None:
         super().__init__(adjust_outliers)
         self.m: Optional[NDArray] = None
         self.s: Optional[NDArray] = None
@@ -332,7 +332,7 @@ class MinMaxScaler(Scaler):
     >>> print(X_scaled.max(axis=0))  # [1, 1]
     """
 
-    def __init__(self, adjust_outliers: bool = True) -> None:
+    def __init__(self, adjust_outliers: bool = False) -> None:
         super().__init__(adjust_outliers)
         self.min: Optional[NDArray] = None
         self.max: Optional[NDArray] = None
@@ -412,7 +412,7 @@ class RobustMinMaxScaler(MinMaxScaler):
     >>> X_scaled = scaler.fit_transform(X)
     """
 
-    def __init__(self, adjust_outliers: bool = True, tail: float = 0.05) -> None:
+    def __init__(self, adjust_outliers: bool = False, tail: float = 0.05) -> None:
         super().__init__(adjust_outliers)
         self.tail = tail
 
