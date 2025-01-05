@@ -330,7 +330,7 @@ class RandomParam(Param):
                 self.sigmas[be].set_name(f"{be}_sigma_{self.name}")
                 self.sigmas[be].create_graph(model, idata, freedom)
                 self.offsets[be] = pm.Normal(
-                    f"{be}_offset_{self.name}",
+                    f"normalized_{be}_offset_{self.name}",
                     dims=be_dims,  # type:ignore
                 )
                 if self.dims:
@@ -338,12 +338,12 @@ class RandomParam(Param):
                 else:
                     be_sigma = self.sigmas[be].dist  # type: ignore
                 self.scaled_offsets[be] = pm.Deterministic(
-                    f"scaled_{be}_offset_{self.name}",
+                    f"{be}_offset_{self.name}",
                     be_sigma  # type: ignore
-                    * self.offsets[be][model[f"{be}_data"]],
-                    dims=outdims,
+                    * self.offsets[be],
+                    dims=be_dims,
                 )
-                acc += self.scaled_offsets[be]
+                acc += self.scaled_offsets[be][model[f"{be}_data"]]
             self.dist = pm.Deterministic(self.name, acc, dims=outdims)
 
     def set_name(self, name: str):
