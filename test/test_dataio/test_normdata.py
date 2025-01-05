@@ -37,8 +37,6 @@ def test_norm_data_creation(
     assert norm_data.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
     assert norm_data.covariates.shape == (n_covariates,)
     assert norm_data.batch_effect_dims.shape == (n_batch_effect_dims,)
-    assert norm_data.attrs["batch_effects_maps"]["batch_effect_0"] == {'0': 0, '1': 1}
-    assert norm_data.attrs["batch_effects_maps"]["batch_effect_1"] == {'0': 0, '1': 1, '2': 2}
     assert norm_data.coords["datapoints"].shape == (n_train_datapoints,)
     assert norm_data.coords["covariates"].shape == (n_covariates,)
     assert norm_data.coords["batch_effect_dims"].shape == (n_batch_effect_dims,)
@@ -72,7 +70,6 @@ def test_split_with_stratify(
         assert split.batch_effects.shape == (expected_samples, len(batch_effect_values))
         assert split.covariates.shape == (n_covariates,)
         assert split.batch_effect_dims.shape == (len(batch_effect_values),)
-        assert split.batch_effects_maps == {f"batch_effect_{i}":{str(k):j for j, k in enumerate(sorted(batch_effect_values)[i])} for i in range(len(batch_effect_values))}
         assert split.coords["datapoints"].shape == (expected_samples,)
         assert split.coords["covariates"].to_numpy().tolist() == [f"covariate_{i}" for i in range(n_covariates)]
         assert split.coords["batch_effect_dims"].to_numpy().tolist() == [f"batch_effect_{i}" for i in range(len(batch_effect_values))]

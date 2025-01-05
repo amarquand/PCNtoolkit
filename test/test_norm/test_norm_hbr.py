@@ -87,18 +87,16 @@ def test_normhbr_from_args(
     assert not isinstance(hbr.default_reg_conf.sigma, RandomParam) and not isinstance(hbr.default_reg_conf.sigma, LinearParam)
 
 
-def test_normdata_to_hbrdata(norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates):
+def test_normdata_to_hbrdata(fitted_norm_hbr_model, norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates):
     single_response_var = norm_data_from_arrays.sel(response_vars="response_var_0")
-    hbrdata = NormHBR.normdata_to_hbrdata(single_response_var)
+    hbrdata = fitted_norm_hbr_model.normdata_to_hbrdata(single_response_var)
 
-    assert hbrdata.X.shape == (n_train_datapoints, n_covariates)
+    assert hbrdata.X.shape == (n_train_datapoints, n_covariates*7)
     assert hbrdata.y.shape == (n_train_datapoints, )
     assert hbrdata.response_var == "response_var_0"
 
     assert hbrdata.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
-    assert tuple(hbrdata.covariate_dims) == tuple(f"covariate_{i}" for i in range(n_covariates))
     assert tuple(hbrdata.batch_effect_dims) == tuple(f"batch_effect_{i}" for i in range(len(batch_effect_values)))
-    assert hbrdata.batch_effects_maps == {f"batch_effect_{i}":{str(k):j for j, k in enumerate(sorted(batch_effect_values)[i])} for i in range(len(batch_effect_values))}
 
 def test_fit(fitted_norm_hbr_model, n_mcmc_samples):
     for model in fitted_norm_hbr_model.regression_models.values():

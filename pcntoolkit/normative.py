@@ -52,9 +52,7 @@ def fit_predict(conf_dict: dict) -> None:
     fit_data = load_data(conf_dict)
     predict_data = load_test_data(conf_dict)
 
-    assert fit_data.is_compatible_with(
-        predict_data
-    ), "Fit and predict data are not compatible."
+    assert fit_data.check_compatibility(predict_data), "Fit and predict data are not compatible."
 
     normative_model: NormBase = create_normative_model_from_args(conf_dict)
     runner.fit_predict(normative_model, fit_data, predict_data)

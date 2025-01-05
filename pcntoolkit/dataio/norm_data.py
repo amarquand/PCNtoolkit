@@ -8,12 +8,12 @@ The NormData object is an xarray.Dataset that contains the data, covariates, bat
 is used by all the models in the toolkit.
 """
 
-
 from __future__ import annotations
 
+import warnings
 from functools import reduce
 
-#pylint: disable=deprecated-class
+# pylint: disable=deprecated-class
 from typing import (
     Any,
     Dict,
@@ -27,7 +27,7 @@ from typing import (
     Union,
 )
 
-#pylint: enable=deprecated-class
+# pylint: enable=deprecated-class
 import numpy as np
 import pandas as pd  # type: ignore
 import xarray as xr
@@ -39,11 +39,11 @@ from xarray.core.types import DataVars
 
 class NormData(xr.Dataset):
     """A class for handling normative modeling data, extending xarray.Dataset.
-    
+
     This class provides functionality for loading, preprocessing, and managing
     data for normative modeling. It supports various data formats and includes
     methods for data scaling, splitting, and visualization.
-    
+
     Parameters
     ----------
     name : str
@@ -54,12 +54,12 @@ class NormData(xr.Dataset):
         Coordinates for the dataset
     attrs : Mapping[Any, Any] | None, optional
         Additional attributes for the dataset, by default None
-        
+
     Attributes
     ----------
     X : xr.DataArray
         Covariate data
-    y : xr.DataArray 
+    y : xr.DataArray
         Response variable data
     scaled_X : xr.DataArray
         Scaled version of covariate data
@@ -72,17 +72,17 @@ class NormData(xr.Dataset):
     scaled_centiles : xr.DataArray
         Scaled centile data (if applicable)
     centiles : xr.DataArray
-        Unscaled centile data (if applicable) 
+        Unscaled centile data (if applicable)
     zscores : xr.DataArray
         Z-score data (if applicable)
-        
+
     Notes
     -----
     This class stores both original and scaled versions of X and y data.
     While this approach offers convenience and transparency, it may
     increase memory usage. Consider memory constraints when working with
     large datasets.
-    
+
     Examples
     --------
     >>> data = NormData.from_dataframe("my_data", df, covariates,
@@ -127,8 +127,8 @@ class NormData(xr.Dataset):
             attrs = {}
         attrs["name"] = name  # type: ignore
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
-        self['batch_effects'] = self['batch_effects'].astype(str)
-        self.create_batch_effects_maps()
+        self["batch_effects"] = self["batch_effects"].astype(str)
+        self.register_unique_batch_effects()
 
     @classmethod
     def from_ndarrays(
@@ -167,7 +167,7 @@ class NormData(xr.Dataset):
             X = X[:, None]
         if y.ndim == 1:
             y = y[:, None]
-        if batch_effects is not None:   
+        if batch_effects is not None:
             if batch_effects.ndim == 1:
                 batch_effects = batch_effects[:, None]
         else:
@@ -326,17 +326,37 @@ class NormData(xr.Dataset):
             },
             attrs=attrs,
         )
-    
+
     def merge(self, other: NormData) -> NormData:
         """
         Merge two NormData objects.
         """
         new_X = np.concatenate([self.X.values, other.X.values], axis=0)
         new_y = np.concatenate([self.y.values, other.y.values], axis=0)
-        new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
+        new_batch_effects = np.concatenate(
+            [self.batch_effects.values, other.batch_effects.values], axis=0
+        )
 
-        new_normdata = NormData(name=self.attrs["name"], data_vars={"X": (["datapoints", "covariates"], new_X), "y": (["datapoints", "response_vars"], new_y), "batch_effects": (["datapoints", "batch_effect_dims"], new_batch_effects)}, coords={"datapoints": list(np.arange(new_X.shape[0])), "response_vars": self.response_vars.to_numpy(), "covariates": self.covariates.to_numpy(), "batch_effect_dims": self.batch_effect_dims.to_numpy()}, attrs=self.attrs)
+        new_normdata = NormData(
+            name=self.attrs["name"],
+            data_vars={
+                "X": (["datapoints", "covariates"], new_X),
+                "y": (["datapoints", "response_vars"], new_y),
+                "batch_effects": (
+                    ["datapoints", "batch_effect_dims"],
+                    new_batch_effects,
+                ),
+            },
+            coords={
+                "datapoints": list(np.arange(new_X.shape[0])),
+                "response_vars": self.response_vars.to_numpy(),
+                "covariates": self.covariates.to_numpy(),
+                "batch_effect_dims": self.batch_effect_dims.to_numpy(),
+            },
+            attrs=self.attrs,
+        )
         return new_normdata
+
     # pylint: enable=arguments-differ
 
     def create_synthetic_data(
@@ -385,21 +405,19 @@ class NormData(xr.Dataset):
         # For each batch_effect dimension that is not specified, sample from the first value in the batch effects map
         for dim in self.batch_effect_dims.to_numpy():
             if dim not in batch_effects_to_sample:
-                batch_effects_to_sample[dim] = [
-                    list(self.attrs["batch_effects_maps"][dim].keys())[0]
-                ]
+                batch_effects_to_sample[dim] = [self.unique_batch_effects[dim][0]]
 
         # # Assert that the batch effects to sample are in the batch effects maps
         for dim, values in batch_effects_to_sample.items():
             assert (
-                dim in self.attrs["batch_effects_maps"]
+                dim in self.batch_effect_dims
             ), f"{dim} is not a known batch effect dimension"
             assert (
                 len(values) > 0
             ), f"No values provided for batch effect dimension {dim}"
             for value in values:
                 assert (
-                    value in self.attrs["batch_effects_maps"][dim]
+                    value in self.unique_batch_effects[dim]
                 ), f"{value} is not a known value for batch effect dimension {dim}"
 
         for batch_effect_dim, values_to_sample in batch_effects_to_sample.items():
@@ -420,10 +438,6 @@ class NormData(xr.Dataset):
             self.batch_effect_dims.to_numpy(),
             self.response_vars.to_numpy(),
         )
-
-        # set the batch effects maps
-        to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"]
-
         return to_return
 
     def get_single_batch_effect(self) -> Dict[str, List[str]]:
@@ -436,7 +450,7 @@ class NormData(xr.Dataset):
             A dictionary mapping each batch effect dimension to a list containing a single value.
         """
         return {
-            k: [list(v.keys())[0]] for k, v in self.attrs["batch_effects_maps"].items()
+            k: [v[0]] for k, v in self.unique_batch_effects.items()
         }
 
     def concatenate_string_arrays(self, *arrays: Any) -> np.ndarray:
@@ -454,7 +468,7 @@ class NormData(xr.Dataset):
             A single concatenated numpy array of strings.
         """
         return reduce(np.char.add, arrays)
-    
+
     def chunk(self, n_chunks: int) -> Generator[NormData]:
         """
         Split the data into n_chunks with roughly equal number of response variables
@@ -496,6 +510,7 @@ class NormData(xr.Dataset):
             splits = (splits, 1 - splits)
         elif isinstance(splits, list):
             splits = tuple(splits)
+        assert isinstance(splits, tuple)
         batch_effects_stringified = self.concatenate_string_arrays(
             *[
                 self.batch_effects[:, i].astype(str)
@@ -547,25 +562,28 @@ class NormData(xr.Dataset):
         for train_idx, test_idx in stratified_kfold_split.split(
             self.X, batch_effects_stringified
         ):
-            split1 = self.isel(datapoints=train_idx)    
+            split1 = self.isel(datapoints=train_idx)
             split2 = self.isel(datapoints=test_idx)
             yield split1, split2
-            
 
-    def create_batch_effects_maps(self) -> None:
+    def register_unique_batch_effects(self) -> None:
         """
-        Create a mapping of batch effects to integer indices.
+        Create a mapping of batch effects dims to unique values.
         """
         # create a dictionary with for each column in the batch effects, a dict from value to int
-        batch_effects_maps = {}
+        self.attrs['unique_batch_effects'] = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-
-            batch_effects_maps[dim] = {
-                value: j for j, value in enumerate(np.unique(self.batch_effects[:, i]))
+            self.attrs['unique_batch_effects'][dim] = list(np.unique(self.batch_effects[:, i]))
+        self.attrs['batch_effects_counts'] = {}
+        for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
+            self.attrs['batch_effects_counts'][dim] = {
+                k: v
+                for k, v in zip(
+                    *np.unique(self.batch_effects.values[:, i], return_counts=True)
+                )
             }
-        self.attrs["batch_effects_maps"] = batch_effects_maps
 
-    def is_compatible_with(self, other: NormData) -> bool:
+    def check_compatibility(self, other: NormData) -> bool:
         """
         Check if the data is compatible with another dataset.
 
@@ -577,14 +595,38 @@ class NormData(xr.Dataset):
         Returns
         -------
         bool
-            True if compatible, False otherwise.
+            True if compatible, False otherwise
         """
-        same_covariates: bool = len(self.covariates) == len(other.covariates) and np.all(self.covariates == other.covariates).astype(bool)
-        same_batch_effect_dims: bool = len(self.batch_effect_dims) == len(other.batch_effect_dims) and np.all(self.batch_effect_dims == other.batch_effect_dims).astype(bool)
-        same_batch_effects_maps: bool = (
-            self.attrs["batch_effects_maps"] == other.attrs["batch_effects_maps"]
-        )
-        return same_covariates and same_batch_effect_dims and same_batch_effects_maps
+        missing_covariates = [
+            i for i in other.covariates.values if i not in self.covariates.values
+        ]
+        if len(missing_covariates) > 0:
+            warnings.warn(
+                f"The dataset {self.name} is missing the following covariates: {missing_covariates}"
+            )
+
+        extra_covariates = [
+            i for i in self.covariates.values if i not in other.covariates.values
+        ]
+        if len(extra_covariates) > 0:
+            warnings.warn(
+                f"The dataset {self.name} has covariates that are not present in {other.name}: {extra_covariates}"
+            )
+
+        extra_response_vars = [
+            i for i in self.response_vars.values if i not in other.response_vars.values
+        ]
+        if len(extra_response_vars) > 0:
+            warnings.warn(
+                f"The dataset {self.name} has response variables that are not present in {other.name}: {extra_response_vars}"
+            )
+        if (
+            len(missing_covariates) > 0
+            or len(extra_covariates) > 0
+            or len(extra_response_vars) > 0
+        ):
+            return False
+        return True
 
     def scale_forward(
         self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]
@@ -675,22 +717,24 @@ class NormData(xr.Dataset):
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
-    def split_batch_effects(self, batch_effects: Dict[str, List[str]], names: Tuple[str, str] | None = None, recreate_batch_effects_maps: bool = True) -> Tuple[NormData, NormData]:
+    def split_batch_effects(
+        self,
+        batch_effects: Dict[str, List[str]],
+        names: Tuple[str, str] | None = None,
+    ) -> Tuple[NormData, NormData]:
         """
         Split the data into two datasets, one with the specified batch effects and one without.
         """
         A = self.select_batch_effects(batch_effects)
         B = self.select_batch_effects(batch_effects, invert=True)
-        if recreate_batch_effects_maps:
-            A.create_batch_effects_maps()
-            B.create_batch_effects_maps()
         if names is not None:
             A.name = names[0]
             B.name = names[1]
         return A, B
 
-
-    def select_batch_effects(self, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
+    def select_batch_effects(
+        self, batch_effects: Dict[str, List[str]], invert: bool = False
+    ) -> NormData:
         """
         Select only the specified batch effects.
 
@@ -717,8 +761,7 @@ class NormData(xr.Dataset):
             to_return = NormData.from_xarray(
                 f"{self.attrs['name']}_selected", to_return
             )
-        to_return.attrs["batch_effects_maps"] = self.attrs["batch_effects_maps"].copy()
-
+        to_return.register_unique_batch_effects()
         return to_return
 
     def to_dataframe(self, dim_order: Sequence[Hashable] | None = None) -> pd.DataFrame:
@@ -779,7 +822,6 @@ class NormData(xr.Dataset):
             acc.append(centiles)
         return pd.concat(acc, axis=1)
 
-
     def create_measures_group(self) -> None:
         """
         Initializes a DataArray for measures with NaN values.
@@ -811,11 +853,11 @@ class NormData(xr.Dataset):
             The name of the dataset.
         """
         return self.attrs["name"]
-    
+
     @name.setter
     def name(self, name: str) -> None:
         self.attrs["name"] = name
-    
+
     @property
     def response_var_list(self) -> xr.DataArray:
         return self.response_vars.to_numpy().copy().tolist()

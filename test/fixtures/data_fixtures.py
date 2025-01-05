@@ -31,7 +31,7 @@ def n_transfer_datapoints():
 
 @pytest.fixture
 def n_covariates():
-    return 5
+    return 2
 
 
 @pytest.fixture

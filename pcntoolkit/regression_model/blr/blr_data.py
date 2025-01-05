@@ -12,7 +12,7 @@ BLRData
     An object to store the data used in Bayesian linear regression.
 """
 
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -43,7 +43,6 @@ class BLRData:
         response_var : str, optional
             The name of the response variable.
         """
-        self._batch_effects_maps = {}
         self.check_and_set_data(X, y, var_X, batch_effects)
         self.response_var = response_var
         self._n_covariates = self.X.shape[1]
@@ -155,17 +154,6 @@ class BLRData:
         assert len(data_attr.shape) == 2, f"{data_attr_str} must be a 1D or 2D array"
         return data_attr
 
-    def set_batch_effects_maps(self, batch_effects_maps: dict[str, dict[Any, int]]) -> None:
-        """
-        Sets the batch effects map.
-
-        Parameters
-        ----------
-        batch_effects_maps : dict of str to dict of Any to int
-            The batch effects map.
-        """
-        self._batch_effects_maps = batch_effects_maps
-
     @property
     def n_covariates(self) -> int:
         """int: The number of covariates."""
@@ -180,8 +168,3 @@ class BLRData:
     def n_batch_effect_columns(self) -> int:
         """int: The number of batch effect columns."""
         return self._n_batch_effect_columns
-
-    @property
-    def batch_effects_maps(self) -> dict[str, dict[Any, int]]:
-        """dict of str to dict of Any to int: The batch effects map."""
-        return self._batch_effects_maps

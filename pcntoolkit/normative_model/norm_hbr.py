@@ -118,7 +118,12 @@ class NormHBR(NormBase):
     >>> predictions = model._predict(data)
     """
 
-    def __init__(self, norm_conf: NormConf, reg_conf: HBRConf = None, regression_model_type: Type[RegressionModel]=HBR): # type: ignore
+    def __init__(
+        self,
+        norm_conf: NormConf,
+        reg_conf: HBRConf = None, #type: ignore
+        regression_model_type: Type[RegressionModel] = HBR,
+    ):  # type: ignore
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = HBRConf()
@@ -128,50 +133,56 @@ class NormHBR(NormBase):
 
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         hbrdata = self.normdata_to_hbrdata(data)
-        self.focused_model.fit(hbrdata, make_new_model) # type: ignore
+        self.focused_model.fit(hbrdata, make_new_model)  # type: ignore
 
     def _predict(self, data: NormData) -> None:
         hbrdata = self.normdata_to_hbrdata(data)
-        self.focused_model.predict(hbrdata) # type: ignore
+        self.focused_model.predict(hbrdata)  # type: ignore
 
     def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         fit_hbrdata = self.normdata_to_hbrdata(fit_data)
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
-        self.focused_model.fit_predict(fit_hbrdata, predict_hbrdata) # type: ignore
+        self.focused_model.fit_predict(fit_hbrdata, predict_hbrdata)  # type: ignore
 
-    def _transfer(self, data: NormData, **kwargs: Any) -> HBR:
+    def _transfer(self, model_to_transfer_to: NormHBR, data: NormData, **kwargs: Any) -> HBR:
         freedom = kwargs.get("freedom", 1)
-        transferdata = self.normdata_to_hbrdata(data)
+        transferdata = model_to_transfer_to.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
             raise RuntimeError("Model needs to be fitted before it can be transferred")
-        reg_conf_dict: dict[str, Any] = self.default_reg_conf.to_dict()
+        reg_conf_dict: dict[str, Any] = model_to_transfer_to.default_reg_conf.to_dict()
         reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
         reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
-        reg_conf_dict["pymc_cores"] = kwargs.get("pymc_cores", reg_conf_dict["pymc_cores"])
-        reg_conf_dict["nuts_sampler"] = kwargs.get("nuts_sampler", reg_conf_dict["nuts_sampler"])
+        reg_conf_dict["pymc_cores"] = kwargs.get(
+            "pymc_cores", reg_conf_dict["pymc_cores"]
+        )
+        reg_conf_dict["nuts_sampler"] = kwargs.get(
+            "nuts_sampler", reg_conf_dict["nuts_sampler"]
+        )
         reg_conf_dict["init"] = kwargs.get("init", reg_conf_dict["init"])
         reg_conf_dict["chains"] = kwargs.get("chains", reg_conf_dict["chains"])
         reg_conf = HBRConf.from_dict(reg_conf_dict)
-        new_hbr_model = self.focused_model.transfer( # type: ignore
+        new_hbr_model = self.focused_model.transfer(  # type: ignore
             reg_conf, transferdata, freedom
         )
         return new_hbr_model
-    
 
     def _extend(self, data: NormData) -> NormBase:
         hbrdata = self.normdata_to_hbrdata(data)
-        return self.focused_model.extend(hbrdata) # type: ignore
+        return self.focused_model.extend(hbrdata)  # type: ignore
 
-
-    def _generate_synthetic_data(self, data:NormData, n_synthetic_samples: int = 1000) -> NormData:
-
+    def _generate_synthetic_data(
+        self, data: NormData, n_synthetic_samples: int = 1000
+    ) -> NormData:
         df = pd.DataFrame()
         for c in data.X.coords["covariates"].values:
             c_min = self.inscalers[c].min
             c_max = self.inscalers[c].max
             df[c] = np.random.rand(n_synthetic_samples) * (c_max - c_min) + c_min
 
-        for responsevar in self.response_vars:
+        for responsevar in data.response_vars.values:
+            if responsevar not in self.response_vars:
+                print(f"Skipping {responsevar} because it is not in the original model")
+                continue
             df[responsevar] = np.zeros(n_synthetic_samples)
 
         bes = self.sample_batch_effects(n_synthetic_samples)
@@ -182,35 +193,35 @@ class NormHBR(NormBase):
             dataframe=df,
             covariates=data.covariates.values,
             batch_effects=data.batch_effect_dims.values,
-            response_vars=self.response_vars,
+            response_vars=data.response_vars.values,
         )
 
         self.preprocess(synthetic_data)
 
-        for responsevar in self.response_vars:
+        for responsevar in df.columns:
+            if responsevar not in self.response_vars:
+                continue
             resp_synthetic_data = synthetic_data.sel(response_vars=responsevar)
             self.focus(responsevar)
             hbr_data = self.normdata_to_hbrdata(resp_synthetic_data)
-            self.focused_model.generate_synthetic_data(hbr_data) # type: ignore
+            self.focused_model.generate_synthetic_data(hbr_data)  # type: ignore
             synthetic_data.scaled_y.loc[{"response_vars": responsevar}] = hbr_data.y
 
         self.scale_backward(synthetic_data)
         return synthetic_data
 
-
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
-        resample = kwargs.get("resample", True)
         hbrdata = self.normdata_to_hbrdata(data)
 
-        return self.focused_model.centiles(hbrdata, cdf, resample) # type: ignore
+        return self.focused_model.centiles(hbrdata, cdf)  # type: ignore
 
-    def _zscores(self, data: NormData, resample: bool = False) -> xr.DataArray:
+    def _zscores(self, data: NormData, **kwargs: Any) -> xr.DataArray:
         hbrdata = self.normdata_to_hbrdata(data)
-        return self.focused_model.zscores(hbrdata, resample) # type: ignore
+        return self.focused_model.zscores(hbrdata)  # type: ignore
 
     def n_params(self) -> int:
         return sum(
-            [i.size.eval() for i in self.focused_model.pymc_model.free_RVs] # type: ignore
+            [i.size.eval() for i in self.focused_model.pymc_model.free_RVs]  # type: ignore
         )
 
     @classmethod
@@ -220,8 +231,7 @@ class NormHBR(NormBase):
         self = cls(norm_conf, hbrconf)
         return self
 
-    @staticmethod
-    def normdata_to_hbrdata(data: NormData) -> hbr_data.HBRData:
+    def normdata_to_hbrdata(self, data: NormData) -> hbr_data.HBRData:
         """
         Converts NormData to HBRData format.
 
@@ -269,14 +279,14 @@ class NormHBR(NormBase):
             data.y.shape[1] == 1
         ), "Only one response variable is supported for HBRdata"
 
+            
         hbrdata = hbr_data.HBRData(
             X=this_X,
             y=this_y,
-            batch_effects=data.batch_effects.to_numpy(),
+            batch_effects=self.map_batch_effects(data),
+            unique_batch_effects=self.unique_batch_effects,
             response_var=data.response_vars.to_numpy().item(),
             covariate_dims=this_covariate_dims,
-            batch_effect_dims=data.batch_effect_dims.to_numpy().tolist(),
             datapoint_coords=data.datapoints.to_numpy().tolist(),
         )
-        hbrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return hbrdata

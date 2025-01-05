@@ -45,7 +45,12 @@ class NormBLR(NormBase):
     - Computation of centiles and z-scores
     """
 
-    def __init__(self, norm_conf: NormConf, reg_conf: Optional[BLRConf] = None, regression_model_type: Type[RegressionModel]=BLR) -> None:
+    def __init__(
+        self,
+        norm_conf: NormConf,
+        reg_conf: Optional[BLRConf] = None,
+        regression_model_type: Type[RegressionModel] = BLR,
+    ) -> None:
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = BLRConf()
@@ -69,11 +74,13 @@ class NormBLR(NormBase):
         blrdata = self.normdata_to_blrdata(data)
         self.focused_model.predict(blrdata)  # type: ignore
 
-    def _fit_predict(self, fit_data: NormData, predict_data:NormData) -> None:
+    def _fit_predict(self, fit_data: NormData, predict_data: NormData) -> None:
         self._fit(fit_data)
         self._predict(predict_data)
 
-    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
+    def _generate_synthetic_data(
+        self, data: NormData, n_synthetic_samples: int = 1000
+    ) -> NormData:
         raise NotImplementedError(
             f"Generate synthetic data method not implemented for {self.__class__.__name__}"
         )
@@ -154,13 +161,10 @@ class NormBLR(NormBase):
 
         # Create one-hot encoding for random intercept
         if random_intercept:
-            for i in data.batch_effect_dims:
-                cur_be = data.batch_effects.sel(batch_effect_dims=i)
-                cur_be_id = np.vectorize(
-                    data.attrs["batch_effects_maps"][i.item()].get
-                )(cur_be.values)
+            mapped_batch_effects = self.map_batch_effects(data)
+            for i, v in enumerate(self.unique_batch_effects):
                 acc.append(
-                    np.eye(len(data.attrs["batch_effects_maps"][i.item()]))[cur_be_id],
+                    np.eye(len(v))[mapped_batch_effects[:,i]],
                 )
         if len(acc) == 0:
             raise ValueError("No design matrix created")
@@ -219,7 +223,6 @@ class NormBLR(NormBase):
             batch_effects=data.batch_effects.to_numpy(),
             response_var=data.response_vars.to_numpy().item(),
         )
-        blrdata.set_batch_effects_maps(data.attrs["batch_effects_maps"])
         return blrdata
 
     @property

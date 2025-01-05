@@ -30,6 +30,8 @@ def log_dir():
 
 @pytest.fixture
 def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
+    source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
+    os.makedirs(source_data_dir, exist_ok=True)
     cov_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates.csv")
     resp_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "responses.csv")
     trbefile_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects.csv")
@@ -47,6 +49,8 @@ def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_va
 
 @pytest.fixture
 def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
+    source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
+    os.makedirs(source_data_dir, exist_ok=True)
     test_cov_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates_test.csv")
     test_resp_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "responses_test.csv")
     test_trbefile_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects_test.csv")
@@ -65,8 +69,6 @@ def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_va
 @pytest.fixture
 def save_dir():
     return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test")
-
-
 
 @pytest.fixture
 def maskfile():

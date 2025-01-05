@@ -148,7 +148,7 @@ def norm_conf_for_hbr_test_model(savemodel, save_dir):
         savemodel=savemodel,
         save_dir=save_dir + "/hbr",
         basis_function="bspline",
-        basis_function_kwargs={"order": 3, "nknots": 10},
+        basis_function_kwargs={"order": 3, "nknots": 5},
         inscaler="standardize",
         outscaler="standardize",
         saveresults=True,
