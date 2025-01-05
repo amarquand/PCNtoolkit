@@ -4,6 +4,7 @@ Module providing entry points for fitting and predicting with normative models.
 
 import argparse
 
+import cloudpickle as pickle  # noqa: F401
 import numpy as np
 
 from pcntoolkit.dataio import fileio

@@ -60,7 +60,7 @@ class NormHBR(NormBase):
     ----------
     norm_conf : NormConf
         Configuration object for the normative model.
-    reg_conf : Optional[HBRConf], optional
+    reg_conf : Optional[HBRConf], optionafl
         Configuration object for the regression model. If not provided, a default HBRConf is used.
 
     Attributes
@@ -223,6 +223,10 @@ class NormHBR(NormBase):
         return sum(
             [i.size.eval() for i in self.focused_model.pymc_model.free_RVs]  # type: ignore
         )
+
+    def make_serializable(self) -> None:
+        for model in self.regression_models.values():
+            del model.pymc_model # type: ignore
 
     @classmethod
     def from_args(cls, args: Any) -> "NormHBR":

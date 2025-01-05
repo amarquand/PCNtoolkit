@@ -123,7 +123,7 @@ class NormBase(ABC):
         self.outscalers: dict = {}
         self.basis_function: BasisFunction
         self.basis_column: Optional[int] = None
-
+        self.is_fitted: bool = False
     def fit(self, data: NormData) -> None:
         """
         Fits a regression model for each response variable in the data.
@@ -158,6 +158,7 @@ class NormBase(ABC):
             print(f"{os.getpid()} - Fitting model for {responsevar}\n")
             self._fit(resp_fit_data)
             self.reset()
+        self.is_fitted = True
         if self.norm_conf.savemodel:
             self.save()
 
@@ -193,6 +194,7 @@ class NormBase(ABC):
         - Predictions are stored in the data object
 
         """
+        assert self.is_fitted, "Model is not fitted!"
         self.preprocess(data)
         assert self.check_compatibility(data), "Data is not compatible with the model!"
         print(f"Going to predict {len(self.response_vars)} models")
@@ -267,6 +269,7 @@ class NormBase(ABC):
             print(f"Fitting and predicting model for {responsevar}")
             self._fit_predict(resp_fit_data, resp_predict_data)
             self.reset()
+        self.is_fitted = True
         if self.norm_conf.savemodel:
             self.save()
         # Get the results
@@ -305,20 +308,16 @@ class NormBase(ABC):
         4. Maintains original model's configuration with transfer-specific adjustments
         """
         self.preprocess(data)
-     
-
         transfered_norm_conf_dict = copy.deepcopy(self.norm_conf.to_dict())
         transfered_norm_conf_dict["save_dir"] = kwargs.get(
             "save_dir", self.norm_conf.save_dir + "_transfer"
         )
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
-
         # pylint: disable=too-many-function-args
         transfered_normative_model = self.__class__(
             transfered_norm_conf,
             self.default_reg_conf,  # type: ignore
         )
-
         transfered_normative_model.register_batch_effects(data)
         transfered_normative_model.response_vars = (
             data.response_vars.to_numpy().copy().tolist()
@@ -340,6 +339,7 @@ class NormBase(ABC):
         self.transfer_basis_function(transfered_normative_model)
         self.transfer_scalers(transfered_normative_model)
         transfered_normative_model.batch_effects_counts = data.batch_effects_counts
+        transfered_normative_model.is_fitted = True
         if transfered_normative_model.norm_conf.savemodel:
             transfered_normative_model.save()
         return transfered_normative_model
@@ -710,6 +710,11 @@ class NormBase(ABC):
         """
         Sample the batch effects from the estimated distribution.
         """
+        max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
+        if n_samples < max_batch_effect_count:
+            raise ValueError(f"Cannot sample {n_samples} batch effects, because some batch effects have more levels than the number of samples.")
+        
+
         bes = pd.DataFrame()
         for be in self.batch_effects_counts.keys():
             countsum = np.sum(list(self.batch_effects_counts[be].values()))
@@ -718,6 +723,9 @@ class NormBase(ABC):
                 size=n_samples,
                 p=[c / countsum for c in list(self.batch_effects_counts[be].values())],
             )
+            # always add all the levels, even if they are not sampled
+            levels = self.unique_batch_effects[be]
+            bes.loc[0:len(levels)-1,be] = levels            
         return bes
 
     def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
@@ -818,6 +826,7 @@ class NormBase(ABC):
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
             "response_vars": self.response_vars,
             "unique_batch_effects": self.unique_batch_effects,
+            "is_fitted": self.is_fitted
         }
 
         if hasattr(self, "bspline_basis"):
@@ -898,6 +907,7 @@ class NormBase(ABC):
         self.response_vars = []
         self.outscalers = {}
         self.regression_models = {}
+        self.is_fitted = metadata["is_fitted"]
         reg_models_path = os.path.join(path, "model", "*")
         for path in glob.glob(reg_models_path):
             if os.path.isdir(path):
@@ -1085,6 +1095,8 @@ class NormBase(ABC):
     # Abstract methods
 
     #######################################################################################################
+
+ 
 
     @abstractmethod
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
@@ -1354,7 +1366,7 @@ class NormBase(ABC):
         >>> args = {'param1': value1, 'param2': value2}
         >>> model = ConcreteNormModel.from_args(args)
         """
-
+        
     #######################################################################################################
 
     # Properties

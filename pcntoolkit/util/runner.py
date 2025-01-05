@@ -6,7 +6,7 @@ import warnings
 from copy import deepcopy
 from typing import Callable, Dict, Optional
 
-import dill
+import cloudpickle as pickle
 
 # mp.set_start_method("spawn")
 # from multiprocess import Pool
@@ -178,7 +178,7 @@ class Runner:
                 conf = model.norm_conf
                 for i_fold, (_, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
                     with open(os.path.join(conf.save_dir, "folds", f"fold_{i_fold}"), "rb") as f:
-                        fold_model:NormBase = dill.load(f)
+                        fold_model:NormBase = pickle.load(f)
                     fold_model.predict(predict_data)
                     fold_model.save()
             return kfold_predict_chunk_fn
@@ -258,7 +258,7 @@ class Runner:
                         text=True
                     )
                     stdout, stderr = process.communicate()
-                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
+                    job_id = re.search(r"Submitted batch job (\d+)", stdout)    
                     if job_id:
                         self.active_job_ids[f"job_{i}"] = job_id.group(1)
                     elif stderr:
@@ -270,7 +270,8 @@ class Runner:
     def submit_binary_jobs(self, fn: Callable, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
         """Submit binary jobs to the job scheduler.
 
-        Binary jobs are jobs that take two arguments: fit_data and predict_data.
+        Binary jobs are jobs that call a function that takes two arguments. 
+        The predict_data argument is optional, and if it is not provided, None is passed to the function.
 
         Parameters
         ----------

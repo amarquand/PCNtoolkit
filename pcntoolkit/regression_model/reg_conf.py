@@ -18,38 +18,6 @@ Classes
 RegConf
     Abstract base class for regression model configurations. Provides the interface
     that all concrete configuration classes must implement.
-
-Notes
------
-When implementing a new regression model configuration:
-1. Create a new class that inherits from RegConf
-2. Implement all abstract methods and properties
-3. Define model-specific parameters in __init__
-4. Add validation logic in detect_configuration_problems()
-5. Implement serialization in to_dict() and from_dict()
-
-Example
--------
->>> class MyModelConf(RegConf):
-...     def __init__(self, learning_rate: float = 0.01):
-...         self.learning_rate = learning_rate
-...         self.__post_init__()
-...
-...     @property
-...     def has_random_effect(self) -> bool:
-...         return False
-...
-...     def detect_configuration_problems(self) -> List[str]:
-...         problems = []
-...         if self.learning_rate <= 0:
-...             problems.append("learning_rate must be positive")
-...         return problems
-
-See Also
---------
-pcntoolkit.regression_model.blr.blr_conf : Bayesian Linear Regression configuration
-pcntoolkit.regression_model.gpr.gpr_conf : Gaussian Process Regression configuration
-pcntoolkit.regression_model.hbr.hbr_conf : Hierarchical Bayesian Regression configuration
 """
 
 from __future__ import annotations
@@ -90,37 +58,6 @@ class RegConf(ABC):
         Creates a configuration instance from a dictionary.
     to_dict(path=None)
         Serializes the configuration to a dictionary.
-
-    Raises
-    ------
-    ValueError
-        If any configuration problems are detected during initialization.
-
-    Examples
-    --------
-    Subclasses should implement this abstract base class like so:
-
-    >>> class MyModelConf(RegConf):
-    ...     def __init__(self, param1: float, param2: str):
-    ...         self.param1 = param1
-    ...         self.param2 = param2
-    ...
-    ...     @property
-    ...     def has_random_effect(self) -> bool:
-    ...         return False
-    ...
-    ...     def detect_configuration_problems(self) -> List[str]:
-    ...         problems = []
-    ...         if self.param1 < 0:
-    ...             problems.append("param1 must be non-negative")
-    ...         return problems
-
-    Notes
-    -----
-    - All configuration parameters should be immutable after initialization
-    - Validation is automatically performed via __post_init__
-    - Subclasses must implement all abstract methods
-    - The class follows the configuration validation pattern
     """
 
     def __post_init__(self) -> None:
@@ -130,20 +67,6 @@ class RegConf(ABC):
         This method is automatically called after object initialization to verify
         that all configuration parameters are valid. It uses detect_configuration_problems()
         to identify any issues with the configuration.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        ValueError
-            If any configuration problems are detected, with a detailed list of the problems.
-
-        Notes
-        -----
-        - Prints a confirmation message if configuration is valid
-        - The error message includes numbered list of all detected problems
         """
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
@@ -161,16 +84,6 @@ class RegConf(ABC):
     def has_random_effect(self) -> bool:
         """
         Indicates whether the regression model includes random effects.
-
-        Returns
-        -------
-        bool
-            True if the model includes random effects, False otherwise.
-
-        Notes
-        -----
-        - This is an abstract property that must be implemented by subclasses
-        - Default implementation returns False
         """
 
     @abstractmethod
@@ -213,8 +126,6 @@ class RegConf(ABC):
         Notes
         -----
         - Subclasses must implement this method
-        - Should handle type conversion from string arguments
-        - Should validate all required arguments are present
         """
 
     @classmethod
@@ -236,8 +147,6 @@ class RegConf(ABC):
         Notes
         -----
         - Subclasses must implement this method
-        - Should validate all required keys are present
-        - Useful for loading configurations from JSON/YAML files
         """
 
     @abstractmethod
@@ -248,8 +157,7 @@ class RegConf(ABC):
         Parameters
         ----------
         path : str | None, optional
-            Optional file path for configurations that include file references.
-            Used to resolve relative paths to absolute paths.
+            Optional file path for storing large objects. 
 
         Returns
         -------

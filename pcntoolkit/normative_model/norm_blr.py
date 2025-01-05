@@ -162,7 +162,7 @@ class NormBLR(NormBase):
         # Create one-hot encoding for random intercept
         if random_intercept:
             mapped_batch_effects = self.map_batch_effects(data)
-            for i, v in enumerate(self.unique_batch_effects):
+            for i, v in enumerate(self.unique_batch_effects.values()):
                 acc.append(
                     np.eye(len(v))[mapped_batch_effects[:,i]],
                 )
@@ -235,3 +235,7 @@ class NormBLR(NormBase):
             The currently focused Bayesian Linear Regression model.
         """
         return self[self.focused_var]  # type:ignore
+
+    def make_serializable(self) -> None:
+        """Nothing to do here"""
+        pass
