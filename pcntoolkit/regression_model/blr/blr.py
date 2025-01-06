@@ -829,3 +829,7 @@ class BLR(RegressionModel):
             or self.blr_conf.random_intercept_var
             or self.blr_conf.intercept_var
         )
+    
+    @property
+    def reg_conf(self) -> BLRConf:
+        return self._reg_conf  # type: ignore

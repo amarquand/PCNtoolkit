@@ -5,7 +5,7 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.param import make_param
+from pcntoolkit.regression_model.hbr.prior import make_prior
 from test.fixtures.data_fixtures import *
 from test.fixtures.path_fixtures import *
 
@@ -157,19 +157,19 @@ def norm_conf_for_hbr_test_model(savemodel, save_dir):
 
 @pytest.fixture
 def mu():
-    return make_param(
+    return make_prior(
         linear=True,
-        intercept=make_param(random=True),
-        slope=make_param(dist_name="Normal", dist_params=(0, 10))
+        intercept=make_prior(random=True),
+        slope=make_prior(dist_name="Normal", dist_params=(0, 10))
     )
 
 
 @pytest.fixture
 def sigma():
-    return make_param(
+    return make_prior(
         linear=True,
-        slope=make_param(dist_name="Normal", dist_params=(0, 2.)),
-        intercept=make_param(dist_name="Normal", dist_params=(0, 2.)),
+        slope=make_prior(dist_name="Normal", dist_params=(0, 2.)),
+        intercept=make_prior(dist_name="Normal", dist_params=(0, 2.)),
         mapping = "softplus",
         mapping_params=(0., 3.)
     )

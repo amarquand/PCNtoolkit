@@ -2,7 +2,7 @@
 
 # TODO move all plotting functions to this file
 
-from typing import Any, Dict, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 import os
 
+
 def plot_centiles(
     model: "NormBase",
     data: NormData,
@@ -27,6 +28,7 @@ def plot_centiles(
     plt_kwargs: dict | None = None,
     hue_data: str = "site",
     markers_data: str = "sex",
+    show_other_data: bool = False,
     save_dir: str | None = None,
     **kwargs: Any,
 ) -> None:
@@ -149,6 +151,7 @@ def plot_centiles(
             markers_data=markers_data,
             palette=palette,
             save_dir=save_dir,
+            show_other_data=show_other_data,
         )
 
 
@@ -164,6 +167,7 @@ def _plot_centiles(
     markers_data: str = "sex",
     palette: str = "viridis",
     save_dir: str | None = None,
+    show_other_data: bool = False,
 ) -> None:
     """Plot centile curves for a single response variable.
 
@@ -283,19 +287,22 @@ def _plot_centiles(
                 hue=hue_data if hue_data in df else None,
                 style=markers_data if markers_data in df else None,
                 s=50,
-                alpha=0.7,
+                alpha=0.8,
                 zorder=1,
             )
-            non_be_df = df[~idx]
-            sns.scatterplot(
-                data=non_be_df,
-                x=covariate,
-                y=response_var,
-                color="black",
-                s=20,
-                alpha=0.4,
-                zorder=0,
-            )
+            if show_other_data:
+                non_be_df = df[~idx]
+                non_be_df["marker"] = ["Other data"]*len(non_be_df)
+                sns.scatterplot(
+                    data=non_be_df,
+                    x=covariate,
+                    y=response_var,
+                    color="black",
+                    style="marker",
+                    s=20,
+                    alpha=0.4,
+                    zorder=0,
+                )
             legend = scatter.get_legend()
             if legend:
                 handles = legend.legend_handles

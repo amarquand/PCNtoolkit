@@ -25,18 +25,18 @@ PM_DISTMAP = {
 }
 
 
-def make_param(name: str = "theta", **kwargs) -> Param:
+def make_prior(name: str = "theta", **kwargs) -> BasePrior:
     if kwargs.pop("linear", False):
-        return LinearParam(name, **kwargs)
-    elif kwargs.pop("random", False):
-        return RandomParam(name, **kwargs)
+        return LinearPrior(name, **kwargs)
+    elif kwargs.pop("random", False): 
+        return RandomPrior(name, **kwargs)
     else:
-        return FixedParam(name, **kwargs)
+        return Prior(name, **kwargs)
+        
 
-
-def param_from_args(
+def prior_from_args(
     name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None
-) -> Param:
+) -> BasePrior:
     dims = args.get(f"dims_{name}", dims)
 
     mapping = args.get(f"mapping_{name}", "identity")
@@ -61,11 +61,11 @@ def param_from_args(
         dist_params = args.get(f"dist_params_{name}", (0, 1))
 
     if args.get(f"linear_{name}", False):
-        slope = param_from_args(f"slope_{name}", args, dims=dims)
-        intercept = param_from_args(f"intercept_{name}", args, dims=dims)
-        return LinearParam(name, dims, mapping, mapping_params, slope, intercept)
+        slope = prior_from_args(f"slope_{name}", args, dims=dims)
+        intercept = prior_from_args(f"intercept_{name}", args, dims=dims)
+        return LinearPrior(name, dims, mapping, mapping_params, slope, intercept)
     elif args.get(f"random_{name}", False):
-        mu = param_from_args(f"mu_{name}", args, dims=dims)
+        mu = prior_from_args(f"mu_{name}", args, dims=dims)
         if not args.get(f"mapping_sigma_{name}", None):
             assert (
                 args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"]
@@ -74,15 +74,15 @@ def param_from_args(
                 and args.get(f"dist_params_sigma_{name}", None)[0] > 0
             ), "Sigma needs a positive distribution if it is not linear or random"
 
-            sigma = param_from_args(f"sigma_{name}", args, dims=dims)
+            sigma = prior_from_args(f"sigma_{name}", args, dims=dims)
         else:
             sigma = get_default_sigma(dims)
-        return RandomParam(name, dims, mapping, mapping_params, mu, sigma)
+        return RandomPrior(name, dims, mapping, mapping_params, mu, sigma)
     else:
-        return FixedParam(name, dims, mapping, mapping_params, dist_name, dist_params)
+        return Prior(name, dims, mapping, mapping_params, dist_name, dist_params)
 
 
-class Param(ABC):
+class BasePrior(ABC):
     def __init__(
         self,
         name: str = "theta",
@@ -130,7 +130,7 @@ class Param(ABC):
         return toreturn
 
     @abstractmethod
-    def create_graph(
+    def compile(
         self,
         model: pm.Model,
         idata: Optional[az.InferenceData] = None,
@@ -158,14 +158,14 @@ class Param(ABC):
         return dct | {"type": self.__class__.__name__}
 
     @classmethod
-    def from_dict(cls, dict: dict) -> Param:
+    def from_dict(cls, dict: dict) -> BasePrior:
         return globals()[dict.pop("type")].from_dict(dict)
 
-    def __eq__(self, other: Param):
+    def __eq__(self, other: BasePrior):
         return self.to_dict() == other.to_dict()
 
 
-class FixedParam(Param):
+class Prior(BasePrior):
     def __init__(
         self,
         name: str = "theta",
@@ -181,7 +181,7 @@ class FixedParam(Param):
         self.dist_params = dist_params
         self.sample_dims = ()
 
-    def create_graph(
+    def compile(
         self,
         model: pm.Model,
         idata: Optional[az.InferenceData] = None,
@@ -280,15 +280,15 @@ class FixedParam(Param):
         self.name = name
 
 
-class RandomParam(Param):
+class RandomPrior(BasePrior):
     def __init__(
         self,
         name: str = "theta",
         dims: Optional[Union[Tuple[str, ...], str]] = None,
         mapping: str = "identity",
         mapping_params: tuple[float, ...] = (0.0, 1.0),
-        mu: Optional[Param] = None,
-        sigma: Optional[Param] = None,
+        mu: Optional[BasePrior] = None,
+        sigma: Optional[BasePrior] = None,
         **kwargs,
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
@@ -310,7 +310,7 @@ class RandomParam(Param):
             self.sigma.dims = value
         self._dims = value
 
-    def create_graph(
+    def compile(
         self,
         model: pm.Model,
         idata: Optional[az.InferenceData] = None,
@@ -318,19 +318,19 @@ class RandomParam(Param):
     ):
         outdims = "datapoints" if not self.dims else ("datapoints", *self.dims)
         with model:
-            self.mu.create_graph(model, idata, freedom)
+            self.mu.compile(model, idata, freedom)
             if self.dims:
                 acc = self.mu.dist[None]  # type: ignore
             else:
                 acc = self.mu.dist  # type: ignore
-            self.sigmas: dict[str, Param] = {}
+            self.sigmas: dict[str, BasePrior] = {}
             self.offsets = {}
             self.scaled_offsets = {}
             for be in model.custom_batch_effect_dims:  # type:ignore
                 be_dims = be if not self.dims else (be, *self.dims)
                 self.sigmas[be] = copy.deepcopy(self.sigma)
                 self.sigmas[be].set_name(f"{be}_sigma_{self.name}")
-                self.sigmas[be].create_graph(model, idata, freedom)
+                self.sigmas[be].compile(model, idata, freedom)
                 self.scaled_offsets[be] = pm.Deterministic(
                     f"{be}_offset_{self.name}",
                     self.sigmas[be].dist  # type: ignore
@@ -370,8 +370,8 @@ class RandomParam(Param):
 
     @classmethod
     def from_dict(cls, dct):
-        mu = Param.from_dict(dct["mu"])
-        sigma = Param.from_dict(dct["sigma"])
+        mu = BasePrior.from_dict(dct["mu"])
+        sigma = BasePrior.from_dict(dct["sigma"])
         instance = cls(
             mu=mu,
             sigma=sigma,
@@ -382,21 +382,21 @@ class RandomParam(Param):
             },
         )
         instance.sigmas = {
-            k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")
+            k: BasePrior.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")
         }
         # instance.scaled_offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
         return instance
 
 
-class LinearParam(Param):
+class LinearPrior(BasePrior):
     def __init__(
         self,
         name: str = "theta",
         dims: Optional[Union[Tuple[str, ...], str]] = None,
         mapping: str = "identity",
         mapping_params: tuple[float, ...] = (0.0, 1.0),
-        slope: Optional[Param] = None,
-        intercept: Optional[Param] = None,
+        slope: Optional[BasePrior] = None,
+        intercept: Optional[BasePrior] = None,
         **kwargs,
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
@@ -419,15 +419,15 @@ class LinearParam(Param):
             self.intercept.dims = value
         self._dims = value
 
-    def create_graph(
+    def compile(
         self,
         model: pm.Model,
         idata: Optional[az.InferenceData] = None,
         freedom: float = 1,
     ):
         self.one_dimensional = len(model.coords["covariates"]) == 1
-        self.slope.create_graph(model, idata, freedom)
-        self.intercept.create_graph(model, idata, freedom)
+        self.slope.compile(model, idata, freedom)
+        self.intercept.compile(model, idata, freedom)
 
     def _sample(self, data: HBRData):
         if self.one_dimensional:    
@@ -445,8 +445,8 @@ class LinearParam(Param):
 
     @classmethod
     def from_dict(cls, dct):
-        slope = Param.from_dict(dct["slope"])
-        intercept = Param.from_dict(dct["intercept"])
+        slope = BasePrior.from_dict(dct["slope"])
+        intercept = BasePrior.from_dict(dct["intercept"])
         return cls(
             slope=slope,
             intercept=intercept,
@@ -473,8 +473,8 @@ class LinearParam(Param):
 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠"
 
 
-def get_default_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
-    return LinearParam(
+def get_default_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
+    return LinearPrior(
         "mu",
         dims=dims,
         slope=get_default_slope(dims),
@@ -482,10 +482,10 @@ def get_default_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
     )
 
 
-def get_default_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
+def get_default_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
     slope = get_default_slope(dims)
     intercept = get_default_intercept(dims)
-    return LinearParam(
+    return LinearPrior(
         slope=slope,
         intercept=intercept,
         mapping="softplus",
@@ -493,8 +493,8 @@ def get_default_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Par
     )
 
 
-def get_default_epsilon() -> Param:
-    return FixedParam(
+def get_default_epsilon() -> BasePrior:
+    return Prior(
         dist_name="Normal",
         dist_params=(
             0.0,
@@ -503,8 +503,8 @@ def get_default_epsilon() -> Param:
     )
 
 
-def get_default_delta() -> Param:
-    return FixedParam(
+def get_default_delta() -> BasePrior:
+    return Prior(
         dist_name="Normal",
         dist_params=(
             0.0,
@@ -515,8 +515,8 @@ def get_default_delta() -> Param:
     )
 
 
-def get_default_sub_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
-    return FixedParam(
+def get_default_sub_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
+    return Prior(
         dims=dims,
         dist_name="Normal",
         dist_params=(
@@ -526,8 +526,8 @@ def get_default_sub_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Pa
     )
 
 
-def get_default_sub_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
-    return FixedParam(
+def get_default_sub_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
+    return Prior(
         dims=dims,
         dist_name="LogNormal",
         dist_params=(2.0,),
@@ -536,16 +536,16 @@ def get_default_sub_sigma(dims: Optional[Union[Tuple[str, ...], str]] = None) ->
 
 def get_default_slope(
     dims: Optional[Union[Tuple[str, ...], str]] = ("covariates",),
-) -> Param:
-    return FixedParam(
+) -> BasePrior:
+    return Prior(
         dims=dims,
         dist_name="Normal",
         dist_params=(0, 10.0),
     )
 
 
-def get_default_intercept(dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
-    return FixedParam(
+def get_default_intercept(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
+    return Prior(
         dims=dims,
         dist_name="Normal",
         dist_params=(0, 10.0),
