@@ -425,14 +425,18 @@ class LinearParam(Param):
         idata: Optional[az.InferenceData] = None,
         freedom: float = 1,
     ):
+        self.one_dimensional = len(model.coords["covariates"]) == 1
         self.slope.create_graph(model, idata, freedom)
         self.intercept.create_graph(model, idata, freedom)
 
     def _sample(self, data: HBRData):
-        return math.sum(
-            self.slope.sample(data) * data.pm_X, axis=1, keepdims=False
-        ) + self.intercept.sample(data)
-
+        if self.one_dimensional:    
+            return (self.slope.sample(data) * data.pm_X)[:,0] + self.intercept.sample(data)
+        else:
+            return math.sum(
+                self.slope.sample(data) * data.pm_X, axis=1, keepdims=False
+            ) + self.intercept.sample(data)
+        
     def to_dict(self):
         dct = super().to_dict()
         dct["slope"] = self.slope.to_dict()
