@@ -34,21 +34,21 @@ def make_param(name: str = "theta", **kwargs) -> Param:
         return FixedParam(name, **kwargs)
 
 
-def param_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None) -> Param:
+def param_from_args(
+    name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None
+) -> Param:
     dims = args.get(f"dims_{name}", dims)
 
     mapping = args.get(f"mapping_{name}", "identity")
     mapping_params = args.get(f"mapping_params_{name}", (0, 1))
     if name.split("_")[0] in ["sigma", "delta"]:
         dist_name = args.get(f"dist_name_{name}", "HalfNormal")
-        dist_params = args.get(f"dist_params_{name}", (1.,))
+        dist_params = args.get(f"dist_params_{name}", (1.0,))
         if args.get(f"linear_{name}", False) or args.get(f"random_{name}", False):
-        
             assert (
                 mapping != "identity"
             ), "Sigma and delta need a mapping if they are linear or random"
         else:
-           
             assert (
                 args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"]
                 or (
@@ -68,12 +68,11 @@ def param_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[
         mu = param_from_args(f"mu_{name}", args, dims=dims)
         if not args.get(f"mapping_sigma_{name}", None):
             assert (
-                (args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"])
-                or (
-                        args.get(f"dist_name_sigma_{name}", None) == "Uniform"
-                        and args.get(f"dist_params_sigma_{name}", None)[0] > 0
-                    )
-                ), "Sigma needs a positive distribution if it is not linear or random"
+                args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"]
+            ) or (
+                args.get(f"dist_name_sigma_{name}", None) == "Uniform"
+                and args.get(f"dist_params_sigma_{name}", None)[0] > 0
+            ), "Sigma needs a positive distribution if it is not linear or random"
 
             sigma = param_from_args(f"sigma_{name}", args, dims=dims)
         else:
@@ -90,6 +89,7 @@ class Param(ABC):
         dims: Optional[Union[Tuple[str, ...], str]] = None,
         mapping: str = "identity",
         mapping_params: tuple = (0, 1),
+        **kwargs,
     ):
         self.name = name
         self._dims = dims
@@ -106,7 +106,7 @@ class Param(ABC):
     @property
     def dims(self):
         return self._dims
-    
+
     @dims.setter
     def dims(self, value):
         self._dims = value
@@ -174,8 +174,9 @@ class FixedParam(Param):
         mapping_params: tuple[float, ...] = (0.0, 1.0),
         dist_name: str = "Normal",
         dist_params: Tuple[float | int | list[float | int], ...] = (0, 10.0),
+        **kwargs,
     ):
-        super().__init__(name, dims, mapping, mapping_params)
+        super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.dist_name = dist_name
         self.dist_params = dist_params
         self.sample_dims = ()
@@ -288,8 +289,9 @@ class RandomParam(Param):
         mapping_params: tuple[float, ...] = (0.0, 1.0),
         mu: Optional[Param] = None,
         sigma: Optional[Param] = None,
+        **kwargs,
     ):
-        super().__init__(name, dims, mapping, mapping_params)
+        super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.mu = mu or get_default_sub_mu(dims)
         self.mu.set_name(f"mu_{self.name}")
         self.sigma = sigma or get_default_sub_sigma(dims)
@@ -299,7 +301,7 @@ class RandomParam(Param):
     @property
     def dims(self):
         return self._dims
-    
+
     @dims.setter
     def dims(self, value):
         if hasattr(self, "mu"):
@@ -318,29 +320,24 @@ class RandomParam(Param):
         with model:
             self.mu.create_graph(model, idata, freedom)
             if self.dims:
-                acc = self.mu.dist[None,:]
+                acc = self.mu.dist[None]  # type: ignore
             else:
-                acc = self.mu.dist
+                acc = self.mu.dist  # type: ignore
             self.sigmas: dict[str, Param] = {}
             self.offsets = {}
             self.scaled_offsets = {}
             for be in model.custom_batch_effect_dims:  # type:ignore
-                be_dims = be if not self.dims else (be,*self.dims)
+                be_dims = be if not self.dims else (be, *self.dims)
                 self.sigmas[be] = copy.deepcopy(self.sigma)
                 self.sigmas[be].set_name(f"{be}_sigma_{self.name}")
                 self.sigmas[be].create_graph(model, idata, freedom)
-                self.offsets[be] = pm.Normal(
-                    f"normalized_{be}_offset_{self.name}",
-                    dims=be_dims,  # type:ignore
-                )
-                if self.dims:
-                    be_sigma = self.sigmas[be].dist[None,:]
-                else:
-                    be_sigma = self.sigmas[be].dist  # type: ignore
                 self.scaled_offsets[be] = pm.Deterministic(
                     f"{be}_offset_{self.name}",
-                    be_sigma  # type: ignore
-                    * self.offsets[be],
+                    self.sigmas[be].dist  # type: ignore
+                    * pm.Normal(
+                        f"normalized_{be}_offset_{self.name}",
+                        dims=be_dims,  # type:ignore
+                    ),
                     dims=be_dims,
                 )
                 acc += self.scaled_offsets[be][model[f"{be}_data"]]
@@ -400,8 +397,9 @@ class LinearParam(Param):
         mapping_params: tuple[float, ...] = (0.0, 1.0),
         slope: Optional[Param] = None,
         intercept: Optional[Param] = None,
+        **kwargs,
     ):
-        super().__init__(name, dims, mapping, mapping_params)
+        super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.slope = slope or get_default_slope()
         self.slope.dims = (
             ("covariates",) if self.slope.dims is None else self.slope.dims
@@ -416,7 +414,7 @@ class LinearParam(Param):
     @property
     def dims(self):
         return self._dims
-    
+
     @dims.setter
     def dims(self, value):
         if hasattr(self, "slope"):
