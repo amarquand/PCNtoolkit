@@ -100,6 +100,8 @@ class NormData(xr.Dataset):
         "scaled_centiles",
         "centiles",
         "zscores",
+        "unique_batch_effects",
+        "batch_effects_counts"
     )
 
     def __init__(

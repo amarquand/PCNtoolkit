@@ -5,9 +5,9 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.regression_model.hbr.param import (  # pylint: disable=E0611
-    LinearParam,
-    RandomParam,
+from pcntoolkit.regression_model.hbr.prior import (  # pylint: disable=E0611
+    LinearPrior,
+    RandomPrior,
 )
 from pcntoolkit.util.plotter import plot_centiles
 from test.fixtures.data_fixtures import *
@@ -81,10 +81,10 @@ def test_normhbr_from_args(
     assert hbr.default_reg_conf.likelihood == "Normal"
     if args.get("linear_mu", False):
         if args.get("random_slope_mu", False):
-            assert isinstance(hbr.default_reg_conf.mu.slope, RandomParam)
+            assert isinstance(hbr.default_reg_conf.mu.slope, RandomPrior)
         if args.get("random_intercept_mu", False):  
-            assert isinstance(hbr.default_reg_conf.mu.intercept, RandomParam)
-    assert not isinstance(hbr.default_reg_conf.sigma, RandomParam) and not isinstance(hbr.default_reg_conf.sigma, LinearParam)
+            assert isinstance(hbr.default_reg_conf.mu.intercept, RandomPrior)
+    assert not isinstance(hbr.default_reg_conf.sigma, RandomPrior) and not isinstance(hbr.default_reg_conf.sigma, LinearPrior)
 
 
 def test_normdata_to_hbrdata(fitted_norm_hbr_model, norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates):
@@ -121,7 +121,7 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     )
 
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
-    hbr = load_normative_model(load_path)
+    hbr: NormHBR = load_normative_model(load_path)
     for model in hbr.regression_models.values():
         if model.is_fitted:
             assert model.idata.posterior.mu_samples.shape[:2] == (2, n_mcmc_samples)

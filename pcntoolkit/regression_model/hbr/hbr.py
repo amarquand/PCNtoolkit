@@ -68,7 +68,7 @@ import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
 from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
-from pcntoolkit.regression_model.hbr.param import Param
+from pcntoolkit.regression_model.hbr.prior import Prior
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
 
@@ -778,19 +778,19 @@ class HBR(RegressionModel):
     # pylint: disable=C0116
 
     @property
-    def mu(self) -> Param:
+    def mu(self) -> Prior:
         return self.reg_conf.mu  # type: ignore
 
     @property
-    def sigma(self) -> Param:
+    def sigma(self) -> Prior:
         return self.reg_conf.sigma  # type: ignore
 
     @property
-    def epsilon(self) -> Param:
+    def epsilon(self) -> Prior:
         return self.reg_conf.epsilon  # type: ignore
 
     @property
-    def delta(self) -> Param:
+    def delta(self) -> Prior:
         return self.reg_conf.delta  # type: ignore
 
     @property
@@ -820,3 +820,7 @@ class HBR(RegressionModel):
     @property
     def init(self) -> str:
         return self.reg_conf.init  # type: ignore
+
+    @property
+    def reg_conf(self) -> HBRConf:
+        return self._reg_conf  # type: ignore

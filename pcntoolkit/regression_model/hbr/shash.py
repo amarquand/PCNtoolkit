@@ -104,17 +104,6 @@ def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
     -------
     NDArray[np.float64]
         Inverse transformed values
-
-    Notes
-    -----
-    This is the inverse of the S() transformation function.
-    Used primarily in sampling from SHASH distributions.
-
-    Examples
-    --------
-    >>> x = 1.0
-    >>> np.allclose(S_inv(S(x, 0.5, 2.0), 0.5, 2.0), x)
-    True
     """
     return np.sinh((np.arcsinh(x) + epsilon) / delta)
 
@@ -135,17 +124,6 @@ def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
     -------
     NDArray[np.float64]
         Transformed values
-
-    Notes
-    -----
-    This function computes C(x) = sqrt(1 + S(x)^2), where S is the
-    sinh-arcsinh transformation. It is used in computing probability
-    densities of SHASH distributions.
-
-    Examples
-    --------
-    >>> C(0.0, epsilon=0.0, delta=1.0)
-    1.0
     """
     return np.cosh(np.arcsinh(x) * delta - epsilon)
 
@@ -195,12 +173,6 @@ class SHASHrv(RandomVariable):
         -------
         NDArray[np.float64]
             Array of random samples from the distribution
-
-        Notes
-        -----
-        The sampling process involves:
-        1. Generate standard normal samples
-        2. Apply sinh-arcsinh transformation with parameters
         """
         return np.sinh(
             (np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta
@@ -222,18 +194,6 @@ class SHASH(Continuous):
         Skewness parameter controlling asymmetry
     delta : float
         Kurtosis parameter controlling tail weight
-
-    Notes
-    -----
-    The distribution reduces to standard normal when epsilon=0 and delta=1.
-    Positive epsilon produces positive skewness.
-    Delta < 1 produces heavier tails than normal.
-
-    Examples
-    --------
-    >>> import pymc as pm
-    >>> with pm.Model():
-    ...     x = pm.SHASH('x', epsilon=0.5, delta=1.2)
     """
 
     rv_op = shash
@@ -320,12 +280,6 @@ class SHASH(Continuous):
         -----
         This method is more efficient than calling m1() and m2() separately
         as it reuses intermediate calculations.
-
-        Examples
-        --------
-        >>> mean, var = SHASH.m1m2(0.0, 1.0)  # Standard normal case
-        >>> np.allclose([mean, var], [0.0, 1.0])
-        True
         """
         inv_delta = 1.0 / delta
         two_inv_delta = 2.0 * inv_delta
@@ -356,10 +310,6 @@ class SHASH(Continuous):
         -------
         SHASH
             A SHASH distribution instance
-
-        Notes
-        -----
-        The parameters are converted to float tensors before distribution creation.
         """
         epsilon = as_tensor_variable(floatX(epsilon))
         delta = as_tensor_variable(floatX(delta))
@@ -381,11 +331,6 @@ class SHASH(Continuous):
         -------
         float
             Log probability density at the specified points
-
-        Notes
-        -----
-        The implementation follows Jones et al. (2009) equation (2.2).
-        Numerical stability is maintained through log-space calculations.
         """
         this_S = S(value, epsilon, delta)
         this_S_sqr = np.square(this_S)
@@ -445,13 +390,6 @@ class SHASHoRV(RandomVariable):
         -------
         NDArray[np.float64]
             Array of random samples from the distribution
-
-        Notes
-        -----
-        The sampling process involves:
-        1. Generate standard normal samples
-        2. Apply SHASH transformation
-        3. Scale and shift the result
         """
         s = rng.normal(size=size)
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu  # type: ignore
@@ -481,12 +419,6 @@ class SHASHo(Continuous):
     -----
     The distribution is obtained by applying the transformation
     Y = mu + sigma * X where X follows the base SHASH distribution.
-
-    Examples
-    --------
-    >>> import pymc as pm
-    >>> with pm.Model():
-    ...     x = pm.SHASHo('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
     """
 
     rv_op = shasho
@@ -548,11 +480,6 @@ class SHASHo(Continuous):
         -------
         float
             Log probability density at the specified points
-
-        Notes
-        -----
-        The implementation follows Jones et al. (2009) equation (2.2)
-        with additional location-scale transformation.
         """
         remapped_value = (value - mu) / sigma  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
@@ -616,12 +543,6 @@ class SHASHo2RV(RandomVariable):
         NDArray[np.float64]
             Array of random samples from the distribution
 
-        Notes
-        -----
-        The sampling process involves:
-        1. Generate standard normal samples
-        2. Apply SHASH transformation
-        3. Scale by sigma/delta and shift by mu
         """
         s = rng.normal(size=size)
         sigma_d = sigma / delta  # type: ignore
@@ -652,14 +573,6 @@ class SHASHo2(Continuous):
     -----
     The distribution is obtained by applying the transformation
     Y = mu + (sigma/delta) * X where X follows the base SHASH distribution.
-    This parameterization can be useful when the relationship between
-    scale and kurtosis needs to be explicitly modeled.
-
-    Examples
-    --------
-    >>> import pymc as pm
-    >>> with pm.Model():
-    ...     x = pm.SHASHo2('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
     """
 
     rv_op = shasho2
@@ -748,13 +661,6 @@ class SHASHbRV(RandomVariable):
     This class implements sampling from a SHASH distribution that has been
     standardized to have zero mean and unit variance before applying
     location and scale transformations.
-
-    Notes
-    -----
-    The transformation involves:
-    1. Generate SHASH samples
-    2. Standardize to zero mean and unit variance
-    3. Apply location-scale transformation
     """
 
     name = "shashb"
@@ -793,14 +699,6 @@ class SHASHbRV(RandomVariable):
         -------
         NDArray[np.float64]
             Array of random samples from the distribution
-
-        Notes
-        -----
-        The sampling process involves:
-        1. Generate standard normal samples
-        2. Apply SHASH transformation
-        3. Standardize
-        4. Apply location-scale transformation
         """
         s = rng.normal(size=size)
 
@@ -886,12 +784,6 @@ class SHASHb(Continuous):
 
     This standardization can improve numerical stability and parameter
     interpretability in some applications.
-
-    Examples
-    --------
-    >>> import pymc as pm
-    >>> with pm.Model():
-    ...     x = pm.SHASHb('x', mu=0.0, sigma=1.0, epsilon=0.5, delta=1.2)
     """
 
     rv_op = shashb
@@ -953,11 +845,6 @@ class SHASHb(Continuous):
         -------
         float
             Log probability density at the specified points
-
-        Notes
-        -----
-        The implementation follows Jones et al. (2009) equation (2.2)
-        with standardization and location-scale transformation.
         """
         mean, var = SHASH.m1m2(epsilon, delta)
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean  # type: ignore

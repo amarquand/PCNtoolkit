@@ -67,6 +67,7 @@ class RegressionModel(ABC):
         return self._name
 
     @property
+    @abstractmethod
     def reg_conf(self) -> RegConf:
         """
         Get the model's configuration.
@@ -76,7 +77,6 @@ class RegressionModel(ABC):
         RegConf
             The configuration object containing model parameters
         """
-        return self._reg_conf
 
     @property
     def is_from_dict(self) -> bool:
