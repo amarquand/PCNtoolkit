@@ -121,7 +121,7 @@ class NormHBR(NormBase):
     def __init__(
         self,
         norm_conf: NormConf,
-        reg_conf: HBRConf = None, #type: ignore
+        reg_conf: HBRConf = None,  # type: ignore
         regression_model_type: Type[RegressionModel] = HBR,
     ):  # type: ignore
         super().__init__(norm_conf)
@@ -144,7 +144,9 @@ class NormHBR(NormBase):
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
         self.focused_model.fit_predict(fit_hbrdata, predict_hbrdata)  # type: ignore
 
-    def _transfer(self, model_to_transfer_to: NormHBR, data: NormData, **kwargs: Any) -> HBR:
+    def _transfer(
+        self, model_to_transfer_to: NormHBR, data: NormData, **kwargs: Any
+    ) -> HBR:
         freedom = kwargs.get("freedom", 1)
         transferdata = model_to_transfer_to.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
@@ -223,6 +225,17 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
         return self.focused_model.logp(hbrdata)  # type: ignore
 
+    @property
+    def focused_model(self) -> BLR:
+        """Get the currently focused BLR model.
+
+        Returns
+        -------
+        BLR
+            The currently focused Bayesian Linear Regression model.
+        """
+        return self[self.focused_var]  # type:ignore
+
     def n_params(self) -> int:
         return sum(
             [i.size.eval() for i in self.focused_model.pymc_model.free_RVs]  # type: ignore
@@ -230,7 +243,7 @@ class NormHBR(NormBase):
 
     def make_serializable(self) -> None:
         for model in self.regression_models.values():
-            del model.pymc_model # type: ignore
+            del model.pymc_model  # type: ignore
 
     @classmethod
     def from_args(cls, args: Any) -> "NormHBR":
@@ -287,7 +300,6 @@ class NormHBR(NormBase):
             data.y.shape[1] == 1
         ), "Only one response variable is supported for HBRdata"
 
-            
         hbrdata = hbr_data.HBRData(
             X=this_X,
             y=this_y,

@@ -86,13 +86,13 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr_dict["reg_conf"]["tune"] == sample_args.get("tune")
     assert hbr_dict["reg_conf"]["pymc_cores"] == sample_args.get("pymc_cores")
     assert hbr_dict["reg_conf"]["likelihood"] == "Normal"
-    assert args.get("linear_mu", False) == (hbr_dict["reg_conf"]["mu"]["type"] == "LinearParam")
+    assert args.get("linear_mu", False) == (hbr_dict["reg_conf"]["mu"]["type"] == "LinearPrior")
     if args.get("linear_mu", False):
-        assert hbr_dict["reg_conf"]["mu"]["type"] == "LinearParam"
-        assert (hbr_dict["reg_conf"]["mu"]["slope"]["type"] == "RandomParam") == args.get("random_slope_mu", False)
-        assert (hbr_dict["reg_conf"]["mu"]["intercept"]["type"] == "RandomParam") == args.get("random_intercept_mu", False)
+        assert hbr_dict["reg_conf"]["mu"]["type"] == "LinearPrior"
+        assert (hbr_dict["reg_conf"]["mu"]["slope"]["type"] == "RandomPrior") == args.get("random_slope_mu", False)
+        assert (hbr_dict["reg_conf"]["mu"]["intercept"]["type"] == "RandomPrior") == args.get("random_intercept_mu", False)
     assert hbr.is_from_dict
-    assert not hbr_dict["reg_conf"]["sigma"]["type"] == "LinearParam"
+    assert not hbr_dict["reg_conf"]["sigma"]["type"] == "LinearPrior"
 
     # Testing from_dict
     del hbr

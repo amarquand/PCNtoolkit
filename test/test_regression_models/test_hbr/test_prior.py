@@ -569,14 +569,14 @@ def test_to_dict(model_and_data):
     json.dumps(my_dict)
 
 
-@pytest.mark.Prioretrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
-def test_approximate_posterior_normal(mu, sigma):
+@pytest.mark.parametrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_normal(mu, sigma):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.Normal.dist(mu=mu, sigma=sigma), draws=10000))
     prior: Prior = make_prior("test", dims=())
     dist_name = "Normal"
-    prior.approximate_posterior(model, dist_name, samples)
+    prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
     mu = priors[0]
     sigma = priors[1]
@@ -584,27 +584,27 @@ def test_approximate_posterior_normal(mu, sigma):
     assert sigma == pytest.approx(sigma, abs=0.01)
 
 
-@pytest.mark.Prioretrize("sigma", [1, 2, 3])
-def test_approximate_posterior_halfnormal(sigma):
+@pytest.mark.parametrize("sigma", [1, 2, 3])
+def test_approximate_halfnormal(sigma):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.HalfNormal.dist(sigma=sigma), draws=10000))
     Prior: Prior = make_prior("test", dims=()) # type: ignore
     dist_name = "HalfNormal"
-    Prior.approximate_posterior(model, dist_name, samples)
+    Prior.approximate(model, dist_name, samples)
     Priors = Prior.dist_params
     sigma = Priors[0]
     assert sigma == pytest.approx(sigma, abs=0.01)
 
 
-@pytest.mark.Prioretrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
-def test_approximate_posterior_lognormal(mu, sigma):
+@pytest.mark.parametrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_lognormal(mu, sigma):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.Lognormal.dist(mu=mu, sigma=sigma), draws=10000))
     prior: Prior = make_prior("test", dims=()) # type: ignore
     dist_name = "LogNormal"
-    prior.approximate_posterior(model, dist_name, samples)
+    prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
     mu = priors[0]
     sigma = priors[1]
@@ -612,14 +612,14 @@ def test_approximate_posterior_lognormal(mu, sigma):
     assert sigma == pytest.approx(sigma, abs=0.01)
 
 
-@pytest.mark.Prioretrize("alpha, beta", [(0, 1), (1, 2), (-1, 0.5)])
-def test_approximate_posterior_cauchy(alpha, beta):
+@pytest.mark.parametrize("alpha, beta", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_cauchy(alpha, beta):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.Cauchy.dist(alpha=alpha, beta=beta), draws=10000))
     prior: Prior = make_prior("test", dims=()) # type: ignore
     dist_name = "Cauchy"
-    prior.approximate_posterior(model, dist_name, samples)
+    prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
     alpha = priors[0]
     beta = priors[1]
@@ -627,21 +627,21 @@ def test_approximate_posterior_cauchy(alpha, beta):
     assert beta == pytest.approx(beta, abs=0.01)
 
 
-@pytest.mark.Prioretrize("beta", [1, 2, 3])
-def test_approximate_posterior_halfcauchy(beta):
+@pytest.mark.parametrize("beta", [1, 2, 3])
+def test_approximate_halfcauchy(beta):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.HalfCauchy.dist(beta=beta), draws=10000))
     prior: Prior = make_prior("test", dims=()) # type: ignore
     dist_name = "HalfCauchy"
-    prior.approximate_posterior(model, dist_name, samples)
+    prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
     beta = priors[0]
     assert beta == pytest.approx(beta, abs=0.01)
 
 
-@pytest.mark.Prioretrize("lower, upper", [(0, 1), (1, 2), (-1, 0.5)])
-def test_approximate_posterior_uniform(lower, upper):
+@pytest.mark.parametrize("lower, upper", [(0, 1), (1, 2), (-1, 0.5)])
+def test_approximate_uniform(lower, upper):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(
@@ -649,7 +649,7 @@ def test_approximate_posterior_uniform(lower, upper):
     )
     prior: Prior = make_prior("test", dims=()) # type: ignore
     dist_name = "Uniform"
-    prior.approximate_posterior(model, dist_name, samples)
+    prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
     lower = priors[0]
     upper = priors[1]
