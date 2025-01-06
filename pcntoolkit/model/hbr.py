@@ -794,12 +794,22 @@ class Prior:
                     dims = dims + pb.batch_effect_dim_names
                 if self.name.startswith("slope") or self.name.startswith("offset_slope"):
                     dims = dims + ["basis_functions"]
-                self.dist = from_posterior(
-                    param=self.name,
-                    samples=samples.to_numpy(),
-                    shape=new_shape,
-                    distribution=dist,
-                    dims=dims,
+                    print(f"{self.name} has dims: {dims} if idata is present")
+                if dims == []:
+                    self.dist = from_posterior(
+                        param=self.name,
+                        samples=samples.to_numpy(),
+                        shape=new_shape,
+                        distribution=dist,
+                        freedom=pb.configs["freedom"],
+                    )
+                else:
+                    self.dist = from_posterior(
+                        param=self.name,
+                        samples=samples.to_numpy(),
+                        shape=new_shape,
+                        distribution=dist,
+                        dims=dims,
                     freedom=pb.configs["freedom"],
                 )
 
@@ -809,6 +819,7 @@ class Prior:
                     dims = dims + pb.batch_effect_dim_names
                 if self.name.startswith("slope") or self.name.startswith("offset_slope"):
                     dims = dims + ["basis_functions"]
+                    print(f"{self.name} has dims: {dims} if idata is not present")
                 if dims == []:
                     self.dist = self.distmap[dist](self.name, *params)
                 else:
