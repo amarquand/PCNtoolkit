@@ -1145,7 +1145,7 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
             if testcov is not None:
                 yhat, s2 = nm.predict_on_new_sites(Xte, batch_effects_test)
                 if testresp is not None:
-                    Z[:, i] = nm.get_mcmc_zscores(Xte, Yte[:, i:i+1], **kwargs)
+                    Z[:, i] = nm.get_mcmc_zscores(Xte, Yte[:, i:i+1], tsbefile=tsbefile **kwargs)
 
         # We basically use normative.predict script here.
         if alg == 'blr':
