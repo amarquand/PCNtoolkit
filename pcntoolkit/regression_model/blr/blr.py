@@ -13,6 +13,7 @@ and supports both homoskedastic and heteroskedastic noise models.
 
 from __future__ import annotations
 
+import copy
 from typing import Literal, Optional, cast
 
 import numpy as np
@@ -372,7 +373,7 @@ class BLR(RegressionModel):
         _, _, gamma = self.parse_hyps(hyp, X, var_X)
 
         if self.warp:
-            y_unwarped = y
+            y_unwarped = copy.deepcopy(y)
             y = self.warp.f(y, gamma)
 
         something_big: float = float(np.finfo(np.float64).max)
@@ -681,6 +682,45 @@ class BLR(RegressionModel):
         self.m = np.array(args.get("m", None))
         self.A = np.array(args.get("A", None))
         return self
+
+    def elemwise_logp(self, data: BLRData) -> np.ndarray:
+        """Compute log-probabilities for each observation in the data.
+        
+        This method computes the log probability density for each observation
+        individually, using the fitted model parameters.
+        
+        Parameters
+        ----------
+        data : BLRData
+            Data object containing features and targets to compute log probabilities for
+        
+        Returns
+        -------
+        np.ndarray
+            Array of log probabilities for each observation
+        """
+        if not self.is_fitted:
+            raise ValueError("Model must be fitted before computing log probabilities")
+        
+        # Get predictions (mean and variance)
+        ys, s2 = self.predict(data)
+        
+        if self.warp:
+            # For warped models, transform the observations
+            y_warped = self.warp.f(data.y, self.gamma)
+            y = y_warped
+        else:
+            y = data.y
+        
+        # Compute log probabilities using Gaussian PDF
+        # log p(y|x) = -0.5 * (log(2π) + log(σ²) + (y-μ)²/σ²)
+        logp = -0.5 * (np.log(2 * np.pi) + np.log(s2) + ((y - ys) ** 2) / s2)
+        
+        if self.warp:
+            # Add log determinant of Jacobian for warped models
+            logp += np.log(self.warp.df(data.y, self.gamma))
+        
+        return logp
 
     @property
     def tol(self) -> float:

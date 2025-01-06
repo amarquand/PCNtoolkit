@@ -137,7 +137,9 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None  # type: ignore
         self.pymc_model: pm.Model = None  # type: ignore
 
-    def fit(self, hbrdata: HBRData, make_new_model: bool = True, progressbar: bool = True) -> None:
+    def fit(
+        self, hbrdata: HBRData, make_new_model: bool = True, progressbar: bool = True
+    ) -> None:
         """
         Fit the model to training data using MCMC sampling.
 
@@ -167,7 +169,10 @@ class HBR(RegressionModel):
         self.is_fitted = True
 
     def predict(
-        self, hbrdata: HBRData, extend_inferencedata: bool = True, progressbar: bool = True
+        self,
+        hbrdata: HBRData,
+        extend_inferencedata: bool = True,
+        progressbar: bool = True,
     ) -> az.InferenceData | dict[str, np.ndarray[Any, Any]]:
         """
         Generate predictions for new data.
@@ -185,7 +190,9 @@ class HBR(RegressionModel):
         if not self.pymc_model:
             self.compile_model(hbrdata)
         else:
-            hbrdata.set_data_in_existing_model(self.pymc_model) # Model already compiled, only need to update the data
+            hbrdata.set_data_in_existing_model(
+                self.pymc_model
+            )  # Model already compiled, only need to update the data
         if extend_inferencedata and hasattr(self.idata, "predictions"):
             del self.idata.predictions
             del self.idata.predictions_constant_data
@@ -236,7 +243,13 @@ class HBR(RegressionModel):
                 predictions=True,
             )
 
-    def transfer(self, hbrconf: HBRConf, transferdata: HBRData, freedom: float, progressbar: bool = True) -> HBR:
+    def transfer(
+        self,
+        hbrconf: HBRConf,
+        transferdata: HBRData,
+        freedom: float,
+        progressbar: bool = True,
+    ) -> HBR:
         """
         Perform transfer learning using existing model as prior.
 
@@ -269,7 +282,9 @@ class HBR(RegressionModel):
 
         return new_hbr_model
 
-    def generate_synthetic_data(self, hbrdata: HBRData, progressbar: bool = True) -> HBRData:
+    def generate_synthetic_data(
+        self, hbrdata: HBRData, progressbar: bool = True
+    ) -> HBRData:
         if not self.pymc_model:
             self.compile_model(hbrdata)
         else:
@@ -279,22 +294,18 @@ class HBR(RegressionModel):
             pred_idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=False,
-                var_names=['y_pred'],
+                var_names=["y_pred"],
                 predictions=True,
                 progressbar=progressbar,
             )
-        preds = az.extract(pred_idata, "predictions", var_names=['y_pred'])
+        preds = az.extract(pred_idata, "predictions", var_names=["y_pred"])
         datapoints, sample = preds.shape
         replace = datapoints > sample
         selected_idx = np.random.choice(sample, size=datapoints, replace=replace)
-        hbrdata.y = np.diag(preds.values[:,selected_idx])
+        hbrdata.y = np.diag(preds.values[:, selected_idx])
         return hbrdata
-    
-    
 
-    def centiles(
-        self, hbrdata: HBRData, cdf: np.ndarray
-    ) -> xr.DataArray:
+    def centiles(self, hbrdata: HBRData, cdf: np.ndarray) -> xr.DataArray:
         """
         Calculate centile values for given cumulative densities.
 
@@ -311,7 +322,9 @@ class HBR(RegressionModel):
             Calculated centile values
         """
         var_names = self.get_var_names()
-        centiles_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
+        centiles_idata = self.predict(
+            hbrdata, extend_inferencedata=False, progressbar=False
+        )
         post_pred = az.extract(
             centiles_idata,
             "predictions",
@@ -352,7 +365,9 @@ class HBR(RegressionModel):
             Calculated z-scores
         """
         var_names = self.get_var_names()
-        zscores_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
+        zscores_idata = self.predict(
+            hbrdata, extend_inferencedata=False, progressbar=False
+        )
         post_pred = az.extract(
             zscores_idata,
             "predictions",
@@ -369,6 +384,21 @@ class HBR(RegressionModel):
         ).mean(dim="sample")
 
         return zscores
+
+    def logp(self, hbrdata: HBRData) -> xr.DataArray:
+        """
+        Compute log-probabilities for each observation in the data.
+        """
+        if not self.pymc_model:
+            self.compile_model(hbrdata)
+        with self.pymc_model:
+            logp = pm.compute_log_likelihood(
+                self.idata,
+                var_names=["y_pred"],
+                extend_inferencedata=False,
+                progressbar=False,
+            )
+        return az.extract(logp, "log_likelihood", var_names=["y_pred"]).mean("sample")
 
     def get_var_names(self) -> List[str]:
         """Get the variable names for the current likelihood function.

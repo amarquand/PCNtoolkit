@@ -112,6 +112,10 @@ class NormBLR(NormBase):
             dims=["datapoints"],
         )
 
+    def _logp(self, data: NormData) -> None:
+        blrdata = self.normdata_to_blrdata(data)
+        return self.focused_model.elemwise_logp(blrdata)  # type: ignore
+
     def n_params(self) -> int:
         raise NotImplementedError(
             f"n_params method not implemented for {self.__class__.__name__}"

@@ -219,6 +219,10 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
         return self.focused_model.zscores(hbrdata)  # type: ignore
 
+    def _logp(self, data: NormData) -> None:
+        hbrdata = self.normdata_to_hbrdata(data)
+        return self.focused_model.logp(hbrdata)  # type: ignore
+
     def n_params(self) -> int:
         return sum(
             [i.size.eval() for i in self.focused_model.pymc_model.free_RVs]  # type: ignore
