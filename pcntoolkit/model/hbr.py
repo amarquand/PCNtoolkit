@@ -769,7 +769,6 @@ class Prior:
         :param params: List of parameters for the distribution.
         :param pb: The model object.
         """
-        print(f"self.name: {self.name}")
         with pb.model as m:
             if pb.idata is not None:
                 # Get samples
@@ -795,7 +794,6 @@ class Prior:
                     dims = dims + pb.batch_effect_dim_names
                 if self.name.startswith("slope") or self.name.startswith("offset_slope"):
                     dims = dims + ["basis_functions"]
-                print(f"{self.name} has dims: {dims} if idata is present")
                 if dims == []:
                     self.dist = from_posterior(
                         param=self.name,
@@ -820,7 +818,6 @@ class Prior:
                     dims = dims + pb.batch_effect_dim_names
                 if self.name.startswith("slope") or self.name.startswith("offset_slope"):
                     dims = dims + ["basis_functions"]
-                print(f"{self.name} has dims: {dims} if idata is not present")
                 if dims == []:
                     self.dist = self.distmap[dist](self.name, *params)
                 else:
