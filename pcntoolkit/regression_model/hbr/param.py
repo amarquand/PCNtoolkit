@@ -401,13 +401,9 @@ class LinearParam(Param):
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.slope = slope or get_default_slope()
-        self.slope.dims = (
-            ("covariates",) if self.slope.dims is None else self.slope.dims
-        )
+        self.slope.dims = ("covariates",) if not self.dims else ("covariates",*self.dims)
         self.intercept = intercept or get_default_intercept()
-        self.intercept.dims = (
-            dims if self.intercept.dims is None else self.intercept.dims
-        )
+        self.intercept.dims = self.dims
         self.sample_dims = ("datapoints",)
         self.set_name(self.name)
 
