@@ -458,8 +458,8 @@ class HBR(RegressionModel):
         None
             Updates the PyMC model in place with Normal likelihood components
         """
-        self.mu.create_graph(self.pymc_model, idata, freedom)
-        self.sigma.create_graph(self.pymc_model, idata, freedom)
+        self.mu.compile(self.pymc_model, idata, freedom)
+        self.sigma.compile(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
@@ -502,10 +502,10 @@ class HBR(RegressionModel):
         None
             Updates the PyMC model in place with SHASHb likelihood components
         """
-        self.mu.create_graph(self.pymc_model, idata, freedom)
-        self.sigma.create_graph(self.pymc_model, idata, freedom)
-        self.epsilon.create_graph(self.pymc_model, idata, freedom)
-        self.delta.create_graph(self.pymc_model, idata, freedom)
+        self.mu.compile(self.pymc_model, idata, freedom)
+        self.sigma.compile(self.pymc_model, idata, freedom)
+        self.epsilon.compile(self.pymc_model, idata, freedom)
+        self.delta.compile(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
@@ -560,10 +560,10 @@ class HBR(RegressionModel):
         None
             Updates the PyMC model in place with SHASHo likelihood components
         """
-        self.mu.create_graph(self.pymc_model, idata, freedom)
-        self.sigma.create_graph(self.pymc_model, idata, freedom)
-        self.epsilon.create_graph(self.pymc_model, idata, freedom)
-        self.delta.create_graph(self.pymc_model, idata, freedom)
+        self.mu.compile(self.pymc_model, idata, freedom)
+        self.sigma.compile(self.pymc_model, idata, freedom)
+        self.epsilon.compile(self.pymc_model, idata, freedom)
+        self.delta.compile(self.pymc_model, idata, freedom)
         with self.pymc_model:
             mu_samples = pm.Deterministic(
                 "mu_samples",
