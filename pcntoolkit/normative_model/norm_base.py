@@ -470,6 +470,7 @@ class NormBase(ABC):
         - Centile computation for distributional analysis
         - Performance metrics calculation through Evaluator
         """
+        data = self.compute_logp(data)
         data = self.compute_zscores(data)
         data = self.compute_centiles(data)
         data = self.evaluator.evaluate(data)
@@ -591,6 +592,51 @@ class NormBase(ABC):
             )
             self.reset()
         self.postprocess(data)
+        return data
+    
+    def compute_logp(self, data: NormData) -> NormData:
+        """
+        Computes standardized log-probabilities for each response variable in the data.
+
+        Log-probabilities represent the log-probability of each observation under the model's
+        predicted distribution. The specific computation depends on the underlying regression model.
+
+        Parameters
+        ----------
+        data : NormData
+            Input data containing:
+            - X: covariates array (n_samples, n_features)
+            - y: observed responses (n_samples, n_response_vars)
+            - yhat: predicted means (n_samples, n_response_vars)
+            - ys2: predicted variances (n_samples, n_response_vars)
+
+        Returns
+        -------
+        NormData
+            Input data extended with:
+            - logp: array of log-probabilities (n_samples, n_response_vars)
+            Original data structure is preserved with additional log-probability information.
+
+        """
+
+        self.preprocess(data)
+        data["logp"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(self.response_vars))),
+            dims=("datapoints", "response_vars"),
+            coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
+        )
+        for responsevar in self.response_vars:
+            resp_predict_data = data.sel(response_vars=responsevar)
+            if responsevar not in self.regression_models:
+                raise ValueError(
+                    f"Attempted to find zscores for self {responsevar}, but it does not exist."
+                )
+            self.focus(responsevar)
+            print("Computing logp for", responsevar)
+            data["logp"].loc[{"response_vars": responsevar}] = self._logp(
+                resp_predict_data
+            )
+            self.reset()
         return data
 
     def preprocess(self, data: NormData) -> None:
@@ -1321,6 +1367,12 @@ class NormBase(ABC):
         """
 
     @abstractmethod
+    def _logp(self, data: NormData) -> None:
+        """
+        Computes log-probabilities for each response variable in the data.
+        """
+
+    @abstractmethod
     def n_params(self) -> int:
         """
         Returns the number of parameters of the model.
@@ -1392,9 +1444,9 @@ class NormBase(ABC):
         return self.focused_model.has_random_effect
 
     @property
+    @abstractmethod
     def focused_model(self) -> RegressionModel:
         """Returns the regression model that is currently focused on."""
-        return self[self.focused_var]
 
     @focused_model.setter
     def focused_model(self, value: str) -> None:

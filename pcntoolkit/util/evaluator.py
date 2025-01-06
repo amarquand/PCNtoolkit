@@ -1,9 +1,8 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import xarray as xr
 from scipy import stats  # type: ignore
-from sklearn.metrics import explained_variance_score  # type: ignore
 
 from pcntoolkit.dataio.norm_data import NormData
 
@@ -26,7 +25,7 @@ class Evaluator:
         """Initialize the Evaluator."""
         self.response_vars: List[str] = []
 
-    def evaluate(self, data: NormData) -> NormData:
+    def evaluate(self, data: NormData, measures: List[str] = []) -> NormData:
         """
         Evaluate model predictions using multiple statistical measures.
 
@@ -41,20 +40,38 @@ class Evaluator:
             Data container updated with evaluation measures
         """
         data["Yhat"] = data.centiles.sel(cdf=0.5, method="nearest")
-        # ! For asymmetric distributions, this is not correct.
-        data["S2"] = (
-            data.centiles.sel(cdf=0.1587, method="nearest") - data["Yhat"]
-        ) ** 2
-        self.create_measures_group(data)
+        all_measures = [
+            "Rho",
+            "Rho_p",
+            "R2",
+            "RMSE",
+            "SMSE",
+            "MSLL",
+            "NLL",
+            "ShapiroW",
+        ]
+        if measures:
+            self.measures = [m for m in all_measures if m in measures]
 
-        self.evaluate_shapiro_w(data)
-        # self.evaluate_bic(data)
-        self.evaluate_rho(data)
-        self.evaluate_rmse(data)
-        self.evaluate_smse(data)
-        self.evaluate_expv(data)
-        # self.evaluate_msll(data)
-        self.evaluate_nll(data)
+        else:
+            self.measures = all_measures
+        if "Rho" in self.measures and "Rho_p" not in self.measures:
+            self.measures.append("Rho_p")
+        self.create_measures_group(data)
+        if "ShapiroW" in self.measures:
+            self.evaluate_shapiro_w(data)
+        if "R2" in self.measures:
+            self.evaluate_R2(data)
+        if "Rho" in self.measures:
+            self.evaluate_rho(data)
+        if "RMSE" in self.measures:
+            self.evaluate_rmse(data)
+        if "SMSE" in self.measures:
+            self.evaluate_smse(data)
+        if "MSLL" in self.measures:
+            self.evaluate_msll(data)
+        if "NLL" in self.measures:
+            self.evaluate_nll(data)
         return data
 
     def create_measures_group(self, data: NormData) -> None:
@@ -66,12 +83,13 @@ class Evaluator:
         data : NormData
             Data container to add measures group to
         """
+        self.measures = sorted(self.measures)
         data["measures"] = xr.DataArray(
-            np.nan * np.ones((len(data.response_var_list), 6)),
-            dims=("response_vars", "statistics"),
+            np.nan * np.ones((len(data.response_var_list), len(self.measures))),
+            dims=("response_vars", "measure"),
             coords={
                 "response_vars": data.response_var_list,
-                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "ShapiroW"],
+                "measure": self.measures,
             },
         )
 
@@ -86,10 +104,22 @@ class Evaluator:
         """
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
-            rho = self._evaluate_rho(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "Rho"}] = float(rho)
+            rho, p_rho = self._evaluate_rho(resp_predict_data)
+            data.measures.loc[{"response_vars": responsevar, "measure": "Rho"}] = float(
+                rho
+            )
+            data.measures.loc[{"response_vars": responsevar, "measure": "Rho_p"}] = (
+                float(p_rho)
+            )
 
-    # Similar docstrings should be added for other evaluation methods...
+    def evaluate_R2(self, data: NormData) -> None:
+        """
+        Evaluate R2 for model predictions.
+        """
+        for responsevar in data.response_var_list:
+            resp_predict_data = data.sel(response_vars=responsevar)
+            r2 = self._evaluate_R2(resp_predict_data)
+            data.measures.loc[{"response_vars": responsevar, "measure": "R2"}] = r2
 
     def evaluate_rmse(self, data: NormData) -> None:
         """
@@ -103,7 +133,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             rmse = self._evaluate_rmse(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "RMSE"}] = rmse
+            data.measures.loc[{"response_vars": responsevar, "measure": "RMSE"}] = rmse
 
     def evaluate_smse(self, data: NormData) -> None:
         """
@@ -120,7 +150,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             smse = self._evaluate_smse(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "SMSE"}] = smse
+            data.measures.loc[{"response_vars": responsevar, "measure": "SMSE"}] = smse
 
     def evaluate_expv(self, data: NormData) -> None:
         """
@@ -137,7 +167,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             expv = self._evaluate_expv(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "ExpV"}] = expv
+            data.measures.loc[{"response_vars": responsevar, "measure": "ExpV"}] = expv
 
     def evaluate_msll(self, data: NormData) -> None:
         """
@@ -155,7 +185,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             msll = self._evaluate_msll(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "MSLL"}] = msll
+            data.measures.loc[{"response_vars": responsevar, "measure": "MSLL"}] = msll
 
     def evaluate_nll(self, data: NormData) -> None:
         """
@@ -173,7 +203,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             nll = self._evaluate_nll(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "NLL"}] = nll
+            data.measures.loc[{"response_vars": responsevar, "measure": "NLL"}] = nll
 
     def evaluate_bic(self, data: NormData) -> None:
         """
@@ -191,7 +221,7 @@ class Evaluator:
             resp_predict_data = data.sel(response_vars=responsevar)
             bic = self._evaluate_bic(resp_predict_data)
             self.prepare(responsevar)
-            data.measures.loc[{"response_vars": responsevar, "statistics": "BIC"}] = bic
+            data.measures.loc[{"response_vars": responsevar, "measure": "BIC"}] = bic
             self.reset()
 
     def evaluate_shapiro_w(self, data: NormData) -> None:
@@ -209,11 +239,11 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             shapiro_w = self._evaluate_shapiro_w(resp_predict_data)
-            data.measures.loc[
-                {"response_vars": responsevar, "statistics": "ShapiroW"}
-            ] = shapiro_w
+            data.measures.loc[{"response_vars": responsevar, "measure": "ShapiroW"}] = (
+                shapiro_w
+            )
 
-    def _evaluate_rho(self, data: NormData) -> float:
+    def _evaluate_rho(self, data: NormData) -> Tuple[float, float]:
         """
         Calculate Spearman's rank correlation coefficient.
 
@@ -229,8 +259,17 @@ class Evaluator:
         """
         y = data["y"].values
         yhat = data["Yhat"].values
-        rho, _ = stats.spearmanr(y, yhat)
-        return float(rho)
+        rho, p_rho = stats.spearmanr(y, yhat)
+        return float(rho), float(p_rho)
+
+    def _evaluate_R2(self, data: NormData) -> float:
+        """
+        Calculate S2 for model predictions.
+        """
+        y = data["y"].values
+        yhat = data["Yhat"].values
+        r2 = 1 - np.var(y - yhat) / np.var(y)
+        return float(r2)
 
     def _evaluate_rmse(self, data: NormData) -> float:
         """
@@ -269,7 +308,7 @@ class Evaluator:
         yhat = data["Yhat"].values
 
         mse = np.mean((y - yhat) ** 2)
-        variance = np.var(y)
+        variance = np.var((y - np.mean(y)) ** 2)
         smse = float(mse / variance if variance != 0 else 0)
 
         return smse
@@ -290,8 +329,7 @@ class Evaluator:
         """
         y = data["y"].values
         yhat = data["Yhat"].values
-
-        expv = explained_variance_score(y, yhat)
+        expv = 1 - np.var(y - yhat) / np.var(y)
         return float(expv)  # Explicitly cast to float
 
     def _evaluate_msll(self, data: NormData) -> float:
@@ -308,18 +346,16 @@ class Evaluator:
         float
             Mean standardized log loss between actual and predicted values
         """
-        y = data["y"].values
-        yhat = data["Yhat"].values
-        yhat_std = data["Yhat"]
-
-        log_loss = np.mean((y - yhat) ** 2 / (2 * yhat_std**2) + np.log(yhat_std))
-        naive_std = np.std(y)
-        naive_log_loss = np.mean(
-            (y - np.mean(y)) ** 2 / (2 * naive_std**2) + np.log(naive_std)
-        )
-
-        msll = float(log_loss - naive_log_loss)  # Explicitly cast to float
-        return msll
+        pred_log_prob = data["logp"].values
+        sample_mean = np.mean(data["y"].values)
+        sample_std = np.std(
+            data["y"].values
+        )  # For some reason, scipy normal distribution uses std instead of var
+        naive_logp = stats.norm.logpdf(
+            data["y"].values, sample_mean, sample_std
+        )  # ¯\_(ツ)_/¯
+        msll = np.mean(pred_log_prob - naive_logp)
+        return float(msll)
 
     def _evaluate_nll(self, data: NormData) -> float:
         """
@@ -335,10 +371,8 @@ class Evaluator:
         float
             Negative log likelihood of predictions
         """
-        y = data["y"].values
-        yhat = data["Yhat"].values
-
-        nll = -np.mean(y * np.log(yhat) + (1 - y) * np.log(1 - yhat))
+        logp = data["logp"].values
+        nll = -np.mean(logp)
         return float(nll)  # Explicitly cast to float
 
     def _evaluate_bic(self, data: NormData) -> float:
@@ -361,7 +395,9 @@ class Evaluator:
 
         rss = np.sum((y - yhat) ** 2)
         n = len(y)
-        bic = float(n * np.log(rss / n) + n_params * np.log(n))  # Explicitly cast to float
+        bic = float(
+            n * np.log(rss / n) + n_params * np.log(n)
+        )  # Explicitly cast to float
         return bic
 
     def _evaluate_shapiro_w(self, data: NormData) -> float:
