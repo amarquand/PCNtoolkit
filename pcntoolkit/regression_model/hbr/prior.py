@@ -189,7 +189,7 @@ class Prior(BasePrior):
     ):
         with model:
             if idata is not None:
-                self.approximate_posterior(
+                self.approximate(
                     model,
                     self.dist_name,
                     az.extract(idata, var_names=self.name),
@@ -202,7 +202,7 @@ class Prior(BasePrior):
     def _sample(self, data: HBRData):
         return self.dist
 
-    def approximate_posterior(
+    def approximate(
         self,
         model: Any,
         dist_name: str,
