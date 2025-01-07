@@ -1,4 +1,3 @@
-
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_blr import NormBLR
 from test.fixtures.blr_model_fixtures import *
@@ -18,10 +17,12 @@ def test_predict(fitted_norm_blr_model: NormBLR, norm_data_from_arrays: NormData
     for model in fitted_norm_blr_model.regression_models.values():
         assert model.is_fitted
 
+
 def test_fit_predict(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormData, test_norm_data_from_arrays: NormData):
     new_norm_blr_model.fit_predict(norm_data_from_arrays, test_norm_data_from_arrays)
     for model in new_norm_blr_model.regression_models.values():
         assert model.is_fitted
+
 
 def test_save_load(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormData, test_norm_data_from_arrays: NormData):
     new_norm_blr_model.fit(norm_data_from_arrays)

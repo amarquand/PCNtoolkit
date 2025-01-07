@@ -71,9 +71,7 @@ The tests cover the following aspects:
         },
     ],
 )
-def test_normhbr_from_args(
-    norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]
-):
+def test_normhbr_from_args(norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]):
     hbr = NormHBR.from_args(norm_args | sample_args | args)
     assert hbr.default_reg_conf.draws == sample_args.get("draws")
     assert hbr.default_reg_conf.tune == sample_args.get("tune")
@@ -82,21 +80,24 @@ def test_normhbr_from_args(
     if args.get("linear_mu", False):
         if args.get("random_slope_mu", False):
             assert isinstance(hbr.default_reg_conf.mu.slope, RandomPrior)
-        if args.get("random_intercept_mu", False):  
+        if args.get("random_intercept_mu", False):
             assert isinstance(hbr.default_reg_conf.mu.intercept, RandomPrior)
     assert not isinstance(hbr.default_reg_conf.sigma, RandomPrior) and not isinstance(hbr.default_reg_conf.sigma, LinearPrior)
 
 
-def test_normdata_to_hbrdata(fitted_norm_hbr_model, norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates):
+def test_normdata_to_hbrdata(
+    fitted_norm_hbr_model, norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates
+):
     single_response_var = norm_data_from_arrays.sel(response_vars="response_var_0")
     hbrdata = fitted_norm_hbr_model.normdata_to_hbrdata(single_response_var)
 
-    assert hbrdata.X.shape == (n_train_datapoints, n_covariates*7)
-    assert hbrdata.y.shape == (n_train_datapoints, )
+    assert hbrdata.X.shape == (n_train_datapoints, n_covariates * 7)
+    assert hbrdata.y.shape == (n_train_datapoints,)
     assert hbrdata.response_var == "response_var_0"
 
     assert hbrdata.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
     assert tuple(hbrdata.batch_effect_dims) == tuple(f"batch_effect_{i}" for i in range(len(batch_effect_values)))
+
 
 def test_fit(fitted_norm_hbr_model, n_mcmc_samples):
     for model in fitted_norm_hbr_model.regression_models.values():
@@ -108,17 +109,9 @@ def test_fit(fitted_norm_hbr_model, n_mcmc_samples):
 def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     fitted_norm_hbr_model.save()
     for i in fitted_norm_hbr_model.response_vars:
-        assert os.path.exists(
-            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "idata.nc")
-        )
-        assert os.path.exists(
-            os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "regression_model.json")
-        )
-    assert os.path.exists(
-        os.path.join(
-            fitted_norm_hbr_model.norm_conf.save_dir, "model", "normative_model.json"
-        )
-    )
+        assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "idata.nc"))
+        assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "regression_model.json"))
+    assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", "normative_model.json"))
 
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
     hbr: NormHBR = load_normative_model(load_path)
@@ -149,9 +142,7 @@ def test_predict(
     fitted_norm_hbr_model.predict(test_norm_data_from_arrays)
     for model in fitted_norm_hbr_model.regression_models.values():
         assert model.is_fitted
-        assert model.idata.predictions.y_pred.datapoints.shape == (
-            n_test_datapoints,
-        )
+        assert model.idata.predictions.y_pred.datapoints.shape == (n_test_datapoints,)
 
 
 def test_fit_predict(
@@ -163,9 +154,7 @@ def test_fit_predict(
     new_norm_hbr_model.fit_predict(norm_data_from_arrays, test_norm_data_from_arrays)
     for model in new_norm_hbr_model.regression_models.values():
         assert model.is_fitted
-        assert model.idata.predictions.y_pred.datapoints.shape == (
-            n_test_datapoints,
-        )
+        assert model.idata.predictions.y_pred.datapoints.shape == (n_test_datapoints,)
 
 
 def test_transfer(
@@ -178,9 +167,18 @@ def test_transfer(
     transfer_cores = 1
     transfer_init = "jitter+adapt_diag_grad"
     transfer_chains = 2
-    hbr_transfered = fitted_norm_hbr_model.transfer(transfer_norm_data_from_arrays, freedom=10, draws=transfer_samples, tune=transfer_tune, pymc_cores=transfer_cores, nuts_sampler="nutpie", init=transfer_init, chains=transfer_chains)
+    hbr_transfered = fitted_norm_hbr_model.transfer(
+        transfer_norm_data_from_arrays,
+        freedom=10,
+        draws=transfer_samples,
+        tune=transfer_tune,
+        pymc_cores=transfer_cores,
+        nuts_sampler="nutpie",
+        init=transfer_init,
+        chains=transfer_chains,
+    )
     for model in hbr_transfered.regression_models.values():
-        assert model.pymc_model.coords["batch_effect_1"] == ('3',)
+        assert model.pymc_model.coords["batch_effect_1"] == ("3",)
         assert model.is_fitted
         assert model.idata.posterior.mu_samples.shape[:2] == (transfer_chains, transfer_samples)
 
@@ -190,7 +188,7 @@ def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data_from_arrays: No
         model=fitted_norm_hbr_model,
         data=test_norm_data_from_arrays,
         covariate="covariate_0",
-        batch_effects={"batch_effect_1": ['0']},
+        batch_effects={"batch_effect_1": ["0"]},
         show_data=True,
         resample=True,
     )

@@ -174,9 +174,7 @@ class SHASHrv(RandomVariable):
         NDArray[np.float64]
             Array of random samples from the distribution
         """
-        return np.sinh(
-            (np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta
-        )
+        return np.sinh((np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta)
 
 
 shash = SHASHrv()
@@ -335,9 +333,7 @@ class SHASH(Continuous):
         this_S = S(value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac2 = (
-            np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(value)) / 2
-        )
+        frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp
 
@@ -459,8 +455,12 @@ class SHASHo(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
-    ) -> float: 
+        value: ArrayLike,
+        mu: float,
+        sigma: float,
+        epsilon: float,
+        delta: float,  # type: ignore
+    ) -> float:
         """Calculate the log probability density of the SHASHo distribution.
 
         Parameters
@@ -485,11 +485,7 @@ class SHASHo(Continuous):
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac2 = (
-            np.log(delta)
-            + np.log(this_C_sqr) / 2
-            - np.log(1 + np.square(remapped_value)) / 2
-        )
+        frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(remapped_value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp - np.log(sigma)
 
@@ -613,7 +609,11 @@ class SHASHo2(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
+        value: ArrayLike,
+        mu: float,
+        sigma: float,
+        epsilon: float,
+        delta: float,  # type: ignore
     ) -> float:
         """Calculate the log probability density of the SHASHo2 distribution.
 
@@ -646,11 +646,7 @@ class SHASHo2(Continuous):
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac2 = (
-            np.log(delta)
-            + np.log(this_C_sqr) / 2
-            - np.log(1 + np.square(remapped_value)) / 2
-        )
+        frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(remapped_value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp - np.log(sigma_d)
 
@@ -748,9 +744,7 @@ class SHASHbRV(RandomVariable):
             return mean, var
 
         mean, var = m1m2(epsilon, delta)
-        out = (
-            (np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)
-        ) * sigma + mu  # type: ignore
+        out = ((np.sinh((np.arcsinh(s) + epsilon) / delta) - mean) / np.sqrt(var)) * sigma + mu  # type: ignore
         return out
 
 
@@ -824,7 +818,11 @@ class SHASHb(Continuous):
         return super().dist([mu, sigma, epsilon, delta], **kwargs)
 
     def logp(
-        value: ArrayLike, mu: float, sigma: float, epsilon: float, delta: float  # type: ignore
+        value: ArrayLike,
+        mu: float,
+        sigma: float,
+        epsilon: float,
+        delta: float,  # type: ignore
     ) -> float:
         """Calculate the log probability density of the SHASHb distribution.
 
@@ -851,10 +849,6 @@ class SHASHb(Continuous):
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
-        frac2 = (
-            np.log(delta)
-            + np.log(this_C_sqr) / 2
-            - np.log(1 + np.square(remapped_value)) / 2
-        )
+        frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(remapped_value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp + np.log(var) / 2 - np.log(sigma)

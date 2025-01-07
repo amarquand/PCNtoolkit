@@ -25,9 +25,7 @@ def test_norm_base_fit(new_norm_hbr_model: NormBase, norm_data_from_arrays: Norm
     new_norm_hbr_model.fit(norm_data_from_arrays)
 
     assert new_norm_hbr_model.response_vars is not None
-    assert len(new_norm_hbr_model.regression_models) == len(
-        new_norm_hbr_model.response_vars
-    )
+    assert len(new_norm_hbr_model.regression_models) == len(new_norm_hbr_model.response_vars)
 
     for responsevar in new_norm_hbr_model.response_vars:
         assert responsevar in new_norm_hbr_model.regression_models
@@ -80,6 +78,3 @@ def assert_minmax_scaled(data):
     assert np.allclose(data.scaled_X.max(axis=0), 1)
     assert np.allclose(data.scaled_y.min(axis=0), 0)
     assert np.allclose(data.scaled_y.max(axis=0), 1)
-
-
-

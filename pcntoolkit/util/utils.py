@@ -50,6 +50,7 @@ def get_type_of_object(path: str) -> str:
     else:
         return "nonexistant"
 
+
 def open_file(path):
     # Taken and adapted from: https://stackoverflow.com/questions/6631299/python-opening-a-folder-in-explorer-nautilus-finder
     try:

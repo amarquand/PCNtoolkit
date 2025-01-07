@@ -13,6 +13,7 @@ from test.fixtures.path_fixtures import *
 def cvfolds():
     return 4
 
+
 @pytest.fixture
 def savemodel():
     return True
@@ -32,26 +33,31 @@ def norm_conf_for_blr_test_model(savemodel, save_dir):
 
 @pytest.fixture
 def blrconf():
-    return BLRConf(n_iter=1000, 
-                   tol=1e-3, 
-                   ard=False, 
-                   optimizer="l-bfgs-b", 
-                   l_bfgs_b_l=0.1, 
-                   l_bfgs_b_epsilon=0.1, 
-                   l_bfgs_b_norm="l1",
-                   heteroskedastic=True,
-                   intercept=True,
-                   random_intercept=True,
-                   warp="WarpSinhArcsinh",
-                   warp_reparam=True)
+    return BLRConf(
+        n_iter=1000,
+        tol=1e-3,
+        ard=False,
+        optimizer="l-bfgs-b",
+        l_bfgs_b_l=0.1,
+        l_bfgs_b_epsilon=0.1,
+        l_bfgs_b_norm="l1",
+        heteroskedastic=True,
+        intercept=True,
+        random_intercept=True,
+        warp="WarpSinhArcsinh",
+        warp_reparam=True,
+    )
+
 
 @pytest.fixture
 def blr(blrconf):
     return BLR("test_blr", blrconf)
 
+
 @pytest.fixture
 def new_norm_blr_model(norm_conf_for_blr_test_model, blrconf):
     return NormBLR(norm_conf_for_blr_test_model, blrconf)
+
 
 @pytest.fixture
 def fitted_norm_blr_model(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormData):

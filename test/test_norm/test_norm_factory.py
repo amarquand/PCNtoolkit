@@ -25,17 +25,13 @@ The tests cover the following aspects:
 """
 
 
-@pytest.mark.parametrize(
-    "norm_subclass, reg_conf, reg_model", [(NormHBR, HBRConf, HBR), (NormBLR, BLRConf, BLR)]
-)
+@pytest.mark.parametrize("norm_subclass, reg_conf, reg_model", [(NormHBR, HBRConf, HBR), (NormBLR, BLRConf, BLR)])
 def test_create_normative_model(
     norm_subclass: type[NormBase],
     norm_conf_for_generic_model: NormConf,
     reg_conf: type[RegConf],
     reg_model,
 ):
-    norm_model: NormBase = create_normative_model(
-        norm_conf_for_generic_model, reg_conf()
-    )
+    norm_model: NormBase = create_normative_model(norm_conf_for_generic_model, reg_conf())
     assert isinstance(norm_model, norm_subclass)
     assert norm_model.regression_model_type == reg_model

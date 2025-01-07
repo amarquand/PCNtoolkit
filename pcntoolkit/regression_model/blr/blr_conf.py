@@ -118,9 +118,7 @@ class BLRConf(RegConf):
 
     @classmethod
     def from_args(cls, args: dict[str, Any]) -> "BLRConf":
-        args_filt: dict[str, Any] = {
-            k: v for k, v in args.items() if k in [f.name for f in fields(cls)]
-        }
+        args_filt: dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
 
         return cls(
             n_iter=args_filt.get("n_iter", N_ITER),
@@ -134,9 +132,7 @@ class BLRConf(RegConf):
             random_intercept=args_filt.get("random_intercept", RANDOM_INTERCEPT),
             heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
             intercept_var=args_filt.get("intercept_var", INTERCEPT_VAR),
-            random_intercept_var=args_filt.get(
-                "random_intercept_var", RANDOM_INTERCEPT_VAR
-            ),
+            random_intercept_var=args_filt.get("random_intercept_var", RANDOM_INTERCEPT_VAR),
             warp=args_filt.get("warp", WARP),
             warp_reparam=args_filt.get("warp_reparam", WARP_REPARAM),
         )

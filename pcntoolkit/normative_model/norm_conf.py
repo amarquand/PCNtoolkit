@@ -58,7 +58,7 @@ class NormConf:
     saveresults: bool = False
     save_dir: str = "./saves"
     basis_function: str = "linear"
-    basis_function_kwargs: dict=field(default_factory=dict)
+    basis_function_kwargs: dict = field(default_factory=dict)
     inscaler: str = "none"
     outscaler: str = "none"
     normative_model_name: Optional[str] = None
@@ -67,9 +67,7 @@ class NormConf:
         """Validate configuration after initialization."""
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
-            problem_list = "\n".join(
-                [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
-            )
+            problem_list = "\n".join([f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)])
             Output.error(Errors.NORMATIVE_MODEL_CONFIGURATION_PROBLEMS, problems=problem_list)
         else:
             Output.print(Messages.NORMATIVE_MODEL_CONFIGURATION_VALID)
@@ -88,7 +86,7 @@ class NormConf:
         NormConf
             New configuration instance
         """
-        norm_args:dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
+        norm_args: dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
         return cls(**norm_args)
 
     @classmethod
@@ -138,9 +136,7 @@ class NormConf:
 
         return configuration_problems
 
-    def detect_dir_problem(
-        self, add_problem: Callable[[str], None], dir_attr_str: str
-    ) -> None:
+    def detect_dir_problem(self, add_problem: Callable[[str], None], dir_attr_str: str) -> None:
         """Detect problems with directory configuration.
 
         Parameters
@@ -152,20 +148,15 @@ class NormConf:
         """
         dir_attr = getattr(self, dir_attr_str)
         if not isinstance(dir_attr, str):
-            add_problem(
-                f"{dir_attr_str} is not a string, but {type(dir_attr).__name__}"
-            )
+            add_problem(f"{dir_attr_str} is not a string, but {type(dir_attr).__name__}")
         else:
             if os.path.exists(dir_attr):
                 if not os.path.isdir(dir_attr):
-                    add_problem(
-                        f"{dir_attr_str} is not a directory, but {get_type_of_object(dir_attr)}"
-                    )
+                    add_problem(f"{dir_attr_str} is not a directory, but {get_type_of_object(dir_attr)}")
             else:
-                warnings.warn(
-                    f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you"
-                )
+                warnings.warn(f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you")
                 os.makedirs(dir_attr)
+
     def detect_basis_function_problem(self, add_problem: Callable[[str], None]) -> None:
         """Detect problems with basis function configuration.
 
@@ -181,18 +172,12 @@ class NormConf:
         """
         acceptable_basis_functions = ["linear", "polynomial", "bspline", "none"]
         if not isinstance(self.basis_function, str):
-            add_problem(
-                f"basis_function_type is not a string, but {type(self.basis_function).__name__}"
-            )
+            add_problem(f"basis_function_type is not a string, but {type(self.basis_function).__name__}")
         else:
             if self.basis_function not in acceptable_basis_functions:
-                add_problem(
-                    f"basis_function_type is not one of the possible values: {acceptable_basis_functions}"
-                )
+                add_problem(f"basis_function_type is not one of the possible values: {acceptable_basis_functions}")
 
-    def detect_scaler_problem(
-        self, add_problem: Callable[[str], None], scaler_attr_str: str
-    ) -> None:
+    def detect_scaler_problem(self, add_problem: Callable[[str], None], scaler_attr_str: str) -> None:
         """Detect problems with data scaling configuration.
 
                 Validates that the specified scaler is one of:
@@ -210,14 +195,10 @@ class NormConf:
         acceptable_scalers = ["none", "standardize", "minmax"]
         scaler_attr = getattr(self, scaler_attr_str)
         if not isinstance(scaler_attr, str):
-            add_problem(
-                f"{scaler_attr_str} is not a string, but {type(scaler_attr).__name__}"
-            )
+            add_problem(f"{scaler_attr_str} is not a string, but {type(scaler_attr).__name__}")
         else:
             if scaler_attr not in acceptable_scalers:
-                add_problem(
-                    f"{scaler_attr_str} is not one of the possible values: {acceptable_scalers}"
-                )
+                add_problem(f"{scaler_attr_str} is not one of the possible values: {acceptable_scalers}")
 
     def set_save_dir(self, path: str) -> None:
         """Set the save directory path.
@@ -232,7 +213,6 @@ class NormConf:
         """
         object.__setattr__(self, "save_dir", path)
 
-  
     def copy(self) -> "NormConf":
         """Create a deep copy of the configuration.
 

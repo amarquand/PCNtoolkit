@@ -78,22 +78,14 @@ class NormBLR(NormBase):
         self._fit(fit_data)
         self._predict(predict_data)
 
-    def _generate_synthetic_data(
-        self, data: NormData, n_synthetic_samples: int = 1000
-    ) -> NormData:
-        raise NotImplementedError(
-            f"Generate synthetic data method not implemented for {self.__class__.__name__}"
-        )
+    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
+        raise NotImplementedError(f"Generate synthetic data method not implemented for {self.__class__.__name__}")
 
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
-        raise NotImplementedError(
-            f"Transfer method not implemented for {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"Transfer method not implemented for {self.__class__.__name__}")
 
     def _extend(self, data: NormData) -> "NormBLR":
-        raise NotImplementedError(
-            f"Extend method not implemented for {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"Extend method not implemented for {self.__class__.__name__}")
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         blrdata = self.normdata_to_blrdata(data)
@@ -117,9 +109,7 @@ class NormBLR(NormBase):
         return self.focused_model.elemwise_logp(blrdata)  # type: ignore
 
     def n_params(self) -> int:
-        raise NotImplementedError(
-            f"n_params method not implemented for {self.__class__.__name__}"
-        )
+        raise NotImplementedError(f"n_params method not implemented for {self.__class__.__name__}")
 
     def create_design_matrix(
         self,
@@ -168,7 +158,7 @@ class NormBLR(NormBase):
             mapped_batch_effects = self.map_batch_effects(data)
             for i, v in enumerate(self.unique_batch_effects.values()):
                 acc.append(
-                    np.eye(len(v))[mapped_batch_effects[:,i]],
+                    np.eye(len(v))[mapped_batch_effects[:, i]],
                 )
         if len(acc) == 0:
             raise ValueError("No design matrix created")
@@ -195,9 +185,7 @@ class NormBLR(NormBase):
         """
         reg_conf: RegConf = self.focused_model.reg_conf  # type: ignore
         if not isinstance(reg_conf, BLRConf):
-            raise ValueError(
-                f"Regression configuration is not of type BLRConf, got {type(reg_conf)}"
-            )
+            raise ValueError(f"Regression configuration is not of type BLRConf, got {type(reg_conf)}")
 
         this_X = self.create_design_matrix(
             data,

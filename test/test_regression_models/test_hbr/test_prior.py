@@ -35,7 +35,7 @@ The tests cover:
 
 
 @pytest.fixture
-def data(new_norm_hbr_model:NormHBR, norm_data_from_arrays):
+def data(new_norm_hbr_model: NormHBR, norm_data_from_arrays):
     new_norm_hbr_model.register_batch_effects(norm_data_from_arrays)
     single_respvar = norm_data_from_arrays.sel(response_vars="response_var_1")
     data = new_norm_hbr_model.normdata_to_hbrdata(single_respvar)
@@ -43,7 +43,7 @@ def data(new_norm_hbr_model:NormHBR, norm_data_from_arrays):
 
 
 @pytest.fixture
-def model_and_data(data: HBRData) ->  tuple[pm.Model ,HBRData]:
+def model_and_data(data: HBRData) -> tuple[pm.Model, HBRData]:
     model = pm.Model(coords=data.coords)
     data.set_data_in_new_model(model)
     return model, data
@@ -51,7 +51,7 @@ def model_and_data(data: HBRData) ->  tuple[pm.Model ,HBRData]:
 
 def test_normal_fixed_prior(model_and_data):
     model, data = model_and_data
-    prior: Prior = make_prior("theta", dist_name="Normal", dist_params=(0, 10)) # type: ignore
+    prior: Prior = make_prior("theta", dist_name="Normal", dist_params=(0, 10))  # type: ignore
     prior.compile(model)
     assert prior.name == "theta"
     assert prior.dims is None
@@ -63,7 +63,7 @@ def test_normal_fixed_prior(model_and_data):
 
 def test_cauchy_fixed_prior(model_and_data):
     model, data = model_and_data
-    prior: Prior = make_prior("fixed2", dist_name="Cauchy") # type: ignore
+    prior: Prior = make_prior("fixed2", dist_name="Cauchy")  # type: ignore
     prior.compile(model)
     assert prior.name == "fixed2"
     assert prior.dims is None
@@ -75,7 +75,7 @@ def test_cauchy_fixed_prior(model_and_data):
 
 def test_normal_fixed_prior_with_covariate_dim(model_and_data):
     model, data = model_and_data
-    prior: Prior = make_prior("fixed3", dist_name="Cauchy", dims=("covariates",)) # type: ignore
+    prior: Prior = make_prior("fixed3", dist_name="Cauchy", dims=("covariates",))  # type: ignore
     prior.compile(model)
     assert prior.name == "fixed3"
     assert prior.dims == ("covariates",)
@@ -87,7 +87,7 @@ def test_normal_fixed_prior_with_covariate_dim(model_and_data):
 
 def test_random_prior(model_and_data):
     model, data = model_and_data
-    prior: RandomPrior = make_prior(name="mu",random=True) # type: ignore
+    prior: RandomPrior = make_prior(name="mu", random=True)  # type: ignore
     prior.compile(model)
     assert prior.name == "mu"
     assert prior.dims is None
@@ -95,10 +95,9 @@ def test_random_prior(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
-
 def test_random_prior_with_covariate_dim(model_and_data):
     model, data = model_and_data
-    prior: RandomPrior = make_prior("test_random3", random=True,  dims=("covariates",)) # type: ignore
+    prior: RandomPrior = make_prior("test_random3", random=True, dims=("covariates",))  # type: ignore
     prior.compile(model)
     samples = prior.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints, data.n_covariates)
@@ -106,7 +105,7 @@ def test_random_prior_with_covariate_dim(model_and_data):
 
 def test_linear_prior(model_and_data):
     model, data = model_and_data
-    prior: LinearPrior = make_prior("test_linear1", linear=True) # type: ignore
+    prior: LinearPrior = make_prior("test_linear1", linear=True)  # type: ignore
     prior.compile(model)
     samples = prior.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
@@ -114,8 +113,8 @@ def test_linear_prior(model_and_data):
 
 def test_linear_prior_with_random_slope(model_and_data):
     model, data = model_and_data
-    slope: RandomPrior = make_prior("test_slope", random=True) # type: ignore
-    prior: LinearPrior = make_prior("test_linear2", linear=True, slope=slope) # type: ignore
+    slope: RandomPrior = make_prior("test_slope", random=True)  # type: ignore
+    prior: LinearPrior = make_prior("test_linear2", linear=True, slope=slope)  # type: ignore
     prior.compile(model)
     samples = prior.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
@@ -123,8 +122,8 @@ def test_linear_prior_with_random_slope(model_and_data):
 
 def test_linear_prior_with_random_intercept(model_and_data):
     model, data = model_and_data
-    intercept: RandomPrior = make_prior("test_intercept", random=True) # type: ignore
-    prior: LinearPrior = make_prior("test_linear3", linear=True, intercept=intercept) # type: ignore
+    intercept: RandomPrior = make_prior("test_intercept", random=True)  # type: ignore
+    prior: LinearPrior = make_prior("test_linear3", linear=True, intercept=intercept)  # type: ignore
     prior.compile(model)
     samples = prior.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
@@ -132,9 +131,9 @@ def test_linear_prior_with_random_intercept(model_and_data):
 
 def test_linear_prior_with_random_intercept_and_slope(model_and_data):
     model, data = model_and_data
-    intercept: RandomPrior = make_prior("test_intercept", random=True) # type: ignore
-    slope: RandomPrior = make_prior("test_slope", random=True) # type: ignore
-    prior: LinearPrior = make_prior("test_linear4", linear=True, intercept=intercept, slope=slope) # type: ignore
+    intercept: RandomPrior = make_prior("test_intercept", random=True)  # type: ignore
+    slope: RandomPrior = make_prior("test_slope", random=True)  # type: ignore
+    prior: LinearPrior = make_prior("test_linear4", linear=True, intercept=intercept, slope=slope)  # type: ignore
     prior.compile(model)
     samples = prior.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
@@ -150,13 +149,13 @@ def test_priors_from_args_single(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu: Prior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: Prior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 1)
-    assert isinstance(mu, Prior)   
+    assert isinstance(mu, Prior)
 
     samples = mu.sample(data)
     assert tuple(samples.shape.eval()) == ()
@@ -173,20 +172,18 @@ def test_prior_from_args_single_with_covariate_dim(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu: Prior = prior_from_args("mu", prior_dict, dims=("covariates",)) # type: ignore
+    mu: Prior = prior_from_args("mu", prior_dict, dims=("covariates",))  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
     assert mu.dist_name == "Normal"
     assert mu.dist_params == (0, 1)
-    assert isinstance(mu, Prior)   
+    assert isinstance(mu, Prior)
 
     assert tuple(mu.dist.shape.eval()) == (data.n_covariates,)
 
     samples = mu.sample(data)
-    assert tuple(samples.shape.eval()) == (
-        data.n_covariates,
-    )
+    assert tuple(samples.shape.eval()) == (data.n_covariates,)
 
 
 def test_two_priors_from_args(model_and_data):
@@ -205,7 +202,7 @@ def test_two_priors_from_args(model_and_data):
         "centered_sigma": False,
         "linear_sigma": False,
     }
-    mu: Prior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: Prior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
 
     assert mu.name == "mu"
@@ -216,13 +213,12 @@ def test_two_priors_from_args(model_and_data):
     samples = mu.sample(data)
     assert tuple(samples.shape.eval()) == ()
 
-    sigma: Prior = prior_from_args("sigma", prior_dict) # type: ignore
+    sigma: Prior = prior_from_args("sigma", prior_dict)  # type: ignore
     sigma.compile(model)
     assert sigma.name == "sigma"
     assert sigma.dims is None
     assert sigma.dist_name == "LogNormal"
     assert sigma.dist_params == (2.0,)
-
 
     samples = sigma.sample(data)
     assert tuple(samples.shape.eval()) == ()
@@ -240,7 +236,7 @@ def test_prior_from_args_random_centered(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu: RandomPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: RandomPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
 
     assert mu.name == "mu"
@@ -273,7 +269,7 @@ def test_prior_from_args_random_centered_with_covariate_dim(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu: RandomPrior = prior_from_args("mu", prior_dict, dims=("covariates",)) # type: ignore
+    mu: RandomPrior = prior_from_args("mu", prior_dict, dims=("covariates",))  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims == ("covariates",)
@@ -303,7 +299,7 @@ def test_prior_from_args_random(model_and_data):
         "intercept": None,
         "slope": None,
     }
-    mu: RandomPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: RandomPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
@@ -323,11 +319,10 @@ def test_prior_from_args_random(model_and_data):
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
-
 def test_prior_from_args_linear(model_and_data):
     model, data = model_and_data
     prior_dict = {"linear_mu": True}
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
@@ -349,7 +344,7 @@ def test_prior_from_args_linear(model_and_data):
 def test_prior_from_args_linear_with_random_slope(model_and_data):
     model, data = model_and_data
     prior_dict = {"linear_mu": True, "random_slope_mu": True}
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore  
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
@@ -381,7 +376,7 @@ def test_prior_from_args_linear_with_random_slope(model_and_data):
 def test_prior_from_args_linear_with_random_intercept(model_and_data):
     model, data = model_and_data
     prior_dict = {"linear_mu": True, "random_intercept_mu": True}
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
@@ -414,7 +409,7 @@ def test_prior_from_args_linear_with_random_intercept_and_slope(model_and_data):
         "random_intercept_mu": True,
         "random_slope_mu": True,
     }
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
@@ -452,10 +447,10 @@ def test_prior_from_args_linear_with_random_intercept_and_slope(model_and_data):
 def test_prior_from_args_linear_with_random_centered_slope(model_and_data):
     model, data = model_and_data
     prior_dict = {"linear_mu": True, "random_slope_mu": True, "centered_slope_mu": True}
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
     assert mu.name == "mu"
-    assert mu.dims is None  
+    assert mu.dims is None
     assert isinstance(mu.intercept, Prior)
     assert mu.intercept.name == "intercept_mu"
     assert mu.intercept.dims is None
@@ -474,7 +469,7 @@ def test_prior_from_args_linear_with_random_centered_slope(model_and_data):
     assert mu.slope.sigma.dims == ("covariates",)
     assert mu.slope.sigma.dist_name == "HalfNormal"
     assert mu.slope.sigma.dist_params == (1.0,)
-        
+
     samples = mu.sample(data)
     assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
@@ -486,7 +481,7 @@ def test_prior_from_args_linear_with_random_centered_intercept(model_and_data):
         "random_intercept_mu": True,
         "centered_intercept_mu": True,
     }
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
 
     assert mu.name == "mu"
@@ -506,7 +501,7 @@ def test_prior_from_args_linear_with_random_centered_intercept(model_and_data):
     assert mu.intercept.sigma.dist_params == (1.0,)
 
     samples = mu.sample(data)
-    assert tuple(samples.shape.eval()) == (data.n_datapoints, )
+    assert tuple(samples.shape.eval()) == (data.n_datapoints,)
 
 
 def test_prior_from_args_linear_with_random_centered_intercept_and_slope(
@@ -520,7 +515,7 @@ def test_prior_from_args_linear_with_random_centered_intercept_and_slope(
         "random_slope_mu": True,
         "centered_slope_mu": True,
     }
-    mu: LinearPrior = prior_from_args("mu", prior_dict) # type: ignore
+    mu: LinearPrior = prior_from_args("mu", prior_dict)  # type: ignore
     mu.compile(model)
 
     assert mu.name == "mu"
@@ -589,7 +584,7 @@ def test_approximate_halfnormal(sigma):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.HalfNormal.dist(sigma=sigma), draws=10000))
-    Prior: Prior = make_prior("test", dims=()) # type: ignore
+    Prior: Prior = make_prior("test", dims=())  # type: ignore
     dist_name = "HalfNormal"
     Prior.approximate(model, dist_name, samples)
     Priors = Prior.dist_params
@@ -602,7 +597,7 @@ def test_approximate_lognormal(mu, sigma):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.Lognormal.dist(mu=mu, sigma=sigma), draws=10000))
-    prior: Prior = make_prior("test", dims=()) # type: ignore
+    prior: Prior = make_prior("test", dims=())  # type: ignore
     dist_name = "LogNormal"
     prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
@@ -617,7 +612,7 @@ def test_approximate_cauchy(alpha, beta):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.Cauchy.dist(alpha=alpha, beta=beta), draws=10000))
-    prior: Prior = make_prior("test", dims=()) # type: ignore
+    prior: Prior = make_prior("test", dims=())  # type: ignore
     dist_name = "Cauchy"
     prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
@@ -632,7 +627,7 @@ def test_approximate_halfcauchy(beta):
     np.random.seed(42)
     model = pm.Model()
     samples = xr.DataArray(pm.draw(pm.HalfCauchy.dist(beta=beta), draws=10000))
-    prior: Prior = make_prior("test", dims=()) # type: ignore
+    prior: Prior = make_prior("test", dims=())  # type: ignore
     dist_name = "HalfCauchy"
     prior.approximate(model, dist_name, samples)
     priors = prior.dist_params
@@ -644,10 +639,8 @@ def test_approximate_halfcauchy(beta):
 def test_approximate_uniform(lower, upper):
     np.random.seed(42)
     model = pm.Model()
-    samples = xr.DataArray(
-        pm.draw(pm.Uniform.dist(lower=lower, upper=upper), draws=10000)
-    )
-    prior: Prior = make_prior("test", dims=()) # type: ignore
+    samples = xr.DataArray(pm.draw(pm.Uniform.dist(lower=lower, upper=upper), draws=10000))
+    prior: Prior = make_prior("test", dims=())  # type: ignore
     dist_name = "Uniform"
     prior.approximate(model, dist_name, samples)
     priors = prior.dist_params

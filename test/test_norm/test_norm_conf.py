@@ -1,3 +1,4 @@
+import os
 
 from pcntoolkit.normative_model.norm_conf import NormConf
 
@@ -10,11 +11,8 @@ The tests cover the following aspects:
 3. Creating NormConf objects from dictionaries
 """
 
-import os
-
 
 def test_norm_conf_to_dict():
-
     norm_conf_from_args = NormConf.from_args(
         {
             "savemodel": True,

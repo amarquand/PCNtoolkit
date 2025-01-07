@@ -87,7 +87,6 @@ class HBRData:
         covariate_dims: Optional[List[str]] = None,
         datapoint_coords: Optional[List[Any]] = None,
     ) -> None:
-        
         self.check_and_set_data(X, y, batch_effects)
 
         # Set the response var
@@ -102,22 +101,17 @@ class HBRData:
         self._coords = OrderedDict()  # This preserves the order of the keys
 
         # Create datapoint coordinates
-        self._coords["datapoints"] = datapoint_coords or list(
-            np.arange(self._n_datapoints)
-        )
+        self._coords["datapoints"] = datapoint_coords or list(np.arange(self._n_datapoints))
 
         # Create covariate dims if they are not provided
         if covariate_dims is None:
-            self.covariate_dims = [
-                "covariate_" + str(i) for i in range(self._n_covariates)
-            ]
+            self.covariate_dims = ["covariate_" + str(i) for i in range(self._n_covariates)]
         else:
             self.covariate_dims = covariate_dims
         assert (
             len(self.covariate_dims) == self._n_covariates
         ), "The number of covariate dimensions must match the number of covariates"
         self._coords["covariates"] = self.covariate_dims
-
 
         self.batch_effect_dims = list(unique_batch_effects.keys())
 
@@ -131,7 +125,6 @@ class HBRData:
         self.pm_X: pm.Data = None  # type: ignore
         self.pm_y: pm.Data = None  # type:ignore
         self.pm_batch_effect_indices: dict[str, pm.Data] = None  # type: ignore
-
 
     def check_and_set_data(
         self,
@@ -180,9 +173,7 @@ class HBRData:
             self.y = y
 
         if batch_effects is None:
-            warnings.warn(
-                "batch_effects is not provided, setting self.batch_effects to zeros"
-            )
+            warnings.warn("batch_effects is not provided, setting self.batch_effects to zeros")
             self.batch_effects = np.zeros((X.shape[0], 1))
         else:
             self.batch_effects = batch_effects
@@ -194,9 +185,7 @@ class HBRData:
             self.X.shape[0] == self.y.shape[0] == self.batch_effects.shape[0]
         ), "X, y and batch_effects must have the same number of rows"
         if len(self.y.shape) > 1:
-            assert (
-                self.y.shape[1] == 1
-            ), "y can only have one column, or it must be a 1D array"
+            assert self.y.shape[1] == 1, "y can only have one column, or it must be a 1D array"
             self.y = np.squeeze(self.y)
 
     def set_data_in_new_model(self, model: pm.Model) -> None:
@@ -222,7 +211,7 @@ class HBRData:
             for i, k in enumerate(self.batch_effect_dims):
                 self.pm_batch_effect_indices[k] = pm.Data(
                     k + "_data",
-                    self.batch_effects[:,i],
+                    self.batch_effects[:, i],
                     dims=("datapoints",),
                 )
 
@@ -252,9 +241,7 @@ class HBRData:
         self.pm_y = model["y"]
         be_acc = {}
         for i in range(self._n_batch_effect_columns):
-            model.set_data(
-                str(self.batch_effect_dims[i]) + "_data", self.batch_effects[:,i]
-            )
+            model.set_data(str(self.batch_effect_dims[i]) + "_data", self.batch_effects[:, i])
             be_acc[self.batch_effect_dims[i]] = model[self.batch_effect_dims[i] + "_data"]
         self.pm_batch_effect_indices = be_acc
 

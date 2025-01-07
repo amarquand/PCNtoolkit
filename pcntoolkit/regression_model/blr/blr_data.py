@@ -96,21 +96,14 @@ class BLRData:
         else:
             self.batch_effects = batch_effects
 
-        self.X, self.var_X, self.batch_effects = self.expand_all(
-            "X", "var_X", "batch_effects"
-        )
+        self.X, self.var_X, self.batch_effects = self.expand_all("X", "var_X", "batch_effects")
 
         assert (
-            self.X.shape[0]
-            == self.y.shape[0]
-            == self.var_X.shape[0]
-            == self.batch_effects.shape[0]
+            self.X.shape[0] == self.y.shape[0] == self.var_X.shape[0] == self.batch_effects.shape[0]
         ), "X, var_X, y and batch_effects must have the same number of rows"
 
         if len(self.y.shape) > 1:
-            assert (
-                self.y.shape[1] == 1
-            ), "y can only have one column, or it must be a 1D array"
+            assert self.y.shape[1] == 1, "y can only have one column, or it must be a 1D array"
             self.y = np.squeeze(self.y)
 
     def expand_all(self, *args: str) -> Tuple[np.ndarray, ...]:

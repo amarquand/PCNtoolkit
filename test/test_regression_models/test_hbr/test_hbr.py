@@ -70,7 +70,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.reg_conf.likelihood == "Normal"
     if args.get("linear_mu", False):
         if args.get("random_slope_mu", False):
-            assert isinstance(hbr.reg_conf.mu.slope, RandomPrior)   
+            assert isinstance(hbr.reg_conf.mu.slope, RandomPrior)
         else:
             assert isinstance(hbr.reg_conf.mu.slope, Prior)
         if args.get("random_intercept_mu", False):
@@ -103,7 +103,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.reg_conf.likelihood == "Normal"
     if args.get("linear_mu", False):
         assert isinstance(hbr.reg_conf.mu, LinearPrior)
-        if args.get("random_slope_mu", False):    
+        if args.get("random_slope_mu", False):
             assert isinstance(hbr.reg_conf.mu.slope, RandomPrior)
         else:
             assert isinstance(hbr.reg_conf.mu.slope, Prior)
@@ -111,5 +111,5 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
             assert isinstance(hbr.reg_conf.mu.intercept, RandomPrior)
         else:
             assert isinstance(hbr.reg_conf.mu.intercept, Prior)
-   
+
     assert hbr.is_from_dict

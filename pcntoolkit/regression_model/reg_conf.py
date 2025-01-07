@@ -72,9 +72,7 @@ class RegConf(ABC):
         """
         configuration_problems = self.detect_configuration_problems()
         if len(configuration_problems) > 0:
-            problem_list = "\n".join(
-                [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
-            )
+            problem_list = "\n".join([f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)])
             Output.error(Errors.REGRESSION_MODEL_CONFIGURATION_PROBLEMS, problems=problem_list)
         else:
             Output.print(Messages.REGRESSION_MODEL_CONFIGURATION_VALID)
@@ -157,7 +155,7 @@ class RegConf(ABC):
         Parameters
         ----------
         path : str | None, optional
-            Optional file path for storing large objects. 
+            Optional file path for storing large objects.
 
         Returns
         -------

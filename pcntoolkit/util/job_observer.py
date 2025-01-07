@@ -51,9 +51,7 @@ class JobObserver:
                             )
                         )
                 except ValueError as e:
-                    Output.warning(
-                        Warnings.ERROR_PARSING_JOB_STATUS_LINE, line=line, error=e
-                    )
+                    Output.warning(Warnings.ERROR_PARSING_JOB_STATUS_LINE, line=line, error=e)
         elif stderr:
             Output.warning(Warnings.ERROR_GETTING_JOB_STATUSES, stderr=stderr)
 
@@ -102,9 +100,7 @@ class JobObserver:
             completed_jobs = []
             for job_name, job_id in list(self.active_job_ids.items()):
                 if not any(s.job_id == job_id for s in statuses) or any(
-                    s.job_id == job_id
-                    and s.state in ["COMPLETED", "FAILED", "CANCELLED"]
-                    for s in statuses
+                    s.job_id == job_id and s.state in ["COMPLETED", "FAILED", "CANCELLED"] for s in statuses
                 ):
                     completed_jobs.append(job_name)
 
@@ -145,9 +141,7 @@ class JobObserver:
             completed_jobs = []
             for job_name, job_id in list(self.active_job_ids.items()):
                 if not any(s.job_id == job_id for s in statuses) or any(
-                    s.job_id == job_id
-                    and s.state in ["COMPLETED", "FAILED", "CANCELLED"]
-                    for s in statuses
+                    s.job_id == job_id and s.state in ["COMPLETED", "FAILED", "CANCELLED"] for s in statuses
                 ):
                     completed_jobs.append(job_name)
 

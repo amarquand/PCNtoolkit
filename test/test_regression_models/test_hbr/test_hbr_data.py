@@ -21,9 +21,7 @@ This file contains tests for the HBRData class in the PCNtoolkit.
         (1000, 4, 3, (2, 3, 4), False),
     ],
 )
-def test_create_data(
-    n_datapoints, n_covariates, n_batch_effects, n_values_per_batch_effect, has_y
-):
+def test_create_data(n_datapoints, n_covariates, n_batch_effects, n_values_per_batch_effect, has_y):
     X = np.random.randn(n_datapoints, n_covariates)
     if has_y:
         y = np.random.randn(n_datapoints)
@@ -35,14 +33,11 @@ def test_create_data(
         n_values_per_batch_effect = (1,)
     batch_effects_list = []
     for i in range(n_batch_effects):
-        batch_effects_list.append(
-            np.random.choice(n_values_per_batch_effect[i], size=(n_datapoints, 1))
-        )
+        batch_effects_list.append(np.random.choice(n_values_per_batch_effect[i], size=(n_datapoints, 1)))
     batch_effects = np.concatenate(batch_effects_list, axis=1)
     unique_batch_effects = {}
     for i in range(n_batch_effects):
         unique_batch_effects[f"batch_effect_{i}"] = np.unique(batch_effects[:, i])
-
 
     data = HBRData(X, y, batch_effects, unique_batch_effects)
     assert data.n_datapoints == n_datapoints

@@ -74,12 +74,20 @@ exclude = [
     "site-packages",
     "venv",
 ]
+
+ignore = [
+    "F403",
+    "F405",
+    "F841",
+]
+
 # Same as Black.
 line-length = 130
 indent-width = 4
 
 # Assume Python 3.12
 target-version = "py312"
+
 
 
 [tool.ruff.format]

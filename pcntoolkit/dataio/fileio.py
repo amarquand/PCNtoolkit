@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import os
-import re
 import sys
 import tempfile
 
@@ -17,32 +16,21 @@ if path not in sys.path:
     sys.path.append(path)
 del path
 
-CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
-                  'dlabel', 'pscalar', 'pdconn', 'dpconn',
-                  'pconnseries', 'pconnscalar')
+CIFTI_MAPPINGS = (
+    "dconn",
+    "dtseries",
+    "pconn",
+    "ptseries",
+    "dscalar",
+    "dlabel",
+    "pscalar",
+    "pdconn",
+    "dpconn",
+    "pconnseries",
+    "pconnscalar",
+)
 
-CIFTI_VOL_ATLAS = 'Atlas_ROIs.2.nii.gz'
-
-PICKLE_PROTOCOL = 4
-
-# ------------------------
-# general utility routines
-# ------------------------
-
-
-def predictive_interval(s2_forward,
-                        cov_forward,
-                        multiplicator):
-    """
-    Calculates a predictive interval for the forward model
-    """
-  # calculates a predictive interval
-
-    PI = np.zeros(len(cov_forward))
-    for i, xdot in enumerate(cov_forward):
-        s = np.sqrt(s2_forward[i])
-        PI[i] = multiplicator*s
-    return PI
+CIFTI_VOL_ATLAS = "Atlas_ROIs.2.nii.gz"
 
 
 def create_mask(data_array, mask, verbose=False):
@@ -123,21 +111,23 @@ def file_type(filename):
                     file_type(filename)
 
     :param filename: name of the file to check
+    :returns: str: The file type ('cifti', 'nifti', 'text', or 'binary')
+    :raises: ValueError if file type is unknown
     """
-    # routine to determine filetype
+    # Map file extensions to types
+    extension_map = {
+        "cifti": (".dtseries.nii", ".dscalar.nii", ".dlabel.nii"),
+        "nifti": (".nii.gz", ".nii", ".img", ".hdr"),
+        "text": (".txt", ".csv", ".tsv", ".asc"),
+        "binary": (".pkl",),
+    }
 
-    if filename.endswith(('.dtseries.nii', '.dscalar.nii', '.dlabel.nii')):
-        ftype = 'cifti'
-    elif filename.endswith(('.nii.gz', '.nii', '.img', '.hdr')):
-        ftype = 'nifti'
-    elif filename.endswith(('.txt', '.csv', '.tsv', '.asc')):
-        ftype = 'text'
-    elif filename.endswith(('.pkl')):
-        ftype = 'binary'
-    else:
-        Output.error(Errors.UNKNOWN_FILE_TYPE.format(filename=filename))
+    # Check each type's extensions
+    for ftype, extensions in extension_map.items():
+        if any(filename.endswith(ext) for ext in extensions):
+            return ftype
 
-    return ftype
+    Output.error(Errors.UNKNOWN_FILE_TYPE.format(filename=filename))
 
 
 def file_extension(filename):
@@ -150,26 +140,7 @@ def file_extension(filename):
 
     :param filename: name of the file to check
     """
-
-    # routine to get the full file extension (e.g. .nii.gz, not just .gz)
-
-    parts = filename.split(os.extsep)
-
-    if parts[-1] == 'gz':
-        if parts[-2] == 'nii' or parts[-2] == 'img' or parts[-2] == 'hdr':
-            ext = parts[-2] + '.' + parts[-1]
-        else:
-            ext = parts[-1]
-    elif parts[-1] == 'nii':
-        if parts[-2] in CIFTI_MAPPINGS:
-            ext = parts[-2] + '.' + parts[-1]
-        else:
-            ext = parts[-1]
-    else:
-        ext = parts[-1]
-
-    ext = '.' + ext
-    return ext
+    return os.path.splitext(filename)[1]
 
 
 def file_stem(filename):
@@ -182,10 +153,8 @@ def file_stem(filename):
 
     :param filename: name of the file to check
     """
-    idx = filename.find(file_extension(filename))
-    stm = filename[0:idx]
+    return os.path.splitext(os.path.basename(filename))[0]
 
-    return stm
 
 # --------------
 # nifti routines
@@ -205,7 +174,7 @@ def load_nifti(datafile, mask=None, vol=False):
     :param vol: whether to load the image as a volume
     :param verbose: verbose output
     """
-    
+
     img = nib.load(datafile)
     dat = img.get_data()
 
@@ -219,7 +188,7 @@ def load_nifti(datafile, mask=None, vol=False):
 
 
 def save_nifti(data, filename, examplenii, mask, dtype=None):
-    '''
+    """
     Write output to nifti
 
     Basic usage::
@@ -231,7 +200,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     :param examplenii: nifti to copy the geometry and data type from
     :mask: nifti image containing a mask for the image
     :param dtype: data type for the output image (if different from the image)
-    '''
+    """
 
     # load mask
     if isinstance(mask, str):
@@ -251,7 +220,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     # write data
     array_data = np.zeros((np.prod(dim), nvol))
     array_data[mask.flatten(), :] = data
-    array_data = np.reshape(array_data, dim+(nvol,))
+    array_data = np.reshape(array_data, dim + (nvol,))
     hdr = ex_img.header
     if dtype is not None:
         hdr.set_data_dtype(dtype)
@@ -260,6 +229,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
 
     nib.save(array_img, filename)
 
+
 # --------------
 # cifti routines
 # --------------
@@ -267,7 +237,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
 
 def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     """
-    Load a cifti file into a numpy array 
+    Load a cifti file into a numpy array
 
     Basic usage::
 
@@ -281,17 +251,14 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     # parse the name
     dnam, fnam = os.path.split(filename)
     fpref = file_stem(fnam)
-    outstem = os.path.join(tempfile.gettempdir(),
-                           str(os.getpid()) + "-" + fpref)
+    outstem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + "-" + fpref)
 
     # extract surface data from the cifti file
     Output.print(Messages.EXTRACTING_CIFTI_SURFACE_DATA.format(outstem=outstem))
-    giinamel = outstem + '-left.func.gii'
-    giinamer = outstem + '-right.func.gii'
-    os.system('wb_command -cifti-separate ' + filename +
-              ' COLUMN -metric CORTEX_LEFT ' + giinamel)
-    os.system('wb_command -cifti-separate ' + filename +
-              ' COLUMN -metric CORTEX_RIGHT ' + giinamer)
+    giinamel = outstem + "-left.func.gii"
+    giinamer = outstem + "-right.func.gii"
+    os.system("wb_command -cifti-separate " + filename + " COLUMN -metric CORTEX_LEFT " + giinamel)
+    os.system("wb_command -cifti-separate " + filename + " COLUMN -metric CORTEX_RIGHT " + giinamer)
 
     # load the surface data
     giil = nib.load(giinamel)
@@ -299,8 +266,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     Nimg = len(giil.darrays)
     Nvert = len(giil.darrays[0].data)
     if Nimg == 1:
-        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data),
-                             axis=0)
+        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data), axis=0)
     else:
         Gl = np.zeros((Nvert, Nimg))
         Gr = np.zeros((Nvert, Nimg))
@@ -314,10 +280,9 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
         os.remove(giinamer)
 
     if vol:
-        niiname = outstem + '-vol.nii'
+        niiname = outstem + "-vol.nii"
         Output.print(Messages.EXTRACTING_CIFTI_VOLUME_DATA.format(niiname=niiname))
-        os.system('wb_command -cifti-separate ' + filename +
-                  ' COLUMN -volume-all ' + niiname)
+        os.system("wb_command -cifti-separate " + filename + " COLUMN -volume-all " + niiname)
         vol = load_nifti(niiname, vol=True)
         volmask = create_mask(vol)
         out = np.concatenate((out, vol2vec(vol, volmask)), axis=0)
@@ -344,11 +309,9 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     """
 
     # do some sanity checks
-    if data.dtype == 'float32' or \
-       data.dtype == 'float' or \
-       data.dtype == 'float64':
-        data = data.astype('float32')  # force 32 bit output
-        dtype = 'NIFTI_TYPE_FLOAT32'
+    if data.dtype == "float32" or data.dtype == "float" or data.dtype == "float64":
+        data = data.astype("float32")  # force 32 bit output
+        dtype = "NIFTI_TYPE_FLOAT32"
     else:
         Output.error(Errors.NO_FLOAT_DATA_TYPE.format(data_type=data.dtype))
 
@@ -364,23 +327,19 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
 
     # Split the template
     estem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + "-" + fstem)
-    giiexnamel = estem + '-left.func.gii'
-    giiexnamer = estem + '-right.func.gii'
-    os.system('wb_command -cifti-separate ' + example +
-              ' COLUMN -metric CORTEX_LEFT ' + giiexnamel)
-    os.system('wb_command -cifti-separate ' + example +
-              ' COLUMN -metric CORTEX_RIGHT ' + giiexnamer)
+    giiexnamel = estem + "-left.func.gii"
+    giiexnamer = estem + "-right.func.gii"
+    os.system("wb_command -cifti-separate " + example + " COLUMN -metric CORTEX_LEFT " + giiexnamel)
+    os.system("wb_command -cifti-separate " + example + " COLUMN -metric CORTEX_RIGHT " + giiexnamer)
 
     # write left hemisphere
     giiexl = nib.load(giiexnamel)
     Nvertl = len(giiexl.darrays[0].data)
     garraysl = []
     for i in range(0, Nimg):
-        garraysl.append(
-            nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-                                           datatype=dtype))
+        garraysl.append(nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i], datatype=dtype))
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
-    fnamel = fstem + '-left.func.gii'
+    fnamel = fstem + "-left.func.gii"
     nib.save(giil, fnamel)
 
     # write right hemisphere
@@ -388,40 +347,47 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     Nvertr = len(giiexr.darrays[0].data)
     garraysr = []
     for i in range(0, Nimg):
-        garraysr.append(
-            nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-                                           datatype=dtype))
+        garraysr.append(nib.gifti.gifti.GiftiDataArray(data=data[Nvertl : Nvertl + Nvertr, i], datatype=dtype))
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
-    fnamer = fstem + '-right.func.gii'
+    fnamer = fstem + "-right.func.gii"
     nib.save(giir, fnamer)
 
     tmpfiles = [fnamer, fnamel, giiexnamel, giiexnamer]
 
     # process volumetric data
     if vol:
-        niiexname = estem + '-vol.nii'
-        os.system('wb_command -cifti-separate ' + example +
-                  ' COLUMN -volume-all ' + niiexname)
+        niiexname = estem + "-vol.nii"
+        os.system("wb_command -cifti-separate " + example + " COLUMN -volume-all " + niiexname)
         niivol = load_nifti(niiexname, vol=True)
         if mask is None:
             mask = create_mask(niivol)
 
         if volatlas is None:
             volatlas = CIFTI_VOL_ATLAS
-        fnamev = fstem + '-vol.nii'
+        fnamev = fstem + "-vol.nii"
 
-        save_nifti(data[Nvertr+Nvertl:, :], fnamev, niiexname, mask)
+        save_nifti(data[Nvertr + Nvertl :, :], fnamev, niiexname, mask)
         tmpfiles.extend([fnamev, niiexname])
 
     # write cifti
-    fname = fstem + '.dtseries.nii'
-    os.system('wb_command -cifti-create-dense-timeseries ' + fname +
-              ' -volume ' + fnamev + ' ' + volatlas +
-              ' -left-metric ' + fnamel + ' -right-metric ' + fnamer)
+    fname = fstem + ".dtseries.nii"
+    os.system(
+        "wb_command -cifti-create-dense-timeseries "
+        + fname
+        + " -volume "
+        + fnamev
+        + " "
+        + volatlas
+        + " -left-metric "
+        + fnamel
+        + " -right-metric "
+        + fnamer
+    )
 
     # clean up
     for f in tmpfiles:
         os.remove(f)
+
 
 # --------------
 # ascii routines
@@ -440,9 +406,7 @@ def load_pd(filename):
     """
 
     # based on pandas
-    x = pd.read_csv(filename,
-                    sep=' ',
-                    header=None)
+    x = pd.read_csv(filename, sep=" ", header=None)
     return x
 
 
@@ -458,11 +422,7 @@ def save_pd(data, filename):
     :param filename: where to store it
     """
     # based on pandas
-    data.to_csv(filename,
-                index=None,
-                header=None,
-                sep=' ',
-                na_rep='NaN')
+    data.to_csv(filename, index=None, header=None, sep=" ", na_rep="NaN")
 
 
 def load_ascii(filename):
@@ -495,6 +455,7 @@ def save_ascii(data, filename):
     # based on pandas
     np.savetxt(filename, data)
 
+
 # ----------------
 # generic routines
 # ----------------
@@ -516,13 +477,13 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
     :param dtype: data type for the output image (if different from the image)
     """
 
-    if file_type(filename) == 'cifti':
+    if file_type(filename) == "cifti":
         save_cifti(data.T, filename, example, vol=True)
-    elif file_type(filename) == 'nifti':
+    elif file_type(filename) == "nifti":
         save_nifti(data.T, filename, example, mask, dtype=dtype)
-    elif text or file_type(filename) == 'text':
+    elif text or file_type(filename) == "text":
         save_ascii(data, filename)
-    elif file_type(filename) == 'binary':
+    elif file_type(filename) == "binary":
         data = pd.DataFrame(data)
         data.to_pickle(filename, protocol=PICKLE_PROTOCOL)
 
@@ -563,53 +524,3 @@ def load(filename, mask=None, text=False, vol=True):
                         return x
                     except Exception:
                         raise ValueError("Unknown file type")
-
-
-
-# -------------------
-# sorting routines for batched in normative parallel
-# -------------------
-
-
-def tryint(s):
-    """
-    Try to convert a string to an integer
-
-    Basic usage::
-
-                    tryint(s)
-
-    :param s: string to convert
-    """
-
-    try:
-        return int(s)
-    except ValueError:
-        return s
-
-
-def alphanum_key(s):
-    """
-    Turn a string into a list of numbers
-
-    Basic usage::
-
-                    alphanum_key(s) 
-
-    :param s: string to convert
-    """
-    return [tryint(c) for c in re.split('([0-9]+)', s)]
-
-
-def sort_nicely(l):
-    """
-    Sort a list of strings in a natural way
-
-    Basic usage::
-
-        sort_nicely(l)  
-
-    :param l: list of strings to sort
-    """
-
-    return sorted(l, key=alphanum_key)
