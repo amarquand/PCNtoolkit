@@ -4,7 +4,7 @@ import subprocess
 import sys
 import warnings
 from copy import deepcopy
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Literal, Optional
 
 import cloudpickle as pickle
 
@@ -27,8 +27,9 @@ class Runner:
     n_jobs: int = 1
     n_cores: int = 1
     python_path: Optional[str] = None
-    walltime: str = "00:05:00"
-    memory: str = "5GB"
+    time_limit_str: str | int = "00:05:00"
+    time_limit_seconds: int = 300
+    memory: str = "5gb"
     log_dir: str = ""
     temp_dir: str = ""
 
@@ -41,7 +42,7 @@ class Runner:
         n_jobs: int = 1,
         n_cores: int = 1,
         python_path: Optional[str] = None,
-        walltime: str = "00:05:00",
+        time_limit: str | int= "00:05:00",
         memory: str = "5GB",
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
@@ -53,7 +54,19 @@ class Runner:
         self.n_jobs = n_jobs
         self.pool = None
         self.n_cores = n_cores
-        self.walltime = walltime
+        if isinstance(time_limit, str):
+            self.time_limit_str = time_limit
+            try: 
+                self.time_limit_seconds = sum([int(v)*60**i for i, v in enumerate(reversed(self.time_limit_str.split(":"))) ])
+            except Exception:
+                raise ValueError(f"Error parsing {self.time_limit_str} as duration. Please use HH:MM:SS format")
+        elif isinstance(time_limit, int):
+            self.time_limit_seconds = time_limit
+            s = self.time_limit_seconds
+            self.time_limit_str = f"{str(s//3600)}:{str((s//60)%60).rjust(2,"0")}:{str(s%60).rjust(2,"0")}"
+        else:
+            raise ValueError(f"Cannot parse {time_limit} as time linit")
+        
         self.memory = memory
         self.active_job_ids: Dict[str, str] = {}
         
@@ -88,49 +101,49 @@ class Runner:
     def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_chunk_fn(model)
-        self.submit_unary_jobs(fn, data)
+        self.submit_jobs(fn, first_data_source = data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
         
     def fit_predict(self, model: NormBase, fit_data: NormData, predict_data: Optional[NormData] = None, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_predict_chunk_fn(model)
-        self.submit_binary_jobs(fn, fit_data, predict_data)
+        self.submit_jobs(fn, first_data_source = fit_data, second_data_source = predict_data, mode="binary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_predict_chunk_fn(model)
-        self.submit_unary_jobs(fn, data)
+        self.submit_jobs(fn, first_data_source = data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_transfer"
         fn = self.get_transfer_chunk_fn(model)
-        self.submit_unary_jobs(fn, data)
+        self.submit_jobs(fn, data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def transfer_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_transfer"
         fn = self.get_transfer_predict_chunk_fn(model)
-        self.submit_binary_jobs(fn, fit_data, predict_data)
+        self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_extend"
         fn = self.get_extend_chunk_fn(model)
-        self.submit_unary_jobs(fn, data)
+        self.submit_jobs(fn, data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def extend_predict(self, model: NormBase, fit_data: NormData, predict_data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir+"_extend"
         fn = self.get_extend_predict_chunk_fn(model)
-        self.submit_binary_jobs(fn, fit_data, predict_data)
+        self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
@@ -246,110 +259,115 @@ class Runner:
                 extended_model.save()
             return extend_predict_chunk_fn
 
-    def submit_unary_jobs(self, fn: Callable, data: NormData) -> None:
-        if self.parallelize:
-            if self.job_type == "local":
-                chunks = data.chunk(self.n_jobs)
-                Parallel(n_jobs=self.n_jobs)(delayed(fn)(chunk) for chunk in chunks)
-            elif self.job_type == "slurm":
-                chunks = data.chunk(self.n_jobs)
-                for i, chunk in enumerate(chunks):
-                    job_path = self.wrap_in_slurm_job(i, fn, chunk)
-                    process = subprocess.Popen(
-                        ["sbatch", job_path], 
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True
-                    )
-                    stdout, stderr = process.communicate()
-                    job_id = re.search(r"Submitted batch job (\d+)", stdout)    
-                    if job_id:
-                        self.active_job_ids[f"job_{i}"] = job_id.group(1)
-                    elif stderr:
-                        print(f"Error submitting job {i}: {stderr}")
-        else:
-            fn(data)
+    def save_callable_and_data(self, job_name: int | str, fn: Callable, chunk: NormData | tuple[NormData, NormData | None]) -> tuple[str, str]:
+        python_callable_path = os.path.join(self.temp_dir, f"python_callable_{job_name}.pkl")
+        data_path = os.path.join(self.temp_dir, f"data_{job_name}.pkl")
+        os.makedirs(os.path.dirname(self.temp_dir), exist_ok=True)
+        with open(python_callable_path, "wb") as f:
+            pickle.dump(fn, f)
+        with open(data_path, "wb") as f:
+            pickle.dump(chunk, f)
+        return python_callable_path, data_path
 
+    def submit_jobs(self, fn: Callable, first_data_source: NormData,  second_data_source: Optional[NormData] = None, mode: Literal["unary", "binary"] = "unary") -> None:
+        """Submit jobs to the job scheduler.
 
-    def submit_binary_jobs(self, fn: Callable, fit_data: NormData, predict_data: Optional[NormData] = None) -> None:
-        """Submit binary jobs to the job scheduler.
-
-        Binary jobs are jobs that call a function that takes two arguments. 
         The predict_data argument is optional, and if it is not provided, None is passed to the function.
 
         Parameters
         ----------
         fn : Callable
-            Function to call. It should take two arguments: fit_data and predict_data.
+            Function to call. It should take two arguments.
         fit_data : NormData
             Data to fit the model on
         predict_data : Optional[NormData], optional
             Data to predict on, by default None
         """
         if self.parallelize:
-            fit_chunks = fit_data.chunk(self.n_jobs)
+            first_chunks = first_data_source.chunk(self.n_jobs)
 
-            if predict_data is not None:
-                predict_chunks = predict_data.chunk(self.n_jobs)
+            if second_data_source is not None:
+                second_chunks = second_data_source.chunk(self.n_jobs)
             else:
-                predict_chunks = [None] * self.n_jobs
+                second_chunks = [None] * self.n_jobs
                 
             if self.job_type == "local":
-                Parallel(n_jobs=self.n_jobs)(delayed(fn)(fit_chunk, predict_chunk) 
-                    for fit_chunk, predict_chunk in zip(fit_chunks, predict_chunks))
-                
-            elif self.job_type == "slurm":
-                for i, (fit_chunk, predict_chunk) in enumerate(zip(fit_chunks, predict_chunks)):
-                    job_path = self.wrap_in_slurm_job(i, fn, (fit_chunk, predict_chunk))
-                    # Use Popen instead of run
+                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                    if mode == "unary":
+                        chunk_tuple = first_chunk
+                    elif mode == "binary":
+                        chunk_tuple = (first_chunk, second_chunk)
+                    Parallel(n_jobs=self.n_jobs, timeout=self.time_limit_seconds)(delayed(fn)(chunk_tuple))
+
+            else:
+                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                    if mode == "unary":
+                        chunk_tuple = first_chunk
+                    elif mode == "binary":
+                        chunk_tuple = (first_chunk, second_chunk)
+                    python_callable_path, data_path = self.save_callable_and_data(i, fn, chunk_tuple)
+                    if self.job_type == "slurm":
+                        command = self.wrap_in_slurm_job(i, python_callable_path, data_path)
+                    elif self.job_type == "torque":
+                        command = self.wrap_in_torque_job(i, python_callable_path, data_path)
                     process = subprocess.Popen(
-                        ["sbatch", job_path], 
+                        command, 
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True
                     )
                     stdout, stderr = process.communicate()
-                    
-                    # Parse job ID from output (typically "Submitted batch job 123456")
                     job_id = re.search(r"Submitted batch job (\d+)", stdout)
                     if job_id:
                         self.active_job_ids[f"job_{i}"] = job_id.group(1)
                     elif stderr:
                         print(f"Error submitting job {i}: {stderr}")
         else:
-            fn(fit_data, predict_data)
+            if mode == "unary":
+                chunk_tuple = (first_data_source,)
+            elif mode == "binary":
+                chunk_tuple = (first_data_source, second_data_source)
+            fn(*chunk_tuple)
 
-    def wrap_in_slurm_job(self, job_name: int | str, fn: Callable , chunk: NormData | tuple[NormData, NormData | None]) -> str:
-        # Save all the necessary objects to the temp directory
-        executable_path = os.path.join(self.temp_dir, f"slurm_executable_{job_name}.pkl")
-        job_path = os.path.join(self.temp_dir, f"slurm_job_{job_name}.sh")
-        data_path = os.path.join(self.temp_dir, f"slurm_data_{job_name}.pkl")
-        os.makedirs(os.path.dirname(executable_path), exist_ok=True)
-        with open(executable_path, "wb") as f:
-            pickle.dump(fn, f)
-        with open(data_path, "wb") as f:
-            pickle.dump(chunk, f)
-
-        # Get the current file path. We use this script (runner.py) as the entrypoint for the job.
+    def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> str:
+        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
-
-        # Write the job script
         with open(job_path, "w") as f:
             f.write(f"""#!/bin/bash
                     
-#SBATCH --job-name={job_name}
+#SBATCH --job-name=normative_{job_name}
 #SBATCH --nodes=1
-#SBATCH --time={self.walltime}
+#SBATCH --time={self.time_limit_str}
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=batch
 #SBATCH --mem={self.memory}
-#SBATCH --cpus-per-task={self.n_cores}
-#SBATCH --output={os.path.join(self.log_dir, f"{job_name}.out")}
+#SBATCH --cpus-per-task={self.n_cores}/≥
 #SBATCH --error={os.path.join(self.log_dir, f"{job_name}.err")}
 
-{self.python_path} {current_file_path} {executable_path} {data_path}
+{self.python_path} {current_file_path} {python_callable_path} {data_path}
 """)
-        return job_path
+        return f"sbatch {job_path}"
+    
+    def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> str:
+        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
+        current_file_path = os.path.abspath(__file__)
+        
+        with open(job_path, "w") as f:
+            f.write(f"""#!/bin/sh
+
+#PBS -N normative_{job_name}
+#PBS -l nodes=1:ppn={self.n_cores}
+#PBS -l walltime={self.time_limit_str}
+#PBS -l mem={self.memory}
+#PBS -o {os.path.join(self.log_dir, f"{job_name}.out")}
+#PBS -e {os.path.join(self.log_dir, f"{job_name}.err")}
+#PBS -m a
+
+{self.python_path} {current_file_path} {python_callable_path} {data_path}
+""")
+        
+        return f"qsub {job_path}"
+    
     
     def load_fold_model(self, fold_index: int) -> NormBase:
         path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
