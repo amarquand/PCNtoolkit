@@ -30,7 +30,7 @@ ipywidgets = "^8.1.5"
 black = "^24.10.0"
 ipykernel = "^6.29.5"
 sphinx-rtd-theme = "^3.0.2"
-
+ruff = "^0.8.6"
 
 [build-system]
 requires = ["poetry-core"]
@@ -41,3 +41,51 @@ python_version = ">=3.10,<3.13"
 
 [tool.poetry.scripts]
 normative = "pcntoolkit.normative:entrypoint"
+
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".github",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+# Same as Black.
+line-length = 130
+indent-width = 4
+
+# Assume Python 3.12
+target-version = "py312"
+
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"

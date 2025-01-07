@@ -25,6 +25,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
+from pcntoolkit.util.output import Errors, Messages, Output
+
 
 class RegConf(ABC):
     """
@@ -73,11 +75,9 @@ class RegConf(ABC):
             problem_list = "\n".join(
                 [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
             )
-            raise ValueError(
-                f"The following problems have been detected in the regression model configuration:\n{problem_list}"
-            )
+            Output.error(Errors.REGRESSION_MODEL_CONFIGURATION_PROBLEMS, problems=problem_list)
         else:
-            print("Configuration of regression model is valid.")
+            Output.print(Messages.REGRESSION_MODEL_CONFIGURATION_VALID)
 
     @property
     @abstractmethod

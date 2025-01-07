@@ -22,6 +22,7 @@ from scipy.linalg import LinAlgError  # type: ignore
 
 from pcntoolkit.regression_model.blr.blr_data import BLRData
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 
 from .blr_conf import BLRConf
 
@@ -196,8 +197,11 @@ class BLR(RegressionModel):
                         callback=store,
                     )
                 except np.linalg.LinAlgError as e:
-                    print(
-                        f"Restarting estimation at hyp = {all_hyp_i[-1]}, due to *** numpy.linalg.LinAlgError: Matrix is singular.\n{e}"
+                    Output.print(
+                        Messages.BLR_RESTARTING_ESTIMATION_AT_HYP.format(
+                            hyp=all_hyp_i[-1],
+                            e=e
+                        )
                     )
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
@@ -323,7 +327,7 @@ class BLR(RegressionModel):
 
         # Check if hyperparameters have changed
         if (hyp == self.hyp).all() and hasattr(self, "N"):
-            print("hyperparameters have not changed, exiting")
+            Output.print(Messages.BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED)
             return
         else:
             self.hyp = hyp
@@ -336,7 +340,7 @@ class BLR(RegressionModel):
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
-            raise ValueError("hyperparameter vector has invalid length")
+            Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH)
 
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
@@ -382,16 +386,17 @@ class BLR(RegressionModel):
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
             try:
                 self.post(hyp, X, y, var_X)
-            except ValueError:
-                print("Warning: Estimation of posterior distribution failed")
+            except ValueError as error:
+                Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
+
                 nlZ = something_big
                 return nlZ
 
         try:
             # compute the log determinants in a numerically stable way
             logdetA = 2 * np.sum(np.log(np.diag(np.linalg.cholesky(self.A))))
-        except (ValueError, LinAlgError):
-            print("Warning: Estimation of posterior distribution failed")
+        except (ValueError, LinAlgError) as error:
+            Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
             nlZ = something_big
             return nlZ
 
@@ -486,12 +491,13 @@ class BLR(RegressionModel):
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
             try:
                 self.post(hyp, X, y, var_X)
-            except ValueError:
-                print("Warning: Estimation of posterior distribution failed")
+            except ValueError as error:
+                Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
                 if self.dnlZ is not None:
                     dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
                     return dnlZ
                 return np.array(1 / np.finfo(float).eps)
+            
         # precompute re-used quantities to maximise speed
         # todo: revise implementation to use Cholesky throughout
         #       that would remove the need to explicitly compute the inverse
@@ -700,7 +706,7 @@ class BLR(RegressionModel):
             Array of log probabilities for each observation
         """
         if not self.is_fitted:
-            raise ValueError("Model must be fitted before computing log probabilities")
+            Output.error(Errors.BLR_MODEL_NOT_FITTED)
         
         # Get predictions (mean and variance)
         ys, s2 = self.predict(data)

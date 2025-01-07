@@ -17,6 +17,7 @@ import warnings
 from dataclasses import dataclass, field, fields
 from typing import Any, Callable, Dict, List, Optional
 
+from pcntoolkit.util.output import Errors, Messages, Output
 from pcntoolkit.util.utils import get_type_of_object
 
 
@@ -69,11 +70,9 @@ class NormConf:
             problem_list = "\n".join(
                 [f"{i+1}:\t{v}" for i, v in enumerate(configuration_problems)]
             )
-            raise ValueError(
-                f"The following problems have been detected in the normative model configuration:\n{problem_list}"
-            )
+            Output.error(Errors.NORMATIVE_MODEL_CONFIGURATION_PROBLEMS, problems=problem_list)
         else:
-            print("Configuration of normative model is valid.")
+            Output.print(Messages.NORMATIVE_MODEL_CONFIGURATION_VALID)
 
     @classmethod
     def from_args(cls, args: Dict[str, Any]) -> "NormConf":

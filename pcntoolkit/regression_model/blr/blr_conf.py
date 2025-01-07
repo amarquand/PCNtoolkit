@@ -2,26 +2,6 @@
 Module: blr_conf
 
 This module defines the configuration class for Bayesian Linear Regression (BLR) models.
-The `BLRConf` class is a dataclass that encapsulates configuration parameters for setting
-up and running BLR models. It provides a convenient method to initialize its instances
-from a dictionary of arguments.
-
-Classes
--------
-BLRConf
-    A dataclass that holds configuration parameters for a BLR model.
-
-Methods
--------
-BLRConf.from_args(args: dict[str, Any]) -> BLRConf
-    Class method to create an instance of `BLRConf` from a dictionary of arguments.
-
-Examples
---------
->>> args = {'param1': value1, 'param2': value2}
->>> config = BLRConf.from_args(args)
->>> print(config)
-BLRConf(param1=value1, param2=value2)
 """
 
 from __future__ import annotations
@@ -54,14 +34,13 @@ RANDOM_INTERCEPT_VAR = False
 WARP = None
 WARP_REPARAM = False
 
+
 @dataclass(frozen=True)
 class BLRConf(RegConf):
     """
     Class: BLRConf
 
-    A dataclass for configuring Bayesian Linear Regression (BLR) models. This class encapsulates
-    the parameters required to set up and execute a BLR model, providing a structured way to
-    manage configuration data.
+    A dataclass for configuring Bayesian Linear Regression (BLR) models.
 
     Parameters
     ----------
@@ -89,19 +68,8 @@ class BLRConf(RegConf):
         Whether the variance has an intercept (a fixed effect).
     random_intercept_var: bool = RANDOM_INTERCEPT_VAR
         Whether the variance has a random intercept for each group.
-
-    Methods
-    -------
-    from_args(args: dict[str, Any]) -> BLRConf
-        Class method to create an instance of `BLRConf` from a dictionary of arguments.
-
-    Examples
-    --------
-    >>> args = {'param1': value1, 'param2': value2}
-    >>> config = BLRConf.from_args(args)
-    >>> print(config)
-    BLRConf(param1=value1, param2=value2)
     """
+
     # some configuration parameters
     n_iter: int = N_ITER
     tol: float = TOL
@@ -149,8 +117,10 @@ class BLRConf(RegConf):
         return configuration_problems
 
     @classmethod
-    def from_args(cls, args:dict[str, Any]) -> "BLRConf":
-        args_filt:dict[str, Any] = {k: v for k, v in args.items() if k in [f.name for f in fields(cls)]}
+    def from_args(cls, args: dict[str, Any]) -> "BLRConf":
+        args_filt: dict[str, Any] = {
+            k: v for k, v in args.items() if k in [f.name for f in fields(cls)]
+        }
 
         return cls(
             n_iter=args_filt.get("n_iter", N_ITER),
@@ -172,7 +142,7 @@ class BLRConf(RegConf):
         )
 
     @classmethod
-    def from_dict(cls, dct:dict[str, Any]) -> "BLRConf":
+    def from_dict(cls, dct: dict[str, Any]) -> "BLRConf":
         return cls(
             n_iter=dct["n_iter"],
             tol=dct["tol"],
@@ -189,8 +159,8 @@ class BLRConf(RegConf):
             warp=dct["warp"],
             warp_reparam=dct["warp_reparam"],
         )
-    
-    def to_dict(self, path:str|None="") -> dict[str, Any]:
+
+    def to_dict(self, path: str | None = "") -> dict[str, Any]:
         return {
             "n_iter": self.n_iter,
             "tol": self.tol,
@@ -211,7 +181,6 @@ class BLRConf(RegConf):
     @property
     def has_random_effect(self) -> bool:
         return self.random_intercept or self.random_intercept_var
-
 
     def get_warp(self) -> Optional[WarpBase]:
         if self.warp is None:
