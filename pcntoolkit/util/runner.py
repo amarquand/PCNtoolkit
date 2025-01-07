@@ -82,14 +82,14 @@ class Runner:
             self.log_dir = os.path.abspath("logs")
             print(f"No log directory specified. Using default log directory: {self.log_dir}")
         else:
-            self.log_dir = log_dir
+            self.log_dir = os.path.abspath(log_dir)
         os.makedirs(self.log_dir, exist_ok=True)
 
         if temp_dir is None:
             self.temp_dir = os.path.abspath("temp")
             print(f"No temp directory specified. Using default temp directory: {self.temp_dir}")
         else:
-            self.temp_dir = temp_dir
+            self.temp_dir = os.path.abspath(temp_dir)
         os.makedirs(self.temp_dir, exist_ok=True)
 
         if self.cross_validate and self.cv_folds <= 1:
@@ -269,7 +269,7 @@ class Runner:
             pickle.dump(chunk, f)
         return python_callable_path, data_path
 
-    def submit_jobs(self, fn: Callable, first_data_source: NormData,  second_data_source: Optional[NormData] = None, mode: Literal["unary", "binary"] = "unary") -> None:
+    def submit_jobs(self, fn: Callable, first_data_source: NormData, second_data_source: Optional[NormData] = None, mode: Literal["unary", "binary"] = "unary") -> None:
         """Submit jobs to the job scheduler.
 
         The predict_data argument is optional, and if it is not provided, None is passed to the function.
@@ -292,12 +292,13 @@ class Runner:
                 second_chunks = [None] * self.n_jobs
                 
             if self.job_type == "local":
-                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                delayed_functions = []
+                for first_chunk, second_chunk in zip(first_chunks, second_chunks):
                     if mode == "unary":
-                        chunk_tuple = first_chunk
+                        delayed_functions.append(delayed(fn)(first_chunk))
                     elif mode == "binary":
-                        chunk_tuple = (first_chunk, second_chunk)
-                    Parallel(n_jobs=self.n_jobs, timeout=self.time_limit_seconds)(delayed(fn)(chunk_tuple))
+                        delayed_functions.append(delayed(fn)(first_chunk, second_chunk))
+                Parallel(n_jobs=self.n_jobs, timeout=self.time_limit_seconds)(delayed_functions)
 
             else:
                 for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
@@ -341,12 +342,12 @@ class Runner:
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=batch
 #SBATCH --mem={self.memory}
-#SBATCH --cpus-per-task={self.n_cores}/≥
+#SBATCH --cpus-per-task={self.n_cores}
 #SBATCH --error={os.path.join(self.log_dir, f"{job_name}.err")}
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
 """)
-        return f"sbatch {job_path}"
+        return ["sbatch", job_path]
     
     def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> str:
         job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
@@ -366,13 +367,16 @@ class Runner:
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
 """)
         
-        return f"qsub {job_path}"
+        return ["qsub", job_path]
     
     
-    def load_fold_model(self, fold_index: int) -> NormBase:
-        path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
-        return load_normative_model(path)
-
+    def load_model(self, fold_index: Optional[int]=0) -> NormBase:
+        if self.cross_validate:
+            path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
+            return load_normative_model(path)
+        else:
+            return load_normative_model(self.save_dir)
+        
     @classmethod    
     def from_args(cls, args: dict) -> "Runner":
         filtered_args = {k:v for k,v in args.items() if k in list(cls.__dict__.keys())}
