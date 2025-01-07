@@ -183,7 +183,6 @@ class NormHBR(NormBase):
 
         for responsevar in data.response_vars.values:
             if responsevar not in self.response_vars:
-                print(f"Skipping {responsevar} because it is not in the original model")
                 continue
             df[responsevar] = np.zeros(n_synthetic_samples)
 

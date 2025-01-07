@@ -9,17 +9,13 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 
-try:  # run as a package if installed
-    from pcntoolkit import configs
-except ImportError:
-    pass
+from pcntoolkit.util.output import Errors, Messages, Output
 
-    path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.dirname(path)  # parent directory
-    if path not in sys.path:
-        sys.path.append(path)
-    del path
-    # import configs
+path = os.path.abspath(os.path.dirname(__file__))
+path = os.path.dirname(path)  # parent directory
+if path not in sys.path:
+    sys.path.append(path)
+del path
 
 CIFTI_MAPPINGS = ('dconn', 'dtseries', 'pconn', 'ptseries', 'dscalar',
                   'dlabel', 'pscalar', 'pdconn', 'dpconn',
@@ -65,8 +61,7 @@ def create_mask(data_array, mask, verbose=False):
     # create a (volumetric) mask either from an input nifti or the nifti itself
 
     if mask is not None:
-        if verbose:
-            print('Loading ROI mask ...')
+        Output.print(Messages.LOADING_ROI_MASK)
         maskvol = load_nifti(mask, vol=True)
         maskvol = maskvol != 0
     else:
@@ -75,8 +70,7 @@ def create_mask(data_array, mask, verbose=False):
         else:
             dim = data_array.shape[0:3] + (data_array.shape[3],)
 
-        if verbose:
-            print('Generating mask automatically ...')
+        Output.print(Messages.GENERATING_MASK_AUTOMATICALLY)
         if dim[3] == 1:
             maskvol = data_array[:, :, :] != 0
         else:
@@ -141,7 +135,7 @@ def file_type(filename):
     elif filename.endswith(('.pkl')):
         ftype = 'binary'
     else:
-        raise ValueError("I don't know what to do with " + filename)
+        Output.error(Errors.UNKNOWN_FILE_TYPE.format(filename=filename))
 
     return ftype
 
@@ -198,7 +192,7 @@ def file_stem(filename):
 # --------------
 
 
-def load_nifti(datafile, mask=None, vol=False, verbose=False):
+def load_nifti(datafile, mask=None, vol=False):
     """
     Load a nifti file into a numpy array
 
@@ -211,9 +205,7 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     :param vol: whether to load the image as a volume
     :param verbose: verbose output
     """
-
-    if verbose:
-        print('Loading nifti: ' + datafile + ' ...')
+    
     img = nib.load(datafile)
     dat = img.get_data()
 
@@ -293,7 +285,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
                            str(os.getpid()) + "-" + fpref)
 
     # extract surface data from the cifti file
-    print("Extracting cifti surface data to ", outstem, '-*.func.gii', sep="")
+    Output.print(Messages.EXTRACTING_CIFTI_SURFACE_DATA.format(outstem=outstem))
     giinamel = outstem + '-left.func.gii'
     giinamer = outstem + '-right.func.gii'
     os.system('wb_command -cifti-separate ' + filename +
@@ -323,7 +315,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
 
     if vol:
         niiname = outstem + '-vol.nii'
-        print("Extracting cifti volume data to ", niiname, sep="")
+        Output.print(Messages.EXTRACTING_CIFTI_VOLUME_DATA.format(niiname=niiname))
         os.system('wb_command -cifti-separate ' + filename +
                   ' COLUMN -volume-all ' + niiname)
         vol = load_nifti(niiname, vol=True)
@@ -358,7 +350,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         data = data.astype('float32')  # force 32 bit output
         dtype = 'NIFTI_TYPE_FLOAT32'
     else:
-        raise ValueError('Only float data types currently handled')
+        Output.error(Errors.NO_FLOAT_DATA_TYPE.format(data_type=data.dtype))
 
     if len(data.shape) == 1:
         Nimg = 1

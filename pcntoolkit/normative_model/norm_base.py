@@ -46,7 +46,6 @@ import fcntl
 import glob
 import json
 import os
-import warnings
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
@@ -65,6 +64,7 @@ from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.basis_function import BasisFunction, create_basis_function
 from pcntoolkit.util.evaluator import Evaluator
+from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 from pcntoolkit.util.plotter import plot_centiles, plot_qq
 from pcntoolkit.util.scaler import Scaler
 
@@ -124,6 +124,7 @@ class NormBase(ABC):
         self.basis_function: BasisFunction
         self.basis_column: Optional[int] = None
         self.is_fitted: bool = False
+
     def fit(self, data: NormData) -> None:
         """
         Fits a regression model for each response variable in the data.
@@ -151,11 +152,11 @@ class NormBase(ABC):
         self.register_batch_effects(data)
         self.preprocess(data)
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
-        print(f"{os.getpid()} - Going to fit {len(self.response_vars)} models\n")
+        Output.print(Messages.FITTING_MODELS, n_models=len(self.response_vars))
         for responsevar in self.response_vars:
-            resp_fit_data = data.sel(response_vars=responsevar)
+            resp_fit_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print(f"{os.getpid()} - Fitting model for {responsevar}\n")
+            Output.print(Messages.FITTING_MODEL, model_name=responsevar)
             self._fit(resp_fit_data)
             self.reset()
         self.is_fitted = True
@@ -197,15 +198,16 @@ class NormBase(ABC):
         assert self.is_fitted, "Model is not fitted!"
         self.preprocess(data)
         assert self.check_compatibility(data), "Data is not compatible with the model!"
-        print(f"Going to predict {len(self.response_vars)} models")
-        for responsevar in self.response_vars:
-            resp_predict_data = data.sel(response_vars=responsevar)
-            if responsevar not in self.regression_models:
-                raise ValueError(
-                    f"Attempted to predict model {responsevar}, but it does not exist."
-                )
+
+        respvar_intersection = set(self.response_vars).intersection(
+            data.response_vars.values
+        )
+
+        Output.print(Messages.PREDICTING_MODELS, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print(f"Predicting model for {responsevar}")
+            Output.print(Messages.PREDICTING_MODEL, model_name=responsevar)
             self._predict(resp_predict_data)
             self.reset()
         self.evaluate(data)
@@ -257,22 +259,23 @@ class NormBase(ABC):
         self.register_batch_effects(fit_data)
         self.preprocess(predict_data)
         self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
-        print(f"Going to fit and predict {len(self.response_vars)} models")
+        Output.print(
+            Messages.FITTING_AND_PREDICTING_MODELS, n_models=len(self.response_vars)
+        )
         for responsevar in self.response_vars:
-            resp_fit_data = fit_data.sel(response_vars=responsevar)
-            resp_predict_data = predict_data.sel(response_vars=responsevar)
+            resp_fit_data = fit_data.sel({"response_vars": responsevar})
+            resp_predict_data = predict_data.sel({"response_vars": responsevar})
             if responsevar not in self.regression_models:
                 self.regression_models[responsevar] = self.regression_model_type(
                     responsevar, self.default_reg_conf
                 )
             self.focus(responsevar)
-            print(f"Fitting and predicting model for {responsevar}")
+            Output.print(Messages.FITTING_AND_PREDICTING_MODEL, model_name=responsevar)
             self._fit_predict(resp_fit_data, resp_predict_data)
             self.reset()
         self.is_fitted = True
         if self.norm_conf.savemodel:
             self.save()
-        # Get the results
         self.evaluate(predict_data)
         if self.norm_conf.saveresults:
             self.save_results(predict_data)
@@ -323,14 +326,15 @@ class NormBase(ABC):
             data.response_vars.to_numpy().copy().tolist()
         )
         transfered_models = {}
-        print(f"Going to transfer {len(self.response_vars)} models")
-        for responsevar in data.response_vars.values:
-            if responsevar not in self.response_vars:
-                print(f"Skipping {responsevar} because it is not in the original model")
-                continue
-            resp_transfer_data = data.sel(response_vars=responsevar)
+
+        respvar_intersection = set(self.response_vars).intersection(
+            data.response_vars.values
+        )
+        Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_transfer_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print(f"Transferring model for {responsevar}")
+            Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
             transfered_models[responsevar] = self._transfer(
                 transfered_normative_model, resp_transfer_data, *args, **kwargs
             )
@@ -528,19 +532,19 @@ class NormBase(ABC):
             data = data.drop_vars(["scaled_centiles", "centiles"])
             data = data.drop_dims(["cdf"])
 
+        respvar_intersection = set(self.response_vars).intersection(
+            data.response_vars.values
+        )
         data["scaled_centiles"] = xr.DataArray(
-            np.zeros((cdf.shape[0], data.X.shape[0], len(self.response_vars))),
+            np.zeros((cdf.shape[0], data.X.shape[0], len(respvar_intersection))),
             dims=("cdf", "datapoints", "response_vars"),
             coords={"cdf": cdf},
         )
-        for responsevar in self.response_vars:
-            resp_predict_data = data.sel(response_vars=responsevar)
-            if responsevar not in self.regression_models:
-                raise ValueError(
-                    f"Attempted to find quantiles for model {responsevar}, but it does not exist."
-                )
+        Output.print(Messages.COMPUTING_CENTILES, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print("Computing centiles for", responsevar)
+            Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
             data["scaled_centiles"].loc[{"response_vars": responsevar}] = (
                 self._centiles(resp_predict_data, cdf, **kwargs)
             )
@@ -574,26 +578,30 @@ class NormBase(ABC):
         """
 
         self.preprocess(data)
-        data["zscores"] = xr.DataArray(
-            np.zeros((data.X.shape[0], len(self.response_vars))),
-            dims=("datapoints", "response_vars"),
-            coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
+        respvar_intersection = set(self.response_vars).intersection(
+            data.response_vars.values
         )
-        for responsevar in self.response_vars:
-            resp_predict_data = data.sel(response_vars=responsevar)
-            if responsevar not in self.regression_models:
-                raise ValueError(
-                    f"Attempted to find zscores for self {responsevar}, but it does not exist."
-                )
+
+        data["zscores"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(respvar_intersection))),
+            dims=("datapoints", "response_vars"),
+            coords={
+                "datapoints": data.datapoints,
+                "response_vars": list(respvar_intersection),
+            },
+        )
+        Output.print(Messages.COMPUTING_ZSCORES, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print("Computing zscores for", responsevar)
+            Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
             data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
                 resp_predict_data
             )
             self.reset()
         self.postprocess(data)
         return data
-    
+
     def compute_logp(self, data: NormData) -> NormData:
         """
         Computes standardized log-probabilities for each response variable in the data.
@@ -620,19 +628,22 @@ class NormBase(ABC):
         """
 
         self.preprocess(data)
-        data["logp"] = xr.DataArray(
-            np.zeros((data.X.shape[0], len(self.response_vars))),
-            dims=("datapoints", "response_vars"),
-            coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
+        respvar_intersection = set(self.response_vars).intersection(
+            data.response_vars.values
         )
-        for responsevar in self.response_vars:
-            resp_predict_data = data.sel(response_vars=responsevar)
-            if responsevar not in self.regression_models:
-                raise ValueError(
-                    f"Attempted to find zscores for self {responsevar}, but it does not exist."
-                )
+        data["logp"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(respvar_intersection))),
+            dims=("datapoints", "response_vars"),
+            coords={
+                "datapoints": data.datapoints,
+                "response_vars": list(respvar_intersection),
+            },
+        )
+        Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
-            print("Computing logp for", responsevar)
+            Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self._logp(
                 resp_predict_data
             )
@@ -703,24 +714,30 @@ class NormBase(ABC):
             i for i in self.inscalers.keys() if i not in data.covariates.values
         ]
         if len(missing_covariates) > 0:
-            warnings.warn(
-                f"The dataset {data.name} is missing the following covariates: {missing_covariates}"
+            Output.warning(
+                Warnings.MISSING_COVARIATES,
+                covariates=missing_covariates,
+                dataset_name=data.name,
             )
 
         extra_covariates = [
             i for i in data.covariates.values if i not in self.inscalers.keys()
         ]
         if len(extra_covariates) > 0:
-            warnings.warn(
-                f"The dataset {data.name} has too many covariates: {extra_covariates}"
+            Output.warning(
+                Warnings.EXTRA_COVARIATES,
+                covariates=extra_covariates,
+                dataset_name=data.name,
             )
 
         extra_response_vars = [
             i for i in data.response_vars.values if i not in self.outscalers.keys()
         ]
         if len(extra_response_vars) > 0:
-            warnings.warn(
-                f"The dataset {data.name} has too many response variables: {extra_response_vars}"
+            Output.warning(
+                Warnings.EXTRA_RESPONSE_VARS,
+                response_vars=extra_response_vars,
+                dataset_name=data.name,
             )
 
         compatible = True
@@ -729,6 +746,12 @@ class NormBase(ABC):
             for be, unique in data.unique_batch_effects.items()
         }
         compatible = sum([len(l) for l in unknown_batch_effects.values()]) == 0
+        if len(unknown_batch_effects) > 0:
+            Output.warning(
+                Warnings.UNKNOWN_BATCH_EFFECTS,
+                batch_effects=unknown_batch_effects,
+                dataset_name=data.name,
+            )
         return (
             (len(missing_covariates) == 0)
             and (len(extra_covariates) == 0)
@@ -751,15 +774,19 @@ class NormBase(ABC):
                 mapped_batch_effects[j, i] = self.batch_effects_maps[be][v]
         return mapped_batch_effects.astype(int)
 
-
     def sample_batch_effects(self, n_samples: int) -> pd.DataFrame:
         """
         Sample the batch effects from the estimated distribution.
         """
-        max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
+        max_batch_effect_count = max(
+            [len(v) for v in self.unique_batch_effects.values()]
+        )
         if n_samples < max_batch_effect_count:
-            raise ValueError(f"Cannot sample {n_samples} batch effects, because some batch effects have more levels than the number of samples.")
-        
+            Output.error(
+                Errors.SAMPLE_BATCH_EFFECTS,
+                n_samples=n_samples,
+                max_batch_effect_count=max_batch_effect_count,
+            )
 
         bes = pd.DataFrame()
         for be in self.batch_effects_counts.keys():
@@ -769,9 +796,8 @@ class NormBase(ABC):
                 size=n_samples,
                 p=[c / countsum for c in list(self.batch_effects_counts[be].values())],
             )
-            # always add all the levels, even if they are not sampled
             levels = self.unique_batch_effects[be]
-            bes.loc[0:len(levels)-1,be] = levels            
+            bes.loc[0 : len(levels) - 1, be] = levels
         return bes
 
     def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
@@ -863,6 +889,13 @@ class NormBase(ABC):
         self.basis_function.transform(data)
 
     def save(self, path: Optional[str] = None) -> None:
+        """
+        Save the model to a file.
+
+        Args:
+            path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.
+        """
+        Output.print(Messages.SAVING_MODEL.format(save_dir=self.norm_conf.save_dir))
         if path is not None:
             self.norm_conf.set_save_dir(path)
         metadata = {
@@ -870,9 +903,8 @@ class NormBase(ABC):
             "regression_model_type": self.regression_model_type.__name__,
             "default_reg_conf": self.default_reg_conf.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
-            "response_vars": self.response_vars,
             "unique_batch_effects": self.unique_batch_effects,
-            "is_fitted": self.is_fitted
+            "is_fitted": self.is_fitted,
         }
 
         if hasattr(self, "bspline_basis"):
@@ -918,9 +950,6 @@ class NormBase(ABC):
             with open(json_save_path, "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
-        abspath = os.path.abspath(self.norm_conf.save_dir)
-        print(f"Model saved to {abspath}/model")
-
     @classmethod
     def load(cls, path: str) -> NormBase:
         model_path = os.path.join(path, "model", "normative_model.json")
@@ -928,7 +957,6 @@ class NormBase(ABC):
             metadata = json.load(f)
 
         self = cls(NormConf.from_dict(metadata["norm_conf"]))
-
 
         if "basis_function" in metadata:
             self.basis_function = create_basis_function(metadata["basis_function"])
@@ -948,7 +976,6 @@ class NormBase(ABC):
         if "unique_batch_effects" in metadata:
             self.unique_batch_effects = metadata["unique_batch_effects"]
 
-     
         self.regression_model_type = globals()[metadata["regression_model_type"]]
         self.response_vars = []
         self.outscalers = {}
@@ -976,10 +1003,11 @@ class NormBase(ABC):
         self.default_reg_conf = type(
             self.regression_models[self.response_vars[0]].reg_conf
         ).from_dict(metadata["default_reg_conf"])
-        
+
         return self
 
     def save_results(self, data: NormData) -> None:
+        Output.print(Messages.SAVING_RESULTS.format(save_dir=self.norm_conf.save_dir))
         os.makedirs(os.path.join(self.norm_conf.save_dir, "results"), exist_ok=True)
         self.save_zscores(data)
         self.save_centiles(data)
@@ -992,8 +1020,6 @@ class NormBase(ABC):
             show_data=True,
         )
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
-        abspath = os.path.abspath(self.norm_conf.save_dir)
-        print(f"Results and plots saved to {abspath}/results and {abspath}/plots")
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.zscores.to_dataframe().unstack(level="response_vars")
@@ -1142,8 +1168,6 @@ class NormBase(ABC):
 
     #######################################################################################################
 
- 
-
     @abstractmethod
     def _fit(self, data: NormData, make_new_model: bool = False) -> None:
         """
@@ -1224,7 +1248,9 @@ class NormBase(ABC):
         """
 
     @abstractmethod
-    def _transfer(self, model: NormBase, data: NormData, **kwargs: Any) -> RegressionModel:
+    def _transfer(
+        self, model: NormBase, data: NormData, **kwargs: Any
+    ) -> RegressionModel:
         """
         Transfers the current regression model to new data.
 
@@ -1418,7 +1444,7 @@ class NormBase(ABC):
         >>> args = {'param1': value1, 'param2': value2}
         >>> model = ConcreteNormModel.from_args(args)
         """
-        
+
     #######################################################################################################
 
     # Properties
