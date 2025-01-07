@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd  #type: ignore
+import pandas as pd  # type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
 
@@ -94,17 +94,17 @@ def plot_centiles(
     Examples
     --------
     >>> # Basic centile plot
-    >>> plot_centiles(model, data, covariate='age')
-    
+    >>> plot_centiles(model, data, covariate="age")
+
     >>> # With data overlay and batch effects
     >>> plot_centiles(
-    ...     model, 
+    ...     model,
     ...     data,
-    ...     covariate='age',
-    ...     batch_effects={'site': ['site1', 'site2']},
+    ...     covariate="age",
+    ...     batch_effects={"site": ["site1", "site2"]},
     ...     show_data=True,
-    ...     hue_data='diagnosis',
-    ...     markers_data='sex'
+    ...     hue_data="diagnosis",
+    ...     markers_data="sex",
     ... )
     """
     if covariate is None:
@@ -123,9 +123,7 @@ def plot_centiles(
             if isinstance(v, str):
                 batch_effects[k] = [v]
             elif not isinstance(v, list):
-                raise ValueError(
-                    f"Items of the batch_effect dict be a list or a string, not {type(v)}"
-                )
+                raise ValueError(f"Items of the batch_effect dict be a list or a string, not {type(v)}")
 
     if plt_kwargs is None:
         plt_kwargs = {}
@@ -133,9 +131,7 @@ def plot_centiles(
     synth_data = data.create_synthetic_data(
         n_datapoints=150,
         range_dim=covariate,
-        batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()}
-        if batch_effects
-        else None,
+        batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()} if batch_effects else None,
     )
     model.compute_centiles(synth_data, cdf=cummul_densities, **kwargs)
     for response_var in data.coords["response_vars"].to_numpy():
@@ -292,7 +288,7 @@ def _plot_centiles(
             )
             if show_other_data:
                 non_be_df = df[~idx]
-                non_be_df["marker"] = ["Other data"]*len(non_be_df)
+                non_be_df["marker"] = ["Other data"] * len(non_be_df)
                 sns.scatterplot(
                     data=non_be_df,
                     x=covariate,
@@ -321,6 +317,7 @@ def _plot_centiles(
     else:
         plt.show()
     plt.close()
+
 
 def plot_qq(
     data: NormData,
@@ -361,7 +358,7 @@ def plot_qq(
 
     Examples
     --------
-    >>> plot_qq(data, plt_kwargs={'figsize': (10, 6)}, bound=3)
+    >>> plot_qq(data, plt_kwargs={"figsize": (10, 6)}, bound=3)
     """
     plt_kwargs = plt_kwargs or {}
     for response_var in data.coords["response_vars"].to_numpy():
@@ -377,6 +374,7 @@ def plot_qq(
             seed,
             save_dir,
         )
+
 
 def _plot_qq(
     data: NormData,
@@ -413,7 +411,7 @@ def _plot_qq(
         Column to use for splitting data. Defaults to None. All split data will be offset by 1.
     seed : int, optional
         Random seed for reproducibility. Defaults to 42.
-    save_dir: str | None = None,    
+    save_dir: str | None = None,
 
     Returns
     -------
@@ -421,7 +419,7 @@ def _plot_qq(
 
     Examples
     --------
-    >>> _plot_qq(data, 'response_var', plt_kwargs={'figsize': (10, 6)}, bound=3)
+    >>> _plot_qq(data, "response_var", plt_kwargs={"figsize": (10, 6)}, bound=3)
     """
     np.random.seed(seed)
     sns.set_style("whitegrid")

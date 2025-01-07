@@ -32,12 +32,7 @@ The module supports two NUTS sampler implementations:
 
 Example
 -------
->>> conf = HBRConf(
-...     draws=2000,
-...     chains=4,
-...     likelihood="Normal",
-...     cores=2
-... )
+>>> conf = HBRConf(draws=2000, chains=4, likelihood="Normal", cores=2)
 >>> conf.to_dict()
 {'draws': 2000, 'chains': 4, 'likelihood': 'Normal', 'cores': 2, ...}
 
@@ -121,7 +116,7 @@ class HBRConf(RegConf):
 
     Examples
     --------
-    >>> conf = HBRConf(draws=2000, chains=4, likelihood='Normal')
+    >>> conf = HBRConf(draws=2000, chains=4, likelihood="Normal")
     >>> conf.detect_configuration_problems()
     []
 
@@ -146,7 +141,7 @@ class HBRConf(RegConf):
     likelihood: str = LIKELIHOOD
 
     # prior config with defaults
-    mu: BasePrior  = field(default_factory=get_default_mu)
+    mu: BasePrior = field(default_factory=get_default_mu)
     sigma: BasePrior = field(default_factory=get_default_sigma)
     epsilon: BasePrior = field(default_factory=get_default_epsilon)
     delta: BasePrior = field(default_factory=get_default_delta)
@@ -184,9 +179,7 @@ class HBRConf(RegConf):
 
         # Check if likelihood is valid
         if self.likelihood not in ["Normal", "SHASHb", "SHASHo", "SHASHo2"]:
-            add_problem(
-                f"""Likelihood '{self.likelihood}' is not supported. Please specify a valid likelihood."""
-            )
+            add_problem(f"""Likelihood '{self.likelihood}' is not supported. Please specify a valid likelihood.""")
 
         # Check positivity of sigma
         if self.sigma:
@@ -210,13 +203,9 @@ class HBRConf(RegConf):
         # Check if epsilon and delta are provided for SHASH likelihoods
         if self.likelihood.startswith("SHASH"):
             if not self.epsilon:
-                add_problem(
-                    "Epsilon must be provided for SHASH likelihoods. Please specify epsilon."
-                )
+                add_problem("Epsilon must be provided for SHASH likelihoods. Please specify epsilon.")
             if not self.delta:
-                add_problem(
-                    "Delta must be provided for SHASH likelihoods. Please specify delta."
-                )
+                add_problem("Delta must be provided for SHASH likelihoods. Please specify delta.")
 
         return configuration_problems
 

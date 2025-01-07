@@ -28,15 +28,13 @@ PM_DISTMAP = {
 def make_prior(name: str = "theta", **kwargs) -> BasePrior:
     if kwargs.pop("linear", False):
         return LinearPrior(name, **kwargs)
-    elif kwargs.pop("random", False): 
+    elif kwargs.pop("random", False):
         return RandomPrior(name, **kwargs)
     else:
         return Prior(name, **kwargs)
-        
 
-def prior_from_args(
-    name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None
-) -> BasePrior:
+
+def prior_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
     dims = args.get(f"dims_{name}", dims)
 
     mapping = args.get(f"mapping_{name}", "identity")
@@ -45,16 +43,10 @@ def prior_from_args(
         dist_name = args.get(f"dist_name_{name}", "HalfNormal")
         dist_params = args.get(f"dist_params_{name}", (1.0,))
         if args.get(f"linear_{name}", False) or args.get(f"random_{name}", False):
-            assert (
-                mapping != "identity"
-            ), "Sigma and delta need a mapping if they are linear or random"
+            assert mapping != "identity", "Sigma and delta need a mapping if they are linear or random"
         else:
-            assert (
-                args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"]
-                or (
-                    args.get(f"dist_name_{name}", None) == "Uniform"
-                    and args.get(f"dist_params_{name}", None)[0] > 0
-                )
+            assert args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"] or (
+                args.get(f"dist_name_{name}", None) == "Uniform" and args.get(f"dist_params_{name}", None)[0] > 0
             ), "Sigma and delta need a positive distribution if they are not linear or random"
     else:
         dist_name = args.get(f"dist_name_{name}", "Normal")
@@ -67,11 +59,8 @@ def prior_from_args(
     elif args.get(f"random_{name}", False):
         mu = prior_from_args(f"mu_{name}", args, dims=dims)
         if not args.get(f"mapping_sigma_{name}", None):
-            assert (
-                args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"]
-            ) or (
-                args.get(f"dist_name_sigma_{name}", None) == "Uniform"
-                and args.get(f"dist_params_sigma_{name}", None)[0] > 0
+            assert (args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"]) or (
+                args.get(f"dist_name_sigma_{name}", None) == "Uniform" and args.get(f"dist_params_sigma_{name}", None)[0] > 0
             ), "Sigma needs a positive distribution if it is not linear or random"
 
             sigma = prior_from_args(f"sigma_{name}", args, dims=dims)
@@ -195,9 +184,7 @@ class Prior(BasePrior):
                     az.extract(idata, var_names=self.name),
                     freedom,
                 )
-            self.dist = PM_DISTMAP[self.dist_name](
-                self.name, *self.dist_params, dims=self.dims
-            )
+            self.dist = PM_DISTMAP[self.dist_name](self.name, *self.dist_params, dims=self.dims)
 
     def _sample(self, data: HBRData):
         return self.dist
@@ -240,10 +227,7 @@ class Prior(BasePrior):
                     raise ValueError(f"Unknown distribution name {dist_name}")
 
         if "covariates" in samples.dims:
-            params = [
-                infer_params(samples.sel(covariates=i))
-                for i in samples.coords["covariates"]
-            ]
+            params = [infer_params(samples.sel(covariates=i)) for i in samples.coords["covariates"]]
             self.dist_params = [i.tolist() for i in np.array(params).T]
         else:
             self.dist_params = infer_params(samples)
@@ -375,15 +359,9 @@ class RandomPrior(BasePrior):
         instance = cls(
             mu=mu,
             sigma=sigma,
-            **{
-                k: v
-                for k, v in dct.items()
-                if k in ["name", "dims", "mapping", "mapping_params"]
-            },
+            **{k: v for k, v in dct.items() if k in ["name", "dims", "mapping", "mapping_params"]},
         )
-        instance.sigmas = {
-            k: BasePrior.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")
-        }
+        instance.sigmas = {k: BasePrior.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")}
         # instance.scaled_offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
         return instance
 
@@ -401,7 +379,7 @@ class LinearPrior(BasePrior):
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.slope = slope or get_default_slope()
-        self.slope.dims = ("covariates",) if not self.dims else ("covariates",*self.dims)
+        self.slope.dims = ("covariates",) if not self.dims else ("covariates", *self.dims)
         self.intercept = intercept or get_default_intercept()
         self.intercept.dims = self.dims
         self.sample_dims = ("datapoints",)
@@ -430,13 +408,11 @@ class LinearPrior(BasePrior):
         self.intercept.compile(model, idata, freedom)
 
     def _sample(self, data: HBRData):
-        if self.one_dimensional:    
-            return (self.slope.sample(data) * data.pm_X)[:,0] + self.intercept.sample(data)
+        if self.one_dimensional:
+            return (self.slope.sample(data) * data.pm_X)[:, 0] + self.intercept.sample(data)
         else:
-            return math.sum(
-                self.slope.sample(data) * data.pm_X, axis=1, keepdims=False
-            ) + self.intercept.sample(data)
-        
+            return math.sum(self.slope.sample(data) * data.pm_X, axis=1, keepdims=False) + self.intercept.sample(data)
+
     def to_dict(self):
         dct = super().to_dict()
         dct["slope"] = self.slope.to_dict()
@@ -450,11 +426,7 @@ class LinearPrior(BasePrior):
         return cls(
             slope=slope,
             intercept=intercept,
-            **{
-                k: v
-                for k, v in dct.items()
-                if k in ["name", "dims", "mapping", "mapping_params"]
-            },
+            **{k: v for k, v in dct.items() if k in ["name", "dims", "mapping", "mapping_params"]},
         )
 
     @property

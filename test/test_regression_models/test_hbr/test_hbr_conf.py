@@ -1,5 +1,3 @@
-
-
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.prior import LinearPrior, RandomPrior
 
@@ -14,7 +12,6 @@ The tests cover the following aspects:
 
 
 def test_hbrconf_from_args_to_dict_from_dict():
-
     dict_1 = {"draws": 1000, "tune": 1000, "cores": 1, "likelihood": "Normal"}
     dict_1 = dict_1 | {
         "likelihood": "Normal",
@@ -39,8 +36,8 @@ def test_hbrconf_from_args_to_dict_from_dict():
     assert dict_2["tune"] == 1000
     assert dict_2["pymc_cores"] == 1
     assert dict_2["likelihood"] == "Normal"
-    assert dict_2["mu"]['type'] == "LinearPrior"
-    assert dict_2["mu"]["slope"]['type'] == "RandomPrior"
+    assert dict_2["mu"]["type"] == "LinearPrior"
+    assert dict_2["mu"]["slope"]["type"] == "RandomPrior"
     assert dict_2["mu"]["intercept"]["type"] == "RandomPrior"
 
     conf_2 = HBRConf.from_dict(dict_2)

@@ -107,9 +107,7 @@ def load_test_data(conf_dict: dict) -> NormData:
     return data
 
 
-def load_response_vars(
-    datafile: str, maskfile: str | None = None, vol: bool = True
-) -> tuple[np.ndarray, np.ndarray | None]:
+def load_response_vars(datafile: str, maskfile: str | None = None, vol: bool = True) -> tuple[np.ndarray, np.ndarray | None]:
     """
     Load response variables from file. This will load the data and mask it if
     necessary. If the data is in ascii format it will be converted into a numpy
@@ -145,15 +143,9 @@ def get_argparser() -> argparse.ArgumentParser:
     #  parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("-a", "--alg", help="algorithm", dest="alg", default="gpr")
-    parser.add_argument(
-        "-f", "--func", help="Function to call", dest="func", default="estimate"
-    )
-    parser.add_argument(
-        "-r", "--responses", help="responses file", dest="resp", default=None
-    )
-    parser.add_argument(
-        "-c", "--covariates", help="covariates file", dest="cov", default=None
-    )
+    parser.add_argument("-f", "--func", help="Function to call", dest="func", default="estimate")
+    parser.add_argument("-r", "--responses", help="responses file", dest="resp", default=None)
+    parser.add_argument("-c", "--covariates", help="covariates file", dest="cov", default=None)
     parser.add_argument(
         "-t",
         "--test_responses",
@@ -169,9 +161,7 @@ def get_argparser() -> argparse.ArgumentParser:
         default=None,
     )
     parser.add_argument("-m", "--mask", help="mask file", dest="mask", default=None)
-    parser.add_argument(
-        "-k", "--cvfolds", help="cross-validation folds", dest="cvfolds", default=None
-    )
+    parser.add_argument("-k", "--cvfolds", help="cross-validation folds", dest="cvfolds", default=None)
     return parser
 
 
@@ -248,15 +238,16 @@ def main(*args) -> None:
         ValueError: If the function specified in the configuration dictionary is unknown.
 
     """
-    parsed_args = get_conf_dict_from_args() 
-    if parsed_args['func'] == "fit":
-        fit(parsed_args)    
-    elif parsed_args['func'] == "predict":
+    parsed_args = get_conf_dict_from_args()
+    if parsed_args["func"] == "fit":
+        fit(parsed_args)
+    elif parsed_args["func"] == "predict":
         predict(parsed_args)
-    elif parsed_args['func'] == "fit_predict":
+    elif parsed_args["func"] == "fit_predict":
         fit_predict(parsed_args)
     else:
         raise ValueError(f"Unknown function {parsed_args['func']}.")
+
 
 def entrypoint(*args):
     main(*args[1:])
@@ -264,4 +255,3 @@ def entrypoint(*args):
 
 if __name__ == "__main__":
     main()
-

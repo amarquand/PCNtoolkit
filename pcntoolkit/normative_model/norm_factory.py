@@ -91,7 +91,7 @@ def load_normative_model(path: str) -> NormBase:
         If the model name is not recognized.
     """
     try:
-        with open(os.path.join(path, "model", "normative_model.json"), mode="r", encoding='utf-8') as f:
+        with open(os.path.join(path, "model", "normative_model.json"), mode="r", encoding="utf-8") as f:
             metadata = json.load(f)
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"Path {path} does not exist.") from exc

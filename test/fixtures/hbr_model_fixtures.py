@@ -31,6 +31,7 @@ N_TUNES = 5
 N_PYMC_CORES = 4
 N_CHAINS = 2
 
+
 @pytest.fixture
 def cvfolds():
     return 4
@@ -112,12 +113,7 @@ def norm_conf_dict_for_hbr_test_model(
 
 
 @pytest.fixture
-def hbr_conf_dict(
-    save_dir,
-    fit_files,
-    test_files,
-    maskfile  
-):
+def hbr_conf_dict(save_dir, fit_files, test_files, maskfile):
     responsefile, covfile, trbefile = fit_files
     testresp, testcov, tsbefile = test_files
     return {
@@ -157,21 +153,17 @@ def norm_conf_for_hbr_test_model(savemodel, save_dir):
 
 @pytest.fixture
 def mu():
-    return make_prior(
-        linear=True,
-        intercept=make_prior(random=True),
-        slope=make_prior(dist_name="Normal", dist_params=(0, 10))
-    )
+    return make_prior(linear=True, intercept=make_prior(random=True), slope=make_prior(dist_name="Normal", dist_params=(0, 10)))
 
 
 @pytest.fixture
 def sigma():
     return make_prior(
         linear=True,
-        slope=make_prior(dist_name="Normal", dist_params=(0, 2.)),
-        intercept=make_prior(dist_name="Normal", dist_params=(0, 2.)),
-        mapping = "softplus",
-        mapping_params=(0., 3.)
+        slope=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
+        intercept=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
+        mapping="softplus",
+        mapping_params=(0.0, 3.0),
     )
 
 

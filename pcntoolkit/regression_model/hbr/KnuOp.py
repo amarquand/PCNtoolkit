@@ -164,9 +164,7 @@ class KnuPrimeOp(BinaryScalarOp):
         """
         return KnuPrimeOp.st_impl(p, x)
 
-    def grad(
-        self, inputs: Sequence[Variable[Any, Any]], grads: Sequence[Variable[Any, Any]]
-    ) -> List[Variable]:
+    def grad(self, inputs: Sequence[Variable[Any, Any]], grads: Sequence[Variable[Any, Any]]) -> List[Variable]:
         """Compute gradients of the Bessel function derivative.
 
         Parameters

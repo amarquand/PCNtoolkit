@@ -85,8 +85,7 @@ class NormData(xr.Dataset):
 
     Examples
     --------
-    >>> data = NormData.from_dataframe("my_data", df, covariates,
-    ...                                batch_effects, response_vars)
+    >>> data = NormData.from_dataframe("my_data", df, covariates, batch_effects, response_vars)
     >>> data.scale_forward(inscalers, outscalers)
     >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
@@ -101,7 +100,7 @@ class NormData(xr.Dataset):
         "centiles",
         "zscores",
         "unique_batch_effects",
-        "batch_effects_counts"
+        "batch_effects_counts",
     )
 
     def __init__(
@@ -185,9 +184,7 @@ class NormData(xr.Dataset):
                 "datapoints": list(np.arange(X.shape[0])),
                 "covariates": [f"covariate_{i}" for i in np.arange(X.shape[1])],
                 "response_vars": [f"response_var_{i}" for i in np.arange(y.shape[1])],
-                "batch_effect_dims": [
-                    f"batch_effect_{i}" for i in range(batch_effects.shape[1])
-                ],
+                "batch_effect_dims": [f"batch_effect_{i}" for i in range(batch_effects.shape[1])],
             },
             attrs=attrs,
         )
@@ -319,9 +316,7 @@ class NormData(xr.Dataset):
                 ),
             },
             coords={
-                "datapoints": list(
-                    np.arange(dataframe[covariates].to_numpy().shape[0])
-                ),
+                "datapoints": list(np.arange(dataframe[covariates].to_numpy().shape[0])),
                 "response_vars": response_vars,
                 "covariates": covariates,
                 "batch_effect_dims": batch_effects,
@@ -335,9 +330,7 @@ class NormData(xr.Dataset):
         """
         new_X = np.concatenate([self.X.values, other.X.values], axis=0)
         new_y = np.concatenate([self.y.values, other.y.values], axis=0)
-        new_batch_effects = np.concatenate(
-            [self.batch_effects.values, other.batch_effects.values], axis=0
-        )
+        new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
 
         new_normdata = NormData(
             name=self.attrs["name"],
@@ -411,16 +404,10 @@ class NormData(xr.Dataset):
 
         # # Assert that the batch effects to sample are in the batch effects maps
         for dim, values in batch_effects_to_sample.items():
-            assert (
-                dim in self.batch_effect_dims
-            ), f"{dim} is not a known batch effect dimension"
-            assert (
-                len(values) > 0
-            ), f"No values provided for batch effect dimension {dim}"
+            assert dim in self.batch_effect_dims, f"{dim} is not a known batch effect dimension"
+            assert len(values) > 0, f"No values provided for batch effect dimension {dim}"
             for value in values:
-                assert (
-                    value in self.unique_batch_effects[dim]
-                ), f"{value} is not a known value for batch effect dimension {dim}"
+                assert value in self.unique_batch_effects[dim], f"{value} is not a known value for batch effect dimension {dim}"
 
         for batch_effect_dim, values_to_sample in batch_effects_to_sample.items():
             df[batch_effect_dim] = np.random.choice(values_to_sample, n_datapoints)
@@ -451,9 +438,7 @@ class NormData(xr.Dataset):
         Dict[str, List[str]]
             A dictionary mapping each batch effect dimension to a list containing a single value.
         """
-        return {
-            k: [v[0]] for k, v in self.unique_batch_effects.items()
-        }
+        return {k: [v[0]] for k, v in self.unique_batch_effects.items()}
 
     def concatenate_string_arrays(self, *arrays: Any) -> np.ndarray:
         """
@@ -514,10 +499,7 @@ class NormData(xr.Dataset):
             splits = tuple(splits)
         assert isinstance(splits, tuple)
         batch_effects_stringified = self.concatenate_string_arrays(
-            *[
-                self.batch_effects[:, i].astype(str)
-                for i in range(self.batch_effects.shape[1])
-            ]
+            *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
         )
         train_idx, test_idx = train_test_split(
             np.arange(self.X.shape[0]),
@@ -552,18 +534,11 @@ class NormData(xr.Dataset):
             A generator yielding training and testing NormData instances for each fold.
         """
         # Returns an iterator of (NormData, NormData) objects, split into k folds
-        stratified_kfold_split = StratifiedKFold(
-            n_splits=k, shuffle=True, random_state=42
-        )
+        stratified_kfold_split = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
         batch_effects_stringified = self.concatenate_string_arrays(
-            *[
-                self.batch_effects[:, i].astype(str)
-                for i in range(self.batch_effects.shape[1])
-            ]
+            *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
         )
-        for train_idx, test_idx in stratified_kfold_split.split(
-            self.X, batch_effects_stringified
-        ):
+        for train_idx, test_idx in stratified_kfold_split.split(self.X, batch_effects_stringified):
             split1 = self.isel(datapoints=train_idx)
             split2 = self.isel(datapoints=test_idx)
             yield split1, split2
@@ -573,16 +548,13 @@ class NormData(xr.Dataset):
         Create a mapping of batch effects dims to unique values.
         """
         # create a dictionary with for each column in the batch effects, a dict from value to int
-        self.attrs['unique_batch_effects'] = {}
+        self.attrs["unique_batch_effects"] = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-            self.attrs['unique_batch_effects'][dim] = list(np.unique(self.batch_effects[:, i]))
-        self.attrs['batch_effects_counts'] = {}
+            self.attrs["unique_batch_effects"][dim] = list(np.unique(self.batch_effects[:, i]))
+        self.attrs["batch_effects_counts"] = {}
         for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-            self.attrs['batch_effects_counts'][dim] = {
-                k: v
-                for k, v in zip(
-                    *np.unique(self.batch_effects.values[:, i], return_counts=True)
-                )
+            self.attrs["batch_effects_counts"][dim] = {
+                k: v for k, v in zip(*np.unique(self.batch_effects.values[:, i], return_counts=True))
             }
 
     def check_compatibility(self, other: NormData) -> bool:
@@ -599,40 +571,24 @@ class NormData(xr.Dataset):
         bool
             True if compatible, False otherwise
         """
-        missing_covariates = [
-            i for i in other.covariates.values if i not in self.covariates.values
-        ]
+        missing_covariates = [i for i in other.covariates.values if i not in self.covariates.values]
         if len(missing_covariates) > 0:
-            warnings.warn(
-                f"The dataset {self.name} is missing the following covariates: {missing_covariates}"
-            )
+            warnings.warn(f"The dataset {self.name} is missing the following covariates: {missing_covariates}")
 
-        extra_covariates = [
-            i for i in self.covariates.values if i not in other.covariates.values
-        ]
+        extra_covariates = [i for i in self.covariates.values if i not in other.covariates.values]
         if len(extra_covariates) > 0:
-            warnings.warn(
-                f"The dataset {self.name} has covariates that are not present in {other.name}: {extra_covariates}"
-            )
+            warnings.warn(f"The dataset {self.name} has covariates that are not present in {other.name}: {extra_covariates}")
 
-        extra_response_vars = [
-            i for i in self.response_vars.values if i not in other.response_vars.values
-        ]
+        extra_response_vars = [i for i in self.response_vars.values if i not in other.response_vars.values]
         if len(extra_response_vars) > 0:
             warnings.warn(
                 f"The dataset {self.name} has response variables that are not present in {other.name}: {extra_response_vars}"
             )
-        if (
-            len(missing_covariates) > 0
-            or len(extra_covariates) > 0
-            or len(extra_response_vars) > 0
-        ):
+        if len(missing_covariates) > 0 or len(extra_covariates) > 0 or len(extra_response_vars) > 0:
             return False
         return True
 
-    def scale_forward(
-        self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]
-    ) -> None:
+    def scale_forward(self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]) -> None:
         """
         Scale the data forward using provided scalers.
 
@@ -651,9 +607,7 @@ class NormData(xr.Dataset):
             attrs=self.X.attrs,
         )
         for covariate in self.covariates.to_numpy():
-            self.scaled_X.loc[:, covariate] = inscalers[covariate].transform(
-                self.X.sel(covariates=covariate).data
-            )
+            self.scaled_X.loc[:, covariate] = inscalers[covariate].transform(self.X.sel(covariates=covariate).data)
 
         # Scale y column-wise using the outscalers
         self["scaled_y"] = xr.DataArray(
@@ -663,13 +617,9 @@ class NormData(xr.Dataset):
             attrs=self.y.attrs,
         )
         for responsevar in self.response_vars.to_numpy():
-            self.scaled_y.loc[:, responsevar] = outscaler[responsevar].transform(
-                self.y.sel(response_vars=responsevar).data
-            )
+            self.scaled_y.loc[:, responsevar] = outscaler[responsevar].transform(self.y.sel(response_vars=responsevar).data)
 
-    def scale_backward(
-        self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]
-    ) -> None:
+    def scale_backward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """
         Scale the data backward using provided scalers.
 
@@ -688,9 +638,7 @@ class NormData(xr.Dataset):
             attrs=self.scaled_X.attrs,
         )
         for covariate in self.covariates.to_numpy():
-            self.X.loc[:, covariate] = inscalers[covariate].inverse_transform(
-                self.scaled_X.sel(covariates=covariate).data
-            )
+            self.X.loc[:, covariate] = inscalers[covariate].inverse_transform(self.scaled_X.sel(covariates=covariate).data)
 
         # Scale y column-wise using the outscalers
         self["y"] = xr.DataArray(
@@ -713,9 +661,7 @@ class NormData(xr.Dataset):
                 attrs=self.scaled_centiles.attrs,
             )
             for responsevar in self.response_vars.to_numpy():
-                self.centiles.loc[{"response_vars": responsevar}] = outscalers[
-                    responsevar
-                ].inverse_transform(
+                self.centiles.loc[{"response_vars": responsevar}] = outscalers[responsevar].inverse_transform(
                     self.scaled_centiles.sel(response_vars=responsevar).data
                 )
 
@@ -734,9 +680,7 @@ class NormData(xr.Dataset):
             B.name = names[1]
         return A, B
 
-    def select_batch_effects(
-        self, batch_effects: Dict[str, List[str]], invert: bool = False
-    ) -> NormData:
+    def select_batch_effects(self, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
         """
         Select only the specified batch effects.
 
@@ -760,9 +704,7 @@ class NormData(xr.Dataset):
 
         to_return = self.where(mask).dropna(dim="datapoints", how="all")
         if isinstance(to_return, xr.Dataset):
-            to_return = NormData.from_xarray(
-                f"{self.attrs['name']}_selected", to_return
-            )
+            to_return = NormData.from_xarray(f"{self.attrs['name']}_selected", to_return)
         to_return.register_unique_batch_effects()
         return to_return
 
@@ -796,9 +738,7 @@ class NormData(xr.Dataset):
         be = (
             xr.DataArray.to_dataframe(self.batch_effects, dim_order)
             .reset_index(drop=False)
-            .pivot(
-                index="datapoints", columns="batch_effect_dims", values="batch_effects"
-            )
+            .pivot(index="datapoints", columns="batch_effect_dims", values="batch_effects")
         )
         be.columns = [("batch_effects", col) for col in be.columns]
         acc.append(be)

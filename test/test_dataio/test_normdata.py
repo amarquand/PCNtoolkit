@@ -51,9 +51,7 @@ def test_split_with_stratify(
     split_ratio,
     batch_effect_values,
 ):
-    splits = norm_data_from_arrays.train_test_split(
-        splits=split_ratio, split_names=("train", "val")
-    )
+    splits = norm_data_from_arrays.train_test_split(splits=split_ratio, split_names=("train", "val"))
 
     # Check basic split properties
     assert len(splits) == 2
@@ -72,7 +70,9 @@ def test_split_with_stratify(
         assert split.batch_effect_dims.shape == (len(batch_effect_values),)
         assert split.coords["datapoints"].shape == (expected_samples,)
         assert split.coords["covariates"].to_numpy().tolist() == [f"covariate_{i}" for i in range(n_covariates)]
-        assert split.coords["batch_effect_dims"].to_numpy().tolist() == [f"batch_effect_{i}" for i in range(len(batch_effect_values))]
+        assert split.coords["batch_effect_dims"].to_numpy().tolist() == [
+            f"batch_effect_{i}" for i in range(len(batch_effect_values))
+        ]
 
     # Check if stratification worked
     original_batch_effects = norm_data_from_arrays.batch_effects.data
@@ -81,32 +81,26 @@ def test_split_with_stratify(
     for col_idx in range(original_batch_effects.shape[1]):
         original_values, original_counts = np.unique(original_batch_effects[:, col_idx], return_counts=True)
         original_frequencies = original_counts / len(original_batch_effects)
-        
+
         for split in splits:
             split_values, split_counts = np.unique(split.batch_effects.data[:, col_idx], return_counts=True)
             split_frequencies = split_counts / len(split.batch_effects.data)
-            
+
             # Check if all unique values from original exist in split
-            assert np.all(np.isin(original_values, split_values)), \
-                f"Split missing some values from column {col_idx}"
-            
+            assert np.all(np.isin(original_values, split_values)), f"Split missing some values from column {col_idx}"
+
             # Check if frequencies are approximately equal (within 10% tolerance)
             for val, orig_freq in zip(original_values, original_frequencies):
                 split_freq = split_frequencies[split_values == val][0]
                 np.testing.assert_allclose(
-                    split_freq, 
-                    orig_freq, 
-                    atol=0.1,
-                    err_msg=f"Frequency mismatch for value {val} in column {col_idx}"
+                    split_freq, orig_freq, atol=0.1, err_msg=f"Frequency mismatch for value {val} in column {col_idx}"
                 )
 
     # Check if all unique batch effects are present in both splits
     original_unique_batch_effects = np.unique(original_batch_effects, axis=0)
     for split in splits:
         split_unique_batch_effects = np.unique(split.batch_effects.data, axis=0)
-        assert np.all(
-            np.isin(original_unique_batch_effects, split_unique_batch_effects)
-        )
+        assert np.all(np.isin(original_unique_batch_effects, split_unique_batch_effects))
 
         # Check if the data in splits is a subset of the original data
         original_data = np.hstack(
@@ -117,9 +111,7 @@ def test_split_with_stratify(
             )
         )
         for split in splits:
-            split_data = np.hstack(
-                (split.X.data, split.y.data, split.batch_effects.data)
-            )
+            split_data = np.hstack((split.X.data, split.y.data, split.batch_effects.data))
             assert np.all(np.isin(split_data, original_data))
 
         # Check if the attributes are preserved in the splits
@@ -145,5 +137,4 @@ def test_split_with_stratify(
 def test_chunk(norm_data_from_arrays):
     chunks = norm_data_from_arrays.chunk(n_chunks=2)
     for i, chunk in enumerate(chunks):
-        assert chunk.response_vars == ['response_var_{}'.format(i)]
-
+        assert chunk.response_vars == ["response_var_{}".format(i)]

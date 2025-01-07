@@ -137,9 +137,7 @@ class HBR(RegressionModel):
         self.idata: az.InferenceData = None  # type: ignore
         self.pymc_model: pm.Model = None  # type: ignore
 
-    def fit(
-        self, hbrdata: HBRData, make_new_model: bool = True, progressbar: bool = True
-    ) -> None:
+    def fit(self, hbrdata: HBRData, make_new_model: bool = True, progressbar: bool = True) -> None:
         """
         Fit the model to training data using MCMC sampling.
 
@@ -190,9 +188,7 @@ class HBR(RegressionModel):
         if not self.pymc_model:
             self.compile_model(hbrdata)
         else:
-            hbrdata.set_data_in_existing_model(
-                self.pymc_model
-            )  # Model already compiled, only need to update the data
+            hbrdata.set_data_in_existing_model(self.pymc_model)  # Model already compiled, only need to update the data
         if extend_inferencedata and hasattr(self.idata, "predictions"):
             del self.idata.predictions
             del self.idata.predictions_constant_data
@@ -282,9 +278,7 @@ class HBR(RegressionModel):
 
         return new_hbr_model
 
-    def generate_synthetic_data(
-        self, hbrdata: HBRData, progressbar: bool = True
-    ) -> HBRData:
+    def generate_synthetic_data(self, hbrdata: HBRData, progressbar: bool = True) -> HBRData:
         if not self.pymc_model:
             self.compile_model(hbrdata)
         else:
@@ -322,23 +316,17 @@ class HBR(RegressionModel):
             Calculated centile values
         """
         var_names = self.get_var_names()
-        centiles_idata = self.predict(
-            hbrdata, extend_inferencedata=False, progressbar=False
-        )
+        centiles_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
         post_pred = az.extract(
             centiles_idata,
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = [self.likelihood] + list(
-            map(lambda x: np.squeeze(post_pred[x]), var_names)
-        )
+        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
         n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
         centiles = np.zeros((cdf.shape[0], n_datapoints, n_mcmc_samples))
         for i, _cdf in enumerate(cdf):
-            zs = np.full(
-                (n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float
-            )
+            zs = np.full((n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float)
             centiles[i] = xr.apply_ufunc(
                 centile,
                 *array_of_vars,
@@ -365,17 +353,13 @@ class HBR(RegressionModel):
             Calculated z-scores
         """
         var_names = self.get_var_names()
-        zscores_idata = self.predict(
-            hbrdata, extend_inferencedata=False, progressbar=False
-        )
+        zscores_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
         post_pred = az.extract(
             zscores_idata,
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = [self.likelihood] + list(
-            map(lambda x: np.squeeze(post_pred[x]), var_names)
-        )
+        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
         zscores = xr.apply_ufunc(
             zscore,
@@ -461,9 +445,7 @@ class HBR(RegressionModel):
         elif self.likelihood == "SHASHo":
             self.compile_SHASHo(data, idata, freedom)
         else:
-            raise NotImplementedError(
-                f"Likelihood {self.likelihood} not implemented for {self.__class__.__name__}"
-            )
+            raise NotImplementedError(f"Likelihood {self.likelihood} not implemented for {self.__class__.__name__}")
 
     def compile_normal(
         self,
@@ -718,9 +700,7 @@ class HBR(RegressionModel):
                 # self.remove_samples_from_idata_posterior()
                 self.idata.to_netcdf(path, groups=["posterior"])
             else:
-                raise RuntimeError(
-                    "HBR model is fitted but does not have idata. This should not happen."
-                )
+                raise RuntimeError("HBR model is fitted but does not have idata. This should not happen.")
 
     def load_idata(self, path: str) -> None:
         """

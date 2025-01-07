@@ -105,12 +105,8 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             rho, p_rho = self._evaluate_rho(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "Rho"}] = float(
-                rho
-            )
-            data.measures.loc[{"response_vars": responsevar, "measure": "Rho_p"}] = (
-                float(p_rho)
-            )
+            data.measures.loc[{"response_vars": responsevar, "measure": "Rho"}] = float(rho)
+            data.measures.loc[{"response_vars": responsevar, "measure": "Rho_p"}] = float(p_rho)
 
     def evaluate_R2(self, data: NormData) -> None:
         """
@@ -239,9 +235,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             shapiro_w = self._evaluate_shapiro_w(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "ShapiroW"}] = (
-                shapiro_w
-            )
+            data.measures.loc[{"response_vars": responsevar, "measure": "ShapiroW"}] = shapiro_w
 
     def _evaluate_rho(self, data: NormData) -> Tuple[float, float]:
         """
@@ -348,12 +342,8 @@ class Evaluator:
         """
         pred_log_prob = data["logp"].values
         sample_mean = np.mean(data["y"].values)
-        sample_std = np.std(
-            data["y"].values
-        )  # For some reason, scipy normal distribution uses std instead of var
-        naive_logp = stats.norm.logpdf(
-            data["y"].values, sample_mean, sample_std
-        )  # ¯\_(ツ)_/¯
+        sample_std = np.std(data["y"].values)  # For some reason, scipy normal distribution uses std instead of var
+        naive_logp = stats.norm.logpdf(data["y"].values, sample_mean, sample_std)  # ¯\_(ツ)_/¯
         msll = np.mean(pred_log_prob - naive_logp)
         return float(msll)
 
@@ -395,9 +385,7 @@ class Evaluator:
 
         rss = np.sum((y - yhat) ** 2)
         n = len(y)
-        bic = float(
-            n * np.log(rss / n) + n_params * np.log(n)
-        )  # Explicitly cast to float
+        bic = float(n * np.log(rss / n) + n_params * np.log(n))  # Explicitly cast to float
         return bic
 
     def _evaluate_shapiro_w(self, data: NormData) -> float:

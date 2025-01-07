@@ -129,12 +129,12 @@ class RegressionModel(ABC):
         -------
         RegressionModel
             New instance of the regression model
-        
+
         Raises
         ------
         NotImplementedError
             Must be implemented by concrete subclasses
-        """ 
+        """
 
     @classmethod
     @abstractmethod
@@ -153,7 +153,7 @@ class RegressionModel(ABC):
         -------
         RegressionModel
             New instance of the regression model
-        
+
         Raises
         ------
         NotImplementedError

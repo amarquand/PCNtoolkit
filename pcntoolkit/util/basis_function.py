@@ -46,7 +46,7 @@ class BasisFunction(ABC):
         self.max: dict[int, float] = kwargs.get("max", {})
         self.compute_min: bool = self.min == {}
         self.compute_max: bool = self.max == {}
-        if isinstance(basis_column, int):   
+        if isinstance(basis_column, int):
             self.basis_column: list[int] = [basis_column]
         elif isinstance(basis_column, list):
             self.basis_column: list[int] = basis_column
@@ -57,9 +57,7 @@ class BasisFunction(ABC):
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(data[self.source_array_name].data.shape[1])]
         if self.source_array_name not in data.data_vars:
-            raise ValueError(
-                f"Source array {self.source_array_name} does not exist in the data."
-            )
+            raise ValueError(f"Source array {self.source_array_name} does not exist in the data.")
         source_array = data[self.source_array_name]
         for i in self.basis_column:
             self.fit_column(source_array, i)
@@ -68,14 +66,10 @@ class BasisFunction(ABC):
 
     def transform(self, data: NormData) -> None:
         if self.source_array_name not in data.data_vars:
-            raise ValueError(
-                f"Source array {self.source_array_name} does not exist in the data."
-            )
+            raise ValueError(f"Source array {self.source_array_name} does not exist in the data.")
         if not self.is_fitted:
-            raise ValueError(
-                "Basis function is not fitted. Please fit the basis function first."
-            )
-        source_array = data[self.source_array_name] 
+            raise ValueError("Basis function is not fitted. Please fit the basis function first.")
+        source_array = data[self.source_array_name]
         all_arrays = []
         for i in range(source_array.data.shape[1]):
             if i in self.basis_column:
@@ -87,15 +81,13 @@ class BasisFunction(ABC):
 
         data["Phi"] = xr.concat(all_arrays, dim="basis_functions")
 
-    def copy_column(self, source_array:xr.DataArray, i:int):
+    def copy_column(self, source_array: xr.DataArray, i: int):
         copied_array = xr.DataArray(
-            source_array.isel(covariates=i).data[:,None],
+            source_array.isel(covariates=i).data[:, None],
             dims=["datapoints", "basis_functions"],
             coords={
                 "datapoints": source_array.coords["datapoints"],
-                "basis_functions": [
-                    f"{source_array.coords['covariates'][i].data.item()}"
-                ],
+                "basis_functions": [f"{source_array.coords['covariates'][i].data.item()}"],
             },
         )
         return copied_array
@@ -104,9 +96,7 @@ class BasisFunction(ABC):
         array = data.isel(covariates=i).to_numpy()
         squeezed = np.squeeze(array)
         if squeezed.ndim > 1:
-            raise ValueError(
-                "Data must be a 1D array or a N-dimensional array with a single column"
-            )
+            raise ValueError("Data must be a 1D array or a N-dimensional array with a single column")
         transformed_array = self._transform(array, i)
         if transformed_array.ndim == 1:
             transformed_array = transformed_array.reshape(-1, 1)
@@ -114,8 +104,7 @@ class BasisFunction(ABC):
             transformed_array,
             coords={
                 "basis_functions": [
-                    f"{data.coords['covariates'][i].data.item()}_{self.basis_name}_{j}"
-                    for j in range(transformed_array.shape[1])
+                    f"{data.coords['covariates'][i].data.item()}_{self.basis_name}_{j}" for j in range(transformed_array.shape[1])
                 ]
             },
             dims=["datapoints", "basis_functions"],
@@ -188,21 +177,15 @@ class BsplineBasisFunction(BasisFunction):
             knots = np.linspace(aug_min, aug_max, self.nknots)
         elif self.knot_method == "quantile":
             knots = np.percentile(data, np.linspace(0, 100, self.nknots))
-        knots = np.concatenate(
-            [[aug_min] * self.degree, knots, [aug_max] * self.degree]
-        )
+        knots = np.concatenate([[aug_min] * self.degree, knots, [aug_max] * self.degree])
         self.knots[i] = knots
 
     def _transform(self, data: np.ndarray, i: int) -> np.ndarray:
-        return BSpline.design_matrix(
-            data, self.knots[i], self.degree, extrapolate=True
-        ).toarray()
+        return BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
 
 
 class LinearBasisFunction(BasisFunction):
-    def __init__(
-        self, source_array_name: str = "scaled_X", basis_column: Optional[Union[int, list[int]]] = None
-    ):
+    def __init__(self, source_array_name: str = "scaled_X", basis_column: Optional[Union[int, list[int]]] = None):
         super().__init__(source_array_name, basis_column)
         self.basis_name = "linear"
 

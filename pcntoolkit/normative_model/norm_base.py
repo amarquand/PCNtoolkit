@@ -109,9 +109,7 @@ class NormBase(ABC):
 
     def __init__(self, norm_conf: NormConf):
         self._norm_conf: NormConf = norm_conf
-        object.__setattr__(
-            self._norm_conf, "normative_model_name", self.__class__.__name__
-        )
+        object.__setattr__(self._norm_conf, "normative_model_name", self.__class__.__name__)
 
         self.response_vars: list[str] = None  # type: ignore
         self.regression_model_type: Any = None  # type: ignore
@@ -199,9 +197,7 @@ class NormBase(ABC):
         self.preprocess(data)
         assert self.check_compatibility(data), "Data is not compatible with the model!"
 
-        respvar_intersection = set(self.response_vars).intersection(
-            data.response_vars.values
-        )
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
 
         Output.print(Messages.PREDICTING_MODELS, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
@@ -251,24 +247,18 @@ class NormBase(ABC):
         - Computes evaluation metrics after prediction
         """
 
-        assert predict_data.check_compatibility(
-            fit_data
-        ), "Fit data and predict data are not compatible!"
+        assert predict_data.check_compatibility(fit_data), "Fit data and predict data are not compatible!"
 
         self.preprocess(fit_data)
         self.register_batch_effects(fit_data)
         self.preprocess(predict_data)
         self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
-        Output.print(
-            Messages.FITTING_AND_PREDICTING_MODELS, n_models=len(self.response_vars)
-        )
+        Output.print(Messages.FITTING_AND_PREDICTING_MODELS, n_models=len(self.response_vars))
         for responsevar in self.response_vars:
             resp_fit_data = fit_data.sel({"response_vars": responsevar})
             resp_predict_data = predict_data.sel({"response_vars": responsevar})
             if responsevar not in self.regression_models:
-                self.regression_models[responsevar] = self.regression_model_type(
-                    responsevar, self.default_reg_conf
-                )
+                self.regression_models[responsevar] = self.regression_model_type(responsevar, self.default_reg_conf)
             self.focus(responsevar)
             Output.print(Messages.FITTING_AND_PREDICTING_MODEL, model_name=responsevar)
             self._fit_predict(resp_fit_data, resp_predict_data)
@@ -312,9 +302,7 @@ class NormBase(ABC):
         """
         self.preprocess(data)
         transfered_norm_conf_dict = copy.deepcopy(self.norm_conf.to_dict())
-        transfered_norm_conf_dict["save_dir"] = kwargs.get(
-            "save_dir", self.norm_conf.save_dir + "_transfer"
-        )
+        transfered_norm_conf_dict["save_dir"] = kwargs.get("save_dir", self.norm_conf.save_dir + "_transfer")
         transfered_norm_conf = NormConf.from_dict(transfered_norm_conf_dict)
         # pylint: disable=too-many-function-args
         transfered_normative_model = self.__class__(
@@ -322,22 +310,16 @@ class NormBase(ABC):
             self.default_reg_conf,  # type: ignore
         )
         transfered_normative_model.register_batch_effects(data)
-        transfered_normative_model.response_vars = (
-            data.response_vars.to_numpy().copy().tolist()
-        )
+        transfered_normative_model.response_vars = data.response_vars.to_numpy().copy().tolist()
         transfered_models = {}
 
-        respvar_intersection = set(self.response_vars).intersection(
-            data.response_vars.values
-        )
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_transfer_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
             Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
-            transfered_models[responsevar] = self._transfer(
-                transfered_normative_model, resp_transfer_data, *args, **kwargs
-            )
+            transfered_models[responsevar] = self._transfer(transfered_normative_model, resp_transfer_data, *args, **kwargs)
             self.reset()
         transfered_normative_model.regression_models = transfered_models
         self.transfer_basis_function(transfered_normative_model)
@@ -348,9 +330,7 @@ class NormBase(ABC):
             transfered_normative_model.save()
         return transfered_normative_model
 
-    def transfer_predict(
-        self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any
-    ) -> NormBase:
+    def transfer_predict(self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any) -> NormBase:
         """Transfer the normative model to new data and make predictions.
 
         Parameters
@@ -365,9 +345,7 @@ class NormBase(ABC):
         NormBase
             The transferred model.
         """
-        assert fit_data.check_compatibility(
-            predict_data
-        ), "Fit data and predict data are not compatible!"
+        assert fit_data.check_compatibility(predict_data), "Fit data and predict data are not compatible!"
         transfered_model = self.transfer(fit_data, *args, **kwargs)
         transfered_model.predict(predict_data)
         return transfered_model
@@ -406,16 +384,12 @@ class NormBase(ABC):
         merged = synthetic_data.merge(data)
         reg_conf_copy = copy.deepcopy(self.default_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
-        norm_conf_copy.set_save_dir(
-            kwargs.get("save_dir", self.norm_conf.save_dir + "_extend")
-        )
+        norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir + "_extend"))
         extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
         extended_model.fit(merged)
         return extended_model
 
-    def extend_predict(
-        self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any
-    ) -> NormBase:
+    def extend_predict(self, fit_data: NormData, predict_data: NormData, *args: Any, **kwargs: Any) -> NormBase:
         """Extend the normative model with new data and make predictions.
 
         Parameters
@@ -435,9 +409,7 @@ class NormBase(ABC):
         merged = synthetic_data.merge(fit_data)
         reg_conf_copy = copy.deepcopy(self.default_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
-        norm_conf_copy.set_save_dir(
-            kwargs.get("save_dir", self.norm_conf.save_dir + "_extend")
-        )
+        norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir + "_extend"))
         extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
         extended_model.fit_predict(merged, predict_data)
         return extended_model
@@ -525,16 +497,12 @@ class NormBase(ABC):
             cdf = np.array(cdf)
 
         # Drop the centiles and dimensions if they already exist
-        centiles_already_computed = (
-            "scaled_centiles" in data or "centiles" in data or "cdf" in data.coords
-        )
+        centiles_already_computed = "scaled_centiles" in data or "centiles" in data or "cdf" in data.coords
         if centiles_already_computed:
             data = data.drop_vars(["scaled_centiles", "centiles"])
             data = data.drop_dims(["cdf"])
 
-        respvar_intersection = set(self.response_vars).intersection(
-            data.response_vars.values
-        )
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["scaled_centiles"] = xr.DataArray(
             np.zeros((cdf.shape[0], data.X.shape[0], len(respvar_intersection))),
             dims=("cdf", "datapoints", "response_vars"),
@@ -545,9 +513,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
-            data["scaled_centiles"].loc[{"response_vars": responsevar}] = (
-                self._centiles(resp_predict_data, cdf, **kwargs)
-            )
+            data["scaled_centiles"].loc[{"response_vars": responsevar}] = self._centiles(resp_predict_data, cdf, **kwargs)
             self.reset()
         self.postprocess(data)
         return data
@@ -578,9 +544,7 @@ class NormBase(ABC):
         """
 
         self.preprocess(data)
-        respvar_intersection = set(self.response_vars).intersection(
-            data.response_vars.values
-        )
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
 
         data["zscores"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
@@ -595,9 +559,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
             Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
-            data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(
-                resp_predict_data
-            )
+            data["zscores"].loc[{"response_vars": responsevar}] = self._zscores(resp_predict_data)
             self.reset()
         self.postprocess(data)
         return data
@@ -628,9 +590,7 @@ class NormBase(ABC):
         """
 
         self.preprocess(data)
-        respvar_intersection = set(self.response_vars).intersection(
-            data.response_vars.values
-        )
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["logp"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
             dims=("datapoints", "response_vars"),
@@ -644,9 +604,7 @@ class NormBase(ABC):
             resp_predict_data = data.sel({"response_vars": responsevar})
             self.focus(responsevar)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
-            data["logp"].loc[{"response_vars": responsevar}] = self._logp(
-                resp_predict_data
-            )
+            data["logp"].loc[{"response_vars": responsevar}] = self._logp(resp_predict_data)
             self.reset()
         return data
 
@@ -710,9 +668,7 @@ class NormBase(ABC):
         bool
             True if compatible, False otherwise
         """
-        missing_covariates = [
-            i for i in self.inscalers.keys() if i not in data.covariates.values
-        ]
+        missing_covariates = [i for i in self.inscalers.keys() if i not in data.covariates.values]
         if len(missing_covariates) > 0:
             Output.warning(
                 Warnings.MISSING_COVARIATES,
@@ -720,9 +676,7 @@ class NormBase(ABC):
                 dataset_name=data.name,
             )
 
-        extra_covariates = [
-            i for i in data.covariates.values if i not in self.inscalers.keys()
-        ]
+        extra_covariates = [i for i in data.covariates.values if i not in self.inscalers.keys()]
         if len(extra_covariates) > 0:
             Output.warning(
                 Warnings.EXTRA_COVARIATES,
@@ -730,9 +684,7 @@ class NormBase(ABC):
                 dataset_name=data.name,
             )
 
-        extra_response_vars = [
-            i for i in data.response_vars.values if i not in self.outscalers.keys()
-        ]
+        extra_response_vars = [i for i in data.response_vars.values if i not in self.outscalers.keys()]
         if len(extra_response_vars) > 0:
             Output.warning(
                 Warnings.EXTRA_RESPONSE_VARS,
@@ -742,10 +694,9 @@ class NormBase(ABC):
 
         compatible = True
         unknown_batch_effects = {
-            be: [u for u in unique if u not in self.unique_batch_effects[be]]
-            for be, unique in data.unique_batch_effects.items()
+            be: [u for u in unique if u not in self.unique_batch_effects[be]] for be, unique in data.unique_batch_effects.items()
         }
-        compatible = sum([len(l) for l in unknown_batch_effects.values()]) == 0
+        compatible = sum([len(unknown) for unknown in unknown_batch_effects.values()]) == 0
         if len(unknown_batch_effects) > 0:
             Output.warning(
                 Warnings.UNKNOWN_BATCH_EFFECTS,
@@ -753,17 +704,13 @@ class NormBase(ABC):
                 dataset_name=data.name,
             )
         return (
-            (len(missing_covariates) == 0)
-            and (len(extra_covariates) == 0)
-            and (len(extra_response_vars) == 0)
-            and (compatible)
+            (len(missing_covariates) == 0) and (len(extra_covariates) == 0) and (len(extra_response_vars) == 0) and (compatible)
         )
 
     def register_batch_effects(self, data: NormData) -> None:
         self.unique_batch_effects = copy.deepcopy(data.unique_batch_effects)
         self.batch_effects_maps = {
-            be: {k: i for i, k in enumerate(self.unique_batch_effects[be])}
-            for be in self.unique_batch_effects.keys()
+            be: {k: i for i, k in enumerate(self.unique_batch_effects[be])} for be in self.unique_batch_effects.keys()
         }
         self.batch_effects_counts = data.batch_effects_counts
 
@@ -778,9 +725,7 @@ class NormBase(ABC):
         """
         Sample the batch effects from the estimated distribution.
         """
-        max_batch_effect_count = max(
-            [len(v) for v in self.unique_batch_effects.values()]
-        )
+        max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
         if n_samples < max_batch_effect_count:
             Output.error(
                 Errors.SAMPLE_BATCH_EFFECTS,
@@ -828,12 +773,8 @@ class NormBase(ABC):
 
         for responsevar in data.response_vars.to_numpy():
             if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = Scaler.from_string(
-                    self.norm_conf.outscaler
-                )
-                self.outscalers[responsevar].fit(
-                    data.y.sel(response_vars=responsevar).data
-                )
+                self.outscalers[responsevar] = Scaler.from_string(self.norm_conf.outscaler)
+                self.outscalers[responsevar].fit(data.y.sel(response_vars=responsevar).data)
 
         data.scale_forward(self.inscalers, self.outscalers)
 
@@ -916,18 +857,12 @@ class NormBase(ABC):
         # We also add an index to the keys to make sure they are unique
         if hasattr(self, "batch_effects_counts"):
             metadata["inverse_batch_effects_counts"] = {
-                be: {
-                    f"{i}_{k}": v
-                    for i, (v, k) in enumerate(self.batch_effects_counts[be].items())
-                }
+                be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effects_counts[be].items())}
                 for be, mp in self.batch_effects_counts.items()
             }
         if hasattr(self, "batch_effects_maps"):
             metadata["batch_effects_maps"] = {
-                be: {
-                    f"{i}_{k}": v
-                    for i, (v, k) in enumerate(self.batch_effects_maps[be].items())
-                }
+                be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effects_maps[be].items())}
                 for be in self.batch_effects_maps.keys()
             }
 
@@ -960,13 +895,10 @@ class NormBase(ABC):
 
         if "basis_function" in metadata:
             self.basis_function = create_basis_function(metadata["basis_function"])
-        self.inscalers = {
-            k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()
-        }
+        self.inscalers = {k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()}
         if "batch_effects_maps" in metadata:
             self.batch_effects_maps = {
-                be: {v: int(k.split("_")[1]) for k, v in mp.items()}
-                for be, mp in metadata["batch_effects_maps"].items()
+                be: {v: int(k.split("_")[1]) for k, v in mp.items()} for be, mp in metadata["batch_effects_maps"].items()
             }
         if "inverse_batch_effects_counts" in metadata:
             self.batch_effects_counts = {
@@ -992,17 +924,11 @@ class NormBase(ABC):
                     reg_model_dict = json.load(f)
                     responsevar = reg_model_dict["model"]["name"]
                     self.response_vars.append(responsevar)
-                    self.regression_models[responsevar] = (
-                        self.regression_model_type.from_dict(
-                            reg_model_dict["model"], path
-                        )
-                    )
-                    self.outscalers[responsevar] = Scaler.from_dict(
-                        reg_model_dict["outscaler"]
-                    )
-        self.default_reg_conf = type(
-            self.regression_models[self.response_vars[0]].reg_conf
-        ).from_dict(metadata["default_reg_conf"])
+                    self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
+                    self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
+        self.default_reg_conf = type(self.regression_models[self.response_vars[0]].reg_conf).from_dict(
+            metadata["default_reg_conf"]
+        )
 
         return self
 
@@ -1025,17 +951,11 @@ class NormBase(ABC):
         zdf = data.zscores.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         res_path = os.path.join(self.norm_conf.save_dir, "results", "zscores.csv")
-        with open(
-            res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8"
-        ) as f:
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = (
-                    pd.read_csv(f, index_col=0)
-                    if os.path.getsize(res_path) > 0
-                    else None
-                )
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
                     new_results = pd.concat([old_results, zdf], axis=1)
                 else:
@@ -1050,17 +970,11 @@ class NormBase(ABC):
         cdf = data.centiles.to_dataframe().unstack(level="response_vars")
         cdf.columns = cdf.columns.droplevel(0)
         res_path = os.path.join(self.norm_conf.save_dir, "results", "centiles.csv")
-        with open(
-            res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8"
-        ) as f:
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = (
-                    pd.read_csv(f, index_col=[0, 1])
-                    if os.path.getsize(res_path) > 0
-                    else None
-                )
+                old_results = pd.read_csv(f, index_col=[0, 1]) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
                     new_results = pd.concat([old_results, cdf], axis=1)
                 else:
@@ -1075,17 +989,11 @@ class NormBase(ABC):
         mdf = data.measures.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
         res_path = os.path.join(self.norm_conf.save_dir, "results", "measures.csv")
-        with open(
-            res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8"
-        ) as f:
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = (
-                    pd.read_csv(f, index_col=0)
-                    if os.path.getsize(res_path) > 0
-                    else None
-                )
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
                     new_results = pd.concat([old_results, mdf], axis=1)
                 else:
@@ -1114,9 +1022,7 @@ class NormBase(ABC):
         """
         self.focused_var = responsevar
         if responsevar not in self.regression_models:
-            self.regression_models[responsevar] = self.regression_model_type(
-                responsevar, self.get_reg_conf(responsevar)
-            )
+            self.regression_models[responsevar] = self.regression_model_type(responsevar, self.get_reg_conf(responsevar))
 
     def get_reg_conf(self, responsevar: str) -> RegConf:
         """
@@ -1248,9 +1154,7 @@ class NormBase(ABC):
         """
 
     @abstractmethod
-    def _transfer(
-        self, model: NormBase, data: NormData, **kwargs: Any
-    ) -> RegressionModel:
+    def _transfer(self, model: NormBase, data: NormData, **kwargs: Any) -> RegressionModel:
         """
         Transfers the current regression model to new data.
 
@@ -1304,9 +1208,7 @@ class NormBase(ABC):
         """
 
     @abstractmethod
-    def _generate_synthetic_data(
-        self, data: NormData, n_synthetic_samples: int = 1000
-    ) -> NormData:
+    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
         """
         Generates synthetic data from the model. Required for model extension.
 
@@ -1441,7 +1343,7 @@ class NormBase(ABC):
 
         Examples
         --------
-        >>> args = {'param1': value1, 'param2': value2}
+        >>> args = {"param1": value1, "param2": value2}
         >>> model = ConcreteNormModel.from_args(args)
         """
 

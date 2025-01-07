@@ -41,4 +41,3 @@ def norm_data_from_dataframe(train_dataframe, n_covariates, batch_effect_values,
         batch_effects=[f"batch_effect_{i}" for i in range(len(batch_effect_values))],
         response_vars=[f"response_var_{i}" for i in range(n_response_vars)],
     )
-

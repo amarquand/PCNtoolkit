@@ -175,9 +175,7 @@ class BLR(RegressionModel):
                     full_output=1,
                 )
             case "powell":
-                out = optimize.fmin_powell(
-                    func=self.loglik, x0=hyp0, args=args, full_output=1
-                )
+                out = optimize.fmin_powell(func=self.loglik, x0=hyp0, args=args, full_output=1)
             case "nelder-mead":
                 out = optimize.fmin(func=self.loglik, x0=hyp0, args=args, full_output=1)
             case "l-bfgs-b":
@@ -197,12 +195,7 @@ class BLR(RegressionModel):
                         callback=store,
                     )
                 except np.linalg.LinAlgError as e:
-                    Output.print(
-                        Messages.BLR_RESTARTING_ESTIMATION_AT_HYP.format(
-                            hyp=all_hyp_i[-1],
-                            e=e
-                        )
-                    )
+                    Output.print(Messages.BLR_RESTARTING_ESTIMATION_AT_HYP.format(hyp=all_hyp_i[-1], e=e))
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
@@ -214,7 +207,7 @@ class BLR(RegressionModel):
                 raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
         self.hyp = out[0]
         self.nlZ = out[1]
-        _, self.beta,self.gamma = self.parse_hyps(self.hyp, data.X, data.var_X)
+        _, self.beta, self.gamma = self.parse_hyps(self.hyp, data.X, data.var_X)
         self.is_fitted = True
 
     def predict(self, data: BLRData) -> tuple[np.ndarray, np.ndarray]:
@@ -266,9 +259,7 @@ class BLR(RegressionModel):
         # Noise precision
         if self.models_variance:
             if var_X is None or (var_X == 0).all():
-                raise ValueError(
-                    "Variance of covariates (var_X) is required for models with variance."
-                )
+                raise ValueError("Variance of covariates (var_X) is required for models with variance.")
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -284,9 +275,9 @@ class BLR(RegressionModel):
             n_lik_param += self.n_gamma
             if self.warp_reparam:
                 delta = np.exp(gamma[1])
-                beta = beta/(delta**2)
+                beta = beta / (delta**2)
         else:
-            gamma = None # type: ignore
+            gamma = None  # type: ignore
 
         # Coefficients precision
         if isinstance(beta, list) or isinstance(beta, np.ndarray):
@@ -294,8 +285,7 @@ class BLR(RegressionModel):
         else:
             alpha = np.exp(hyp[1:])
 
-
-        return alpha, beta, gamma # type: ignore
+        return alpha, beta, gamma  # type: ignore
 
     def post(
         self,
@@ -333,7 +323,7 @@ class BLR(RegressionModel):
             self.hyp = hyp
 
         # Parse hyperparameters
-        alpha, _ , _= self.parse_hyps(self.hyp, X, var_X)
+        alpha, _, _ = self.parse_hyps(self.hyp, X, var_X)
 
         # prior variance
         if len(alpha) == 1 or len(alpha) == self.D:
@@ -462,30 +452,20 @@ class BLR(RegressionModel):
             If norm is not "L1" or "L2"
         """
         if norm.upper() == "L1":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
-                np.abs(hyp)
-            )
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(np.abs(hyp))
         elif norm.upper() == "L2":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(
-                np.sum(np.square(hyp))
-            )
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(np.square(hyp)))
         else:
-            raise ValueError(
-                "Requested penalty not recognized, choose between 'L1' or 'L2'."
-            )
+            raise ValueError("Requested penalty not recognized, choose between 'L1' or 'L2'.")
 
-    def dloglik(
-        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
-    ) -> np.ndarray:
+    def dloglik(self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray) -> np.ndarray:
         """Function to compute derivatives"""
 
         # hyperparameters
         alpha, beta, gamma = self.parse_hyps(hyp, X, var_X)
 
-
         if self.warp:
-            raise ValueError('optimization with derivatives is not yet ' +
-                             'supported for warped liklihood')
+            raise ValueError("optimization with derivatives is not yet " + "supported for warped liklihood")
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
@@ -497,7 +477,7 @@ class BLR(RegressionModel):
                     dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
                     return dnlZ
                 return np.array(1 / np.finfo(float).eps)
-            
+
         # precompute re-used quantities to maximise speed
         # todo: revise implementation to use Cholesky throughout
         #       that would remove the need to explicitly compute the inverse
@@ -582,9 +562,7 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def centiles(
-        self, data: BLRData, cdf: np.ndarray, resample: bool = True
-    ) -> np.ndarray:
+    def centiles(self, data: BLRData, cdf: np.ndarray, resample: bool = True) -> np.ndarray:
         """Calculate prediction centiles for given cumulative distribution function values.
 
         Parameters
@@ -691,15 +669,15 @@ class BLR(RegressionModel):
 
     def elemwise_logp(self, data: BLRData) -> np.ndarray:
         """Compute log-probabilities for each observation in the data.
-        
+
         This method computes the log probability density for each observation
         individually, using the fitted model parameters.
-        
+
         Parameters
         ----------
         data : BLRData
             Data object containing features and targets to compute log probabilities for
-        
+
         Returns
         -------
         np.ndarray
@@ -707,25 +685,25 @@ class BLR(RegressionModel):
         """
         if not self.is_fitted:
             Output.error(Errors.BLR_MODEL_NOT_FITTED)
-        
+
         # Get predictions (mean and variance)
         ys, s2 = self.predict(data)
-        
+
         if self.warp:
             # For warped models, transform the observations
             y_warped = self.warp.f(data.y, self.gamma)
             y = y_warped
         else:
             y = data.y
-        
+
         # Compute log probabilities using Gaussian PDF
         # log p(y|x) = -0.5 * (log(2π) + log(σ²) + (y-μ)²/σ²)
         logp = -0.5 * (np.log(2 * np.pi) + np.log(s2) + ((y - ys) ** 2) / s2)
-        
+
         if self.warp:
             # Add log determinant of Jacobian for warped models
             logp += np.log(self.warp.df(data.y, self.gamma))
-        
+
         return logp
 
     @property
@@ -870,12 +848,8 @@ class BLR(RegressionModel):
             True if model includes heteroskedastic noise, random intercept variance,
             or intercept variance components
         """
-        return (
-            self.blr_conf.heteroskedastic
-            or self.blr_conf.random_intercept_var
-            or self.blr_conf.intercept_var
-        )
-    
+        return self.blr_conf.heteroskedastic or self.blr_conf.random_intercept_var or self.blr_conf.intercept_var
+
     @property
     def reg_conf(self) -> BLRConf:
         return self._reg_conf  # type: ignore

@@ -40,7 +40,7 @@ def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_va
     batch_effects = generate_batch_effects(n_train_datapoints, batch_effect_values)
     np.savetxt(cov_path, covariates)
     np.savetxt(resp_path, responses)
-    np.savetxt(trbefile_path,   batch_effects)
+    np.savetxt(trbefile_path, batch_effects)
     yield (cov_path, resp_path, trbefile_path)
     os.remove(cov_path)
     os.remove(resp_path)
@@ -69,6 +69,7 @@ def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_va
 @pytest.fixture
 def save_dir():
     return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test")
+
 
 @pytest.fixture
 def maskfile():

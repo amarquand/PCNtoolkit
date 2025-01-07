@@ -33,9 +33,7 @@ import scipy.special as spp  # type: ignore
 from numpy.typing import NDArray
 
 
-def S(
-    x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]
-) -> NDArray[np.float64]:
+def S(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
     """Sinh transformation.
 
     Parameters
@@ -55,9 +53,7 @@ def S(
     return np.sinh(np.arcsinh(x) * d - e)
 
 
-def S_inv(
-    x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]
-) -> NDArray[np.float64]:
+def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
     """Inverse sinh arcsinh transformation.
 
     Parameters
@@ -118,9 +114,7 @@ def P(q: NDArray[np.float64]) -> NDArray[np.float64]:
     return a
 
 
-def m(
-    epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int
-) -> NDArray[np.float64]:
+def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArray[np.float64]:
     """Calculate the r'th uncentered moment as given in Jones et al.
 
     Parameters

@@ -144,9 +144,7 @@ class NormHBR(NormBase):
         predict_hbrdata = self.normdata_to_hbrdata(predict_data)
         self.focused_model.fit_predict(fit_hbrdata, predict_hbrdata)  # type: ignore
 
-    def _transfer(
-        self, model_to_transfer_to: NormHBR, data: NormData, **kwargs: Any
-    ) -> HBR:
+    def _transfer(self, model_to_transfer_to: NormHBR, data: NormData, **kwargs: Any) -> HBR:
         freedom = kwargs.get("freedom", 1)
         transferdata = model_to_transfer_to.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
@@ -154,12 +152,8 @@ class NormHBR(NormBase):
         reg_conf_dict: dict[str, Any] = model_to_transfer_to.default_reg_conf.to_dict()
         reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
         reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
-        reg_conf_dict["pymc_cores"] = kwargs.get(
-            "pymc_cores", reg_conf_dict["pymc_cores"]
-        )
-        reg_conf_dict["nuts_sampler"] = kwargs.get(
-            "nuts_sampler", reg_conf_dict["nuts_sampler"]
-        )
+        reg_conf_dict["pymc_cores"] = kwargs.get("pymc_cores", reg_conf_dict["pymc_cores"])
+        reg_conf_dict["nuts_sampler"] = kwargs.get("nuts_sampler", reg_conf_dict["nuts_sampler"])
         reg_conf_dict["init"] = kwargs.get("init", reg_conf_dict["init"])
         reg_conf_dict["chains"] = kwargs.get("chains", reg_conf_dict["chains"])
         reg_conf = HBRConf.from_dict(reg_conf_dict)
@@ -172,9 +166,7 @@ class NormHBR(NormBase):
         hbrdata = self.normdata_to_hbrdata(data)
         return self.focused_model.extend(hbrdata)  # type: ignore
 
-    def _generate_synthetic_data(
-        self, data: NormData, n_synthetic_samples: int = 1000
-    ) -> NormData:
+    def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
         df = pd.DataFrame()
         for c in data.X.coords["covariates"].values:
             c_min = self.inscalers[c].min
@@ -225,13 +217,13 @@ class NormHBR(NormBase):
         return self.focused_model.logp(hbrdata)  # type: ignore
 
     @property
-    def focused_model(self) -> BLR:
-        """Get the currently focused BLR model.
+    def focused_model(self) -> HBR:
+        """Get the currently focused HBR model.
 
         Returns
         -------
-        BLR
-            The currently focused Bayesian Linear Regression model.
+        HBR
+            The currently focused Hierarchical Bayesian Regression model.
         """
         return self[self.focused_var]  # type:ignore
 
@@ -295,9 +287,7 @@ class NormHBR(NormBase):
         else:
             this_y = data.y.to_numpy()
 
-        assert (len(data.y.shape) == 1) or (
-            data.y.shape[1] == 1
-        ), "Only one response variable is supported for HBRdata"
+        assert (len(data.y.shape) == 1) or (data.y.shape[1] == 1), "Only one response variable is supported for HBRdata"
 
         hbrdata = hbr_data.HBRData(
             X=this_X,
