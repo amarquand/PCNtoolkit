@@ -336,14 +336,15 @@ class Runner:
         with open(job_path, "w") as f:
             f.write(f"""#!/bin/bash
                     
+#SBATCH --partition=batch
 #SBATCH --job-name=normative_{job_name}
 #SBATCH --nodes=1
-#SBATCH --time={self.time_limit_str}
-#SBATCH --mail-type=FAIL
-#SBATCH --partition=batch
-#SBATCH --mem={self.memory}
 #SBATCH --cpus-per-task={self.n_cores}
+#SBATCH --time={self.time_limit_str}
+#SBATCH --mem={self.memory}
 #SBATCH --error={os.path.join(self.log_dir, f"{job_name}.err")}
+#SBATCH --output={os.path.join(self.log_dir, f"{job_name}.out")}
+#SBATCH --mail-type=FAIL
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
 """)
