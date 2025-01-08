@@ -195,7 +195,7 @@ class BLR(RegressionModel):
                         callback=store,
                     )
                 except np.linalg.LinAlgError as e:
-                    Output.print(Messages.BLR_RESTARTING_ESTIMATION_AT_HYP.format(hyp=all_hyp_i[-1], e=e))
+                    Output.print(Messages.BLR_RESTARTING_ESTIMATION_AT_HYP, hyp=all_hyp_i[-1], e=e)
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
@@ -204,7 +204,7 @@ class BLR(RegressionModel):
                         epsilon=self.epsilon,
                     )
             case _:
-                raise ValueError(f"Optimizer {self.blr_conf.optimizer} not recognized.")
+                raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.blr_conf.optimizer)
         self.hyp = out[0]
         self.nlZ = out[1]
         _, self.beta, self.gamma = self.parse_hyps(self.hyp, data.X, data.var_X)
@@ -259,7 +259,7 @@ class BLR(RegressionModel):
         # Noise precision
         if self.models_variance:
             if var_X is None or (var_X == 0).all():
-                raise ValueError("Variance of covariates (var_X) is required for models with variance.")
+                raise Output.error(Errors.ERROR_BLR_VAR_X_NOT_PROVIDED)
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -330,7 +330,7 @@ class BLR(RegressionModel):
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
-            Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH)
+            raise Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH)
 
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
@@ -456,7 +456,7 @@ class BLR(RegressionModel):
         elif norm.upper() == "L2":
             return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(np.square(hyp)))
         else:
-            raise ValueError("Requested penalty not recognized, choose between 'L1' or 'L2'.")
+            raise Output.error(Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED, penalty=norm)
 
     def dloglik(self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray) -> np.ndarray:
         """Function to compute derivatives"""
@@ -465,7 +465,7 @@ class BLR(RegressionModel):
         alpha, beta, gamma = self.parse_hyps(hyp, X, var_X)
 
         if self.warp:
-            raise ValueError("optimization with derivatives is not yet " + "supported for warped liklihood")
+            raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="dloglik", class_name=self.__class__.__name__)
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
@@ -684,7 +684,7 @@ class BLR(RegressionModel):
             Array of log probabilities for each observation
         """
         if not self.is_fitted:
-            Output.error(Errors.BLR_MODEL_NOT_FITTED)
+            raise Output.error(Errors.BLR_MODEL_NOT_FITTED)
 
         # Get predictions (mean and variance)
         ys, s2 = self.predict(data)

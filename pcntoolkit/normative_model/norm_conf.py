@@ -13,11 +13,10 @@ directory creation when needed.
 """
 
 import os
-import warnings
 from dataclasses import dataclass, field, fields
 from typing import Any, Callable, Dict, List, Optional
 
-from pcntoolkit.util.output import Errors, Messages, Output
+from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 from pcntoolkit.util.utils import get_type_of_object
 
 
@@ -154,7 +153,11 @@ class NormConf:
                 if not os.path.isdir(dir_attr):
                     add_problem(f"{dir_attr_str} is not a directory, but {get_type_of_object(dir_attr)}")
             else:
-                warnings.warn(f"{dir_attr_str} ({dir_attr}) does not exist, creating it for you")
+                Output.warning(
+                    Warnings.DIR_DOES_NOT_EXIST,
+                    dir_attr_str=dir_attr_str,
+                    dir_attr=dir_attr,
+                )
                 os.makedirs(dir_attr)
 
     def detect_basis_function_problem(self, add_problem: Callable[[str], None]) -> None:

@@ -12,12 +12,13 @@ The module requires PyMC for Bayesian modeling integration and NumPy for array o
 All data is validated and transformed into appropriate formats for use in HBR models.
 """
 
-import warnings
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pymc as pm  # type: ignore
+
+from pcntoolkit.util.output import Errors, Output, Warnings
 
 
 class HBRData:
@@ -163,7 +164,7 @@ class HBRData:
         """
 
         if X is None:
-            raise ValueError("X must be provided")
+            raise Output.error(Errors.ERROR_HBRDATA_X_NOT_PROVIDED)
         else:
             self.X = X
 
@@ -173,7 +174,7 @@ class HBRData:
             self.y = y
 
         if batch_effects is None:
-            warnings.warn("batch_effects is not provided, setting self.batch_effects to zeros")
+            Output.warning(Warnings.HBR_BATCH_EFFECTS_NOT_PROVIDED)
             self.batch_effects = np.zeros((X.shape[0], 1))
         else:
             self.batch_effects = batch_effects

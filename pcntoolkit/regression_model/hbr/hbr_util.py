@@ -32,6 +32,8 @@ import numpy as np
 import scipy.special as spp  # type: ignore
 from numpy.typing import NDArray
 
+from pcntoolkit.util.output import Errors, Output
+
 
 def S(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
     """Sinh transformation.
@@ -186,7 +188,7 @@ def centile(
     elif likelihood == "Normal":
         quantiles = zs * sigma + mu
     else:
-        raise ValueError("Unsupported likelihood")
+        raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
     return quantiles
 
 
@@ -227,7 +229,7 @@ def zscore(
     """
     y = kwargs.get("y", None)
     if y is None:
-        raise ValueError("y must be provided for z-score computation")
+        raise Output.error(Errors.ERROR_HBR_Y_NOT_PROVIDED)
     if likelihood == "SHASHo":
         SHASH = (y - mu) / sigma
         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
@@ -244,5 +246,5 @@ def zscore(
     elif likelihood == "Normal":
         Z = (y - mu) / sigma
     else:
-        raise ValueError("Unsupported likelihood")
+        raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
     return Z

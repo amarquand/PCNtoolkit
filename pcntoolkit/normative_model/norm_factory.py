@@ -36,6 +36,7 @@ from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.reg_conf import RegConf
+from pcntoolkit.util.output import Errors, Output
 
 
 def create_normative_model(norm_conf: NormConf, reg_conf: RegConf) -> NormBase:
@@ -66,7 +67,7 @@ def create_normative_model(norm_conf: NormConf, reg_conf: RegConf) -> NormBase:
     # elif isinstance(reg_conf, GPRConf):
     #     return NormGPR(norm_conf, reg_conf)
     else:
-        raise ValueError(f"Unknown regression model configuration: {reg_conf.__class__.__name__}")
+        raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=reg_conf.__class__.__name__)
 
 
 def load_normative_model(path: str) -> NormBase:
@@ -94,7 +95,7 @@ def load_normative_model(path: str) -> NormBase:
         with open(os.path.join(path, "model", "normative_model.json"), mode="r", encoding="utf-8") as f:
             metadata = json.load(f)
     except FileNotFoundError as exc:
-        raise FileNotFoundError(f"Path {path} does not exist.") from exc
+        raise Output.error(Errors.ERROR_FILE_NOT_FOUND, path=path) from exc
 
     norm_conf = NormConf.from_dict(metadata["norm_conf"])
     model_name = norm_conf.normative_model_name
@@ -106,7 +107,7 @@ def load_normative_model(path: str) -> NormBase:
     # elif model_name == "NormGPR":
     #     return NormGPR.load(path)
     else:
-        raise ValueError(f"Model name {model_name} not recognized.")
+        raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=model_name)
 
 
 def create_normative_model_from_args(args: dict[str, str]) -> NormBase:
@@ -136,5 +137,5 @@ def create_normative_model_from_args(args: dict[str, str]) -> NormBase:
     # elif args["alg"] == "gpr":
     #     reg_conf = GPRConf.from_args(args)
     else:
-        raise ValueError(f"Unknown regression model: {args['alg']}")
+        raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=args["alg"])
     return create_normative_model(norm_conf, reg_conf)

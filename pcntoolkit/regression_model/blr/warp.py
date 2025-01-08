@@ -46,6 +46,8 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.stats import norm  # type: ignore
 
+from pcntoolkit.util.output import Errors, Output
+
 
 class WarpBase(ABC):
     """Base class for likelihood warping functions.
@@ -281,7 +283,7 @@ class WarpAffine(WarpBase):
             If param length doesn't match n_params
         """
         if len(param) != self.n_params:
-            raise ValueError("number of parameters must be " + str(self.n_params))
+            raise Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params)
         return param[0], np.exp(param[1])
 
     def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -491,7 +493,7 @@ class WarpSinhArcsinh(WarpBase):
             If param length doesn't match n_params
         """
         if len(param) != self.n_params:
-            raise ValueError("number of parameters must be " + str(self.n_params))
+            raise Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params)
 
         epsilon = param[0]
         b = np.exp(param[1])
@@ -583,7 +585,7 @@ class WarpCompose(WarpBase):
         """
         super().__init__()
         if warpnames is None:
-            raise ValueError("A list of warp functions is required")
+            raise Output.error(Errors.ERROR_BLR_WARPS_NOT_PROVIDED)
         self.debugwarp = debugwarp
         self.warps: List[WarpBase] = []
         self.n_params = 0

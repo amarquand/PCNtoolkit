@@ -127,7 +127,7 @@ def file_type(filename):
         if any(filename.endswith(ext) for ext in extensions):
             return ftype
 
-    Output.error(Errors.UNKNOWN_FILE_TYPE.format(filename=filename))
+    raise Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename)
 
 
 def file_extension(filename):
@@ -254,7 +254,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     outstem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + "-" + fpref)
 
     # extract surface data from the cifti file
-    Output.print(Messages.EXTRACTING_CIFTI_SURFACE_DATA.format(outstem=outstem))
+    Output.print(Messages.EXTRACTING_CIFTI_SURFACE_DATA, outstem=outstem)
     giinamel = outstem + "-left.func.gii"
     giinamer = outstem + "-right.func.gii"
     os.system("wb_command -cifti-separate " + filename + " COLUMN -metric CORTEX_LEFT " + giinamel)
@@ -281,7 +281,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
 
     if vol:
         niiname = outstem + "-vol.nii"
-        Output.print(Messages.EXTRACTING_CIFTI_VOLUME_DATA.format(niiname=niiname))
+        Output.print(Messages.EXTRACTING_CIFTI_VOLUME_DATA, niiname=niiname)
         os.system("wb_command -cifti-separate " + filename + " COLUMN -volume-all " + niiname)
         vol = load_nifti(niiname, vol=True)
         volmask = create_mask(vol)
@@ -313,7 +313,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         data = data.astype("float32")  # force 32 bit output
         dtype = "NIFTI_TYPE_FLOAT32"
     else:
-        Output.error(Errors.NO_FLOAT_DATA_TYPE.format(data_type=data.dtype))
+        raise Output.error(Errors.NO_FLOAT_DATA_TYPE, data_type=data.dtype)
 
     if len(data.shape) == 1:
         Nimg = 1
@@ -523,4 +523,4 @@ def load(filename, mask=None, text=False, vol=True):
                         x = load_cifti(filename, vol=vol)
                         return x
                     except Exception:
-                        raise ValueError("Unknown file type")
+                        raise Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename)

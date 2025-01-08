@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 import os
 
+from pcntoolkit.util.output import Errors, Output
+
 
 def plot_centiles(
     model: "NormBase",
@@ -123,7 +125,7 @@ def plot_centiles(
             if isinstance(v, str):
                 batch_effects[k] = [v]
             elif not isinstance(v, list):
-                raise ValueError(f"Items of the batch_effect dict be a list or a string, not {type(v)}")
+                raise Output.error(Errors.ERROR_BATCH_EFFECTS_NOT_LIST, batch_effect_type=type(v))
 
     if plt_kwargs is None:
         plt_kwargs = {}
@@ -315,7 +317,7 @@ def _plot_centiles(
     if save_dir:
         plt.savefig(os.path.join(save_dir, f"centiles_{response_var}.png"))
     else:
-        plt.show()
+        plt.show(block=False)
     plt.close()
 
 
@@ -479,5 +481,5 @@ def _plot_qq(
     if save_dir:
         plt.savefig(os.path.join(save_dir, f"qq_{response_var}.png"))
     else:
-        plt.show()
+        plt.show(block=False)
     plt.close()

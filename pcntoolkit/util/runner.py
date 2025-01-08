@@ -2,7 +2,6 @@ import os
 import re
 import subprocess
 import sys
-import warnings
 from copy import deepcopy
 from typing import Callable, Dict, Literal, Optional
 
@@ -59,7 +58,7 @@ class Runner:
             try:
                 self.time_limit_seconds = sum([int(v) * 60**i for i, v in enumerate(reversed(self.time_limit_str.split(":")))])
             except Exception:
-                Output.error(
+                raise Output.error(
                     Errors.ERROR_PARSING_TIME_LIMIT,
                     time_limit_str=self.time_limit_str,
                 )
@@ -68,7 +67,7 @@ class Runner:
             s = self.time_limit_seconds
             self.time_limit_str = f"{str(s//3600)}:{str((s//60)%60).rjust(2,"0")}:{str(s%60).rjust(2,"0")}"
         else:
-            Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit)
+            raise Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit)
 
         self.memory = memory
         self.active_job_ids: Dict[str, str] = {}
@@ -96,7 +95,7 @@ class Runner:
         os.makedirs(self.temp_dir, exist_ok=True)
 
         if self.cross_validate and self.cv_folds <= 1:
-            Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
+            raise Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
 
     def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
@@ -207,7 +206,7 @@ class Runner:
 
             def fit_predict_chunk_fn(fit_data: NormData, predict_data: Optional[NormData]):
                 if predict_data is None:
-                    Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION)
+                    raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION)
 
                 assert predict_data is not None  # Make the linter happy
                 model.fit_predict(fit_data, predict_data)
@@ -276,7 +275,7 @@ class Runner:
 
             def transfer_predict_chunk_fn(train_data: NormData, predict_data: NormData):
                 if predict_data is None:
-                    raise ValueError("predict_data is required for transfer_predict without cross-validation")
+                    raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED)
                 model.transfer_predict(train_data, predict_data, save_dir=self.save_dir)
                 model.save_results(predict_data)
 
@@ -307,7 +306,7 @@ class Runner:
 
             def kfold_extend_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
-                    warnings.warn("predict_data is not used in kfold cross-validation")
+                    Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
                     extended_model = model.extend_predict(
                         train_data,
@@ -322,7 +321,7 @@ class Runner:
 
             def extend_predict_chunk_fn(train_data: NormData, predict_data: NormData):
                 if predict_data is None:
-                    raise ValueError("predict_data is required for extend_predict without cross-validation")
+                    raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED)
                 extended_model = model.extend_predict(train_data, predict_data, save_dir=self.save_dir)
                 extended_model.save()
                 extended_model.save_results(predict_data)
@@ -403,7 +402,7 @@ class Runner:
                     if job_id:
                         self.active_job_ids[f"job_{i}"] = job_id.group(1)
                     elif stderr:
-                        Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=i, stderr=stderr)
+                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=i, stderr=stderr)
         else:
             if mode == "unary":
                 chunk_tuple = (first_data_source,)

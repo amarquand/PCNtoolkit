@@ -46,6 +46,7 @@ from pcntoolkit.regression_model.hbr import hbr_data
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.output import Errors, Output
 
 
 class NormHBR(NormBase):
@@ -148,7 +149,7 @@ class NormHBR(NormBase):
         freedom = kwargs.get("freedom", 1)
         transferdata = model_to_transfer_to.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
-            raise RuntimeError("Model needs to be fitted before it can be transferred")
+            raise Output.error(Errors.ERROR_MODEL_NOT_FITTED)
         reg_conf_dict: dict[str, Any] = model_to_transfer_to.default_reg_conf.to_dict()
         reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
         reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
