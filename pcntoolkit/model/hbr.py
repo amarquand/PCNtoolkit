@@ -7,24 +7,23 @@ Created on Thu Jul 25 13:23:15 2019
 @author: augub
 """
 
-from __future__ import print_function
-from __future__ import division
-from collections import OrderedDict
+from __future__ import division, print_function
 
+from collections import OrderedDict
+from functools import reduce
+from itertools import product
+
+import arviz as az
 import numpy as np
 import pymc as pm
 import pytensor
-import arviz as az
 import xarray
-from itertools import product
-from functools import reduce
 from scipy import stats
+from util.utils import create_poly_basis, expand_all
 
-from util.utils import create_poly_basis
-from util.utils import expand_all
-from pcntoolkit.util.utils import cartesian_product
-from pcntoolkit.util.bspline import BSplineBasis
 from pcntoolkit.model.SHASH import *
+from pcntoolkit.util.bspline import BSplineBasis
+from pcntoolkit.util.utils import cartesian_product
 
 
 def create_poly_basis(X, order):
@@ -708,7 +707,7 @@ class HBR:
         testvars = az.extract(idata, group='posterior',
                               var_names=var_names, combined=False)
         testvar_names = [var for var in list(
-            testvars.data_vars.keys()) if not '_samples' in var]
+            testvars.data_vars.keys()) if '_samples' not in var]
         rhat_dict = {}
         for var_name in testvar_names:
             var = np.stack(testvars[var_name].to_numpy())[:, ::thin]
@@ -795,12 +794,21 @@ class Prior:
                     dims = dims + pb.batch_effect_dim_names
                 if self.name.startswith("slope") or self.name.startswith("offset_slope"):
                     dims = dims + ["basis_functions"]
-                self.dist = from_posterior(
-                    param=self.name,
-                    samples=samples.to_numpy(),
-                    shape=new_shape,
-                    distribution=dist,
-                    dims=dims,
+                if dims == []:
+                    self.dist = from_posterior(
+                        param=self.name,
+                        samples=samples.to_numpy(),
+                        shape=new_shape,
+                        distribution=dist,
+                        freedom=pb.configs["freedom"],
+                    )
+                else:
+                    self.dist = from_posterior(
+                        param=self.name,
+                        samples=samples.to_numpy(),
+                        shape=new_shape,
+                        distribution=dist,
+                        dims=dims,
                     freedom=pb.configs["freedom"],
                 )
 
