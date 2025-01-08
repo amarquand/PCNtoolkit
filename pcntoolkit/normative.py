@@ -14,6 +14,7 @@ from pcntoolkit.normative_model.norm_factory import (
     create_normative_model_from_args,
     load_normative_model,
 )
+from pcntoolkit.util.output import Errors, Output
 from pcntoolkit.util.runner import Runner
 
 
@@ -186,7 +187,7 @@ def get_conf_dict_from_args() -> dict[str, str | int | float | bool]:
         if "=" in arg:
             key, value = arg.split("=")
             if key in conf_dict:
-                raise ValueError(f"Argument {key} is specified twice.")
+                raise Output.error(Errors.ERROR_ARGUMENT_SPECIFIED_TWICE, key=key)
             conf_dict[key] = value
 
     for k, v in conf_dict.items():
@@ -239,14 +240,15 @@ def main(*args) -> None:
 
     """
     parsed_args = get_conf_dict_from_args()
-    if parsed_args["func"] == "fit":
-        fit(parsed_args)
-    elif parsed_args["func"] == "predict":
-        predict(parsed_args)
-    elif parsed_args["func"] == "fit_predict":
-        fit_predict(parsed_args)
-    else:
-        raise ValueError(f"Unknown function {parsed_args['func']}.")
+    match parsed_args["func"]:
+        case "fit":
+            fit(parsed_args)
+        case "predict":
+            predict(parsed_args)
+        case "fit_predict":
+            fit_predict(parsed_args)
+        case _:
+            raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION, func=parsed_args["func"])
 
 
 def entrypoint(*args):

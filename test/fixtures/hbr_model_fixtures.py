@@ -1,3 +1,5 @@
+import copy
+
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -87,7 +89,7 @@ def norm_conf_for_generic_model(log_dir, save_dir):
     return NormConf(save_dir=save_dir)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def norm_conf_dict_for_hbr_test_model(
     alg,
     fit_files,
@@ -112,7 +114,7 @@ def norm_conf_dict_for_hbr_test_model(
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def hbr_conf_dict(save_dir, fit_files, test_files, maskfile):
     responsefile, covfile, trbefile = fit_files
     testresp, testcov, tsbefile = test_files
@@ -138,7 +140,7 @@ def hbr_conf_dict(save_dir, fit_files, test_files, maskfile):
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def norm_conf_for_hbr_test_model(savemodel, save_dir):
     return NormConf(
         savemodel=savemodel,
@@ -153,7 +155,11 @@ def norm_conf_for_hbr_test_model(savemodel, save_dir):
 
 @pytest.fixture
 def mu():
-    return make_prior(linear=True, intercept=make_prior(random=True), slope=make_prior(dist_name="Normal", dist_params=(0, 10)))
+    return make_prior(
+        linear=True,
+        intercept=make_prior(random=True),
+        slope=make_prior(dist_name="Normal", dist_params=(0, 10)),
+    )
 
 
 @pytest.fixture
@@ -167,7 +173,7 @@ def sigma():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def hbrconf(mu, sigma):
     return HBRConf(
         draws=N_SAMPLES,
@@ -181,17 +187,25 @@ def hbrconf(mu, sigma):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def hbr(hbrconf: HBRConf):
-    return HBR("test_hbr", reg_conf=hbrconf)
+    return HBR("test_hbr", reg_conf=copy.deepcopy(hbrconf))
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def new_norm_hbr_model(norm_conf_for_hbr_test_model, hbrconf):
-    return NormHBR(norm_conf_for_hbr_test_model, hbrconf)
+    return NormHBR(copy.deepcopy(norm_conf_for_hbr_test_model), copy.deepcopy(hbrconf))
 
 
-@pytest.fixture
-def fitted_norm_hbr_model(new_norm_hbr_model: NormHBR, norm_data_from_arrays: NormData):
+@pytest.fixture(scope="function")
+def train_and_save_hbr_model(
+    new_norm_hbr_model,
+    norm_data_from_arrays: NormData,
+):
     new_norm_hbr_model.fit(norm_data_from_arrays)
     return new_norm_hbr_model
+
+
+@pytest.fixture
+def fitted_norm_hbr_model(train_and_save_hbr_model):
+    return train_and_save_hbr_model

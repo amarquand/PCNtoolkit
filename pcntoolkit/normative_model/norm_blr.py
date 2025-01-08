@@ -11,6 +11,7 @@ from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 from pcntoolkit.regression_model.blr.blr_data import BLRData
 from pcntoolkit.regression_model.reg_conf import RegConf
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.output import Errors, Output
 
 
 class NormBLR(NormBase):
@@ -79,13 +80,21 @@ class NormBLR(NormBase):
         self._predict(predict_data)
 
     def _generate_synthetic_data(self, data: NormData, n_synthetic_samples: int = 1000) -> NormData:
-        raise NotImplementedError(f"Generate synthetic data method not implemented for {self.__class__.__name__}")
+        raise Output.error(
+            Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="generate_synthetic_data", class_name=self.__class__.__name__
+        )
 
     def _transfer(self, data: NormData, **kwargs: Any) -> "BLR":
-        raise NotImplementedError(f"Transfer method not implemented for {self.__class__.__name__}")
+        raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="transfer", class_name=self.__class__.__name__)
+
+    def _transfer_predict(self, transfer_data: NormData, predict_data: NormData, **kwargs: Any) -> "BLR":
+        raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="transfer_predict", class_name=self.__class__.__name__)
 
     def _extend(self, data: NormData) -> "NormBLR":
-        raise NotImplementedError(f"Extend method not implemented for {self.__class__.__name__}")
+        raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="extend", class_name=self.__class__.__name__)
+
+    def _extend_predict(self, train_data: NormData, predict_data: NormData) -> "NormBLR":
+        raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="extend_predict", class_name=self.__class__.__name__)
 
     def _centiles(self, data: NormData, cdf: np.ndarray, **kwargs: Any) -> xr.DataArray:
         blrdata = self.normdata_to_blrdata(data)
@@ -109,7 +118,7 @@ class NormBLR(NormBase):
         return self.focused_model.elemwise_logp(blrdata)  # type: ignore
 
     def n_params(self) -> int:
-        raise NotImplementedError(f"n_params method not implemented for {self.__class__.__name__}")
+        raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="n_params", class_name=self.__class__.__name__)
 
     def create_design_matrix(
         self,
@@ -161,7 +170,7 @@ class NormBLR(NormBase):
                     np.eye(len(v))[mapped_batch_effects[:, i]],
                 )
         if len(acc) == 0:
-            raise ValueError("No design matrix created")
+            raise Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED)
 
         return np.concatenate(acc, axis=1)
 
@@ -185,7 +194,7 @@ class NormBLR(NormBase):
         """
         reg_conf: RegConf = self.focused_model.reg_conf  # type: ignore
         if not isinstance(reg_conf, BLRConf):
-            raise ValueError(f"Regression configuration is not of type BLRConf, got {type(reg_conf)}")
+            raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=type(reg_conf).__name__)
 
         this_X = self.create_design_matrix(
             data,

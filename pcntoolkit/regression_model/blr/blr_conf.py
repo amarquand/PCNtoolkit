@@ -17,6 +17,7 @@ from pcntoolkit.regression_model.blr.warp import (
     WarpSinhArcsinh,
 )
 from pcntoolkit.regression_model.reg_conf import RegConf
+from pcntoolkit.util.output import Errors, Output
 
 # Default configuration values
 N_ITER = 300
@@ -190,4 +191,4 @@ class BLRConf(RegConf):
         elif self.warp.lower() == "warplog":
             return WarpLog()
         else:
-            raise ValueError(f"Warp {self.warp} not recognized.")
+            raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.warp)

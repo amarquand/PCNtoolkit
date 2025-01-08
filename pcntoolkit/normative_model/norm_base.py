@@ -727,7 +727,7 @@ class NormBase(ABC):
         """
         max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
         if n_samples < max_batch_effect_count:
-            Output.error(
+            raise Output.error(
                 Errors.SAMPLE_BATCH_EFFECTS,
                 n_samples=n_samples,
                 max_batch_effect_count=max_batch_effect_count,
@@ -836,7 +836,7 @@ class NormBase(ABC):
         Args:
             path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.
         """
-        Output.print(Messages.SAVING_MODEL.format(save_dir=self.norm_conf.save_dir))
+        Output.print(Messages.SAVING_MODEL, save_dir=self.norm_conf.save_dir)
         if path is not None:
             self.norm_conf.set_save_dir(path)
         metadata = {
@@ -933,7 +933,7 @@ class NormBase(ABC):
         return self
 
     def save_results(self, data: NormData) -> None:
-        Output.print(Messages.SAVING_RESULTS.format(save_dir=self.norm_conf.save_dir))
+        Output.print(Messages.SAVING_RESULTS, save_dir=self.norm_conf.save_dir)
         os.makedirs(os.path.join(self.norm_conf.save_dir, "results"), exist_ok=True)
         self.save_zscores(data)
         self.save_centiles(data)

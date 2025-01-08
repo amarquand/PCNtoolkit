@@ -113,7 +113,7 @@ class BasePrior(ABC):
         elif self.mapping == "softplus":
             toreturn = math.log(1 + math.exp(a + x / b)) * b  # type: ignore
         else:
-            raise ValueError(f"Unknown mapping {self.mapping}")
+            raise Output.error(Errors.ERROR_UNKNOWN_MAPPING, mapping=self.mapping)
         if len(self.mapping_params) > 2:
             toreturn = toreturn + self.mapping_params[2]
         return toreturn
@@ -224,7 +224,7 @@ class Prior(BasePrior):
                     temp = stats.invgamma.fit(s)
                     return (temp[0], temp[1], freedom * temp[2])
                 else:
-                    raise ValueError(f"Unknown distribution name {dist_name}")
+                    raise Output.error(Errors.ERROR_UNKNOWN_DISTRIBUTION, dist_name=dist_name)
 
         if "covariates" in samples.dims:
             params = [infer_params(samples.sel(covariates=i)) for i in samples.coords["covariates"]]

@@ -3,7 +3,7 @@ from typing import Any, List, Sequence, Union
 
 import scipy.special as spp  # type: ignore
 from pytensor.gradient import grad_not_implemented
-from pytensor.graph.basic import Apply, Variable
+from pytensor.graph.basic import Variable
 from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
 
 
@@ -101,15 +101,15 @@ class KnuOp(BinaryScalarOp):
         dfdp = (knuop(p + dp, x) - knuop(p - dp, x)) / (2 * dp)  # type: ignore
         return [gz * dfdp, gz * knupop(p, x)]  # type: ignore
 
-    def c_code(
-        self,
-        node: Apply[Any],
-        name: str,
-        inputs: Sequence[Any],
-        outputs: Sequence[Any],
-        sub: dict[str, str],
-    ) -> Any:
-        raise NotImplementedError("C code generation not implemented for KnuOp")
+    # def c_code(
+    #     self,
+    #     node: Apply[Any],
+    #     name: str,
+    #     inputs: Sequence[Any],
+    #     outputs: Sequence[Any],
+    #     sub: dict[str, str],
+    # ) -> Any:
+    #     raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="c_code", class_name="KnuOp")
 
 
 class KnuPrimeOp(BinaryScalarOp):
@@ -181,15 +181,15 @@ class KnuPrimeOp(BinaryScalarOp):
         """
         return [grad_not_implemented(self, 0, "p"), grad_not_implemented(self, 1, "x")]
 
-    def c_code(
-        self,
-        node: Apply[Any],
-        name: str,
-        inputs: Sequence[Any],
-        outputs: Sequence[Any],
-        sub: dict[str, str],
-    ) -> Any:
-        raise NotImplementedError("C code generation not implemented for KnupOp")
+    # def c_code(
+    #     self,
+    #     node: Apply[Any],
+    #     name: str,
+    #     inputs: Sequence[Any],
+    #     outputs: Sequence[Any],
+    #     sub: dict[str, str],
+    # ) -> Any:
+    #     raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="c_code", class_name="KnuPrimeOp")
 
 
 # Create operation instances

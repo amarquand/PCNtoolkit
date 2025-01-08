@@ -49,8 +49,13 @@ class Warnings:
     UNKNOWN_BATCH_EFFECTS = "The dataset {dataset_name} has unknown batch effects: {batch_effects}"
     BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED = "Estimation of posterior distribution failed due to: \n{error}"
     ERROR_GETTING_JOB_STATUSES = "Error getting job statuses: {stderr}"
-    ERROR_PARSING_JOB_STATUS_LINE = "Error parsing job status line: {line}"
+    ERROR_PARSING_JOB_STATUS_LINE = "Error parsing job status line: {line} - {error}"
     PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION = "Predict data not used in k-fold cross-validation"
+    DIR_DOES_NOT_EXIST = "{dir_attr_str} ({dir_attr}) does not exist, creating it for you."
+    BLR_Y_NOT_PROVIDED = "y is not provided, setting self.y to zeros"
+    BLR_VAR_X_NOT_PROVIDED = "var_X is not provided, setting self.var_X to zeros"
+    BLR_BATCH_EFFECTS_NOT_PROVIDED = "batch_effects is not provided, setting self.batch_effects to zeros"
+    HBR_BATCH_EFFECTS_NOT_PROVIDED = BLR_BATCH_EFFECTS_NOT_PROVIDED
 
 
 class Errors:
@@ -69,10 +74,37 @@ class Errors:
     BLR_MODEL_NOT_FITTED = "Model must be fitted before computing log probabilities"
     ERROR_PARSING_TIME_LIMIT = "Cannot parse {time_limit_str} as time limit"
     ERROR_CROSS_VALIDATION_FOLDS = "If cross-validation is enabled, cv_folds must be greater than 1"
+    ERROR_PREDICT_DATA_REQUIRED = "Predict data is required for fit_predict without cross-validation"
+    ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
+    BLR_X_NOT_PROVIDED = "X is not provided"
+    ERROR_UNKNOWN_FUNCTION = "Unknown function {func}"
+    ERROR_ARGUMENT_SPECIFIED_TWICE = "Argument {key} is specified twice."
+    ERROR_UNKNOWN_FUNCTION_FOR_CLASS = "Unknown function {func} for class {class_name}"
+    BLR_ERROR_NO_DESIGN_MATRIX_CREATED = "No design matrix created"
+    ERROR_UNKNOWN_CLASS = "Unknown class {class_name}"
+    ERROR_FILE_NOT_FOUND = "File not found: {path}"
+    ERROR_MODEL_NOT_FITTED = "Model needs to be fitted before it can be transferred"
+    ERROR_BLR_VAR_X_NOT_PROVIDED = "Variance of covariates (var_X) is required for models with variance."
+    ERROR_BLR_PENALTY_NOT_RECOGNIZED = "Requested penalty ({penalty}) not recognized, choose between 'L1' or 'L2'."
+    ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH = "Hyperparameter vector invalid length"
+    ERROR_BLR_WARPS_NOT_PROVIDED = "A list of warp functions is required"
+    ERROR_HBRDATA_X_NOT_PROVIDED = "X must be provided"
+    ERROR_UNKNOWN_LIKELIHOOD = "Unsupported likelihood ({likelihood})"
+    ERROR_HBR_Y_NOT_PROVIDED = "y must be provided for z-score computation"
+    ERROR_HBR_FITTED_BUT_NO_IDATA = "HBR model is fitted but does not have idata. This should not happen."
+    ERROR_HBR_COULD_NOT_LOAD_IDATA = "Could not load idata from {path}"
+    ERROR_UNKNOWN_MAPPING = "Unknown mapping ({mapping})"
+    ERROR_UNKNOWN_DISTRIBUTION = "Unknown distribution ({dist_name})"
+    ERROR_SOURCE_ARRAY_NOT_FOUND = "Source array {source_array_name} does not exist in the data."
+    ERROR_BASIS_FUNCTION_NOT_FITTED = "Basis function is not fitted. Please fit the basis function first."
+    ERROR_DATA_MUST_BE_1D = "Data must be a 1D array or a N-dimensional array with a single column"
+    ERROR_BATCH_EFFECTS_NOT_LIST = "Items of the batch_effect dict be a list or a string, not {batch_effect_type}"
+    ERROR_SCALER_TYPE_NOT_FOUND = "Dictionary must contain 'scaler_type' key"
+    ERROR_UNKNOWN_SCALER_TYPE = "Undefined scaler type: {scaler_type}"
+    ERROR_SCALER_NOT_FITTED = "Scaler must be fitted before {method}"
     ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION = (
         "Predict data is required for fit_predict without cross-validation"
     )
-    ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
 
 
 class Output:
@@ -96,6 +128,6 @@ class Output:
             warnings.warn("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
 
     @classmethod
-    def error(cls, message: str, *args, **kwargs) -> Exception:
+    def error(cls, message: str, *args, **kwargs) -> ValueError:
         """Print error message"""
-        raise ValueError("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+        return ValueError("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))

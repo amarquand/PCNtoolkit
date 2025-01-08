@@ -14,32 +14,32 @@ These fixtures are used to create consistent and controlled datasets for testing
 """
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def n_train_datapoints():
     return 1500
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def n_test_datapoints():
     return 1000
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def n_transfer_datapoints():
     return 500
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def n_covariates():
     return 2
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def n_response_vars():
     return 2
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def batch_effect_values():
     return [[0, 1], [0, 1, 2]]
 
@@ -84,7 +84,10 @@ def dataframe(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
     all_columns = X_columns + y_columns + batch_effect_columns
     if len(y.shape) == 1:
         y = y[:, None]
-    return pd.DataFrame(np.concatenate([X, y, batch_effects.astype(object)], axis=1), columns=all_columns)
+    return pd.DataFrame(
+        np.concatenate([X, y, batch_effects.astype(object)], axis=1),
+        columns=all_columns,
+    )
 
 
 @pytest.fixture

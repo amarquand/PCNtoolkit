@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from tempfile import gettempdir
 
 import numpy as np
@@ -23,12 +24,16 @@ The fixtures defined here include:
 """
 
 
-@pytest.fixture
+MODEL_PATH = Path("tests/fixtures/model.joblib")
+LOCK_PATH = Path("tests/fixtures/model.lock")
+
+
+@pytest.fixture(scope="session")
 def log_dir():
     return os.path.join(gettempdir(), "pcntoolkit_tests", "log_test")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
     source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
     os.makedirs(source_data_dir, exist_ok=True)
@@ -47,7 +52,7 @@ def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_va
     os.remove(trbefile_path)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
     source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
     os.makedirs(source_data_dir, exist_ok=True)
@@ -66,70 +71,11 @@ def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_va
     os.remove(test_trbefile_path)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def save_dir():
     return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def maskfile():
     return None
-
-
-# @pytest.fixture
-# def covfile(n_train_datapoints, n_covariates):
-#     file_path = os.path.join(
-#         gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates.csv"
-#     )
-#     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#     np.savetxt(file_path, generate_covariates(n_train_datapoints, n_covariates))
-#     yield file_path
-#     os.remove(file_path)
-
-
-# @pytest.fixture
-# def testcov(n_test_datapoints, n_covariates):
-#     file_path = os.path.join(
-#         gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates_test.csv"
-#     )
-#     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#     np.savetxt(file_path, generate_covariates(n_test_datapoints, n_covariates))
-#     yield file_path
-#     os.remove(file_path)
-
-
-# @pytest.fixture
-# def testresp(n_test_datapoints, n_response_vars):
-#     file_path = os.path.join(
-#         gettempdir(), "pcntoolkit_tests", "resources", "data", "responses_test.csv"
-#     )
-#     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#     np.savetxt(file_path, generate_response_vars(n_test_datapoints, n_response_vars))
-#     yield file_path
-#     os.remove(file_path)
-
-
-# @pytest.fixture
-# def trbefile(n_train_datapoints, batch_effect_values):
-#     file_path = os.path.join(
-#         gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects.csv"
-#     )
-#     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#     np.savetxt(
-#         file_path, generate_batch_effects(n_train_datapoints, batch_effect_values)
-#     )
-#     yield file_path
-#     os.remove(file_path)
-
-
-# @pytest.fixture
-# def tsbefile(n_test_datapoints, batch_effect_values):
-#     file_path = os.path.join(
-#         gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects_test.csv"
-#     )
-#     os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#     np.savetxt(
-#         file_path, generate_batch_effects(n_test_datapoints, batch_effect_values)
-#     )
-#     yield file_path
-#     os.remove(file_path)

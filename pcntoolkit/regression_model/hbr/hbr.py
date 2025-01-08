@@ -71,6 +71,7 @@ from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
 from pcntoolkit.regression_model.hbr.prior import Prior
 from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.util.output import Errors, Output
 
 from .hbr_conf import HBRConf
 
@@ -410,7 +411,7 @@ class HBR(RegressionModel):
                 "delta_samples",
             ]
         else:
-            raise RuntimeError("Unsupported likelihood " + likelihood)
+            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
         return var_names
 
     def compile_model(
@@ -445,7 +446,7 @@ class HBR(RegressionModel):
         elif self.likelihood == "SHASHo":
             self.compile_SHASHo(data, idata, freedom)
         else:
-            raise NotImplementedError(f"Likelihood {self.likelihood} not implemented for {self.__class__.__name__}")
+            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=self.likelihood)
 
     def compile_normal(
         self,
@@ -700,7 +701,7 @@ class HBR(RegressionModel):
                 # self.remove_samples_from_idata_posterior()
                 self.idata.to_netcdf(path, groups=["posterior"])
             else:
-                raise RuntimeError("HBR model is fitted but does not have idata. This should not happen.")
+                raise Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA)
 
     def load_idata(self, path: str) -> None:
         """
@@ -724,7 +725,7 @@ class HBR(RegressionModel):
             try:
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
-                raise RuntimeError(f"Could not load idata from {path}.") from exc
+                raise Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path) from exc
             # self.replace_samples_in_idata_posterior()
 
     def remove_samples_from_idata_posterior(self) -> None:

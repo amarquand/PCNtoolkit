@@ -10,7 +10,6 @@ is used by all the models in the toolkit.
 
 from __future__ import annotations
 
-import warnings
 from functools import reduce
 
 # pylint: disable=deprecated-class
@@ -35,6 +34,8 @@ from sklearn.model_selection import StratifiedKFold, train_test_split  # type: i
 
 # import datavars from xarray
 from xarray.core.types import DataVars
+
+from pcntoolkit.util.output import Output, Warnings
 
 
 class NormData(xr.Dataset):
@@ -573,16 +574,26 @@ class NormData(xr.Dataset):
         """
         missing_covariates = [i for i in other.covariates.values if i not in self.covariates.values]
         if len(missing_covariates) > 0:
-            warnings.warn(f"The dataset {self.name} is missing the following covariates: {missing_covariates}")
+            Output.warning(
+                Warnings.MISSING_COVARIATES,
+                dataset_name=self.name,
+                covariates=missing_covariates,
+            )
 
         extra_covariates = [i for i in self.covariates.values if i not in other.covariates.values]
         if len(extra_covariates) > 0:
-            warnings.warn(f"The dataset {self.name} has covariates that are not present in {other.name}: {extra_covariates}")
+            Output.warning(
+                Warnings.EXTRA_COVARIATES,
+                dataset_name=self.name,
+                covariates=extra_covariates,
+            )
 
         extra_response_vars = [i for i in self.response_vars.values if i not in other.response_vars.values]
         if len(extra_response_vars) > 0:
-            warnings.warn(
-                f"The dataset {self.name} has response variables that are not present in {other.name}: {extra_response_vars}"
+            Output.warning(
+                Warnings.EXTRA_RESPONSE_VARS,
+                dataset_name=self.name,
+                response_vars=extra_response_vars,
             )
         if len(missing_covariates) > 0 or len(extra_covariates) > 0 or len(extra_response_vars) > 0:
             return False

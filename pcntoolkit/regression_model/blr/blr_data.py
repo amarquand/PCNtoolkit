@@ -16,6 +16,8 @@ from typing import Optional, Tuple
 
 import numpy as np
 
+from pcntoolkit.util.output import Errors, Output, Warnings
+
 
 class BLRData:
     """An object to store the data used in Bayesian linear regression."""
@@ -72,26 +74,24 @@ class BLRData:
             If X is not provided.
         """
         if X is None:
-            raise ValueError("X must be provided")
+            raise Output.error(Errors.BLR_X_NOT_PROVIDED)
         else:
             self.X = X
 
         if y is None:
-            # warnings.warn("y is not provided, setting self.y to zeros")
+            Output.warning(Warnings.BLR_Y_NOT_PROVIDED)
             self.y = np.zeros((X.shape[0], 1))
         else:
             self.y = y
 
         if var_X is None:
-            # warnings.warn("var_X is not provided, setting self.var_X to zeros")
+            Output.warning(Warnings.BLR_VAR_X_NOT_PROVIDED)
             self.var_X = np.zeros((X.shape[0], 1))
         else:
             self.var_X = var_X
 
         if batch_effects is None:
-            # warnings.warn(
-            #     "batch_effects is not provided, setting self.batch_effects to zeros"
-            # )
+            Output.warning(Warnings.BLR_BATCH_EFFECTS_NOT_PROVIDED)
             self.batch_effects = np.zeros((X.shape[0], 1))
         else:
             self.batch_effects = batch_effects

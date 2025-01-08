@@ -8,6 +8,7 @@ import xarray as xr
 from scipy.interpolate import BSpline
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.util.output import Errors, Output
 
 
 def create_basis_function_from_dict(basis_function_dict: dict) -> BasisFunction:
@@ -57,7 +58,7 @@ class BasisFunction(ABC):
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(data[self.source_array_name].data.shape[1])]
         if self.source_array_name not in data.data_vars:
-            raise ValueError(f"Source array {self.source_array_name} does not exist in the data.")
+            raise Output.error(Errors.ERROR_SOURCE_ARRAY_NOT_FOUND, source_array_name=self.source_array_name)
         source_array = data[self.source_array_name]
         for i in self.basis_column:
             self.fit_column(source_array, i)
@@ -66,9 +67,9 @@ class BasisFunction(ABC):
 
     def transform(self, data: NormData) -> None:
         if self.source_array_name not in data.data_vars:
-            raise ValueError(f"Source array {self.source_array_name} does not exist in the data.")
+            raise Output.error(Errors.ERROR_SOURCE_ARRAY_NOT_FOUND, source_array_name=self.source_array_name)
         if not self.is_fitted:
-            raise ValueError("Basis function is not fitted. Please fit the basis function first.")
+            raise Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED)
         source_array = data[self.source_array_name]
         all_arrays = []
         for i in range(source_array.data.shape[1]):
@@ -96,7 +97,7 @@ class BasisFunction(ABC):
         array = data.isel(covariates=i).to_numpy()
         squeezed = np.squeeze(array)
         if squeezed.ndim > 1:
-            raise ValueError("Data must be a 1D array or a N-dimensional array with a single column")
+            raise Output.error(Errors.ERROR_DATA_MUST_BE_1D, data=data)
         transformed_array = self._transform(array, i)
         if transformed_array.ndim == 1:
             transformed_array = transformed_array.reshape(-1, 1)

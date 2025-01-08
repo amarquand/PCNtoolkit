@@ -86,8 +86,13 @@ def test_normhbr_from_args(norm_args: dict[str, str], sample_args: dict[str, int
 
 
 def test_normdata_to_hbrdata(
-    fitted_norm_hbr_model, norm_data_from_arrays: NormData, n_train_datapoints, batch_effect_values, n_covariates
+    fitted_norm_hbr_model,
+    norm_data_from_arrays: NormData,
+    n_train_datapoints,
+    batch_effect_values,
+    n_covariates,
 ):
+    fitted_norm_hbr_model.preprocess(norm_data_from_arrays)
     single_response_var = norm_data_from_arrays.sel(response_vars="response_var_0")
     hbrdata = fitted_norm_hbr_model.normdata_to_hbrdata(single_response_var)
 
@@ -110,7 +115,14 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     fitted_norm_hbr_model.save()
     for i in fitted_norm_hbr_model.response_vars:
         assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "idata.nc"))
-        assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", f"{i}", "regression_model.json"))
+        assert os.path.exists(
+            os.path.join(
+                fitted_norm_hbr_model.norm_conf.save_dir,
+                "model",
+                f"{i}",
+                "regression_model.json",
+            )
+        )
     assert os.path.exists(os.path.join(fitted_norm_hbr_model.norm_conf.save_dir, "model", "normative_model.json"))
 
     load_path = fitted_norm_hbr_model.norm_conf.save_dir
@@ -180,7 +192,10 @@ def test_transfer(
     for model in hbr_transfered.regression_models.values():
         assert model.pymc_model.coords["batch_effect_1"] == ("3",)
         assert model.is_fitted
-        assert model.idata.posterior.mu_samples.shape[:2] == (transfer_chains, transfer_samples)
+        assert model.idata.posterior.mu_samples.shape[:2] == (
+            transfer_chains,
+            transfer_samples,
+        )
 
 
 def test_centiles(fitted_norm_hbr_model: NormHBR, test_norm_data_from_arrays: NormData):
