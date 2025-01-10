@@ -147,9 +147,8 @@ class NormBase(ABC):
         - Preprocessing includes scaling and basis expansion based on norm_conf settings
 
         """
-        self.register_batch_effects(data)
+        self.register_data_info(data)
         self.preprocess(data)
-        self.response_vars = data.response_vars.to_numpy().copy().tolist()
         Output.print(Messages.FITTING_MODELS, n_models=len(self.response_vars))
         for responsevar in self.response_vars:
             resp_fit_data = data.sel({"response_vars": responsevar})
@@ -249,10 +248,9 @@ class NormBase(ABC):
 
         assert predict_data.check_compatibility(fit_data), "Fit data and predict data are not compatible!"
 
+        self.register_data_info(fit_data)
         self.preprocess(fit_data)
-        self.register_batch_effects(fit_data)
         self.preprocess(predict_data)
-        self.response_vars = fit_data.response_vars.to_numpy().copy().tolist()
         Output.print(Messages.FITTING_AND_PREDICTING_MODELS, n_models=len(self.response_vars))
         for responsevar in self.response_vars:
             resp_fit_data = fit_data.sel({"response_vars": responsevar})
@@ -309,8 +307,7 @@ class NormBase(ABC):
             transfered_norm_conf,
             self.default_reg_conf,  # type: ignore
         )
-        transfered_normative_model.register_batch_effects(data)
-        transfered_normative_model.response_vars = data.response_vars.to_numpy().copy().tolist()
+        transfered_normative_model.register_data_info(data)
         transfered_models = {}
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
@@ -707,6 +704,11 @@ class NormBase(ABC):
             (len(missing_covariates) == 0) and (len(extra_covariates) == 0) and (len(extra_response_vars) == 0) and (compatible)
         )
 
+    def register_data_info(self, data: NormData) -> None:
+        self.covariates = data.covariates.to_numpy().copy().tolist()
+        self.response_vars = data.response_vars.to_numpy().copy().tolist()
+        self.register_batch_effects(data)
+
     def register_batch_effects(self, data: NormData) -> None:
         self.unique_batch_effects = copy.deepcopy(data.unique_batch_effects)
         self.batch_effects_maps = {
@@ -848,6 +850,9 @@ class NormBase(ABC):
             "is_fitted": self.is_fitted,
         }
 
+        if hasattr(self, "covariates"):
+            metadata["covariates"] = self.covariates
+
         if hasattr(self, "bspline_basis"):
             metadata["basis_function"] = copy.deepcopy(self.basis_function)
 
@@ -907,6 +912,9 @@ class NormBase(ABC):
             }
         if "unique_batch_effects" in metadata:
             self.unique_batch_effects = metadata["unique_batch_effects"]
+
+        if "covariates" in metadata:
+            self.covariates = metadata["covariates"]
 
         self.regression_model_type = globals()[metadata["regression_model_type"]]
         self.response_vars = []
