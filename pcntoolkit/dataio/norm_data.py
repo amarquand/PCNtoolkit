@@ -478,6 +478,7 @@ class NormData(xr.Dataset):
         self,
         splits: Tuple[float, ...] | List[float] | float = 0.8,
         split_names: Tuple[str, ...] | None = None,  # type: ignore
+        random_state: int = 42,
     ) -> Tuple[NormData, ...]:
         """
         Split the data into training and testing datasets.
@@ -488,6 +489,8 @@ class NormData(xr.Dataset):
             A tuple specifying the proportion of data for each split. Or a float specifying the proportion of data for the train set.
         split_names : Tuple[str, ...] | None, optional
             Names for the splits, by default None.
+        random_state: int , optional
+            Random state for splits, by default 42.
 
         Returns
         -------
@@ -505,7 +508,7 @@ class NormData(xr.Dataset):
         train_idx, test_idx = train_test_split(
             np.arange(self.X.shape[0]),
             test_size=splits[1],
-            random_state=42,
+            random_state=random_state,
             stratify=batch_effects_stringified,
         )
         split1 = self.isel(datapoints=train_idx)
