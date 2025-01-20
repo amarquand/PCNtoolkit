@@ -109,3 +109,4 @@ example_notebooks/resources
 docs/_build/
 docs/autoapi/
 example_notebooks/save_dir/*
+example_notebooks/sandbox.ipynb

@@ -12,6 +12,7 @@ import xarray as xr
 from pymc import math
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
+from pcntoolkit.util.output import Errors, Output
 
 PM_DISTMAP = {
     "Normal": pm.Normal,
@@ -22,6 +23,36 @@ PM_DISTMAP = {
     "Gamma": pm.Gamma,
     "InvGamma": pm.InverseGamma,
     "LogNormal": pm.LogNormal,
+}
+
+DEFAULT_PRIOR_ARGS = {
+    # For all models
+    "linear_mu": True,
+    "random_intercept_mu": True,
+    "slope_mu_dist": "Normal",
+    "slope_mu_params": (0, 10.0),
+    "mu_intercept_mu_dist": "Normal",
+    "mu_intercept_mu_params": (0, 10.0),
+    "sigma_intercept_mu_dist": "HalfNormal",
+    "sigma_intercept_mu_params": (2.0,),
+    "linear_sigma": True,
+    "mapping_sigma": "softplus",
+    "mapping_params_sigma": (0, 2.0),
+    "slope_sigma_dist": "Normal",
+    "slope_sigma_params": (0, 10.0),
+    "intercept_sigma_dist": "HalfNormal",
+    "intercept_sigma_params": (2.0,),
+    # For SHASH models
+    "linear_epsilon": False,
+    "random_epsilon": False,
+    "epsilon_dist": "Normal",
+    "epsilon_params": (0, 1.0),
+    "linear_delta": False,
+    "random_delta": False,
+    "delta_dist": "Normal",
+    "delta_params": (1.0, 2.0),
+    "mapping_delta": "softplus",
+    "mapping_params_delta": (0, 3.0, 0.3),
 }
 
 
@@ -35,37 +66,30 @@ def make_prior(name: str = "theta", **kwargs) -> BasePrior:
 
 
 def prior_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
-    dims = args.get(f"dims_{name}", dims)
-
-    mapping = args.get(f"mapping_{name}", "identity")
-    mapping_params = args.get(f"mapping_params_{name}", (0, 1))
+    my_args = DEFAULT_PRIOR_ARGS | args
+    mapping = my_args.get(f"mapping_{name}", "identity")
+    mapping_params = my_args.get(f"mapping_params_{name}", (0, 1))
     if name.split("_")[0] in ["sigma", "delta"]:
-        dist_name = args.get(f"dist_name_{name}", "HalfNormal")
-        dist_params = args.get(f"dist_params_{name}", (1.0,))
-        if args.get(f"linear_{name}", False) or args.get(f"random_{name}", False):
+        dist_name = my_args.get(f"dist_name_{name}", "HalfNormal")
+        dist_params = my_args.get(f"dist_params_{name}", (1.0,))
+        if my_args.get(f"linear_{name}", False) or my_args.get(f"random_{name}", False):
             assert mapping != "identity", "Sigma and delta need a mapping if they are linear or random"
         else:
-            assert args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"] or (
-                args.get(f"dist_name_{name}", None) == "Uniform" and args.get(f"dist_params_{name}", None)[0] > 0
+            assert my_args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"] or (
+                my_args.get(f"dist_name_{name}", None) == "Uniform" and my_args.get(f"dist_params_{name}", None)[0] > 0
             ), "Sigma and delta need a positive distribution if they are not linear or random"
     else:
-        dist_name = args.get(f"dist_name_{name}", "Normal")
-        dist_params = args.get(f"dist_params_{name}", (0, 1))
+        dist_name = my_args.get(f"dist_name_{name}", "Normal")
+        dist_params = my_args.get(f"dist_params_{name}", (0, 1))
 
-    if args.get(f"linear_{name}", False):
-        slope = prior_from_args(f"slope_{name}", args, dims=dims)
-        intercept = prior_from_args(f"intercept_{name}", args, dims=dims)
+    dims = my_args.get(f"dims_{name}", dims)
+    if my_args.get(f"linear_{name}", False):
+        slope = prior_from_args(f"slope_{name}", my_args, dims=dims)
+        intercept = prior_from_args(f"intercept_{name}", my_args, dims=dims)
         return LinearPrior(name, dims, mapping, mapping_params, slope, intercept)
-    elif args.get(f"random_{name}", False):
-        mu = prior_from_args(f"mu_{name}", args, dims=dims)
-        if not args.get(f"mapping_sigma_{name}", None):
-            assert (args.get(f"dist_name_sigma_{name}", None) not in ["Normal", "Cauchy"]) or (
-                args.get(f"dist_name_sigma_{name}", None) == "Uniform" and args.get(f"dist_params_sigma_{name}", None)[0] > 0
-            ), "Sigma needs a positive distribution if it is not linear or random"
-
-            sigma = prior_from_args(f"sigma_{name}", args, dims=dims)
-        else:
-            sigma = get_default_sigma(dims)
+    elif my_args.get(f"random_{name}", False):
+        mu = prior_from_args(f"mu_{name}", my_args, dims=dims)
+        sigma = prior_from_args(f"sigma_{name}", my_args, dims=dims)
         return RandomPrior(name, dims, mapping, mapping_params, mu, sigma)
     else:
         return Prior(name, dims, mapping, mapping_params, dist_name, dist_params)
@@ -403,7 +427,7 @@ class LinearPrior(BasePrior):
         idata: Optional[az.InferenceData] = None,
         freedom: float = 1,
     ):
-        self.one_dimensional = len(model.coords["covariates"]) == 1
+        self.one_dimensional = len(model.coords["covariates"]) == 1  # type: ignore
         self.slope.compile(model, idata, freedom)
         self.intercept.compile(model, idata, freedom)
 
