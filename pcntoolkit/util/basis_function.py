@@ -161,9 +161,9 @@ class BsplineBasisFunction(BasisFunction):
     ):
         super().__init__(source_array_name, basis_column, **kwargs)
         self.degree = kwargs.get("degree", 3)
-        self.nknots = kwargs.get("nknots", 5)
-        self.left_expand = kwargs.get("left_expand", 0.1)
-        self.right_expand = kwargs.get("right_expand", 0.1)
+        self.nknots = kwargs.get("nknots", 3)
+        self.left_expand = kwargs.get("left_expand", 0.05)
+        self.right_expand = kwargs.get("right_expand", 0.05)
         self.knot_method = kwargs.get("knot_method", "uniform")
         self.knots = kwargs.get("knots", {})
         self.basis_name = "bspline"
