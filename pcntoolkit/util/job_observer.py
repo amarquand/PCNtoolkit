@@ -1,3 +1,4 @@
+import copy
 import subprocess
 import time
 from dataclasses import dataclass
@@ -16,8 +17,9 @@ class JobStatus:
 
 
 class JobObserver:
-    def __init__(self, active_job_ids: Dict[str, str]):
-        self.active_job_ids = active_job_ids
+    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local"):
+        self.active_job_ids = copy.deepcopy(active_job_ids)
+        self.job_type = job_type
 
     def get_job_statuses(self) -> List[JobStatus]:
         """Get status of all tracked jobs."""
@@ -25,12 +27,23 @@ class JobObserver:
             return []
 
         # Get all job statuses at once
-        process = subprocess.Popen(
-            ["squeue", "--format=%i|%j|%T|%M|%N", "--noheader"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
+        if self.job_type == "local":
+            process = subprocess.Popen(
+                ["ps", "-e", "-o", "pid,comm,stat,etime"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        elif self.job_type == "slurm":
+            process = subprocess.Popen(
+                ["squeue", "--format=%i|%j|%T|%M|%N", "--noheader"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        else:
+            raise ValueError(f"Invalid job type: {self.job_type}")
+
         stdout, stderr = process.communicate()
 
         statuses = []
@@ -39,23 +52,53 @@ class JobObserver:
             lines = [line.strip() for line in stdout.split("\n") if line.strip()]
             for line in lines:
                 try:
-                    job_id, name, state, time, nodes = line.split("|")
-                    if job_id in list(self.active_job_ids.values()):
-                        statuses.append(
-                            JobStatus(
-                                job_id=job_id,
-                                name=name,
-                                state=state,
-                                time=time,
-                                nodes=nodes,
+                    if self.job_type == "local":
+                        job_id = line.split(maxsplit=1)[0]
+                        if job_id in list(self.active_job_ids.values()):
+                            job_id, name, state, time = line.split()
+                            state = self.map_local_to_slurm_state(state)
+                            statuses.append(
+                                JobStatus(
+                                    job_id=job_id,
+                                    name=name,
+                                    state=state,
+                                    time=time,
+                                    nodes="",
+                                )
                             )
-                        )
+                    else:
+                        job_id, name, state, time, nodes = line.split("|")
+                        if job_id in list(self.active_job_ids.values()):
+                            statuses.append(
+                                JobStatus(
+                                    job_id=job_id,
+                                    name=name,
+                                    state=state,
+                                    time=time,
+                                    nodes=nodes,
+                                )
+                            )
                 except ValueError as e:
                     Output.warning(Warnings.ERROR_PARSING_JOB_STATUS_LINE, line=line, error=e)
         elif stderr:
             Output.warning(Warnings.ERROR_GETTING_JOB_STATUSES, stderr=stderr)
 
         return statuses
+
+    def map_local_to_slurm_state(self, local_state: str) -> str:
+        base_state = local_state[0].upper()
+
+        state_map = {
+            "R": "RUNNING",  # Running or runnable
+            "S": "RUNNING",  # Interruptible sleep
+            "D": "RUNNING",  # Uninterruptible sleep
+            "Z": "FAILED",  # Zombie
+            "T": "SUSPENDED",  # Stopped
+            "X": "FAILED",  # Dead
+            "I": "PENDING",  # Idle kernel thread
+        }
+        # Assume that if the job is not in the state map, it is completed (sorry)
+        return state_map.get(base_state, "COMPLETED")
 
     def wait_for_jobs(self, check_interval=5):
         """Wait for all submitted jobs to complete.
@@ -116,14 +159,13 @@ class JobObserver:
     def wait_for_jobs_terminal(self, check_interval=5):
         # Terminal display with ANSI codes
         # Keep existing terminal implementation
-        print("\033[2K\r", end="")  # Clear current line
+        show_pid = Output.get_show_pid()
+        Output.set_show_pid(False)
         Output.print(Messages.JOB_STATUS_MONITOR)
 
         prev_lines = 0
 
         while self.active_job_ids:
-            print(f"\033[{prev_lines + 5}A", end="")
-
             statuses = self.get_job_statuses()
 
             for status in statuses:
@@ -150,5 +192,7 @@ class JobObserver:
 
             if self.active_job_ids:
                 time.sleep(check_interval)
+            print(f"\033[{prev_lines}A", end="")
 
+        Output.set_show_pid(show_pid)
         Output.print(Messages.ALL_JOBS_COMPLETED)
