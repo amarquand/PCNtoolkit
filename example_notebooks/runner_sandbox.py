@@ -9,7 +9,7 @@ from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
 from pcntoolkit.regression_model.hbr.prior import make_prior
 from pcntoolkit.util.runner import Runner
 
-resources_dir = "/Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources"
+resources_dir = "/project/3022000.05/projects/stijdboe/Projects/PCNtoolkit/example_notebooks/resources"
 data_dir = os.path.join(resources_dir, "data")
 os.makedirs(data_dir, exist_ok=True)
 
@@ -96,7 +96,7 @@ runner = Runner(
     cross_validate=False,
     parallelize=True,
     time_limit="00:15:00",
-    job_type="local",  # or "slurm" if you are on a slurm cluster
+    job_type="slurm",  # or "slurm" if you are on a slurm cluster
     n_jobs=2,
     log_dir=os.path.join(sandbox_dir, "log_dir"),
     temp_dir=os.path.join(sandbox_dir, "temp_dir"),

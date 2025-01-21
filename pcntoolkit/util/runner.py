@@ -420,12 +420,12 @@ class Runner:
                 return True, False, None  # Still running
 
             # Job not running, check for success file
-            success_file = os.path.join(self.log_dir, f"{job_id}.success")
+            success_file = os.path.join(self.log_dir, f"{job_name}.success")
             if os.path.exists(success_file):
                 return False, False, None  # Finished successfully
 
             # Job finished but no success file - read error output
-            error_file = os.path.join(self.log_dir, f"{job_id}.err")
+            error_file = os.path.join(self.log_dir, f"{job_name}.err")
             if os.path.exists(error_file):
                 with open(error_file, "r") as f:
                     return False, True, f.read().strip()
@@ -488,6 +488,7 @@ class Runner:
             self.job_commands.clear()
 
             for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                job_name = f"job_{i}"
                 if mode == "unary":
                     chunk_tuple = first_chunk
                 elif mode == "binary":
@@ -504,14 +505,14 @@ class Runner:
                         start_new_session=True,
                     )
                     # For local jobs, store the PID immediately without waiting
-                    self.all_jobs[f"job_{i}"] = str(process.pid)
-                    self.job_commands[f"job_{i}"] = command
+                    self.all_jobs[job_name] = str(process.pid)
+                    self.job_commands[job_name] = command
                 else:
                     # For cluster jobs, we need to wait for the job ID
                     if self.job_type == "slurm":
-                        command = self.wrap_in_slurm_job(i, python_callable_path, data_path)
+                        command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
                     elif self.job_type == "torque":
-                        command = self.wrap_in_torque_job(i, python_callable_path, data_path)
+                        command = self.wrap_in_torque_job(job_name, python_callable_path, data_path)
 
                     process = subprocess.Popen(
                         command,
@@ -522,10 +523,10 @@ class Runner:
                     stdout, stderr = process.communicate()
                     job_id = re.search(r"Submitted batch job (\d+)", stdout)
                     if job_id:
-                        self.all_jobs[f"job_{i}"] = job_id.group(1)
-                        self.job_commands[f"job_{i}"] = command
+                        self.all_jobs[job_name] = job_id.group(1)
+                        self.job_commands[job_name] = command
                     elif stderr:
-                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=i, stderr=stderr)
+                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
 
         else:
             if mode == "unary":
@@ -534,15 +535,16 @@ class Runner:
                 chunk_tuple = (first_data_source, second_data_source)
             fn(*chunk_tuple)
 
+        
     def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
-        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
+        job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
-                    
+    
 #SBATCH --job-name=normative_{job_name}
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task={self.n_cores}
@@ -562,7 +564,7 @@ exit $exit_code
         return ["sbatch", job_path]
 
     def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
-        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
+        job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
@@ -590,9 +592,9 @@ exit $exit_code
         return ["qsub", job_path]
 
     def wrap_in_local_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
-        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
+        job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
-        success_file = os.path.join(self.log_dir, f"job_{job_name}.success")
+        success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
         with open(job_path, "w") as f:
             f.write(
