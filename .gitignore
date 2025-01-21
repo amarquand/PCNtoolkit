@@ -106,7 +106,7 @@ example_notebooks/resources/save_dir/*
 example_notebooks/resources 
 example_notebooks/save_dir/*
 example_notebooks/sandbox.ipynb
-example_notebooks/runner_sandbox.py
+# example_notebooks/runner_sandbox.py
 example_notebooks/runner_sandbox.ipynb
 
 # Sphinx documentation
