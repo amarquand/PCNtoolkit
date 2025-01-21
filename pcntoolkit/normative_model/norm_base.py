@@ -952,6 +952,7 @@ class NormBase(ABC):
             data,
             save_dir=os.path.join(self.norm_conf.save_dir, "plots"),
             show_data=True,
+            show_other_data=True
         )
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
 
