@@ -965,7 +965,10 @@ class NormBase(ABC):
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    new_results = pd.concat([old_results, zdf], axis=1)
+                    # Merge on datapoints, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(zdf, on="datapoints", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
                     new_results = zdf
                 f.seek(0)
@@ -984,7 +987,10 @@ class NormBase(ABC):
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=[0, 1]) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    new_results = pd.concat([old_results, cdf], axis=1)
+                    # Merge on datapoints, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(cdf, on=["datapoints", "cdf"], how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
                     new_results = cdf
                 f.seek(0)
@@ -1003,7 +1009,10 @@ class NormBase(ABC):
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    new_results = pd.concat([old_results, mdf], axis=1)
+                    # Merge on datapoints, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(mdf, on="measure", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
                     new_results = mdf
                 f.seek(0)

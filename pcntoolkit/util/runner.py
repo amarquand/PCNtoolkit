@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import subprocess
@@ -9,8 +10,6 @@ import cloudpickle as pickle
 
 # mp.set_start_method("spawn")
 # from multiprocess import Pool
-from joblib import Parallel, delayed
-
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_factory import load_normative_model
@@ -70,7 +69,10 @@ class Runner:
             raise Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit)
 
         self.memory = memory
-        self.active_job_ids: Dict[str, str] = {}
+        self.all_jobs: Dict[str, str] = {}
+        self.job_commands: Dict[str, list[str]] = {}  # Save the commands for re-submission
+        self.active_jobs: Dict[str, str] = {}
+        self.failed_jobs: Dict[str, str] = {}
 
         # Get Python path if not provided
         if not python_path:
@@ -97,12 +99,19 @@ class Runner:
         if self.cross_validate and self.cv_folds <= 1:
             raise Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
 
-    def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+    def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            # If we want to observer the jobs, we wait for them, and then get the failed jobs after it's done
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            # Else, we save the runner state after all jobs are submitted
+            # The load function will check for failed jobs
+            self.save()
 
     def fit_predict(
         self,
@@ -110,6 +119,7 @@ class Runner:
         fit_data: NormData,
         predict_data: Optional[NormData] = None,
         save_dir: Optional[str] = None,
+        observe: bool = True,
     ) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_predict_chunk_fn(model)
@@ -119,22 +129,34 @@ class Runner:
             second_data_source=predict_data,
             mode="binary",
         )
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
-    def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+    def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
-    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
     def transfer_predict(
         self,
@@ -142,19 +164,28 @@ class Runner:
         fit_data: NormData,
         predict_data: NormData,
         save_dir: Optional[str] = None,
+        observe: bool = True,
     ) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
-    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
+    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
     def extend_predict(
         self,
@@ -162,12 +193,17 @@ class Runner:
         fit_data: NormData,
         predict_data: NormData,
         save_dir: Optional[str] = None,
+        observe: bool = True,
     ) -> None:
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        self.job_observer = JobObserver(self.active_job_ids)
-        self.job_observer.wait_for_jobs()
+        if observe:
+            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+        else:
+            self.save()
 
     def get_fit_chunk_fn(self, model: NormBase) -> Callable:
         """Returns a callable that fits a chunk of data"""
@@ -343,6 +379,83 @@ class Runner:
             pickle.dump(chunk, f)
         return python_callable_path, data_path
 
+    def check_job_status(self, job_name: str) -> tuple[bool, bool, Optional[str]]:
+        """Check if a job has failed by looking for success file.
+
+        Returns
+        -------
+        tuple[bool, bool, Optional[str]]
+            (is_running, finished_with_error, error_message)
+            If job is still running, returns (True, False, None)
+            If job finished successfully, returns (False, False, None)
+            If job failed, returns (False, True, error_message)
+        """
+        job_id = self.all_jobs[job_name]
+        if self.job_type == "local":
+            try:
+                os.kill(int(job_id), 0)  # Check if process still running
+                return True, False, None  # Still running
+            except ProcessLookupError:
+                # Process finished, check for success file
+                success_file = os.path.join(self.log_dir, f"{job_name}.success")
+                if os.path.exists(success_file):
+                    return False, False, None  # Finished successfully
+                else:
+                    # Job finished but no success file - read error output
+                    error_file = os.path.join(self.log_dir, f"{job_name}.err")
+                    if os.path.exists(error_file):
+                        with open(error_file, "r") as f:
+                            return False, True, f.read().strip()
+                    return False, True, "Job failed without error output"
+        else:
+            # For cluster jobs, first check if job is still in queue/running
+            is_running = False
+            if self.job_type == "slurm":
+                result = subprocess.run(["squeue", "-j", job_id], capture_output=True, text=True)
+                is_running = job_id in result.stdout
+            elif self.job_type == "torque":
+                result = subprocess.run(["qstat", job_id], capture_output=True, text=True)
+                is_running = result.returncode == 0
+            if is_running:
+                return True, False, None  # Still running
+
+            # Job not running, check for success file
+            success_file = os.path.join(self.log_dir, f"{job_id}.success")
+            if os.path.exists(success_file):
+                return False, False, None  # Finished successfully
+
+            # Job finished but no success file - read error output
+            error_file = os.path.join(self.log_dir, f"{job_id}.err")
+            if os.path.exists(error_file):
+                with open(error_file, "r") as f:
+                    return False, True, f.read().strip()
+            return False, True, "Job failed without error output"
+
+    def check_jobs_status(self) -> tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
+        """Check all jobs in active_job_ids for errors.
+
+        Returns
+        -------
+        tuple[Dict[str, str], Dict[str, str], Dict[str, str]]
+            A tuple containing:
+            - A dictionary mapping job names to job IDs for running jobs
+            - A dictionary mapping job names to error messages for failed jobs
+            - A dictionary mapping job names to job IDs for finished jobs
+        """
+        running_jobs = {}
+        finished_jobs = {}
+        failed_jobs = {}
+        for job_name, job_id in self.all_jobs.items():
+            is_running, finished_with_error, error_msg = self.check_job_status(job_name)
+            if not is_running:
+                if finished_with_error:
+                    failed_jobs[job_name] = error_msg
+                else:
+                    finished_jobs[job_name] = job_id
+            elif is_running:
+                running_jobs[job_name] = job_id
+        return running_jobs, finished_jobs, failed_jobs
+
     def submit_jobs(
         self,
         fn: Callable,
@@ -371,26 +484,35 @@ class Runner:
             else:
                 second_chunks = [None] * self.n_jobs
 
-            if self.job_type == "local":
-                delayed_functions = []
-                for first_chunk, second_chunk in zip(first_chunks, second_chunks):
-                    if mode == "unary":
-                        delayed_functions.append(delayed(fn)(first_chunk))
-                    elif mode == "binary":
-                        delayed_functions.append(delayed(fn)(first_chunk, second_chunk))
-                Parallel(n_jobs=self.n_jobs, timeout=self.time_limit_seconds)(delayed_functions)
+            self.all_jobs.clear()  # Reset job IDs for new submission
+            self.job_commands.clear()
 
-            else:
-                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                    if mode == "unary":
-                        chunk_tuple = first_chunk
-                    elif mode == "binary":
-                        chunk_tuple = (first_chunk, second_chunk)
-                    python_callable_path, data_path = self.save_callable_and_data(i, fn, chunk_tuple)
+            for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                if mode == "unary":
+                    chunk_tuple = first_chunk
+                elif mode == "binary":
+                    chunk_tuple = (first_chunk, second_chunk)
+                python_callable_path, data_path = self.save_callable_and_data(i, fn, chunk_tuple)
+
+                if self.job_type == "local":
+                    command = self.wrap_in_local_job(i, python_callable_path, data_path)
+                    process = subprocess.Popen(
+                        command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        start_new_session=True,
+                    )
+                    # For local jobs, store the PID immediately without waiting
+                    self.all_jobs[f"job_{i}"] = str(process.pid)
+                    self.job_commands[f"job_{i}"] = command
+                else:
+                    # For cluster jobs, we need to wait for the job ID
                     if self.job_type == "slurm":
                         command = self.wrap_in_slurm_job(i, python_callable_path, data_path)
                     elif self.job_type == "torque":
                         command = self.wrap_in_torque_job(i, python_callable_path, data_path)
+
                     process = subprocess.Popen(
                         command,
                         stdout=subprocess.PIPE,
@@ -400,9 +522,11 @@ class Runner:
                     stdout, stderr = process.communicate()
                     job_id = re.search(r"Submitted batch job (\d+)", stdout)
                     if job_id:
-                        self.active_job_ids[f"job_{i}"] = job_id.group(1)
+                        self.all_jobs[f"job_{i}"] = job_id.group(1)
+                        self.job_commands[f"job_{i}"] = command
                     elif stderr:
                         raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=i, stderr=stderr)
+
         else:
             if mode == "unary":
                 chunk_tuple = (first_data_source,)
@@ -413,6 +537,8 @@ class Runner:
     def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
+        success_file = os.path.join(self.log_dir, f"{job_name}.success")
+
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
@@ -426,6 +552,11 @@ class Runner:
 #SBATCH --output={os.path.join(self.log_dir, f"{job_name}.out")}
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    touch {success_file}
+fi
+exit $exit_code
 """
             )
         return ["sbatch", job_path]
@@ -433,6 +564,7 @@ class Runner:
     def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
+        success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
         with open(job_path, "w") as f:
             f.write(
@@ -447,10 +579,35 @@ class Runner:
 #PBS -m a
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    touch {success_file}
+fi
+exit $exit_code
 """
             )
 
         return ["qsub", job_path]
+
+    def wrap_in_local_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
+        job_path = os.path.join(self.temp_dir, f"job_{job_name}.sh")
+        current_file_path = os.path.abspath(__file__)
+        success_file = os.path.join(self.log_dir, f"job_{job_name}.success")
+
+        with open(job_path, "w") as f:
+            f.write(
+                f"""#!/bin/bash
+export PYTHONPATH=$PYTHONPATH:{os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))}
+{self.python_path} {current_file_path} {python_callable_path} {data_path} > {os.path.join(self.log_dir, f"{job_name}.out")} 2> {os.path.join(self.log_dir, f"{job_name}.err")}
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    touch {success_file}
+fi
+exit $exit_code
+"""
+            )
+        os.chmod(job_path, 0o755)
+        return ["bash", job_path]
 
     def load_model(self, fold_index: Optional[int] = 0) -> NormBase:
         if self.cross_validate:
@@ -459,10 +616,89 @@ class Runner:
         else:
             return load_normative_model(self.save_dir)
 
+    def save(self) -> None:
+        """Save the runner state to a JSON file in the save directory."""
+
+        runner_state = {
+            "all_jobs": self.all_jobs,
+            "log_dir": self.log_dir,
+            "temp_dir": self.temp_dir,
+            "job_type": self.job_type,
+            "n_jobs": self.n_jobs,
+            "save_dir": self.save_dir,
+            "job_commands": self.job_commands,
+            "active_jobs": self.active_jobs,
+            "failed_jobs": self.failed_jobs,
+        }
+
+        runner_file = os.path.join(self.temp_dir, "runner_state.json")
+        Output.print(Messages.SAVING_RUNNER_STATE, runner_file=runner_file)
+        with open(runner_file, "w") as f:
+            json.dump(runner_state, f, indent=4)
+
+    @classmethod
+    def load(cls, save_dir: str) -> "Runner":
+        """Load a runner from a saved state.
+
+        Parameters
+        ----------
+        save_dir : str
+            Directory containing the runner state file
+
+        Returns
+        -------
+        Runner
+            A runner instance with the saved state
+        """
+        runner_file = os.path.join(save_dir, "runner_state.json")
+        Output.print(Messages.LOADING_RUNNER_STATE, runner_file=runner_file)
+        with open(runner_file, "r") as f:
+            state = json.load(f)
+
+        runner = cls(job_type=state["job_type"], n_jobs=state["n_jobs"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
+        runner.save_dir = state["save_dir"]
+        runner.job_commands = state["job_commands"]
+        runner.all_jobs = state["all_jobs"]
+        runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
+
+        Output.print(
+            Messages.RUNNER_LOADED,
+            n_active_jobs=len(runner.active_jobs),
+            n_finished_jobs=len(runner.finished_jobs),
+            n_failed_jobs=len(runner.failed_jobs),
+        )
+        return runner
+
     @classmethod
     def from_args(cls, args: dict) -> "Runner":
         filtered_args = {k: v for k, v in args.items() if k in list(cls.__dict__.keys())}
         return cls(**filtered_args)
+
+    def re_submit_failed_jobs(self, observe: bool = True) -> None:
+        for job_name, command in self.job_commands.items():
+            if job_name in self.failed_jobs:
+                process = subprocess.Popen(
+                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True
+                )
+                if self.job_type == "local":
+                    self.active_jobs[job_name] = str(process.pid)
+                    self.job_commands[job_name] = command
+                else:
+                    stdout, stderr = process.communicate()
+                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
+                    if job_id:
+                        self.all_jobs[job_name] = job_id.group(1)
+                        self.job_commands[job_name] = command
+                    elif stderr:
+                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
+
+        self.failed_jobs.clear()
+        if observe:
+            self.job_observer = JobObserver(self.active_jobs, self.job_type)
+            self.job_observer.wait_for_jobs()
+            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+
+        self.save()
 
 
 def load_and_execute(args):

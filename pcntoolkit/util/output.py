@@ -40,6 +40,16 @@ All jobs completed!
     NO_PYTHON_PATH_SPECIFIED = "No python path specified. Using interpreter path of current process: {python_path}"
     NO_LOG_DIR_SPECIFIED = "No log directory specified. Using default log directory: {log_dir}"
     NO_TEMP_DIR_SPECIFIED = "No temporary directory specified. Using default temporary directory: {temp_dir}"
+    SAVING_RUNNER_STATE = "Saving runner state to {runner_file}"
+    LOADING_RUNNER_STATE = "Loading runner state from {runner_file}"
+    RUNNER_LOADED = (
+        "Runner loaded\n"
+        "--------------------------------------------\n"
+        "Active jobs: {n_active_jobs}\n"
+        "Finished jobs: {n_finished_jobs}\n"
+        "Failed jobs: {n_failed_jobs}\n"
+        "--------------------------------------------"
+    )
 
 
 class Warnings:
@@ -56,6 +66,7 @@ class Warnings:
     BLR_VAR_X_NOT_PROVIDED = "var_X is not provided, setting self.var_X to zeros"
     BLR_BATCH_EFFECTS_NOT_PROVIDED = "batch_effects is not provided, setting self.batch_effects to zeros"
     HBR_BATCH_EFFECTS_NOT_PROVIDED = BLR_BATCH_EFFECTS_NOT_PROVIDED
+    ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
 
 
 class Errors:
@@ -110,24 +121,42 @@ class Errors:
 class Output:
     _show_messages = True  # Default to showing output
     _show_warnings = True
+    _show_pid = True
 
     @classmethod
     def set_show_messages(cls, value: bool) -> None:
         cls._show_messages = value
 
     @classmethod
+    def set_show_pid(cls, value: bool) -> None:
+        cls._show_pid = value
+
+    @classmethod
     def print(cls, message: str, *args, **kwargs) -> None:
         """Print message only if show_messages mode is enabled"""
         if cls._show_messages:
-            print("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+            if cls._show_pid:
+                print("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+            else:
+                print(message.format(*args, **kwargs))
 
     @classmethod
     def warning(cls, message: str, *args, **kwargs) -> None:
         """Print warning message only if show_warnings mode is enabled"""
         if cls._show_warnings:
-            warnings.warn("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+            if cls._show_pid:
+                warnings.warn("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+            else:
+                warnings.warn(message.format(*args, **kwargs))
 
     @classmethod
     def error(cls, message: str, *args, **kwargs) -> ValueError:
         """Print error message"""
-        return ValueError("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+        if cls._show_pid:
+            return ValueError("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+        else:
+            return ValueError(message.format(*args, **kwargs))
+
+    @classmethod
+    def get_show_pid(cls) -> bool:
+        return cls._show_pid
