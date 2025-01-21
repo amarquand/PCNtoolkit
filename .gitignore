@@ -104,9 +104,11 @@ example_notebooks/resources/save_dir/idata_rh_MeanThickness_thickness.nc
 example_notebooks/resources/save_dir/normative_model_dict.json
 example_notebooks/resources/save_dir/*
 example_notebooks/resources 
+example_notebooks/save_dir/*
+example_notebooks/sandbox.ipynb
+example_notebooks/runner_sandbox.py
+example_notebooks/runner_sandbox.ipynb
 
 # Sphinx documentation
 docs/_build/
 docs/autoapi/
-example_notebooks/save_dir/*
-example_notebooks/sandbox.ipynb
