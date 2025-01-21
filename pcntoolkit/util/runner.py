@@ -34,6 +34,7 @@ class Runner:
 
     def __init__(
         self,
+        model: NormBase,
         cross_validate: bool = False,
         cv_folds: int = 5,
         parallelize: bool = False,
@@ -43,9 +44,12 @@ class Runner:
         python_path: Optional[str] = None,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
+        save_dir: Optional[str] = None,
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
+        self.model = model
+        self.save_dir = save_dir if save_dir is not None else self.model.norm_conf.save_dir
         self.cross_validate = cross_validate
         self.cv_folds = cv_folds
         self.parallelize = parallelize
@@ -97,22 +101,18 @@ class Runner:
         if self.cross_validate and self.cv_folds <= 1:
             raise Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
 
-    def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
-        fn = self.get_fit_chunk_fn(model)
+    def fit(self, data: NormData) -> None:
+        fn = self.get_fit_chunk_fn(self.model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def fit_predict(
         self,
-        model: NormBase,
         fit_data: NormData,
         predict_data: Optional[NormData] = None,
-        save_dir: Optional[str] = None,
     ) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
-        fn = self.get_fit_predict_chunk_fn(model)
+        fn = self.get_fit_predict_chunk_fn(self.model)
         self.submit_jobs(
             fn,
             first_data_source=fit_data,
@@ -122,49 +122,46 @@ class Runner:
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
-        fn = self.get_predict_chunk_fn(model)
+    def predict(self, data: NormData) -> None:
+        fn = self.get_predict_chunk_fn(self.model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
-        fn = self.get_transfer_chunk_fn(model)
+    def transfer(self, data: NormData, suffix: Optional[str] = "transfer") -> None:
+        self.save_dir = self.save_dir + "_" + suffix
+        fn = self.get_transfer_chunk_fn(self.model)
         self.submit_jobs(fn, data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def transfer_predict(
         self,
-        model: NormBase,
         fit_data: NormData,
         predict_data: NormData,
-        save_dir: Optional[str] = None,
+        suffix: Optional[str] = "transfer"
     ) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
-        fn = self.get_transfer_predict_chunk_fn(model)
+        self.save_dir = self.save_dir + "_" + suffix
+        fn = self.get_transfer_predict_chunk_fn(self.model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
-    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
-        fn = self.get_extend_chunk_fn(model)
+    def extend(self, data: NormData, suffix: Optional[str] = "extend") -> None:
+        self.save_dir = self.save_dir + "_" + suffix
+        fn = self.get_extend_chunk_fn(self.model)
         self.submit_jobs(fn, data, mode="unary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
 
     def extend_predict(
         self,
-        model: NormBase,
         fit_data: NormData,
         predict_data: NormData,
-        save_dir: Optional[str] = None,
+        suffix: Optional[str] = "extend",
     ) -> None:
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
-        fn = self.get_extend_predict_chunk_fn(model)
+        self.save_dir = self.save_dir + "_" + suffix
+        fn = self.get_extend_predict_chunk_fn(self.model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         self.job_observer = JobObserver(self.active_job_ids)
         self.job_observer.wait_for_jobs()
