@@ -49,6 +49,8 @@ from typing import Any, ClassVar, Dict, List, Optional
 from pcntoolkit.regression_model.hbr.prior import (
     BasePrior,
     LinearPrior,
+    get_default_alpha,
+    get_default_beta,
     get_default_delta,
     get_default_epsilon,
     get_default_mu,
@@ -135,6 +137,8 @@ class HBRConf(RegConf):
     sigma: BasePrior = field(default_factory=get_default_sigma)
     epsilon: BasePrior = field(default_factory=get_default_epsilon)
     delta: BasePrior = field(default_factory=get_default_delta)
+    alpha: BasePrior = field(default_factory=get_default_alpha)
+    beta: BasePrior = field(default_factory=get_default_beta)
 
     # Add class variable for dataclass fields
     __dataclass_fields__: ClassVar[Dict[str, Any]]
@@ -149,6 +153,10 @@ class HBRConf(RegConf):
             self.epsilon.set_name("epsilon")
         if self.delta:
             self.delta.set_name("delta")
+        if self.alpha:
+            self.alpha.set_name("alpha")
+        if self.beta:
+            self.beta.set_name("beta")
 
     def detect_configuration_problems(self) -> List[str]:
         """
