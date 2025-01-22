@@ -192,7 +192,7 @@ class Prior(BasePrior):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.dist_name = dist_name
         self.dist_params = dist_params
-        self.sample_dims = ()
+        self.sample_dims = None
 
     def compile(
         self,

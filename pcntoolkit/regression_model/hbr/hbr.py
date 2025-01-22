@@ -298,6 +298,12 @@ class HBR(RegressionModel):
         hbrdata.y = np.diag(preds.values[:, selected_idx])
         return hbrdata
 
+    def extract_and_reshape(self, post_pred, datapoints, var_name: str) -> xr.DataArray:
+        preds = post_pred[var_name].values
+        if len(preds.shape) == 1:
+            preds = np.repeat(preds[None, :], datapoints, axis=0)
+        return xr.DataArray(np.squeeze(preds), dims=["datapoints", "sample"])
+
     def centiles(self, hbrdata: HBRData, cdf: np.ndarray) -> xr.DataArray:
         """
         Calculate centile values for given cumulative densities.
@@ -321,8 +327,11 @@ class HBR(RegressionModel):
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
-        n_datapoints, n_mcmc_samples = post_pred[var_names[0]].shape
+        n_datapoints = self.pymc_model.dim_lengths["datapoints"].eval().item()
+        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_datapoints, x), var_names))
+
+        n_mcmc_samples = post_pred.sizes["sample"]
+
         centiles = np.zeros((cdf.shape[0], n_datapoints, n_mcmc_samples))
         for i, _cdf in enumerate(cdf):
             zs = np.full((n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float)
@@ -354,10 +363,10 @@ class HBR(RegressionModel):
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
+        n_datapoints = self.pymc_model.dim_lengths["datapoints"].eval().item()
+        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_datapoints, x), var_names))
         zscores = xr.apply_ufunc(self.likelihood.zscore, *array_of_vars, kwargs={"y": hbrdata.y[:, None]}).mean(dim="sample")
-
         return zscores
 
     def logp(self, hbrdata: HBRData) -> xr.DataArray:
@@ -366,7 +375,7 @@ class HBR(RegressionModel):
         """
         if not self.pymc_model:
             self.pymc_model = self.likelihood.compile(hbrdata, self.idata)
-        hbrdata.set_data_in_existing_model(self.pymc_model)
+        # hbrdata.set_data_in_existing_model(self.pymc_model)
         with self.pymc_model:
             logp = pm.compute_log_likelihood(
                 self.idata,
