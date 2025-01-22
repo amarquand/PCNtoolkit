@@ -10,6 +10,7 @@ from pcntoolkit.regression_model.hbr.prior import make_prior
 from pcntoolkit.util.runner import Runner
 
 resources_dir = "/project/3022000.05/projects/stijdboe/Projects/PCNtoolkit/example_notebooks/resources"
+
 data_dir = os.path.join(resources_dir, "data")
 os.makedirs(data_dir, exist_ok=True)
 
@@ -38,55 +39,76 @@ transfer_train, transfer_test = transfer_data.train_test_split()
 
 # Create a NormConf object
 sandbox_dir = os.path.join(resources_dir, "hbr_runner_sandbox")
+save_dir = os.path.join(sandbox_dir, "save_dir")
+os.makedirs(save_dir, exist_ok=True)
 os.makedirs(sandbox_dir, exist_ok=True)
+
 norm_conf = NormConf(
     savemodel=True,
     saveresults=True,
-    save_dir=os.path.join(sandbox_dir, "save_dir"),
-    inscaler="none",
-    outscaler="none",
+    save_dir=save_dir,
+    inscaler="standardize",
+    outscaler="standardize",
     basis_function="bspline",
-    basis_function_kwargs={"order": 3, "nknots": 10},
+    basis_function_kwargs={"order": 3, "nknots": 5},
 )
 
 mu = make_prior(
-    name="mu",
     linear=True,
-    slope=make_prior(dist_name="Normal", dist_params=(0.0, 10.0)),
+    slope=make_prior(dist_params = (0.0, 10.)),
     intercept=make_prior(
         random=True,
-        sigma=make_prior(dist_name="HalfNormal", dist_params=(1.0,)),
+        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
+        mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
+    ),
+)
+
+sigma = make_prior(
+    linear=True,
+    slope=make_prior(dist_params = (0.0, 10.0)),
+    intercept=make_prior(
+        random=True,
+        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
+        mu=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
+    ),
+    mapping="softplus",
+    mapping_params=(0.0, 3.0),
+)
+
+epsilon = make_prior(
+    linear=True,
+    slope=make_prior(dist_params = (0.0, 1.0)),
+    intercept=make_prior(
+        random=True,
+        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
         mu=make_prior(dist_name="Normal", dist_params=(0.0, 0.5)),
     ),
 )
-sigma = make_prior(
-    name="sigma",
-    linear=True,
-    slope=make_prior(dist_name="Normal", dist_params=(0.0, 10.0)),
-    intercept=make_prior(random=False),
-    mapping="softplus",
-    mapping_params=(0.0, 1.0),
-)
-epsilon = make_prior(linear=True, intercept=make_prior(random=True), slope=make_prior(dist="Normal", params=(0, 10)))
+
 delta = make_prior(
     linear=True,
-    intercept=make_prior(random=True),
-    slope=make_prior(dist="Normal", params=(0, 10)),
+    slope=make_prior(dist_params = (0.0, 1.0)),
+    intercept=make_prior(
+        random=True,
+        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
+        mu=make_prior(dist_name="Normal", dist_params=(1.0, 0.5)),
+    ),
     mapping="softplus",
-    mapping_params=(0.0, 1.0, 0.0),
+    mapping_params=(0.0, 2.0, 0.5),
 )
+
 
 # Configure the HBRConf object
 hbr_conf = HBRConf(
     draws=1500,
     tune=500,
     chains=4,
-    pymc_cores=8,
-    likelihood="Normal",
+    pymc_cores=16,
+    likelihood="SHASHb",
     mu=mu,
     sigma=sigma,
-    # epsilon=epsilon,
-    # delta=delta,
+    epsilon=epsilon,
+    delta=delta,
     nuts_sampler="nutpie",
 )
 
@@ -95,7 +117,7 @@ new_hbr_model = NormHBR(norm_conf=norm_conf, reg_conf=hbr_conf)
 runner = Runner(
     cross_validate=False,
     parallelize=True,
-    time_limit="00:15:00",
+    time_limit="15:00:00",
     job_type="slurm",  # or "slurm" if you are on a slurm cluster
     n_jobs=2,
     log_dir=os.path.join(sandbox_dir, "log_dir"),
