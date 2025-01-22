@@ -443,9 +443,9 @@ class NormBase(ABC):
         - Centile computation for distributional analysis
         - Performance metrics calculation through Evaluator
         """
-        data = self.compute_logp(data)
         data = self.compute_zscores(data)
         data = self.compute_centiles(data)
+        data = self.compute_logp(data)
         data = self.evaluator.evaluate(data)
 
     def compute_centiles(
@@ -947,13 +947,7 @@ class NormBase(ABC):
         self.save_centiles(data)
         self.save_measures(data)
         os.makedirs(os.path.join(self.norm_conf.save_dir, "plots"), exist_ok=True)
-        plot_centiles(
-            self,
-            data,
-            save_dir=os.path.join(self.norm_conf.save_dir, "plots"),
-            show_data=True,
-            show_other_data=True
-        )
+        plot_centiles(self, data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"), show_data=True, show_other_data=True)
         plot_qq(data, save_dir=os.path.join(self.norm_conf.save_dir, "plots"))
 
     def save_zscores(self, data: NormData) -> None:
