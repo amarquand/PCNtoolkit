@@ -158,7 +158,7 @@ class HBRConf(RegConf):
         """
         # Filter out the arguments that are not relevant for this configuration
         args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
-        likelihood = Likelihood.from_args(args["likelihood"])
+        likelihood = Likelihood.from_dict(args_filt.pop("likelihood"))
         self = cls(**args_filt, likelihood=likelihood)
         return self
 
@@ -169,7 +169,7 @@ class HBRConf(RegConf):
         """
         # Filter out the arguments that are not relevant for this configuration
         args_filt = {k: v for k, v in dct.items() if k in cls.__dataclass_fields__}
-        likelihood = Likelihood.from_dict(dct["likelihood"])
+        likelihood = Likelihood.from_dict(args_filt.pop("likelihood"))
         self = cls(**args_filt, likelihood=likelihood)
         return self
 
@@ -198,7 +198,4 @@ class HBRConf(RegConf):
 
     @property
     def has_random_effect(self) -> bool:
-        for attr in ["mu", "sigma", "epsilon", "delta"]:
-            if getattr(self, attr) and getattr(self, attr).has_random_effect:
-                return True
-        return False
+        return self.likelihood.has_random_effect

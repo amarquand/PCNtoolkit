@@ -443,9 +443,9 @@ class NormBase(ABC):
         - Centile computation for distributional analysis
         - Performance metrics calculation through Evaluator
         """
+        data = self.compute_logp(data)
         data = self.compute_zscores(data)
         data = self.compute_centiles(data)
-        data = self.compute_logp(data)
         data = self.evaluator.evaluate(data)
 
     def compute_centiles(
