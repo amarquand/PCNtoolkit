@@ -102,13 +102,6 @@ class HBRConf(RegConf):
     delta : Param, optional
         Prior parameters for delta (δ), defaults to Param.default_delta()
 
-    Attributes
-    ----------
-    has_random_effect : bool
-        Always True for HBR models as they include random effects by design
-    __dataclass_fields__ : ClassVar[Dict[str, Any]]
-        Class variable storing dataclass field definitions
-
     Methods
     -------
     detect_configuration_problems()
@@ -117,15 +110,12 @@ class HBRConf(RegConf):
     Examples
     --------
     >>> conf = HBRConf(draws=2000, chains=4, likelihood="Normal")
-    >>> conf.detect_configuration_problems()
-    []
 
     Notes
     -----
     - Uses the dataclass decorator with frozen=True for immutability
     - Implements comprehensive validation of all configuration parameters
     - Supports multiple likelihood functions for different modeling scenarios
-    - Provides default values for all parameters based on common use cases
     """
 
     # sampling config
