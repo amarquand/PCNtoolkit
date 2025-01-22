@@ -58,7 +58,7 @@ is defined through the HBRConf configuration object which specifies the paramete
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import arviz as az  # type: ignore
 import numpy as np
@@ -67,9 +67,7 @@ import scipy.stats as stats  # type: ignore
 import xarray as xr
 
 from pcntoolkit.regression_model.hbr.hbr_data import HBRData
-from pcntoolkit.regression_model.hbr.hbr_util import centile, zscore
-from pcntoolkit.regression_model.hbr.prior import Prior
-from pcntoolkit.regression_model.hbr.shash import SHASHb, SHASHo
+from pcntoolkit.regression_model.hbr.likelihood import Likelihood
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Output
 
@@ -145,7 +143,7 @@ class HBR(RegressionModel):
         Parameters
         ----------
         hbrdata : HBRData
-            Training data object containing features and targets
+            Training data object containing features and targetsx
         make_new_model : bool, optional
             Whether to create a new PyMC model, by default True
 
@@ -154,7 +152,7 @@ class HBR(RegressionModel):
         None
         """
         if make_new_model or (not self.pymc_model):
-            self.compile_model(hbrdata)
+            self.pymc_model = self.likelihood.compile(hbrdata, self.idata)
         with self.pymc_model:
             self.idata = pm.sample(
                 self.draws,
@@ -187,7 +185,7 @@ class HBR(RegressionModel):
             Updates the model's inference data with predictions
         """
         if not self.pymc_model:
-            self.compile_model(hbrdata)
+            self.pymc_model = self.likelihood.compile(hbrdata, self.idata)
         else:
             hbrdata.set_data_in_existing_model(self.pymc_model)  # Model already compiled, only need to update the data
         if extend_inferencedata and hasattr(self.idata, "predictions"):
@@ -197,7 +195,7 @@ class HBR(RegressionModel):
             idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=extend_inferencedata,
-                var_names=self.get_var_names() + ["y_pred"],
+                var_names=self.likelihood.get_var_names() + ["y_pred"],
                 predictions=True,
                 progressbar=progressbar,
             )
@@ -220,7 +218,7 @@ class HBR(RegressionModel):
             Updates model's inference data with fitted parameters and predictions
         """
         if not self.pymc_model:
-            self.compile_model(fit_hbrdata)
+            self.pymc_model = self.likelihood.compile(fit_hbrdata, self.idata)
         with self.pymc_model:
             self.idata = pm.sample(
                 self.draws,
@@ -236,7 +234,7 @@ class HBR(RegressionModel):
             pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=True,
-                var_names=self.get_var_names() + ["y_pred"],
+                var_names=self.likelihood.get_var_names() + ["y_pred"],
                 predictions=True,
             )
 
@@ -265,8 +263,8 @@ class HBR(RegressionModel):
             New model instance with transferred knowledge
         """
         new_hbr_model = HBR(self.name, hbrconf)
-        new_hbr_model.compile_model(transferdata, self.idata, freedom)
-        with new_hbr_model.pymc_model:
+        new_hbr_model_model = new_hbr_model.likelihood.compile(transferdata, self.idata)
+        with new_hbr_model_model:
             new_hbr_model.idata = pm.sample(
                 hbrconf.draws,
                 tune=hbrconf.tune,
@@ -281,7 +279,7 @@ class HBR(RegressionModel):
 
     def generate_synthetic_data(self, hbrdata: HBRData, progressbar: bool = True) -> HBRData:
         if not self.pymc_model:
-            self.compile_model(hbrdata)
+            self.pymc_model = self.likelihood.compile(hbrdata, self.idata)
         else:
             hbrdata.set_data_in_existing_model(self.pymc_model)
 
@@ -317,18 +315,18 @@ class HBR(RegressionModel):
             Calculated centile values
         """
         centiles_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
-        var_names = self.get_var_names()
+        var_names = self.likelihood.get_var_names()
         post_pred = az.extract(
             centiles_idata,
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+        array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
         n_datapoints, n_mcmc_samples = post_pred[var_names[0]].shape
         centiles = np.zeros((cdf.shape[0], n_datapoints, n_mcmc_samples))
         for i, _cdf in enumerate(cdf):
             zs = np.full((n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float)
-            centiles[i] = xr.apply_ufunc(centile, *array_of_vars, kwargs={"zs": zs})
+            centiles[i] = xr.apply_ufunc(self.likelihood.centile, *array_of_vars, kwargs={"zs": zs})
         return xr.DataArray(
             centiles,
             dims=["cdf", "datapoints", "sample"],
@@ -350,15 +348,15 @@ class HBR(RegressionModel):
             Calculated z-scores
         """
         zscores_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
-        var_names = self.get_var_names()
+        var_names = self.likelihood.get_var_names()
         post_pred = az.extract(
             zscores_idata,
             "predictions",
             var_names=var_names,
         )
-        array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
+        array_of_vars = list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
-        zscores = xr.apply_ufunc(zscore, *array_of_vars, kwargs={"y": hbrdata.y[:, None]}).mean(dim="sample")
+        zscores = xr.apply_ufunc(self.likelihood.zscore, *array_of_vars, kwargs={"y": hbrdata.y[:, None]}).mean(dim="sample")
 
         return zscores
 
@@ -367,7 +365,8 @@ class HBR(RegressionModel):
         Compute log-probabilities for each observation in the data.
         """
         if not self.pymc_model:
-            self.compile_model(hbrdata)
+            self.pymc_model = self.likelihood.compile(hbrdata, self.idata)
+        hbrdata.set_data_in_existing_model(self.pymc_model)
         with self.pymc_model:
             logp = pm.compute_log_likelihood(
                 self.idata,
@@ -376,260 +375,6 @@ class HBR(RegressionModel):
                 progressbar=False,
             )
         return az.extract(logp, "log_likelihood", var_names=["y_pred"]).mean("sample")
-
-    def get_var_names(self) -> List[str]:
-        """Get the variable names for the current likelihood function.
-
-        Returns
-        -------
-        List[str]
-            List of variable names required for the current likelihood function.
-            For Normal likelihood: ['mu_samples', 'sigma_samples']
-            For SHASH likelihoods: ['mu_samples', 'sigma_samples', 'epsilon_samples', 'delta_samples']
-
-        Raises
-        ------
-        RuntimeError
-            If likelihood is not supported (must be 'Normal', 'SHASHb', or 'SHASHo')
-        """
-        likelihood = self.likelihood
-        if likelihood == "Normal":
-            var_names = ["mu_samples", "sigma_samples"]
-        elif likelihood.startswith("SHASH"):
-            var_names = [
-                "mu_samples",
-                "sigma_samples",
-                "epsilon_samples",
-                "delta_samples",
-            ]
-        elif likelihood == "beta":
-            var_names = ["alpha_samples", "beta_samples"]
-        else:
-            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
-        return var_names
-
-    def compile_model(
-        self,
-        data: HBRData,
-        idata: Optional[az.InferenceData] = None,
-        freedom: float = 1,
-    ) -> None:
-        """
-        Create the PyMC model computational graph.
-
-        Parameters
-        ----------
-        data : HBRData
-            Data object containing model inputs
-        idata : Optional[az.InferenceData], optional
-            Previous inference data for transfer learning, by default None
-        freedom : float, optional
-            Parameter controlling influence of prior model, by default 1
-
-        Returns
-        -------
-        None
-            Creates and stores PyMC model in instance
-        """
-        self.pymc_model = pm.Model(coords=data.coords)
-        data.set_data_in_new_model(self.pymc_model)
-        if self.likelihood == "Normal":
-            self.compile_normal(data, idata, freedom)
-        elif self.likelihood == "SHASHb":
-            self.compile_SHASHb(data, idata, freedom)
-        elif self.likelihood == "SHASHo":
-            self.compile_SHASHo(data, idata, freedom)
-        elif self.likelihood == "beta":
-            self.compile_beta(data, idata, freedom)
-        else:
-            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=self.likelihood)
-
-    def compile_normal(
-        self,
-        data: HBRData,
-        idata: Optional[az.InferenceData] = None,
-        freedom: float = 1,
-    ) -> None:
-        """
-        Create PyMC model with Normal likelihood.
-
-        Parameters
-        ----------
-        data : HBRData
-            Data object containing model inputs
-        idata : Optional[az.InferenceData], optional
-            Previous inference data for transfer learning, by default None
-        freedom : float, optional
-            Parameter controlling influence of prior model (0-1), by default 1
-
-        Returns
-        -------
-        None
-            Updates the PyMC model in place with Normal likelihood components
-        """
-        self.mu.compile(self.pymc_model, idata, freedom)
-        self.sigma.compile(self.pymc_model, idata, freedom)
-        with self.pymc_model:
-            mu_samples = pm.Deterministic(
-                "mu_samples",
-                self.mu.sample(data),
-                dims=self.mu.sample_dims,
-            )
-            sigma_samples = pm.Deterministic(
-                "sigma_samples",
-                self.sigma.sample(data),
-                dims=self.sigma.sample_dims,
-            )
-            pm.Normal(
-                "y_pred",
-                mu=mu_samples,
-                sigma=sigma_samples,
-                observed=data.pm_y,
-                dims=("datapoints",),
-            )
-
-    def compile_SHASHb(
-        self,
-        data: HBRData,
-        idata: Optional[az.InferenceData] = None,
-        freedom: float = 1,
-    ) -> None:
-        """
-        Create PyMC model with SHASHb likelihood.
-
-        Parameters
-        ----------
-        data : HBRData
-            Data object containing model inputs
-        idata : Optional[az.InferenceData], optional
-            Previous inference data for transfer learning, by default None
-        freedom : float, optional
-            Parameter controlling influence of prior model (0-1), by default 1
-
-        Returns
-        -------
-        None
-            Updates the PyMC model in place with SHASHb likelihood components
-        """
-        self.mu.compile(self.pymc_model, idata, freedom)
-        self.sigma.compile(self.pymc_model, idata, freedom)
-        self.epsilon.compile(self.pymc_model, idata, freedom)
-        self.delta.compile(self.pymc_model, idata, freedom)
-        with self.pymc_model:
-            mu_samples = pm.Deterministic(
-                "mu_samples",
-                self.mu.sample(data),
-                dims=self.mu.sample_dims,
-            )
-            sigma_samples = pm.Deterministic(
-                "sigma_samples",
-                self.sigma.sample(data),
-                dims=self.sigma.sample_dims,
-            )
-            epsilon_samples = pm.Deterministic(
-                "epsilon_samples",
-                self.epsilon.sample(data),
-                dims=self.epsilon.sample_dims,
-            )
-            delta_samples = pm.Deterministic(
-                "delta_samples",
-                self.delta.sample(data),
-                dims=self.delta.sample_dims,
-            )
-            SHASHb(
-                "y_pred",
-                mu=mu_samples,
-                sigma=sigma_samples,
-                epsilon=epsilon_samples,
-                delta=delta_samples,
-                observed=data.pm_y,
-                dims=("datapoints",),
-            )
-
-    def compile_SHASHo(
-        self,
-        data: HBRData,
-        idata: Optional[az.InferenceData] = None,
-        freedom: float = 1,
-    ) -> None:
-        """
-        Create PyMC model with SHASHo likelihood.
-
-        Parameters
-        ----------
-        data : HBRData
-            Data object containing model inputs
-        idata : Optional[az.InferenceData], optional
-            Previous inference data for transfer learning, by default None
-        freedom : float, optional
-            Parameter controlling influence of prior model (0-1), by default 1
-
-        Returns
-        -------
-        None
-            Updates the PyMC model in place with SHASHo likelihood components
-        """
-        self.mu.compile(self.pymc_model, idata, freedom)
-        self.sigma.compile(self.pymc_model, idata, freedom)
-        self.epsilon.compile(self.pymc_model, idata, freedom)
-        self.delta.compile(self.pymc_model, idata, freedom)
-        with self.pymc_model:
-            mu_samples = pm.Deterministic(
-                "mu_samples",
-                self.mu.sample(data),
-                dims=self.mu.sample_dims,
-            )
-            sigma_samples = pm.Deterministic(
-                "sigma_samples",
-                self.sigma.sample(data),
-                dims=self.sigma.sample_dims,
-            )
-            epsilon_samples = pm.Deterministic(
-                "epsilon_samples",
-                self.epsilon.sample(data),
-                dims=self.epsilon.sample_dims,
-            )
-            delta_samples = pm.Deterministic(
-                "delta_samples",
-                self.delta.sample(data),
-                dims=self.delta.sample_dims,
-            )
-            SHASHo(
-                "y_pred",
-                mu=mu_samples,
-                sigma=sigma_samples,
-                epsilon=epsilon_samples,
-                delta=delta_samples,
-                observed=data.pm_y,
-                dims=("datapoints",),
-            )
-
-    def compile_beta(
-        self,
-        data: HBRData,
-        idata: Optional[az.InferenceData] = None,
-        freedom: float = 1,
-    ) -> None:
-        self.alpha.compile(self.pymc_model, idata, freedom)
-        self.beta.compile(self.pymc_model, idata, freedom)
-        with self.pymc_model:
-            alpha_samples = pm.Deterministic(
-                "alpha_samples",
-                self.alpha.sample(data),
-                dims=self.alpha.sample_dims,
-            )
-            beta_samples = pm.Deterministic(
-                "beta_samples",
-                self.beta.sample(data),
-                dims=self.beta.sample_dims,
-            )
-            pm.Beta(
-                "y_pred",
-                alpha=alpha_samples,
-                beta=beta_samples,
-                observed=data.pm_y,
-                dims=("datapoints",),
-            )
 
     def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -812,31 +557,7 @@ class HBR(RegressionModel):
     # pylint: disable=C0116
 
     @property
-    def mu(self) -> Prior:
-        return self.reg_conf.mu  # type: ignore
-
-    @property
-    def sigma(self) -> Prior:
-        return self.reg_conf.sigma  # type: ignore
-
-    @property
-    def epsilon(self) -> Prior:
-        return self.reg_conf.epsilon  # type: ignore
-
-    @property
-    def delta(self) -> Prior:
-        return self.reg_conf.delta  # type: ignore
-
-    @property
-    def alpha(self) -> Prior:
-        return self.reg_conf.alpha  # type: ignore
-
-    @property
-    def beta(self) -> Prior:
-        return self.reg_conf.beta  # type: ignore
-
-    @property
-    def likelihood(self) -> str:
+    def likelihood(self) -> Likelihood:
         return self.reg_conf.likelihood  # type: ignore
 
     @property
