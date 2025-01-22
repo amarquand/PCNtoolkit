@@ -30,6 +30,7 @@ from typing import Literal
 
 import numpy as np
 import scipy.special as spp  # type: ignore
+import scipy.stats
 from numpy.typing import NDArray
 
 from pcntoolkit.util.output import Errors, Output
@@ -145,11 +146,8 @@ def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArr
 
 
 def centile(
-    likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal"],
-    mu: NDArray[np.float64],
-    sigma: NDArray[np.float64],
-    epsilon: NDArray[np.float64] = None,  # type: ignore
-    delta: NDArray[np.float64] = None,  # type: ignore
+    likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal", "beta"],
+    *args,
     **kwargs,
 ) -> NDArray[np.float64]:
     """Compute centiles for different likelihood models.
@@ -158,16 +156,8 @@ def centile(
     ----------
     likelihood : {"SHASHo", "SHASHo2", "SHASHb", "Normal"}
         The likelihood model to use
-    mu : NDArray[np.float64]
-        Mean parameter array
-    sigma : NDArray[np.float64]
-        Standard deviation parameter array
-    epsilon : NDArray[np.float64] or None, optional
-        Epsilon parameter for SHASH models
-    delta : NDArray[np.float64] or None, optional
-        Delta parameter for SHASH models
-    zs : NDArray[np.float64] or float, optional
-        Z-scores for quantile computation, default 0
+    *args, **kwargs
+        Arguments and keyword arguments for the likelihood model
 
     Returns
     -------
@@ -175,47 +165,47 @@ def centile(
         Computed quantiles
     """
     zs = kwargs.get("zs", 0)
-    if likelihood == "SHASHo":
-        quantiles = S_inv(zs, epsilon, delta) * sigma + mu
-    elif likelihood == "SHASHo2":
-        sigma_d = sigma / delta
-        quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
-    elif likelihood == "SHASHb":
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
-        SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
-        quantiles = SHASH_c * sigma + mu
-    elif likelihood == "Normal":
-        quantiles = zs * sigma + mu
-    else:
-        raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
+    match likelihood:
+        case "SHASHo":
+            mu, sigma, epsilon, delta = args
+            quantiles = S_inv(zs, epsilon, delta) * sigma + mu
+        case "SHASHo2":
+            mu, sigma, epsilon, delta = args
+            sigma_d = sigma / delta
+            quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
+        case "SHASHb":
+            mu, sigma, epsilon, delta = args
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (S_inv(zs, epsilon, delta) - true_mu) / true_sigma
+            quantiles = SHASH_c * sigma + mu
+        case "Normal":
+            mu, sigma = args
+            quantiles = zs * sigma + mu
+        case "beta":
+            alpha, beta = args
+            # First map the zs to the normal distribution
+            cdf_norm = scipy.stats.norm.cdf(zs)
+            # Then map the normal distribution to the beta distribution
+            quantiles = scipy.stats.beta.ppf(cdf_norm, alpha, beta)
+        case _:
+            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
     return quantiles
 
 
 def zscore(
-    likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal"],
-    mu: NDArray[np.float64],
-    sigma: NDArray[np.float64],
-    epsilon: NDArray[np.float64] = None,  # type: ignore
-    delta: NDArray[np.float64] = None,  # type: ignore
+    likelihood: Literal["SHASHo", "SHASHo2", "SHASHb", "Normal", "beta"],
+    *args,
     **kwargs,
 ) -> NDArray[np.float64]:
     """Compute z-scores for different likelihood models.
 
     Parameters
     ----------
-    likelihood : {"SHASHo", "SHASHo2", "SHASHb", "Normal"}
+    likelihood : {"SHASHo", "SHASHo2", "SHASHb", "Normal", "beta"}
         The likelihood model to use
-    mu : NDArray[np.float64]
-        Mean parameter array
-    sigma : NDArray[np.float64]
-        Standard deviation parameter array
-    epsilon : NDArray[np.float64] or None, optional
-        Epsilon parameter for SHASH models
-    delta : NDArray[np.float64] or None, optional
-        Delta parameter for SHASH models
-    y : NDArray[np.float64] or None, optional
-        Observed values for z-score computation
+    *args, **kwargs
+        Arguments and keyword arguments for the likelihood model
 
     Returns
     -------
@@ -230,21 +220,30 @@ def zscore(
     y = kwargs.get("y", None)
     if y is None:
         raise Output.error(Errors.ERROR_HBR_Y_NOT_PROVIDED)
-    if likelihood == "SHASHo":
-        SHASH = (y - mu) / sigma
-        Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == "SHASHo2":
-        sigma_d = sigma / delta
-        SHASH = (y - mu) / sigma_d
-        Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == "SHASHb":
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
-        SHASH_c = (y - mu) / sigma
-        SHASH = SHASH_c * true_sigma + true_mu
-        Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-    elif likelihood == "Normal":
-        Z = (y - mu) / sigma
-    else:
-        raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
+    match likelihood:
+        case "SHASHo":
+            mu, sigma, epsilon, delta = args
+            SHASH = (y - mu) / sigma
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        case "SHASHo2":
+            mu, sigma, epsilon, delta = args
+            sigma_d = sigma / delta
+            SHASH = (y - mu) / sigma_d
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        case "SHASHb":
+            mu, sigma, epsilon, delta = args
+            true_mu = m(epsilon, delta, 1)
+            true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+            SHASH_c = (y - mu) / sigma
+            SHASH = SHASH_c * true_sigma + true_mu
+            Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        case "Normal":
+            mu, sigma = args
+            Z = (y - mu) / sigma
+        case "beta":
+            alpha, beta = args
+            cdf = scipy.stats.beta.cdf(y, alpha, beta)
+            Z = scipy.stats.norm.ppf(cdf)
+        case _:
+            raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
     return Z

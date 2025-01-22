@@ -302,7 +302,7 @@ class StandardScaler(Scaler):
 
 
 class MinMaxScaler(Scaler):
-    """Scale features to a fixed range [0, 1].
+    """Scale features to a fixed range (0, 1).
 
     Transforms features by scaling each feature to a given range (default [0, 1]):
     X_scaled = (X - X_min) / (X_max - X_min)
@@ -336,8 +336,12 @@ class MinMaxScaler(Scaler):
         self.max: Optional[NDArray] = None
 
     def fit(self, X: NDArray) -> None:
-        self.min = np.min(X, axis=0)
-        self.max = np.max(X, axis=0)
+        # Add a small epsilon to avoid division by zero
+        min = np.min(X, axis=0)
+        max = np.max(X, axis=0)
+        epsilon = 1e-10
+        self.min = min - epsilon
+        self.max = max + epsilon
 
     def transform(self, X: NDArray, index: Optional[NDArray] = None) -> NDArray:
         if self.min is None or self.max is None:

@@ -316,23 +316,19 @@ class HBR(RegressionModel):
         xr.DataArray
             Calculated centile values
         """
-        var_names = self.get_var_names()
         centiles_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
+        var_names = self.get_var_names()
         post_pred = az.extract(
             centiles_idata,
             "predictions",
             var_names=var_names,
         )
         array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
-        n_datapoints, n_mcmc_samples = post_pred["mu_samples"].shape
+        n_datapoints, n_mcmc_samples = post_pred[var_names[0]].shape
         centiles = np.zeros((cdf.shape[0], n_datapoints, n_mcmc_samples))
         for i, _cdf in enumerate(cdf):
             zs = np.full((n_datapoints, n_mcmc_samples), stats.norm.ppf(_cdf), dtype=float)
-            centiles[i] = xr.apply_ufunc(
-                centile,
-                *array_of_vars,
-                kwargs={"zs": zs},
-            )
+            centiles[i] = xr.apply_ufunc(centile, *array_of_vars, kwargs={"zs": zs})
         return xr.DataArray(
             centiles,
             dims=["cdf", "datapoints", "sample"],
@@ -353,8 +349,8 @@ class HBR(RegressionModel):
         xr.DataArray
             Calculated z-scores
         """
-        var_names = self.get_var_names()
         zscores_idata = self.predict(hbrdata, extend_inferencedata=False, progressbar=False)
+        var_names = self.get_var_names()
         post_pred = az.extract(
             zscores_idata,
             "predictions",
@@ -362,11 +358,7 @@ class HBR(RegressionModel):
         )
         array_of_vars = [self.likelihood] + list(map(lambda x: np.squeeze(post_pred[x]), var_names))
 
-        zscores = xr.apply_ufunc(
-            zscore,
-            *array_of_vars,
-            kwargs={"y": hbrdata.y[:, None]},
-        ).mean(dim="sample")
+        zscores = xr.apply_ufunc(zscore, *array_of_vars, kwargs={"y": hbrdata.y[:, None]}).mean(dim="sample")
 
         return zscores
 
@@ -410,6 +402,8 @@ class HBR(RegressionModel):
                 "epsilon_samples",
                 "delta_samples",
             ]
+        elif likelihood == "beta":
+            var_names = ["alpha_samples", "beta_samples"]
         else:
             raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=likelihood)
         return var_names
@@ -445,6 +439,8 @@ class HBR(RegressionModel):
             self.compile_SHASHb(data, idata, freedom)
         elif self.likelihood == "SHASHo":
             self.compile_SHASHo(data, idata, freedom)
+        elif self.likelihood == "beta":
+            self.compile_beta(data, idata, freedom)
         else:
             raise Output.error(Errors.ERROR_UNKNOWN_LIKELIHOOD, likelihood=self.likelihood)
 
@@ -604,6 +600,33 @@ class HBR(RegressionModel):
                 sigma=sigma_samples,
                 epsilon=epsilon_samples,
                 delta=delta_samples,
+                observed=data.pm_y,
+                dims=("datapoints",),
+            )
+
+    def compile_beta(
+        self,
+        data: HBRData,
+        idata: Optional[az.InferenceData] = None,
+        freedom: float = 1,
+    ) -> None:
+        self.alpha.compile(self.pymc_model, idata, freedom)
+        self.beta.compile(self.pymc_model, idata, freedom)
+        with self.pymc_model:
+            alpha_samples = pm.Deterministic(
+                "alpha_samples",
+                self.alpha.sample(data),
+                dims=self.alpha.sample_dims,
+            )
+            beta_samples = pm.Deterministic(
+                "beta_samples",
+                self.beta.sample(data),
+                dims=self.beta.sample_dims,
+            )
+            pm.Beta(
+                "y_pred",
+                alpha=alpha_samples,
+                beta=beta_samples,
                 observed=data.pm_y,
                 dims=("datapoints",),
             )
@@ -803,6 +826,14 @@ class HBR(RegressionModel):
     @property
     def delta(self) -> Prior:
         return self.reg_conf.delta  # type: ignore
+
+    @property
+    def alpha(self) -> Prior:
+        return self.reg_conf.alpha  # type: ignore
+
+    @property
+    def beta(self) -> Prior:
+        return self.reg_conf.beta  # type: ignore
 
     @property
     def likelihood(self) -> str:

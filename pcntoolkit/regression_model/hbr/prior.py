@@ -511,6 +511,26 @@ def get_default_delta() -> BasePrior:
     )
 
 
+def get_default_alpha() -> BasePrior:
+    return Prior(
+        dist_name="Gamma",
+        dist_params=(
+            2.0,
+            0.5,
+        ),
+    )
+
+
+def get_default_beta() -> BasePrior:
+    return Prior(
+        dist_name="Gamma",
+        dist_params=(
+            2.0,
+            0.5,
+        ),
+    )
+
+
 def get_default_sub_mu(dims: Optional[Union[Tuple[str, ...], str]] = None) -> BasePrior:
     return Prior(
         dims=dims,
