@@ -274,6 +274,7 @@ class HBR(RegressionModel):
                 progressbar=progressbar,
             )
             new_hbr_model.is_fitted = True
+        new_hbr_model.pymc_model = new_hbr_model_model
 
         return new_hbr_model
 

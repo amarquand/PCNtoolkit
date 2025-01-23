@@ -5,6 +5,7 @@ import pytest
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_factory import load_normative_model
 from pcntoolkit.normative_model.norm_hbr import NormHBR
+from pcntoolkit.regression_model.hbr.likelihood import NormalLikelihood
 from pcntoolkit.regression_model.hbr.prior import (  # pylint: disable=E0611
     LinearPrior,
     RandomPrior,
@@ -76,13 +77,13 @@ def test_normhbr_from_args(norm_args: dict[str, str], sample_args: dict[str, int
     assert hbr.default_reg_conf.draws == sample_args.get("draws")
     assert hbr.default_reg_conf.tune == sample_args.get("tune")
     assert hbr.default_reg_conf.pymc_cores == sample_args.get("pymc_cores")
-    assert hbr.default_reg_conf.likelihood == "Normal"
+    assert isinstance(hbr.default_reg_conf.likelihood, NormalLikelihood)
     if args.get("linear_mu", False):
         if args.get("random_slope_mu", False):
-            assert isinstance(hbr.default_reg_conf.mu.slope, RandomPrior)
+            assert isinstance(hbr.default_reg_conf.likelihood.mu.slope, RandomPrior)
         if args.get("random_intercept_mu", False):
-            assert isinstance(hbr.default_reg_conf.mu.intercept, RandomPrior)
-    assert not isinstance(hbr.default_reg_conf.sigma, RandomPrior) and not isinstance(hbr.default_reg_conf.sigma, LinearPrior)
+            assert isinstance(hbr.default_reg_conf.likelihood.mu.intercept, RandomPrior)
+    assert isinstance(hbr.default_reg_conf.likelihood.sigma, LinearPrior)
 
 
 def test_normdata_to_hbrdata(
@@ -142,7 +143,7 @@ def test_save_load(fitted_norm_hbr_model: NormHBR, n_mcmc_samples):
     os.remove(os.path.join(load_path, "model", "normative_model.json"))
 
     # Assert the following throws an error
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError):
         load_normative_model(load_path)
 
 
