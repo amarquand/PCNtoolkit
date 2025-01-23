@@ -158,7 +158,8 @@ class HBRConf(RegConf):
         """
         # Filter out the arguments that are not relevant for this configuration
         args_filt = {k: v for k, v in args.items() if k in cls.__dataclass_fields__}
-        likelihood = Likelihood.from_dict(args_filt.pop("likelihood"))
+        likelihood = Likelihood.from_args(args)
+        args_filt.pop("likelihood", "unlikely")
         self = cls(**args_filt, likelihood=likelihood)
         return self
 

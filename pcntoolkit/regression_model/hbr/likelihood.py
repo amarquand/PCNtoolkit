@@ -30,31 +30,37 @@ class Likelihood(ABC):
 
     @staticmethod
     def from_dict(dct: Dict[str, Any]) -> "Likelihood":
-        if dct["name"] == "Normal":
-            return NormalLikelihood._from_dict(dct)
-        elif dct["name"] == "SHASHb":
-            return SHASHbLikelihood._from_dict(dct)
-        elif dct["name"] == "SHASHo":
-            return SHASHoLikelihood._from_dict(dct)
-        elif dct["name"] == "SHASHo2":
-            return SHASHo2Likelihood._from_dict(dct)
-        elif dct["name"] == "beta":
-            return BetaLikelihood._from_dict(dct)
-        raise ValueError(f"Unknown likelihood: {dct['name']}")
+        likelihood = dct.pop("name", "Normal")
+        match likelihood:
+            case "Normal":
+                return NormalLikelihood._from_dict(dct)
+            case "SHASHb":
+                return SHASHbLikelihood._from_dict(dct)
+            case "SHASHo":
+                return SHASHoLikelihood._from_dict(dct)
+            case "SHASHo2":
+                return SHASHo2Likelihood._from_dict(dct)
+            case "beta":
+                return BetaLikelihood._from_dict(dct)
+            case _:
+                raise ValueError(f"Unknown likelihood: {likelihood}")
 
     @staticmethod
     def from_args(args: Dict[str, Any]) -> "Likelihood":
-        if args["likelihood"] == "Normal":
-            return NormalLikelihood._from_args(args)
-        elif args["likelihood"] == "SHASHb":
-            return SHASHbLikelihood._from_args(args)
-        elif args["likelihood"] == "SHASHo":
-            return SHASHoLikelihood._from_args(args)
-        elif args["likelihood"] == "SHASHo2":
-            return SHASHo2Likelihood._from_args(args)
-        elif args["likelihood"] == "beta":
-            return BetaLikelihood._from_args(args)
-        raise ValueError(f"Unknown likelihood: {args['likelihood']}")
+        likelihood = args.pop("likelihood", "Normal")
+        match likelihood:
+            case "Normal":
+                return NormalLikelihood._from_args(args)
+            case "SHASHb":
+                return SHASHbLikelihood._from_args(args)
+            case "SHASHo":
+                return SHASHoLikelihood._from_args(args)
+            case "SHASHo2":
+                return SHASHo2Likelihood._from_args(args)
+            case "beta":
+                return BetaLikelihood._from_args(args)
+            case _:
+                raise ValueError(f"Unknown likelihood: {likelihood}")
 
     @abstractmethod
     def to_dict(self) -> Dict[str, Any]:

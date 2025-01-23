@@ -326,11 +326,9 @@ def test_prior_from_args_linear(model_and_data):
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
-    assert isinstance(mu.intercept, Prior)
+    assert isinstance(mu.intercept, RandomPrior)
     assert mu.intercept.name == "intercept_mu"
     assert mu.intercept.dims is None
-    assert mu.intercept.dist_name == "Normal"
-    assert mu.intercept.dist_params == (0, 1)
     assert isinstance(mu.slope, Prior)
     assert mu.slope.name == "slope_mu"
     assert mu.slope.dims == ("covariates",)
@@ -348,14 +346,10 @@ def test_prior_from_args_linear_with_random_slope(model_and_data):
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
-    assert isinstance(mu.intercept, Prior)
-    assert mu.intercept.dist_name == "Normal"
-    assert mu.intercept.dist_params == (0, 1)
+    assert isinstance(mu.intercept, RandomPrior)
     assert isinstance(mu.slope, RandomPrior)
     assert mu.intercept.name == "intercept_mu"
     assert mu.intercept.dims is None
-    assert mu.intercept.dist_name == "Normal"
-    assert mu.intercept.dist_params == (0, 1)
     assert mu.slope.name == "slope_mu"
     assert mu.slope.dims == ("covariates",)
     assert isinstance(mu.slope.mu, Prior)
@@ -451,11 +445,9 @@ def test_prior_from_args_linear_with_random_centered_slope(model_and_data):
     mu.compile(model)
     assert mu.name == "mu"
     assert mu.dims is None
-    assert isinstance(mu.intercept, Prior)
+    assert isinstance(mu.intercept, RandomPrior)
     assert mu.intercept.name == "intercept_mu"
     assert mu.intercept.dims is None
-    assert mu.intercept.dist_name == "Normal"
-    assert mu.intercept.dist_params == (0, 1)
     assert isinstance(mu.slope, RandomPrior)
     assert mu.slope.name == "slope_mu"
     assert mu.slope.dims == ("covariates",)

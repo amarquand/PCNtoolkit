@@ -7,7 +7,8 @@ from pcntoolkit.normative_model.norm_conf import NormConf
 from pcntoolkit.normative_model.norm_hbr import NormHBR
 from pcntoolkit.regression_model.hbr.hbr import HBR
 from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.prior import make_prior
+from pcntoolkit.regression_model.hbr.likelihood import SHASHbLikelihood
+from pcntoolkit.regression_model.hbr.prior import get_default_delta, get_default_epsilon, make_prior
 from test.fixtures.data_fixtures import *
 from test.fixtures.path_fixtures import *
 
@@ -180,9 +181,7 @@ def hbrconf(mu, sigma):
         tune=N_TUNES,
         chains=N_CHAINS,
         pymc_cores=N_PYMC_CORES,
-        likelihood="SHASHb",
-        mu=mu,
-        sigma=sigma,
+        likelihood=SHASHbLikelihood(mu=mu, sigma=sigma, epsilon=get_default_epsilon(), delta=get_default_delta()),
         nuts_sampler="nutpie",
     )
 
