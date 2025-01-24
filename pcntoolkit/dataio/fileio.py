@@ -1,12 +1,13 @@
 from __future__ import print_function
 
 import os
-import sys
-import numpy as np
-import nibabel as nib
-import tempfile
-import pandas as pd
 import re
+import sys
+import tempfile
+
+import nibabel as nib
+import numpy as np
+import pandas as pd
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -214,7 +215,7 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     if verbose:
         print('Loading nifti: ' + datafile + ' ...')
     img = nib.load(datafile)
-    dat = img.get_data()
+    dat = img.get_fdata()
 
     if mask is not None:
         mask = load_nifti(mask, vol=True)
