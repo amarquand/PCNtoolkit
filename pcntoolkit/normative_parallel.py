@@ -1190,13 +1190,9 @@ def sbatchwrap_nm(processing_dir,
     job_call = [job_call[0] + ' ' + respfile_path]
 
     # If count jobsdone is true, we need to add the log_path to the job_call
-    if kwargs.get('count_jobsdone', "False") == "True" or kwargs.get('count_jobsdone', False):
-        if 'log_path' not in kwargs:
-            if log_path is None:
-                raise ValueError("log_path must be specified when count_jobsdone is True")
-            else:
-                job_call = [job_call[0] + ' log_path=' + log_path]
-
+    job_call = [job_call[0] + ' log_path=' + log_path]
+    
+    print("log_path: ", log_path)
     # add in optional arguments.
     for k in kwargs:
         job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
