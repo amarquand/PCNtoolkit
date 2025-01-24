@@ -176,7 +176,7 @@ def load_nifti(datafile, mask=None, vol=False):
     """
 
     img = nib.load(datafile)
-    dat = img.get_data()
+    dat = img.get_fdata()
 
     if mask is not None:
         mask = load_nifti(mask, vol=True)
