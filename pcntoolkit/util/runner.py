@@ -42,6 +42,7 @@ class Runner:
         python_path: Optional[str] = None,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
+        save_dir: Optional[str] = None,
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
@@ -81,6 +82,13 @@ class Runner:
             Output.print(Messages.NO_PYTHON_PATH_SPECIFIED, python_path=self.python_path)
         else:
             self.python_path = python_path
+        
+        if save_dir is None:
+            self.save_dir = os.path.abspath("model")
+            Output.print(Messages.NO_SAVE_DIR_SPECIFIED, save_dir=self.save_dir)
+        else:
+            self.save_dir = os.path.abspath(save_dir)
+        os.makedirs(self.save_dir, exist_ok=True)
 
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
