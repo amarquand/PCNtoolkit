@@ -82,13 +82,6 @@ class Runner:
             Output.print(Messages.NO_PYTHON_PATH_SPECIFIED, python_path=self.python_path)
         else:
             self.python_path = python_path
-        
-        if save_dir is None:
-            self.save_dir = os.path.abspath("model")
-            Output.print(Messages.NO_SAVE_DIR_SPECIFIED, save_dir=self.save_dir)
-        else:
-            self.save_dir = os.path.abspath(save_dir)
-        os.makedirs(self.save_dir, exist_ok=True)
 
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
@@ -96,7 +89,7 @@ class Runner:
         else:
             self.log_dir = os.path.abspath(log_dir)
         os.makedirs(self.log_dir, exist_ok=True)
-
+ 
         if temp_dir is None:
             self.temp_dir = os.path.abspath("temp")
             Output.print(Messages.NO_TEMP_DIR_SPECIFIED, temp_dir=self.temp_dir)
