@@ -110,7 +110,7 @@ def execute_nm(processing_dir,
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     outputsuffix = "_" + outputsuffix.replace("_", "")
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
-    log_path = kwargs.get('log_path', None)
+    log_path = kwargs.pop('log_path', None)
     binary = kwargs.pop('binary', False)
     cores = kwargs.pop('n_cores_per_batch','1')
 
