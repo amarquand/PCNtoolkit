@@ -89,7 +89,7 @@ class Runner:
         else:
             self.log_dir = os.path.abspath(log_dir)
         os.makedirs(self.log_dir, exist_ok=True)
- 
+
         if temp_dir is None:
             self.temp_dir = os.path.abspath("temp")
             Output.print(Messages.NO_TEMP_DIR_SPECIFIED, temp_dir=self.temp_dir)
@@ -101,6 +101,25 @@ class Runner:
             raise Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
 
     def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+        """
+        Fit a normative model on a dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to fit.
+        data : NormData
+            The data to fit the model on.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.
+            If false, the function will dispatch the jobs and return. In that case, the model will not be loaded into the model object, it will have to be loaded manually using the load function when the jobs are done.
+
+        Returns
+        -------
+        None
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
@@ -109,6 +128,7 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            self.load_model(into=model)
         else:
             # Else, we save the runner state after all jobs are submitted
             # The load function will check for failed jobs
@@ -122,6 +142,27 @@ class Runner:
         save_dir: Optional[str] = None,
         observe: bool = True,
     ) -> None:
+        """
+        Fit a normative model on a dataset and predict on another dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to fit.
+        fit_data : NormData
+            The data to fit the model on.
+        predict_data : Optional[NormData], optional
+            The data to predict on. If None, the function will predict on the fit_data.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish, then load the model into the model object
+            If false, the function will dispatch the jobs and return. In that case, the model will not be loaded into the model object, it will have to be loaded manually using the load function when the jobs are done.
+
+        Returns
+        -------
+        None
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_fit_predict_chunk_fn(model)
         self.submit_jobs(
@@ -134,10 +175,29 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            self.load_model(into=model)
         else:
             self.save()
 
     def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+        """
+        Predict on a dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to predict on.
+        data : NormData
+            The data to predict on.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish.
+
+        Returns
+        -------
+        None
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
@@ -148,7 +208,27 @@ class Runner:
         else:
             self.save()
 
-    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormBase | None:
+        """
+        Transfer a normative model to a new dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to transfer.
+        data : NormData
+            The data to transfer the model to.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then return the transfered model.
+            If false, the function will dispatch the jobs and return.
+
+        Returns
+        -------
+        NormBase | None
+            The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
@@ -156,6 +236,7 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            return self.load_model()
         else:
             self.save()
 
@@ -166,7 +247,29 @@ class Runner:
         predict_data: NormData,
         save_dir: Optional[str] = None,
         observe: bool = True,
-    ) -> None:
+    ) -> NormBase | None:
+        """
+        Transfer a normative model to a new dataset and predict on another dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to transfer.
+        fit_data : NormData
+            The data to transfer the model to.
+        predict_data : NormData
+            The data to predict on.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.
+            If false, the function will dispatch the jobs and return.
+
+        Returns
+        -------
+        NormBase | No   ne
+            The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
@@ -174,10 +277,31 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            return self.load_model()
         else:
             self.save()
 
-    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormBase | None:
+        """
+        Extend a normative model on a dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to extend.
+        data : NormData
+            The data to extend the model on.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.
+            If false, the function will dispatch the jobs and return.
+
+        Returns
+        -------
+        NormBase | None
+            The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
@@ -185,6 +309,7 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            return self.load_model()
         else:
             self.save()
 
@@ -195,7 +320,29 @@ class Runner:
         predict_data: NormData,
         save_dir: Optional[str] = None,
         observe: bool = True,
-    ) -> None:
+    ) -> NormBase | None:
+        """
+        Extend a normative model on a dataset and predict on another dataset.
+
+        Parameters
+        ----------
+        model : NormBase
+            The normative model to extend.
+        fit_data : NormData
+            The data to extend the model on.
+        predict_data : NormData
+            The data to predict on.
+        save_dir : Optional[str], optional
+            The directory to save the model to. If None, the model will be saved in the model's save directory.
+        observe : bool, optional
+            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.
+            If false, the function will dispatch the jobs and return.
+
+        Returns
+        -------
+        NormBase | None
+            The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
+        """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
@@ -203,11 +350,12 @@ class Runner:
             self.job_observer = JobObserver(self.all_jobs, self.job_type)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            return self.load_model()
         else:
             self.save()
 
     def get_fit_chunk_fn(self, model: NormBase) -> Callable:
-        """Returns a callable that fits a chunk of data"""
+        """Returns a callable that fits a model on a chunk of data"""
         if self.cross_validate:
 
             def kfold_fit_chunk_fn(chunk: NormData):
@@ -226,6 +374,7 @@ class Runner:
             return fit_chunk_fn
 
     def get_fit_predict_chunk_fn(self, model: NormBase) -> Callable:
+        """Returns a callable that fits a model on a chunk of data and predicts on another chunk of data"""
         if self.cross_validate:
 
             def kfold_fit_predict_chunk_fn(all_data: NormData, unused_predict_data: Optional[NormData] = None):
@@ -273,6 +422,7 @@ class Runner:
             return predict_chunk_fn
 
     def get_transfer_chunk_fn(self, model: NormBase) -> Callable:
+        """Returns a callable that transfers a model on a chunk of data"""
         if self.cross_validate:
 
             def kfold_transfer_chunk_fn(chunk: NormData):
@@ -536,7 +686,6 @@ class Runner:
                 chunk_tuple = (first_data_source, second_data_source)
             fn(*chunk_tuple)
 
-        
     def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
@@ -612,12 +761,12 @@ exit $exit_code
         os.chmod(job_path, 0o755)
         return ["bash", job_path]
 
-    def load_model(self, fold_index: Optional[int] = 0) -> NormBase:
+    def load_model(self, fold_index: Optional[int] = 0, into: NormBase | None = None) -> NormBase:
         if self.cross_validate:
             path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
-            return load_normative_model(path)
+            return load_normative_model(path, into=into)
         else:
-            return load_normative_model(self.save_dir)
+            return load_normative_model(self.save_dir, into=into)
 
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""

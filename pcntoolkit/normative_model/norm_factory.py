@@ -70,7 +70,7 @@ def create_normative_model(norm_conf: NormConf, reg_conf: RegConf) -> NormBase:
         raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=reg_conf.__class__.__name__)
 
 
-def load_normative_model(path: str) -> NormBase:
+def load_normative_model(path: str, into: NormBase | None = None) -> NormBase:
     """
     Load a normative model from a specified path.
 
@@ -78,6 +78,9 @@ def load_normative_model(path: str) -> NormBase:
     ----------
     path : str
         The file path to load the normative model from.
+    into : NormBase, optional
+        The normative model to load the data into. If None, a new normative model is created.
+        This is useful if you want to load a normative model into an existing normative model in-place, for example in the runner. 
 
     Returns
     -------
@@ -101,9 +104,9 @@ def load_normative_model(path: str) -> NormBase:
     model_name = norm_conf.normative_model_name
 
     if model_name == "NormHBR":
-        return NormHBR.load(path)
+        return NormHBR.load(path, into=into)
     elif model_name == "NormBLR":
-        return NormBLR.load(path)
+        return NormBLR.load(path, into=into)
     # elif model_name == "NormGPR":
     #     return NormGPR.load(path)
     else:
