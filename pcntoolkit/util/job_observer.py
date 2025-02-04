@@ -1,4 +1,5 @@
 import copy
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -14,12 +15,21 @@ class JobStatus:
     state: str
     time: str
     nodes: str
+    success_file_exists: bool = False
 
 
 class JobObserver:
-    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local"):
+    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs"):
         self.active_job_ids = copy.deepcopy(active_job_ids)
         self.job_type = job_type
+        self.log_dir = log_dir
+        # Reverse mapping from job_id to job_name for looking up success files
+        self.job_id_to_name = {v: k for k, v in active_job_ids.items()}
+
+    def check_success_file(self, job_name: str) -> bool:
+        """Check if a success file exists for the given job name."""
+        success_file = os.path.join(self.log_dir, f"{job_name}.success")
+        return os.path.exists(success_file)
 
     def get_job_statuses(self) -> List[JobStatus]:
         """Get status of all tracked jobs."""
@@ -57,6 +67,8 @@ class JobObserver:
                         if job_id in list(self.active_job_ids.values()):
                             job_id, name, state, time = line.split()
                             state = self.map_local_to_slurm_state(state)
+                            job_name = self.job_id_to_name.get(job_id)
+                            success_exists = (job_name is not None) and self.check_success_file(job_name)
                             statuses.append(
                                 JobStatus(
                                     job_id=job_id,
@@ -64,11 +76,14 @@ class JobObserver:
                                     state=state,
                                     time=time,
                                     nodes="",
+                                    success_file_exists=success_exists,
                                 )
                             )
                     else:
                         job_id, name, state, time, nodes = line.split("|")
                         if job_id in list(self.active_job_ids.values()):
+                            job_name = self.job_id_to_name.get(job_id)
+                            success_exists = (job_name is not None) and self.check_success_file(job_name)
                             statuses.append(
                                 JobStatus(
                                     job_id=job_id,
@@ -76,12 +91,32 @@ class JobObserver:
                                     state=state,
                                     time=time,
                                     nodes=nodes,
+                                    success_file_exists=success_exists,
                                 )
                             )
                 except ValueError as e:
                     Output.warning(Warnings.ERROR_PARSING_JOB_STATUS_LINE, line=line, error=e)
         elif stderr:
             Output.warning(Warnings.ERROR_GETTING_JOB_STATUSES, stderr=stderr)
+
+        # For jobs not found in process list, check if they have success files
+        active_job_ids_set = set(self.active_job_ids.values())
+        found_job_ids = {status.job_id for status in statuses}
+        for job_id in active_job_ids_set - found_job_ids:
+            job_name = self.job_id_to_name.get(job_id)
+            if job_name:
+                success_exists = self.check_success_file(job_name)
+                state = "COMPLETED" if success_exists else "FAILED"
+                statuses.append(
+                    JobStatus(
+                        job_id=job_id,
+                        name=job_name,
+                        state=state,
+                        time="",
+                        nodes="",
+                        success_file_exists=success_exists,
+                    )
+                )
 
         return statuses
 
@@ -142,8 +177,14 @@ class JobObserver:
             # Check for completed jobs
             completed_jobs = []
             for job_name, job_id in list(self.active_job_ids.items()):
-                if not any(s.job_id == job_id for s in statuses) or any(
-                    s.job_id == job_id and s.state in ["COMPLETED", "FAILED", "CANCELLED"] for s in statuses
+                matching_statuses = [s for s in statuses if s.job_id == job_id]
+                if not matching_statuses:
+                    # Job not found in process list and no success file
+                    if not self.check_success_file(job_name):
+                        completed_jobs.append(job_name)
+                elif any(
+                    s.state in ["COMPLETED", "FAILED", "CANCELLED"] or (s.state == "COMPLETED" and not s.success_file_exists)
+                    for s in matching_statuses
                 ):
                     completed_jobs.append(job_name)
 

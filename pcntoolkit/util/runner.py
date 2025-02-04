@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import sys
+import uuid
 from copy import deepcopy
 from typing import Callable, Dict, Literal, Optional
 
@@ -125,7 +126,7 @@ class Runner:
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
             # If we want to observer the jobs, we wait for them, and then get the failed jobs after it's done
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             self.load_model(into=model)
@@ -172,7 +173,7 @@ class Runner:
             mode="binary",
         )
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             self.load_model(into=model)
@@ -202,7 +203,7 @@ class Runner:
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
         else:
@@ -233,7 +234,7 @@ class Runner:
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -274,7 +275,7 @@ class Runner:
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -306,7 +307,7 @@ class Runner:
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -347,7 +348,7 @@ class Runner:
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type)
+            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -644,10 +645,10 @@ class Runner:
                     chunk_tuple = first_chunk
                 elif mode == "binary":
                     chunk_tuple = (first_chunk, second_chunk)
-                python_callable_path, data_path = self.save_callable_and_data(i, fn, chunk_tuple)
+                python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
 
                 if self.job_type == "local":
-                    command = self.wrap_in_local_job(i, python_callable_path, data_path)
+                    command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
                     process = subprocess.Popen(
                         command,
                         stdout=subprocess.PIPE,
@@ -770,8 +771,9 @@ exit $exit_code
 
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""
-
+        runner_state_uuid = str(uuid.uuid4())
         runner_state = {
+            "runner_state_uuid": runner_state_uuid,
             "all_jobs": self.all_jobs,
             "log_dir": self.log_dir,
             "temp_dir": self.temp_dir,
@@ -783,7 +785,7 @@ exit $exit_code
             "failed_jobs": self.failed_jobs,
         }
 
-        runner_file = os.path.join(self.temp_dir, "runner_state.json")
+        runner_file = os.path.join(self.temp_dir, f"runner_state_{runner_state_uuid}.json")
         Output.print(Messages.SAVING_RUNNER_STATE, runner_file=runner_file)
         with open(runner_file, "w") as f:
             json.dump(runner_state, f, indent=4)
@@ -846,7 +848,7 @@ exit $exit_code
 
         self.failed_jobs.clear()
         if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
 
