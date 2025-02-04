@@ -891,15 +891,30 @@ class NormBase(ABC):
                 json.dump(reg_model_dict, f, indent=4)
 
     @classmethod
-    def load(cls, path: str) -> NormBase:
+    def load(cls, path: str, into: NormBase | None= None) -> NormBase:
+        """
+        Load a normative model from a path.
+
+        Parameters
+        ----------
+        path : str
+            The path to the normative model.
+        into : NormBase, optional
+            The normative model to load the data into. If None, a new normative model is created.
+            This is useful if you want to load a normative model into an existing normative model, for example in the runner. 
+        """
         model_path = os.path.join(path, "model", "normative_model.json")
         with open(model_path, mode="r", encoding="utf-8") as f:
             metadata = json.load(f)
 
-        self = cls(NormConf.from_dict(metadata["norm_conf"]))
+        if into is None:
+            self = cls(NormConf.from_dict(metadata["norm_conf"]))
+        else:
+            self = into
 
         if "basis_function" in metadata:
             self.basis_function = create_basis_function(metadata["basis_function"])
+
         self.inscalers = {k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()}
         if "batch_effects_maps" in metadata:
             self.batch_effects_maps = {
