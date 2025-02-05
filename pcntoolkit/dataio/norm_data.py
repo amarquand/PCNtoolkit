@@ -302,6 +302,14 @@ class NormData(xr.Dataset):
         NormData
             An instance of NormData.
         """
+        if response_vars is None or len(response_vars) == 0:
+            Output.warning(Warnings.NO_RESPONSE_VARS, dataset_name=name)
+
+
+        for response_var in response_vars:
+            if response_var not in dataframe.columns:
+                Output.warning(Warnings.RESPONSE_VAR_NOT_FOUND, dataset_name=name, response_var=response_var)
+                dataframe[response_var] = np.nan
 
         return cls(
             name,
