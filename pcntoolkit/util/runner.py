@@ -652,7 +652,6 @@ class Runner:
                     command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
                     process = subprocess.Popen(
                         command,
-                        shell=True,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
