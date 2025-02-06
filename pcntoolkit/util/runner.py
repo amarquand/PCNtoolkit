@@ -376,7 +376,6 @@ class Runner:
                     fold_norm_model: NormBase = deepcopy(model)
                     fold_norm_model.norm_conf.set_save_dir(os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}"))
                     fold_norm_model.fit(train_data)
-                    fold_norm_model.save()
 
             return kfold_fit_chunk_fn
         else:
@@ -397,8 +396,6 @@ class Runner:
                     fold_norm_model: NormBase = deepcopy(model)
                     fold_norm_model.norm_conf.set_save_dir(os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}"))
                     fold_norm_model.fit_predict(fit_data, predict_data)
-                    fold_norm_model.save()
-                    fold_norm_model.save_results(predict_data)
 
             return kfold_fit_predict_chunk_fn
         else:
@@ -406,11 +403,8 @@ class Runner:
             def fit_predict_chunk_fn(fit_data: NormData, predict_data: Optional[NormData]):
                 if predict_data is None:
                     raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION)
-
                 assert predict_data is not None  # Make the linter happy
                 model.fit_predict(fit_data, predict_data)
-                model.save()
-                model.save_results(predict_data)
 
             return fit_predict_chunk_fn
 
@@ -423,14 +417,12 @@ class Runner:
                 for i_fold, (_, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
                     fold_model = load_normative_model(os.path.join(conf.save_dir, "folds", f"fold_{i_fold}"))
                     fold_model.predict(predict_data)
-                    fold_model.save_results(predict_data)
 
             return kfold_predict_chunk_fn
         else:
 
             def predict_chunk_fn(chunk: NormData):
                 model.predict(chunk)
-                model.save_results(chunk)
 
             return predict_chunk_fn
 
@@ -440,18 +432,16 @@ class Runner:
 
             def kfold_transfer_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    transfered_model = model.transfer(
+                    model.transfer(
                         train_data,
                         save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"),
                     )
-                    transfered_model.save()
 
             return kfold_transfer_chunk_fn
         else:
 
             def transfer_chunk_fn(data: NormData):
-                transfered_model = model.transfer(data, save_dir=self.save_dir)
-                transfered_model.save()
+                model.transfer(data, save_dir=self.save_dir)
 
             return transfer_chunk_fn
 
@@ -462,13 +452,11 @@ class Runner:
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    transfered_model = model.transfer_predict(
+                    model.transfer_predict(
                         train_data,
                         predict_data,
                         save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"),
                     )
-                    transfered_model.save()
-                    transfered_model.save_results(predict_data)
 
             return kfold_transfer_predict_chunk_fn
         else:
@@ -477,7 +465,6 @@ class Runner:
                 if predict_data is None:
                     raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED)
                 model.transfer_predict(train_data, predict_data, save_dir=self.save_dir)
-                model.save_results(predict_data)
 
             return transfer_predict_chunk_fn
 
@@ -486,18 +473,16 @@ class Runner:
 
             def kfold_extend_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    extended_model = model.extend(
+                    model.extend(
                         train_data,
                         save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"),
                     )
-                    extended_model.save()
 
             return kfold_extend_chunk_fn
         else:
 
             def extend_chunk_fn(data: NormData):
-                extended_model = model.extend(data, save_dir=self.save_dir)
-                extended_model.save()
+                model.extend(data, save_dir=self.save_dir)
 
             return extend_chunk_fn
 
@@ -508,13 +493,11 @@ class Runner:
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    extended_model = model.extend_predict(
+                    model.extend_predict(
                         train_data,
                         predict_data,
                         save_dir=os.path.join(self.save_dir, "folds", f"fold_{i_fold}"),
                     )
-                    extended_model.save()
-                    extended_model.save_results(predict_data)
 
             return kfold_extend_predict_chunk_fn
         else:
@@ -522,9 +505,7 @@ class Runner:
             def extend_predict_chunk_fn(train_data: NormData, predict_data: NormData):
                 if predict_data is None:
                     raise Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED)
-                extended_model = model.extend_predict(train_data, predict_data, save_dir=self.save_dir)
-                extended_model.save()
-                extended_model.save_results(predict_data)
+                model.extend_predict(train_data, predict_data, save_dir=self.save_dir)
 
             return extend_predict_chunk_fn
 
@@ -676,6 +657,7 @@ class Runner:
                 # Wait for all jobs to finish
                 all_processes = []
                 import multiprocessing as mp
+
                 with mp.Pool(processes=self.n_jobs) as pool:
                     results = pool.map(subprocess.Popen, [command for _, command in jobs_to_run])
                     # all_processes.append(process)  # noqa: F821
@@ -684,12 +666,13 @@ class Runner:
                 #     stdout, stderr = process.communicate()
                 #     print(stdout, stderr)
                 import time
+
                 time.sleep(1000)
 
             else:
                 for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
                     job_name = f"job_{i}"
-                    if mode == "unary": 
+                    if mode == "unary":
                         chunk_tuple = first_chunk
                     else:
                         chunk_tuple = (first_chunk, second_chunk)

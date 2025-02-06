@@ -27,9 +27,9 @@ class NormConf:
     Parameters
     ----------
     savemodel : bool, optional
-        Whether to save the trained model, by default False
+        Whether to save the trained model, by default True
     saveresults : bool, optional
-        Whether to save prediction results, by default False
+        Whether to save prediction results, by default True
     log_dir : str, optional
         Directory for logging output, by default "./logs"
     save_dir : str, optional
@@ -53,8 +53,8 @@ class NormConf:
         Name identifier for the normative model, by default None
     """
 
-    savemodel: bool = False
-    saveresults: bool = False
+    savemodel: bool = True
+    saveresults: bool = True
     save_dir: str = "./saves"
     basis_function: str = "linear"
     basis_function_kwargs: dict = field(default_factory=dict)
