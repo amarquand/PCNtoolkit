@@ -9,8 +9,6 @@ from typing import Callable, Dict, Literal, Optional
 
 import cloudpickle as pickle
 
-# mp.set_start_method("spawn")
-# from multiprocess import Pool
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model.norm_base import NormBase
 from pcntoolkit.normative_model.norm_factory import load_normative_model
@@ -122,6 +120,7 @@ class Runner:
         None
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.set_unique_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
@@ -134,6 +133,13 @@ class Runner:
             # Else, we save the runner state after all jobs are submitted
             # The load function will check for failed jobs
             self.save()
+
+    def set_unique_temp_and_log_dir(self):
+        my_new_uuid = str(uuid.uuid4())
+        self.temp_dir = os.path.join(self.temp_dir, my_new_uuid)
+        self.log_dir = os.path.join(self.log_dir, my_new_uuid)
+        os.makedirs(self.temp_dir, exist_ok=True)
+        os.makedirs(self.log_dir, exist_ok=True)
 
     def fit_predict(
         self,
@@ -165,6 +171,7 @@ class Runner:
         None
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.set_unique_temp_and_log_dir()
         fn = self.get_fit_predict_chunk_fn(model)
         self.submit_jobs(
             fn,
@@ -200,6 +207,7 @@ class Runner:
         None
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.set_unique_temp_and_log_dir()
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
@@ -231,6 +239,7 @@ class Runner:
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
+        self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
@@ -272,6 +281,7 @@ class Runner:
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
+        self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
@@ -304,6 +314,7 @@ class Runner:
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
+        self.set_unique_temp_and_log_dir()
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
@@ -345,6 +356,7 @@ class Runner:
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
+        self.set_unique_temp_and_log_dir()
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
@@ -608,6 +620,17 @@ class Runner:
                 running_jobs[job_name] = job_id
         return running_jobs, finished_jobs, failed_jobs
 
+    def run_command_with_subprocess(self, cmd: list[str]):
+        """Run using subprocess"""
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            text=True,
+        )
+        return process
+
     def submit_jobs(
         self,
         fn: Callable,
@@ -630,37 +653,49 @@ class Runner:
         """
         if self.parallelize:
             first_chunks = first_data_source.chunk(self.n_jobs)
+            second_chunks = [None] * self.n_jobs if second_data_source is None else second_data_source.chunk(self.n_jobs)
 
-            if second_data_source is not None:
-                second_chunks = second_data_source.chunk(self.n_jobs)
-            else:
-                second_chunks = [None] * self.n_jobs
-
-            self.all_jobs.clear()  # Reset job IDs for new submission
+            self.all_jobs.clear()
             self.job_commands.clear()
 
-            for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                job_name = f"job_{i}"
-                if mode == "unary":
-                    chunk_tuple = first_chunk
-                elif mode == "binary":
-                    chunk_tuple = (first_chunk, second_chunk)
-                python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
+            if self.job_type == "local":
+                # Create all job files first
+                jobs_to_run = []
+                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                    job_name = f"job_{i}"
+                    if mode == "unary":
+                        chunk_tuple = first_chunk
+                    else:
+                        chunk_tuple = (first_chunk, second_chunk)
 
-                if self.job_type == "local":
+                    python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
                     command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
-                    process = subprocess.Popen(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        start_new_session=True,
-                    )
-                    # For local jobs, store the PID immediately without waiting
-                    self.all_jobs[job_name] = str(process.pid)
+                    jobs_to_run.append((job_name, command))
                     self.job_commands[job_name] = command
-                else:
-                    # For cluster jobs, we need to wait for the job ID
+
+                # Wait for all jobs to finish
+                all_processes = []
+                import multiprocessing as mp
+                with mp.Pool(processes=self.n_jobs) as pool:
+                    results = pool.map(subprocess.Popen, [command for _, command in jobs_to_run])
+                    # all_processes.append(process)  # noqa: F821
+                # for process in all_processes:
+                #     process.wait()
+                #     stdout, stderr = process.communicate()
+                #     print(stdout, stderr)
+                import time
+                time.sleep(1000)
+
+            else:
+                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                    job_name = f"job_{i}"
+                    if mode == "unary": 
+                        chunk_tuple = first_chunk
+                    else:
+                        chunk_tuple = (first_chunk, second_chunk)
+
+                    python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
+
                     if self.job_type == "slurm":
                         command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
                     elif self.job_type == "torque":
@@ -690,6 +725,8 @@ class Runner:
     def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
+        out_file = os.path.join(self.log_dir, f"{job_name}.out")
+        err_file = os.path.join(self.log_dir, f"{job_name}.err")
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
         with open(job_path, "w") as f:
@@ -701,8 +738,8 @@ class Runner:
 #SBATCH --cpus-per-task={self.n_cores}
 #SBATCH --time={self.time_limit_str}
 #SBATCH --mem={self.memory}
-#SBATCH --error={os.path.join(self.log_dir, f"{job_name}.err")}
-#SBATCH --output={os.path.join(self.log_dir, f"{job_name}.out")}
+#SBATCH --error={err_file}
+#SBATCH --output={out_file}
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
 exit_code=$?
@@ -717,6 +754,8 @@ exit $exit_code
     def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
+        out_file = os.path.join(self.log_dir, f"{job_name}.out")
+        err_file = os.path.join(self.log_dir, f"{job_name}.err")
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
 
         with open(job_path, "w") as f:
@@ -727,8 +766,8 @@ exit $exit_code
 #PBS -l nodes=1:ppn={self.n_cores}
 #PBS -l walltime={self.time_limit_str}
 #PBS -l mem={self.memory}
-#PBS -o {os.path.join(self.log_dir, f"{job_name}.out")}
-#PBS -e {os.path.join(self.log_dir, f"{job_name}.err")}
+#PBS -o {out_file}
+#PBS -e {err_file}
 #PBS -m a
 
 {self.python_path} {current_file_path} {python_callable_path} {data_path}
@@ -746,20 +785,23 @@ exit $exit_code
         job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
         current_file_path = os.path.abspath(__file__)
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
+        out_file = os.path.join(self.log_dir, f"{job_name}.out")
+        err_file = os.path.join(self.log_dir, f"{job_name}.err")
 
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
-export PYTHONPATH=$PYTHONPATH:{os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))}
-{self.python_path} {current_file_path} {python_callable_path} {data_path} > {os.path.join(self.log_dir, f"{job_name}.out")} 2> {os.path.join(self.log_dir, f"{job_name}.err")}
+# Execute Python script with unbuffered output
+PYTHONUNBUFFERED=1 {self.python_path} -m pcntoolkit.util.run_job {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
+
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
 fi
 exit $exit_code
 """
             )
-        os.chmod(job_path, 0o755)
+        os.chmod(job_path, 0o755)  # Make script executable
         return ["bash", job_path]
 
     def load_model(self, fold_index: Optional[int] = 0, into: NormBase | None = None) -> NormBase:
@@ -771,9 +813,7 @@ exit $exit_code
 
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""
-        runner_state_uuid = str(uuid.uuid4())
         runner_state = {
-            "runner_state_uuid": runner_state_uuid,
             "all_jobs": self.all_jobs,
             "log_dir": self.log_dir,
             "temp_dir": self.temp_dir,
@@ -785,26 +825,25 @@ exit $exit_code
             "failed_jobs": self.failed_jobs,
         }
 
-        runner_file = os.path.join(self.temp_dir, f"runner_state_{runner_state_uuid}.json")
+        runner_file = os.path.join(self.temp_dir, "runner_state.json")
         Output.print(Messages.SAVING_RUNNER_STATE, runner_file=runner_file)
         with open(runner_file, "w") as f:
             json.dump(runner_state, f, indent=4)
 
     @classmethod
-    def load(cls, save_dir: str) -> "Runner":
+    def load_from_state(cls, runner_file: str) -> "Runner":
         """Load a runner from a saved state.
 
         Parameters
         ----------
-        save_dir : str
-            Directory containing the runner state file
+        runner_file : str
+            Path to the runner state file
 
         Returns
         -------
         Runner
             A runner instance with the saved state
         """
-        runner_file = os.path.join(save_dir, "runner_state.json")
         Output.print(Messages.LOADING_RUNNER_STATE, runner_file=runner_file)
         with open(runner_file, "r") as f:
             state = json.load(f)
@@ -856,6 +895,7 @@ exit $exit_code
 
 
 def load_and_execute(args):
+    print("Loading and executing")
     with open(args[0], "rb") as executable_path:
         fn = pickle.load(executable_path)
     with open(args[1], "rb") as data_path:
@@ -867,4 +907,5 @@ def load_and_execute(args):
 
 
 if __name__ == "__main__":
+    print("Running the runner")
     load_and_execute(sys.argv[1:])
