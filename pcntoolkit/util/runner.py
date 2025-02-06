@@ -640,34 +640,16 @@ class Runner:
             self.job_commands.clear()
 
             if self.job_type == "local":
-                # Create all job files first
-                jobs_to_run = []
                 for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
                     job_name = f"job_{i}"
                     if mode == "unary":
                         chunk_tuple = first_chunk
                     else:
                         chunk_tuple = (first_chunk, second_chunk)
-
                     python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
                     command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
-                    jobs_to_run.append((job_name, command))
+                    self.all_jobs[job_name] = str(self.run_command_with_subprocess(command).pid)
                     self.job_commands[job_name] = command
-
-                # Wait for all jobs to finish
-                all_processes = []
-                import multiprocessing as mp
-
-                with mp.Pool(processes=self.n_jobs) as pool:
-                    results = pool.map(subprocess.Popen, [command for _, command in jobs_to_run])
-                    # all_processes.append(process)  # noqa: F821
-                # for process in all_processes:
-                #     process.wait()
-                #     stdout, stderr = process.communicate()
-                #     print(stdout, stderr)
-                import time
-
-                time.sleep(1000)
 
             else:
                 for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
