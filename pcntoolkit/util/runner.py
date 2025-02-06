@@ -639,28 +639,26 @@ class Runner:
             self.all_jobs.clear()
             self.job_commands.clear()
 
-            if self.job_type == "local":
-                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                    job_name = f"job_{i}"
-                    if mode == "unary":
-                        chunk_tuple = first_chunk
-                    else:
-                        chunk_tuple = (first_chunk, second_chunk)
-                    python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
+            for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
+                
+                job_name = f"job_{i}"
+                if mode == "unary":
+                    chunk_tuple = first_chunk
+                else:
+                    chunk_tuple = (first_chunk, second_chunk)
+                python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
+
+                if self.job_type == "local":
                     command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
-                    self.all_jobs[job_name] = str(self.run_command_with_subprocess(command).pid)
-                    self.job_commands[job_name] = command
-
-            else:
-                for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                    job_name = f"job_{i}"
-                    if mode == "unary":
-                        chunk_tuple = first_chunk
-                    else:
-                        chunk_tuple = (first_chunk, second_chunk)
-
-                    python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
-
+                    process = subprocess.Popen(
+                        command,
+                        shell=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    job_id = str(process.pid)
+                else:
                     if self.job_type == "slurm":
                         command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
                     elif self.job_type == "torque":
@@ -673,12 +671,13 @@ class Runner:
                         text=True,
                     )
                     stdout, stderr = process.communicate()
-                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
-                    if job_id:
-                        self.all_jobs[job_name] = job_id.group(1)
-                        self.job_commands[job_name] = command
-                    elif stderr:
+                    try:
+                        job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
+                    except AttributeError:
                         raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
+
+                self.all_jobs[job_name] = job_id
+                self.job_commands[job_name] = command
 
         else:
             if mode == "unary":
