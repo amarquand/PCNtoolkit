@@ -19,6 +19,7 @@ from typing import (
     Generator,
     Hashable,
     List,
+    LiteralString,
     Mapping,
     Optional,
     Sequence,
@@ -276,7 +277,7 @@ class NormData(xr.Dataset):
         dataframe: pd.DataFrame,
         covariates: List[str],
         batch_effects: List[str],
-        response_vars: List[str],
+        response_vars: List[str | LiteralString],
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """

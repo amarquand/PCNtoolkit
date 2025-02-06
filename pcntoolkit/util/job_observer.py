@@ -5,6 +5,8 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List
 
+from IPython.display import clear_output
+
 from pcntoolkit.util.output import Messages, Output, Warnings
 
 
@@ -20,6 +22,7 @@ class JobStatus:
 
 class JobObserver:
     def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs"):
+        self.job_ids = copy.deepcopy(active_job_ids)
         self.active_job_ids = copy.deepcopy(active_job_ids)
         self.job_type = job_type
         self.log_dir = log_dir
@@ -33,9 +36,6 @@ class JobObserver:
 
     def get_job_statuses(self) -> List[JobStatus]:
         """Get status of all tracked jobs."""
-        if not self.active_job_ids:
-            return []
-
         # Get all job statuses at once
         if self.job_type == "local":
             process = subprocess.Popen(
@@ -64,7 +64,7 @@ class JobObserver:
                 try:
                     if self.job_type == "local":
                         job_id = line.split(maxsplit=1)[0]
-                        if job_id in list(self.active_job_ids.values()):
+                        if job_id in list(self.job_ids.values()):
                             job_id, name, state, time = line.split()
                             state = self.map_local_to_slurm_state(state)
                             job_name = self.job_id_to_name.get(job_id)
@@ -81,7 +81,7 @@ class JobObserver:
                             )
                     else:
                         job_id, name, state, time, nodes = line.split("|")
-                        if job_id in list(self.active_job_ids.values()):
+                        if job_id in list(self.job_ids.values()):
                             job_name = self.job_id_to_name.get(job_id)
                             success_exists = (job_name is not None) and self.check_success_file(job_name)
                             statuses.append(
@@ -99,10 +99,11 @@ class JobObserver:
         elif stderr:
             Output.warning(Warnings.ERROR_GETTING_JOB_STATUSES, stderr=stderr)
 
-        # For jobs not found in process list, check if they have success files
-        active_job_ids_set = set(self.active_job_ids.values())
+        # Any jobs not in the process list are assumed to be completed. 
+        # Check if they have a success file
+        job_ids_set = set(self.job_ids.values())
         found_job_ids = {status.job_id for status in statuses}
-        for job_id in active_job_ids_set - found_job_ids:
+        for job_id in job_ids_set - found_job_ids:
             job_name = self.job_id_to_name.get(job_id)
             if job_name:
                 success_exists = self.check_success_file(job_name)
@@ -117,7 +118,6 @@ class JobObserver:
                         success_file_exists=success_exists,
                     )
                 )
-
         return statuses
 
     def map_local_to_slurm_state(self, local_state: str) -> str:
@@ -135,7 +135,7 @@ class JobObserver:
         # Assume that if the job is not in the state map, it is completed (sorry)
         return state_map.get(base_state, "COMPLETED")
 
-    def wait_for_jobs(self, check_interval=5):
+    def wait_for_jobs(self, check_interval=1):
         """Wait for all submitted jobs to complete.
 
         Args:
@@ -155,10 +155,11 @@ class JobObserver:
         else:
             self.wait_for_jobs_terminal(check_interval)
 
-    def wait_for_jobs_notebook(self, check_interval=5):
+    def wait_for_jobs_notebook(self, check_interval=1):
         # Notebook-friendly display without ANSI codes
-        from IPython.display import clear_output
+        show_pid = Output.get_show_pid()
 
+        Output.set_show_pid(False)
         while self.active_job_ids:
             clear_output(wait=True)
             Output.print(Messages.JOB_STATUS_MONITOR)
@@ -196,8 +197,9 @@ class JobObserver:
                 time.sleep(check_interval)
 
         Output.print(Messages.ALL_JOBS_COMPLETED)
+        Output.set_show_pid(show_pid)
 
-    def wait_for_jobs_terminal(self, check_interval=5):
+    def wait_for_jobs_terminal(self, check_interval=1):
         # Terminal display with ANSI codes
         # Keep existing terminal implementation
         show_pid = Output.get_show_pid()
@@ -235,5 +237,5 @@ class JobObserver:
                 time.sleep(check_interval)
             print(f"\033[{prev_lines}A", end="")
 
-        Output.set_show_pid(show_pid)
         Output.print(Messages.ALL_JOBS_COMPLETED)
+        Output.set_show_pid(show_pid)

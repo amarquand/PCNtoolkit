@@ -9,8 +9,8 @@ class Messages:
     PREDICTING_MODEL = "Making predictions on {model_name}."
     FITTING_AND_PREDICTING_MODELS = "Fitting and predicting {n_models} response variables."
     FITTING_AND_PREDICTING_MODEL = "Fitting and predicting model for {model_name}."
-    SAVING_MODEL = "Saving model to {save_dir}."
-    SAVING_RESULTS = "Saving results to {save_dir}."
+    SAVING_MODEL = "Saving model to:\n\t{save_dir}."
+    SAVING_RESULTS = "Saving results to:\n\t{save_dir}."
     TRANSFERRING_MODELS = "Transferring models on {n_models} response variables."
     TRANSFERRING_MODEL = "Transferring model for {model_name}."
     COMPUTING_CENTILES = "Computing centiles for {n_models} response variables."
@@ -28,20 +28,23 @@ class Messages:
     BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED = "Hyperparameters have not changed, exiting"
     REGRESSION_MODEL_CONFIGURATION_VALID = "Configuration of regression model is valid."
     JOB_STATUS_MONITOR = """
-Job Status Monitor:
---------------------------------------------
-Job ID     Name     State     Time     Nodes
---------------------------------------------
+------------------------------------------------
+               Job Status Monitor
+------------------------------------------------
+Job ID      Name      State      Time      Nodes
+------------------------------------------------
 """
     ALL_JOBS_COMPLETED = """
+------------------------------------------------    
 All jobs completed!
+------------------------------------------------
 """
-    JOB_STATUS_LINE = "{:<10} {:<8} {:<9} {:<8} {:<8}"
+    JOB_STATUS_LINE = "{:<11} {:<9} {:<10} {:<9} {:<9}"
     NO_PYTHON_PATH_SPECIFIED = "No python path specified. Using interpreter path of current process: {python_path}"
     NO_LOG_DIR_SPECIFIED = "No log directory specified. Using default log directory: {log_dir}"
     NO_TEMP_DIR_SPECIFIED = "No temporary directory specified. Using default temporary directory: {temp_dir}"
-    SAVING_RUNNER_STATE = "Saving runner state to {runner_file}"
-    LOADING_RUNNER_STATE = "Loading runner state from {runner_file}"
+    SAVING_RUNNER_STATE = "Saving runner state to:\n\t{runner_file}"
+    LOADING_RUNNER_STATE = "Loading runner state from:\n\t{runner_file}"
     RUNNER_LOADED = (
         "Runner loaded\n"
         "--------------------------------------------\n"
@@ -67,7 +70,8 @@ class Warnings:
     BLR_BATCH_EFFECTS_NOT_PROVIDED = "batch_effects is not provided, setting self.batch_effects to zeros"
     HBR_BATCH_EFFECTS_NOT_PROVIDED = BLR_BATCH_EFFECTS_NOT_PROVIDED
     ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
-
+    NO_RESPONSE_VARS = "No response variables provided for dataset {dataset_name}. Please provide a list of response variables for which you want to fit or predict."
+    RESPONSE_VAR_NOT_FOUND = "Response variable {response_var} not found in dataset {dataset_name}. Setting to NaN."
 
 class Errors:
     SAMPLE_BATCH_EFFECTS = (

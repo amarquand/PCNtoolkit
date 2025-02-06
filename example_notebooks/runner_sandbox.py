@@ -3,125 +3,68 @@ import os
 import pandas as pd
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.normative_model.norm_blr import NormBLR
 from pcntoolkit.normative_model.norm_conf import NormConf
-from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.prior import make_prior
+from pcntoolkit.regression_model.blr.blr_conf import BLRConf
 from pcntoolkit.util.runner import Runner
 
-resources_dir = "/project/3022000.05/projects/stijdboe/Projects/PCNtoolkit/example_notebooks/resources"
+if __name__ == "__main__":
+    os.makedirs("resources/data", exist_ok=True)
+    # If you are running this notebook for the first time, you need to download the dataset from github.
+    # If you have already downloaded the dataset, you can comment out the following line
 
-data_dir = os.path.join(resources_dir, "data")
-os.makedirs(data_dir, exist_ok=True)
+    pd.read_csv(
+        "https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv"
+    ).to_csv("resources/data/fcon1000.csv", index=False)
+    data = pd.read_csv("resources/data/fcon1000.csv")
+    covariates = ["age"]
+    batch_effects = ["sex", "site"]
+    response_vars = "rh_G_temp_sup-G_T_transv_thickness,rh_G_temp_sup-Lateral_thickness,rh_G_temp_sup-Plan_polar_thickness,rh_G_temp_sup-Plan_tempo_thickness,rh_G_temporal_inf_thickness,rh_G_temporal_middle_thickness,rh_Lat_Fis-ant-Horizont_thickness,rh_Lat_Fis-ant-Vertical_thickness,rh_Lat_Fis-post_thickness,rh_Pole_occipital_thickness,rh_Pole_temporal_thickness,rh_S_calcarine_thickness,rh_S_central_thickness,rh_S_cingul-Marginalis_thickness,rh_S_circular_insula_ant_thickness,rh_S_circular_insula_inf_thickness".split(",")
+    norm_data = NormData.from_dataframe(
+        name="full",
+        dataframe=data,
+        covariates=["age"],
+        batch_effects=["sex", "site"],
+        response_vars=response_vars,
+    )
 
-pd.read_csv(
-    "https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv"
-).to_csv(os.path.join(data_dir, "fcon1000.csv"), index=False)
-data = pd.read_csv(os.path.join(data_dir, "fcon1000.csv"))
-covariates = ["age"]
-batch_effects = ["sex", "site"]
-response_vars = ["rh_MeanThickness_thickness", "WM-hypointensities"]
-norm_data = NormData.from_dataframe(
-    name="full",
-    dataframe=data,
-    covariates=["age"],
-    batch_effects=["sex", "site"],
-    response_vars=["rh_MeanThickness_thickness", "WM-hypointensities"],
-)
+    # Leave two sites out for doing transfer and extend later
+    transfer_sites = ["Milwaukee_b", "Oulu"]
+    transfer_data, fit_data = norm_data.split_batch_effects({"site": transfer_sites}, names=("transfer", "fit"))
 
-# Leave two sites out for doing transfer and extend later
-transfer_sites = ["Milwaukee_b", "Oulu"]
-transfer_data, fit_data = norm_data.split_batch_effects({"site": transfer_sites}, names=("transfer", "fit"))
+    # Split into train and test sets
+    train, test = fit_data.train_test_split()
+    transfer_train, transfer_test = transfer_data.train_test_split()
+    # Create a NormConf object
+    norm_conf = NormConf(
+        savemodel=True,
+        saveresults=True,
+        save_dir="resources/blr/save_dir",
+        inscaler="standardize",
+        outscaler="standardize",
+        basis_function="bspline",
+        basis_function_kwargs={"order": 3, "nknots": 5},
+    )
+    blr_conf = BLRConf(
+        optimizer="l-bfgs-b",
+        n_iter=200,
+        heteroskedastic=True,
+        random_intercept=True,
+        random_intercept_var=True,
+        warp="WarpSinhArcsinh",
+        warp_reparam=True,
+    )
+    # Using the constructor
+    new_model = NormBLR(norm_conf=norm_conf, reg_conf=blr_conf)
 
-# Split into train and test sets
-train, test = fit_data.train_test_split()
-transfer_train, transfer_test = transfer_data.train_test_split()
-
-# Create a NormConf object
-sandbox_dir = os.path.join(resources_dir, "hbr_runner_sandbox")
-save_dir = os.path.join(sandbox_dir, "save_dir")
-os.makedirs(save_dir, exist_ok=True)
-os.makedirs(sandbox_dir, exist_ok=True)
-
-norm_conf = NormConf(
-    savemodel=True,
-    saveresults=True,
-    save_dir=save_dir,
-    inscaler="standardize",
-    outscaler="standardize",
-    basis_function="bspline",
-    basis_function_kwargs={"order": 3, "nknots": 5},
-)
-
-mu = make_prior(
-    linear=True,
-    slope=make_prior(dist_params = (0.0, 10.)),
-    intercept=make_prior(
-        random=True,
-        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
-        mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
-    ),
-)
-
-sigma = make_prior(
-    linear=True,
-    slope=make_prior(dist_params = (0.0, 10.0)),
-    intercept=make_prior(
-        random=True,
-        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
-        mu=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
-    ),
-    mapping="softplus",
-    mapping_params=(0.0, 3.0),
-)
-
-epsilon = make_prior(
-    linear=True,
-    slope=make_prior(dist_params = (0.0, 1.0)),
-    intercept=make_prior(
-        random=True,
-        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
-        mu=make_prior(dist_name="Normal", dist_params=(0.0, 0.5)),
-    ),
-)
-
-delta = make_prior(
-    linear=True,
-    slope=make_prior(dist_params = (0.0, 1.0)),
-    intercept=make_prior(
-        random=True,
-        sigma=make_prior(dist_name="HalfCauchy", dist_params=(0.5,)),
-        mu=make_prior(dist_name="Normal", dist_params=(1.0, 0.5)),
-    ),
-    mapping="softplus",
-    mapping_params=(0.0, 2.0, 0.5),
-)
-
-
-# Configure the HBRConf object
-hbr_conf = HBRConf(
-    draws=1500,
-    tune=500,
-    chains=4,
-    pymc_cores=16,
-    likelihood="SHASHb",
-    mu=mu,
-    sigma=sigma,
-    epsilon=epsilon,
-    delta=delta,
-    nuts_sampler="nutpie",
-)
-
-new_hbr_model = NormHBR(norm_conf=norm_conf, reg_conf=hbr_conf)
-
-runner = Runner(
-    cross_validate=False,
-    parallelize=True,
-    time_limit="15:00:00",
-    job_type="slurm",  # or "slurm" if you are on a slurm cluster
-    n_jobs=2,
-    log_dir=os.path.join(sandbox_dir, "log_dir"),
-    temp_dir=os.path.join(sandbox_dir, "temp_dir"),
-)
-
-runner.fit_predict(new_hbr_model, train, test, observe=False)
+    runner = Runner(
+        cross_validate=False,
+        cv_folds=3,
+        parallelize=True,
+        job_type="local",  # or "slurm" if you are on a slurm cluster
+        n_jobs=2,
+        log_dir="resources/runner_output/log_dir",
+        temp_dir="resources/runner_output/temp_dir",
+    )
+    # Local parallelization might not work on login nodes due to resource restrictions
+    runner.fit_predict(new_model, train, test, observe=True)
