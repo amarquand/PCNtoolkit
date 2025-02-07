@@ -23,7 +23,7 @@ class Runner:
     job_type: str = "local"
     n_jobs: int = 1
     n_cores: int = 1
-    python_path: Optional[str] = None
+    environment: str = None # type: ignore
     time_limit_str: str | int = "00:05:00"
     time_limit_seconds: int = 300
     memory: str = "5gb"
@@ -38,7 +38,7 @@ class Runner:
         job_type: str = "local",
         n_jobs: int = 1,
         n_cores: int = 1,
-        python_path: Optional[str] = None,
+        environment: Optional[str] = None,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
         save_dir: Optional[str] = None,
@@ -75,12 +75,15 @@ class Runner:
         self.failed_jobs: Dict[str, str] = {}
 
         # Get Python path if not provided
-        if not python_path:
-            # Option 1: Get the interpreter path
-            self.python_path = sys.executable
-            Output.print(Messages.NO_PYTHON_PATH_SPECIFIED, python_path=self.python_path)
+        if not environment:
+            Output.error(Errors.ERROR_NO_ENVIRONMENT_SPECIFIED)
         else:
-            self.python_path = python_path
+            # Check if the environment is valid
+            if not os.path.exists(os.path.join(environment, "bin", "python")):
+                Output.error(Errors.ERROR_ENVIRONMENT_NOT_FOUND, environment=environment)
+            else:
+                self.environment = environment                
+                
 
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
@@ -704,7 +707,7 @@ class Runner:
 #SBATCH --error={err_file}
 #SBATCH --output={out_file}
 
-{self.python_path} {current_file_path} {python_callable_path} {data_path}
+{self.environment}/bin/python {current_file_path} {python_callable_path} {data_path}
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -733,7 +736,8 @@ exit $exit_code
 #PBS -e {err_file}
 #PBS -m a
 
-{self.python_path} {current_file_path} {python_callable_path} {data_path}
+{self.environment}/bin/python {current_file_path} {python_callable_path} {data_path}
+
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -756,7 +760,7 @@ exit $exit_code
                 f"""#!/bin/bash
                 
 # Execute Python script with unbuffered output
-conda activate /opt/anaconda3/envs/crash-course
+conda activate {self.environment}
 
 python -m pcntoolkit.util.run_job {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
