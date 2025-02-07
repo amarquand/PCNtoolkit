@@ -74,6 +74,7 @@ class Warnings:
     RESPONSE_VAR_NOT_FOUND = "Response variable {response_var} not found in dataset {dataset_name}. Setting to NaN."
 
 class Errors:
+    ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
     SAMPLE_BATCH_EFFECTS = (
         "Cannot sample {n_samples} batch effects, because some batch effects have more levels than the number of samples."
     )
@@ -120,7 +121,7 @@ class Errors:
     ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION = (
         "Predict data is required for fit_predict without cross-validation"
     )
-
+    ERROR_NO_ENVIRONMENT_SPECIFIED = "No python environment specified. Please specify the path to the python environment using the environment keyword."
 
 class Output:
     _show_messages = True  # Default to showing output

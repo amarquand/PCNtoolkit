@@ -446,6 +446,7 @@ class NormBase(ABC):
         data = self.compute_logp(data)
         data = self.compute_zscores(data)
         data = self.compute_centiles(data)
+        print(data)
         data = self.evaluator.evaluate(data)
 
     def compute_centiles(
@@ -598,7 +599,9 @@ class NormBase(ABC):
         )
         Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
+            print(f"{os.getpid()}, {responsevar}, {data.X.mean().values.item()}")
             resp_predict_data = data.sel({"response_vars": responsevar})
+            print(f"{os.getpid()}, {responsevar}, {resp_predict_data.X.mean().values.item()}")
             self.focus(responsevar)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self._logp(resp_predict_data)
