@@ -306,7 +306,6 @@ class NormData(xr.Dataset):
         if response_vars is None or len(response_vars) == 0:
             Output.warning(Warnings.NO_RESPONSE_VARS, dataset_name=name)
 
-
         for response_var in response_vars:
             if response_var not in dataframe.columns:
                 Output.warning(Warnings.RESPONSE_VAR_NOT_FOUND, dataset_name=name, response_var=response_var)
@@ -654,39 +653,41 @@ class NormData(xr.Dataset):
             Scalers for the response variable data.
         """
         # Scale X column-wise using the inscalers
+
+        np_X = np.zeros(self.scaled_X.shape)
+        for i, covariate in enumerate(self.covariates.to_numpy()):
+            np_X[:, i] = inscalers[covariate].inverse_transform(self.scaled_X.sel(covariates=covariate).data)
         self["X"] = xr.DataArray(
-            np.zeros(self.scaled_X.shape),
+            np_X,
             coords=self.scaled_X.coords,
             dims=self.scaled_X.dims,
             attrs=self.scaled_X.attrs,
         )
-        for covariate in self.covariates.to_numpy():
-            self.X.loc[:, covariate] = inscalers[covariate].inverse_transform(self.scaled_X.sel(covariates=covariate).data)
 
         # Scale y column-wise using the outscalers
+        np_y = np.zeros(self.scaled_y.shape)
+        for i, responsevar in enumerate(self.response_vars.to_numpy()):
+            np_y[:, i] = outscalers[responsevar].inverse_transform(self.scaled_y.sel(response_vars=responsevar).data)
         self["y"] = xr.DataArray(
-            np.zeros(self.scaled_y.shape),
+            np_y,
             coords=self.scaled_y.coords,
             dims=self.scaled_y.dims,
             attrs=self.scaled_y.attrs,
         )
-        for responsevar in self.response_vars.to_numpy():
-            self.y.loc[:, responsevar] = outscalers[responsevar].inverse_transform(
-                self.scaled_y.sel(response_vars=responsevar).data
-            )
 
         # Unscale the centiles, if they exist
         if "scaled_centiles" in self.data_vars:
+            np_centiles = np.zeros(self.scaled_centiles.shape)
+            for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                np_centiles[:, :, i] = outscalers[responsevar].inverse_transform(
+                    self.scaled_centiles.sel(response_vars=responsevar).data
+                )
             self["centiles"] = xr.DataArray(
-                np.zeros(self.scaled_centiles.shape),
+                np_centiles,
                 coords=self.scaled_centiles.coords,
                 dims=self.scaled_centiles.dims,
                 attrs=self.scaled_centiles.attrs,
             )
-            for responsevar in self.response_vars.to_numpy():
-                self.centiles.loc[{"response_vars": responsevar}] = outscalers[responsevar].inverse_transform(
-                    self.scaled_centiles.sel(response_vars=responsevar).data
-                )
 
     def split_batch_effects(
         self,

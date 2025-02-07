@@ -233,7 +233,7 @@ class Evaluator:
             Data container with predictions and actual values. Must contain 'zscores' variable.
         """
         for responsevar in data.response_var_list:
-            resp_predict_data = data.sel(response_vars=responsevar)
+            resp_predict_data = data.sel({"response_vars": responsevar})
             shapiro_w = self._evaluate_shapiro_w(resp_predict_data)
             data.measures.loc[{"response_vars": responsevar, "measure": "ShapiroW"}] = shapiro_w
 

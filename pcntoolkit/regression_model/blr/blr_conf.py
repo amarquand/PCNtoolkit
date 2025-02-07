@@ -28,10 +28,10 @@ L_BFGS_B_L = 0.1
 L_BFGS_B_EPSILON = 0.1
 L_BFGS_B_NORM = "l2"
 INTERCEPT = False
-RANDOM_INTERCEPT = False
+FIXED_EFFECT = True
 HETEROSKEDASTIC = False
 INTERCEPT_VAR = False
-RANDOM_INTERCEPT_VAR = False
+FIXED_EFFECT_VAR = True
 WARP = None
 WARP_REPARAM = False
 
@@ -86,10 +86,10 @@ class BLRConf(RegConf):
 
     # Design matrix configuration
     intercept: bool = INTERCEPT
-    fixed_effect: bool = RANDOM_INTERCEPT
+    fixed_effect: bool = FIXED_EFFECT
     heteroskedastic: bool = HETEROSKEDASTIC
     intercept_var: bool = INTERCEPT_VAR
-    fixed_effect_var: bool = RANDOM_INTERCEPT_VAR
+    fixed_effect_var: bool = FIXED_EFFECT_VAR
 
     # TODO implement warp
     warp: Optional[str] = WARP
@@ -130,10 +130,10 @@ class BLRConf(RegConf):
             l_bfgs_b_epsilon=args_filt.get("l_bfgs_b_epsilon", L_BFGS_B_EPSILON),
             l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
             intercept=args_filt.get("intercept", INTERCEPT),
-            fixed_effect=args_filt.get("fixed_effect", RANDOM_INTERCEPT),
+            fixed_effect=args_filt.get("fixed_effect", FIXED_EFFECT),
             heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
             intercept_var=args_filt.get("intercept_var", INTERCEPT_VAR),
-            fixed_effect_var=args_filt.get("fixed_effect_var", RANDOM_INTERCEPT_VAR),
+            fixed_effect_var=args_filt.get("fixed_effect_var", FIXED_EFFECT_VAR),
             warp=args_filt.get("warp", WARP),
             warp_reparam=args_filt.get("warp_reparam", WARP_REPARAM),
         )
