@@ -795,15 +795,15 @@ class BLR(RegressionModel):
         return self.blr_conf.intercept
 
     @property
-    def random_intercept(self) -> bool:
-        """Whether to include a random intercept.
+    def fixed_effect(self) -> bool:
+        """Whether to include a fixed effect.
 
         Returns
         -------
         bool
-            True if model includes random intercept, False otherwise
+            True if model includes fixed effect, False otherwise
         """
-        return self.blr_conf.random_intercept
+        return self.blr_conf.fixed_effect
 
     @property
     def heteroskedastic(self) -> bool:
@@ -817,7 +817,7 @@ class BLR(RegressionModel):
         return self.blr_conf.heteroskedastic
 
     @property
-    def random_intercept_var(self) -> bool:
+    def fixed_effect_var(self) -> bool:
         """Whether to model random intercept variance.
 
         Returns
@@ -825,7 +825,7 @@ class BLR(RegressionModel):
         bool
             True if modeling random intercept variance, False otherwise
         """
-        return self.blr_conf.random_intercept_var
+        return self.blr_conf.fixed_effect_var
 
     @property
     def intercept_var(self) -> bool:
@@ -848,7 +848,7 @@ class BLR(RegressionModel):
             True if model includes heteroskedastic noise, random intercept variance,
             or intercept variance components
         """
-        return self.blr_conf.heteroskedastic or self.blr_conf.random_intercept_var or self.blr_conf.intercept_var
+        return self.blr_conf.heteroskedastic or self.blr_conf.fixed_effect_var or self.blr_conf.intercept_var
 
     @property
     def reg_conf(self) -> BLRConf:

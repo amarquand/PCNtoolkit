@@ -60,15 +60,15 @@ class BLRConf(RegConf):
     l_bfgs_b_norm: str = L_BFGS_B_NORM
         The norm to use for the "l-bfgs-b" optimizer. Options are: "l1", "l2".
     intercept: bool = INTERCEPT
-        Whether to include an intercept in the model.
-    random_intercept: bool = RANDOM_INTERCEPT
-        Whether to include a random intercept in the model.
+        Whether the mean has an intercept.
+    fixed_effect: bool = RANDOM_INTERCEPT
+        Whether the mean in Normal space has a fixed effect
     heteroskedastic: bool = HETEROSKEDASTIC
         Whether to model heteroskedasticity in the data.
     intercept_var: bool = INTERCEPT_VAR
-        Whether the variance has an intercept (a fixed effect).
-    random_intercept_var: bool = RANDOM_INTERCEPT_VAR
-        Whether the variance has a random intercept for each group.
+        Whether the variance has an intercept.
+    fixed_effect_var: bool = RANDOM_INTERCEPT_VAR
+        Whether the variance in Normal space has a fixed effect.
     """
 
     # some configuration parameters
@@ -86,10 +86,10 @@ class BLRConf(RegConf):
 
     # Design matrix configuration
     intercept: bool = INTERCEPT
-    random_intercept: bool = RANDOM_INTERCEPT
+    fixed_effect: bool = RANDOM_INTERCEPT
     heteroskedastic: bool = HETEROSKEDASTIC
     intercept_var: bool = INTERCEPT_VAR
-    random_intercept_var: bool = RANDOM_INTERCEPT_VAR
+    fixed_effect_var: bool = RANDOM_INTERCEPT_VAR
 
     # TODO implement warp
     warp: Optional[str] = WARP
@@ -130,10 +130,10 @@ class BLRConf(RegConf):
             l_bfgs_b_epsilon=args_filt.get("l_bfgs_b_epsilon", L_BFGS_B_EPSILON),
             l_bfgs_b_norm=args_filt.get("l_bfgs_b_norm", L_BFGS_B_NORM),
             intercept=args_filt.get("intercept", INTERCEPT),
-            random_intercept=args_filt.get("random_intercept", RANDOM_INTERCEPT),
+            fixed_effect=args_filt.get("fixed_effect", RANDOM_INTERCEPT),
             heteroskedastic=args_filt.get("heteroskedastic", HETEROSKEDASTIC),
             intercept_var=args_filt.get("intercept_var", INTERCEPT_VAR),
-            random_intercept_var=args_filt.get("random_intercept_var", RANDOM_INTERCEPT_VAR),
+            fixed_effect_var=args_filt.get("fixed_effect_var", RANDOM_INTERCEPT_VAR),
             warp=args_filt.get("warp", WARP),
             warp_reparam=args_filt.get("warp_reparam", WARP_REPARAM),
         )
@@ -149,10 +149,10 @@ class BLRConf(RegConf):
             l_bfgs_b_epsilon=dct["l_bfgs_b_epsilon"],
             l_bfgs_b_norm=dct["l_bfgs_b_norm"],
             intercept=dct["intercept"],
-            random_intercept=dct["random_intercept"],
+            fixed_effect=dct["fixed_effect"],
             heteroskedastic=dct["heteroskedastic"],
             intercept_var=dct["intercept_var"],
-            random_intercept_var=dct["random_intercept_var"],
+            fixed_effect_var=dct["fixed_effect_var"],
             warp=dct["warp"],
             warp_reparam=dct["warp_reparam"],
         )
@@ -167,17 +167,17 @@ class BLRConf(RegConf):
             "l_bfgs_b_epsilon": self.l_bfgs_b_epsilon,
             "l_bfgs_b_norm": self.l_bfgs_b_norm,
             "intercept": self.intercept,
-            "random_intercept": self.random_intercept,
+            "fixed_effect": self.fixed_effect,
             "heteroskedastic": self.heteroskedastic,
             "intercept_var": self.intercept_var,
-            "random_intercept_var": self.random_intercept_var,
+            "fixed_effect_var": self.fixed_effect_var,
             "warp": self.warp,
             "warp_reparam": self.warp_reparam,
         }
 
     @property
-    def has_random_effect(self) -> bool:
-        return self.random_intercept or self.random_intercept_var
+    def has_batch_effect(self) -> bool:
+        return self.fixed_effect or self.fixed_effect_var
 
     def get_warp(self) -> Optional[WarpBase]:
         if self.warp is None:

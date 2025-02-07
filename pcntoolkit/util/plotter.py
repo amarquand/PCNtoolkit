@@ -23,8 +23,8 @@ from pcntoolkit.util.output import Errors, Output
 def plot_centiles(
     model: "NormBase",
     data: NormData,
+    centiles: list | None = None,
     covariate: str | None = None,
-    cummul_densities: list | None = None,
     batch_effects: Dict[str, List[str]] | None = None,
     show_data: bool = False,
     plt_kwargs: dict | None = None,
@@ -46,12 +46,11 @@ def plot_centiles(
         The fitted normative model used to generate centile predictions.
     data : NormData
         Dataset containing covariates and response variables to be plotted.
+    centiles : list | None, optional
+        List of centile values to plot. If None, uses default values, by default None.
     covariate : str | None, optional
         Name of the covariate to plot on x-axis. If None, uses the first
         covariate in the dataset, by default None.
-    cummul_densities : list | None, optional
-        List of cumulative density function values to plot as centiles.
-        If None, uses model's default values, by default None.
     batch_effects : Dict[str, List[str]] | None, optional
         Specification of batch effects for plotting. Format:
         {'batch_effect_name': ['value1', 'value2', ...]}
@@ -102,10 +101,11 @@ def plot_centiles(
     >>> plot_centiles(
     ...     model,
     ...     data,
+    ...     centiles=[0.1587, 0.8413],
     ...     covariate="age",
     ...     batch_effects={"site": ["site1", "site2"]},
     ...     show_data=True,
-    ...     hue_data="diagnosis",
+    ...     hue_data="site",
     ...     markers_data="sex",
     ... )
     """
@@ -114,7 +114,7 @@ def plot_centiles(
         assert isinstance(covariate, str)
 
     if batch_effects is None:
-        if model.has_random_effect:
+        if model.has_batch_effect:
             batch_effects = data.get_single_batch_effect()
         else:
             batch_effects = {}
@@ -135,7 +135,7 @@ def plot_centiles(
         range_dim=covariate,
         batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()} if batch_effects else None,
     )
-    model.compute_centiles(synth_data, cdf=cummul_densities, **kwargs)
+    model.compute_centiles(synth_data, cdf=centiles, **kwargs)
     for response_var in data.coords["response_vars"].to_numpy():
         _plot_centiles(
             data=data,

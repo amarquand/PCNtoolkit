@@ -45,8 +45,8 @@ class RegConf(ABC):
 
     Attributes
     ----------
-    has_random_effect : bool
-        Indicates whether the regression model includes random effects.
+    has_batch_effect : bool
+        Indicates whether the regression model includes batch effects.
 
     Methods
     -------
@@ -79,9 +79,9 @@ class RegConf(ABC):
 
     @property
     @abstractmethod
-    def has_random_effect(self) -> bool:
+    def has_batch_effect(self) -> bool:
         """
-        Indicates whether the regression model includes random effects.
+        Indicates whether the regression model includes batch effects.
         """
 
     @abstractmethod

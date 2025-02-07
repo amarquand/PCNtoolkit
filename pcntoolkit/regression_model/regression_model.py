@@ -161,13 +161,13 @@ class RegressionModel(ABC):
         """
 
     @property
-    def has_random_effect(self) -> bool:
+    def has_batch_effect(self) -> bool:
         """
-        Check if model includes random effects.
+        Check if model includes batch effects.
 
         Returns
         -------
         bool
-            True if model includes random effects, False otherwise
+            True if model includes batch effects, False otherwise
         """
-        return self.reg_conf.has_random_effect
+        return self.reg_conf.has_batch_effect
