@@ -754,8 +754,11 @@ exit $exit_code
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
+                
 # Execute Python script with unbuffered output
-PYTHONUNBUFFERED=1 {self.python_path} -m pcntoolkit.util.run_job {python_callable_path} {data_path} > {out_file} 2> {err_file}
+conda activate /opt/anaconda3/envs/crash-course
+
+python -m pcntoolkit.util.run_job {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
 
 if [ $exit_code -eq 0 ]; then

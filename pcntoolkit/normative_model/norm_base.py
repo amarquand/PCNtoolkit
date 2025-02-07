@@ -90,7 +90,7 @@ class NormBase(ABC):
         List of response variable names.
     regression_model_type : Any
         Type of regression model being used.
-    default_reg_conf : RegConf
+    template_reg_conf : RegConf
         Default regression configuration.
     regression_models : dict[str, RegressionModel]
         Dictionary mapping response variables to their regression models.
@@ -113,7 +113,7 @@ class NormBase(ABC):
 
         self.response_vars: list[str] = None  # type: ignore
         self.regression_model_type: Any = None  # type: ignore
-        self.default_reg_conf: RegConf = None  # type: ignore
+        self.template_reg_conf: RegConf = None  # type: ignore
         self.regression_models: dict[str, RegressionModel] = {}
         self.focused_var: str = None  # type: ignore
         self.evaluator = Evaluator()
@@ -256,7 +256,7 @@ class NormBase(ABC):
             resp_fit_data = fit_data.sel({"response_vars": responsevar})
             resp_predict_data = predict_data.sel({"response_vars": responsevar})
             if responsevar not in self.regression_models:
-                self.regression_models[responsevar] = self.regression_model_type(responsevar, self.default_reg_conf)
+                self.regression_models[responsevar] = self.regression_model_type(responsevar, self.template_reg_conf)
             self.focus(responsevar)
             Output.print(Messages.FITTING_AND_PREDICTING_MODEL, model_name=responsevar)
             self._fit_predict(resp_fit_data, resp_predict_data)
@@ -305,7 +305,7 @@ class NormBase(ABC):
         # pylint: disable=too-many-function-args
         transfered_normative_model = self.__class__(
             transfered_norm_conf,
-            self.default_reg_conf,  # type: ignore
+            self.template_reg_conf,  # type: ignore
         )
         transfered_normative_model.register_data_info(data)
         transfered_models = {}
@@ -379,7 +379,7 @@ class NormBase(ABC):
         synthetic_data = self._generate_synthetic_data(data)
         self.postprocess(synthetic_data)
         merged = synthetic_data.merge(data)
-        reg_conf_copy = copy.deepcopy(self.default_reg_conf)
+        reg_conf_copy = copy.deepcopy(self.template_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
         norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir + "_extend"))
         extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
@@ -404,7 +404,7 @@ class NormBase(ABC):
         synthetic_data = self._generate_synthetic_data(fit_data)
         self.postprocess(synthetic_data)
         merged = synthetic_data.merge(fit_data)
-        reg_conf_copy = copy.deepcopy(self.default_reg_conf)
+        reg_conf_copy = copy.deepcopy(self.template_reg_conf)
         norm_conf_copy = copy.deepcopy(self._norm_conf)
         norm_conf_copy.set_save_dir(kwargs.get("save_dir", self.norm_conf.save_dir + "_extend"))
         extended_model = self.__class__(norm_conf_copy, reg_conf_copy)  # type: ignore
@@ -844,7 +844,7 @@ class NormBase(ABC):
         metadata = {
             "norm_conf": self.norm_conf.to_dict(),
             "regression_model_type": self.regression_model_type.__name__,
-            "default_reg_conf": self.default_reg_conf.to_dict(),
+            "template_reg_conf": self.template_reg_conf.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
             "unique_batch_effects": self.unique_batch_effects,
             "is_fitted": self.is_fitted,
@@ -949,8 +949,8 @@ class NormBase(ABC):
                     self.response_vars.append(responsevar)
                     self.regression_models[responsevar] = self.regression_model_type.from_dict(reg_model_dict["model"], path)
                     self.outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
-        self.default_reg_conf = type(self.regression_models[self.response_vars[0]].reg_conf).from_dict(
-            metadata["default_reg_conf"]
+        self.template_reg_conf = type(self.regression_models[self.response_vars[0]].reg_conf).from_dict(
+            metadata["template_reg_conf"]
         )
 
         return self
@@ -1079,7 +1079,7 @@ class NormBase(ABC):
         if responsevar in self.regression_models:
             return self.regression_models[responsevar].reg_conf
         else:
-            return self.default_reg_conf
+            return self.template_reg_conf
 
     def set_save_dir(self, save_dir: str) -> None:
         """Override the save_dir in the norm_conf.

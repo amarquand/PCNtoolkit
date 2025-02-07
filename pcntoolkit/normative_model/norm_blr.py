@@ -30,7 +30,7 @@ class NormBLR(NormBase):
 
     Attributes
     ----------
-    default_reg_conf : BLRConf
+    template_reg_conf : BLRConf
         Default regression configuration for BLR.
     regression_model_type : Type[BLR]
         Type of the regression model (BLR).
@@ -55,7 +55,7 @@ class NormBLR(NormBase):
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = BLRConf()
-        self.default_reg_conf: BLRConf = reg_conf
+        self.template_reg_conf: BLRConf = reg_conf
         self.regression_model_type: Type[RegressionModel] = regression_model_type
         # self.current_regression_model: BLR = None  # type:ignore
 
