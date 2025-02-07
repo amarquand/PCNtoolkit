@@ -1231,6 +1231,8 @@ def transfer(covfile, respfile, testcov=None, testresp=None, maskfile=None,
 
         # Creates a file for every job succesfully completed (for tracking failed jobs).
         if count_jobsdone == True:
+            print("log_path: ", log_path)
+            print("job_id: ", job_id)
             done_path = os.path.join(log_path, str(job_id)+".jobsdone")
             Path(done_path).touch()
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pcntoolkit"
-version = "0.33.0"
+version = "0.34.0"
 description = "Predictive Clinical Neuroscience Toolkit"
 authors = ["Andre Marquand"]
 license = "GNU GPLv3"
