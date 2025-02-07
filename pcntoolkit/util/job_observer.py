@@ -8,6 +8,7 @@ from typing import Dict, List
 from IPython.display import clear_output
 
 from pcntoolkit.util.output import Messages, Output, Warnings
+from pathlib import Path
 
 
 @dataclass
@@ -22,7 +23,7 @@ class JobStatus:
 
 class JobObserver:
     def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs"):
-        self.job_ids = copy.deepcopy(active_job_ids)
+        self.all_job_ids = copy.deepcopy(active_job_ids)
         self.active_job_ids = copy.deepcopy(active_job_ids)
         self.job_type = job_type
         self.log_dir = log_dir
@@ -32,7 +33,10 @@ class JobObserver:
     def check_success_file(self, job_name: str) -> bool:
         """Check if a success file exists for the given job name."""
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
-        return os.path.exists(success_file)
+        if not os.path.exists(os.path.abspath(success_file)):
+            if not Path(success_file).exists():
+                return False
+        return True
 
     def get_job_statuses(self) -> List[JobStatus]:
         """Get status of all tracked jobs."""
@@ -64,7 +68,7 @@ class JobObserver:
                 try:
                     if self.job_type == "local":
                         job_id = line.split(maxsplit=1)[0]
-                        if job_id in list(self.job_ids.values()):
+                        if job_id in list(self.all_job_ids.values()):
                             job_id, name, state, time = line.split()
                             state = self.map_local_to_slurm_state(state)
                             job_name = self.job_id_to_name.get(job_id)
@@ -75,13 +79,13 @@ class JobObserver:
                                     name=name,
                                     state=state,
                                     time=time,
-                                    nodes="",
+                                    nodes="local",
                                     success_file_exists=success_exists,
                                 )
                             )
                     else:
                         job_id, name, state, time, nodes = line.split("|")
-                        if job_id in list(self.job_ids.values()):
+                        if job_id in list(self.all_job_ids.values()):
                             job_name = self.job_id_to_name.get(job_id)
                             success_exists = (job_name is not None) and self.check_success_file(job_name)
                             statuses.append(
@@ -101,7 +105,7 @@ class JobObserver:
 
         # Any jobs not in the process list are assumed to be completed. 
         # Check if they have a success file
-        job_ids_set = set(self.job_ids.values())
+        job_ids_set = set(self.all_job_ids.values())
         found_job_ids = {status.job_id for status in statuses}
         for job_id in job_ids_set - found_job_ids:
             job_name = self.job_id_to_name.get(job_id)
@@ -158,14 +162,13 @@ class JobObserver:
     def wait_for_jobs_notebook(self, check_interval=1):
         # Notebook-friendly display without ANSI codes
         show_pid = Output.get_show_pid()
-
         Output.set_show_pid(False)
         while self.active_job_ids:
             clear_output(wait=True)
             Output.print(Messages.JOB_STATUS_MONITOR)
             # Get and display current statuses
             statuses = self.get_job_statuses()
-            for status in statuses:
+            for status in sorted(statuses, key=lambda x: x.job_id):
                 Output.print(
                     Messages.JOB_STATUS_LINE,
                     status.job_id,
@@ -175,23 +178,22 @@ class JobObserver:
                     status.nodes,
                 )
 
-            # Check for completed jobs
-            completed_jobs = []
-            for job_name, job_id in list(self.active_job_ids.items()):
+            # Count completed, failed, and active jobs
+            completed_jobs, failed_jobs, active_jobs = 0,0,0
+            for job_name, job_id in sorted(list(self.active_job_ids.items()), key=lambda x: x[0]):
                 matching_statuses = [s for s in statuses if s.job_id == job_id]
-                if not matching_statuses:
-                    # Job not found in process list and no success file
-                    if not self.check_success_file(job_name):
-                        completed_jobs.append(job_name)
-                elif any(
-                    s.state in ["COMPLETED", "FAILED", "CANCELLED"] or (s.state == "COMPLETED" and not s.success_file_exists)
-                    for s in matching_statuses
-                ):
-                    completed_jobs.append(job_name)
+                if len(matching_statuses) > 1:
+                    Output.warning(Warnings.MULTIPLE_JOBS_FOUND_FOR_JOB_ID, job_id=job_id, job_name=job_name)
+                elif len(matching_statuses) == 1:
+                    my_status = matching_statuses[0]
+                    if my_status.state == "COMPLETED":
+                        completed_jobs += 1
+                    elif my_status.state == "FAILED":
+                        failed_jobs += 1
+                    else:
+                        active_jobs += 1
 
-            # Remove completed jobs
-            for job_name in completed_jobs:
-                del self.active_job_ids[job_name]
+            Output.print(Messages.JOB_STATUS_SUMMARY, total_completed_jobs=completed_jobs, total_active_jobs=active_jobs, total_failed_jobs=failed_jobs)
 
             if self.active_job_ids:
                 time.sleep(check_interval)

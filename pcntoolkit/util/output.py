@@ -28,18 +28,28 @@ class Messages:
     BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED = "Hyperparameters have not changed, exiting"
     REGRESSION_MODEL_CONFIGURATION_VALID = "Configuration of regression model is valid."
     JOB_STATUS_MONITOR = """
-------------------------------------------------
-               Job Status Monitor
-------------------------------------------------
+-----------------------------------------------------
+            PCNtoolkit Job Status Monitor ®
+-----------------------------------------------------
 Job ID      Name      State      Time      Nodes
-------------------------------------------------
+-----------------------------------------------------
 """
+
+
     ALL_JOBS_COMPLETED = """
-------------------------------------------------    
+-----------------------------------------------------
 All jobs completed!
-------------------------------------------------
+-----------------------------------------------------
 """
-    JOB_STATUS_LINE = "{:<11} {:<9} {:<10} {:<9} {:<9}"
+
+    JOB_STATUS_SUMMARY = """
+-----------------------------------------------------
+Total active jobs: {total_active_jobs}
+Total completed jobs: {total_completed_jobs}
+Total failed jobs: {total_failed_jobs}
+-----------------------------------------------------
+"""
+    JOB_STATUS_LINE = "{:<11} {:<9} {:<10} {:<9} {:<14}"
     NO_PYTHON_PATH_SPECIFIED = "No python path specified. Using interpreter path of current process: {python_path}"
     NO_LOG_DIR_SPECIFIED = "No log directory specified. Using default log directory: {log_dir}"
     NO_TEMP_DIR_SPECIFIED = "No temporary directory specified. Using default temporary directory: {temp_dir}"
@@ -47,13 +57,15 @@ All jobs completed!
     LOADING_RUNNER_STATE = "Loading runner state from:\n\t{runner_file}"
     RUNNER_LOADED = (
         "Runner loaded\n"
-        "--------------------------------------------\n"
+        "-----------------------------------------------------\n"
         "Active jobs: {n_active_jobs}\n"
         "Finished jobs: {n_finished_jobs}\n"
         "Failed jobs: {n_failed_jobs}\n"
         "--------------------------------------------"
     )
-
+    UUID_FOR_RUNNER_CREATED = "UUID for runner task created: {uuid}"
+    LOG_DIR_CREATED = "Log directory created:\n\t{log_dir}"
+    TEMP_DIR_CREATED = "Temporary directory created:\n\t{temp_dir}"
 
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
@@ -72,7 +84,8 @@ class Warnings:
     ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
     NO_RESPONSE_VARS = "No response variables provided for dataset {dataset_name}. Please provide a list of response variables for which you want to fit or predict."
     RESPONSE_VAR_NOT_FOUND = "Response variable {response_var} not found in dataset {dataset_name}. Setting to NaN."
-
+    MULTIPLE_JOBS_FOUND_FOR_JOB_ID = "Multiple jobs found for job ID {job_id}: {job_name}. Please check the job statuses and try again."
+    
 class Errors:
     ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
     SAMPLE_BATCH_EFFECTS = (

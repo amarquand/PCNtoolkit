@@ -98,7 +98,6 @@ class Runner:
             raise Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit)
 
         self.memory = memory
-        self.all_jobs: Dict[str, str] = {}
         self.job_commands: Dict[str, list[str]] = {}  # Save the commands for re-submission
         self.active_jobs: Dict[str, str] = {}
         self.failed_jobs: Dict[str, str] = {}
@@ -157,7 +156,7 @@ class Runner:
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
             # If we want to observer the jobs, we wait for them, and then get the failed jobs after it's done
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             self.load_model(into=model)
@@ -172,6 +171,9 @@ class Runner:
         self.log_dir = os.path.join(self.log_dir, my_new_uuid)
         os.makedirs(self.temp_dir, exist_ok=True)
         os.makedirs(self.log_dir, exist_ok=True)
+        Output.print(Messages.UUID_FOR_RUNNER_CREATED, uuid=my_new_uuid)
+        Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.temp_dir)
+        Output.print(Messages.LOG_DIR_CREATED, log_dir=self.log_dir)
 
     def fit_predict(
         self,
@@ -212,7 +214,7 @@ class Runner:
             mode="binary",
         )
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             self.load_model(into=model)
@@ -243,7 +245,7 @@ class Runner:
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
         else:
@@ -275,7 +277,7 @@ class Runner:
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -317,7 +319,7 @@ class Runner:
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -350,7 +352,7 @@ class Runner:
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -392,7 +394,7 @@ class Runner:
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         if observe:
-            self.job_observer = JobObserver(self.all_jobs, self.job_type, self.log_dir)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.log_dir)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
             return self.load_model()
@@ -567,7 +569,7 @@ class Runner:
             If job finished successfully, returns (False, False, None)
             If job failed, returns (False, True, error_message)
         """
-        job_id = self.all_jobs[job_name]
+        job_id = self.active_jobs[job_name]
         if self.job_type == "local":
             try:
                 os.kill(int(job_id), 0)  # Check if process still running
@@ -622,7 +624,7 @@ class Runner:
         running_jobs = {}
         finished_jobs = {}
         failed_jobs = {}
-        for job_name, job_id in self.all_jobs.items():
+        for job_name, job_id in self.active_jobs.items():
             is_running, finished_with_error, error_msg = self.check_job_status(job_name)
             if not is_running:
                 if finished_with_error:
@@ -668,7 +670,7 @@ class Runner:
             first_chunks = first_data_source.chunk(self.n_jobs)
             second_chunks = [None] * self.n_jobs if second_data_source is None else second_data_source.chunk(self.n_jobs)
 
-            self.all_jobs.clear()
+            self.active_jobs.clear()
             self.job_commands.clear()
 
             for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
@@ -706,7 +708,7 @@ class Runner:
                     except AttributeError:
                         raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
 
-                self.all_jobs[job_name] = job_id
+                self.active_jobs[job_name] = job_id
                 self.job_commands[job_name] = command
 
         else:
@@ -727,7 +729,7 @@ class Runner:
             f.write(
                 f"""#!/bin/bash
     
-#SBATCH --job-name=normative_{job_name}
+#SBATCH --job-name={job_name}
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task={self.n_cores}
 #SBATCH --time={self.time_limit_str}
@@ -758,7 +760,7 @@ exit $exit_code
             f.write(
                 f"""#!/bin/sh
 
-#PBS -N normative_{job_name}
+#PBS -N {job_name}
 #PBS -l nodes=1:ppn={self.n_cores}
 #PBS -l walltime={self.time_limit_str}
 #PBS -l mem={self.memory}
@@ -814,7 +816,7 @@ exit $exit_code
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""
         runner_state = {
-            "all_jobs": self.all_jobs,
+            "all_jobs": self.active_jobs,
             "log_dir": self.log_dir,
             "temp_dir": self.temp_dir,
             "job_type": self.job_type,
@@ -880,7 +882,7 @@ exit $exit_code
                     stdout, stderr = process.communicate()
                     job_id = re.search(r"Submitted batch job (\d+)", stdout)
                     if job_id:
-                        self.all_jobs[job_name] = job_id.group(1)
+                        self.active_jobs[job_name] = job_id.group(1)
                         self.job_commands[job_name] = command
                     elif stderr:
                         raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
