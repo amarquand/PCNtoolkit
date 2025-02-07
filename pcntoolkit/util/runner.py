@@ -635,16 +635,6 @@ class Runner:
                 running_jobs[job_name] = job_id
         return running_jobs, finished_jobs, failed_jobs
 
-    def run_command_with_subprocess(self, cmd: list[str]):
-        """Run using subprocess"""
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            start_new_session=True,
-            text=True,
-        )
-        return process
 
     def submit_jobs(
         self,
@@ -897,7 +887,6 @@ exit $exit_code
 
 
 def load_and_execute(args):
-    print("Loading and executing")
     with open(args[0], "rb") as executable_path:
         fn = pickle.load(executable_path)
     with open(args[1], "rb") as data_path:
@@ -909,5 +898,4 @@ def load_and_execute(args):
 
 
 if __name__ == "__main__":
-    print("Running the runner")
     load_and_execute(sys.argv[1:])

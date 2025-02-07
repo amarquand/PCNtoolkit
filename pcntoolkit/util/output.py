@@ -36,9 +36,9 @@ Job ID      Name      State      Time      Nodes
 """
 
 
-    ALL_JOBS_COMPLETED = """
+    NO_MORE_RUNNING_JOBS = """
 -----------------------------------------------------
-All jobs completed!
+No more running jobs!
 -----------------------------------------------------
 """
 
@@ -178,3 +178,11 @@ class Output:
     @classmethod
     def get_show_pid(cls) -> bool:
         return cls._show_pid
+
+    @classmethod
+    def get_show_messages(cls) -> bool:
+        return cls._show_messages
+
+    @classmethod
+    def get_show_warnings(cls) -> bool:
+        return cls._show_warnings

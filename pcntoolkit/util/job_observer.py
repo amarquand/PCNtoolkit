@@ -3,12 +3,12 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List
 
 from IPython.display import clear_output
 
 from pcntoolkit.util.output import Messages, Output, Warnings
-from pathlib import Path
 
 
 @dataclass
@@ -76,7 +76,7 @@ class JobObserver:
                             statuses.append(
                                 JobStatus(
                                     job_id=job_id,
-                                    name=name,
+                                    name=job_name or "",
                                     state=state,
                                     time=time,
                                     nodes="local",
@@ -154,22 +154,26 @@ class JobObserver:
         except NameError:
             in_notebook = False
 
-        if in_notebook:
-            self.wait_for_jobs_notebook(check_interval)
-        else:
-            self.wait_for_jobs_terminal(check_interval)
+        statuses = self.get_job_statuses()
+        while any(status.state == "RUNNING" for status in statuses):
+            self.show_job_status_monitor(in_notebook, statuses)
+            time.sleep(check_interval)
+            statuses = self.get_job_statuses()
+        time.sleep(check_interval)
+        statuses = self.get_job_statuses()
+        self.show_job_status_monitor(in_notebook, statuses)
 
-    def wait_for_jobs_notebook(self, check_interval=1):
-        # Notebook-friendly display without ANSI codes
+
+    def show_job_status_monitor(self,in_notebook, statuses):
         show_pid = Output.get_show_pid()
         Output.set_show_pid(False)
-        while self.active_job_ids:
+        show_messages = Output.get_show_messages()
+        Output.set_show_messages(True)
+        if in_notebook:
             clear_output(wait=True)
-            Output.print(Messages.JOB_STATUS_MONITOR)
-            # Get and display current statuses
-            statuses = self.get_job_statuses()
-            for status in sorted(statuses, key=lambda x: x.job_id):
-                Output.print(
+        Output.print(Messages.JOB_STATUS_MONITOR)
+        for status in sorted(statuses, key=lambda x: x.job_id):
+            Output.print(
                     Messages.JOB_STATUS_LINE,
                     status.job_id,
                     status.name,
@@ -179,65 +183,28 @@ class JobObserver:
                 )
 
             # Count completed, failed, and active jobs
-            completed_jobs, failed_jobs, active_jobs = 0,0,0
-            for job_name, job_id in sorted(list(self.active_job_ids.items()), key=lambda x: x[0]):
-                matching_statuses = [s for s in statuses if s.job_id == job_id]
-                if len(matching_statuses) > 1:
-                    Output.warning(Warnings.MULTIPLE_JOBS_FOUND_FOR_JOB_ID, job_id=job_id, job_name=job_name)
-                elif len(matching_statuses) == 1:
-                    my_status = matching_statuses[0]
-                    if my_status.state == "COMPLETED":
-                        completed_jobs += 1
-                    elif my_status.state == "FAILED":
-                        failed_jobs += 1
-                    else:
-                        active_jobs += 1
+        completed_jobs, failed_jobs, active_jobs = 0,0,0
+        for job_name, job_id in sorted(list(self.active_job_ids.items()), key=lambda x: x[0]):
+            matching_statuses = [s for s in statuses if s.job_id == job_id]
+            if len(matching_statuses) > 1:
+                Output.warning(Warnings.MULTIPLE_JOBS_FOUND_FOR_JOB_ID, job_id=job_id, job_name=job_name)
+            elif len(matching_statuses) == 1:
+                my_status = matching_statuses[0]
+                if my_status.state == "COMPLETED":
+                    completed_jobs += 1
+                elif my_status.state == "FAILED":
+                    failed_jobs += 1
+                else:
+                    active_jobs += 1
+        
+        Output.print(Messages.JOB_STATUS_SUMMARY, total_completed_jobs=completed_jobs, total_active_jobs=active_jobs, total_failed_jobs=failed_jobs)
 
-            Output.print(Messages.JOB_STATUS_SUMMARY, total_completed_jobs=completed_jobs, total_active_jobs=active_jobs, total_failed_jobs=failed_jobs)
 
-            if self.active_job_ids:
-                time.sleep(check_interval)
+        if not any(status.state == "RUNNING" for status in statuses):
+            Output.print(Messages.NO_MORE_RUNNING_JOBS)
+        else:
+            if not in_notebook:
+                print(f"\033[{len(statuses) + 14}A", end="")
 
-        Output.print(Messages.ALL_JOBS_COMPLETED)
-        Output.set_show_pid(show_pid)
-
-    def wait_for_jobs_terminal(self, check_interval=1):
-        # Terminal display with ANSI codes
-        # Keep existing terminal implementation
-        show_pid = Output.get_show_pid()
-        Output.set_show_pid(False)
-        Output.print(Messages.JOB_STATUS_MONITOR)
-
-        prev_lines = 0
-
-        while self.active_job_ids:
-            statuses = self.get_job_statuses()
-
-            for status in statuses:
-                Output.print(
-                    Messages.JOB_STATUS_LINE,
-                    status.job_id,
-                    status.name,
-                    status.state,
-                    status.time,
-                    status.nodes,
-                )
-
-            prev_lines = len(statuses)
-
-            completed_jobs = []
-            for job_name, job_id in list(self.active_job_ids.items()):
-                if not any(s.job_id == job_id for s in statuses) or any(
-                    s.job_id == job_id and s.state in ["COMPLETED", "FAILED", "CANCELLED"] for s in statuses
-                ):
-                    completed_jobs.append(job_name)
-
-            for job_name in completed_jobs:
-                del self.active_job_ids[job_name]
-
-            if self.active_job_ids:
-                time.sleep(check_interval)
-            print(f"\033[{prev_lines}A", end="")
-
-        Output.print(Messages.ALL_JOBS_COMPLETED)
+        Output.set_show_messages(show_messages)
         Output.set_show_pid(show_pid)
