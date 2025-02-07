@@ -762,7 +762,7 @@ exit $exit_code
 # Execute Python script with unbuffered output
 conda activate {self.environment}
 
-python -m pcntoolkit.util.run_job {python_callable_path} {data_path} > {out_file} 2> {err_file}
+python {current_file_path} {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
 
 if [ $exit_code -eq 0 ]; then
