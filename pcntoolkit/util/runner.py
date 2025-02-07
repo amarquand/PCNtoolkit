@@ -783,6 +783,8 @@ exit $exit_code
             f.write(
                 f"""#!/bin/bash
 
+conda init bash
+source ~/.bashrc
 conda activate {self.environment}
 PYTHONBUFFERED=1 python {current_file_path} {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
