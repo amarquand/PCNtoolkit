@@ -19,7 +19,7 @@
         "response_var_1"
     ],
     "regression_model_type": "HBR",
-    "default_reg_conf": {
+    "template_reg_conf": {
         "draws": 10,
         "tune": 10,
         "cores": 2,

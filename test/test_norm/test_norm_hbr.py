@@ -74,16 +74,16 @@ The tests cover the following aspects:
 )
 def test_normhbr_from_args(norm_args: dict[str, str], sample_args: dict[str, int], args: dict[str, str | bool]):
     hbr = NormHBR.from_args(norm_args | sample_args | args)
-    assert hbr.default_reg_conf.draws == sample_args.get("draws")
-    assert hbr.default_reg_conf.tune == sample_args.get("tune")
-    assert hbr.default_reg_conf.pymc_cores == sample_args.get("pymc_cores")
-    assert isinstance(hbr.default_reg_conf.likelihood, NormalLikelihood)
+    assert hbr.template_reg_conf.draws == sample_args.get("draws")
+    assert hbr.template_reg_conf.tune == sample_args.get("tune")
+    assert hbr.template_reg_conf.pymc_cores == sample_args.get("pymc_cores")
+    assert isinstance(hbr.template_reg_conf.likelihood, NormalLikelihood)
     if args.get("linear_mu", False):
         if args.get("random_slope_mu", False):
-            assert isinstance(hbr.default_reg_conf.likelihood.mu.slope, RandomPrior)
+            assert isinstance(hbr.template_reg_conf.likelihood.mu.slope, RandomPrior)
         if args.get("random_intercept_mu", False):
-            assert isinstance(hbr.default_reg_conf.likelihood.mu.intercept, RandomPrior)
-    assert isinstance(hbr.default_reg_conf.likelihood.sigma, LinearPrior)
+            assert isinstance(hbr.template_reg_conf.likelihood.mu.intercept, RandomPrior)
+    assert isinstance(hbr.template_reg_conf.likelihood.sigma, LinearPrior)
 
 
 def test_normdata_to_hbrdata(

@@ -66,7 +66,7 @@ class NormHBR(NormBase):
 
     Attributes
     ----------
-    default_reg_conf : HBRConf
+    template_reg_conf : HBRConf
         The default configuration for the regression model.
     regression_model_type : Type[HBR]
         The type of regression model used, which is HBR.
@@ -128,7 +128,7 @@ class NormHBR(NormBase):
         super().__init__(norm_conf)
         if reg_conf is None:
             reg_conf = HBRConf()
-        self.default_reg_conf: HBRConf = reg_conf
+        self.template_reg_conf: HBRConf = reg_conf
         self.regression_model_type = regression_model_type
         self.current_regression_model: HBR = None  # type: ignore
 
@@ -150,7 +150,7 @@ class NormHBR(NormBase):
         transferdata = model_to_transfer_to.normdata_to_hbrdata(data)
         if not self.focused_model.is_fitted:
             raise Output.error(Errors.ERROR_MODEL_NOT_FITTED)
-        reg_conf_dict: dict[str, Any] = model_to_transfer_to.default_reg_conf.to_dict()
+        reg_conf_dict: dict[str, Any] = model_to_transfer_to.template_reg_conf.to_dict()
         reg_conf_dict["draws"] = kwargs.get("draws", reg_conf_dict["draws"])
         reg_conf_dict["tune"] = kwargs.get("tune", reg_conf_dict["tune"])
         reg_conf_dict["pymc_cores"] = kwargs.get("pymc_cores", reg_conf_dict["pymc_cores"])
