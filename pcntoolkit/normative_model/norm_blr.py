@@ -19,7 +19,7 @@ class NormBLR(NormBase):
 
     This class implements normative modeling using Bayesian Linear Regression (BLR) as the
     underlying regression model. It supports both homoscedastic and heteroscedastic noise models,
-    as well as random intercepts for handling batch effects.
+    as well as fixed effects for handling batch effects.
 
     Parameters
     ----------
@@ -42,7 +42,7 @@ class NormBLR(NormBase):
     The BLR implementation supports:
     - Linear and non-linear regression
     - Homoscedastic and heteroscedastic noise models
-    - Random intercepts for batch effect correction
+    - Fixed effects for batch effect correction
     - Computation of centiles and z-scores
     """
 
@@ -125,7 +125,7 @@ class NormBLR(NormBase):
         data: NormData,
         linear: bool = False,
         intercept: bool = False,
-        random_intercept: bool = False,
+        fixed_effect: bool = False,
     ) -> np.ndarray:
         """Create design matrix for the model.
 
@@ -137,8 +137,8 @@ class NormBLR(NormBase):
             Include linear terms in the design matrix.
         intercept : bool, default=False
             Include intercept term in the design matrix.
-        random_intercept : bool, default=False
-            Include random intercepts for batch effects.
+        fixed_effect : bool, default=False
+            Include fixed effect for batch effects.
 
         Returns
         -------
@@ -162,8 +162,8 @@ class NormBLR(NormBase):
         if intercept:
             acc.append(np.ones((data.X.shape[0], 1)))
 
-        # Create one-hot encoding for random intercept
-        if random_intercept:
+        # Create one-hot encoding for fixed effect
+        if fixed_effect:
             mapped_batch_effects = self.map_batch_effects(data)
             for i, v in enumerate(self.unique_batch_effects.values()):
                 acc.append(
@@ -200,14 +200,14 @@ class NormBLR(NormBase):
             data,
             linear=True,
             intercept=reg_conf.intercept,
-            random_intercept=reg_conf.random_intercept,
+            fixed_effect=reg_conf.fixed_effect,
         )
         if self.focused_model.models_variance:
             this_var_X = self.create_design_matrix(
                 data,
                 linear=reg_conf.heteroskedastic,
                 intercept=reg_conf.intercept_var,
-                random_intercept=reg_conf.random_intercept_var,
+                fixed_effect=reg_conf.fixed_effect_var,
             )
         else:
             this_var_X = None

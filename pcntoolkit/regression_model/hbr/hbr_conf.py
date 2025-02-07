@@ -198,5 +198,5 @@ class HBRConf(RegConf):
         return conf_dict
 
     @property
-    def has_random_effect(self) -> bool:
-        return self.likelihood.has_random_effect
+    def has_batch_effect(self) -> bool:
+        return self.likelihood.has_random_effect()
