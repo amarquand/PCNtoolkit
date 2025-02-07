@@ -23,9 +23,10 @@ class Runner:
     job_type: str = "local"
     n_jobs: int = 1
     n_cores: int = 1
-    environment: str = None # type: ignore
     time_limit_str: str | int = "00:05:00"
     time_limit_seconds: int = 300
+    environment: str = None  # type: ignore
+    preamble: str = "module load anaconda3"
     memory: str = "5gb"
     log_dir: str = ""
     temp_dir: str = ""
@@ -38,13 +39,46 @@ class Runner:
         job_type: str = "local",
         n_jobs: int = 1,
         n_cores: int = 1,
-        environment: Optional[str] = None,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
+        environment: Optional[str] = None,
+        preamble: str = "module load anaconda3",
         save_dir: Optional[str] = None,
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
+        """
+        Initialize the runner.
+
+        Parameters
+        ----------
+        cross_validate : bool, optional
+            Whether to cross-validate the model.
+        cv_folds : int, optional
+            The number of folds for cross-validation.
+        parallelize : bool, optional
+            Whether to parallelize the jobs.
+        job_type : str, optional
+            The type of job to run.
+        n_jobs : int, optional
+            The number of jobs to run in parallel.
+        n_cores : int, optional
+            The number of cores to use for each job.
+        time_limit : str | int, optional
+            The time limit for the jobs. Int (seconds) or string of the format "HH:MM:SS".
+        memory : str, optional
+            The memory limit for the jobs.
+        environment : str, optional
+            The python environment to use for the jobs. Will be loaded with `source activate {environment}`, after the preamble.
+        preamble : str, optional
+            The preamble to use for the jobs. Note that the default preamble is "module load anaconda3", which is the preamble for use on the DCCN cluster.
+        save_dir : str, optional
+            The directory to save the runner state.
+        log_dir : str, optional
+            The directory to save the runner logs to.
+        temp_dir : str, optional
+            The directory to save the runner temporary files to.
+        """
         self.cross_validate = cross_validate
         self.cv_folds = cv_folds
         self.parallelize = parallelize
@@ -52,20 +86,15 @@ class Runner:
         self.n_jobs = n_jobs
         self.pool = None
         self.n_cores = n_cores
-        if isinstance(time_limit, str):
-            self.time_limit_str = time_limit
-            try:
+        try:
+            if isinstance(time_limit, str):
+                self.time_limit_str = time_limit
                 self.time_limit_seconds = sum([int(v) * 60**i for i, v in enumerate(reversed(self.time_limit_str.split(":")))])
-            except Exception:
-                raise Output.error(
-                    Errors.ERROR_PARSING_TIME_LIMIT,
-                    time_limit_str=self.time_limit_str,
-                )
-        elif isinstance(time_limit, int):
-            self.time_limit_seconds = time_limit
-            s = self.time_limit_seconds
-            self.time_limit_str = f"{str(s//3600)}:{str((s//60)%60).rjust(2,"0")}:{str(s%60).rjust(2,"0")}"
-        else:
+            elif isinstance(time_limit, int):
+                self.time_limit_seconds = time_limit
+                s = self.time_limit_seconds
+                self.time_limit_str = f"{str(s//3600)}:{str((s//60)%60).rjust(2,"0")}:{str(s%60).rjust(2,"0")}"
+        except Exception:
             raise Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit)
 
         self.memory = memory
@@ -82,8 +111,8 @@ class Runner:
             if not os.path.exists(os.path.join(environment, "bin", "python")):
                 Output.error(Errors.ERROR_ENVIRONMENT_NOT_FOUND, environment=environment)
             else:
-                self.environment = environment                
-                
+                self.environment = environment
+                self.preamble = preamble
 
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
@@ -643,7 +672,6 @@ class Runner:
             self.job_commands.clear()
 
             for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                
                 job_name = f"job_{i}"
                 if mode == "unary":
                     chunk_tuple = first_chunk
@@ -707,7 +735,9 @@ class Runner:
 #SBATCH --error={err_file}
 #SBATCH --output={out_file}
 
-{self.environment}/bin/python {current_file_path} {python_callable_path} {data_path}
+{self.preamble}
+source activate {self.environment}
+python {current_file_path} {python_callable_path} {data_path}
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -736,7 +766,9 @@ exit $exit_code
 #PBS -e {err_file}
 #PBS -m a
 
-{self.environment}/bin/python {current_file_path} {python_callable_path} {data_path}
+{self.preamble}
+source activate {self.environment}
+python {current_file_path} {python_callable_path} {data_path}
 
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
@@ -758,11 +790,9 @@ exit $exit_code
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
-                
-# Execute Python script with unbuffered output
-conda activate {self.environment}
 
-python {current_file_path} {python_callable_path} {data_path} > {out_file} 2> {err_file}
+conda activate {self.environment}
+PYTHONBUFFERED=1 python {current_file_path} {python_callable_path} {data_path} > {out_file} 2> {err_file}
 exit_code=$?
 
 if [ $exit_code -eq 0 ]; then
