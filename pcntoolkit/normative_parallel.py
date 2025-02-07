@@ -110,7 +110,7 @@ def execute_nm(processing_dir,
     outputsuffix = kwargs.get('outputsuffix', 'estimate')
     outputsuffix = "_" + outputsuffix.replace("_", "")
     cluster_spec = kwargs.pop('cluster_spec', 'torque')
-    log_path = kwargs.get('log_path', None)
+    log_path = kwargs.pop('log_path', None)
     binary = kwargs.pop('binary', False)
     cores = kwargs.pop('n_cores_per_batch','1')
 
@@ -173,15 +173,16 @@ def execute_nm(processing_dir,
                     # update the response file
                     kwargs.update({'testrespfile_path':
                                    batch_testrespfile_path})
-                    sbatchwrap_nm(batch_processing_dir,
-                                  python_path,
-                                  normative_path,
-                                  batch_job_name,
-                                  covfile_path,
-                                  batch_respfile_path,
+                    sbatchwrap_nm(processing_dir=batch_processing_dir,
+                                  python_path=python_path,
+                                  normative_path=normative_path,
+                                  job_name=batch_job_name,
+                                  covfile_path=covfile_path,
+                                  respfile_path=batch_respfile_path,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
+                                  log_path=log_path,
                                   **kwargs)
 
                     job_id = sbatch_nm(job_path=batch_job_path)
@@ -226,9 +227,10 @@ def execute_nm(processing_dir,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
+                                  log_path=log_path,
                                   **kwargs)
 
-                    job_id = sbatch_nm(job_path=batch_job_path)
+                    job_id = sbatch_nm(job_path=batch_job_path,)
                     job_ids.append(job_id)
                 elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
@@ -270,6 +272,7 @@ def execute_nm(processing_dir,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
+                                  log_path=log_path,
                                   **kwargs)
 
                     job_id = sbatch_nm(job_path=batch_job_path)
@@ -1186,9 +1189,14 @@ def sbatchwrap_nm(processing_dir,
     # add responses file
     job_call = [job_call[0] + ' ' + respfile_path]
 
+    # If count jobsdone is true, we need to add the log_path to the job_call
+    job_call = [job_call[0] + ' log_path=' + log_path]
+    
+    print("log_path: ", log_path)
     # add in optional arguments.
     for k in kwargs:
         job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, 'w') as bash_file:
