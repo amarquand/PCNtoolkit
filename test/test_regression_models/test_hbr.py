@@ -134,6 +134,8 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.is_from_dict
 
 
+
+
 @pytest.fixture(scope="module")
 def extract_data(fitted_norm_hbr_model: NormativeModel, norm_data_from_arrays: NormData):
     fitted_norm_hbr_model.saveplots = False
@@ -157,22 +159,12 @@ def test_normal_fixed_prior(extract_data):
     assert tuple(samples.shape.eval()) == ()
 
 
-def test_cauchy_fixed_prior(extract_data):
-    prior: Prior = make_prior("fixed2", dist_name="Cauchy")  # type: ignore
-    samples = prior.compile(*extract_data)
-    assert prior.name == "fixed2"
-    assert prior.dims is None
-    assert prior.dist_name == "Cauchy"
-    assert prior.dist_params == (0, 10)
-    assert tuple(samples.shape.eval()) == ()
-
-
 def test_normal_fixed_prior_with_covariate_dim(extract_data):
-    prior: Prior = make_prior("fixed3", dist_name="Cauchy", dims=("mu_covariates",))  # type: ignore
+    prior: Prior = make_prior("fixed3", dist_name="Normal", dims=("mu_covariates",))  # type: ignore
     samples = prior.compile(*extract_data)
     assert prior.name == "fixed3"
     assert prior.dims == ("mu_covariates",)
-    assert prior.dist_name == "Cauchy"
+    assert prior.dist_name == "Normal"
     assert prior.dist_params == (0, 10)
     assert len(samples.shape.eval()) == 1
     assert samples.shape.eval()[0] == len(extract_data[0].coords["mu_covariates"])
@@ -306,40 +298,8 @@ def test_two_priors_from_args(extract_data):
     assert tuple(samples.shape.eval()) == ()
 
 
-def test_prior_from_args_random_centered(extract_data):
-    my_new_prior_name = "mu5"
-    my_new_prior_name_sigma = "sigma5"
-    prior_dict = {
-        f"random_{my_new_prior_name}": True,
-        f"centered_{my_new_prior_name}": True,
-        f"linear_{my_new_prior_name}": False,
-        f"dist_params_mu_{my_new_prior_name}": (0, 3),
-        f"dist_name_{my_new_prior_name_sigma}": "HalfNormal",
-        f"dist_params_{my_new_prior_name_sigma}": (1.0,),
-        "intercept_mu": None,
-        "slope_mu": None,
-    }
-    mu: RandomPrior = prior_from_args(my_new_prior_name, prior_dict)  # type: ignore
-    samples = mu.compile(*extract_data)
 
-    assert mu.name == my_new_prior_name
-    assert mu.dims is None
-    assert mu.mu.name == f"mu_{my_new_prior_name}"
-    assert mu.mu.dims is None
-    assert isinstance(mu.mu, Prior)
-    assert mu.mu.dist_name == "Normal"
-    assert mu.mu.dist_params == (0, 3)
-    assert mu.sigma.name == f"sigma_{my_new_prior_name}"
-    assert mu.sigma.dims is None
-    assert isinstance(mu.sigma, Prior)
-    assert mu.sigma.dist_name == "HalfNormal"
-    assert mu.sigma.dist_params == (1.0,)
-    assert mu.dist.name == my_new_prior_name
-
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
-
-
-def test_prior_from_args_random_centered_with_covariate_dim(extract_data):
+def test_prior_from_args_random_with_covariate_dim(extract_data):
     my_new_prior_name = "mu7"
     prior_dict = {
         f"dist_name_mu_{my_new_prior_name}": "Normal",

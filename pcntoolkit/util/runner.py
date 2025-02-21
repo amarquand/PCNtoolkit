@@ -83,8 +83,12 @@ class Runner:
         self.parallelize = parallelize
         self.job_type = job_type
         self.n_jobs = n_jobs
-        self.pool = None
         self.n_cores = n_cores
+        self.uuid = ""
+        self.unique_temp_dir = ""
+        self.unique_log_dir = ""
+        self.job_observer = None
+        self.save_dir = ""
         try:
             if isinstance(time_limit, str):
                 self.time_limit_str = time_limit
@@ -92,7 +96,7 @@ class Runner:
             elif isinstance(time_limit, int):
                 self.time_limit_seconds = time_limit
                 s = self.time_limit_seconds
-                self.time_limit_str = f"{str(s//3600)}:{str((s//60)%60).rjust(2,"0")}:{str(s%60).rjust(2,"0")}"
+                self.time_limit_str = f"{str(s // 3600)}:{str((s // 60) % 60).rjust(2, '0')}:{str(s % 60).rjust(2, '0')}"
         except Exception:
             raise ValueError(Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit))
 
@@ -102,15 +106,16 @@ class Runner:
         self.failed_jobs: Dict[str, str] = {}
 
         # Get Python path if not provided
-        if not environment:
-            raise ValueError(Output.error(Errors.ERROR_NO_ENVIRONMENT_SPECIFIED))
-        else:
-            # Check if the environment is valid
-            if not os.path.exists(os.path.join(environment, "bin", "python")):
-                raise ValueError(Output.error(Errors.INVALID_ENVIRONMENT, environment=environment))
+        if parallelize:
+            if not environment:
+                raise ValueError(Output.error(Errors.ERROR_NO_ENVIRONMENT_SPECIFIED))
             else:
-                self.environment = environment
-                self.preamble = preamble
+                # Check if the environment is valid
+                if not os.path.exists(os.path.join(environment, "bin", "python")):
+                    raise ValueError(Output.error(Errors.INVALID_ENVIRONMENT, environment=environment))
+                else:
+                    self.environment = environment
+                    self.preamble = preamble
 
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
@@ -128,6 +133,25 @@ class Runner:
 
         if self.cross_validate and self.cv_folds <= 1:
             raise ValueError(Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds))
+
+    def wait_or_finish(self, observe):
+        if self.parallelize:
+            if observe:
+                self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
+                self.job_observer.wait_for_jobs()
+                self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            else:
+                self.save()
+
+    def set_unique_temp_and_log_dir(self):
+        self.uuid = str(uuid.uuid4())
+        self.unique_temp_dir = os.path.join(self.temp_dir, self.uuid)
+        self.unique_log_dir = os.path.join(self.log_dir, self.uuid)
+        os.makedirs(self.unique_temp_dir, exist_ok=True)
+        os.makedirs(self.unique_log_dir, exist_ok=True)
+        Output.print(Messages.UUID_FOR_RUNNER_CREATED, uuid=self.uuid)
+        Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
+        Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
 
     def fit(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         """
@@ -149,33 +173,25 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_fit_chunk_fn(modelclone)
+        fn = self.get_fit_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        if observe:
-            # If we want to observer the jobs, we wait for them, and then get the failed jobs after it's done
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            self.load_model(into=model)
+        if self.parallelize:
+            if observe:
+                # If we want to jobs, we wait for them, and then get the failed jobs after it's done
+                self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
+                self.job_observer.wait_for_jobs()
+                self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+                self.load_model(into=model)
+            else:
+                # Else, we save the runner state after all jobs are submitted
+                # The load function will check for failed jobs
+                self.save()
         else:
-            # Else, we save the runner state after all jobs are submitted
-            # The load function will check for failed jobs
-            self.save()
-
-    def set_unique_temp_and_log_dir(self):
-        my_new_uuid = str(uuid.uuid4())
-        self.uuid = my_new_uuid
-        self.unique_temp_dir = os.path.join(self.temp_dir, my_new_uuid)
-        self.unique_log_dir = os.path.join(self.log_dir, my_new_uuid)
-        os.makedirs(self.unique_temp_dir, exist_ok=True)
-        os.makedirs(self.unique_log_dir, exist_ok=True)
-        Output.print(Messages.UUID_FOR_RUNNER_CREATED, uuid=my_new_uuid)
-        Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
-        Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
+            # If we are not in parallel, just load the model after it's done running (we don't need to wait)
+            self.load_model(into=model)
 
     def fit_predict(
         self,
@@ -195,7 +211,7 @@ class Runner:
         fit_data : NormData
             The data to fit the model on.
         predict_data : Optional[NormData], optional
-            The data to predict on. If None, the function will predict on the fit_data.
+            The data to predict on. Can be None if cross-validation is used.
         save_dir : Optional[str], optional
             The directory to save the model to. If None, the model will be saved in the model's save directory.
         observe : bool, optional
@@ -206,24 +222,18 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_fit_predict_chunk_fn(modelclone)
+        fn = self.get_fit_predict_chunk_fn(model, save_dir)
         self.submit_jobs(
             fn,
             first_data_source=fit_data,
             second_data_source=predict_data,
             mode="binary",
         )
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            self.load_model(into=model)
-        else:
-            self.save()
+        self.wait_or_finish(observe)
+        self.load_model(into=model)
 
     def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         """
@@ -244,20 +254,17 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir
+        assert save_dir is not None
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_predict_chunk_fn(modelclone)
+        fn = self.get_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-        else:
-            self.save()
+        self.wait_or_finish(observe)
 
-    def transfer(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
+    def transfer(
+        self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
+    ) -> NormativeModel | None:
         """
         Transfer a normative model to a new dataset.
 
@@ -278,25 +285,20 @@ class Runner:
         NormBase | None
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
+        assert save_dir is not None
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_transfer_chunk_fn(modelclone)
+        fn = self.get_transfer_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            return self.load_model()
-        else:
-            self.save()
+        self.wait_or_finish(observe)
+        return self.load_model()
 
     def transfer_predict(
         self,
         model: NormativeModel,
         fit_data: NormData,
-        predict_data: NormData,
+        predict_data: Optional[NormData] = None,
         save_dir: Optional[str] = None,
         observe: bool = True,
     ) -> NormativeModel | None:
@@ -309,8 +311,8 @@ class Runner:
             The normative model to transfer.
         fit_data : NormData
             The data to transfer the model to.
-        predict_data : NormData
-            The data to predict on.
+        predict_data : Optional[NormData], optional
+            The data to predict on. Can be None if cross-validation is used.
         save_dir : Optional[str], optional
             The directory to save the model to. If None, the model will be saved in the model's save directory.
         observe : bool, optional
@@ -322,21 +324,18 @@ class Runner:
         NormBase | No   ne
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
+        assert save_dir is not None
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_transfer_predict_chunk_fn(modelclone)
+        fn = self.get_transfer_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            return self.load_model()
-        else:
-            self.save()
+        self.wait_or_finish(observe)
+        return self.load_model()
 
-    def extend(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
+    def extend(
+        self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
+    ) -> NormativeModel | None:
         """
         Extend a normative model on a dataset.
 
@@ -357,25 +356,20 @@ class Runner:
         NormativeModel | None
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
+        assert save_dir is not None
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_extend_chunk_fn(modelclone)
+        fn = self.get_extend_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            return self.load_model()
-        else:
-            self.save()
+        self.wait_or_finish(observe)
+        return self.load_model()
 
     def extend_predict(
         self,
         model: NormativeModel,
         fit_data: NormData,
-        predict_data: NormData,
+        predict_data: Optional[NormData] = None,
         save_dir: Optional[str] = None,
         observe: bool = True,
     ) -> NormativeModel | None:
@@ -388,8 +382,8 @@ class Runner:
             The normative model to extend.
         fit_data : NormData
             The data to extend the model on.
-        predict_data : NormData
-            The data to predict on.
+        predict_data : Optional[NormData], optional
+            The data to predict on. Can be None if cross-validation is used.
         save_dir : Optional[str], optional
             The directory to save the model to. If None, the model will be saved in the model's save directory.
         observe : bool, optional
@@ -401,40 +395,36 @@ class Runner:
         NormativeModel | None
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
-        modelclone = deepcopy(model)
-        modelclone.set_save_dir(self.save_dir)
+        save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
+        assert save_dir is not None
+        self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
-        fn = self.get_extend_predict_chunk_fn(modelclone)
+        fn = self.get_extend_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-            self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-            return self.load_model()
-        else:
-            self.save()
+        self.wait_or_finish(observe)
+        return self.load_model()
 
-    def get_fit_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_fit_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data"""
         if self.cross_validate:
 
             def kfold_fit_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
                     fold_norm_model: NormativeModel = deepcopy(model)
-                    fold_norm_model.set_save_dir(os.path.join(model.save_dir, "folds", f"fold_{i_fold}"))
-                    train_data.attrs["name"] = f"fold_{i_fold}_train"
+                    fold_norm_model.set_save_dir(os.path.join(save_dir, "folds", f"fold_{i_fold}"))
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
                     fold_norm_model.fit(train_data)
 
             return kfold_fit_chunk_fn
         else:
 
             def fit_chunk_fn(chunk: NormData):
+                model.set_save_dir(save_dir)
                 model.fit(chunk)
 
             return fit_chunk_fn
 
-    def get_fit_predict_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_fit_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data and predicts on another chunk of data"""
         if self.cross_validate:
 
@@ -443,9 +433,9 @@ class Runner:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (fit_data, predict_data) in enumerate(all_data.kfold_split(self.cv_folds)):
                     fold_norm_model: NormativeModel = deepcopy(model)
-                    fold_norm_model.set_save_dir(os.path.join(model.save_dir, "folds", f"fold_{i_fold}"))
-                    fit_data.attrs["name"] = f"fold_{i_fold}_train"
-                    predict_data.attrs["name"] = f"fold_{i_fold}_predict"
+                    fold_norm_model.set_save_dir(os.path.join(save_dir, "folds", f"fold_{i_fold}"))
+                    fit_data.attrs["name"] = fit_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                    predict_data.attrs["name"] = predict_data.attrs["name"] + "_fold_" + str(i_fold) + "_predict"
                     fold_norm_model.fit_predict(fit_data, predict_data)
 
             return kfold_fit_predict_chunk_fn
@@ -455,54 +445,57 @@ class Runner:
                 if predict_data is None:
                     raise ValueError(Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION))
                 assert predict_data is not None  # Make the linter happy
+                model.set_save_dir(save_dir)
                 model.fit_predict(fit_data, predict_data)
 
             return fit_predict_chunk_fn
 
-    def get_predict_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Loads each fold model and predicts on the corresponding fold of data. Model n is used to predict on fold n."""
         if self.cross_validate:
             raise ValueError(Output.error(Errors.ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION))
         else:
 
             def predict_chunk_fn(chunk: NormData):
+                model.set_save_dir(save_dir)
                 model.predict(chunk)
 
             return predict_chunk_fn
 
-    def get_transfer_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_transfer_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that transfers a model on a chunk of data"""
         if self.cross_validate:
 
             def kfold_transfer_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = f"fold_{i_fold}_train"
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold)
                     model.transfer(
                         train_data,
-                        save_dir=os.path.join(model.save_dir, "folds", f"fold_{i_fold}"),
+                        save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
                     )
 
             return kfold_transfer_chunk_fn
         else:
 
             def transfer_chunk_fn(data: NormData):
+                model.set_save_dir(save_dir)
                 model.transfer(data, save_dir=model.save_dir)
 
             return transfer_chunk_fn
 
-    def get_transfer_predict_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_transfer_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
 
             def kfold_transfer_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = f"fold_{i_fold}_train"
-                    predict_data.attrs["name"] = f"fold_{i_fold}_predict"
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                    predict_data.attrs["name"] = predict_data.attrs["name"] + "_fold_" + str(i_fold) + "_predict"
                     model.transfer_predict(
                         train_data,
                         predict_data,
-                        save_dir=os.path.join(model.save_dir, "folds", f"fold_{i_fold}"),
+                        save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
                     )
 
             return kfold_transfer_predict_chunk_fn
@@ -511,42 +504,43 @@ class Runner:
             def transfer_predict_chunk_fn(train_data: NormData, predict_data: NormData):
                 if predict_data is None:
                     raise ValueError(Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED))
-                model.transfer_predict(train_data, predict_data, save_dir=model.save_dir)
+                model.transfer_predict(train_data, predict_data, save_dir=save_dir)
 
             return transfer_predict_chunk_fn
 
-    def get_extend_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_extend_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
 
             def kfold_extend_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = f"fold_{i_fold}_train"
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold)
                     model.extend(
                         data=train_data,
-                        save_dir=os.path.join(model.save_dir, "folds", f"fold_{i_fold}"),
+                        save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
                     )
 
             return kfold_extend_chunk_fn
         else:
 
             def extend_chunk_fn(data: NormData):
-                model.extend(data=data, save_dir=model.save_dir)
+                model.set_save_dir(save_dir)
+                model.extend(data=data, save_dir=save_dir)
 
             return extend_chunk_fn
 
-    def get_extend_predict_chunk_fn(self, model: NormativeModel) -> Callable:
+    def get_extend_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
 
             def kfold_extend_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = f"fold_{i_fold}_train"
-                    predict_data.attrs["name"] = f"fold_{i_fold}_predict"
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                    predict_data.attrs["name"] = predict_data.attrs["name"] + "_fold_" + str(i_fold) + "_predict"
                     model.extend_predict(
                         extend_data=train_data,
                         predict_data=predict_data,
-                        save_dir=os.path.join(model.save_dir, "folds", f"fold_{i_fold}"),
+                        save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
                     )
 
             return kfold_extend_predict_chunk_fn
@@ -554,8 +548,9 @@ class Runner:
 
             def extend_predict_chunk_fn(train_data: NormData, predict_data: NormData):
                 if predict_data is None:
-                    raise ValueError(Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED)   )
-                model.extend_predict(extend_data=train_data, predict_data=predict_data, save_dir=model.save_dir)
+                    raise ValueError(Output.error(Errors.ERROR_PREDICT_DATA_REQUIRED))
+                model.set_save_dir(save_dir)
+                model.extend_predict(extend_data=train_data, predict_data=predict_data, save_dir=save_dir)
 
             return extend_predict_chunk_fn
 
@@ -563,7 +558,7 @@ class Runner:
         self,
         job_name: int | str,
         fn: Callable,
-        chunk: NormData | tuple[NormData, NormData | None],
+        chunk: tuple[NormData] | tuple[NormData, NormData | None],
     ) -> tuple[str, str]:
         python_callable_path = os.path.join(self.unique_temp_dir, f"python_callable_{job_name}.pkl")
         data_path = os.path.join(self.unique_temp_dir, f"data_{job_name}.pkl")
@@ -586,7 +581,7 @@ class Runner:
             If job failed, returns (False, True, error_message)
         """
         job_id = self.active_jobs[job_name]
-       
+
         # For cluster jobs, first check if job is still in queue/running
         is_running = False
         if self.job_type == "slurm":
@@ -634,7 +629,6 @@ class Runner:
             elif is_running:
                 running_jobs[job_name] = job_id
         return running_jobs, finished_jobs, failed_jobs
-
 
     def submit_jobs(
         self,
@@ -840,7 +834,7 @@ exit $exit_code
                     self.active_jobs[job_name] = job_id.group(1)
                     self.job_commands[job_name] = command
                 elif stderr:
-                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)  )
+                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))
 
         self.failed_jobs.clear()
         if observe:
@@ -856,10 +850,7 @@ def load_and_execute(args):
         fn = pickle.load(executable_path)
     with open(args[1], "rb") as data_path:
         data = pickle.load(data_path)
-    if isinstance(data, tuple):
-        fn(data[0], data[1])
-    else:
-        fn(data)
+    fn(*data)
 
 
 if __name__ == "__main__":

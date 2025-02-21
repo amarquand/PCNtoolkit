@@ -441,7 +441,7 @@ class HBR(RegressionModel):
         tune = args.get("tune", 1000)
         cores = args.get("cores", 1)
         chains = args.get("chains", 1)
-        nuts_sampler = args.get("nuts_sampler", "NUTS")
+        nuts_sampler = args.get("nuts_sampler", "pymc")
         init = args.get("init", "auto")
         progressbar = args.get("progressbar", True)
         is_fitted = args.get("is_fitted", False)

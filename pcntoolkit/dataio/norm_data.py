@@ -524,7 +524,7 @@ class NormData(xr.Dataset):
         Parameters
         ----------
         splits : Tuple[float, ...] | List[float] | float
-            A tuple specifying the proportion of data for each split. Or a float specifying the proportion of data for the train set.
+            A tuple (train_size, test_size), specifying the proportion of data for each split. Or a float specifying the proportion of data for the train set.
         split_names : Tuple[str, ...] | None, optional
             Names for the splits, by default None.
         random_state: int , optional
@@ -540,6 +540,9 @@ class NormData(xr.Dataset):
         elif isinstance(splits, list):
             splits = tuple(splits)
         assert isinstance(splits, tuple)
+        assert all([isinstance(i, float) for i in splits]), "Splits must be a list of floats"
+        assert sum(list(splits)) == 1, "Splits must sum to 1"
+        assert len(splits) > 1, "Splits must contain at least two elements"
         batch_effects_stringified = self.concatenate_string_arrays(
             *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
         )

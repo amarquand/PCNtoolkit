@@ -19,6 +19,7 @@ from pcntoolkit.math.scaler import Scaler
 from pcntoolkit.regression_model.blr import BLR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.hbr import HBR  # noqa: F401 # type: ignore
 from pcntoolkit.regression_model.regression_model import RegressionModel
+from pcntoolkit.regression_model.test_model import TestModel  # noqa: F401 # type: ignore
 from pcntoolkit.util.evaluator import Evaluator
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 from pcntoolkit.util.plotter import plot_centiles, plot_qq
@@ -50,7 +51,7 @@ class NormativeModel:
 
     def __init__(
         self,
-        template_reg_model: RegressionModel,
+        template_regression_model: RegressionModel,
         savemodel: bool = True,
         evaluate_model: bool = True,
         saveresults: bool = True,
@@ -69,12 +70,60 @@ class NormativeModel:
         self.outscaler: str = outscaler
         self.normative_model_name: Optional[str] = normative_model_name
         self.response_vars: list[str] = None  # type: ignore
-        self.template_regression_model: RegressionModel = template_reg_model
+        self.template_regression_model: RegressionModel = template_regression_model
         self.regression_models: dict[str, RegressionModel] = {}
         self.evaluator = Evaluator()
         self.inscalers: dict = {}
         self.outscalers: dict = {}
         self.is_fitted: bool = False
+
+    @classmethod
+    def from_args(cls, **kwargs) -> NormativeModel:
+        """
+        Create a new normative model from command line arguments.
+
+        Parameters
+        ----------
+        args : dict[str, str]
+            A dictionary of command line arguments.
+
+        Returns
+        -------
+        NormBase
+            An instance of a normative model.
+
+        Raises
+        ------
+        ValueError
+            If the regression model specified in the arguments is unknown.
+        """
+        savemodel = kwargs["savemodel"] in ["True", True]
+        saveresults = kwargs["saveresults"] in ["True", True]
+        saveplots = kwargs["saveplots"] in ["True", True]
+        evaluate_model = kwargs["evaluate_model"] in ["True", True]
+        save_dir = kwargs["save_dir"]
+        inscaler = kwargs["inscaler"]
+        outscaler = kwargs["outscaler"]
+        normative_model_name = kwargs["normative_model_name"]
+        if kwargs["alg"] == "blr":
+            template_regression_model = BLR.from_args("template", kwargs)
+        elif kwargs["alg"] == "hbr":
+            template_regression_model = HBR.from_args("template", kwargs)
+        elif kwargs["alg"] == "test_model":
+            template_regression_model = TestModel.from_args("template", kwargs)
+        else:
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=kwargs["alg"]))
+        return cls(
+            template_regression_model=template_regression_model,
+            savemodel=savemodel,
+            saveresults=saveresults,
+            saveplots=saveplots,
+            evaluate_model=evaluate_model,
+            save_dir=save_dir,
+            inscaler=inscaler,
+            outscaler=outscaler,
+            normative_model_name=normative_model_name,
+        )
 
     def fit(self, data: NormData) -> None:
         """
@@ -418,12 +467,11 @@ class NormativeModel:
             inscaler=self.inscaler,
             outscaler=self.outscaler,
             save_dir=self.save_dir,
-            
         )
         if save_dir is not None:
             new_model.save_dir = save_dir
         else:
-            new_model.save_dir = self.save_dir+"_transfer"
+            new_model.save_dir = self.save_dir + "_transfer"
         new_model.covariates = copy.deepcopy(self.covariates)
         new_model.response_vars = copy.deepcopy(self.response_vars)
         new_model.inscalers = copy.deepcopy(self.inscalers)
@@ -438,16 +486,24 @@ class NormativeModel:
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
+        if new_model.savemodel:
+            new_model.save()
+        if new_model.evaluate_model:
+            new_model.evaluate(transfer_data)
+        if new_model.saveresults:
+            new_model.save_results(transfer_data)
+        if new_model.saveplots:
+            new_model.save_plots(transfer_data)
         return new_model
-    
+
     def transfer_predict(self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None) -> NormativeModel:
         """
         Transfers the model to a new dataset and predicts the data.
         """
-        new_model = self.transfer(transfer_data, save_dir )
+        new_model = self.transfer(transfer_data, save_dir)
         new_model.predict(predict_data)
         return new_model
-    
+
     def extend(self, data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
         """
         Extends the model to a new dataset.
@@ -457,8 +513,8 @@ class NormativeModel:
         self.postprocess(data)
         merged_data = data.merge(synth)
         if save_dir is None:
-            save_dir = self.save_dir+"_extend"
-            
+            save_dir = self.save_dir + "_extend"
+
         new_model = NormativeModel(
             copy.deepcopy(self.template_regression_model),
             savemodel=True,
@@ -475,14 +531,16 @@ class NormativeModel:
         new_model.fit(merged_data)
         return new_model
 
-    def extend_predict(self, extend_data: NormData, predict_data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
+    def extend_predict(
+        self, extend_data: NormData, predict_data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None
+    ) -> NormativeModel:
         """
         Extends the model to a new dataset and predicts the data.
         """
         new_model = self.extend(extend_data, save_dir, n_synth_samples)
-        new_model.predict(predict_data) 
+        new_model.predict(predict_data)
         return new_model
-    
+
     def preprocess(self, data: NormData) -> None:
         """
         Applies preprocessing transformations to the input data.
@@ -585,11 +643,13 @@ class NormativeModel:
         """
         max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
         if n_samples < max_batch_effect_count:
-            raise ValueError(Output.error(
-                Errors.SAMPLE_BATCH_EFFECTS,
-                n_samples=n_samples,
-                max_batch_effect_count=max_batch_effect_count,
-            )) 
+            raise ValueError(
+                Output.error(
+                    Errors.SAMPLE_BATCH_EFFECTS,
+                    n_samples=n_samples,
+                    max_batch_effect_count=max_batch_effect_count,
+                )
+            )
 
         bes = xr.DataArray(
             np.zeros((n_samples, len(self.batch_effect_counts.keys()))).astype(str),
@@ -679,9 +739,24 @@ class NormativeModel:
             path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.
         """
         savepath = path if path is not None else self.save_dir
-        savepath = os.path.join(savepath, "model")
+        modelpath = os.path.join(savepath, "model")
+        os.makedirs(modelpath, exist_ok=True)
+        my_dict = self.to_dict()
         Output.print(Messages.SAVING_MODEL, save_dir=savepath)
-        metadata = {
+        with open(os.path.join(modelpath, "normative_model.json"), "w", encoding="utf-8") as f:
+            json.dump(my_dict, f, indent=4)
+
+        for responsevar, model in self.regression_models.items():
+            regmodel_path = os.path.join(modelpath, responsevar)
+            os.makedirs(regmodel_path, exist_ok=True)
+            reg_model_dict = {}
+            reg_model_dict["model"] = model.to_dict(regmodel_path)
+            reg_model_dict["outscaler"] = self.outscalers[responsevar].to_dict()
+            with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
+                json.dump(reg_model_dict, f, indent=4)
+
+    def to_dict(self):
+        my_dict = {
             "save_dir": self.save_dir,
             "savemodel": self.savemodel,
             "saveresults": self.saveresults,
@@ -690,49 +765,35 @@ class NormativeModel:
             "normative_model_name": self.normative_model_name,
             "template_regression_model": self.template_regression_model.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
-            "unique_batch_effects": self.unique_batch_effects,
             "is_fitted": self.is_fitted,
             "inscaler": self.inscaler,
             "outscaler": self.outscaler,
         }
 
         if hasattr(self, "covariates"):
-            metadata["covariates"] = self.covariates
+            my_dict["covariates"] = self.covariates
+
+        if hasattr(self, "unique_batch_effects"):
+            my_dict["unique_batch_effects"] = self.unique_batch_effects
 
         # JSON keys are always string, so we have use a trick to save the batch effects distributions, which may have string or int keys.
         # We invert the map, so that the original keys are stored as the values
         # The original integer values are then converted to strings by json, but we can safely convert them back to ints when loading
         # We also add an index to the keys to make sure they are unique
         if hasattr(self, "batch_effect_counts"):
-            metadata["inverse_batch_effect_counts"] = {
+            my_dict["inverse_batch_effect_counts"] = {
                 be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effect_counts[be].items())}
                 for be, mp in self.batch_effect_counts.items()
             }
         if hasattr(self, "batch_effects_maps"):
-            metadata["batch_effects_maps"] = {
+            my_dict["batch_effects_maps"] = {
                 be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effects_maps[be].items())}
                 for be in self.batch_effects_maps.keys()
             }
         if hasattr(self, "batch_effect_covariate_ranges"):
-            metadata["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
+            my_dict["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
 
-        os.makedirs(savepath, exist_ok=True)
-        with open(
-            os.path.join(savepath, "normative_model.json"),
-            mode="w",
-            encoding="utf-8",
-        ) as f:
-            json.dump(metadata, f, indent=4)
-
-        for responsevar, model in self.regression_models.items():
-            reg_model_save_path = os.path.join(savepath, f"{responsevar}")
-            os.makedirs(reg_model_save_path, exist_ok=True)
-            reg_model_dict = {}
-            reg_model_dict["model"] = model.to_dict(reg_model_save_path)
-            reg_model_dict["outscaler"] = self.outscalers[responsevar].to_dict()
-            json_save_path = os.path.join(reg_model_save_path, "regression_model.json")
-            with open(json_save_path, "w", encoding="utf-8") as f:
-                json.dump(reg_model_dict, f, indent=4)
+        return my_dict
 
     @classmethod
     def load(cls, path: str, into: NormativeModel | None = None) -> NormativeModel:
@@ -747,6 +808,8 @@ class NormativeModel:
             The normative model to load the data into. If None, a new normative model is created.
             This is useful if you want to load a normative model into an existing normative model, for example in the runner.
         """
+        assert isinstance(path, str), f"Path must be a string, got {type(path)}"
+        assert os.path.exists(path), f"Path {path} does not exist"
         model_path = os.path.join(path, "model", "normative_model.json")
         with open(model_path, mode="r", encoding="utf-8") as f:
             metadata = json.load(f)
@@ -772,15 +835,17 @@ class NormativeModel:
                     encoding="utf-8",
                 ) as f:
                     reg_model_dict = json.load(f)
-                    responsevar = reg_model_dict["model"]["_name"]
+                    responsevar = reg_model_dict["model"]["name"]
                     response_vars.append(responsevar)
                     regression_model_type = globals()[reg_model_dict["model"]["type"]]
                     regression_models[responsevar] = regression_model_type.from_dict(reg_model_dict["model"], path)
                     outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
-        template_regression_model = type(regression_models[response_vars[0]]).from_dict(metadata["template_regression_model"])
+        template_regression_model = type(regression_models[response_vars[0]]).from_dict(
+            metadata["template_regression_model"], None
+        )
         if into is None:
             self = cls(
-                template_reg_model=template_regression_model,
+                template_regression_model=template_regression_model,
                 savemodel=savemodel,
                 evaluate_model=evaluate_model,
                 saveresults=saveresults,
@@ -808,6 +873,7 @@ class NormativeModel:
             }
         if "batch_effect_covariate_ranges" in metadata:
             self.batch_effect_covariate_ranges = metadata["batch_effect_covariate_ranges"]
+            
         if "unique_batch_effects" in metadata:
             self.unique_batch_effects = metadata["unique_batch_effects"]
 
@@ -833,11 +899,14 @@ class NormativeModel:
         if hasattr(data, "Z"):
             plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
         if hasattr(data, "centiles"):
-            plot_centiles(self, 
-                          data, 
-                          save_dir=os.path.join(self.save_dir, "plots"), show_data=True,
-                          show_other_data=True,
-                          harmonize_data=True)
+            plot_centiles(
+                self,
+                data,
+                save_dir=os.path.join(self.save_dir, "plots"),
+                show_data=True,
+                show_other_data=True,
+                harmonize_data=True,
+            )
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
@@ -948,45 +1017,3 @@ class NormativeModel:
 
 
 # Factory methods #########################################################################################
-
-
-def create_normative_model_from_args(args: dict[str, str]) -> NormativeModel:
-    """
-    Create a normative model from command line arguments.
-
-    Parameters
-    ----------
-    args : dict[str, str]
-        A dictionary of command line arguments.
-
-    Returns
-    -------
-    NormBase
-        An instance of a normative model.
-
-    Raises
-    ------
-    ValueError
-        If the regression model specified in the arguments is unknown.
-    """
-    savemodel = args["savemodel"] == "True"
-    saveresults = args["saveresults"] == "True"
-    save_dir = args["save_dir"]
-    inscaler = args["inscaler"]
-    outscaler = args["outscaler"]
-    normative_model_name = args["normative_model_name"]
-    if args["alg"] == "blr":
-        template_reg_model = BLR.from_args("template", args)
-    elif args["alg"] == "hbr":
-        template_reg_model = HBR.from_args("template", args)
-    else:
-        raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=args["alg"]))
-    return NormativeModel(
-        template_reg_model=template_reg_model,
-        savemodel=savemodel,
-        saveresults=saveresults,
-        save_dir=save_dir,
-        inscaler=inscaler,
-        outscaler=outscaler,
-        normative_model_name=normative_model_name,
-    )
