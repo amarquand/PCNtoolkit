@@ -28,26 +28,28 @@ class Messages:
     BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED = "Hyperparameters have not changed, exiting"
     REGRESSION_MODEL_CONFIGURATION_VALID = "Configuration of regression model is valid."
     JOB_STATUS_MONITOR = """
------------------------------------------------------
-            PCNtoolkit Job Status Monitor ®
------------------------------------------------------
-Job ID      Name      State      Time      Nodes
------------------------------------------------------
+---------------------------------------------------------
+              PCNtoolkit Job Status Monitor ®
+---------------------------------------------------------
+Task uuid: {uuid}
+---------------------------------------------------------
+Job ID      Name          State      Time      Nodes
+---------------------------------------------------------
 """
 
 
     NO_MORE_RUNNING_JOBS = """
------------------------------------------------------
+---------------------------------------------------------
 No more running jobs!
------------------------------------------------------
+---------------------------------------------------------
 """
 
     JOB_STATUS_SUMMARY = """
------------------------------------------------------
+---------------------------------------------------------
 Total active jobs: {total_active_jobs}
 Total completed jobs: {total_completed_jobs}
 Total failed jobs: {total_failed_jobs}
------------------------------------------------------
+---------------------------------------------------------
 """
     JOB_STATUS_LINE = "{:<11} {:<9} {:<10} {:<9} {:<14}"
     NO_PYTHON_PATH_SPECIFIED = "No python path specified. Using interpreter path of current process: {python_path}"
@@ -57,11 +59,11 @@ Total failed jobs: {total_failed_jobs}
     LOADING_RUNNER_STATE = "Loading runner state from:\n\t{runner_file}"
     RUNNER_LOADED = (
         "Runner loaded\n"
-        "-----------------------------------------------------\n"
+        "---------------------------------------------------------"
         "Active jobs: {n_active_jobs}\n"
         "Finished jobs: {n_finished_jobs}\n"
         "Failed jobs: {n_failed_jobs}\n"
-        "--------------------------------------------"
+        "---------------------------------------------------------"
     )
     UUID_FOR_RUNNER_CREATED = "UUID for runner task created: {uuid}"
     LOG_DIR_CREATED = "Log directory created:\n\t{log_dir}"
@@ -148,6 +150,8 @@ class Errors:
     HBR_MODEL_NOT_FITTED = "HBR model is not fitted"
     ERROR_BLR_TRANSFER_NOT_IMPLEMENTED = "BLR transfer not implemented"
     ERROR_MULTIPLE_COVARIATE_DIMS = "Multiple covariate dimensions found: {covariate_dims}"
+    ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Predict with cross-validation is not supported. Please use fit_predict instead."
+
 class Output:
     _show_messages = True  # Default to showing output
     _show_warnings = True
@@ -180,12 +184,12 @@ class Output:
                 warnings.warn(message.format(*args, **kwargs))
 
     @classmethod
-    def error(cls, message: str, *args, **kwargs) -> ValueError:
+    def error(cls, message: str, *args, **kwargs) -> str:
         """Print error message"""
         if cls._show_pid:
-            return ValueError("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
+            return "Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs)
         else:
-            return ValueError(message.format(*args, **kwargs))
+            return message.format(*args, **kwargs)
 
     @classmethod
     def get_show_pid(cls) -> bool:

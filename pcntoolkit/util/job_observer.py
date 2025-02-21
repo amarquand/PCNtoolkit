@@ -22,42 +22,50 @@ class JobStatus:
 
 
 class JobObserver:
-    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs"):
+    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs", uuid: str = ""):
         self.all_job_ids = copy.deepcopy(active_job_ids)
         self.active_job_ids = copy.deepcopy(active_job_ids)
         self.job_type = job_type
         self.log_dir = log_dir
+        self.task_uuid = uuid
         # Reverse mapping from job_id to job_name for looking up success files
         self.job_id_to_name = {v: k for k, v in active_job_ids.items()}
 
     def check_success_file(self, job_name: str) -> bool:
         """Check if a success file exists for the given job name."""
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
-        if not os.path.exists(os.path.abspath(success_file)):
-            if not Path(success_file).exists():
-                return False
-        return True
+        max_retries = 10
+        retry_delay = 1  # seconds
+        
+        for _ in range(max_retries):
+            if os.path.exists(success_file):
+                try:
+                    # Try to open the file to ensure it's fully written
+                    with open(success_file, 'r') as f:
+                        f.read()
+                    return True
+                except (IOError, OSError):
+                    pass
+            time.sleep(retry_delay)
+        return False
 
     def get_job_statuses(self) -> List[JobStatus]:
         """Get status of all tracked jobs."""
         # Get all job statuses at once
-        if self.job_type == "local":
-            process = subprocess.Popen(
-                ["ps", "-e", "-o", "pid,comm,stat,etime"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-        elif self.job_type == "slurm":
+        if self.job_type == "slurm":
             process = subprocess.Popen(
                 ["squeue", "--format=%i|%j|%T|%M|%N", "--noheader"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
-        else:
-            raise ValueError(f"Invalid job type: {self.job_type}")
-
+        elif self.job_type == "torque":
+            process = subprocess.Popen(
+                ["qstat", "--format=%i|%j|%T|%M|%N", "--noheader"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
         stdout, stderr = process.communicate()
 
         statuses = []
@@ -66,38 +74,23 @@ class JobObserver:
             lines = [line.strip() for line in stdout.split("\n") if line.strip()]
             for line in lines:
                 try:
-                    if self.job_type == "local":
-                        job_id = line.split(maxsplit=1)[0]
-                        if job_id in list(self.all_job_ids.values()):
-                            job_id, name, state, time = line.split()
-                            state = self.map_local_to_slurm_state(state)
-                            job_name = self.job_id_to_name.get(job_id)
+                    job_id, name, state, time, nodes = line.split("|")
+                    if job_id in list(self.all_job_ids.values()):
+                        job_name = self.job_id_to_name.get(job_id)
+                        if state not in ["RUNNING", "PENDING", "COMPLETING"]:
                             success_exists = (job_name is not None) and self.check_success_file(job_name)
-                            statuses.append(
-                                JobStatus(
-                                    job_id=job_id,
-                                    name=job_name or "",
-                                    state=state,
-                                    time=time,
-                                    nodes="local",
-                                    success_file_exists=success_exists,
-                                )
+                        else:
+                            success_exists = False
+                        statuses.append(
+                            JobStatus(
+                                job_id=job_id,
+                                name=name,
+                                state=state,
+                                time=time,
+                                nodes=nodes,
+                                success_file_exists=success_exists,
                             )
-                    else:
-                        job_id, name, state, time, nodes = line.split("|")
-                        if job_id in list(self.all_job_ids.values()):
-                            job_name = self.job_id_to_name.get(job_id)
-                            success_exists = (job_name is not None) and self.check_success_file(job_name)
-                            statuses.append(
-                                JobStatus(
-                                    job_id=job_id,
-                                    name=name,
-                                    state=state,
-                                    time=time,
-                                    nodes=nodes,
-                                    success_file_exists=success_exists,
-                                )
-                            )
+                        )
                 except ValueError as e:
                     Output.warning(Warnings.ERROR_PARSING_JOB_STATUS_LINE, line=line, error=e)
         elif stderr:
@@ -124,21 +117,6 @@ class JobObserver:
                 )
         return statuses
 
-    def map_local_to_slurm_state(self, local_state: str) -> str:
-        base_state = local_state[0].upper()
-
-        state_map = {
-            "R": "RUNNING",  # Running or runnable
-            "S": "RUNNING",  # Interruptible sleep
-            "D": "RUNNING",  # Uninterruptible sleep
-            "Z": "FAILED",  # Zombie
-            "T": "SUSPENDED",  # Stopped
-            "X": "FAILED",  # Dead
-            "I": "PENDING",  # Idle kernel thread
-        }
-        # Assume that if the job is not in the state map, it is completed (sorry)
-        return state_map.get(base_state, "COMPLETED")
-
     def wait_for_jobs(self, check_interval=1):
         """Wait for all submitted jobs to complete.
 
@@ -154,8 +132,10 @@ class JobObserver:
         except NameError:
             in_notebook = False
 
+        # Give the jobs time to start
+        time.sleep(5)
         statuses = self.get_job_statuses()
-        while any(status.state == "RUNNING" for status in statuses):
+        while any(status.state in ["RUNNING", "PENDING", "COMPLETING"] for status in statuses):
             self.show_job_status_monitor(in_notebook, statuses)
             time.sleep(check_interval)
             statuses = self.get_job_statuses()
@@ -171,7 +151,7 @@ class JobObserver:
         Output.set_show_messages(True)
         if in_notebook:
             clear_output(wait=True)
-        Output.print(Messages.JOB_STATUS_MONITOR)
+        Output.print(Messages.JOB_STATUS_MONITOR, uuid=self.task_uuid)
         for status in sorted(statuses, key=lambda x: x.job_id):
             Output.print(
                     Messages.JOB_STATUS_LINE,
@@ -200,7 +180,7 @@ class JobObserver:
         Output.print(Messages.JOB_STATUS_SUMMARY, total_completed_jobs=completed_jobs, total_active_jobs=active_jobs, total_failed_jobs=failed_jobs)
 
 
-        if not any(status.state == "RUNNING" for status in statuses):
+        if not any(status.state in ["RUNNING", "PENDING", "COMPLETING"] for status in statuses):
             Output.print(Messages.NO_MORE_RUNNING_JOBS)
         else:
             if not in_notebook:

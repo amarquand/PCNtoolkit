@@ -319,46 +319,73 @@ class NormData(xr.Dataset):
     def merge(self, other: NormData) -> NormData:
         """
         Merge two NormData objects.
+
+        Drops all columns that are not present in both datasets.
         """
+
         new_data_vars = {}
         new_coords = {}
-        if hasattr(self, "X") and hasattr(other, "X"):
-            new_X = np.concatenate([self.X.values, other.X.values], axis=0)
-            new_data_vars["X"] = (["datapoints", "covariates"], new_X)
-            new_coords["datapoints"] = list(np.arange(new_X.shape[0]))
-            new_coords["covariates"] = self.covariates.to_numpy()
 
+        covar_intersection = list(set(self.covariates.to_numpy()) & set(other.covariates.to_numpy()))
+        
+        if hasattr(self, "X") and hasattr(other, "X"):
+            new_X = xr.DataArray(np.zeros((self.X.shape[0] + other.X.shape[0], len(covar_intersection))), dims=["datapoints", "covariates"], coords={"covariates": covar_intersection}) 
+            for i, covar in enumerate(covar_intersection):
+                new_X[:, i] = np.concatenate([self.X.sel(covariates=covar).values, other.X.sel(covariates=covar).values], axis=0)
+            new_data_vars["X"] = (["datapoints", "covariates"], new_X.data)
+            new_coords["datapoints"] = list(np.arange(new_X.shape[0]))
+            new_coords["covariates"] = covar_intersection
+
+        respvar_intersection = list(set(self.response_vars.to_numpy()) & set(other.response_vars.to_numpy()))
+       
         if hasattr(self, "Y") and hasattr(other, "Y"):
-            new_y = np.concatenate([self.Y.values, other.Y.values], axis=0)
-            new_data_vars["Y"] = (["datapoints", "response_vars"], new_y)
-            new_coords["datapoints"] = list(np.arange(new_y.shape[0]))
-            new_coords["response_vars"] = self.response_vars.to_numpy()
+            new_Y = xr.DataArray(np.zeros((new_X.shape[0], len(respvar_intersection))), dims=["datapoints", "response_vars"], coords={"response_vars": respvar_intersection})
+            for i, respvar in enumerate(respvar_intersection):
+                new_Y[:, i] = np.concatenate([self.Y.sel(response_vars=respvar).values, other.Y.sel(response_vars=respvar).values], axis=0)
+            new_data_vars["Y"] = (["datapoints", "response_vars"], new_Y.data)
+            new_coords["datapoints"] = list(np.arange(new_Y.shape[0]))
+            new_coords["response_vars"] = respvar_intersection
+
 
         if hasattr(self, "Y_harmonized") and hasattr(other, "Y_harmonized"):
-            new_y_harmonized = np.concatenate([self.Y_harmonized.values, other.Y_harmonized.values], axis=0)
-            new_data_vars["Y_harmonized"] = (["datapoints", "response_vars"], new_y_harmonized)
-            new_coords["datapoints"] = list(np.arange(new_y_harmonized.shape[0]))
-            new_coords["response_vars"] = self.response_vars.to_numpy()
+            new_Y_harmonized = xr.DataArray(np.zeros((new_X.shape[0], len(respvar_intersection))), dims=["datapoints", "response_vars"], coords={"response_vars": respvar_intersection})
+            for i, respvar in enumerate(respvar_intersection):
+                new_Y_harmonized[:, i] = np.concatenate([self.Y_harmonized.sel(response_vars=respvar).values, other.Y_harmonized.sel(response_vars=respvar).values], axis=0)
+            new_data_vars["Y_harmonized"] = (["datapoints", "response_vars"], new_Y_harmonized.data)
+            new_coords["datapoints"] = list(np.arange(new_Y_harmonized.shape[0]))
+            new_coords["response_vars"] = respvar_intersection
 
         if hasattr(self, "Z") and hasattr(other, "Z"):
-            new_Z = np.concatenate([self.Z.values, other.Z.values], axis=0)
-            new_data_vars["Z"] = (["datapoints", "response_vars"], new_Z)
+            new_Z = xr.DataArray(np.zeros((new_X.shape[0], len(respvar_intersection))), dims=["datapoints", "response_vars"], coords={"response_vars": respvar_intersection})
+            for i, respvar in enumerate(respvar_intersection):
+                new_Z[:, i] = np.concatenate([self.Z.sel(response_vars=respvar).values, other.Z.sel(response_vars=respvar).values], axis=0)
+            new_data_vars["Z"] = (["datapoints", "response_vars"], new_Z.data)
             new_coords["datapoints"] = list(np.arange(new_Z.shape[0]))
-            new_coords["response_vars"] = self.response_vars.to_numpy()
+            new_coords["response_vars"] = respvar_intersection
 
         if hasattr(self, "centiles") and hasattr(other, "centiles"):
             if self.centile.to_numpy() == other.centile.to_numpy():
-                new_centiles = np.concatenate([self.centiles.values, other.centiles.values], axis=0)
-                new_data_vars["centiles"] = (["datapoints", "response_vars", "centile"], new_centiles)
+                new_centiles = xr.DataArray(np.zeros((new_X.shape[0], len(respvar_intersection), len(self.centile.to_numpy()))), 
+                                            dims=["datapoints", "response_vars", "centile"], 
+                                            coords={"response_vars": respvar_intersection, "centile": self.centile.to_numpy()})
+                for i, respvar in enumerate(respvar_intersection):
+                    for j, centile in enumerate(self.centile.to_numpy()):
+                        new_centiles[:, i, j] = np.concatenate([self.centiles.sel(response_vars=respvar, centile=centile).values, 
+                                                                other.centiles.sel(response_vars=respvar, centile=centile).values], axis=0)
+                new_data_vars["centiles"] = (["datapoints", "response_vars", "centile"], new_centiles.data)
                 new_coords["datapoints"] = list(np.arange(new_centiles.shape[0]))
-                new_coords["response_vars"] = self.response_vars.to_numpy()
+                new_coords["response_vars"] = respvar_intersection
                 new_coords["centile"] = self.centile.to_numpy()
 
+        batch_effect_dims_intersection = list(set(self.batch_effect_dims.to_numpy()) & set(other.batch_effect_dims.to_numpy()))
+
         if hasattr(self, "batch_effects") and hasattr(other, "batch_effects"):
-            new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
-            new_data_vars["batch_effects"] = (["datapoints", "batch_effect_dims"], new_batch_effects)
+            new_batch_effects = xr.DataArray(np.zeros((new_X.shape[0], len(batch_effect_dims_intersection))).astype(str), dims=["datapoints", "batch_effect_dims"], coords={"batch_effect_dims": batch_effect_dims_intersection})
+            for i, batch_effect_dim in enumerate(batch_effect_dims_intersection):
+                new_batch_effects[:, i] = np.concatenate([self.batch_effects.sel(batch_effect_dims=batch_effect_dim).values, other.batch_effects.sel(batch_effect_dims=batch_effect_dim).values], axis=0)
+            new_data_vars["batch_effects"] = (["datapoints", "batch_effect_dims"], new_batch_effects.data)
             new_coords["datapoints"] = list(np.arange(new_batch_effects.shape[0]))
-            new_coords["batch_effect_dims"] = self.batch_effect_dims.to_numpy()
+            new_coords["batch_effect_dims"] = batch_effect_dims_intersection
 
         new_normdata = NormData(
             name=self.attrs["name"],
@@ -554,8 +581,8 @@ class NormData(xr.Dataset):
             *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
         )
         for train_idx, test_idx in stratified_kfold_split.split(self.X, batch_effects_stringified):
-            split1 = self.isel(datapoints=train_idx)
-            split2 = self.isel(datapoints=test_idx)
+            split1 = copy.deepcopy(self.isel(datapoints=train_idx))
+            split2 = copy.deepcopy(self.isel(datapoints=test_idx))
             yield split1, split2
 
     def register_unique_batch_effects(self) -> None:

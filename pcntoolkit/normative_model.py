@@ -456,7 +456,9 @@ class NormativeModel:
         self.postprocess(synth)
         self.postprocess(data)
         merged_data = data.merge(synth)
-
+        if save_dir is None:
+            save_dir = self.save_dir+"_extend"
+            
         new_model = NormativeModel(
             copy.deepcopy(self.template_regression_model),
             savemodel=True,
@@ -465,12 +467,9 @@ class NormativeModel:
             saveplots=True,
             inscaler=self.inscaler,
             outscaler=self.outscaler,
-            save_dir=self.save_dir,
+            save_dir=save_dir,
         )
-        if save_dir is not None:
-            new_model.save_dir = save_dir
-        else:
-            new_model.save_dir = self.save_dir+"_extend"
+
         new_model.inscalers = copy.deepcopy(self.inscalers)
         new_model.outscalers = copy.deepcopy(self.outscalers)
         new_model.fit(merged_data)
@@ -586,11 +585,11 @@ class NormativeModel:
         """
         max_batch_effect_count = max([len(v) for v in self.unique_batch_effects.values()])
         if n_samples < max_batch_effect_count:
-            raise Output.error(
+            raise ValueError(Output.error(
                 Errors.SAMPLE_BATCH_EFFECTS,
                 n_samples=n_samples,
                 max_batch_effect_count=max_batch_effect_count,
-            )
+            )) 
 
         bes = xr.DataArray(
             np.zeros((n_samples, len(self.batch_effect_counts.keys()))).astype(str),
@@ -834,7 +833,11 @@ class NormativeModel:
         if hasattr(data, "Z"):
             plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
         if hasattr(data, "centiles"):
-            plot_centiles(self, data, save_dir=os.path.join(self.save_dir, "plots"), show_data=True, show_other_data=True)
+            plot_centiles(self, 
+                          data, 
+                          save_dir=os.path.join(self.save_dir, "plots"), show_data=True,
+                          show_other_data=True,
+                          harmonize_data=True)
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
@@ -977,7 +980,7 @@ def create_normative_model_from_args(args: dict[str, str]) -> NormativeModel:
     elif args["alg"] == "hbr":
         template_reg_model = HBR.from_args("template", args)
     else:
-        raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=args["alg"])
+        raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=args["alg"]))
     return NormativeModel(
         template_reg_model=template_reg_model,
         savemodel=savemodel,

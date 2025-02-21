@@ -140,7 +140,7 @@ def plot_centiles(
             if isinstance(v, str):
                 batch_effects[k] = [v]
             elif not isinstance(v, list):
-                raise Output.error(Errors.ERROR_BATCH_EFFECTS_NOT_LIST, batch_effect_type=type(v))
+                raise ValueError(Output.error(Errors.ERROR_BATCH_EFFECTS_NOT_LIST, batch_effect_type=type(v)))
 
     if plt_kwargs is None:
         plt_kwargs = {}

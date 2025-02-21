@@ -186,7 +186,7 @@
 #         if "=" in arg:
 #             key, value = arg.split("=")
 #             if key in conf_dict:
-#                 raise Output.error(Errors.ERROR_ARGUMENT_SPECIFIED_TWICE, key=key)
+#                 raise ValueError(Output.error(Errors.ERROR_ARGUMENT_SPECIFIED_TWICE, key=key))
 #             conf_dict[key] = value
 
 #     for k, v in conf_dict.items():
@@ -247,7 +247,7 @@
 #         case "fit_predict":
 #             fit_predict(parsed_args)
 #         case _:
-#             raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION, func=parsed_args["func"])
+#             raise ValueError(Output.error(Errors.ERROR_UNKNOWN_FUNCTION, func=parsed_args["func"]))
 
 
 # def entrypoint(*args):

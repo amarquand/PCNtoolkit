@@ -64,7 +64,7 @@ class BasisFunction(ABC):
 
     def transform(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
-            raise Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED)
+            raise ValueError(Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED))
         all_arrays = []
         for i in range(X.shape[1]):
             if i in self.basis_column:
@@ -84,7 +84,7 @@ class BasisFunction(ABC):
         array = X[:, i]
         squeezed = np.squeeze(array)
         if squeezed.ndim > 1:
-            raise Output.error(Errors.ERROR_DATA_MUST_BE_1D)
+            raise ValueError(Output.error(Errors.ERROR_DATA_MUST_BE_1D))
         transformed_array = self._transform(array, i)
         if transformed_array.ndim == 1:
             transformed_array = transformed_array.reshape(-1, 1)
