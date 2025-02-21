@@ -48,7 +48,7 @@ class RegressionModel(ABC):
     ):
         self._name: str = name
         self.is_fitted: bool = is_fitted
-        self._is_from_dict: bool = is_from_dict
+        self.is_from_dict: bool = is_from_dict
 
     @property
     def name(self) -> str:
@@ -135,31 +135,11 @@ class RegressionModel(ABC):
         """
         pass
 
-    @abstractmethod
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
         """
         pass
-    
-    @property
-    def is_from_dict(self) -> bool:
-        """
-        Check if model was instantiated from dictionary.
-
-        Returns
-        -------
-        bool
-            True if model was created from dictionary, False otherwise
-        """
-        return self._is_from_dict
-    
-    @is_from_dict.setter
-    def is_from_dict(self, is_from_dict: bool) -> None:
-        """
-        Set the model's is_from_dict attribute.
-        """
-        self._is_from_dict = is_from_dict
     
     @property
     def regmodel_dict(self) -> dict:

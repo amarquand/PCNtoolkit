@@ -58,7 +58,7 @@ def sigma():
     return make_prior(
         linear=True,
         slope=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
-        intercept=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
+        intercept=make_prior(dist_name="Normal", dist_params=(1.0, 2.0)),
         mapping="softplus",
         mapping_params=(0.0, 3.0),
     )
