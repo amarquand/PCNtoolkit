@@ -39,7 +39,7 @@ class Evaluator:
         NormData
             Data container updated with evaluation measures
         """
-        data["Yhat"] = data.centiles.sel(cdf=0.5, method="nearest")
+        data["Yhat"] = data.centiles.sel(centile=0.5, method="nearest")
         all_measures = [
             "Rho",
             "Rho_p",
@@ -251,7 +251,7 @@ class Evaluator:
         float
             Spearman's rank correlation coefficient between actual and predicted values
         """
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
         rho, p_rho = stats.spearmanr(y, yhat)
         return float(rho), float(p_rho)
@@ -260,7 +260,7 @@ class Evaluator:
         """
         Calculate S2 for model predictions.
         """
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
         r2 = 1 - np.var(y - yhat) / np.var(y)
         return float(r2)
@@ -279,7 +279,7 @@ class Evaluator:
         float
             Root mean square error between actual and predicted values
         """
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
         rmse = np.sqrt(np.mean((y - yhat) ** 2))
         return float(rmse)
@@ -298,7 +298,7 @@ class Evaluator:
         float
             Standardized mean square error between actual and predicted values
         """
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
 
         mse = np.mean((y - yhat) ** 2)
@@ -321,7 +321,7 @@ class Evaluator:
         float
             Explained variance score between actual and predicted values
         """
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
         expv = 1 - np.var(y - yhat) / np.var(y)
         return float(expv)  # Explicitly cast to float
@@ -341,9 +341,9 @@ class Evaluator:
             Mean standardized log loss between actual and predicted values
         """
         pred_log_prob = data["logp"].values
-        sample_mean = np.mean(data["y"].values)
-        sample_std = np.std(data["y"].values)  # For some reason, scipy normal distribution uses std instead of var
-        naive_logp = stats.norm.logpdf(data["y"].values, sample_mean, sample_std)  # ¯\_(ツ)_/¯
+        sample_mean = np.mean(data["Y"].values)
+        sample_std = np.std(data["Y"].values)  # For some reason, scipy normal distribution uses std instead of var
+        naive_logp = stats.norm.logpdf(data["Y"].values, sample_mean, sample_std)  # ¯\_(ツ)_/¯
         msll = np.mean(pred_log_prob - naive_logp)
         return float(msll)
 
@@ -380,7 +380,7 @@ class Evaluator:
             Bayesian Information Criterion value
         """
         n_params = self.n_params()
-        y = data["y"].values
+        y = data["Y"].values
         yhat = data["Yhat"].values
 
         rss = np.sum((y - yhat) ** 2)
@@ -402,7 +402,7 @@ class Evaluator:
         float
             Shapiro-Wilk W statistic
         """
-        y = data["zscores"].values
+        y = data["Z"].values
         shapiro_w, _ = stats.shapiro(y)
         return float(shapiro_w)  # Explicitly cast to float
 

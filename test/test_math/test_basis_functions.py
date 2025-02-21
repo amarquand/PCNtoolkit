@@ -1,6 +1,6 @@
 import pytest
 
-from pcntoolkit.util.basis_function import create_basis_function
+from pcntoolkit.math.basis_function import create_basis_function
 from test.fixtures.norm_data_fixtures import *
 
 
@@ -19,23 +19,23 @@ def test_to_and_from_dict(basis_function_name, basis_function_class):
 def test_poly_fit_and_transform(norm_data_from_arrays, basis_column):
     degree = 3
     basis_function = create_basis_function("polynomial", source_array_name="X", degree=degree, basis_column=basis_column)
-    basis_function.fit(norm_data_from_arrays)
-    basis_function.transform(norm_data_from_arrays)
+    basis_function.fit(norm_data_from_arrays.X.values)
+    Phi = basis_function.transform(norm_data_from_arrays.X.values)
     assert basis_function.is_fitted
     assert basis_function.basis_name == "poly"
     if basis_column is None:
-        assert norm_data_from_arrays.Phi.shape == (
+        assert Phi.shape == (
             norm_data_from_arrays.X.data.shape[0],
             len(norm_data_from_arrays.X.coords["covariates"]) * degree,
         )
     else:
         if isinstance(basis_column, int):
-            assert norm_data_from_arrays.Phi.shape == (
+            assert Phi.shape == (
                 norm_data_from_arrays.X.data.shape[0],
                 degree + norm_data_from_arrays.X.data.shape[1] - 1,
             )
         else:
-            assert norm_data_from_arrays.Phi.shape == (
+            assert Phi.shape == (
                 norm_data_from_arrays.X.data.shape[0],
                 degree * len(basis_column) + (norm_data_from_arrays.X.data.shape[1] - len(basis_column)),
             )
@@ -44,11 +44,11 @@ def test_poly_fit_and_transform(norm_data_from_arrays, basis_column):
 @pytest.mark.parametrize("nknots, degree", [(8, 4), (10, 4), (10, 3)])
 def test_bspline_fit_and_transform(norm_data_from_arrays, nknots, degree):
     basis_function = create_basis_function("bspline", source_array_name="X", degree=degree, nknots=nknots)
-    basis_function.fit(norm_data_from_arrays)
-    basis_function.transform(norm_data_from_arrays)
+    basis_function.fit(norm_data_from_arrays.X.values)
+    Phi = basis_function.transform(norm_data_from_arrays.X.values)
     assert basis_function.is_fitted
     assert basis_function.basis_name == "bspline"
-    assert norm_data_from_arrays.Phi.shape == (
+    assert Phi.shape == (
         norm_data_from_arrays.X.data.shape[0],
         len(norm_data_from_arrays.X.coords["covariates"]) * (nknots + degree - 1),
     )

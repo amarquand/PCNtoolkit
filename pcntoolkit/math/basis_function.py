@@ -1,46 +1,40 @@
 from __future__ import annotations
 
+import copy
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import numpy as np
-import xarray as xr
 from scipy.interpolate import BSpline
 
-from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.util.output import Errors, Output
 
 
-def create_basis_function_from_dict(basis_function_dict: dict) -> BasisFunction:
-    basis_function_type = basis_function_dict["basis_function"]
-    basis_function = create_basis_function(basis_function_type, **basis_function_dict)
-    return basis_function
-
-
 def create_basis_function(
-    basis_type: str | dict,
-    source_array_name: str = "scaled_X",
+    basis_type: str | dict | None,
     basis_column: Optional[Union[int, list[int]]] = None,
     **kwargs,
 ) -> BasisFunction:
     if isinstance(basis_type, dict):
-        return create_basis_function_from_dict(basis_type)
+        return BasisFunction.from_dict(basis_type)
     elif basis_type in ["polynomial", "PolynomialBasisFunction"]:
-        return PolynomialBasisFunction(source_array_name, basis_column, **kwargs)
+        return PolynomialBasisFunction(basis_column, **kwargs)
     elif basis_type in ["bspline", "BsplineBasisFunction"]:
-        return BsplineBasisFunction(source_array_name, basis_column, **kwargs)
+        new_knots = {int(k):v for k,v in kwargs.pop("knots",{}).items()}
+        for k, v in new_knots.items():
+            if isinstance(v, list):
+                new_knots[k] = np.array(v)
+        return BsplineBasisFunction(basis_column, **kwargs, knots=new_knots)
     else:
-        return LinearBasisFunction(source_array_name, basis_column)
+        return LinearBasisFunction(basis_column)
 
 
 class BasisFunction(ABC):
     def __init__(
         self,
-        source_array_name: str = "scaled_X",
         basis_column: Optional[int | list[int]] = None,
         **kwargs,
     ):
-        self.source_array_name = source_array_name
         self.is_fitted: bool = kwargs.get("is_fitted", False)
         self.basis_name: str = kwargs.get("basis_name", "basis")
         self.min: dict[int, float] = kwargs.get("min", {})
@@ -54,65 +48,50 @@ class BasisFunction(ABC):
         else:
             self.basis_column: list[int] = [-1]
 
-    def fit(self, data: NormData) -> None:
-        if self.basis_column == [-1]:
-            self.basis_column = [i for i in range(data[self.source_array_name].data.shape[1])]
-        if self.source_array_name not in data.data_vars:
-            raise Output.error(Errors.ERROR_SOURCE_ARRAY_NOT_FOUND, source_array_name=self.source_array_name)
-        source_array = data[self.source_array_name]
-        for i in self.basis_column:
-            self.fit_column(source_array, i)
+    @classmethod
+    def from_dict(cls, my_dict: dict) -> BasisFunction:
+        basis_function_type = my_dict["basis_function"]
+        basis_function = create_basis_function(basis_function_type, **my_dict)
+        return basis_function
 
+    def fit(self, X: np.ndarray) -> None:
+        if self.basis_column == [-1]:
+            self.basis_column = [i for i in range(X.shape[1])]
+        for i in self.basis_column:
+
+            self.fit_column(X, i)
         self.is_fitted = True
 
-    def transform(self, data: NormData) -> None:
-        if self.source_array_name not in data.data_vars:
-            raise Output.error(Errors.ERROR_SOURCE_ARRAY_NOT_FOUND, source_array_name=self.source_array_name)
+    def transform(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED)
-        source_array = data[self.source_array_name]
         all_arrays = []
-        for i in range(source_array.data.shape[1]):
+        for i in range(X.shape[1]):
             if i in self.basis_column:
-                expanded_arrays = self.transform_column(source_array, i)
+                expanded_arrays = self.transform_column(X, i)
                 all_arrays.append(expanded_arrays)
             else:
-                copied_array = self.copy_column(source_array, i)
-                all_arrays.append(copied_array)
+                copied_array = copy.deepcopy(X[:, i])
+                all_arrays.append(copied_array[:,None])
 
-        data["Phi"] = xr.concat(all_arrays, dim="basis_functions")
+        return np.concatenate(all_arrays, axis=1)
 
-    def copy_column(self, source_array: xr.DataArray, i: int):
-        copied_array = xr.DataArray(
-            source_array.isel(covariates=i).data[:, None],
-            dims=["datapoints", "basis_functions"],
-            coords={
-                "datapoints": source_array.coords["datapoints"],
-                "basis_functions": [f"{source_array.coords['covariates'][i].data.item()}"],
-            },
-        )
+    def copy_column(self, X: np.ndarray, i: int):
+        copied_array = X[:, i]
         return copied_array
 
-    def transform_column(self, data: xr.DataArray, i: int) -> xr.DataArray:
-        array = data.isel(covariates=i).to_numpy()
+    def transform_column(self, X: np.ndarray, i: int) -> np.ndarray:
+        array = X[:, i]
         squeezed = np.squeeze(array)
         if squeezed.ndim > 1:
-            raise Output.error(Errors.ERROR_DATA_MUST_BE_1D, data=data)
+            raise Output.error(Errors.ERROR_DATA_MUST_BE_1D)
         transformed_array = self._transform(array, i)
         if transformed_array.ndim == 1:
             transformed_array = transformed_array.reshape(-1, 1)
-        return xr.DataArray(
-            transformed_array,
-            coords={
-                "basis_functions": [
-                    f"{data.coords['covariates'][i].data.item()}_{self.basis_name}_{j}" for j in range(transformed_array.shape[1])
-                ]
-            },
-            dims=["datapoints", "basis_functions"],
-        )
+        return transformed_array
 
-    def fit_column(self, data: xr.DataArray, i: int) -> None:
-        array = data.isel(covariates=i).to_numpy()
+    def fit_column(self, X: np.ndarray, i: int) -> None:
+        array = X[:, i]
         if self.compute_min:
             self.min[i] = np.min(array)
         if self.compute_max:
@@ -128,7 +107,7 @@ class BasisFunction(ABC):
         pass
 
     def to_dict(self) -> dict:
-        mydict = self.__dict__
+        mydict = copy.deepcopy(self.__dict__)
         mydict["basis_function"] = self.__class__.__name__
         return mydict
 
@@ -136,12 +115,12 @@ class BasisFunction(ABC):
 class PolynomialBasisFunction(BasisFunction):
     def __init__(
         self,
-        source_array_name: str = "scaled_X",
-        basis_column: Optional[Union[int, list[int]]] = None,
+        basis_column: Optional[Union[int, list[int] ]] = None,
+        degree: int = 3,    
         **kwargs,
     ):
-        super().__init__(source_array_name, basis_column, **kwargs)
-        self.degree = kwargs.get("degree", 3)
+        super().__init__(basis_column, **kwargs)
+        self.degree = degree
         self.basis_name = "poly"
 
     def _fit(self, data: np.ndarray, i: int) -> None:
@@ -155,17 +134,25 @@ class PolynomialBasisFunction(BasisFunction):
 class BsplineBasisFunction(BasisFunction):
     def __init__(
         self,
-        source_array_name: str = "scaled_X",
         basis_column: Optional[Union[int, list[int]]] = None,
+        degree: int = 3,
+        nknots: int = 3,
+        left_expand: float = 0.05,
+        right_expand: float = 0.05,
+        knot_method: str = "uniform",
+        knots: dict[int, np.ndarray] = None, #type: ignore
         **kwargs,
     ):
-        super().__init__(source_array_name, basis_column, **kwargs)
-        self.degree = kwargs.get("degree", 3)
-        self.nknots = kwargs.get("nknots", 3)
-        self.left_expand = kwargs.get("left_expand", 0.05)
-        self.right_expand = kwargs.get("right_expand", 0.05)
-        self.knot_method = kwargs.get("knot_method", "uniform")
-        self.knots = kwargs.get("knots", {})
+        super().__init__(basis_column, **kwargs)
+        self.degree = degree
+        self.nknots = nknots
+        self.left_expand = left_expand
+        self.right_expand = right_expand
+        self.knot_method = knot_method
+        self.knots = knots or {}
+        for k, v in self.knots.items(): 
+            if isinstance(v, list):
+                self.knots[k] = np.array(v)
         self.basis_name = "bspline"
 
     def _fit(self, data: np.ndarray, i: int) -> None:
@@ -179,15 +166,33 @@ class BsplineBasisFunction(BasisFunction):
         elif self.knot_method == "quantile":
             knots = np.percentile(data, np.linspace(0, 100, self.nknots))
         knots = np.concatenate([[aug_min] * self.degree, knots, [aug_max] * self.degree])
-        self.knots[i] = knots
+        if isinstance(knots, np.ndarray):
+            self.knots[i] = knots
+        else:
+            self.knots[i] = np.array(knots)
 
     def _transform(self, data: np.ndarray, i: int) -> np.ndarray:
         return BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
 
-
+    def to_dict(self) -> dict:
+        mydict = super().to_dict()
+        mydict["degree"] = self.degree
+        mydict["nknots"] = self.nknots
+        mydict["left_expand"] = self.left_expand
+        mydict["right_expand"] = self.right_expand
+        mydict["knot_method"] = self.knot_method
+        mydict["knots"] = {}
+        for k, v in self.knots.items():
+            if isinstance(v, np.ndarray):
+                mydict["knots"][k] = v.tolist()
+            elif isinstance(v, list):
+                mydict["knots"][k] = v
+            else:
+                mydict["knots"][k] = list(v)
+        return mydict
 class LinearBasisFunction(BasisFunction):
-    def __init__(self, source_array_name: str = "scaled_X", basis_column: Optional[Union[int, list[int]]] = None):
-        super().__init__(source_array_name, basis_column)
+    def __init__(self, basis_column: Optional[Union[int, list[int]]] = None, **kwargs):
+        super().__init__(basis_column, **kwargs)
         self.basis_name = "linear"
 
     def _fit(self, data: np.ndarray, i: int) -> None:

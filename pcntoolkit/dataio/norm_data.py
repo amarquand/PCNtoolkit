@@ -10,6 +10,7 @@ is used by all the models in the toolkit.
 
 from __future__ import annotations
 
+import copy
 from functools import reduce
 
 # pylint: disable=deprecated-class
@@ -42,9 +43,8 @@ from pcntoolkit.util.output import Output, Warnings
 class NormData(xr.Dataset):
     """A class for handling normative modeling data, extending xarray.Dataset.
 
-    This class provides functionality for loading, preprocessing, and managing
-    data for normative modeling. It supports various data formats and includes
-    methods for data scaling, splitting, and visualization.
+    This class provides functionality for loading data for normative modeling.
+    It supports various data formats.
 
     Parameters
     ----------
@@ -63,46 +63,31 @@ class NormData(xr.Dataset):
         Covariate data
     y : xr.DataArray
         Response variable data
-    scaled_X : xr.DataArray
-        Scaled version of covariate data
-    scaled_y : xr.DataArray
-        Scaled version of response variable data
     batch_effects : xr.DataArray
         Batch effect data
-    Phi : xr.DataArray
-        Design matrix
-    scaled_centiles : xr.DataArray
-        Scaled centile data (if applicable)
-    centiles : xr.DataArray
-        Unscaled centile data (if applicable)
-    zscores : xr.DataArray
-        Z-score data (if applicable)
+    Z: xr.DataArray
+        Z-score data
+    centiles: xr.DataArray
+        Centile data
 
-    Notes
-    -----
-    This class stores both original and scaled versions of X and y data.
-    While this approach offers convenience and transparency, it may
-    increase memory usage. Consider memory constraints when working with
-    large datasets.
 
     Examples
     --------
     >>> data = NormData.from_dataframe("my_data", df, covariates, batch_effects, response_vars)
-    >>> data.scale_forward(inscalers, outscalers)
     >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
 
     __slots__ = (
-        "X",
-        "y",
-        "scaled_X",
-        "scaled_y",
-        "Phi",
-        "scaled_centiles",
-        "centiles",
-        "zscores",
+        # "X",
+        # "Y",
+        # "batch_effects",
+        # "Z",
+        # "centiles",
+        # "logp",
+        # "Y_harmonized",
         "unique_batch_effects",
-        "batch_effects_counts",
+        "batch_effect_counts",
+        "batch_effect_covariate_ranges",
     )
 
     def __init__(
@@ -128,6 +113,7 @@ class NormData(xr.Dataset):
         """
         if attrs is None:
             attrs = {}
+        attrs["is_scaled"] = False  # type: ignore
         attrs["name"] = name  # type: ignore
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
         self["batch_effects"] = self["batch_effects"].astype(str)
@@ -137,9 +123,9 @@ class NormData(xr.Dataset):
     def from_ndarrays(
         cls,
         name: str,
-        X: np.ndarray,
-        y: np.ndarray,
-        batch_effects: Optional[np.ndarray] = None,
+        X: np.ndarray | None = None,
+        Y: np.ndarray | None = None,
+        batch_effects: np.ndarray | None = None,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """Create a NormData object from numpy arrays.
@@ -166,30 +152,29 @@ class NormData(xr.Dataset):
         -----
         Input arrays are automatically reshaped to 2D if they are 1D
         """
-        if X.ndim == 1:
-            X = X[:, None]
-        if y.ndim == 1:
-            y = y[:, None]
+        data_vars = {}
+        coords = {}
+        if X is not None:
+            if X.ndim == 1:
+                X = X[:, None]
+            data_vars["X"] = (["datapoints", "covariates"], X)
+            coords["datapoints"] = list(np.arange(X.shape[0]))
+            coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
+        if Y is not None:
+            if Y.ndim == 1:
+                Y = Y[:, None]
+            data_vars["Y"] = (["datapoints", "response_vars"], Y)
+            if "datapoints" not in coords:
+                coords["datapoints"] = list(np.arange(Y.shape[0]))
+            coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
         if batch_effects is not None:
             if batch_effects.ndim == 1:
                 batch_effects = batch_effects[:, None]
-        else:
-            batch_effects = np.zeros((X.shape[0], 1))
-        return cls(
-            name,
-            {
-                "X": (["datapoints", "covariates"], X),
-                "y": (["datapoints", "response_vars"], y),
-                "batch_effects": (["datapoints", "batch_effect_dims"], batch_effects),
-            },
-            coords={
-                "datapoints": list(np.arange(X.shape[0])),
-                "covariates": [f"covariate_{i}" for i in np.arange(X.shape[1])],
-                "response_vars": [f"response_var_{i}" for i in np.arange(y.shape[1])],
-                "batch_effect_dims": [f"batch_effect_{i}" for i in range(batch_effects.shape[1])],
-            },
-            attrs=attrs,
-        )
+            data_vars["batch_effects"] = (["datapoints", "batch_effect_dims"], batch_effects)
+            if "datapoints" not in coords:
+                coords["datapoints"] = list(np.arange(batch_effects.shape[0]))
+            coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+        return cls(name, data_vars, coords, attrs)
 
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
@@ -275,9 +260,9 @@ class NormData(xr.Dataset):
         cls,
         name: str,
         dataframe: pd.DataFrame,
-        covariates: List[str],
-        batch_effects: List[str],
-        response_vars: List[str | LiteralString],
+        covariates: List[str] | None = None,
+        batch_effects: List[str] | None = None,
+        response_vars: List[str | LiteralString] | None = None,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """
@@ -303,65 +288,85 @@ class NormData(xr.Dataset):
         NormData
             An instance of NormData.
         """
-        if response_vars is None or len(response_vars) == 0:
-            Output.warning(Warnings.NO_RESPONSE_VARS, dataset_name=name)
 
-        for response_var in response_vars:
-            if response_var not in dataframe.columns:
-                Output.warning(Warnings.RESPONSE_VAR_NOT_FOUND, dataset_name=name, response_var=response_var)
-                dataframe[response_var] = np.nan
+        data_vars = {}
+        coords = {}
+        if response_vars is not None and len(response_vars) > 0:
+            for respvar in response_vars:
+                if respvar not in dataframe.columns:
+                    dataframe[respvar] = np.nan
+            data_vars["Y"] = (["datapoints", "response_vars"], dataframe[response_vars].to_numpy())
+            coords["response_vars"] = response_vars
+            coords["datapoints"] = list(np.arange(dataframe[response_vars].to_numpy().shape[0]))
+
+        if covariates is not None and len(covariates) > 0:
+            data_vars["X"] = (["datapoints", "covariates"], dataframe[covariates].to_numpy())
+            coords["covariates"] = covariates
+            coords["datapoints"] = list(np.arange(dataframe[covariates].to_numpy().shape[0]))
+
+        if batch_effects is not None and len(batch_effects) > 0:
+            data_vars["batch_effects"] = (["datapoints", "batch_effect_dims"], dataframe[batch_effects].to_numpy())
+            coords["batch_effect_dims"] = batch_effects
+            coords["datapoints"] = list(np.arange(dataframe[batch_effects].to_numpy().shape[0]))
 
         return cls(
             name,
-            {
-                "X": (["datapoints", "covariates"], dataframe[covariates].to_numpy()),
-                "y": (
-                    ["datapoints", "response_vars"],
-                    dataframe[response_vars].to_numpy(),
-                ),
-                "batch_effects": (
-                    ["datapoints", "batch_effect_dims"],
-                    dataframe[batch_effects].to_numpy(),
-                ),
-            },
-            coords={
-                "datapoints": list(np.arange(dataframe[covariates].to_numpy().shape[0])),
-                "response_vars": response_vars,
-                "covariates": covariates,
-                "batch_effect_dims": batch_effects,
-            },
-            attrs=attrs,
+            data_vars,
+            coords,
+            attrs,
         )
 
     def merge(self, other: NormData) -> NormData:
         """
         Merge two NormData objects.
         """
-        new_X = np.concatenate([self.X.values, other.X.values], axis=0)
-        new_y = np.concatenate([self.y.values, other.y.values], axis=0)
-        new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
+        new_data_vars = {}
+        new_coords = {}
+        if hasattr(self, "X") and hasattr(other, "X"):
+            new_X = np.concatenate([self.X.values, other.X.values], axis=0)
+            new_data_vars["X"] = (["datapoints", "covariates"], new_X)
+            new_coords["datapoints"] = list(np.arange(new_X.shape[0]))
+            new_coords["covariates"] = self.covariates.to_numpy()
+
+        if hasattr(self, "Y") and hasattr(other, "Y"):
+            new_y = np.concatenate([self.Y.values, other.Y.values], axis=0)
+            new_data_vars["Y"] = (["datapoints", "response_vars"], new_y)
+            new_coords["datapoints"] = list(np.arange(new_y.shape[0]))
+            new_coords["response_vars"] = self.response_vars.to_numpy()
+
+        if hasattr(self, "Y_harmonized") and hasattr(other, "Y_harmonized"):
+            new_y_harmonized = np.concatenate([self.Y_harmonized.values, other.Y_harmonized.values], axis=0)
+            new_data_vars["Y_harmonized"] = (["datapoints", "response_vars"], new_y_harmonized)
+            new_coords["datapoints"] = list(np.arange(new_y_harmonized.shape[0]))
+            new_coords["response_vars"] = self.response_vars.to_numpy()
+
+        if hasattr(self, "Z") and hasattr(other, "Z"):
+            new_Z = np.concatenate([self.Z.values, other.Z.values], axis=0)
+            new_data_vars["Z"] = (["datapoints", "response_vars"], new_Z)
+            new_coords["datapoints"] = list(np.arange(new_Z.shape[0]))
+            new_coords["response_vars"] = self.response_vars.to_numpy()
+
+        if hasattr(self, "centiles") and hasattr(other, "centiles"):
+            if self.centile.to_numpy() == other.centile.to_numpy():
+                new_centiles = np.concatenate([self.centiles.values, other.centiles.values], axis=0)
+                new_data_vars["centiles"] = (["datapoints", "response_vars", "centile"], new_centiles)
+                new_coords["datapoints"] = list(np.arange(new_centiles.shape[0]))
+                new_coords["response_vars"] = self.response_vars.to_numpy()
+                new_coords["centile"] = self.centile.to_numpy()
+
+        if hasattr(self, "batch_effects") and hasattr(other, "batch_effects"):
+            new_batch_effects = np.concatenate([self.batch_effects.values, other.batch_effects.values], axis=0)
+            new_data_vars["batch_effects"] = (["datapoints", "batch_effect_dims"], new_batch_effects)
+            new_coords["datapoints"] = list(np.arange(new_batch_effects.shape[0]))
+            new_coords["batch_effect_dims"] = self.batch_effect_dims.to_numpy()
 
         new_normdata = NormData(
             name=self.attrs["name"],
-            data_vars={
-                "X": (["datapoints", "covariates"], new_X),
-                "y": (["datapoints", "response_vars"], new_y),
-                "batch_effects": (
-                    ["datapoints", "batch_effect_dims"],
-                    new_batch_effects,
-                ),
-            },
-            coords={
-                "datapoints": list(np.arange(new_X.shape[0])),
-                "response_vars": self.response_vars.to_numpy(),
-                "covariates": self.covariates.to_numpy(),
-                "batch_effect_dims": self.batch_effect_dims.to_numpy(),
-            },
+            data_vars=new_data_vars,
+            coords=new_coords,
             attrs=self.attrs,
         )
         return new_normdata
-
-    # pylint: enable=arguments-differ
 
     def create_synthetic_data(
         self,
@@ -392,8 +397,8 @@ class NormData(xr.Dataset):
         if isinstance(range_dim, int):
             range_dim = self.covariates[range_dim].to_numpy().item()
 
-        min_range = np.min(self.X.sel(covariates=range_dim))
-        max_range = np.max(self.X.sel(covariates=range_dim))
+        min_range = self.attrs["covariate_ranges"][range_dim]["min"]
+        max_range = self.attrs["covariate_ranges"][range_dim]["max"]
         X = np.linspace(min_range, max_range, n_datapoints)
 
         df = pd.DataFrame(X, columns=[range_dim])
@@ -415,8 +420,6 @@ class NormData(xr.Dataset):
         for dim, values in batch_effects_to_sample.items():
             assert dim in self.batch_effect_dims, f"{dim} is not a known batch effect dimension"
             assert len(values) > 0, f"No values provided for batch effect dimension {dim}"
-            for value in values:
-                assert value in self.unique_batch_effects[dim], f"{value} is not a known value for batch effect dimension {dim}"
 
         for batch_effect_dim, values_to_sample in batch_effects_to_sample.items():
             df[batch_effect_dim] = np.random.choice(values_to_sample, n_datapoints)
@@ -424,8 +427,8 @@ class NormData(xr.Dataset):
         # For each response variable, sample from a normal distribution with the mean and std of the original dataset
         for response_var in self.response_vars.to_numpy():
             df[response_var] = np.random.normal(
-                self.y.sel(response_vars=response_var).mean(),
-                self.y.sel(response_vars=response_var).std(),
+                self.Y.sel(response_vars=response_var).mean(),
+                self.Y.sel(response_vars=response_var).std(),
                 n_datapoints,
             )
 
@@ -520,9 +523,9 @@ class NormData(xr.Dataset):
             stratify=batch_effects_stringified,
         )
         split1 = self.isel(datapoints=train_idx)
-        split1.attrs = self.attrs.copy()
+        split1.attrs = copy.deepcopy(self.attrs)
         split2 = self.isel(datapoints=test_idx)
-        split2.attrs = self.attrs.copy()
+        split2.attrs = copy.deepcopy(self.attrs)
         if split_names is not None:
             split1.attrs["name"] = split_names[0]
             split2.attrs["name"] = split_names[1]
@@ -559,15 +562,32 @@ class NormData(xr.Dataset):
         """
         Create a mapping of batch effects dims to unique values.
         """
+        my_be: xr.DataArray = self.batch_effects
         # create a dictionary with for each column in the batch effects, a dict from value to int
         self.attrs["unique_batch_effects"] = {}
-        for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-            self.attrs["unique_batch_effects"][dim] = list(np.unique(self.batch_effects[:, i]))
-        self.attrs["batch_effects_counts"] = {}
-        for i, dim in enumerate(self.batch_effect_dims.to_numpy()):
-            self.attrs["batch_effects_counts"][dim] = {
-                k: v for k, v in zip(*np.unique(self.batch_effects.values[:, i], return_counts=True))
-            }
+        self.attrs["batch_effect_counts"] = {}
+        self.attrs["batch_effect_covariate_ranges"] = {}
+        for dim in self.batch_effect_dims.to_numpy():
+            dim_subset = my_be.sel(batch_effect_dims=dim)
+            uniques, counts = np.unique(dim_subset, return_counts=True)
+            self.attrs["unique_batch_effects"][dim] = list(uniques)
+            self.attrs["batch_effect_counts"][dim] = {k: v for k, v in zip(uniques, counts)}
+            self.attrs["batch_effect_covariate_ranges"][dim] = {}
+            if self.X is not None:
+                for u in uniques:
+                    self.attrs["batch_effect_covariate_ranges"][dim][u] = {}
+                    for c in self.covariates.to_numpy():
+                        u_mask = dim_subset.values == u
+                        my_c = self.X.sel(covariates=c).values[u_mask]
+                        my_min = my_c.min()
+                        my_max = my_c.max()
+                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"min": my_min, "max": my_max}
+        self.attrs["covariate_ranges"] = {}
+        for c in self.covariates.to_numpy():
+            my_c = self.X.sel(covariates=c).values
+            my_min = my_c.min()
+            my_max = my_c.max()
+            self.attrs["covariate_ranges"][c] = {"min": my_min, "max": my_max}
 
     def check_compatibility(self, other: NormData) -> bool:
         """
@@ -612,7 +632,7 @@ class NormData(xr.Dataset):
 
     def scale_forward(self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]) -> None:
         """
-        Scale the data forward using provided scalers.
+        Scale the data forward in-place using provided scalers.
 
         Parameters
         ----------
@@ -621,25 +641,53 @@ class NormData(xr.Dataset):
         outscaler : Dict[str, Any]
             Scalers for the response variable data.
         """
-        # Scale X column-wise using the inscalers
-        self["scaled_X"] = xr.DataArray(
-            np.zeros(self.X.shape),
-            coords=self.X.coords,
-            dims=self.X.dims,
-            attrs=self.X.attrs,
-        )
-        for covariate in self.covariates.to_numpy():
-            self.scaled_X.loc[:, covariate] = inscalers[covariate].transform(self.X.sel(covariates=covariate).data)
+        if not self.attrs["is_scaled"]:
+            # Scale X column-wise using the inscalers
+            if "X" in self.data_vars:
+                scaled_X = np.zeros(self.X.shape)
+                for i, covariate in enumerate(self.covariates.to_numpy()):
+                    scaled_X[:, i] = inscalers[covariate].transform(self.X.sel(covariates=covariate).data)
+                self["X"] = xr.DataArray(
+                    scaled_X,
+                    coords=self.X.coords,
+                    dims=self.X.dims,
+                    attrs=self.X.attrs,
+                )
+            # Scale y column-wise using the outscalers
+            if "Y" in self.data_vars:
+                scaled_y = np.zeros(self.Y.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    scaled_y[:, i] = outscaler[responsevar].transform(self.Y.sel(response_vars=responsevar).data)
+                self["Y"] = xr.DataArray(
+                    scaled_y,
+                    coords=self.Y.coords,
+                    dims=self.Y.dims,
+                    attrs=self.Y.attrs,
+                )
+            if "Y_harmonized" in self.data_vars:
+                scaled_Y_harmonized = np.zeros(self.Y_harmonized.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    scaled_Y_harmonized[:, i] = outscaler[responsevar].transform(
+                        self.Y_harmonized.sel(response_vars=responsevar).data
+                    )
+                self["Y_harmonized"] = xr.DataArray(
+                    scaled_Y_harmonized,
+                    coords=self.Y_harmonized.coords,
+                    dims=self.Y_harmonized.dims,
+                    attrs=self.Y_harmonized.attrs,
+                )
+            if "centiles" in self.data_vars:
+                scaled_centiles = np.zeros(self.centiles.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    scaled_centiles[:, :, i] = outscaler[responsevar].transform(self.centiles.sel(response_vars=responsevar).data)
+                self["centiles"] = xr.DataArray(
+                    scaled_centiles,
+                    coords=self.centiles.coords,
+                    dims=self.centiles.dims,
+                    attrs=self.centiles.attrs,
+                )
 
-        # Scale y column-wise using the outscalers
-        self["scaled_y"] = xr.DataArray(
-            np.zeros(self.y.shape),
-            coords=self.y.coords,
-            dims=self.y.dims,
-            attrs=self.y.attrs,
-        )
-        for responsevar in self.response_vars.to_numpy():
-            self.scaled_y.loc[:, responsevar] = outscaler[responsevar].transform(self.y.sel(response_vars=responsevar).data)
+            self.attrs["is_scaled"] = True
 
     def scale_backward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """
@@ -652,42 +700,54 @@ class NormData(xr.Dataset):
         outscalers : Dict[str, Any]
             Scalers for the response variable data.
         """
-        # Scale X column-wise using the inscalers
-
-        np_X = np.zeros(self.scaled_X.shape)
-        for i, covariate in enumerate(self.covariates.to_numpy()):
-            np_X[:, i] = inscalers[covariate].inverse_transform(self.scaled_X.sel(covariates=covariate).data)
-        self["X"] = xr.DataArray(
-            np_X,
-            coords=self.scaled_X.coords,
-            dims=self.scaled_X.dims,
-            attrs=self.scaled_X.attrs,
-        )
-
-        # Scale y column-wise using the outscalers
-        np_y = np.zeros(self.scaled_y.shape)
-        for i, responsevar in enumerate(self.response_vars.to_numpy()):
-            np_y[:, i] = outscalers[responsevar].inverse_transform(self.scaled_y.sel(response_vars=responsevar).data)
-        self["y"] = xr.DataArray(
-            np_y,
-            coords=self.scaled_y.coords,
-            dims=self.scaled_y.dims,
-            attrs=self.scaled_y.attrs,
-        )
-
-        # Unscale the centiles, if they exist
-        if "scaled_centiles" in self.data_vars:
-            np_centiles = np.zeros(self.scaled_centiles.shape)
-            for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                np_centiles[:, :, i] = outscalers[responsevar].inverse_transform(
-                    self.scaled_centiles.sel(response_vars=responsevar).data
+        if self.attrs["is_scaled"]:
+            if "X" in self.data_vars:
+                unscaled_X = np.zeros(self.X.shape)
+                for i, covariate in enumerate(self.covariates.to_numpy()):
+                    unscaled_X[:, i] = inscalers[covariate].inverse_transform(self.X.sel(covariates=covariate).data)
+                self["X"] = xr.DataArray(
+                    unscaled_X,
+                    coords=self.X.coords,
+                    dims=self.X.dims,
+                    attrs=self.X.attrs,
                 )
-            self["centiles"] = xr.DataArray(
-                np_centiles,
-                coords=self.scaled_centiles.coords,
-                dims=self.scaled_centiles.dims,
-                attrs=self.scaled_centiles.attrs,
-            )
+            if "Y" in self.data_vars:
+                unscaled_y = np.zeros(self.Y.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    unscaled_y[:, i] = outscalers[responsevar].inverse_transform(self.Y.sel(response_vars=responsevar).data)
+                self["Y"] = xr.DataArray(
+                    unscaled_y,
+                    coords=self.Y.coords,
+                    dims=self.Y.dims,
+                    attrs=self.Y.attrs,
+                )
+
+            if "Y_harmonized" in self.data_vars:
+                unscaled_Y_harmonized = np.zeros(self.Y_harmonized.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    unscaled_Y_harmonized[:, i] = outscalers[responsevar].inverse_transform(
+                        self.Y_harmonized.sel(response_vars=responsevar).data
+                    )
+                self["Y_harmonized"] = xr.DataArray(
+                    unscaled_Y_harmonized,
+                    coords=self.Y_harmonized.coords,
+                    dims=self.Y_harmonized.dims,
+                    attrs=self.Y_harmonized.attrs,
+                )
+
+            if "centiles" in self.data_vars:
+                unscaled_centiles = np.zeros(self.centiles.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    unscaled_centiles[:, :, i] = outscalers[responsevar].inverse_transform(
+                        self.centiles.sel(response_vars=responsevar).data
+                    )
+                self["centiles"] = xr.DataArray(
+                    unscaled_centiles,
+                    coords=self.centiles.coords,
+                    dims=self.centiles.dims,
+                    attrs=self.centiles.attrs,
+                )
+            self.attrs["is_scaled"] = False
 
     def split_batch_effects(
         self,
@@ -747,8 +807,8 @@ class NormData(xr.Dataset):
             A DataFrame representation of the NormData instance.
         """
         acc = []
-        x_columns = [col for col in ["X", "scaled_X"] if hasattr(self, col)]
-        y_columns = [col for col in ["y", "zscores", "scaled_y"] if hasattr(self, col)]
+        x_columns = [col for col in ["X"] if hasattr(self, col)]
+        y_columns = [col for col in ["Y", "Y_harmonized", "Z"] if hasattr(self, col)]
         acc.append(
             xr.Dataset.to_dataframe(self[x_columns], dim_order)
             .reset_index(drop=False)
@@ -766,21 +826,13 @@ class NormData(xr.Dataset):
         )
         be.columns = [("batch_effects", col) for col in be.columns]
         acc.append(be)
-        if hasattr(self, "Phi"):
-            phi = (
-                xr.DataArray.to_dataframe(self.Phi, dim_order)
-                .reset_index(drop=False)
-                .pivot(index="datapoints", columns="basis_functions", values="Phi")
-            )
-            phi.columns = [("Phi", col) for col in phi.columns]
-            acc.append(phi)
         if hasattr(self, "centiles"):
             centiles = (
                 xr.DataArray.to_dataframe(self.centiles, dim_order)
                 .reset_index(drop=False)
                 .pivot(
                     index="datapoints",
-                    columns=["response_vars", "cdf"],
+                    columns=["response_vars", "centile"],
                     values="centiles",
                 )
             )

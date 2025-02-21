@@ -1,8 +1,7 @@
 """A module for plotting functions."""
 
-# TODO move all plotting functions to this file
-
-from typing import TYPE_CHECKING, Any, Dict, List
+from re import S
+from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,25 +12,27 @@ from matplotlib.font_manager import FontProperties
 from pcntoolkit.dataio.norm_data import NormData
 
 if TYPE_CHECKING:
-    from pcntoolkit.normative_model.norm_base import NormBase
-
+    from pcntoolkit.normative_model import NormativeModel
 import os
 
 from pcntoolkit.util.output import Errors, Output
 
 
 def plot_centiles(
-    model: "NormBase",
+    model: "NormativeModel",
     data: NormData,
-    centiles: list | None = None,
+    centiles: List[float] | np.ndarray | None = None,
     covariate: str | None = None,
-    batch_effects: Dict[str, List[str]] | None = None,
+    batch_effects: Dict[str, List[str]] | None | Literal["all"] = None,
     show_data: bool = False,
+    harmonize_data: bool = True,
     plt_kwargs: dict | None = None,
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
     save_dir: str | None = None,
+    show_centile_labels: bool = True,
+    show_legend: bool = True,
     **kwargs: Any,
 ) -> None:
     """Generate centile plots for response variables with optional data overlay.
@@ -71,6 +72,15 @@ def plot_centiles(
     markers_data : str, optional
         Column name in data used for marker styles when show_data=True,
         by default "sex".
+    show_other_data : bool, optional
+        Whether to show data points that do not match any batch effects,
+        by default False.
+    save_dir : str | None, optional
+        Directory to save the plot, by default None.
+    show_centile_labels : bool, optional
+        Whether to show the centile labels, by default True.
+    show_legend : bool, optional
+        Whether to show the legend, by default True.
 
     Returns
     -------
@@ -113,11 +123,16 @@ def plot_centiles(
         covariate = data.covariates[0].to_numpy().item()
         assert isinstance(covariate, str)
 
-    if batch_effects is None:
+    if batch_effects == "all":
+        batch_effects = model.unique_batch_effects
+    elif batch_effects is None:
         if model.has_batch_effect:
             batch_effects = data.get_single_batch_effect()
         else:
             batch_effects = {}
+
+    if harmonize_data:
+        data = model.harmonize(data, {k: v[0] for k, v in batch_effects.items()})
 
     # Ensure that the batch effects are in the correct format
     if batch_effects:
@@ -135,7 +150,7 @@ def plot_centiles(
         range_dim=covariate,
         batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()} if batch_effects else None,
     )
-    model.compute_centiles(synth_data, cdf=centiles, **kwargs)
+    model.compute_centiles(synth_data, centiles=centiles, **kwargs)
     for response_var in data.coords["response_vars"].to_numpy():
         _plot_centiles(
             data=data,
@@ -144,12 +159,15 @@ def plot_centiles(
             covariate=covariate,
             batch_effects=batch_effects,
             show_data=show_data,
+            harmonize_data=harmonize_data,
             plt_kwargs=plt_kwargs,
             hue_data=hue_data,
             markers_data=markers_data,
             palette=palette,
             save_dir=save_dir,
             show_other_data=show_other_data,
+            show_centile_labels=show_centile_labels,
+            show_legend=show_legend,
         )
 
 
@@ -160,12 +178,15 @@ def _plot_centiles(
     batch_effects: Dict[str, List[str]],
     covariate: str = None,  # type: ignore
     show_data: bool = False,
+    harmonize_data: bool = True,
     plt_kwargs: dict = None,  # type: ignore
     hue_data: str = "site",
     markers_data: str = "sex",
     palette: str = "viridis",
     save_dir: str | None = None,
     show_other_data: bool = False,
+    show_centile_labels: bool = True,
+    show_legend: bool = True,
 ) -> None:
     """Plot centile curves for a single response variable.
 
@@ -207,10 +228,11 @@ def _plot_centiles(
         "covariates": covariate,
         "response_vars": response_var,
     }
+
     filtered = synth_data.sel(filter_dict)
 
-    for cdf in synth_data.coords["cdf"][::-1]:
-        d_mean = abs(cdf - 0.5)
+    for centile in synth_data.coords["centile"][::-1]:
+        d_mean = abs(centile - 0.5)
         if d_mean < 0.25:
             style = "-"
         elif d_mean < 0.475:
@@ -220,41 +242,44 @@ def _plot_centiles(
 
         sns.lineplot(
             x=filtered.X,
-            y=filtered.centiles.sel(cdf=cdf),
-            color=cmap(cdf),
+            y=filtered.centiles.sel(centile=centile),
+            color=cmap(centile),
             linestyle=style,
             linewidth=1,
             zorder=2,
             legend="brief",
         )
-        color = cmap(cdf)
+        color = cmap(centile)
         font = FontProperties()
         font.set_weight("bold")
-        plt.text(
-            s=cdf.item(),
-            x=filtered.X[0] - 1,
-            y=filtered.centiles.sel(cdf=cdf)[0],
-            color=color,
-            horizontalalignment="right",
-            verticalalignment="center",
-            fontproperties=font,
-        )
-        plt.text(
-            s=cdf.item(),
-            x=filtered.X[-1] + 1,
-            y=filtered.centiles.sel(cdf=cdf)[-1],
-            color=color,
-            horizontalalignment="left",
-            verticalalignment="center",
-            fontproperties=font,
-        )
+        if show_centile_labels:
+            plt.text(
+                s=centile.item(),
+                x=filtered.X[0] - 1,
+                y=filtered.centiles.sel(centile=centile)[0],
+                color=color,
+                horizontalalignment="right",
+                verticalalignment="center",
+                fontproperties=font,
+            )
+            plt.text(
+                s=centile.item(),
+                x=filtered.X[-1] + 1,
+                y=filtered.centiles.sel(centile=centile)[-1],
+                color=color,
+                horizontalalignment="left",
+                verticalalignment="center",
+                fontproperties=font,
+            )
 
     minx, maxx = plt.xlim()
     plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
 
     if show_data:
         df = data.sel(filter_dict).to_dataframe()
-        columns = [("X", covariate), ("y", response_var)]
+        scatter_data = "Y_harmonized" if harmonize_data else "Y"
+
+        columns = [("X", covariate), (scatter_data, response_var)]
         columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
         df = df[columns]
         df.columns = [c[1] for c in df.columns]
@@ -269,6 +294,7 @@ def _plot_centiles(
                 s=20,
                 alpha=0.6,
                 zorder=1,
+                linewidth=0,
             )
         else:
             idx = np.full(len(df), True)
@@ -287,6 +313,7 @@ def _plot_centiles(
                 s=50,
                 alpha=0.8,
                 zorder=1,
+                linewidth=0,
             )
             if show_other_data:
                 non_be_df = df[~idx]
@@ -297,25 +324,34 @@ def _plot_centiles(
                     y=response_var,
                     color="black",
                     style="marker",
+                    linewidth=0,
                     s=20,
                     alpha=0.4,
                     zorder=0,
                 )
-            legend = scatter.get_legend()
-            if legend:
-                handles = legend.legend_handles
-                labels = [t.get_text() for t in legend.get_texts()]
-                plt.legend(
-                    handles,
-                    labels,
-                    title=data.name + " data",
-                    title_fontsize=10,
-                )
-    plt.title(f"Centiles of {response_var}")
+            if show_legend:
+                legend = scatter.get_legend()
+                if legend:
+                    handles = legend.legend_handles
+                    labels = [t.get_text() for t in legend.get_texts()]
+                    plt.legend(
+                        handles,
+                        labels,
+                        title_fontsize=10,
+                    )
+            else:
+                plt.legend().remove()
+    title = f"Centiles of {response_var}"
+    if show_data:
+        if harmonize_data:
+            title = f"{title}\n With harmonized {data.name} data"
+        else:
+            title = f"{title}\n With raw {data.name} data"
+    plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"centiles_{response_var}.png"))
+        plt.savefig(os.path.join(save_dir, f"centiles_{response_var}_{data.name}.png"))
     else:
         plt.show(block=False)
     plt.close()
@@ -437,7 +473,7 @@ def _plot_qq(
     rq = f"{response_var} quantiles"
 
     # Filter columns needed for plotting
-    columns = [("zscores", response_var)]
+    columns = [("Z", response_var)]
     columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
     df = df[columns]
     df.columns = [rq] + [be.item() for be in data.batch_effect_dims]
@@ -452,6 +488,7 @@ def _plot_qq(
 
     if split_data:
         for i, g in enumerate(df.groupby(split_data, sort=False)):
+            my_offset = i * 1.0
             my_id = g[1].index
             df.loc[my_id, rq] += i * 1.0
             rand = np.random.randn(g[1].shape[0])
@@ -466,20 +503,34 @@ def _plot_qq(
         hue=hue_data if hue_data in df else None,
         style=markers_data if markers_data in df else None,
         **plt_kwargs,
+        linewidth=0,
     )
     if plot_id_line:
-        max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
-        plt.plot(
-            [-max_abs_val, max_abs_val],
-            [-max_abs_val, max_abs_val],
-            color="black",
-            linestyle="--",
-        )
+        if split_data:
+            for i, g in enumerate(df.groupby(split_data, sort=False)):
+                my_offset = i * 1.0
+                my_id = g[1].index
+                my_df = df.loc[my_id, rq]
+                max_abs_val = max(abs(my_df.min()), abs(my_df.max())) + 0.5
+                plt.plot(
+                    [-max_abs_val, max_abs_val],
+                    [-max_abs_val + my_offset, max_abs_val + my_offset],
+                    color="black",
+                    linestyle="--",
+                )
+        else:
+            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
+            plt.plot(
+                [-max_abs_val, max_abs_val],
+                [-max_abs_val, max_abs_val],
+                color="black",
+                linestyle="--",
+            )
 
     if bound != 0:
         plt.axis((-bound, bound, -bound, bound))
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"qq_{response_var}.png"))
+        plt.savefig(os.path.join(save_dir, f"qq_{response_var}_{data.name}.png"))
     else:
         plt.show(block=False)
     plt.close()

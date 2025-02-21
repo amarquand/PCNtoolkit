@@ -14,13 +14,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from pcntoolkit.regression_model.reg_conf import RegConf
+import xarray as xr
 
 
 class RegressionModel(ABC):
     """
-    Abstract base class for regression models.
-
     This class defines the interface for all regression models in the toolkit,
     providing common attributes and methods that must be implemented by concrete
     subclasses.
@@ -45,12 +43,10 @@ class RegressionModel(ABC):
     def __init__(
         self,
         name: str,
-        reg_conf: RegConf,
         is_fitted: bool = False,
         is_from_dict: bool = False,
     ):
         self._name: str = name
-        self._reg_conf: RegConf = reg_conf
         self.is_fitted: bool = is_fitted
         self._is_from_dict: bool = is_from_dict
 
@@ -65,19 +61,87 @@ class RegressionModel(ABC):
             The unique identifier of the model
         """
         return self._name
-
-    @property
-    @abstractmethod
-    def reg_conf(self) -> RegConf:
+    
+    @name.setter
+    def name(self, name: str) -> None:
         """
-        Get the model's configuration.
+        Set the model's name.
+        """
+        self._name = name
+    
+    @abstractmethod
+    def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
+        """
+        Fit the model to the data.
+        """
+        pass
+
+    @abstractmethod
+    def forward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> xr.DataArray:
+        """Compute Z-scores for provided Y values 
+
+        Parameters
+        ----------
+        NormData : NormData 
+            Data for normative modeling
 
         Returns
         -------
-        RegConf
-            The configuration object containing model parameters
+        NormData
+            Data with Z-scores derived from Y values
+        """
+        pass
+
+    @abstractmethod
+    def backward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Z: xr.DataArray) -> xr.DataArray:
+        """Compute points in feature space for given z-scores 
+
+        Parameters
+        ----------
+        NormData : NormData
+            Data for normative modeling
+
+        Returns
+        -------
+        NormData
+            Data with Y values derived from Z-scores
         """
 
+    @abstractmethod
+    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> xr.DataArray:
+        """Compute the log-probability of the data under the model.
+        """
+        pass
+
+    @abstractmethod
+    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> RegressionModel:
+        """Transfer the model to a new dataset.
+
+        Parameters
+        ----------
+        X : xr.DataArray
+            Covariate data
+        be : xr.DataArray
+            Batch effect data
+        be_maps : dict[str, dict[str, int]]
+            Batch effect maps
+        Y : xr.DataArray
+            Response data
+
+        Returns
+        -------
+        RegressionModel
+            New instance of the regression model, transfered to the new dataset
+        """
+        pass
+
+    @abstractmethod
+    def model_specific_evaluation(self, path: str) -> None:
+        """
+        Save model-specific evaluation metrics.
+        """
+        pass
+    
     @property
     def is_from_dict(self) -> bool:
         """
@@ -89,10 +153,29 @@ class RegressionModel(ABC):
             True if model was created from dictionary, False otherwise
         """
         return self._is_from_dict
-
+    
+    @is_from_dict.setter
+    def is_from_dict(self, is_from_dict: bool) -> None:
+        """
+        Set the model's is_from_dict attribute.
+        """
+        self._is_from_dict = is_from_dict
+    
+    @property
+    def regmodel_dict(self) -> dict:
+        my_dict: dict[str, str | dict | bool] = {}
+        my_dict["name"] = self.name
+        my_dict["type"] = self.__class__.__name__
+        my_dict["is_fitted"] = self.is_fitted
+        my_dict["is_from_dict"] = self.is_from_dict
+        return my_dict
+        
+    @abstractmethod
     def to_dict(self, path: str | None = None) -> dict:
         """
         Convert model instance to dictionary representation.
+
+        Used for saving models to disk. 
 
         Parameters
         ----------
@@ -104,13 +187,7 @@ class RegressionModel(ABC):
         dict
             Dictionary containing model parameters and configuration
         """
-        my_dict: dict[str, str | dict | bool] = {}
-        my_dict["name"] = self.name
-        my_dict["type"] = self.__class__.__name__
-        my_dict["reg_conf"] = self.reg_conf.to_dict(path)
-        my_dict["is_fitted"] = self.is_fitted
-        my_dict["is_from_dict"] = self.is_from_dict
-        return my_dict
+        pass
 
     @classmethod
     @abstractmethod
@@ -118,6 +195,8 @@ class RegressionModel(ABC):
         """
         Create model instance from dictionary representation.
 
+        Used for loading models from disk. 
+        
         Parameters
         ----------
         dct : dict
@@ -142,6 +221,8 @@ class RegressionModel(ABC):
         """
         Create model instance from arguments dictionary.
 
+        Used for instantiating models from the command line. 
+
         Parameters
         ----------
         name : str
@@ -161,6 +242,7 @@ class RegressionModel(ABC):
         """
 
     @property
+    @abstractmethod
     def has_batch_effect(self) -> bool:
         """
         Check if model includes batch effects.
@@ -170,4 +252,32 @@ class RegressionModel(ABC):
         bool
             True if model includes batch effects, False otherwise
         """
-        return self.reg_conf.has_batch_effect
+        pass
+
+# class TransferableRegressionModel(RegressionModel):
+#     """
+#     Abstract base class for transferable regression models.
+#     """
+    
+#     @abstractmethod
+#     def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> TransferableRegressionModel:
+#         """
+#         Transfer the model to a new dataset.
+
+#         Parameters
+#         ----------
+#         X : xr.DataArray
+#             Covariate data
+#         be : xr.DataArray
+#             Batch effect data
+#         be_maps : dict[str, dict[str, int]]
+#             Batch effect maps
+#         Y : xr.DataArray
+#             Response data
+
+#         Returns
+#         -------
+#         TransferableRegressionModel
+#             New instance of the regression model
+#         """
+#         pass

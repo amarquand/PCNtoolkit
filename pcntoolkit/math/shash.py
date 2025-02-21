@@ -28,24 +28,239 @@ The implementation uses PyMC and PyTensor for probabilistic programming capabili
 All distributions support random sampling and log-probability calculations.
 """
 
+# Third-party imports
 from functools import lru_cache
-from typing import Any, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+import scipy.special as spp  # type: ignore
 from numpy.random import Generator
 from numpy.typing import ArrayLike, NDArray
 from pymc import floatX  # type: ignore
 from pymc.distributions import Continuous  # type: ignore
 from pytensor import tensor as pt
+from pytensor.gradient import grad_not_implemented
 from pytensor.graph.basic import Variable
+from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
 from pytensor.tensor import as_tensor_variable  # type: ignore
 from pytensor.tensor.elemwise import Elemwise
 from pytensor.tensor.random.op import RandomVariable  # type: ignore
 from scipy.special import kv  # type: ignore
 
-from pcntoolkit.regression_model.hbr.KnuOp import knuop
-
 # pylint: disable=arguments-differ
+
+
+# Basic shash operations
+def S(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Sinh arcsinh transformation.
+    """
+    return np.sinh(np.arcsinh(x) * d - e)
+
+
+def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Inverse sinh arcsinh transformation.
+    """
+    return np.sinh((np.arcsinh(x) + e) / d)
+
+
+def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
+    """Bessel function of the second kind for unique values.
+    """
+    ps, idxs = np.unique(p, return_inverse=True)
+    return spp.kv(ps, x)[idxs].reshape(p.shape)
+
+
+def P(q: NDArray[np.float64]) -> NDArray[np.float64]:
+    """The P function as given in Jones et al.
+    """
+    frac = np.exp(1 / 4) / np.sqrt(8 * np.pi)
+    K1 = K((q + 1) / 2, 1 / 4)
+    K2 = K((q - 1) / 2, 1 / 4)
+    a = (K1 + K2) * frac
+    return a
+
+
+def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArray[np.float64]:
+    """The r'th uncentered moment as given in Jones et al.
+    """
+    frac1 = 1 / np.power(2, r)
+    acc = 0
+    for i in range(r + 1):
+        combs = spp.comb(r, i)
+        flip = np.power(-1, i)
+        ex = np.exp((r - 2 * i) * epsilon / delta)
+        p = P((r - 2 * i) / delta)
+        acc += combs * flip * ex * p
+    return frac1 * acc
+
+
+class KnuOp(BinaryScalarOp):
+    """Modified Bessel function of the second kind, PyTensor wrapper for scipy.special.kv.
+
+    This class implements a PyTensor operation for computing the modified Bessel function
+    of the second kind (K_nu(x)). It wraps scipy.special.kv to provide automatic
+    differentiation capabilities within PyTensor computational graphs.
+
+    Parameters
+    ----------
+    dtype_converter : callable
+        Function to convert input types (typically upgrade_to_float)
+    name : str
+        Name of the operation
+
+    Notes
+    -----
+    The modified Bessel function K_nu(x) is a solution to the modified Bessel
+    differential equation. This implementation supports automatic differentiation
+    with respect to both the order (nu) and the argument (x).
+
+    See Also
+    --------
+    scipy.special.kv : The underlying modified Bessel function implementation
+    KnuPrimeOp : Derivative of the modified Bessel function
+    """
+
+    nfunc_spec = ("scipy.special.kv", 2, 1)
+
+    @staticmethod
+    def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
+        """Static implementation of the modified Bessel function.
+
+        Parameters
+        ----------
+        p : float or int
+            Order of the modified Bessel function
+        x : float or int
+            Argument where the function is evaluated
+
+        Returns
+        -------
+        float
+            Value of the modified Bessel function K_p(x)
+        """
+        return spp.kv(p, x)
+
+    def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
+        """Implementation of the modified Bessel function.
+
+        Parameters
+        ----------
+        p : float or int
+            Order of the modified Bessel function
+        x : float or int
+            Argument where the function is evaluated
+
+        Returns
+        -------
+        float
+            Value of the modified Bessel function K_p(x)
+        """
+        return KnuOp.st_impl(p, x)
+
+    def grad(
+        self,
+        inputs: Sequence[Variable[Any, Any]],
+        output_gradients: Sequence[Variable[Any, Any]],
+    ) -> List[Variable]:
+        """Compute gradients of the modified Bessel function.
+
+        Parameters
+        ----------
+        inputs : list of Variables
+            List containing the order (p) and argument (x)
+        output_grads : list of Variables
+            List containing the gradient with respect to the output
+
+        Returns
+        -------
+        list of Variables
+            Gradients with respect to p and x
+
+        Notes
+        -----
+        The gradient with respect to p is computed using finite differences
+        due to the lack of a closed-form expression.
+        """
+        dp = 1e-16
+        (p, x) = inputs
+        (gz,) = output_gradients
+        # Use finite differences for derivative with respect to p
+        dfdp = (knuop(p + dp, x) - knuop(p - dp, x)) / (2 * dp)  # type: ignore
+        return [gz * dfdp, gz * knupop(p, x)]  # type: ignore
+
+class KnuPrimeOp(BinaryScalarOp):
+    """Derivative of the modified Bessel function of the second kind.
+
+    This class implements a PyTensor operation for computing the derivative of the
+    modified Bessel function of the second kind with respect to its argument.
+    It wraps scipy.special.kvp.
+
+    Parameters
+    ----------
+    dtype_converter : callable
+        Function to convert input types (typically upgrade_to_float)
+    name : str
+        Name of the operation
+    """
+
+    nfunc_spec = ("scipy.special.kvp", 2, 1)
+
+    @staticmethod
+    def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
+        """Static implementation of the Bessel function derivative.
+
+        Parameters
+        ----------
+        p : float or int
+            Order of the modified Bessel function
+        x : float or int
+            Argument where the derivative is evaluated
+
+        Returns
+        -------
+        float
+            Value of the derivative K'_p(x)
+        """
+        return spp.kvp(p, x)
+
+    def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
+        """Implementation of the Bessel function derivative.
+
+        Parameters
+        ----------
+        p : float or int
+            Order of the modified Bessel function
+        x : float or int
+            Argument where the derivative is evaluated
+
+        Returns
+        -------
+        float
+            Value of the derivative K'_p(x)
+        """
+        return KnuPrimeOp.st_impl(p, x)
+
+    def grad(self, inputs: Sequence[Variable[Any, Any]], grads: Sequence[Variable[Any, Any]]) -> List[Variable]:
+        """Compute gradients of the Bessel function derivative.
+
+        Parameters
+        ----------
+        inputs : list of Variables
+            List containing the order (p) and argument (x)
+        grads : list of Variables
+            List containing the gradient with respect to the output
+
+        Returns
+        -------
+        list of Variables
+            Gradients with respect to p and x (not implemented)
+        """
+        return [grad_not_implemented(self, 0, "p"), grad_not_implemented(self, 1, "x")]
+
+
+# Create operation instances
+knuop = KnuOp(upgrade_to_float, name="knuop")
+knupop = KnuPrimeOp(upgrade_to_float, name="knupop")
 
 
 ##### Constants #####
@@ -56,80 +271,8 @@ CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
 CONST2 = -np.log(2 * np.pi) / 2
 """Constant used in log-probability calculations."""
 
-##### SHASH Transformations #####
-
-
-def S(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
-    """Apply the Sinh-arcsinh transformation.
-
-    This transformation allows for flexible modeling of skewness and kurtosis.
-
-    Parameters
-    ----------
-    x : array_like
-        Input values to transform
-    epsilon : float
-        Skewness parameter. Positive values give positive skewness
-    delta : float
-        Kurtosis parameter. Values < 1 give heavier tails than normal
-
-    Returns
-    -------
-    NDArray[np.float64]
-        Transformed values
-
-    Examples
-    --------
-    >>> S(0.0, epsilon=0.0, delta=1.0)
-    0.0
-    >>> S(1.0, epsilon=0.5, delta=2.0)  # Positive skew, lighter tails
-    1.32460...
-    """
-    return np.sinh(np.arcsinh(x) * delta - epsilon)
-
-
-def S_inv(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
-    """Apply the inverse sinh-arcsinh transformation.
-
-    Parameters
-    ----------
-    x : array_like
-        Input values to transform
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-
-    Returns
-    -------
-    NDArray[np.float64]
-        Inverse transformed values
-    """
-    return np.sinh((np.arcsinh(x) + epsilon) / delta)
-
-
-def C(x: ArrayLike, epsilon: float, delta: float) -> NDArray[np.float64]:
-    """Apply the cosh-arcsinh transformation.
-
-    Parameters
-    ----------
-    x : array_like
-        Input values to transform
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-
-    Returns
-    -------
-    NDArray[np.float64]
-        Transformed values
-    """
-    return np.cosh(np.arcsinh(x) * delta - epsilon)
-
 
 ##### SHASH Distributions #####
-
 
 class SHASHrv(RandomVariable):
     """Random variable class for the base SHASH distribution.
@@ -852,3 +995,4 @@ class SHASHb(Continuous):
         frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(remapped_value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
+

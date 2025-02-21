@@ -3,12 +3,8 @@ import copy
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_conf import NormConf
-from pcntoolkit.normative_model.norm_hbr import NormHBR
-from pcntoolkit.regression_model.hbr.hbr import HBR
-from pcntoolkit.regression_model.hbr.hbr_conf import HBRConf
-from pcntoolkit.regression_model.hbr.likelihood import SHASHbLikelihood
-from pcntoolkit.regression_model.hbr.prior import get_default_delta, get_default_epsilon, make_prior
+from pcntoolkit.normative_model import NormativeModel
+from pcntoolkit.regression_model.hbr import HBR, NormalLikelihood, make_prior
 from test.fixtures.data_fixtures import *
 from test.fixtures.path_fixtures import *
 
@@ -33,128 +29,22 @@ N_SAMPLES = 15
 N_TUNES = 5
 N_PYMC_CORES = 4
 N_CHAINS = 2
-
-
-@pytest.fixture
-def cvfolds():
-    return 4
-
-
-@pytest.fixture
-def alg():
-    return "hbr"
-
-
-@pytest.fixture
-def savemodel():
-    return True
-
-
-@pytest.fixture
-def n_mcmc_samples():
-    return N_SAMPLES
-
-
-@pytest.fixture
-def n_tunes():
-    return N_TUNES
-
-
-@pytest.fixture
-def n_pymc_cores():
-    return N_PYMC_CORES
-
-
-@pytest.fixture
-def n_mcmc_chains():
-    return 2
+CVFOLDS = 4 
+ALG = "hbr"
+SAVEMODEL = True
 
 
 @pytest.fixture
 def sample_args():
-    return {"draws": N_SAMPLES, "tune": N_TUNES, "pymc_cores": N_PYMC_CORES}
-
-
-@pytest.fixture
-def norm_args(log_dir, save_dir):
-    return {"log_dir": log_dir, "save_dir": save_dir}
-
-
-@pytest.fixture
-def norm_conf_dict_for_generic_model(log_dir, save_dir):
-    return {"log_dir": log_dir, "save_dir": save_dir}
-
-
-@pytest.fixture
-def norm_conf_for_generic_model(log_dir, save_dir):
-    return NormConf(save_dir=save_dir)
-
-
-@pytest.fixture(scope="function")
-def norm_conf_dict_for_hbr_test_model(
-    alg,
-    fit_files,
-    maskfile,
-    test_files,
-    savemodel,
-    save_dir,
-):
-    responsefile, covfile, trbefile = fit_files
-    testcov, testresp, tsbefile = test_files
     return {
-        "resp": responsefile,
-        "maskfile": maskfile,
-        "cov": covfile,
-        "t_resp": testresp,
-        "t_cov": testcov,
-        "alg": alg,
-        "savemodel": savemodel,
-        "be": trbefile,
-        "t_be": tsbefile,
-        "save_dir": save_dir + "/hbr",
-    }
-
-
-@pytest.fixture(scope="function")
-def hbr_conf_dict(save_dir, fit_files, test_files, maskfile):
-    responsefile, covfile, trbefile = fit_files
-    testresp, testcov, tsbefile = test_files
-    return {
-        "resp": responsefile,
-        "maskfile": maskfile,
-        "cov": covfile,
-        "t_resp": testresp,
-        "t_cov": testcov,
-        "alg": "hbr",
-        "savemodel": True,
-        "be": trbefile,
-        "t_be": tsbefile,
-        "save_dir": save_dir + "/hbr",
-        "basis_function": "bspline",
-        "linear_mu": True,
-        "linear_sigma": True,
-        "mapping_sigma": "softplus",
-        "pymc_cores": N_PYMC_CORES,
         "draws": N_SAMPLES,
         "tune": N_TUNES,
+        "cores": N_PYMC_CORES,
         "chains": N_CHAINS,
     }
 
 
-@pytest.fixture(scope="function")
-def norm_conf_for_hbr_test_model(savemodel, save_dir):
-    return NormConf(
-        savemodel=savemodel,
-        save_dir=save_dir + "/hbr",
-        basis_function="bspline",
-        basis_function_kwargs={"order": 3, "nknots": 5},
-        inscaler="standardize",
-        outscaler="standardize",
-        saveresults=True,
-    )
-
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def mu():
     return make_prior(
         linear=True,
@@ -163,7 +53,7 @@ def mu():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def sigma():
     return make_prior(
         linear=True,
@@ -173,38 +63,43 @@ def sigma():
         mapping_params=(0.0, 3.0),
     )
 
-
-@pytest.fixture(scope="function")
-def hbrconf(mu, sigma):
-    return HBRConf(
+@pytest.fixture(scope="module")
+def hbr_model(mu, sigma):
+    return HBR(
+        "test_hbr",
+        likelihood=NormalLikelihood(mu=mu, sigma=sigma),
+        nuts_sampler="nutpie",
         draws=N_SAMPLES,
         tune=N_TUNES,
         chains=N_CHAINS,
-        pymc_cores=N_PYMC_CORES,
-        likelihood=SHASHbLikelihood(mu=mu, sigma=sigma, epsilon=get_default_epsilon(), delta=get_default_delta()),
-        nuts_sampler="nutpie",
+        cores=N_PYMC_CORES,
     )
 
 
-@pytest.fixture(scope="function")
-def hbr(hbrconf: HBRConf):
-    return HBR("test_hbr", reg_conf=copy.deepcopy(hbrconf))
+@pytest.fixture(scope="module")
+def new_norm_hbr_model(hbr_model, save_dir_hbr):
+    return NormativeModel(
+        hbr_model,
+        save_dir=save_dir_hbr,
+        inscaler="standardize",
+        outscaler="standardize",
+    )
 
 
-@pytest.fixture(scope="function")
-def new_norm_hbr_model(norm_conf_for_hbr_test_model, hbrconf):
-    return NormHBR(copy.deepcopy(norm_conf_for_hbr_test_model), copy.deepcopy(hbrconf))
-
-
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def train_and_save_hbr_model(
     new_norm_hbr_model,
     norm_data_from_arrays: NormData,
 ):
     new_norm_hbr_model.fit(norm_data_from_arrays)
+    new_norm_hbr_model.save()
     return new_norm_hbr_model
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def fitted_norm_hbr_model(train_and_save_hbr_model):
-    return train_and_save_hbr_model
+
+    loaded_model = NormativeModel.load(train_and_save_hbr_model.save_dir)
+    # loaded_model = NormativeModel.load(save_dir_hbr)
+    return loaded_model
+    
