@@ -90,19 +90,19 @@ def dataframe(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def train_arrays(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
     X_train, y_train, batch_effects_train = np_arrays(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values)
     return X_train, y_train, batch_effects_train
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_arrays(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
     X_test, y_test, batch_effects_test = np_arrays(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values)
     return X_test, y_test, batch_effects_test
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")     
 def transfer_arrays(n_transfer_datapoints, n_covariates, n_response_vars, batch_effect_values):
     X_transfer, y_transfer, batch_effects_transfer = np_arrays(
         n_transfer_datapoints, n_covariates, n_response_vars, batch_effect_values
@@ -112,13 +112,13 @@ def transfer_arrays(n_transfer_datapoints, n_covariates, n_response_vars, batch_
     return X_transfer, y_transfer, batch_effects_transfer
 
 
-@pytest.fixture
+@pytest.fixture(scope="module") 
 def train_dataframe(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
     dataframe_train = dataframe(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values)
     return dataframe_train
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_dataframe(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
     dataframe_test = dataframe(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values)
     return dataframe_test

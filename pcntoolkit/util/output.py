@@ -66,7 +66,10 @@ Total failed jobs: {total_failed_jobs}
     UUID_FOR_RUNNER_CREATED = "UUID for runner task created: {uuid}"
     LOG_DIR_CREATED = "Log directory created:\n\t{log_dir}"
     TEMP_DIR_CREATED = "Temporary directory created:\n\t{temp_dir}"
-
+    HARMONIZING_DATA = "Harmonizing data on {n_models} response variables."
+    HARMONIZING_DATA_MODEL = "Harmonizing data for {model_name}."
+    SYNTHESIZING_DATA = "Synthesizing data for {n_models} response variables."
+    SYNTHESIZING_DATA_MODEL = "Synthesizing data for {model_name}."
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
     EXTRA_COVARIATES = "The dataset {dataset_name} has too many covariates: {covariates}"
@@ -85,9 +88,13 @@ class Warnings:
     NO_RESPONSE_VARS = "No response variables provided for dataset {dataset_name}. Please provide a list of response variables for which you want to fit or predict."
     RESPONSE_VAR_NOT_FOUND = "Response variable {response_var} not found in dataset {dataset_name}. Setting to NaN."
     MULTIPLE_JOBS_FOUND_FOR_JOB_ID = "Multiple jobs found for job ID {job_id}: {job_name}. Please check the job statuses and try again."
-    
+    DATA_NOT_SCALED = "Data is not scaled, skipping scaling back to original scale."
+    DATA_ALREADY_SCALED = "Data is already scaled, skipping scaling back to original scale."
+    NO_COVARIATES = "No covariates provided for dataset {dataset_name}."
+    SYNTHESIZE_N_SAMPLES_IGNORED = "n_samples is ignored because data is provided."
 class Errors:
     ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
+    INVALID_ENVIRONMENT = "The python environment {environment} is invalid because it has no /bin/python file. Please specify a valid python environment."
     SAMPLE_BATCH_EFFECTS = (
         "Cannot sample {n_samples} batch effects, because some batch effects have more levels than the number of samples."
     )
@@ -135,7 +142,12 @@ class Errors:
         "Predict data is required for fit_predict without cross-validation"
     )
     ERROR_NO_ENVIRONMENT_SPECIFIED = "No python environment specified. Please specify the path to the python environment using the environment keyword."
-
+    ERROR_ZSCORES_INVERSE = "Z-scores inverse has invalid shape: Z_shape={Z_shape}, X_shape={X_shape}"
+    ERROR_CDF_SHAPE = "CDF shape {cdf_shape} does not match data shape {data_shape}"
+    ERROR_Y_NOT_FOUND = "y not found in data"
+    HBR_MODEL_NOT_FITTED = "HBR model is not fitted"
+    ERROR_BLR_TRANSFER_NOT_IMPLEMENTED = "BLR transfer not implemented"
+    ERROR_MULTIPLE_COVARIATE_DIMS = "Multiple covariate dimensions found: {covariate_dims}"
 class Output:
     _show_messages = True  # Default to showing output
     _show_warnings = True

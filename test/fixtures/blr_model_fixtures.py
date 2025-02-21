@@ -1,10 +1,9 @@
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_blr import NormBLR
-from pcntoolkit.normative_model.norm_conf import NormConf
-from pcntoolkit.regression_model.blr.blr import BLR
-from pcntoolkit.regression_model.blr.blr_conf import BLRConf
+from pcntoolkit.math.basis_function import BasisFunction, BsplineBasisFunction, LinearBasisFunction
+from pcntoolkit.normative_model import NormativeModel
+from pcntoolkit.regression_model.blr import BLR
 from test.fixtures.norm_data_fixtures import *
 from test.fixtures.path_fixtures import *
 
@@ -20,20 +19,9 @@ def savemodel():
 
 
 @pytest.fixture
-def norm_conf_for_blr_test_model(savemodel, save_dir):
-    return NormConf(
-        savemodel=savemodel,
-        save_dir=save_dir + "/blr",
-        basis_function="none",
-        inscaler="standardize",
-        outscaler="standardize",
-        saveresults=True,
-    )
-
-
-@pytest.fixture
-def blrconf():
-    return BLRConf(
+def blr_model():
+    return BLR(
+        "test_blr",
         n_iter=1000,
         tol=1e-3,
         ard=False,
@@ -44,22 +32,31 @@ def blrconf():
         heteroskedastic=True,
         intercept=True,
         fixed_effect=True,
-        warp="WarpSinhArcsinh",
+        warp_name="WarpSinhArcsinh",
+        basis_function_mean=BsplineBasisFunction(basis_column=0, degree=3, nknots=5),
         warp_reparam=True,
     )
 
 
 @pytest.fixture
-def blr(blrconf):
-    return BLR("test_blr", blrconf)
+def fitted_blr_model(blr_model: BLR, norm_data_from_arrays: NormData, fitted_norm_blr_model: NormativeModel):
+    be_maps = fitted_norm_blr_model.batch_effects_maps
+    response_var = norm_data_from_arrays.response_vars[0]
+    X, be, be_maps, Y = fitted_norm_blr_model.extract_data(norm_data_from_arrays.sel(response_vars=response_var))
+    blr_model.fit(X, be, be_maps, Y)
+    return blr_model
+
+@pytest.fixture
+def new_norm_blr_model(blr_model, save_dir_blr):
+    return NormativeModel(
+        blr_model,
+        save_dir=save_dir_blr,
+        inscaler="standardize",
+        outscaler="standardize",
+    )
 
 
 @pytest.fixture
-def new_norm_blr_model(norm_conf_for_blr_test_model, blrconf):
-    return NormBLR(norm_conf_for_blr_test_model, blrconf)
-
-
-@pytest.fixture
-def fitted_norm_blr_model(new_norm_blr_model: NormBLR, norm_data_from_arrays: NormData):
+def fitted_norm_blr_model(new_norm_blr_model: NormativeModel, norm_data_from_arrays: NormData):
     new_norm_blr_model.fit(norm_data_from_arrays)
     return new_norm_blr_model

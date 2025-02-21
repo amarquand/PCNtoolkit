@@ -10,8 +10,7 @@ from typing import Callable, Dict, Literal, Optional
 import cloudpickle as pickle
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model.norm_base import NormBase
-from pcntoolkit.normative_model.norm_factory import load_normative_model
+from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.util.job_observer import JobObserver
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 
@@ -36,7 +35,7 @@ class Runner:
         cross_validate: bool = False,
         cv_folds: int = 5,
         parallelize: bool = False,
-        job_type: str = "local",
+        job_type: Literal["torque", "slurm"] = "slurm",
         n_jobs: int = 1,
         n_cores: int = 1,
         time_limit: str | int = "00:05:00",
@@ -108,7 +107,7 @@ class Runner:
         else:
             # Check if the environment is valid
             if not os.path.exists(os.path.join(environment, "bin", "python")):
-                Output.error(Errors.ERROR_ENVIRONMENT_NOT_FOUND, environment=environment)
+                Output.error(Errors.INVALID_ENVIRONMENT, environment=environment)
             else:
                 self.environment = environment
                 self.preamble = preamble
@@ -130,7 +129,7 @@ class Runner:
         if self.cross_validate and self.cv_folds <= 1:
             raise Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds)
 
-    def fit(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def fit(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         """
         Fit a normative model on a dataset.
 
@@ -150,7 +149,7 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.save_dir = save_dir if save_dir is not None else model.save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
@@ -177,7 +176,7 @@ class Runner:
 
     def fit_predict(
         self,
-        model: NormBase,
+        model: NormativeModel,
         fit_data: NormData,
         predict_data: Optional[NormData] = None,
         save_dir: Optional[str] = None,
@@ -188,7 +187,7 @@ class Runner:
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to fit.
         fit_data : NormData
             The data to fit the model on.
@@ -204,7 +203,7 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.save_dir = save_dir if save_dir is not None else model.save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_fit_predict_chunk_fn(model)
         self.submit_jobs(
@@ -221,13 +220,13 @@ class Runner:
         else:
             self.save()
 
-    def predict(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
         """
         Predict on a dataset.
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to predict on.
         data : NormData
             The data to predict on.
@@ -240,7 +239,7 @@ class Runner:
         -------
         None
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir
+        self.save_dir = save_dir if save_dir is not None else model.save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_predict_chunk_fn(model)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
@@ -251,13 +250,13 @@ class Runner:
         else:
             self.save()
 
-    def transfer(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormBase | None:
+    def transfer(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
         """
         Transfer a normative model to a new dataset.
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to transfer.
         data : NormData
             The data to transfer the model to.
@@ -272,7 +271,7 @@ class Runner:
         NormBase | None
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
+        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
@@ -286,18 +285,18 @@ class Runner:
 
     def transfer_predict(
         self,
-        model: NormBase,
+        model: NormativeModel,
         fit_data: NormData,
         predict_data: NormData,
         save_dir: Optional[str] = None,
         observe: bool = True,
-    ) -> NormBase | None:
+    ) -> NormativeModel | None:
         """
         Transfer a normative model to a new dataset and predict on another dataset.
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to transfer.
         fit_data : NormData
             The data to transfer the model to.
@@ -314,7 +313,7 @@ class Runner:
         NormBase | No   ne
             The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_transfer"
+        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
@@ -326,13 +325,13 @@ class Runner:
         else:
             self.save()
 
-    def extend(self, model: NormBase, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormBase | None:
+    def extend(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
         """
         Extend a normative model on a dataset.
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to extend.
         data : NormData
             The data to extend the model on.
@@ -344,10 +343,10 @@ class Runner:
 
         Returns
         -------
-        NormBase | None
+        NormativeModel | None
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
+        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         self.set_unique_temp_and_log_dir()
         fn = self.get_extend_chunk_fn(model)
         self.submit_jobs(fn, data, mode="unary")
@@ -361,18 +360,18 @@ class Runner:
 
     def extend_predict(
         self,
-        model: NormBase,
+        model: NormativeModel,
         fit_data: NormData,
         predict_data: NormData,
         save_dir: Optional[str] = None,
         observe: bool = True,
-    ) -> NormBase | None:
+    ) -> NormativeModel | None:
         """
         Extend a normative model on a dataset and predict on another dataset.
 
         Parameters
         ----------
-        model : NormBase
+        model : NormativeModel
             The normative model to extend.
         fit_data : NormData
             The data to extend the model on.
@@ -386,10 +385,10 @@ class Runner:
 
         Returns
         -------
-        NormBase | None
+        NormativeModel | None
             The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
-        self.save_dir = save_dir if save_dir is not None else model.norm_conf.save_dir + "_extend"
+        self.save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         self.set_unique_temp_and_log_dir()
         fn = self.get_extend_predict_chunk_fn(model)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
@@ -401,14 +400,14 @@ class Runner:
         else:
             self.save()
 
-    def get_fit_chunk_fn(self, model: NormBase) -> Callable:
+    def get_fit_chunk_fn(self, model: NormativeModel) -> Callable:
         """Returns a callable that fits a model on a chunk of data"""
         if self.cross_validate:
 
             def kfold_fit_chunk_fn(chunk: NormData):
                 for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    fold_norm_model: NormBase = deepcopy(model)
-                    fold_norm_model.norm_conf.set_save_dir(os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}"))
+                    fold_norm_model: NormativeModel = deepcopy(model)
+                    fold_norm_model.set_save_dir(os.path.join(model.save_dir, "folds", f"fold_{i_fold}"))
                     fold_norm_model.fit(train_data)
 
             return kfold_fit_chunk_fn
@@ -419,7 +418,7 @@ class Runner:
 
             return fit_chunk_fn
 
-    def get_fit_predict_chunk_fn(self, model: NormBase) -> Callable:
+    def get_fit_predict_chunk_fn(self, model: NormativeModel) -> Callable:
         """Returns a callable that fits a model on a chunk of data and predicts on another chunk of data"""
         if self.cross_validate:
 
@@ -427,8 +426,8 @@ class Runner:
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
                 for i_fold, (fit_data, predict_data) in enumerate(all_data.kfold_split(self.cv_folds)):
-                    fold_norm_model: NormBase = deepcopy(model)
-                    fold_norm_model.norm_conf.set_save_dir(os.path.join(model.norm_conf.save_dir, "folds", f"fold_{i_fold}"))
+                    fold_norm_model: NormativeModel = deepcopy(model)
+                    fold_norm_model.set_save_dir(os.path.join(model.save_dir, "folds", f"fold_{i_fold}"))
                     fold_norm_model.fit_predict(fit_data, predict_data)
 
             return kfold_fit_predict_chunk_fn
@@ -442,14 +441,13 @@ class Runner:
 
             return fit_predict_chunk_fn
 
-    def get_predict_chunk_fn(self, model: NormBase) -> Callable:
+    def get_predict_chunk_fn(self, model: NormativeModel) -> Callable:
         """Loads each fold model and predicts on the corresponding fold of data. Model n is used to predict on fold n."""
         if self.cross_validate:
 
             def kfold_predict_chunk_fn(chunk: NormData):
-                conf = model.norm_conf
                 for i_fold, (_, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    fold_model = load_normative_model(os.path.join(conf.save_dir, "folds", f"fold_{i_fold}"))
+                    fold_model = NormativeModel.load(os.path.join(model.save_dir, "folds", f"fold_{i_fold}"))
                     fold_model.predict(predict_data)
 
             return kfold_predict_chunk_fn
@@ -460,7 +458,7 @@ class Runner:
 
             return predict_chunk_fn
 
-    def get_transfer_chunk_fn(self, model: NormBase) -> Callable:
+    def get_transfer_chunk_fn(self, model: NormativeModel) -> Callable:
         """Returns a callable that transfers a model on a chunk of data"""
         if self.cross_validate:
 
@@ -479,7 +477,7 @@ class Runner:
 
             return transfer_chunk_fn
 
-    def get_transfer_predict_chunk_fn(self, model: NormBase) -> Callable:
+    def get_transfer_predict_chunk_fn(self, model: NormativeModel) -> Callable:
         if self.cross_validate:
 
             def kfold_transfer_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
@@ -502,7 +500,7 @@ class Runner:
 
             return transfer_predict_chunk_fn
 
-    def get_extend_chunk_fn(self, model: NormBase) -> Callable:
+    def get_extend_chunk_fn(self, model: NormativeModel) -> Callable:
         if self.cross_validate:
 
             def kfold_extend_chunk_fn(chunk: NormData):
@@ -520,7 +518,7 @@ class Runner:
 
             return extend_chunk_fn
 
-    def get_extend_predict_chunk_fn(self, model: NormBase) -> Callable:
+    def get_extend_predict_chunk_fn(self, model: NormativeModel) -> Callable:
         if self.cross_validate:
 
             def kfold_extend_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
@@ -570,45 +568,29 @@ class Runner:
             If job failed, returns (False, True, error_message)
         """
         job_id = self.active_jobs[job_name]
-        if self.job_type == "local":
-            try:
-                os.kill(int(job_id), 0)  # Check if process still running
-                return True, False, None  # Still running
-            except ProcessLookupError:
-                # Process finished, check for success file
-                success_file = os.path.join(self.log_dir, f"{job_name}.success")
-                if os.path.exists(success_file):
-                    return False, False, None  # Finished successfully
-                else:
-                    # Job finished but no success file - read error output
-                    error_file = os.path.join(self.log_dir, f"{job_name}.err")
-                    if os.path.exists(error_file):
-                        with open(error_file, "r") as f:
-                            return False, True, f.read().strip()
-                    return False, True, "Job failed without error output"
-        else:
-            # For cluster jobs, first check if job is still in queue/running
-            is_running = False
-            if self.job_type == "slurm":
-                result = subprocess.run(["squeue", "-j", job_id], capture_output=True, text=True)
-                is_running = job_id in result.stdout
-            elif self.job_type == "torque":
-                result = subprocess.run(["qstat", job_id], capture_output=True, text=True)
-                is_running = result.returncode == 0
-            if is_running:
-                return True, False, None  # Still running
+       
+        # For cluster jobs, first check if job is still in queue/running
+        is_running = False
+        if self.job_type == "slurm":
+            result = subprocess.run(["squeue", "-j", job_id], capture_output=True, text=True)
+            is_running = job_id in result.stdout
+        elif self.job_type == "torque":
+            result = subprocess.run(["qstat", job_id], capture_output=True, text=True)
+            is_running = result.returncode == 0
+        if is_running:
+            return True, False, None  # Still running
 
-            # Job not running, check for success file
-            success_file = os.path.join(self.log_dir, f"{job_name}.success")
-            if os.path.exists(success_file):
-                return False, False, None  # Finished successfully
+        # Job not running, check for success file
+        success_file = os.path.join(self.log_dir, f"{job_name}.success")
+        if os.path.exists(success_file):
+            return False, False, None  # Finished successfully
 
-            # Job finished but no success file - read error output
-            error_file = os.path.join(self.log_dir, f"{job_name}.err")
-            if os.path.exists(error_file):
-                with open(error_file, "r") as f:
-                    return False, True, f.read().strip()
-            return False, True, "Job failed without error output"
+        # Job finished but no success file - read error output
+        error_file = os.path.join(self.log_dir, f"{job_name}.err")
+        if os.path.exists(error_file):
+            with open(error_file, "r") as f:
+                return False, True, f.read().strip()
+        return False, True, "Job failed without error output"
 
     def check_jobs_status(self) -> tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
         """Check all jobs in active_job_ids for errors.
@@ -671,32 +653,22 @@ class Runner:
                     chunk_tuple = (first_chunk, second_chunk)
                 python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
 
-                if self.job_type == "local":
-                    command = self.wrap_in_local_job(job_name, python_callable_path, data_path)
-                    process = subprocess.Popen(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                    )
-                    job_id = str(process.pid)
-                else:
-                    if self.job_type == "slurm":
-                        command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
-                    elif self.job_type == "torque":
-                        command = self.wrap_in_torque_job(job_name, python_callable_path, data_path)
+                if self.job_type == "slurm":
+                    command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
+                elif self.job_type == "torque":
+                    command = self.wrap_in_torque_job(job_name, python_callable_path, data_path)
 
-                    process = subprocess.Popen(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                    )
-                    stdout, stderr = process.communicate()
-                    try:
-                        job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
-                    except AttributeError:
-                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
+                process = subprocess.Popen(
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                stdout, stderr = process.communicate()
+                try:
+                    job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
+                except AttributeError:
+                    raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
 
                 self.active_jobs[job_name] = job_id
                 self.job_commands[job_name] = command
@@ -772,50 +744,23 @@ exit $exit_code
 
         return ["qsub", job_path]
 
-    def wrap_in_local_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
-        job_path = os.path.join(self.temp_dir, f"{job_name}.sh")
-        current_file_path = os.path.abspath(__file__)
-        success_file = os.path.join(self.log_dir, f"{job_name}.success")
-        out_file = os.path.join(self.log_dir, f"{job_name}.out")
-        err_file = os.path.join(self.log_dir, f"{job_name}.err")
-
-        with open(job_path, "w") as f:
-            f.write(
-                f"""#!/bin/bash
-
-conda init bash
-source ~/.bashrc
-conda activate {self.environment}
-PYTHONBUFFERED=1 python {current_file_path} {python_callable_path} {data_path} > {out_file} 2> {err_file}
-exit_code=$?
-
-if [ $exit_code -eq 0 ]; then
-    touch {success_file}
-fi
-exit $exit_code
-"""
-            )
-        os.chmod(job_path, 0o755)  # Make script executable
-        return ["bash", job_path]
-
-    def load_model(self, fold_index: Optional[int] = 0, into: NormBase | None = None) -> NormBase:
+    def load_model(self, fold_index: Optional[int] = 0, into: NormativeModel | None = None) -> NormativeModel:
         if self.cross_validate:
             path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}")
-            return load_normative_model(path, into=into)
+            return NormativeModel.load(path, into=into)
         else:
-            return load_normative_model(self.save_dir, into=into)
+            return NormativeModel.load(self.save_dir, into=into)
 
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""
         runner_state = {
-            "all_jobs": self.active_jobs,
+            "active_jobs": self.active_jobs,
             "log_dir": self.log_dir,
             "temp_dir": self.temp_dir,
             "job_type": self.job_type,
             "n_jobs": self.n_jobs,
             "save_dir": self.save_dir,
             "job_commands": self.job_commands,
-            "active_jobs": self.active_jobs,
             "failed_jobs": self.failed_jobs,
         }
 
@@ -845,7 +790,7 @@ exit $exit_code
         runner = cls(job_type=state["job_type"], n_jobs=state["n_jobs"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
         runner.save_dir = state["save_dir"]
         runner.job_commands = state["job_commands"]
-        runner.all_jobs = state["all_jobs"]
+        runner.active_jobs = state["active_jobs"]
         runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
 
         Output.print(
@@ -867,17 +812,13 @@ exit $exit_code
                 process = subprocess.Popen(
                     command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True
                 )
-                if self.job_type == "local":
-                    self.active_jobs[job_name] = str(process.pid)
+                stdout, stderr = process.communicate()
+                job_id = re.search(r"Submitted batch job (\d+)", stdout)
+                if job_id:
+                    self.active_jobs[job_name] = job_id.group(1)
                     self.job_commands[job_name] = command
-                else:
-                    stdout, stderr = process.communicate()
-                    job_id = re.search(r"Submitted batch job (\d+)", stdout)
-                    if job_id:
-                        self.active_jobs[job_name] = job_id.group(1)
-                        self.job_commands[job_name] = command
-                    elif stderr:
-                        raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
+                elif stderr:
+                    raise Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr)
 
         self.failed_jobs.clear()
         if observe:

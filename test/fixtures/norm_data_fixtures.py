@@ -14,25 +14,25 @@ These fixtures are used to create consistent and controlled datasets for testing
 """
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def norm_data_from_arrays(train_arrays):
     X, y, batch_effects = train_arrays
     return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def test_norm_data_from_arrays(test_arrays):
     X, y, batch_effects = test_arrays
     return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def transfer_norm_data_from_arrays(transfer_arrays):
     X, y, batch_effects = transfer_arrays
     return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def norm_data_from_dataframe(train_dataframe, n_covariates, batch_effect_values, n_response_vars):
     return NormData.from_dataframe(
         "from_dataframe",

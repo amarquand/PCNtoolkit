@@ -33,7 +33,7 @@ def test_norm_data_creation(
     norm_data = request.getfixturevalue(norm_data_fixture)
 
     assert norm_data.X.shape == (n_train_datapoints, n_covariates)
-    assert norm_data.y.shape == (n_train_datapoints, n_response_vars)
+    assert norm_data.Y.shape == (n_train_datapoints, n_response_vars)
     assert norm_data.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
     assert norm_data.covariates.shape == (n_covariates,)
     assert norm_data.batch_effect_dims.shape == (n_batch_effect_dims,)
@@ -64,7 +64,7 @@ def test_split_with_stratify(
     for i, split in enumerate(splits):
         expected_samples = int(n_train_datapoints * split_ratio[i])
         assert split.X.shape == (expected_samples, n_covariates)
-        assert split.y.shape == (expected_samples, n_response_vars)
+        assert split.Y.shape == (expected_samples, n_response_vars)
         assert split.batch_effects.shape == (expected_samples, len(batch_effect_values))
         assert split.covariates.shape == (n_covariates,)
         assert split.batch_effect_dims.shape == (len(batch_effect_values),)
@@ -106,12 +106,12 @@ def test_split_with_stratify(
         original_data = np.hstack(
             (
                 norm_data_from_arrays.X.data,
-                norm_data_from_arrays.y.data,
+                norm_data_from_arrays.Y.data,
                 norm_data_from_arrays.batch_effects.data,
             )
         )
         for split in splits:
-            split_data = np.hstack((split.X.data, split.y.data, split.batch_effects.data))
+            split_data = np.hstack((split.X.data, split.Y.data, split.batch_effects.data))
             assert np.all(np.isin(split_data, original_data))
 
         # Check if the attributes are preserved in the splits

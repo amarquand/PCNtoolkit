@@ -79,3 +79,17 @@ def save_dir():
 @pytest.fixture(scope="session")
 def maskfile():
     return None
+
+
+@pytest.fixture(scope="session")
+def save_dir_hbr():
+    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr")
+
+
+@pytest.fixture(scope="session")
+def save_dir_blr():
+    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "blr")
+
+@pytest.fixture(scope="session")
+def save_dir_test_model():
+    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "test_model")
