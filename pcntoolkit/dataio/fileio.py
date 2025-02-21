@@ -127,7 +127,7 @@ def file_type(filename):
         if any(filename.endswith(ext) for ext in extensions):
             return ftype
 
-    raise Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename)
+    raise ValueError(Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename))
 
 
 def file_extension(filename):
@@ -313,7 +313,7 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
         data = data.astype("float32")  # force 32 bit output
         dtype = "NIFTI_TYPE_FLOAT32"
     else:
-        raise Output.error(Errors.NO_FLOAT_DATA_TYPE, data_type=data.dtype)
+        raise ValueError(Output.error(Errors.NO_FLOAT_DATA_TYPE, data_type=data.dtype))
 
     if len(data.shape) == 1:
         Nimg = 1
@@ -523,4 +523,4 @@ def load(filename, mask=None, text=False, vol=True):
                         x = load_cifti(filename, vol=vol)
                         return x
                     except Exception:
-                        raise Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename)
+                        raise ValueError(Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename))

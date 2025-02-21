@@ -141,7 +141,7 @@ class HBR(RegressionModel):
             Z-values mapped to Y space
         """
         if not self.is_fitted:
-            raise Output.error(Errors.HBR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
         if not self.pymc_model:
             # If a model is loaded and has no model, it is created here
             # TODO check if the predictions from the loaded model are correct
@@ -197,7 +197,7 @@ class HBR(RegressionModel):
             Z-values mapped to Y space
         """
         if not self.is_fitted:
-            raise Output.error(Errors.HBR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
 
         empty_y = xr.DataArray(np.zeros_like(Z.values), dims=Z.dims)
         if not self.pymc_model:
@@ -254,7 +254,7 @@ class HBR(RegressionModel):
         """
 
         if not self.is_fitted:
-            raise Output.error(Errors.HBR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
         if not self.pymc_model:
             self.pymc_model = self.likelihood.compile(X, be, be_maps, Y)
         else:
@@ -295,7 +295,7 @@ class HBR(RegressionModel):
             if self.pymc_model is not None:
                 self.pymc_model.to_graphviz(save=os.path.join(plotdir,self.name + "_model.png"))
         else:
-            raise Output.error(Errors.HBR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
         
 
     def transfer(
@@ -472,7 +472,7 @@ class HBR(RegressionModel):
                 # self.remove_samples_from_idata_posterior()
                 self.idata.to_netcdf(path, groups=["posterior"])
             else:
-                raise Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA)
+                raise ValueError(Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA))
 
     def load_idata(self, path: str) -> None:
         """
@@ -496,7 +496,7 @@ class HBR(RegressionModel):
             try:
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
-                raise Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path) from exc
+                raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path) ) from exc
             # self.replace_samples_in_idata_posterior()
 
     # def remove_samples_from_idata_posterior(self) -> None:
@@ -679,7 +679,7 @@ class BasePrior(ABC):
         elif self.mapping == "softplus":
             toreturn = math.log(1 + math.exp((x - a) / b)) * b  # type: ignore
         else:
-            raise Output.error(Errors.ERROR_UNKNOWN_MAPPING, mapping=self.mapping)
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_MAPPING, mapping=self.mapping))
         if len(self.mapping_params) > 2:
             toreturn = toreturn + self.mapping_params[2]
         return toreturn
@@ -771,7 +771,7 @@ class Prior(BasePrior):
             # elif self.dist_name == "InvGamma":
             #     return factorize_invgamma(s, freedom)
             else:
-                raise Output.error(Errors.ERROR_UNKNOWN_DISTRIBUTION, dist_name=self.dist_name)
+                raise ValueError(Output.error(Errors.ERROR_UNKNOWN_DISTRIBUTION, dist_name=self.dist_name))
 
         samples = az.extract(idata, var_names=self.name)
         covariate_dims = [i for i in samples.dims if i.endswith("covariates")]
@@ -781,7 +781,7 @@ class Prior(BasePrior):
         elif len(covariate_dims) == 0:
             new_prior.dist_params = infer_params(samples)
         else:
-            raise Output.error(Errors.ERROR_MULTIPLE_COVARIATE_DIMS, covariate_dims=covariate_dims)
+            raise ValueError(Output.error(Errors.ERROR_MULTIPLE_COVARIATE_DIMS, covariate_dims=covariate_dims))
         return new_prior
 
     def update_data(

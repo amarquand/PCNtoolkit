@@ -220,7 +220,7 @@ class BLR(RegressionModel):
                         epsilon=self.l_bfgs_b_epsilon,
                     )
             case _:
-                raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.optimizer)
+                raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.optimizer))
         self.hyp = out[0]
         self.nlZ = out[1]
         _, self.beta, self.gamma = self.parse_hyps(self.hyp, Phi, Phi_var)
@@ -246,7 +246,7 @@ class BLR(RegressionModel):
             Z-values mapped to Y space
         """
         if not self.is_fitted:
-            raise Output.error(Errors.BLR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
         np_X = X.values
         np_be = be.values
         np_Y = Y.values
@@ -279,7 +279,7 @@ class BLR(RegressionModel):
             Z-values mapped to Y space
         """
         if not self.is_fitted:
-            raise Output.error(Errors.BLR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
         np_X = X.values
         np_be = be.values
         np_Z = Z.values
@@ -312,7 +312,7 @@ class BLR(RegressionModel):
         xr.DataArray
             Log-probabilities of the data"""
         if not self.is_fitted:
-            raise Output.error(Errors.BLR_MODEL_NOT_FITTED)
+            raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED)  )
 
         np_X = X.values
         np_be = be.values
@@ -343,7 +343,7 @@ class BLR(RegressionModel):
         pass
 
     def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs) -> BLR:
-        raise Output.error(Errors.ERROR_BLR_TRANSFER_NOT_IMPLEMENTED)
+        raise ValueError(Output.error(Errors.ERROR_BLR_TRANSFER_NOT_IMPLEMENTED))
 
     def init_hyp(self) -> np.ndarray:  # type:ignore
         """
@@ -398,7 +398,7 @@ class BLR(RegressionModel):
         # Noise precision
         if self.models_variance:
             if var_X is None or (var_X == 0).all():
-                raise Output.error(Errors.ERROR_BLR_VAR_X_NOT_PROVIDED)
+                raise ValueError(Output.error(Errors.ERROR_BLR_VAR_X_NOT_PROVIDED))
             Dv = var_X.shape[1]
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(var_X.dot(w_d))
@@ -469,7 +469,7 @@ class BLR(RegressionModel):
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
-            raise Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH)
+            raise ValueError(Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH))
 
         # Compute the posterior precision and mean
         XtLambda_n = X.T * self.lambda_n_vec
@@ -595,7 +595,7 @@ class BLR(RegressionModel):
         elif norm.upper() == "L2":
             return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(np.square(hyp)))
         else:
-            raise Output.error(Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED, penalty=norm)
+            raise ValueError(Output.error(Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED, penalty=norm))
 
     def dloglik(self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray) -> np.ndarray:
         """Function to compute derivatives"""
@@ -604,7 +604,7 @@ class BLR(RegressionModel):
         alpha, beta, gamma = self.parse_hyps(hyp, X, var_X)
 
         if self.warp:
-            raise Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="dloglik", class_name=self.__class__.__name__)
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="dloglik", class_name=self.__class__.__name__))
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
@@ -831,7 +831,7 @@ class BLR(RegressionModel):
         elif warp.lower() == "warplog":
             return WarpLog()
         else:
-            raise Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.warp)
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.warp))
 
     @property
     def has_batch_effect(self) -> bool:
@@ -883,7 +883,7 @@ def create_design_matrix(
                 np.eye(len(v))[be[:, i]],
             )
     if len(acc) == 0:
-        raise Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED)
+        raise ValueError(Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED))
 
     return np.concatenate(acc, axis=1)
 
@@ -1151,7 +1151,7 @@ class WarpAffine(WarpBase):
             If param length doesn't match n_params
         """
         if len(param) != self.n_params:
-            raise Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params)
+            raise ValueError(Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params))
         return param[0], np.exp(param[1])
 
     def f(self, x: NDArray[np.float64], param: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -1361,7 +1361,7 @@ class WarpSinhArcsinh(WarpBase):
             If param length doesn't match n_params
         """
         if len(param) != self.n_params:
-            raise Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params)
+            raise ValueError(Output.error(Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH, n_params=self.n_params))
 
         epsilon = param[0]
         b = np.exp(param[1])
@@ -1453,7 +1453,7 @@ class WarpCompose(WarpBase):
         """
         super().__init__()
         if warpnames is None:
-            raise Output.error(Errors.ERROR_BLR_WARPS_NOT_PROVIDED)
+            raise ValueError(Output.error(Errors.ERROR_BLR_WARPS_NOT_PROVIDED))
         self.debugwarp = debugwarp
         self.warps: List[WarpBase] = []
         self.n_params = 0
