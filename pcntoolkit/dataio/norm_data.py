@@ -153,7 +153,7 @@ class NormData(xr.Dataset):
         attrs = attrs or {}
         if subject_ids is not None:
             attrs["real_ids"] = True
-            coords["subjects"] = list(subject_ids)
+            coords["subjects"] = np.squeeze(subject_ids).tolist()
         else:
             attrs["real_ids"] = False
             coords["subjects"] = list(np.arange(X.shape[0]))
@@ -298,7 +298,7 @@ class NormData(xr.Dataset):
         attrs = attrs or {}
 
         if subject_ids is not None:
-            coords["subjects"] = list(dataframe[subject_ids])
+            coords["subjects"] = np.squeeze(dataframe[subject_ids].to_numpy()).tolist()
             attrs["real_ids"] = True
         else:
             coords["subjects"] = list(np.arange(len(dataframe)))
