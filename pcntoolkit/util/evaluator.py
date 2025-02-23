@@ -11,7 +11,7 @@ class Evaluator:
     """
     A class for evaluating normative model predictions.
 
-    This class implements various statistical measures to assess the quality of
+    This class implements various statistics to assess the quality of
     normative model predictions, including correlation coefficients, error metrics,
     and normality tests.
 
@@ -25,9 +25,9 @@ class Evaluator:
         """Initialize the Evaluator."""
         self.response_vars: List[str] = []
 
-    def evaluate(self, data: NormData, measures: List[str] = []) -> NormData:
+    def evaluate(self, data: NormData, statistics: List[str] = []) -> NormData:
         """
-        Evaluate model predictions using multiple statistical measures.
+        Evaluate model predictions using multiple statistics.
 
         Parameters
         ----------
@@ -37,10 +37,10 @@ class Evaluator:
         Returns
         -------
         NormData
-            Data container updated with evaluation measures
+            Data container updated with evaluation statistics
         """
         data["Yhat"] = data.centiles.sel(centile=0.5, method="nearest")
-        all_measures = [
+        all_statistics = [
             "Rho",
             "Rho_p",
             "R2",
@@ -49,47 +49,53 @@ class Evaluator:
             "MSLL",
             "NLL",
             "ShapiroW",
+            "MACE",
+            "MAPE",
         ]
-        if measures:
-            self.measures = [m for m in all_measures if m in measures]
+        if statistics:
+            self.statistics = [m for m in all_statistics if m in statistics]
 
         else:
-            self.measures = all_measures
-        if "Rho" in self.measures and "Rho_p" not in self.measures:
-            self.measures.append("Rho_p")
-        self.create_measures_group(data)
-        if "ShapiroW" in self.measures:
+            self.statistics = all_statistics
+        if "Rho" in self.statistics and "Rho_p" not in self.statistics:
+            self.statistics.append("Rho_p")
+        self.create_statistics_group(data)
+        if "ShapiroW" in self.statistics:
             self.evaluate_shapiro_w(data)
-        if "R2" in self.measures:
+        if "R2" in self.statistics:
             self.evaluate_R2(data)
-        if "Rho" in self.measures:
+        if "Rho" in self.statistics:
             self.evaluate_rho(data)
-        if "RMSE" in self.measures:
+        if "RMSE" in self.statistics:
             self.evaluate_rmse(data)
-        if "SMSE" in self.measures:
+        if "SMSE" in self.statistics:
             self.evaluate_smse(data)
-        if "MSLL" in self.measures:
+        if "MSLL" in self.statistics:
             self.evaluate_msll(data)
-        if "NLL" in self.measures:
+        if "NLL" in self.statistics:
             self.evaluate_nll(data)
+        if "MACE" in self.statistics:
+            self.evaluate_mace(data)
+        if "MAPE" in self.statistics:
+            self.evaluate_mape(data)
         return data
 
-    def create_measures_group(self, data: NormData) -> None:
+    def create_statistics_group(self, data: NormData) -> None:
         """
-        Create a measures group in the data container.
+        Create a statistics group in the data container.
 
         Parameters
         ----------
         data : NormData
-            Data container to add measures group to
+            Data container to add statistics group to
         """
-        self.measures = sorted(self.measures)
-        data["measures"] = xr.DataArray(
-            np.nan * np.ones((len(data.response_var_list), len(self.measures))),
-            dims=("response_vars", "measure"),
+        self.statistics = sorted(self.statistics)
+        data["statistics"] = xr.DataArray(
+            np.nan * np.ones((len(data.response_var_list), len(self.statistics))),
+            dims=("response_vars", "statistic"),
             coords={
                 "response_vars": data.response_var_list,
-                "measure": self.measures,
+                "statistic": self.statistics,
             },
         )
 
@@ -105,8 +111,8 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             rho, p_rho = self._evaluate_rho(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "Rho"}] = float(rho)
-            data.measures.loc[{"response_vars": responsevar, "measure": "Rho_p"}] = float(p_rho)
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "Rho"}] = float(rho)
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "Rho_p"}] = float(p_rho)
 
     def evaluate_R2(self, data: NormData) -> None:
         """
@@ -115,7 +121,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             r2 = self._evaluate_R2(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "R2"}] = r2
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "R2"}] = r2
 
     def evaluate_rmse(self, data: NormData) -> None:
         """
@@ -129,7 +135,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             rmse = self._evaluate_rmse(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "RMSE"}] = rmse
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "RMSE"}] = rmse
 
     def evaluate_smse(self, data: NormData) -> None:
         """
@@ -146,13 +152,13 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             smse = self._evaluate_smse(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "SMSE"}] = smse
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "SMSE"}] = smse
 
     def evaluate_expv(self, data: NormData) -> None:
         """
         Evaluate Explained Variance score for model predictions.
 
-        The explained variance score measures the proportion of variance in the target variable
+        The explained variance score statistics the proportion of variance in the target variable
         that is predictable from the input features.
 
         Parameters
@@ -163,7 +169,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             expv = self._evaluate_expv(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "ExpV"}] = expv
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "ExpV"}] = expv
 
     def evaluate_msll(self, data: NormData) -> None:
         """
@@ -181,13 +187,13 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             msll = self._evaluate_msll(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "MSLL"}] = msll
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "MSLL"}] = msll
 
     def evaluate_nll(self, data: NormData) -> None:
         """
         Evaluate Negative Log Likelihood (NLL) for model predictions.
 
-        NLL measures the probabilistic accuracy of the model's predictions, assuming
+        NLL statistics the probabilistic accuracy of the model's predictions, assuming
         binary classification targets.
 
         Parameters
@@ -199,13 +205,13 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             nll = self._evaluate_nll(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "NLL"}] = nll
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "NLL"}] = nll
 
     def evaluate_bic(self, data: NormData) -> None:
         """
         Evaluate Bayesian Information Criterion (BIC) for model predictions.
 
-        BIC is a criterion for model selection that measures the trade-off between
+        BIC is a criterion for model selection that statistics the trade-off between
         model fit and complexity.
 
         Parameters
@@ -217,7 +223,7 @@ class Evaluator:
             resp_predict_data = data.sel(response_vars=responsevar)
             bic = self._evaluate_bic(resp_predict_data)
             self.prepare(responsevar)
-            data.measures.loc[{"response_vars": responsevar, "measure": "BIC"}] = bic
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "BIC"}] = bic
             self.reset()
 
     def evaluate_shapiro_w(self, data: NormData) -> None:
@@ -235,7 +241,25 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel({"response_vars": responsevar})
             shapiro_w = self._evaluate_shapiro_w(resp_predict_data)
-            data.measures.loc[{"response_vars": responsevar, "measure": "ShapiroW"}] = shapiro_w
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "ShapiroW"}] = shapiro_w
+
+    def evaluate_mace(self, data: NormData) -> None:
+        """
+        Evaluate Mean Absolute Centile Error.
+        """
+        for responsevar in data.response_var_list:
+            resp_predict_data = data.sel({"response_vars": responsevar})
+            mace = self._evaluate_mace(resp_predict_data)
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "MACE"}] = mace 
+
+    def evaluate_mape(self, data: NormData) -> None:
+        """
+        Evaluate Mean Absolute Percentage Error.
+        """
+        for responsevar in data.response_var_list:
+            resp_predict_data = data.sel({"response_vars": responsevar})
+            mape = self._evaluate_mape(resp_predict_data)
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "MAPE"}] = mape
 
     def _evaluate_rho(self, data: NormData) -> Tuple[float, float]:
         """
@@ -405,8 +429,55 @@ class Evaluator:
         y = data["Z"].values
         shapiro_w, _ = stats.shapiro(y)
         return float(shapiro_w)  # Explicitly cast to float
+    
+    def _evaluate_mace(self, data: NormData) -> float:
+        """
+        Calculate Mean Absolute Centile Error.
+        """
+        y = data["Y"].values
+        centile_list = data.centile.values
+        centile_data = data.centiles.values
+        empirical_centiles = (centile_data >= y).mean(axis=0)
+        mace = np.abs(np.subtract.outer(centile_list, empirical_centiles)).mean()
+        return float(mace)
+    
 
-    def empty_measure(self) -> xr.DataArray:
+    def _evaluate_mape(self, data:NormData) -> float:
+        """
+        Calculate Mean Absolute Percentage Error.
+        """
+        y = data["Y"].values
+        yhat = data["Yhat"].values
+        mape = np.abs((y - yhat) / y).mean()
+        return float(mape)
+
+
+    # def mace(nm, x_test, y_test, be_test, quantiles=[0.05, 0.25, 0.5, 0.75, 0.95], plot=False):
+    #     """
+    #     Calculate Mean Absolute Centile Error.
+    #     """
+        
+    #     # Get the quantiles of the normal distribution
+    #     z_scores = stats.norm.ppf(quantiles)
+    #     # Get the unique batch ids
+    #     batch_ids = np.unique(be_test)    
+    #     # Initialize the batch mace
+    #     batch_mace = np.zeros([len(batch_ids),])
+
+    #     for b, batch_id in enumerate(batch_ids):
+    #         # Get the model predictions for the batch
+    #         model_be = np.repeat(np.array([[batch_id]]), x_test[be_test==batch_id,:].shape[0])
+    #         # Get the centiles for the batch
+    #         mcmc_quantiles = nm.get_mcmc_quantiles(x_test[be_test==batch_id,:], model_be, z_scores=z_scores).T
+    #         # Compute the empirical quantile
+    #         empirical_quantile = (mcmc_quantiles >= y_test[be_test==batch_id,0:1]).mean(axis=0)
+    #         # Calculate the mace for the batch
+    #         batch_mace[b] = np.abs((np.array(quantiles) - empirical_quantile)).mean()
+            
+        
+    #     return batch_mace.mean()
+
+    def empty_statistic(self) -> xr.DataArray:
         return xr.DataArray(
             np.zeros(len(self.response_vars)),
             dims=("response_vars"),

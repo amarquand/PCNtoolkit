@@ -19,6 +19,7 @@ def test_model_args(save_dir_test_model):
         "outscaler": "standardize",
         "normative_model_name": "test_model",
         "alg": "test_model",
+        "success_ratio": 1.0,
     }
 
 

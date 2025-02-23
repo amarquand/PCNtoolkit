@@ -26,18 +26,18 @@ def test_norm_data_creation(
     norm_data_fixture,
     n_batch_effect_dims,
     n_covariates,
-    n_train_datapoints,
+    n_train_subjects,
     batch_effect_values,
     n_response_vars,
 ):
     norm_data = request.getfixturevalue(norm_data_fixture)
 
-    assert norm_data.X.shape == (n_train_datapoints, n_covariates)
-    assert norm_data.Y.shape == (n_train_datapoints, n_response_vars)
-    assert norm_data.batch_effects.shape == (n_train_datapoints, len(batch_effect_values))
+    assert norm_data.X.shape == (n_train_subjects, n_covariates)
+    assert norm_data.Y.shape == (n_train_subjects, n_response_vars)
+    assert norm_data.batch_effects.shape == (n_train_subjects, len(batch_effect_values))
     assert norm_data.covariates.shape == (n_covariates,)
     assert norm_data.batch_effect_dims.shape == (n_batch_effect_dims,)
-    assert norm_data.coords["datapoints"].shape == (n_train_datapoints,)
+    assert norm_data.coords["subjects"].shape == (n_train_subjects,)
     assert norm_data.coords["covariates"].shape == (n_covariates,)
     assert norm_data.coords["batch_effect_dims"].shape == (n_batch_effect_dims,)
 
@@ -46,7 +46,7 @@ def test_norm_data_creation(
 def test_split_with_stratify(
     norm_data_from_arrays,
     n_covariates,
-    n_train_datapoints,
+    n_train_subjects,
     n_response_vars,
     split_ratio,
     batch_effect_values,
@@ -59,16 +59,16 @@ def test_split_with_stratify(
     assert splits[1].name == "val"
 
     # Check if total samples in splits equal original samples
-    assert splits[0].X.shape[0] + splits[1].X.shape[0] == n_train_datapoints
+    assert splits[0].X.shape[0] + splits[1].X.shape[0] == n_train_subjects
 
     for i, split in enumerate(splits):
-        expected_samples = int(n_train_datapoints * split_ratio[i])
+        expected_samples = int(n_train_subjects * split_ratio[i])
         assert split.X.shape == (expected_samples, n_covariates)
         assert split.Y.shape == (expected_samples, n_response_vars)
         assert split.batch_effects.shape == (expected_samples, len(batch_effect_values))
         assert split.covariates.shape == (n_covariates,)
         assert split.batch_effect_dims.shape == (len(batch_effect_values),)
-        assert split.coords["datapoints"].shape == (expected_samples,)
+        assert split.coords["subjects"].shape == (expected_samples,)
         assert split.coords["covariates"].to_numpy().tolist() == [f"covariate_{i}" for i in range(n_covariates)]
         assert split.coords["batch_effect_dims"].to_numpy().tolist() == [
             f"batch_effect_{i}" for i in range(len(batch_effect_values))

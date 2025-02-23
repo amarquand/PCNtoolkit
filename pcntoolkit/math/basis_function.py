@@ -53,7 +53,33 @@ class BasisFunction(ABC):
         basis_function_type = my_dict["basis_function"]
         basis_function = create_basis_function(basis_function_type, **my_dict)
         return basis_function
-
+    
+    @classmethod
+    def from_args(cls, name: str, args: dict) -> BasisFunction:
+        basis_function_type = args.pop(name, "linear")
+        if basis_function_type == "bspline":
+            nknots = args.pop(f"{name}_nknots", 3)
+            degree = args.pop(f"{name}_degree", 3)
+            left_expand = args.pop(f"{name}_left_expand", 0.05)
+            right_expand = args.pop(f"{name}_right_expand", 0.05)
+            knot_method = args.pop(f"{name}_knot_method", "uniform")
+            basis_column = args.pop(f"{name}_basis_column", None)
+            return BsplineBasisFunction(basis_column=basis_column, 
+                                       degree=degree, 
+                                       nknots=nknots, 
+                                       left_expand=left_expand, 
+                                       right_expand=right_expand, 
+                                       knot_method=knot_method)
+        elif basis_function_type == "polynomial":
+            degree = args.pop(f"{name}_degree", 3)
+            basis_column = args.pop(f"{name}_basis_column", None)
+            return PolynomialBasisFunction(basis_column=basis_column, 
+                                         degree=degree)
+        else:
+            basis_column = args.pop(f"{name}_basis_column", None)
+            return LinearBasisFunction(basis_column=basis_column)
+        
+        
     def fit(self, X: np.ndarray) -> None:
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(X.shape[1])]

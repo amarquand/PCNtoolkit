@@ -34,15 +34,15 @@ def log_dir():
 
 
 @pytest.fixture(scope="session")
-def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
+def fit_files(n_train_subjects, n_covariates, n_response_vars, batch_effect_values):
     source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
     os.makedirs(source_data_dir, exist_ok=True)
     cov_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates.csv")
     resp_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "responses.csv")
     trbefile_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects.csv")
-    covariates = generate_covariates(n_train_datapoints, n_covariates)
-    responses = generate_response_vars(n_train_datapoints, n_response_vars, covariates)
-    batch_effects = generate_batch_effects(n_train_datapoints, batch_effect_values)
+    covariates = generate_covariates(n_train_subjects, n_covariates)
+    responses = generate_response_vars(n_train_subjects, n_response_vars, covariates)
+    batch_effects = generate_batch_effects(n_train_subjects, batch_effect_values)
     np.savetxt(cov_path, covariates)
     np.savetxt(resp_path, responses)
     np.savetxt(trbefile_path, batch_effects)
@@ -53,15 +53,15 @@ def fit_files(n_train_datapoints, n_covariates, n_response_vars, batch_effect_va
 
 
 @pytest.fixture(scope="session")
-def test_files(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
+def test_files(n_test_subjects, n_covariates, n_response_vars, batch_effect_values):
     source_data_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data")
     os.makedirs(source_data_dir, exist_ok=True)
     test_cov_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "covariates_test.csv")
     test_resp_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "responses_test.csv")
     test_trbefile_path = os.path.join(gettempdir(), "pcntoolkit_tests", "resources", "data", "batch_effects_test.csv")
-    test_covariates = generate_covariates(n_test_datapoints, n_covariates)
-    test_responses = generate_response_vars(n_test_datapoints, n_response_vars, test_covariates)
-    test_batch_effects = generate_batch_effects(n_test_datapoints, batch_effect_values)
+    test_covariates = generate_covariates(n_test_subjects, n_covariates)
+    test_responses = generate_response_vars(n_test_subjects, n_response_vars, test_covariates)
+    test_batch_effects = generate_batch_effects(n_test_subjects, batch_effect_values)
     np.savetxt(test_cov_path, test_covariates)
     np.savetxt(test_resp_path, test_responses)
     np.savetxt(test_trbefile_path, test_batch_effects)

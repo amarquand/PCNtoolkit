@@ -176,7 +176,7 @@ def test_random_prior(extract_data):
     assert prior.name == "mu"
     assert prior.dims is None
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_random_prior_with_covariate_dim(extract_data):
@@ -184,7 +184,7 @@ def test_random_prior_with_covariate_dim(extract_data):
     samples = prior.compile(*extract_data)
     assert prior.name == "test_random3"
     assert len(samples.shape.eval()) == 2
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
     assert samples.shape.eval()[1] == len(extract_data[0].coords["mu_covariates"])
 
 
@@ -193,7 +193,7 @@ def test_linear_prior(extract_data):
     samples = prior.compile(*extract_data)
     assert prior.name == "test_linear1"
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_linear_prior_with_random_slope(extract_data):
@@ -202,7 +202,7 @@ def test_linear_prior_with_random_slope(extract_data):
     samples = prior.compile(*extract_data)
     assert prior.name == "test_linear2"
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_linear_prior_with_random_intercept(extract_data):
@@ -210,7 +210,7 @@ def test_linear_prior_with_random_intercept(extract_data):
     prior: LinearPrior = make_prior("test_linear3", linear=True, intercept=intercept)  # type: ignore
     samples = prior.compile(*extract_data)
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_linear_prior_with_random_intercept_and_slope(extract_data):
@@ -219,7 +219,7 @@ def test_linear_prior_with_random_intercept_and_slope(extract_data):
     prior: LinearPrior = make_prior("test_linear4", linear=True, intercept=intercept, slope=slope)  # type: ignore
     samples = prior.compile(*extract_data)
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_priors_from_args_single(extract_data):
@@ -328,7 +328,7 @@ def test_prior_from_args_random_with_covariate_dim(extract_data):
     assert mu.dist.name == my_new_prior_name
 
     assert len(samples.shape.eval()) == 2
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
     assert samples.shape.eval()[1] == len(extract_data[0].coords["mu_covariates"])
 
 
@@ -359,7 +359,7 @@ def test_prior_from_args_random(extract_data):
     assert mu.sigma.dist_params == (1.0,)
 
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_prior_from_args_linear(extract_data):
@@ -382,7 +382,7 @@ def test_prior_from_args_linear(extract_data):
     assert mu.slope.dist_name == "Normal"
     assert mu.slope.dist_params == (0, 1)
     assert len(samples.shape.eval()) == 1
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_prior_from_args_linear_with_random_slope(extract_data):
@@ -413,7 +413,7 @@ def test_prior_from_args_linear_with_random_slope(extract_data):
     assert mu.slope.sigma.dist_name == "HalfNormal"
     assert mu.slope.sigma.dist_params == (1.0,)
 
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_prior_from_args_linear_with_random_intercept(extract_data):
@@ -445,7 +445,7 @@ def test_prior_from_args_linear_with_random_intercept(extract_data):
     assert mu.intercept.sigma.dist_name == "HalfNormal"
     assert mu.intercept.sigma.dist_params == (1.0,)
 
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 
 def test_prior_from_args_linear_with_random_intercept_and_slope(extract_data):
@@ -486,7 +486,7 @@ def test_prior_from_args_linear_with_random_intercept_and_slope(extract_data):
     assert mu.slope.sigma.dist_name == "HalfNormal"
     assert mu.slope.sigma.dist_params == (1.0,)
 
-    assert samples.shape.eval()[0] == len(extract_data[0].coords["datapoints"])
+    assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
 
 def test_to_dict(extract_data):
     prior_dict = {

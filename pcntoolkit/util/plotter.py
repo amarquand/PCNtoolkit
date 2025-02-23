@@ -1,6 +1,6 @@
 """A module for plotting functions."""
 
-from re import S
+from re import L, S
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import matplotlib.pyplot as plt
@@ -20,19 +20,19 @@ from pcntoolkit.util.output import Errors, Output
 
 def plot_centiles(
     model: "NormativeModel",
-    data: NormData,
     centiles: List[float] | np.ndarray | None = None,
     covariate: str | None = None,
+    covariate_range: tuple[float, float] = (None, None),  # type: ignore
     batch_effects: Dict[str, List[str]] | None | Literal["all"] = None,
-    show_data: bool = False,
+    scatter_data: NormData | None = None,
     harmonize_data: bool = True,
-    plt_kwargs: dict | None = None,
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
     save_dir: str | None = None,
     show_centile_labels: bool = True,
     show_legend: bool = True,
+    plt_kwargs: dict | None = None,
     **kwargs: Any,
 ) -> None:
     """Generate centile plots for response variables with optional data overlay.
@@ -43,183 +43,111 @@ def plot_centiles(
 
     Parameters
     ----------
-    model : NormBase
-        The fitted normative model used to generate centile predictions.
-    data : NormData
-        Dataset containing covariates and response variables to be plotted.
-    centiles : list | None, optional
-        List of centile values to plot. If None, uses default values, by default None.
-    covariate : str | None, optional
-        Name of the covariate to plot on x-axis. If None, uses the first
-        covariate in the dataset, by default None.
-    batch_effects : Dict[str, List[str]] | None, optional
-        Specification of batch effects for plotting. Format:
-        {'batch_effect_name': ['value1', 'value2', ...]}
-        For models with random effects, specifies which batch effect values
-        to use for centile computation (first value in each list).
-        For data visualization, specifies which batch effects to highlight.
-        By default None.
-    show_data : bool, optional
-        If True, overlays actual data points on the centile curves.
-        Points matching batch_effects are highlighted, others are shown
-        in light gray, by default False.
-    plt_kwargs : dict | None, optional
-        Additional keyword arguments passed to plt.figure(),
-        by default None.
-    hue_data : str, optional
-        Column name in data used for color-coding points when show_data=True,
-        by default "site".
-    markers_data : str, optional
-        Column name in data used for marker styles when show_data=True,
-        by default "sex".
-    show_other_data : bool, optional
-        Whether to show data points that do not match any batch effects,
-        by default False.
-    save_dir : str | None, optional
-        Directory to save the plot, by default None.
-    show_centile_labels : bool, optional
-        Whether to show the centile labels, by default True.
-    show_legend : bool, optional
-        Whether to show the legend, by default True.
+    model: NormativeModel
+        The model to plot the centiles for.
+    centiles: List[float] | np.ndarray | None, optional
+        The centiles to plot. If None, the default centiles will be used.
+    covariate: str | None, optional
+        The covariate to plot on the x-axis. If None, the first covariate in the model will be used.
+    covariate_range: tuple[float, float], optional
+        The range of the covariate to plot on the x-axis. If None, the range of the covariate that was in the train data will be used.
+    batch_effects: Dict[str, List[str]] | None | Literal["all"], optional
+        The batch effects to plot the centiles for. If None, the batch effect that appears first in alphabetical order will be used.
+    scatter_data: NormData | None, optional
+        Data to scatter on top of the centiles. If None, no data will be scattered.
+    harmonize_data: bool, optional
+        Whether to harmonize the scatter data before plotting. Data will be harmonized to the batch effect for which the centiles were computed.
+    hue_data: str, optional
+        The column to use for color coding the data. If None, the data will not be color coded.
+    markers_data: str, optional
+        The column to use for marker styling the data. If None, the data will not be marker styled.
+    show_other_data: bool, optional
+        Whether to scatter data belonging to groups not in batch_effects.
+    save_dir: str | None, optional
+        The directory to save the plot to. If None, the plot will not be saved.
+    show_centile_labels: bool, optional
+        Whether to show the centile labels on the plot.
+    show_legend: bool, optional
+        Whether to show the legend on the plot.
+    plt_kwargs: dict, optional
+        Additional keyword arguments for the plot.
+    **kwargs: Any, optional
+        Additional keyword arguments for the model.compute_centiles method.
 
     Returns
     -------
     None
         Displays the plot using matplotlib.
-
-    Raises
-    ------
-    ValueError
-        If batch_effects dictionary contains invalid value types.
-
-    Notes
-    -----
-    - Centile lines are styled differently based on their distance from the median:
-      - Solid lines for centiles close to median (|cdf - 0.5| < 0.25)
-      - Dashed lines for intermediate centiles (0.25 ≤ |cdf - 0.5| < 0.475)
-      - Dotted lines for extreme centiles (|cdf - 0.5| ≥ 0.475)
-    - CDF values are displayed at both ends of each centile line
-    - When showing data with batch effects, matching points are highlighted
-      while others are shown in gray with reduced opacity
-
-    Examples
-    --------
-    >>> # Basic centile plot
-    >>> plot_centiles(model, data, covariate="age")
-
-    >>> # With data overlay and batch effects
-    >>> plot_centiles(
-    ...     model,
-    ...     data,
-    ...     centiles=[0.1587, 0.8413],
-    ...     covariate="age",
-    ...     batch_effects={"site": ["site1", "site2"]},
-    ...     show_data=True,
-    ...     hue_data="site",
-    ...     markers_data="sex",
-    ... )
     """
     if covariate is None:
-        covariate = data.covariates[0].to_numpy().item()
+        covariate = model.covariates[0]
         assert isinstance(covariate, str)
+
+    cov_min = covariate_range[0] or model.covariate_ranges[covariate]["min"]
+    cov_max = covariate_range[1] or model.covariate_ranges[covariate]["max"]
+    covariate_range = (cov_min, cov_max)
 
     if batch_effects == "all":
         batch_effects = model.unique_batch_effects
     elif batch_effects is None:
         if model.has_batch_effect:
-            batch_effects = data.get_single_batch_effect()
+            batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
         else:
             batch_effects = {}
-
-    if harmonize_data:
-        data = model.harmonize(data, {k: v[0] for k, v in batch_effects.items()})
-
-    # Ensure that the batch effects are in the correct format
-    if batch_effects:
-        for k, v in batch_effects.items():
-            if isinstance(v, str):
-                batch_effects[k] = [v]
-            elif not isinstance(v, list):
-                raise ValueError(Output.error(Errors.ERROR_BATCH_EFFECTS_NOT_LIST, batch_effect_type=type(v)))
 
     if plt_kwargs is None:
         plt_kwargs = {}
     palette = plt_kwargs.pop("cmap", "viridis")
-    synth_data = data.create_synthetic_data(
-        n_datapoints=150,
-        range_dim=covariate,
-        batch_effects_to_sample={k: [v[0]] for k, v in batch_effects.items()} if batch_effects else None,
-    )
-    model.compute_centiles(synth_data, centiles=centiles, **kwargs)
-    for response_var in data.coords["response_vars"].to_numpy():
+
+    centile_data = model.synthesize(n_samples=150, covariate_range_per_batch_effect=False)
+    centile_data.X.loc[{"covariates": covariate}] = np.linspace(covariate_range[0], covariate_range[1], 150)
+    for be, v in batch_effects.items():
+        centile_data.batch_effects.loc[{"batch_effect_dims": be}] = v[0]
+    model.compute_centiles(centile_data, centiles=centiles, **kwargs)
+
+    if harmonize_data and scatter_data:
+        if model.has_batch_effect:
+            model.harmonize(scatter_data)
+        else:
+            model.harmonize(scatter_data, reference_batch_effect=batch_effects)
+
+    for response_var in model.response_vars:
         _plot_centiles(
-            data=data,
-            synth_data=synth_data,
+            centile_data=centile_data,
             response_var=response_var,
             covariate=covariate,
+            covariate_range=covariate_range,
             batch_effects=batch_effects,
-            show_data=show_data,
+            scatter_data=scatter_data,
             harmonize_data=harmonize_data,
-            plt_kwargs=plt_kwargs,
             hue_data=hue_data,
             markers_data=markers_data,
+            show_other_data=show_other_data,
             palette=palette,
             save_dir=save_dir,
-            show_other_data=show_other_data,
             show_centile_labels=show_centile_labels,
             show_legend=show_legend,
+            plt_kwargs=plt_kwargs,
         )
 
 
 def _plot_centiles(
-    data: NormData,
-    synth_data: NormData,
+    centile_data: NormData,
     response_var: str,
-    batch_effects: Dict[str, List[str]],
     covariate: str = None,  # type: ignore
-    show_data: bool = False,
+    covariate_range: tuple[float, float] = (None, None),  # type: ignore
+    batch_effects: Dict[str, List[str]] = None,  # type: ignore
+    scatter_data: NormData | None = None,
     harmonize_data: bool = True,
-    plt_kwargs: dict = None,  # type: ignore
     hue_data: str = "site",
     markers_data: str = "sex",
+    show_other_data: bool = False,
     palette: str = "viridis",
     save_dir: str | None = None,
-    show_other_data: bool = False,
     show_centile_labels: bool = True,
     show_legend: bool = True,
+    plt_kwargs: dict = None,  # type: ignore
 ) -> None:
-    """Plot centile curves for a single response variable.
-
-    Parameters
-    ----------
-    data : NormData
-        Original dataset containing response variables and covariates.
-    synth_data : NormData
-        Synthetic data containing computed centiles.
-    response_var : str
-        Name of the response variable to plot.
-    batch_effects : Dict[str, List[str]]
-        Dictionary specifying batch effects to highlight in the plot.
-    covariate : str, optional
-        Name of the covariate for x-axis.
-    show_data : bool, optional
-        If True, overlay data points on centile curves.
-    plt_kwargs : dict, optional
-        Additional keyword arguments for plt.figure().
-    hue_data : str, optional
-        Column name for color-coding points, by default "site".
-    markers_data : str, optional
-        Column name for marker styles, by default "sex".
-    palette : str, optional
-        Color palette name for centile curves, by default "viridis".
-
-    Notes
-    -----
-    - Centile line styles vary based on distance from median
-    - CDF values are displayed at both ends of centile lines
-    - When showing data, batch effect points are highlighted
-    """
-
     sns.set_style("whitegrid")
     plt.figure(**plt_kwargs)
     cmap = plt.get_cmap(palette)
@@ -229,9 +157,9 @@ def _plot_centiles(
         "response_vars": response_var,
     }
 
-    filtered = synth_data.sel(filter_dict)
+    filtered = centile_data.sel(filter_dict)
 
-    for centile in synth_data.coords["centile"][::-1]:
+    for centile in centile_data.coords["centile"][::-1]:
         d_mean = abs(centile - 0.5)
         if d_mean < 0.25:
             style = "-"
@@ -275,21 +203,19 @@ def _plot_centiles(
     minx, maxx = plt.xlim()
     plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
 
-    if show_data:
-        df = data.sel(filter_dict).to_dataframe()
-        scatter_data = "Y_harmonized" if harmonize_data else "Y"
-
-        columns = [("X", covariate), (scatter_data, response_var)]
-        columns.extend([("batch_effects", be.item()) for be in data.batch_effect_dims])
+    if scatter_data:
+        df = scatter_data.sel(filter_dict).to_dataframe()
+        scatter_data_name = "Y_harmonized" if harmonize_data else "Y"
+        columns = [("X", covariate), (scatter_data_name, response_var)]
+        columns.extend([("batch_effects", be.item()) for be in scatter_data.batch_effect_dims])
         df = df[columns]
         df.columns = [c[1] for c in df.columns]
-
         if batch_effects == {}:
             sns.scatterplot(
                 df,
                 x=covariate,
                 y=response_var,
-                label=data.name,
+                label=scatter_data.name,
                 color="black",
                 s=20,
                 alpha=0.6,
@@ -342,16 +268,18 @@ def _plot_centiles(
             else:
                 plt.legend().remove()
     title = f"Centiles of {response_var}"
-    if show_data:
+    if scatter_data:
         if harmonize_data:
-            title = f"{title}\n With harmonized {data.name} data"
+            plotname = f"centiles_{response_var}_{scatter_data.name}_harmonized"
+            title = f"{title}\n With harmonized {scatter_data.name} data"
         else:
-            title = f"{title}\n With raw {data.name} data"
+            plotname = f"centiles_{response_var}_{scatter_data.name}"
+            title = f"{title}\n With raw {scatter_data.name} data"
     plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"centiles_{response_var}_{data.name}.png"))
+        plt.savefig(os.path.join(save_dir, f"{plotname}.png"))
     else:
         plt.show(block=False)
     plt.close()
@@ -510,27 +438,90 @@ def _plot_qq(
             for i, g in enumerate(df.groupby(split_data, sort=False)):
                 my_offset = i * 1.0
                 my_id = g[1].index
-                my_df = df.loc[my_id, rq]
-                max_abs_val = max(abs(my_df.min()), abs(my_df.max())) + 0.5
                 plt.plot(
-                    [-max_abs_val, max_abs_val],
-                    [-max_abs_val + my_offset, max_abs_val + my_offset],
-                    color="black",
-                    linestyle="--",
+                    [-3, 3], [-3 + my_offset, 3 + my_offset], color="black", linestyle="--", linewidth=1, alpha=0.8, zorder=0
                 )
         else:
-            max_abs_val = max(abs(df[rq].min()), abs(df[rq].max())) + 0.5
-            plt.plot(
-                [-max_abs_val, max_abs_val],
-                [-max_abs_val, max_abs_val],
-                color="black",
-                linestyle="--",
-            )
+            plt.plot([-3, 3], [-3, 3], color="black", linestyle="--", linewidth=1, alpha =0.8, zorder=0)
 
     if bound != 0:
         plt.axis((-bound, bound, -bound, bound))
     if save_dir:
         plt.savefig(os.path.join(save_dir, f"qq_{response_var}_{data.name}.png"))
+    else:
+        plt.show(block=False)
+    plt.close()
+
+
+def plot_ridge(data: NormData, variable: Literal["Z", "Y"], split_by: str, save_dir: str | None = None, **kwargs: Any) -> None:
+    """
+    Plot a ridge plot for each response variable in the data.
+
+    Creates a density plot for the variable split by the split_by variable.
+
+    Each density plot will be on a different row.
+
+    The hue of the density plot will be the split_by variable.
+
+    Parameters
+    ----------
+    data : NormData
+        Data containing the response variable.
+    variable : Literal["Z", "Y"]
+        The variable to plot on the x-axis. (Z or Y)
+    split_by : str
+        The variable to split the data by.
+    save_dir : str | None, optional
+        The directory to save the plot to. Defaults to None.
+    **kwargs : Any, optional
+        Additional keyword arguments for the plot.
+
+    Returns
+    -------
+    None
+    """
+
+    sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
+
+    for response_var in data.coords["response_vars"].to_numpy():
+        _plot_ridge(data, variable, response_var, split_by, save_dir, **kwargs)
+
+
+def _plot_ridge(data, variable, response_var, split_by, save_dir, **kwargs):
+    df = data.to_dataframe()
+    # Select only the Z and batch_effects columns
+    df = df[[(variable, response_var), ("batch_effects", split_by)]]
+    # Join column name levels with an underscore
+    df.columns = [df.columns[0][0], df.columns[1][1]]
+
+    # Initialize the FacetGrid object
+    pal = sns.cubehelix_palette(n_colors=len(df[split_by].unique()), rot=1.5, light=0.7)
+    g = sns.FacetGrid(df, row=split_by, hue=split_by, aspect=15, height=0.5, palette=pal)
+
+    # Draw the densities in a few steps
+    g.map(sns.kdeplot, variable, bw_adjust=0.5, clip_on=False, fill=True, alpha=1, linewidth=1.5)
+    g.map(sns.kdeplot, variable, clip_on=False, color="w", lw=2, bw_adjust=0.5)
+
+    # passing color=None to refline() uses the hue mapping
+    g.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
+
+    # Define and use a simple function to label the plot in axes coordinates
+    def label(x, color, label):
+        ax = plt.gca()
+        ax.text(0, 0.2, label, fontweight="bold", color=color, ha="left", va="center", transform=ax.transAxes)
+
+    g.map(label, variable)
+
+    # Set the subplots to overlap
+    g.figure.subplots_adjust(hspace=-0.25)
+
+    # Remove axes details that don't play well with overlap
+    g.set_titles("")
+    g.set(yticks=[], ylabel="")
+    g.despine(bottom=True, left=True)
+
+    if save_dir:
+        plt.savefig(os.path.join(save_dir, f"ridge_{response_var}_{variable}_{split_by}_{data.name}.png"))
     else:
         plt.show(block=False)
     plt.close()

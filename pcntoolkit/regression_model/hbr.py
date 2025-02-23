@@ -4,6 +4,7 @@ import copy
 import logging
 import os
 from abc import ABC, abstractmethod
+from tkinter.tix import Y_REGION
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import arviz as az  # type: ignore
@@ -16,12 +17,13 @@ from pymc import math
 
 from pcntoolkit.math.basis_function import BasisFunction, LinearBasisFunction
 from pcntoolkit.math.factorize import *
-from pcntoolkit.math.shash import SHASHb, m
+from pcntoolkit.math.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Output
 
 logger = logging.getLogger("pymc")
 logger.propagate = False
+
 
 class HBR(RegressionModel):
     """
@@ -169,8 +171,8 @@ class HBR(RegressionModel):
             var_names=var_names,
         )
 
-        n_datapoints = self.pymc_model.dim_lengths["datapoints"].eval().item()
-        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_datapoints, x), var_names))
+        n_subjects = self.pymc_model.dim_lengths["subjects"].eval().item()
+        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
         z_mapped = xr.apply_ufunc(self.likelihood.forward, *array_of_vars, kwargs={"Y": np.squeeze(Y.values)[:, None]}).mean(
             dim="sample"
         )
@@ -225,8 +227,8 @@ class HBR(RegressionModel):
             var_names=var_names,
         )
 
-        n_datapoints = self.pymc_model.dim_lengths["datapoints"].eval().item()
-        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_datapoints, x), var_names))
+        n_subjects = self.pymc_model.dim_lengths["subjects"].eval().item()
+        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
         y_mapped = xr.apply_ufunc(self.likelihood.backward, *array_of_vars, kwargs={"Z": np.squeeze(Z.values)[:, None]}).mean(
             dim="sample"
         )
@@ -274,29 +276,30 @@ class HBR(RegressionModel):
         """
         plotdir = os.path.join(path, "plots")
         os.makedirs(plotdir, exist_ok=True)
-        resultsdir = os.path.join(path, "results")  
+        resultsdir = os.path.join(path, "results")
         os.makedirs(resultsdir, exist_ok=True)
         if self.is_fitted:
             if self.idata is not None:
-                az.summary(self.idata, fmt="wide", var_names=["~_samples"], filter_vars="like").to_csv(os.path.join(resultsdir,self.name + "_summary.csv"))
-                az.plot_trace(self.idata,var_names="~_samples", filter_vars="like")
+                az.summary(self.idata, fmt="wide", var_names=["~_samples"], filter_vars="like").to_csv(
+                    os.path.join(resultsdir, self.name + "_summary.csv")
+                )
+                az.plot_trace(self.idata, var_names="~_samples", filter_vars="like")
                 plt.tight_layout()
-                plt.savefig(os.path.join(plotdir,self.name + "_trace.png"))
+                plt.savefig(os.path.join(plotdir, self.name + "_trace.png"))
                 plt.close()
-                az.plot_autocorr(self.idata, var_names="~_samples", filter_vars="like")    
+                az.plot_autocorr(self.idata, var_names="~_samples", filter_vars="like")
                 plt.tight_layout()
-                plt.savefig(os.path.join(plotdir,self.name + "_autocorr.png"))
+                plt.savefig(os.path.join(plotdir, self.name + "_autocorr.png"))
                 plt.close()
                 if hasattr(self.idata, "posterior_predictive"):
                     az.plot_ppc(self.idata)
                     plt.tight_layout()
-                    plt.savefig(os.path.join(plotdir,self.name + "_ppc.png"))
+                    plt.savefig(os.path.join(plotdir, self.name + "_ppc.png"))
                     plt.close()
             if self.pymc_model is not None:
-                self.pymc_model.to_graphviz(save=os.path.join(plotdir,self.name + "_model.png"))
+                self.pymc_model.to_graphviz(save=os.path.join(plotdir, self.name + "_model.png"))
         else:
             raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
-        
 
     def transfer(
         self,
@@ -354,11 +357,11 @@ class HBR(RegressionModel):
     def has_batch_effect(self) -> bool:
         return False
 
-    def extract_and_reshape(self, post_pred, datapoints, var_name: str) -> xr.DataArray:
+    def extract_and_reshape(self, post_pred, subjects, var_name: str) -> xr.DataArray:
         preds = post_pred[var_name].values
         if len(preds.shape) == 1:
-            preds = np.repeat(preds[None, :], datapoints, axis=0)
-        return xr.DataArray(np.squeeze(preds), dims=["datapoints", "sample"])
+            preds = np.repeat(preds[None, :], subjects, axis=0)
+        return xr.DataArray(np.squeeze(preds), dims=["subjects", "sample"])
 
     def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -496,7 +499,7 @@ class HBR(RegressionModel):
             try:
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
-                raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path) ) from exc
+                raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
             # self.replace_samples_in_idata_posterior()
 
     # def remove_samples_from_idata_posterior(self) -> None:
@@ -618,12 +621,9 @@ def prior_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[
     if name.split("_")[0] in ["sigma", "delta"]:
         dist_name = my_args.get(f"dist_name_{name}", "HalfNormal")
         dist_params = my_args.get(f"dist_params_{name}", (1.0,))
-        if my_args.get(f"linear_{name}", False) or my_args.get(f"random_{name}", False):
-            assert mapping != "identity", "Sigma and delta need a mapping if they are linear or random"
-        else:
-            assert my_args.get(f"dist_name_{name}", None) not in ["Normal", "Cauchy"] or (
-                my_args.get(f"dist_name_{name}", None) == "Uniform" and my_args.get(f"dist_params_{name}", None)[0] > 0
-            ), "Sigma and delta need a positive distribution if they are not linear or random"
+        if mapping == "identity":
+            if dist_name in ["Normal", "Cauchy"] or (dist_name == "Uniform" and dist_params[0] <= 0):
+                raise ValueError(Output.error(Errors.ENSURE_POSITIVE_DISTRIBUTION, name=name))
     else:
         dist_name = my_args.get(f"dist_name_{name}", "Normal")
         dist_params = my_args.get(f"dist_params_{name}", (0, 1))
@@ -632,7 +632,8 @@ def prior_from_args(name: str, args: Dict[str, Any], dims: Optional[Union[Tuple[
     if my_args.get(f"linear_{name}", False):
         slope = prior_from_args(f"slope_{name}", my_args, dims=dims)
         intercept = prior_from_args(f"intercept_{name}", my_args, dims=dims)
-        return LinearPrior(name, dims, mapping, mapping_params, slope, intercept)
+        basis_function = BasisFunction.from_args(f"basis_function_{name}", my_args)
+        return LinearPrior(name, dims, mapping, mapping_params, slope, intercept, basis_function)
     elif my_args.get(f"random_{name}", False):
         mu = prior_from_args(f"mu_{name}", my_args, dims=dims)
         sigma = prior_from_args(f"sigma_{name}", my_args, dims=dims)
@@ -840,7 +841,7 @@ class RandomPrior(BasePrior):
         self.sigmas = {}
         self.offsets = {}
         self.scaled_offsets = {}
-        self.sample_dims = ("datapoints",)
+        self.sample_dims = ("subjects",)
 
     @property
     def dims(self):
@@ -862,7 +863,7 @@ class RandomPrior(BasePrior):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ):
-        outdims = "datapoints" if not self.dims else ("datapoints", *self.dims)
+        outdims = "subjects" if not self.dims else ("subjects", *self.dims)
         with model:
             self.mu.compile(model, X, be, be_maps, Y)
             if self.dims:
@@ -956,7 +957,7 @@ class LinearPrior(BasePrior):
         self.slope.dims = ("covariates",) if not self.dims else ("covariates", *self.dims)
         self.intercept = intercept or get_default_intercept()
         self.intercept.dims = self.dims
-        self.sample_dims = ("datapoints",)
+        self.sample_dims = ("subjects",)
         self.set_name(self.name)
         self.basis_function = basis_function
 
@@ -974,7 +975,7 @@ class LinearPrior(BasePrior):
 
     def _compile(self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray):
         if not self.basis_function.is_fitted:
-            self.basis_function.fit(X.values)
+            self.basis_function.fit(X.values) # Do this indexing to avoid ordering issues
         mapped_X = self.basis_function.transform(X.values)
         covs = f"{self.name}_covariates"
         self.covariate_dims = [f"{covs}_{i}" for i in range(mapped_X.shape[1])]
@@ -982,7 +983,7 @@ class LinearPrior(BasePrior):
         if not model.coords.get(covs):
             model.add_coords({covs: self.covariate_dims})
         with model:
-            pm_X = pm.Data(f"{self.name}_X", mapped_X, dims=("datapoints", covs))
+            pm_X = pm.Data(f"{self.name}_X", mapped_X, dims=("subjects", covs))
 
         self.slope.dims = (covs,) if not self.dims else (covs, *self.dims)
         self.intercept.dims = self.dims
@@ -1015,7 +1016,7 @@ class LinearPrior(BasePrior):
         self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
     ):
         mapped_X = self.basis_function.transform(X.values)
-        model.set_data(f"{self.name}_X", mapped_X, coords={"datapoints": X.coords["datapoints"].values})
+        model.set_data(f"{self.name}_X", mapped_X, coords={"subjects": X.coords["subjects"].values})
 
     def to_dict(self):
         dct = super().to_dict()
@@ -1171,9 +1172,9 @@ class Likelihood(ABC):
                 pm.Data(
                     f"{be_name}_data",
                     be.sel(batch_effect_dims=be_name).values,
-                    coords={"datapoints": be.coords["datapoints"].values},
+                    coords={"subjects": be.coords["subjects"].values},
                 )
-            pm.Data("Y", Y.values, dims=("datapoints",))
+            pm.Data("Y", Y.values, dims=("subjects",))
 
         self._compile(model, X, be, be_maps, Y)
         return model
@@ -1182,7 +1183,7 @@ class Likelihood(ABC):
         self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
     ):
         with model:
-            model.set_data(name="Y", values=Y.values, coords={"datapoints": Y.coords["datapoints"].values})
+            model.set_data(name="Y", values=Y.values, coords={"subjects": Y.coords["subjects"].values})
             for be_name in be.coords["batch_effect_dims"].values:
                 model.set_data(
                     name=f"{be_name}_data",
@@ -1297,7 +1298,7 @@ class NormalLikelihood(Likelihood):
             sigma_samples = self.sigma.compile(model, X, be, be_maps, Y)
             mu_samples = pm.Deterministic("mu_samples", mu_samples, dims=self.mu.sample_dims)
             sigma_samples = pm.Deterministic("sigma_samples", sigma_samples, dims=self.sigma.sample_dims)
-            pm.Normal("Yhat", mu=mu_samples, sigma=sigma_samples, observed=model["Y"], dims="datapoints")
+            pm.Normal("Yhat", mu=mu_samples, sigma=sigma_samples, observed=model["Y"], dims="subjects")
         return model
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
@@ -1375,7 +1376,7 @@ class SHASHbLikelihood(Likelihood):
                 epsilon=epsilon_samples,
                 delta=delta_samples,
                 observed=model["Y"],
-                dims="datapoints",
+                dims="subjects",
             )
         return model
 
@@ -1439,7 +1440,7 @@ class SHASHbLikelihood(Likelihood):
         true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
         SHASH_centered = (Y - mu) / sigma
         SHASH_uncentered = SHASH_centered * true_sigma + true_mu
-        Z = np.sinh(np.arcsinh(SHASH_uncentered) * delta - epsilon)
+        Z = S(SHASH_uncentered, epsilon, delta)
         return Z
 
     def backward(self, *args, **kwargs):
@@ -1447,234 +1448,258 @@ class SHASHbLikelihood(Likelihood):
         Z = kwargs.get("Z", None)
         true_mu = m(epsilon, delta, 1)
         true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
-        SHASH_centered = np.sinh(np.arcsinh(Z) + epsilon) / delta
-        SHASH_uncentered = SHASH_centered * true_sigma
-        Y = SHASH_uncentered * sigma + mu
+        SHASH_uncentered = S_inv(Z, epsilon, delta)
+        SHASH_centered = (SHASH_uncentered - true_mu) / true_sigma
+        Y = SHASH_centered * sigma + mu
         return Y
 
 
-# class SHASHoLikelihood(Likelihood):
-#     def __init__(self, mu: BasePrior, sigma: BasePrior, epsilon: BasePrior, delta: BasePrior):
-#         super().__init__(name="SHASHo")
-#         self.mu = mu
-#         self.mu.set_name("mu")
-#         self.sigma = sigma
-#         self.sigma.set_name("sigma")
-#         self.epsilon = epsilon
-#         self.epsilon.set_name("epsilon")
-#         self.delta = delta
-#         self.delta.set_name("delta")
+class SHASHoLikelihood(Likelihood):
+    def __init__(self, mu: BasePrior, sigma: BasePrior, epsilon: BasePrior, delta: BasePrior):
+        super().__init__(name="SHASHo")
+        self.mu = mu
+        self.mu.set_name("mu")
+        self.sigma = sigma
+        self.sigma.set_name("sigma")
+        self.epsilon = epsilon
+        self.epsilon.set_name("epsilon")
+        self.delta = delta
+        self.delta.set_name("delta")
 
-#     def compile(self, data: HBRData, idata: az.InferenceData) -> pm.Model:
-#         model = pm.Model(coords=data.coords)
-#         data.set_data_in_new_model(model)
-#         with model:
-#             self.mu.compile(model, idata)
-#             self.sigma.compile(model, idata)
-#             self.epsilon.compile(model, idata)
-#             self.delta.compile(model, idata)
-#             mu_samples = pm.Deterministic("mu_samples", self.mu.sample(data), dims=self.mu.sample_dims)
-#             sigma_samples = pm.Deterministic("sigma_samples", self.sigma.sample(data), dims=self.sigma.sample_dims)
-#             epsilon_samples = pm.Deterministic("epsilon_samples", self.epsilon.sample(data), dims=self.epsilon.sample_dims)
-#             delta_samples = pm.Deterministic("delta_samples", self.delta.sample(data), dims=self.delta.sample_dims)
-#             SHASHo(
-#                 "Yhat",
-#                 mu=mu_samples,
-#                 sigma=sigma_samples,
-#                 epsilon=epsilon_samples,
-#                 delta=delta_samples,
-#                 observed=data.pm_y,
-#                 dims="datapoints",
-#             )
-#         return model
+    def _compile(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> pm.Model:
+        with model:
+            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
+            sigma_samples = self.sigma.compile(model, X, be, be_maps, Y)
+            epsilon_samples = self.epsilon.compile(model, X, be, be_maps, Y)
+            delta_samples = self.delta.compile(model, X, be, be_maps, Y)
+            mu_samples = pm.Deterministic("mu_samples", mu_samples, dims=self.mu.sample_dims)
+            sigma_samples = pm.Deterministic("sigma_samples", sigma_samples, dims=self.sigma.sample_dims)
+            epsilon_samples = pm.Deterministic("epsilon_samples", epsilon_samples, dims=self.epsilon.sample_dims)
+            delta_samples = pm.Deterministic("delta_samples", delta_samples, dims=self.delta.sample_dims)
+            SHASHo(
+                "Yhat",
+                mu=mu_samples,
+                sigma=sigma_samples,
+                epsilon=epsilon_samples,
+                delta=delta_samples,
+                observed=model["Y"],
+                dims="subjects",
+            )
+        return model
 
-#     def has_random_effect(self) -> bool:
-#         return (
-#             self.mu.has_random_effect
-#             or self.sigma.has_random_effect
-#             or self.epsilon.has_random_effect
-#             or self.delta.has_random_effect
-#         )
+    def has_random_effect(self) -> bool:
+        return (
+            self.mu.has_random_effect
+            or self.sigma.has_random_effect
+            or self.epsilon.has_random_effect
+            or self.delta.has_random_effect
+        )
 
-#     def to_dict(self) -> Dict[str, Any]:
-#         return {
-#             "name": self.name,
-#             "mu": self.mu.to_dict(),
-#             "sigma": self.sigma.to_dict(),
-#             "epsilon": self.epsilon.to_dict(),
-#             "delta": self.delta.to_dict(),
-#         }
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "mu": self.mu.to_dict(),
+            "sigma": self.sigma.to_dict(),
+            "epsilon": self.epsilon.to_dict(),
+            "delta": self.delta.to_dict(),
+        }
 
-#     @classmethod
-#     def _from_dict(cls, dct: Dict[str, Any]) -> "SHASHoLikelihood":
-#         return cls(
-#             mu=BasePrior.from_dict(dct["mu"]),
-#             sigma=BasePrior.from_dict(dct["sigma"]),
-#             epsilon=BasePrior.from_dict(dct["epsilon"]),
-#             delta=BasePrior.from_dict(dct["delta"]),
-#         )
+    @classmethod
+    def _from_dict(cls, dct: Dict[str, Any]) -> "SHASHoLikelihood":
+        return cls(
+            mu=BasePrior.from_dict(dct["mu"]),
+            sigma=BasePrior.from_dict(dct["sigma"]),
+            epsilon=BasePrior.from_dict(dct["epsilon"]),
+            delta=BasePrior.from_dict(dct["delta"]),
+        )
 
-#     @classmethod
-#     def _from_args(cls, args: Dict[str, Any]) -> "SHASHoLikelihood":
-#         return cls(
-#             mu=prior_from_args("mu", args),
-#             sigma=prior_from_args("sigma", args),
-#             epsilon=prior_from_args("epsilon", args),
-#             delta=prior_from_args("delta", args),
-#         )
+    @classmethod
+    def _from_args(cls, args: Dict[str, Any]) -> "SHASHoLikelihood":
+        return cls(
+            mu=prior_from_args("mu", args),
+            sigma=prior_from_args("sigma", args),
+            epsilon=prior_from_args("epsilon", args),
+            delta=prior_from_args("delta", args),
+        )
 
-#     def get_var_names(self) -> List[str]:
-#         return ["mu_samples", "sigma_samples", "epsilon_samples", "delta_samples"]
+    def get_var_names(self) -> List[str]:
+        return ["mu_samples", "sigma_samples", "epsilon_samples", "delta_samples"]
 
-#     def zscore(self, *args, **kwargs):
-#         mu, sigma, epsilon, delta = args
-#         y = kwargs.get("y", None)
-#         SHASH = (y - mu) / sigma
-#         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-#         return Z
+    def forward(self, *args, **kwargs):
+        mu, sigma, epsilon, delta = args
+        y = kwargs.get("Y", None)
+        SHASH = (y - mu) / sigma
+        Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
+        return Z
 
-#     def centile(self, *args, **kwargs):
-#         mu, sigma, epsilon, delta = args
-#         zs = kwargs.get("zs", None)
-#         quantiles = S_inv(zs, epsilon, delta) * sigma + mu
-#         return quantiles
-
-
-# class SHASHo2Likelihood(Likelihood):
-#     def __init__(self, mu: BasePrior, sigma: BasePrior, epsilon: BasePrior, delta: BasePrior):
-#         super().__init__(name="SHASHo2")
-#         self.mu = mu
-#         self.mu.set_name("mu")
-#         self.sigma = sigma
-#         self.sigma.set_name("sigma")
-#         self.epsilon = epsilon
-#         self.epsilon.set_name("epsilon")
-#         self.delta = delta
-#         self.delta.set_name("delta")
-
-#     def compile(self, data: HBRData, idata: az.InferenceData) -> pm.Model:
-#         model = pm.Model(coords=data.coords)
-#         data.set_data_in_new_model(model)
-#         with model:
-#             self.mu.compile(model, idata)
-#             self.sigma.compile(model, idata)
-#             self.epsilon.compile(model, idata)
-#             self.delta.compile(model, idata)
-#             mu_samples = pm.Deterministic("mu_samples", self.mu.sample(data), dims=self.mu.sample_dims)
-#             sigma_samples = pm.Deterministic("sigma_samples", self.sigma.sample(data), dims=self.sigma.sample_dims)
-#             epsilon_samples = pm.Deterministic("epsilon_samples", self.epsilon.sample(data), dims=self.epsilon.sample_dims)
-#             delta_samples = pm.Deterministic("delta_samples", self.delta.sample(data), dims=self.delta.sample_dims)
-#             SHASHo2(
-#                 "Yhat",
-#                 mu=mu_samples,
-#                 sigma=sigma_samples,
-#                 epsilon=epsilon_samples,
-#                 delta=delta_samples,
-#                 observed=data.pm_y,
-#                 dims="datapoints",
-#             )
-#         return model
-
-#     def has_random_effect(self) -> bool:
-#         return (
-#             self.mu.has_random_effect
-#             or self.sigma.has_random_effect
-#             or self.epsilon.has_random_effect
-#             or self.delta.has_random_effect
-#         )
-
-#     def to_dict(self) -> Dict[str, Any]:
-#         return {
-#             "name": self.name,
-#             "mu": self.mu.to_dict(),
-#             "sigma": self.sigma.to_dict(),
-#             "epsilon": self.epsilon.to_dict(),
-#             "delta": self.delta.to_dict(),
-#         }
-
-#     @classmethod
-#     def _from_dict(cls, dct: Dict[str, Any]) -> "SHASHo2Likelihood":
-#         return cls(
-#             mu=BasePrior.from_dict(dct["mu"]),
-#             sigma=BasePrior.from_dict(dct["sigma"]),
-#             epsilon=BasePrior.from_dict(dct["epsilon"]),
-#             delta=BasePrior.from_dict(dct["delta"]),
-#         )
-
-#     @classmethod
-#     def _from_args(cls, args: Dict[str, Any]) -> "SHASHo2Likelihood":
-#         return cls(
-#             mu=prior_from_args("mu", args),
-#             sigma=prior_from_args("sigma", args),
-#             epsilon=prior_from_args("epsilon", args),
-#             delta=prior_from_args("delta", args),
-#         )
-
-#     def get_var_names(self) -> List[str]:
-#         return ["mu_samples", "sigma_samples", "epsilon_samples", "delta_samples"]
-
-#     def zscore(self, *args, **kwargs):
-#         mu, sigma, epsilon, delta = args
-#         sigma_d = sigma / delta
-#         y = kwargs.get("y", None)
-#         SHASH = (y - mu) / sigma_d
-#         Z = np.sinh(np.arcsinh(SHASH) * delta - epsilon)
-#         return Z
-
-#     def centile(self, *args, **kwargs):
-#         mu, sigma, epsilon, delta = args
-#         sigma_d = sigma / delta
-#         zs = kwargs.get("zs", None)
-#         quantiles = S_inv(zs, epsilon, delta) * sigma_d + mu
-#         return quantiles
+    def backward(self, *args, **kwargs):
+        mu, sigma, epsilon, delta = args
+        Z = kwargs.get("Z", None)
+        SHASH = S_inv(Z, epsilon, delta)
+        Y = SHASH * sigma + mu
+        return Y
 
 
-# class BetaLikelihood(Likelihood):
-#     def __init__(self, alpha: BasePrior, beta: BasePrior):
-#         super().__init__(name="beta")
-#         self.alpha = alpha
-#         self.alpha.set_name("alpha")
-#         self.beta = beta
-#         self.beta.set_name("beta")
+class SHASHo2Likelihood(Likelihood):
+    def __init__(self, mu: BasePrior, sigma: BasePrior, epsilon: BasePrior, delta: BasePrior):
+        super().__init__(name="SHASHo2")
+        self.mu = mu
+        self.mu.set_name("mu")
+        self.sigma = sigma
+        self.sigma.set_name("sigma")
+        self.epsilon = epsilon
+        self.epsilon.set_name("epsilon")
+        self.delta = delta
+        self.delta.set_name("delta")
 
-#     def compile(self, data: HBRData, idata: az.InferenceData) -> pm.Model:
-#         model = pm.Model(coords=data.coords)
-#         data.set_data_in_new_model(model)
-#         with model:
-#             self.alpha.compile(model, idata)
-#             self.beta.compile(model, idata)
-#             alpha_samples = pm.Deterministic("alpha_samples", self.alpha.sample(data), dims=self.alpha.sample_dims)
-#             beta_samples = pm.Deterministic("beta_samples", self.beta.sample(data), dims=self.beta.sample_dims)
-#             pm.Beta("Yhat", alpha=alpha_samples, beta=beta_samples, observed=data.pm_y, dims="datapoints")
-#         return model
+    def _compile(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> pm.Model:
+        with model:
+            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
+            sigma_samples = self.sigma.compile(model, X, be, be_maps, Y)
+            epsilon_samples = self.epsilon.compile(model, X, be, be_maps, Y)
+            delta_samples = self.delta.compile(model, X, be, be_maps, Y)
+            mu_samples = pm.Deterministic("mu_samples", mu_samples, dims=self.mu.sample_dims)
+            sigma_samples = pm.Deterministic("sigma_samples", sigma_samples, dims=self.sigma.sample_dims)
+            epsilon_samples = pm.Deterministic("epsilon_samples", epsilon_samples, dims=self.epsilon.sample_dims)
+            delta_samples = pm.Deterministic("delta_samples", delta_samples, dims=self.delta.sample_dims)
+            SHASHo2(
+                "Yhat",
+                mu=mu_samples,
+                sigma=sigma_samples,
+                epsilon=epsilon_samples,
+                delta=delta_samples,
+                observed=model["Y"],
+                dims="subjects",
+            )
+        return model
+    
+    def has_random_effect(self) -> bool:
+        return (
+            self.mu.has_random_effect
+            or self.sigma.has_random_effect
+            or self.epsilon.has_random_effect
+            or self.delta.has_random_effect
+        )
 
-#     def zscore(self, *args, **kwargs):
-#         alpha, beta = args
-#         y = kwargs.get("y", None)
-#         cdf = stats.beta.cdf(y, alpha, beta)
-#         Z = stats.norm.ppf(cdf)
-#         return Z
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "mu": self.mu.to_dict(),
+            "sigma": self.sigma.to_dict(),
+            "epsilon": self.epsilon.to_dict(),
+            "delta": self.delta.to_dict(),
+        }
 
-#     def centile(self, *args, **kwargs):
-#         alpha, beta = args
-#         zs = kwargs.get("zs", None)
-#         cdf_norm = stats.norm.cdf(zs)
-#         quantiles = stats.beta.ppf(cdf_norm, alpha, beta)
-#         return quantiles
+    @classmethod
+    def _from_dict(cls, dct: Dict[str, Any]) -> "SHASHo2Likelihood":
+        return cls(
+            mu=BasePrior.from_dict(dct["mu"]),
+            sigma=BasePrior.from_dict(dct["sigma"]),
+            epsilon=BasePrior.from_dict(dct["epsilon"]),
+            delta=BasePrior.from_dict(dct["delta"]),
+        )
 
-#     def has_random_effect(self) -> bool:
-#         return self.alpha.has_random_effect or self.beta.has_random_effect
+    @classmethod
+    def _from_args(cls, args: Dict[str, Any]) -> "SHASHo2Likelihood":
+        return cls(
+            mu=prior_from_args("mu", args),
+            sigma=prior_from_args("sigma", args),
+            epsilon=prior_from_args("epsilon", args),
+            delta=prior_from_args("delta", args),
+        )
 
-#     def to_dict(self) -> Dict[str, Any]:
-#         return {"name": self.name, "alpha": self.alpha.to_dict(), "beta": self.beta.to_dict()}
+    def get_var_names(self) -> List[str]:
+        return ["mu_samples", "sigma_samples", "epsilon_samples", "delta_samples"]
 
-#     @classmethod
-#     def _from_dict(cls, dct: Dict[str, Any]) -> "BetaLikelihood":
-#         return cls(alpha=BasePrior.from_dict(dct["alpha"]), beta=BasePrior.from_dict(dct["beta"]))
+    def forward(self, *args, **kwargs):
+        mu, sigma, epsilon, delta = args
+        sigma_d = sigma / delta
+        Y = kwargs.get("Y", None)
+        SHASH = (Y - mu) / sigma_d
+        Z = S(SHASH, epsilon, delta)
+        return Z
 
-#     @classmethod
-#     def _from_args(cls, args: Dict[str, Any]) -> "BetaLikelihood":
-#         return cls(alpha=prior_from_args("alpha", args), beta=prior_from_args("beta", args))
+    def backward(self, *args, **kwargs):
+        mu, sigma, epsilon, delta = args
+        sigma_d = sigma / delta
+        Z = kwargs.get("Z", None)
+        SHASH = S_inv(Z, epsilon, delta)
+        Y = SHASH * sigma_d + mu
+        return Y
 
-#     def get_var_names(self) -> List[str]:
-#         return ["alpha_samples", "beta_samples"]
+
+class BetaLikelihood(Likelihood):
+    def __init__(self, alpha: BasePrior, beta: BasePrior):
+        super().__init__(name="beta")
+        self.alpha = alpha
+        self.alpha.set_name("alpha")
+        self.beta = beta
+        self.beta.set_name("beta")
+
+    def _compile(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> pm.Model:
+        with model:
+            alpha_samples = self.alpha.compile(model, X, be, be_maps, Y)
+            beta_samples = self.beta.compile(model, X, be, be_maps, Y)
+
+            alpha_samples = pm.Deterministic("alpha_samples", alpha_samples, dims=self.alpha.sample_dims)
+            beta_samples = pm.Deterministic("beta_samples", beta_samples, dims=self.beta.sample_dims)
+            pm.Beta(
+                "Yhat",
+                alpha=alpha_samples,
+                beta=beta_samples,
+                observed=model["Y"],
+                dims="subjects",
+            )
+        return model
+    
+    def forward(self, *args, **kwargs):
+        alpha, beta = args
+        Y = kwargs.get("Y", None)
+        cdf = stats.beta.cdf(Y, alpha, beta)
+        Z = stats.norm.ppf(cdf)
+        return Z
+
+    def backward(self, *args, **kwargs):
+        alpha, beta = args
+        Z = kwargs.get("Z", None)
+        cdf_norm = stats.norm.cdf(Z)
+        quantiles = stats.beta.ppf(cdf_norm, alpha, beta)
+        return quantiles
+
+    def has_random_effect(self) -> bool:
+        return self.alpha.has_random_effect or self.beta.has_random_effect
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"name": self.name, "alpha": self.alpha.to_dict(), "beta": self.beta.to_dict()}
+
+    @classmethod
+    def _from_dict(cls, dct: Dict[str, Any]) -> "BetaLikelihood":
+        return cls(alpha=BasePrior.from_dict(dct["alpha"]), beta=BasePrior.from_dict(dct["beta"]))
+
+    @classmethod
+    def _from_args(cls, args: Dict[str, Any]) -> "BetaLikelihood":
+        return cls(alpha=prior_from_args("alpha", args), beta=prior_from_args("beta", args))
+
+    def get_var_names(self) -> List[str]:
+        return ["alpha_samples", "beta_samples"]
