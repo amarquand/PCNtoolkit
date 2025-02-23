@@ -97,14 +97,15 @@ class NormativeModel:
         ValueError
             If the regression model specified in the arguments is unknown.
         """
-        savemodel = kwargs["savemodel"] in ["True", True]
-        saveresults = kwargs["saveresults"] in ["True", True]
-        saveplots = kwargs["saveplots"] in ["True", True]
-        evaluate_model = kwargs["evaluate_model"] in ["True", True]
-        save_dir = kwargs["save_dir"]
-        inscaler = kwargs["inscaler"]
-        outscaler = kwargs["outscaler"]
-        normative_model_name = kwargs["normative_model_name"]
+        savemodel = kwargs.get("savemodel", True) in ["True", True]
+        saveresults = kwargs.get("saveresults", True) in ["True", True]
+        saveplots = kwargs.get("saveplots", True) in ["True", True]
+        evaluate_model = kwargs.get("evaluate_model", True) in ["True", True]
+        save_dir = kwargs.get("save_dir", "./saves")
+        inscaler = kwargs.get("inscaler", "none")
+        outscaler = kwargs.get("outscaler", "none")
+        normative_model_name = kwargs.get("normative_model_name", None)
+        assert "alg" in kwargs, "Algorithm must be specified"
         if kwargs["alg"] == "blr":
             template_regression_model = BLR.from_args("template", kwargs)
         elif kwargs["alg"] == "hbr":
@@ -148,9 +149,7 @@ class NormativeModel:
             X, be, be_maps, Y = self.extract_data(resp_fit_data)
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
-
         self.postprocess(data)
-
         if self.savemodel:
             self.save()
         if self.evaluate_model:
@@ -171,19 +170,22 @@ class NormativeModel:
             self.save_plots(data)
         return data
 
-    def synthesize(self, data: NormData | None = None, n_samples: int | None = None) -> NormData:  # type: ignore
+    def synthesize(
+        self, data: NormData | None = None, n_samples: int | None = None, covariate_range_per_batch_effect=False
+    ) -> NormData:  # type: ignore
         """Returns synthetic Data
 
         Parameters
         ----------
         data : NormData, optional
-            X and batch_effects are optional. If provided, they are used to generate the synthetic data.
-            If not provided, the model is used to generate the synthetic data.
-            If only batch_effects are provided, batch_effects are sampled from the model.
-            If only X is provided, covariates are sampled from the model.
+            A NormData object with X and batch_effects. If provided, used to generate the synthetic data.
+            If the data has no batch_effects, batch_effects are sampled from the model.
+            If the data has no X, X is sampled from the model, using the provided or sampled batch_effects.
             If neither X nor batch_effects are provided, the model is used to generate the synthetic data.
         n_samples : int, optional
             Number of samples to synthesize. If this is None, the number of samples that were in the train data is used.
+        covariate_range_per_batch_effect : bool, optional
+            If True, the covariate range is different for each batch effect.
         """
         assert self.is_fitted
         if data:
@@ -195,28 +197,31 @@ class NormativeModel:
             if not hasattr(data, "batch_effects") or data.batch_effects is None:
                 data["batch_effects"] = self.sample_batch_effects(n_samples)  # type: ignore
             if not hasattr(data, "X") or data.X is None:
-                data["X"] = self.sample_covariates(data.batch_effects)
+                data["X"] = self.sample_covariates(data.batch_effects, covariate_range_per_batch_effect)
         else:
             if n_samples is None:
-                n_samples = self.n_fit_datapoints
+                n_samples = self.n_fit_subjects
             bes = self.sample_batch_effects(n_samples)
-            X = self.sample_covariates(bes)
+            X = self.sample_covariates(bes, covariate_range_per_batch_effect)
             data = NormData(
                 name="synthesized",
                 data_vars={"X": X, "batch_effects": bes},
                 coords={
-                    "datapoints": np.arange(n_samples),
+                    "subjects": np.arange(n_samples),
                     "response_vars": self.response_vars,
                 },
             )
 
         data["Z"] = xr.DataArray(
-            np.random.normal(0, 1, size=(n_samples, len(self.response_vars))),  # type: ignore
-            dims=("datapoints", "response_vars"),
+            np.random.randn(n_samples, len(self.response_vars)),  # type: ignore
+            dims=("subjects", "response_vars"),
+            coords=(data.coords["subjects"], data.coords["response_vars"]),
         )
+
         data["Y"] = xr.DataArray(
             np.zeros((n_samples, len(self.response_vars))),  # type: ignore
-            dims=("datapoints", "response_vars"),
+            dims=("subjects", "response_vars"),
+            coords=(data.coords["subjects"], data.coords["response_vars"]),
         )
         self.preprocess(data)
         Output.print(Messages.SYNTHESIZING_DATA, n_models=len(self.response_vars))
@@ -258,8 +263,8 @@ class NormativeModel:
 
         data["Y_harmonized"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(self.response_vars))),
-            dims=("datapoints", "response_vars"),
-            coords={"datapoints": data.datapoints, "response_vars": self.response_vars},
+            dims=("subjects", "response_vars"),
+            coords={"subjects": data.subjects, "response_vars": self.response_vars},
         )
         for responsevar in self.response_vars:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
@@ -297,9 +302,9 @@ class NormativeModel:
 
         data["Z"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
-            dims=("datapoints", "response_vars"),
+            dims=("subjects", "response_vars"),
             coords={
-                "datapoints": data.datapoints,
+                "subjects": data.subjects,
                 "response_vars": list(respvar_intersection),
             },
         )
@@ -348,7 +353,7 @@ class NormativeModel:
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["centiles"] = xr.DataArray(
             np.zeros((centiles.shape[0], data.X.shape[0], len(respvar_intersection))),
-            dims=("centile", "datapoints", "response_vars"),
+            dims=("centile", "subjects", "response_vars"),
             coords={"centile": centiles},
         )
 
@@ -358,7 +363,7 @@ class NormativeModel:
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
             X, be, be_maps, _ = self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
-                Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("datapoints",))
+                Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("subjects",))
                 data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, be_maps, Z)
 
         self.postprocess(data)
@@ -389,8 +394,8 @@ class NormativeModel:
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["logp"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
-            dims=("datapoints", "response_vars"),
-            coords={"datapoints": data.datapoints},
+            dims=("subjects", "response_vars"),
+            coords={"subjects": data.subjects},
         )
 
         Output.print(Messages.COMPUTING_CENTILES, n_models=len(respvar_intersection))
@@ -504,11 +509,16 @@ class NormativeModel:
         new_model.predict(predict_data)
         return new_model
 
-    def extend(self, data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
+    def extend(
+        self,
+        data: NormData,
+        save_dir: str | None = None,
+        n_synth_samples: int | None = None
+    ) -> NormativeModel:
         """
         Extends the model to a new dataset.
         """
-        synth = self.synthesize(n_samples=n_synth_samples)
+        synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
         self.postprocess(synth)
         self.postprocess(data)
         merged_data = data.merge(synth)
@@ -526,8 +536,6 @@ class NormativeModel:
             save_dir=save_dir,
         )
 
-        new_model.inscalers = copy.deepcopy(self.inscalers)
-        new_model.outscalers = copy.deepcopy(self.outscalers)
         new_model.fit(merged_data)
         return new_model
 
@@ -624,17 +632,20 @@ class NormativeModel:
         }
         self.batch_effect_counts = copy.deepcopy(data.batch_effect_counts)
         self.batch_effect_covariate_ranges = copy.deepcopy(data.batch_effect_covariate_ranges)
+        self.covariate_ranges = copy.deepcopy(data.covariate_ranges)
 
     def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
-        mapped_batch_effects = np.zeros(batch_effects.values.shape).astype(int)
-        for i, be in enumerate(self.unique_batch_effects.keys()):
-            for j, v in enumerate(batch_effects.values[:, i]):
-                mapped_batch_effects[j, i] = self.batch_effects_maps[be][v]
+        # TODO Use loc and sel here, not values[i,j]
+        # ! check if synthesize, harmonize, etc. also do this correctly, and if xarrays passed to fit and predict are also indexed properly
         mapped_batch_effects = xr.DataArray(
-            mapped_batch_effects,
-            dims=("datapoints", "batch_effect_dims"),
+            np.zeros(batch_effects.values.shape).astype(int),
+            dims=("subjects", "batch_effect_dims"),
             coords={"batch_effect_dims": list(self.unique_batch_effects.keys())},
         )
+        for i, be in enumerate(self.unique_batch_effects.keys()):
+            for j, v in enumerate(batch_effects.sel(batch_effect_dims=be).values):
+                mapped_batch_effects.loc[{"subjects": j, "batch_effect_dims": be}] = self.batch_effects_maps[be][v]
+
         return mapped_batch_effects
 
     def sample_batch_effects(self, n_samples: int) -> xr.DataArray:
@@ -653,8 +664,8 @@ class NormativeModel:
 
         bes = xr.DataArray(
             np.zeros((n_samples, len(self.batch_effect_counts.keys()))).astype(str),
-            dims=("datapoints", "batch_effect_dims"),
-            coords={"datapoints": np.arange(n_samples), "batch_effect_dims": self.batch_effect_dims},
+            dims=("subjects", "batch_effect_dims"),
+            coords={"subjects": np.arange(n_samples), "batch_effect_dims": self.batch_effect_dims},
         )
         for be in self.batch_effect_dims:
             countsum = np.sum(list(self.batch_effect_counts[be].values()))
@@ -665,7 +676,7 @@ class NormativeModel:
             )
         return bes
 
-    def sample_covariates(self, bes: xr.DataArray) -> xr.DataArray:
+    def sample_covariates(self, bes: xr.DataArray, covariate_range_per_batch_effect: bool = False) -> xr.DataArray:
         """
         Sample the covariates from the estimated distribution.
 
@@ -673,18 +684,24 @@ class NormativeModel:
         """
         X = xr.DataArray(
             np.zeros((bes.shape[0], len(self.covariates))),
-            dims=("datapoints", "covariates"),
-            coords={"datapoints": np.arange(bes.shape[0]), "covariates": self.covariates},
+            dims=("subjects", "covariates"),
+            coords={"subjects": np.arange(bes.shape[0]), "covariates": self.covariates},
         )
-        for c in self.covariates:
-            for i in range(X.shape[0]):
-                running_min, running_max = -np.inf, np.inf
-                for k in self.batch_effect_dims:
-                    my_be = bes.sel({"datapoints": i, "batch_effect_dims": k}).values.item()
-                    running_min = max(running_min, self.batch_effect_covariate_ranges[k][my_be][c]["min"])
-                    running_max = min(running_max, self.batch_effect_covariate_ranges[k][my_be][c]["max"])
+        if covariate_range_per_batch_effect:
+            for c in self.covariates:
+                for i in range(X.shape[0]):
+                    running_min, running_max = -np.inf, np.inf
+                    for k in self.batch_effect_dims:
+                        my_be = bes.sel({"subjects": i, "batch_effect_dims": k}).values.item()
+                        running_min = max(running_min, self.batch_effect_covariate_ranges[k][my_be][c]["min"])
+                        running_max = min(running_max, self.batch_effect_covariate_ranges[k][my_be][c]["max"])
 
-                X.loc[{"datapoints": i, "covariates": c}] = np.random.uniform(running_min, running_max, size=1).item()
+                    X.loc[{"subjects": i, "covariates": c}] = np.random.uniform(running_min, running_max, size=1).item()
+        else:
+            for c in self.covariates:
+                X.loc[{"subjects": np.arange(bes.shape[0]), "covariates": c}] = np.random.uniform(
+                    self.covariate_ranges[c]["min"], self.covariate_ranges[c]["max"], size=(bes.shape[0])
+                )
         return X
 
     def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
@@ -873,7 +890,7 @@ class NormativeModel:
             }
         if "batch_effect_covariate_ranges" in metadata:
             self.batch_effect_covariate_ranges = metadata["batch_effect_covariate_ranges"]
-            
+
         if "unique_batch_effects" in metadata:
             self.unique_batch_effects = metadata["unique_batch_effects"]
 
@@ -891,8 +908,8 @@ class NormativeModel:
             self.save_zscores(data)
         if hasattr(data, "centiles"):
             self.save_centiles(data)
-        if hasattr(data, "measures"):
-            self.save_measures(data)
+        if hasattr(data, "statistics"):
+            self.save_statistics(data)
 
     def save_plots(self, data: NormData) -> None:
         os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
@@ -901,11 +918,10 @@ class NormativeModel:
         if hasattr(data, "centiles"):
             plot_centiles(
                 self,
-                data,
                 save_dir=os.path.join(self.save_dir, "plots"),
-                show_data=True,
                 show_other_data=True,
                 harmonize_data=True,
+                scatter_data=data,
             )
 
     def save_zscores(self, data: NormData) -> None:
@@ -918,8 +934,8 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    # Merge on datapoints, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(zdf, on="datapoints", how="outer", suffixes=("_old", ""))
+                    # Merge on subjects, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(zdf, on="subjects", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -940,8 +956,8 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=[0, 1]) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    # Merge on datapoints, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(centiles, on=["datapoints", "centile"], how="outer", suffixes=("_old", ""))
+                    # Merge on subjects, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(centiles, on=["subjects", "centile"], how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -952,18 +968,18 @@ class NormativeModel:
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
-    def save_measures(self, data: NormData) -> None:
-        mdf = data.measures.to_dataframe().unstack(level="response_vars")
+    def save_statistics(self, data: NormData) -> None:
+        mdf = data.statistics.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
-        res_path = os.path.join(self.save_dir, "results", f"measures_{data.name}.csv")
+        res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    # Merge on datapoints, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(mdf, on="measure", how="outer", suffixes=("_old", ""))
+                    # Merge on subjects, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -1008,7 +1024,7 @@ class NormativeModel:
         return list(self.unique_batch_effects.keys())
 
     @property
-    def n_fit_datapoints(self) -> int:
+    def n_fit_subjects(self) -> int:
         """Returns the number of batch effects.
         Returns:
             int: The number of batch effects.

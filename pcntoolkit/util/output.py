@@ -152,6 +152,7 @@ class Errors:
     ERROR_MULTIPLE_COVARIATE_DIMS = "Multiple covariate dimensions found: {covariate_dims}"
     ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Predict with cross-validation is not supported. Please use fit_predict instead."
     ERROR_WARP_STRING_INVALID = "Invalid warp string: {warp_string}"
+    ENSURE_POSITIVE_DISTRIBUTION = "Distribution for {name} needs to be positive."
 class Output:
     _show_messages = True  # Default to showing output
     _show_warnings = True

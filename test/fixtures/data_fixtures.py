@@ -15,17 +15,17 @@ These fixtures are used to create consistent and controlled datasets for testing
 
 
 @pytest.fixture(scope="session")
-def n_train_datapoints():
+def n_train_subjects():
     return 1500
 
 
 @pytest.fixture(scope="session")
-def n_test_datapoints():
+def n_test_subjects():
     return 1000
 
 
 @pytest.fixture(scope="session")
-def n_transfer_datapoints():
+def n_transfer_subjects():
     return 500
 
 
@@ -44,12 +44,12 @@ def batch_effect_values():
     return [[0, 1], [0, 1, 2]]
 
 
-def generate_covariates(n_datapoints, n_covariates):
-    return np.random.rand(n_datapoints, n_covariates)
+def generate_covariates(n_subjects, n_covariates):
+    return np.random.rand(n_subjects, n_covariates)
 
 
-def generate_response_vars(n_datapoints, n_response_vars, X, seed=42):
-    out = np.random.randn(n_datapoints, n_response_vars)
+def generate_response_vars(n_subjects, n_response_vars, X, seed=42):
+    out = np.random.randn(n_subjects, n_response_vars)
 
     noise_coef = np.array([2.3, 1.5])
     slope_coefs = np.array([[1, 0.5, 0.3], [1, 0.5, 0.3]])
@@ -61,23 +61,23 @@ def generate_response_vars(n_datapoints, n_response_vars, X, seed=42):
     return np.square(out)
 
 
-def generate_batch_effects(n_datapoints, batch_effect_values):
+def generate_batch_effects(n_subjects, batch_effect_values):
     batch_effects = []
     for batch_effect in batch_effect_values:
-        batch_effects.append(np.random.choice(batch_effect, (n_datapoints, 1)).astype(int))
+        batch_effects.append(np.random.choice(batch_effect, (n_subjects, 1)).astype(int))
     return np.concatenate(batch_effects, axis=1)
 
 
-def np_arrays(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
+def np_arrays(n_subjects, n_covariates, n_response_vars, batch_effect_values):
     np.random.seed(42)
-    X = generate_covariates(n_datapoints, n_covariates)
-    y = generate_response_vars(n_datapoints, n_response_vars, X)
-    batch_effects = generate_batch_effects(n_datapoints, batch_effect_values)
+    X = generate_covariates(n_subjects, n_covariates)
+    y = generate_response_vars(n_subjects, n_response_vars, X)
+    batch_effects = generate_batch_effects(n_subjects, batch_effect_values)
     return X, y, batch_effects
 
 
-def dataframe(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
-    X, y, batch_effects = np_arrays(n_datapoints, n_covariates, n_response_vars, batch_effect_values)
+def dataframe(n_subjects, n_covariates, n_response_vars, batch_effect_values):
+    X, y, batch_effects = np_arrays(n_subjects, n_covariates, n_response_vars, batch_effect_values)
     X_columns = [f"covariate_{i}" for i in range(X.shape[1])]
     y_columns = [f"response_var_{i}" for i in range(y.shape[1])]
     batch_effect_columns = [f"batch_effect_{i}" for i in range(len(batch_effect_values))]
@@ -91,21 +91,21 @@ def dataframe(n_datapoints, n_covariates, n_response_vars, batch_effect_values):
 
 
 @pytest.fixture(scope="module")
-def train_arrays(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
-    X_train, y_train, batch_effects_train = np_arrays(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values)
+def train_arrays(n_train_subjects, n_covariates, n_response_vars, batch_effect_values):
+    X_train, y_train, batch_effects_train = np_arrays(n_train_subjects, n_covariates, n_response_vars, batch_effect_values)
     return X_train, y_train, batch_effects_train
 
 
 @pytest.fixture(scope="module")
-def test_arrays(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
-    X_test, y_test, batch_effects_test = np_arrays(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values)
+def test_arrays(n_test_subjects, n_covariates, n_response_vars, batch_effect_values):
+    X_test, y_test, batch_effects_test = np_arrays(n_test_subjects, n_covariates, n_response_vars, batch_effect_values)
     return X_test, y_test, batch_effects_test
 
 
 @pytest.fixture(scope="module")     
-def transfer_arrays(n_transfer_datapoints, n_covariates, n_response_vars, batch_effect_values):
+def transfer_arrays(n_transfer_subjects, n_covariates, n_response_vars, batch_effect_values):
     X_transfer, y_transfer, batch_effects_transfer = np_arrays(
-        n_transfer_datapoints, n_covariates, n_response_vars, batch_effect_values
+        n_transfer_subjects, n_covariates, n_response_vars, batch_effect_values
     )
     # Re-set the second batch effects column to be different from the training and test data
     batch_effects_transfer[:, 1] = 3
@@ -113,12 +113,12 @@ def transfer_arrays(n_transfer_datapoints, n_covariates, n_response_vars, batch_
 
 
 @pytest.fixture(scope="module") 
-def train_dataframe(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values):
-    dataframe_train = dataframe(n_train_datapoints, n_covariates, n_response_vars, batch_effect_values)
+def train_dataframe(n_train_subjects, n_covariates, n_response_vars, batch_effect_values):
+    dataframe_train = dataframe(n_train_subjects, n_covariates, n_response_vars, batch_effect_values)
     return dataframe_train
 
 
 @pytest.fixture(scope="module")
-def test_dataframe(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values):
-    dataframe_test = dataframe(n_test_datapoints, n_covariates, n_response_vars, batch_effect_values)
+def test_dataframe(n_test_subjects, n_covariates, n_response_vars, batch_effect_values):
+    dataframe_test = dataframe(n_test_subjects, n_covariates, n_response_vars, batch_effect_values)
     return dataframe_test

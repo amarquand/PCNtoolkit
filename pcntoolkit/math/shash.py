@@ -63,11 +63,16 @@ def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]
     return np.sinh((np.arcsinh(x) + e) / d)
 
 
+# def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
+#     """Bessel function of the second kind for unique values.
+#     """
+#     ps, idxs = np.unique(p, return_inverse=True)
+#     return spp.kv(ps, x)[idxs].reshape(p.shape)
+
 def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
     """Bessel function of the second kind for unique values.
     """
-    ps, idxs = np.unique(p, return_inverse=True)
-    return spp.kv(ps, x)[idxs].reshape(p.shape)
+    return spp.kv(p, x)
 
 
 def P(q: NDArray[np.float64]) -> NDArray[np.float64]:

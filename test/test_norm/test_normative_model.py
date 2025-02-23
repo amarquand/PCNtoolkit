@@ -113,11 +113,11 @@ def assert_minmax_scaled(data):
 def test_test_model_to_and_from_dict_and_args(test_model_args: dict, norm_data_from_arrays: NormData, save_dir_test_model):
     model = NormativeModel.from_args(**test_model_args)
     model_dict = model.to_dict()
-    assert [model_dict[i] == test_model_args[i] for i in test_model_args if not i == "alg"]
+    assert model_dict['template_regression_model']['success_ratio'] == test_model_args["success_ratio"]
     model.fit(norm_data_from_arrays)
     assert model.is_fitted
     model_dict = model.to_dict()
-    assert [model_dict[i] == test_model_args[i] for i in test_model_args if not i == "alg"]
+    assert model_dict['template_regression_model']['success_ratio'] == test_model_args["success_ratio"]
     model.predict(norm_data_from_arrays)
     assert hasattr(norm_data_from_arrays, 'Z')
     Z_bak = copy.deepcopy(norm_data_from_arrays['Z'])
