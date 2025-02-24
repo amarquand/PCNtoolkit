@@ -183,7 +183,7 @@ class JobObserver:
             Output.print(Messages.NO_MORE_RUNNING_JOBS)
         else:
             if not in_notebook:
-                print(f"\033[{len(statuses) + 14}A", end="")
+                print(f"\033[{len(statuses) + 16}A", end="")
 
         Output.set_show_messages(show_messages)
         Output.set_show_pid(show_pid)
