@@ -1,8 +1,10 @@
 import json
 import os
+import random
 import re
 import subprocess
 import sys
+import time
 import uuid
 from copy import deepcopy
 from typing import Callable, Dict, Literal, Optional
@@ -27,22 +29,25 @@ class Runner:
     environment: str = None  # type: ignore
     preamble: str = "module load anaconda3"
     memory: str = "5gb"
+    max_retries: int = 3
+    random_sleep_scale: float = 0.1
     log_dir: str = ""
     temp_dir: str = ""
 
     def __init__(
         self,
-        cross_validate: bool = False,
-        cv_folds: int = 5,
         parallelize: bool = False,
         job_type: Literal["torque", "slurm"] = "slurm",
         n_jobs: int = 1,
         n_cores: int = 1,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
+        max_retries: int = 3,
+        random_sleep_scale: float = 0.1,
         environment: Optional[str] = None,
-        preamble: str = "module load anaconda3",
-        save_dir: Optional[str] = None,
+        cross_validate: bool = False,
+        cv_folds: int = 5,
+        preamble: str = "module load anaconda3",        
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
@@ -51,44 +56,37 @@ class Runner:
 
         Parameters
         ----------
-        cross_validate : bool, optional
-            Whether to cross-validate the model.
-        cv_folds : int, optional
-            The number of folds for cross-validation.
         parallelize : bool, optional
             Whether to parallelize the jobs.
-        job_type : str, optional
-            The type of job to run.
+        job_type : Literal["torque", "slurm"], optional
+            The type of job to use.
         n_jobs : int, optional
             The number of jobs to run in parallel.
         n_cores : int, optional
             The number of cores to use for each job.
         time_limit : str | int, optional
-            The time limit for the jobs. Int (seconds) or string of the format "HH:MM:SS".
+            The time limit for each job.
         memory : str, optional
-            The memory limit for the jobs.
+            The memory to use for each job.
+        max_retries : int, optional
+            The maximum number of retries for each job.
         environment : str, optional
-            The python environment to use for the jobs. Will be loaded with `source activate {environment}`, after the preamble.
+            The environment to use for each job.
+        cross_validate : bool, optional
+            Whether to cross-validate the model.
+        cv_folds : int, optional
+            The number of folds to use for cross-validation.
         preamble : str, optional
-            The preamble to use for the jobs. Note that the default preamble is "module load anaconda3", which is the preamble for use on the DCCN cluster.
-        save_dir : str, optional
-            The directory to save the runner state.
+            The preamble to use for each job.
         log_dir : str, optional
-            The directory to save the runner logs to.
+            The directory to save the logs to.
         temp_dir : str, optional
-            The directory to save the runner temporary files to.
+            The directory to save the temporary files to.
         """
-        self.cross_validate = cross_validate
-        self.cv_folds = cv_folds
         self.parallelize = parallelize
         self.job_type = job_type
         self.n_jobs = n_jobs
         self.n_cores = n_cores
-        self.uuid = ""
-        self.unique_temp_dir = ""
-        self.unique_log_dir = ""
-        self.job_observer = None
-        self.save_dir = ""
         try:
             if isinstance(time_limit, str):
                 self.time_limit_str = time_limit
@@ -99,13 +97,9 @@ class Runner:
                 self.time_limit_str = f"{str(s // 3600)}:{str((s // 60) % 60).rjust(2, '0')}:{str(s % 60).rjust(2, '0')}"
         except Exception:
             raise ValueError(Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit))
-
         self.memory = memory
-        self.job_commands: Dict[str, list[str]] = {}  # Save the commands for re-submission
-        self.active_jobs: Dict[str, str] = {}
-        self.failed_jobs: Dict[str, str] = {}
-
-        # Get Python path if not provided
+        self.max_retries = max_retries
+        self.random_sleep_scale = random_sleep_scale
         if parallelize:
             if not environment:
                 raise ValueError(Output.error(Errors.ERROR_NO_ENVIRONMENT_SPECIFIED))
@@ -115,15 +109,18 @@ class Runner:
                     raise ValueError(Output.error(Errors.INVALID_ENVIRONMENT, environment=environment))
                 else:
                     self.environment = environment
-                    self.preamble = preamble
-
+                    self.preamble = preamble        
+        
+        self.cross_validate = cross_validate
+        self.cv_folds = cv_folds
+        if self.cross_validate and self.cv_folds <= 1:
+            raise ValueError(Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds))
         if log_dir is None:
             self.log_dir = os.path.abspath("logs")
             Output.print(Messages.NO_LOG_DIR_SPECIFIED, log_dir=self.log_dir)
         else:
             self.log_dir = os.path.abspath(log_dir)
         os.makedirs(self.log_dir, exist_ok=True)
-
         if temp_dir is None:
             self.temp_dir = os.path.abspath("temp")
             Output.print(Messages.NO_TEMP_DIR_SPECIFIED, temp_dir=self.temp_dir)
@@ -131,17 +128,28 @@ class Runner:
             self.temp_dir = os.path.abspath(temp_dir)
         os.makedirs(self.temp_dir, exist_ok=True)
 
-        if self.cross_validate and self.cv_folds <= 1:
-            raise ValueError(Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds))
+        self.uuid = ""
+        self.unique_temp_dir = ""
+        self.unique_log_dir = ""
+        self.job_observer = None
+        self.save_dir = ""
+        self.job_commands: Dict[str, list[str]] = {}  
+        self.active_jobs: Dict[str, str] = {}
+        self.failed_jobs: Dict[str, str] = {}
 
-    def wait_or_finish(self, observe):
+
+    def wait_or_finish(self, observe: bool) -> NormativeModel | None:
         if self.parallelize:
             if observe:
                 self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
                 self.job_observer.wait_for_jobs()
                 self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+                return self.load_model()
             else:
                 self.save()
+                return None
+        else:
+            return self.load_model()
 
     def set_unique_temp_and_log_dir(self):
         self.uuid = str(uuid.uuid4())
@@ -153,7 +161,7 @@ class Runner:
         Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
         Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
 
-    def fit(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def fit(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
         """
         Fit a normative model on a dataset.
 
@@ -171,27 +179,15 @@ class Runner:
 
         Returns
         -------
-        None
+        NormativeModel | None
+            The fitted model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        if self.parallelize:
-            if observe:
-                # If we want to jobs, we wait for them, and then get the failed jobs after it's done
-                self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
-                self.job_observer.wait_for_jobs()
-                self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-                self.load_model(into=model)
-            else:
-                # Else, we save the runner state after all jobs are submitted
-                # The load function will check for failed jobs
-                self.save()
-        else:
-            # If we are not in parallel, just load the model after it's done running (we don't need to wait)
-            self.load_model(into=model)
+        return self.wait_or_finish(observe)
 
     def fit_predict(
         self,
@@ -200,7 +196,7 @@ class Runner:
         predict_data: Optional[NormData] = None,
         save_dir: Optional[str] = None,
         observe: bool = True,
-    ) -> None:
+    ) -> NormativeModel | None:
         """
         Fit a normative model on a dataset and predict on another dataset.
 
@@ -220,7 +216,8 @@ class Runner:
 
         Returns
         -------
-        None
+        NormativeModel | None
+            The fitted and model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
@@ -232,10 +229,9 @@ class Runner:
             second_data_source=predict_data,
             mode="binary",
         )
-        self.wait_or_finish(observe)
-        self.load_model(into=model)
+        return self.wait_or_finish(observe)
 
-    def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> None:
+    def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
         """
         Predict on a dataset.
 
@@ -252,7 +248,7 @@ class Runner:
 
         Returns
         -------
-        None
+        None. If you want to load the model, use the runner.load_model function.
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         assert save_dir is not None
@@ -290,9 +286,7 @@ class Runner:
         self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model, save_dir)
-        self.submit_jobs(fn, data, mode="unary")
-        self.wait_or_finish(observe)
-        return self.load_model()
+        return self.submit_jobs(fn, data, mode="unary")
 
     def transfer_predict(
         self,
@@ -330,8 +324,7 @@ class Runner:
         self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        self.wait_or_finish(observe)
-        return self.load_model()
+        return self.wait_or_finish(observe)
 
     def extend(
         self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
@@ -362,8 +355,7 @@ class Runner:
         self.set_unique_temp_and_log_dir()
         fn = self.get_extend_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
-        self.wait_or_finish(observe)
-        return self.load_model()
+        return self.wait_or_finish(observe)
 
     def extend_predict(
         self,
@@ -401,8 +393,7 @@ class Runner:
         self.set_unique_temp_and_log_dir()
         fn = self.get_extend_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        self.wait_or_finish(observe)
-        return self.load_model()
+        return self.wait_or_finish(observe)
 
     def get_fit_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data"""
@@ -713,7 +704,7 @@ class Runner:
 
 {self.preamble}
 source activate {self.environment}
-python {current_file_path} {python_callable_path} {data_path}
+python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -744,7 +735,7 @@ exit $exit_code
 
 {self.preamble}
 source activate {self.environment}
-python {current_file_path} {python_callable_path} {data_path}
+python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
 
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
@@ -846,11 +837,35 @@ exit $exit_code
 
 
 def load_and_execute(args):
-    with open(args[0], "rb") as executable_path:
-        fn = pickle.load(executable_path)
-    with open(args[1], "rb") as data_path:
-        data = pickle.load(data_path)
-    fn(*data)
+    """Load a callable and data from a pickle file and execute it.
+
+    Parameters
+    ----------
+    args : list[str]
+        A list of arguments. The first argument is the path to the callable. The second argument is the path to the data. The third argument is the max number of retries.  The fourth argument is the scale of the random sleep.
+    """
+    retries = int(args[2])
+    scale = float(args[3])
+    for i in range(retries + 1):
+        # Sleep for a random amount of time. 
+        # Try to avoid some async access issues.
+        time.sleep(random.uniform(0, scale))
+        try:
+            Output.print(Messages.LOADING_CALLABLE, path=args[1])
+            with open(args[0], "rb") as executable_path:
+                fn = pickle.load(executable_path)
+            Output.print(Messages.LOADING_DATA, path=args[2])
+            with open(args[1], "rb") as data_path:
+                data = pickle.load(data_path)
+            Output.print(Messages.EXECUTING_CALLABLE, attempt=i + 1, total=retries + 1)
+            fn(*data)
+            break
+        except Exception as e:
+            if i == retries:
+                raise e
+            else:
+                Output.print(Messages.EXECUTION_FAILED, attempt=i + 1, total=retries + 1, error=e)
+                continue
 
 
 if __name__ == "__main__":

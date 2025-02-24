@@ -72,6 +72,10 @@ Total failed jobs: {total_failed_jobs}
     HARMONIZING_DATA_MODEL = "Harmonizing data for {model_name}."
     SYNTHESIZING_DATA = "Synthesizing data for {n_models} response variables."
     SYNTHESIZING_DATA_MODEL = "Synthesizing data for {model_name}."
+    LOADING_CALLABLE = "Loading callable from {path}."
+    LOADING_DATA = "Loading data from {path}."
+    EXECUTING_CALLABLE = "Executing callable, attempt {attempt} of {total}."
+    EXECUTION_FAILED = "Execution of callable failed, attempt {attempt} of {total} with error: \n{error}"
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
     EXTRA_COVARIATES = "The dataset {dataset_name} has too many covariates: {covariates}"
