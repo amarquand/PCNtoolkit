@@ -6,6 +6,7 @@ import pandas as pd
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.regression_model.blr import BLR
+from pcntoolkit.regression_model.test_model import TestModel
 from pcntoolkit.math.basis_function import BsplineBasisFunction
 from pcntoolkit.util.runner import Runner
 import numpy as np
@@ -42,7 +43,7 @@ def load_fcon1000():
     subject_ids = ['sub_id']
     covariates = ["age"]
     batch_effects = ["sex", "site"]
-    response_vars = data.columns[3:220]
+    response_vars = data.columns[3:7]
     norm_data = NormData.from_dataframe(
         name="fcon1000",
         dataframe=data,
@@ -74,6 +75,7 @@ def load_lifespan_big():
         return str not in subject_ids and str not in covariates and str not in batch_effects and not str.startswith('site_') and not str.startswith('group') and not str.startswith('race') and data[str].var() > 0
 
     response_vars = [col for col in data.columns if is_response_var(col)]
+    response_vars = response_vars[:4]
     norm_data = NormData.from_dataframe(
         name="lifespan_big",
         dataframe=data,
@@ -109,9 +111,9 @@ def main():
     ax[1].set_xlabel("Age")
     ax[1].set_ylabel(normdata.response_vars.values[0])
 
-    plt.savefig(os.path.join(resource_dir, "lifespan_big_scatter.png"))
+    plt.savefig(os.path.join(resource_dir, "test_plot.png"))
     plt.close()
-
+     
     mu = make_prior(
         # Mu is linear because we want to allow the mean to vary as a function of the covariates.
         linear=True,
@@ -171,6 +173,12 @@ def main():
             sigma,
         ),
     )
+    
+    # template_test_model = TestModel(
+    #     name="template",
+    #     success_ratio=0.5
+    # )
+
     model = NormativeModel(
         template_regression_model=template_hbr,
         # Whether to save the model after fitting.
@@ -182,7 +190,7 @@ def main():
         # Whether to save the plots after fitting.
         saveplots=True,
         # The directory to save the model, results, and plots.
-        save_dir=os.path.join(resource_dir, "hbr/save_dir"),
+        save_dir=os.path.join(resource_dir, "hbr_lifespan/save_dir"),
         # The scaler to use for the input data. Can be either one of "standardize", "minmax", "robustminmax", "none"
         inscaler="standardize",
         # The scaler to use for the output data. Can be either one of "standardize", "minmax", "robustminmax", "none"
@@ -194,15 +202,17 @@ def main():
         parallelize=True,
         environment=conda_env_path,
         job_type="slurm",  # or "torque" if you are on a torque cluster
-        n_jobs= 50,
+        n_jobs= 2,
         time_limit="05:00:00",
         memory="16GB",
         n_cores=4,
+        max_retries=10,
         log_dir=os.path.join(resource_dir, "runner_output/log_dir"),
         temp_dir=os.path.join(resource_dir, "runner_output/temp_dir"),
     )
 
     runner.fit_predict(model, train, test, observe=False)
+
 
 if __name__ == "__main__":
     main()
