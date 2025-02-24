@@ -5,7 +5,6 @@ import re
 import subprocess
 import sys
 import time
-import uuid
 from copy import deepcopy
 from typing import Callable, Dict, Literal, Optional
 
@@ -128,7 +127,7 @@ class Runner:
             self.temp_dir = os.path.abspath(temp_dir)
         os.makedirs(self.temp_dir, exist_ok=True)
 
-        self.uuid = ""
+        self.task_id = ""
         self.unique_temp_dir = ""
         self.unique_log_dir = ""
         self.job_observer = None
@@ -141,7 +140,7 @@ class Runner:
     def wait_or_finish(self, observe: bool) -> NormativeModel | None:
         if self.parallelize:
             if observe:
-                self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
+                self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
                 self.job_observer.wait_for_jobs()
                 self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
                 return self.load_model()
@@ -152,12 +151,12 @@ class Runner:
             return self.load_model()
 
     def set_unique_temp_and_log_dir(self):
-        self.uuid = str(uuid.uuid4())
-        self.unique_temp_dir = os.path.join(self.temp_dir, self.uuid)
-        self.unique_log_dir = os.path.join(self.log_dir, self.uuid)
+        self.task_id = time.strftime("%Y-%m-%d_%H:%M:%S")
+        self.unique_temp_dir = os.path.join(self.temp_dir, self.task_id)
+        self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
         os.makedirs(self.unique_temp_dir, exist_ok=True)
         os.makedirs(self.unique_log_dir, exist_ok=True)
-        Output.print(Messages.UUID_FOR_RUNNER_CREATED, uuid=self.uuid)
+        Output.print(Messages.TASK_TIMESTAMP_CREATED, timestamp=self.task_id)
         Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
         Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
 
@@ -829,7 +828,7 @@ exit $exit_code
 
         self.failed_jobs.clear()
         if observe:
-            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.uuid)
+            self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
             self.job_observer.wait_for_jobs()
             self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
 
