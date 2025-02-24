@@ -46,7 +46,7 @@ class BLR(RegressionModel):
         l_bfgs_b_l: float = 0.1,
         l_bfgs_b_epsilon: float = 0.1,
         l_bfgs_b_norm: str = "l2",
-        intercept: bool = False,
+        intercept: bool = True,
         fixed_effect: bool = True,
         heteroskedastic: bool = False,
         intercept_var: bool = False,
