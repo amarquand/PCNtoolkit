@@ -143,7 +143,6 @@ class JobObserver:
         statuses = self.get_job_statuses()
         self.show_job_status_monitor(in_notebook, statuses)
 
-
     def show_job_status_monitor(self,in_notebook, statuses):
         show_pid = Output.get_show_pid()
         Output.set_show_pid(False)
@@ -188,3 +187,4 @@ class JobObserver:
 
         Output.set_show_messages(show_messages)
         Output.set_show_pid(show_pid)
+
