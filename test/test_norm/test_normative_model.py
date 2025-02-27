@@ -25,16 +25,23 @@ The tests cover the following aspects:
 
 
 def test_fit(new_norm_test_model: NormativeModel, norm_data_from_arrays: NormData):
+    if os.path.exists(new_norm_test_model.save_dir):
+        shutil.rmtree(new_norm_test_model.save_dir)
+    os.makedirs(new_norm_test_model.save_dir, exist_ok=True)
     new_norm_test_model.fit(norm_data_from_arrays)
     assert new_norm_test_model.is_fitted
 
 
 def test_fit_predict(new_norm_test_model: NormativeModel, norm_data_from_arrays: NormData, test_norm_data_from_arrays: NormData):
+    if os.path.exists(new_norm_test_model.save_dir):
+        shutil.rmtree(new_norm_test_model.save_dir)
+    os.makedirs(new_norm_test_model.save_dir, exist_ok=True)
     new_norm_test_model.fit_predict(norm_data_from_arrays, test_norm_data_from_arrays)
     assert new_norm_test_model.is_fitted
 
 
 def test_predict(fitted_norm_test_model: NormativeModel, test_norm_data_from_arrays: NormData):
+    os.makedirs(fitted_norm_test_model.save_dir, exist_ok=True)
     fitted_norm_test_model.predict(test_norm_data_from_arrays)
     assert fitted_norm_test_model.is_fitted
 

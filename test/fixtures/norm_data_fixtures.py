@@ -23,13 +23,13 @@ def norm_data_from_arrays(train_arrays):
 @pytest.fixture(scope="module")
 def test_norm_data_from_arrays(test_arrays):
     X, y, batch_effects = test_arrays
-    return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
+    return NormData.from_ndarrays("from_arrays_test", X, y, batch_effects)
 
 
 @pytest.fixture(scope="module")
 def transfer_norm_data_from_arrays(transfer_arrays):
     X, y, batch_effects = transfer_arrays
-    return NormData.from_ndarrays("from_arrays", X, y, batch_effects)
+    return NormData.from_ndarrays("from_arrays_transfer", X, y, batch_effects)
 
 
 @pytest.fixture(scope="module")

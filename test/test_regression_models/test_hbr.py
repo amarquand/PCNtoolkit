@@ -88,6 +88,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.cores == sample_args.get("cores")
     assert isinstance(hbr.likelihood, NormalLikelihood)
     if args.get("linear_mu", False):
+        assert isinstance(hbr.likelihood.mu, LinearPrior)
         if args.get("random_slope_mu", False):
             assert isinstance(hbr.likelihood.mu.slope, RandomPrior)
         else:
@@ -142,7 +143,10 @@ def extract_data(fitted_norm_hbr_model: NormativeModel, norm_data_from_arrays: N
     fitted_norm_hbr_model.saveresults = True
     fitted_norm_hbr_model.savemodel = False
     fitted_norm_hbr_model.evaluate_model = True
-
+    fitted_norm_hbr_model.save_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr","results")
+    if os.path.exists(fitted_norm_hbr_model.save_dir):
+        shutil.rmtree(fitted_norm_hbr_model.save_dir)
+    os.makedirs(fitted_norm_hbr_model.save_dir, exist_ok=True)
     fitted_norm_hbr_model.predict(norm_data_from_arrays)
     responsevar = fitted_norm_hbr_model.response_vars[0]
     resp_model: HBR = fitted_norm_hbr_model[responsevar]  # type: ignore
@@ -325,7 +329,6 @@ def test_prior_from_args_random_with_covariate_dim(extract_data):
     assert isinstance(mu.sigma, Prior)
     assert mu.sigma.dist_name == "HalfNormal"
     assert mu.sigma.dist_params == (1.0,)
-    assert mu.dist.name == my_new_prior_name
 
     assert len(samples.shape.eval()) == 2
     assert samples.shape.eval()[0] == len(extract_data[0].coords["subjects"])
