@@ -9,10 +9,7 @@ Methods for normative modelling, spatial statistics and pattern recognition.
 ## Installation (alpha release)
 
 ```
-https://github.com/amarquand/PCNtoolkit.git
-cd PCNtoolkit
-git checkout dev_refactor_alpha
-python -m pip install .
+%pip install https://github.com/amarquand/PCNtoolkit/archive/refs/tags/v1.alpha.1.zip
 ```
 
 See the example_notebooks folder for examples of how to use the toolkit.

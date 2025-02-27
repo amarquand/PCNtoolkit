@@ -15,7 +15,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pcntoolkit.regression_model.hbr import NormalLikelihood, make_prior, HBR
+from pcntoolkit.regression_model.hbr import NormalLikelihood, make_prior, HBR, SHASHbLikelihood
 
 # Get the conda environment path
 conda_env_path = os.path.join(os.path.dirname(os.path.dirname(sys.executable)))
@@ -32,7 +32,7 @@ pcntoolkit.util.output.Output.set_show_messages(True)
 this_file_path = os.path.dirname(os.path.abspath(__file__))
 resource_dir = os.path.join(this_file_path, "resources")
 
-def load_fcon1000():
+def load_fcon1000(n_response_vars=None,n_largest_sites=None):
     os.makedirs(os.path.join(resource_dir, "data"), exist_ok=True)
     if not os.path.exists(os.path.join(resource_dir, "data/fcon1000.csv")):
         pd.read_csv(
@@ -43,7 +43,14 @@ def load_fcon1000():
     subject_ids = ['sub_id']
     covariates = ["age"]
     batch_effects = ["sex", "site"]
-    response_vars = data.columns[3:7]
+    response_vars = data.columns[3:220]
+
+    if n_response_vars is not None:
+        response_vars = response_vars[:n_response_vars]
+
+    if n_largest_sites is not None:
+        data = data[data['site'].isin(data['site'].value_counts().head(n_largest_sites).index)]
+
     norm_data = NormData.from_dataframe(
         name="fcon1000",
         dataframe=data,
@@ -55,7 +62,7 @@ def load_fcon1000():
     return norm_data
 
 
-def load_lifespan_big():
+def load_lifespan_big(n_response_vars=None, n_largest_sites=None, n_subjects=None):
     subject_ids = ['participant_id']
     covariates = ['age']
     batch_effects = ['sex', 'site']
@@ -65,17 +72,29 @@ def load_lifespan_big():
     for col in covariates:
         dtypes[col] = float
     data= pd.read_csv("/project_cephfs/3022017.06/projects/stijdboe/Data/sairut_data/lifespan_big.csv", dtype=dtypes)
+
     data = data.dropna(axis=0, how='all', inplace=False)
     data = data.dropna(axis=1, how='any', inplace=False)
 
     data["sex"] = data["sex"].map({"0.0": "Female", "1.0": "Male", "2.0": "Female"})
     data["site"] = data['site_ID']
+    
+    # Take only the n largest sites
+    if n_largest_sites is not None:
+        data = data[data['site_ID'].isin(data['site_ID'].value_counts().head(n_largest_sites).index)]
+
+    # Take only n subjects
+    if n_subjects is not None:
+        data = data.sample(n=n_subjects, replace=False)
 
     def is_response_var(str):
         return str not in subject_ids and str not in covariates and str not in batch_effects and not str.startswith('site_') and not str.startswith('group') and not str.startswith('race') and data[str].var() > 0
-
+    
     response_vars = [col for col in data.columns if is_response_var(col)]
-    response_vars = response_vars[:4]
+
+    if n_response_vars is not None:
+        response_vars = response_vars[:n_response_vars]
+
     norm_data = NormData.from_dataframe(
         name="lifespan_big",
         dataframe=data,
@@ -87,7 +106,12 @@ def load_lifespan_big():
     return norm_data
 
 def main():
-    normdata = load_lifespan_big()
+    data = "lifespan_big"
+    # data = "fcon1000"
+    if data == "lifespan_big": 
+        normdata = load_lifespan_big(n_response_vars=4)
+    else:
+        normdata = load_fcon1000()
     train, test = normdata.train_test_split(splits = [0.8, 0.2])
     # Inspect the data
     df = train.to_dataframe()
@@ -111,8 +135,9 @@ def main():
     ax[1].set_xlabel("Age")
     ax[1].set_ylabel(normdata.response_vars.values[0])
 
-    plt.savefig(os.path.join(resource_dir, "test_plot.png"))
+    plt.savefig(os.path.join(resource_dir, f"test_plot_{data}.png"))
     plt.close()
+
      
     mu = make_prior(
         # Mu is linear because we want to allow the mean to vary as a function of the covariates.
@@ -151,6 +176,25 @@ def main():
         mapping_params=(0.0, 3.0),
     )
 
+    epsilon = make_prior(
+        linear=True,
+        slope=make_prior(dist_name="Normal", dist_params=(0.0, 2.0)),
+        intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
+        basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),
+        mapping="softplus",
+        mapping_params=(0.0, 3.0),
+    )
+    delta = make_prior(
+        linear=True,
+        slope=make_prior(dist_name="Normal", dist_params=(0.0, 2.0)),
+        intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
+        basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),
+        mapping="softplus",
+        mapping_params=(0.0, 3.0, 0.6),
+    )
+
+    # epsilon = make_prior(dist_name="Normal", dist_params=(0.0, 1.0))
+    # delta = make_prior(dist_name="Normal", dist_params=(1.0, 1.0), mapping="softplus", mapping_params=(0.0, 3.0, 0.6))
 
     template_hbr = HBR(
         # The name of the model.
@@ -165,19 +209,16 @@ def main():
         tune=500,
         # The number of MCMC chains to run.
         chains=4,
-        # The sampler to use for the model.
+        # The implementation of NUTS to use for sampling.
         nuts_sampler="nutpie",
         # The likelihood function to use for the model.
-        likelihood=NormalLikelihood(
+        likelihood=SHASHbLikelihood(
             mu,
             sigma,
+            epsilon,
+            delta
         ),
     )
-    
-    # template_test_model = TestModel(
-    #     name="template",
-    #     success_ratio=0.5
-    # )
 
     model = NormativeModel(
         template_regression_model=template_hbr,
@@ -190,7 +231,7 @@ def main():
         # Whether to save the plots after fitting.
         saveplots=True,
         # The directory to save the model, results, and plots.
-        save_dir=os.path.join(resource_dir, "hbr_lifespan/save_dir"),
+        save_dir=os.path.join(resource_dir, f"hbr_SHASHb2_{data}/save_dir"),
         # The scaler to use for the input data. Can be either one of "standardize", "minmax", "robustminmax", "none"
         inscaler="standardize",
         # The scaler to use for the output data. Can be either one of "standardize", "minmax", "robustminmax", "none"
@@ -201,11 +242,11 @@ def main():
         cross_validate=False,
         parallelize=True,
         environment=conda_env_path,
-        job_type="slurm",  # or "torque" if you are on a torque cluster
-        n_jobs= 2,
-        time_limit="05:00:00",
+        job_type="torque",  # or "torque" if you are on a torque cluster
+        n_jobs=100,
+        time_limit="30:00:00",
         memory="16GB",
-        n_cores=4,
+        n_cores=16,
         max_retries=10,
         log_dir=os.path.join(resource_dir, "runner_output/log_dir"),
         temp_dir=os.path.join(resource_dir, "runner_output/temp_dir"),

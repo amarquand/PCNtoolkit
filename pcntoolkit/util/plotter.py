@@ -17,6 +17,7 @@ import os
 
 from pcntoolkit.util.output import Errors, Output
 
+sns.set_theme(style="darkgrid")
 
 def plot_centiles(
     model: "NormativeModel",
@@ -54,7 +55,7 @@ def plot_centiles(
     batch_effects: Dict[str, List[str]] | None | Literal["all"], optional
         The batch effects to plot the centiles for. If None, the batch effect that appears first in alphabetical order will be used.
     scatter_data: NormData | None, optional
-        Data to scatter on top of the centiles. If None, no data will be scattered.
+        Data to scatter on top of the centiles.
     harmonize_data: bool, optional
         Whether to harmonize the scatter data before plotting. Data will be harmonized to the batch effect for which the centiles were computed.
     hue_data: str, optional
@@ -109,7 +110,8 @@ def plot_centiles(
         if model.has_batch_effect:
             model.harmonize(scatter_data)
         else:
-            model.harmonize(scatter_data, reference_batch_effect=batch_effects)
+            reference_batch_effect = {k: v[0] for k, v in batch_effects}
+            model.harmonize(scatter_data, reference_batch_effect=reference_batch_effect)
 
     for response_var in model.response_vars:
         _plot_centiles(

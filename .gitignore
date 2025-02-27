@@ -115,3 +115,5 @@ docs/autoapi/
 
 test/output/*
 !test/output/gitkeep
+examples/sandbox.py
+examples/sandbox.ipynb

@@ -59,14 +59,16 @@ class JobObserver:
                 stderr=subprocess.PIPE,
                 text=True,
             )
+            stdout, stderr = process.communicate()
         elif self.job_type == "torque":
             process = subprocess.Popen(
-                ["qstat", "--format=%i|%j|%T|%M|%N", "--noheader"],
+                ["qstat"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
-        stdout, stderr = process.communicate()
+            stdout, stderr = process.communicate()
+            stdout = "\n".join(stdout.split("\n")[2:])
 
         statuses = []
         if process.returncode is None or process.returncode == 0:
@@ -74,7 +76,11 @@ class JobObserver:
             lines = [line.strip() for line in stdout.split("\n") if line.strip()]
             for line in lines:
                 try:
-                    job_id, name, state, time, nodes = line.split("|")
+                    if self.job_type == "slurm":
+                        job_id, name, state, time, nodes = line.split("|")
+                    elif self.job_type == "torque":
+                        job_id, name, _, time, state, _ = line.split(" ")
+                        nodes = "?"
                     if job_id in list(self.all_job_ids.values()):
                         job_name = self.job_id_to_name.get(job_id)
                         if state not in ["RUNNING", "PENDING", "COMPLETING"]:

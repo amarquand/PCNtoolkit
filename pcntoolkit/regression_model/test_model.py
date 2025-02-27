@@ -12,6 +12,13 @@ class TestModel(RegressionModel):
     """
 
     def __init__(self, name: str, success_ratio: float = 1.0):
+        """
+        Initialize the test model.
+
+        Args:
+            name: The name of the model.
+            success_ratio: The ratio of successful fits.
+        """
         super().__init__(name)
         self.success_ratio = success_ratio
 

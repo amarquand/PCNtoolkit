@@ -37,7 +37,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split  # type: i
 # import datavars from xarray
 from xarray.core.types import DataVars
 
-from pcntoolkit.util.output import Output, Warnings
+from pcntoolkit.util.output import Output, Messages, Warnings
 
 
 class NormData(xr.Dataset):
@@ -113,6 +113,8 @@ class NormData(xr.Dataset):
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
         self["batch_effects"] = self["batch_effects"].astype(str)
         self.register_batch_effects()
+        be_str = "\t"+("".join([f"\t{be} ({len(self.unique_batch_effects[be])})\n" for be in self.unique_batch_effects])).strip()
+        Output.print(Messages.DATASET_CREATED, name=name, n_subjects=len(self.subjects), n_covariates=len(self.covariates), n_response_vars=len(self.response_vars), n_batch_effects=len(self.unique_batch_effects), batch_effects=be_str)
 
     @classmethod
     def from_ndarrays(
@@ -836,7 +838,9 @@ class NormData(xr.Dataset):
             )
             centiles.columns = [("centiles", col) for col in centiles.columns]
             acc.append(centiles)
-        return pd.concat(acc, axis=1)
+        pandas_df = pd.concat(acc, axis=1)
+        pandas_df.index=self.subjects.values.astype(str)
+        return pandas_df
 
     def create_statistics_group(self) -> None:
         """
