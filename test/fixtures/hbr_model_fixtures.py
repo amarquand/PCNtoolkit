@@ -91,6 +91,9 @@ def train_and_save_hbr_model(
     new_norm_hbr_model,
     norm_data_from_arrays: NormData,
 ):
+    if os.path.exists(new_norm_hbr_model.save_dir):
+        shutil.rmtree(new_norm_hbr_model.save_dir)
+    os.makedirs(new_norm_hbr_model.save_dir, exist_ok=True)
     new_norm_hbr_model.fit(norm_data_from_arrays)
     new_norm_hbr_model.save()
     return new_norm_hbr_model

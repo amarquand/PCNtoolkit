@@ -932,6 +932,7 @@ class NormativeModel:
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
+        zdf.index = zdf.index.astype(str)
         res_path = os.path.join(self.save_dir, "results", f"Z_{data.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
@@ -956,6 +957,7 @@ class NormativeModel:
     def save_centiles(self, data: NormData) -> None:
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
+        centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
         res_path = os.path.join(self.save_dir, "results", f"centiles_{data.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
@@ -980,13 +982,12 @@ class NormativeModel:
     def save_statistics(self, data: NormData) -> None:
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
-        dtypes = {'subjects': str}
         res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = pd.read_csv(f, index_col=0, dtype=dtypes) if os.path.getsize(res_path) > 0 else None
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
                     # Merge on subjects, keeping right (new) values for overlapping columns
                     new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))

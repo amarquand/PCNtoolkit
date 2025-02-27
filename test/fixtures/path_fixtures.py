@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -30,7 +31,11 @@ LOCK_PATH = Path("tests/fixtures/model.lock")
 
 @pytest.fixture(scope="session")
 def log_dir():
-    return os.path.join(gettempdir(), "pcntoolkit_tests", "log_test")
+    path = os.path.join(gettempdir(), "pcntoolkit_tests", "log_test")
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 @pytest.fixture(scope="session")
@@ -73,7 +78,11 @@ def test_files(n_test_subjects, n_covariates, n_response_vars, batch_effect_valu
 
 @pytest.fixture(scope="session")
 def save_dir():
-    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test")
+    path = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test")
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 @pytest.fixture(scope="session")
@@ -83,13 +92,25 @@ def maskfile():
 
 @pytest.fixture(scope="session")
 def save_dir_hbr():
-    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr")
+    path = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr")
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 @pytest.fixture(scope="session")
 def save_dir_blr():
-    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "blr")
+    path = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "blr")
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 @pytest.fixture(scope="session")
 def save_dir_test_model():
-    return os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "test_model")
+    path = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "test_model")
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path

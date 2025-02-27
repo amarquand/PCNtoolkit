@@ -137,22 +137,22 @@ class Runner:
         self.failed_jobs: Dict[str, str] = {}
 
 
-    def wait_or_finish(self, observe: bool) -> NormativeModel | None:
+    def wait_or_finish(self, observe: bool, into: NormativeModel | None = None) -> NormativeModel | None:
         if self.parallelize:
             if observe:
                 self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
                 self.job_observer.wait_for_jobs()
                 self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
-                return self.load_model()
+                return self.load_model(into=into)
             else:
                 self.save()
                 return None
         else:
-            return self.load_model()
+            return self.load_model(into=into)
 
     def set_unique_temp_and_log_dir(self):
-        
-        milliseconds = f"{time.time() * 1000 % 1000:03d}"
+        milliseconds = time.time() * 1000 % 1000
+        milliseconds = f"{milliseconds:03f}"
         self.task_id = time.strftime("%Y-%m-%d_%H:%M:%S") + "_" + milliseconds
         self.unique_temp_dir = os.path.join(self.temp_dir, self.task_id)
         self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
@@ -188,7 +188,7 @@ class Runner:
         self.set_unique_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        return self.wait_or_finish(observe)
+        return self.wait_or_finish(observe,into=model)
 
     def fit_predict(
         self,
@@ -230,7 +230,7 @@ class Runner:
             second_data_source=predict_data,
             mode="binary",
         )
-        return self.wait_or_finish(observe)
+        return self.wait_or_finish(observe, into=model)
 
     def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
         """
@@ -287,8 +287,9 @@ class Runner:
         self.save_dir = save_dir
         self.set_unique_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model, save_dir)
-        return self.submit_jobs(fn, data, mode="unary")
-
+        self.submit_jobs(fn, data, mode="unary")
+        return self.wait_or_finish(observe)
+    
     def transfer_predict(
         self,
         model: NormativeModel,

@@ -119,7 +119,12 @@ def test_runner_fit_predict_kfold(new_norm_test_model: NormativeModel, norm_data
 
 def test_runner_extend(fitted_norm_test_model: NormativeModel, norm_data_from_arrays: NormData):
     runner = Runner(cross_validate=False, parallelize=False)
-    extended_model = runner.extend(fitted_norm_test_model, norm_data_from_arrays, observe=True)
+    # Create extend dir:
+    extend_dir = os.path.join(fitted_norm_test_model.save_dir, "extend")
+    if os.path.exists(extend_dir):
+        shutil.rmtree(extend_dir)
+    os.makedirs(extend_dir, exist_ok=True)  
+    extended_model = runner.extend(fitted_norm_test_model, norm_data_from_arrays, extend_dir, observe=True)
     assert isinstance(extended_model, NormativeModel)
     assert extended_model.is_fitted
     assert os.path.exists(os.path.join(extended_model.save_dir, "model", "normative_model.json"))
@@ -142,7 +147,11 @@ def test_runner_extend(fitted_norm_test_model: NormativeModel, norm_data_from_ar
 def test_runner_extend_predict(fitted_norm_test_model: NormativeModel, norm_data_from_arrays: NormData):
     runner = Runner(cross_validate=False, parallelize=False)
     train, test = norm_data_from_arrays.train_test_split(splits=[0.2, 0.8])
-    extended_model = runner.extend_predict(fitted_norm_test_model, train, test, observe=True)
+    extend_dir = os.path.join(fitted_norm_test_model.save_dir, "extend_predict")
+    if os.path.exists(extend_dir):
+        shutil.rmtree(extend_dir)
+    os.makedirs(extend_dir, exist_ok=True)  
+    extended_model = runner.extend_predict(fitted_norm_test_model, train, test, extend_dir, observe=True)
     assert isinstance(extended_model, NormativeModel)
     assert extended_model.is_fitted
     assert os.path.exists(os.path.join(extended_model.save_dir, "model", "normative_model.json"))
@@ -160,7 +169,11 @@ def test_runner_extend_predict(fitted_norm_test_model: NormativeModel, norm_data
 
 def test_runner_extend_predict_kfold(fitted_norm_test_model: NormativeModel, norm_data_from_arrays: NormData):
     runner = Runner(cross_validate=True, cv_folds=2, parallelize=False)
-    extended_model = runner.extend_predict(fitted_norm_test_model, norm_data_from_arrays, None, observe=True)
+    extend_dir = os.path.join(fitted_norm_test_model.save_dir, "extend_predict_kfold")  
+    if os.path.exists(extend_dir):
+        shutil.rmtree(extend_dir)
+    os.makedirs(extend_dir, exist_ok=True)  
+    extended_model = runner.extend_predict(fitted_norm_test_model, norm_data_from_arrays, None,extend_dir, observe=True)
     assert isinstance(extended_model, NormativeModel)
     assert extended_model.is_fitted
     assert os.path.exists(os.path.join(extended_model.save_dir, "model", "normative_model.json"))
@@ -182,7 +195,11 @@ def test_runner_extend_predict_kfold(fitted_norm_test_model: NormativeModel, nor
 
 def test_runner_transfer(fitted_norm_test_model: NormativeModel, norm_data_from_arrays: NormData):
     runner = Runner(cross_validate=False, parallelize=False)
-    transferred_model = runner.transfer(fitted_norm_test_model, norm_data_from_arrays, observe=True)
+    transfer_dir = os.path.join(fitted_norm_test_model.save_dir, "transfer")
+    if os.path.exists(transfer_dir):
+        shutil.rmtree(transfer_dir)
+    os.makedirs(transfer_dir, exist_ok=True)  
+    transferred_model = runner.transfer(fitted_norm_test_model, norm_data_from_arrays, transfer_dir, observe=True)
     assert isinstance(transferred_model, NormativeModel)
     assert transferred_model.is_fitted
     assert os.path.exists(os.path.join(transferred_model.save_dir, "model", "normative_model.json"))
