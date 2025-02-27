@@ -151,7 +151,9 @@ class Runner:
             return self.load_model()
 
     def set_unique_temp_and_log_dir(self):
-        self.task_id = time.strftime("%Y-%m-%d_%H:%M:%S")
+        
+        milliseconds = f"{time.time() * 1000 % 1000:03d}"
+        self.task_id = time.strftime("%Y-%m-%d_%H:%M:%S") + "_" + milliseconds
         self.unique_temp_dir = os.path.join(self.temp_dir, self.task_id)
         self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
         os.makedirs(self.unique_temp_dir, exist_ok=True)
@@ -668,7 +670,10 @@ class Runner:
                 )
                 stdout, stderr = process.communicate()
                 try:
-                    job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
+                    if self.job_type == "slurm":
+                        job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
+                    elif self.job_type == "torque":
+                        job_id = re.search(r"(.*)", stdout).group(1).strip()  # type: ignore
                 except AttributeError:
                     raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))
 
@@ -703,7 +708,7 @@ class Runner:
 
 {self.preamble}
 source activate {self.environment}
-python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
+PYTHONBUFFERED=1 python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -734,6 +739,11 @@ exit $exit_code
 
 {self.preamble}
 source activate {self.environment}
+# Force Python to use unbuffered output
+export PYTHONUNBUFFERED=1
+# Force stdout/stderr to be unbuffered
+exec 1> >(tee -a {out_file})
+exec 2> >(tee -a {err_file})
 python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
 
 exit_code=$?
@@ -819,13 +829,19 @@ exit $exit_code
                     command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True
                 )
                 stdout, stderr = process.communicate()
-                job_id = re.search(r"Submitted batch job (\d+)", stdout)
+
+                try:
+                    if self.job_type == "slurm":
+                        job_id = re.search(r"Submitted batch job (\d+)", stdout).group(1)  # type: ignore
+                    elif self.job_type == "torque":
+                        job_id = re.search(r"(.*)", stdout).group(1).strip()  # type: ignore
+                except AttributeError:
+                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))                
+                
                 if job_id:
                     self.active_jobs[job_name] = job_id.group(1)
                     self.job_commands[job_name] = command
-                elif stderr:
-                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))
-
+               
         self.failed_jobs.clear()
         if observe:
             self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
@@ -850,21 +866,23 @@ def load_and_execute(args):
         # Try to avoid some async access issues.
         time.sleep(random.uniform(0, scale))
         try:
-            Output.print(Messages.LOADING_CALLABLE, path=args[1])
+            Output.print(Messages.LOADING_CALLABLE, path=args[0])
             with open(args[0], "rb") as executable_path:
                 fn = pickle.load(executable_path)
-            Output.print(Messages.LOADING_DATA, path=args[2])
+            Output.print(Messages.LOADING_DATA, path=args[1])
             with open(args[1], "rb") as data_path:
                 data = pickle.load(data_path)
             Output.print(Messages.EXECUTING_CALLABLE, attempt=i + 1, total=retries + 1)
             fn(*data)
-            break
+            Output.print(Messages.EXECUTION_SUCCESSFUL, attempt=i + 1, total=retries + 1)
+            return
         except Exception as e:
             if i == retries:
                 raise e
             else:
                 Output.print(Messages.EXECUTION_FAILED, attempt=i + 1, total=retries + 1, error=e)
                 continue
+
 
 
 if __name__ == "__main__":

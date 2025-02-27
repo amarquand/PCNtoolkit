@@ -1,6 +1,6 @@
 import os
 import warnings
-
+from datetime import datetime
 
 class Messages:
     FITTING_MODELS = "Fitting models on {n_models} response variables."
@@ -11,6 +11,9 @@ class Messages:
     FITTING_AND_PREDICTING_MODEL = "Fitting and predicting model for {model_name}."
     SAVING_MODEL = "Saving model to:\n\t{save_dir}."
     SAVING_RESULTS = "Saving results to:\n\t{save_dir}."
+    SAVING_STATISTICS = "Saving statistics to:\n\t{save_dir}."
+    SAVING_CENTILES = "Saving centiles to:\n\t{save_dir}."
+    SAVING_ZSCORES = "Saving z-scores to:\n\t{save_dir}."
     TRANSFERRING_MODELS = "Transferring models on {n_models} response variables."
     TRANSFERRING_MODEL = "Transferring model for {model_name}."
     COMPUTING_CENTILES = "Computing centiles for {n_models} response variables."
@@ -76,6 +79,15 @@ Total failed jobs: {total_failed_jobs}
     LOADING_DATA = "Loading data from {path}."
     EXECUTING_CALLABLE = "Executing callable, attempt {attempt} of {total}."
     EXECUTION_FAILED = "Execution of callable failed, attempt {attempt} of {total} with error: \n{error}"
+    EXECUTION_SUCCESSFUL = "Execution of callable successful, attempt {attempt} of {total}."
+    DATASET_CREATED = """Dataset \"{name}\" created.
+    - {n_subjects} subjects
+    - {n_covariates} covariates
+    - {n_response_vars} response variables
+    - {n_batch_effects} batch effects:
+    {batch_effects}
+    """
+
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
     EXTRA_COVARIATES = "The dataset {dataset_name} has too many covariates: {covariates}"
@@ -98,6 +110,8 @@ class Warnings:
     DATA_ALREADY_SCALED = "Data is already scaled, skipping scaling back to original scale."
     NO_COVARIATES = "No covariates provided for dataset {dataset_name}."
     SYNTHESIZE_N_SAMPLES_IGNORED = "n_samples is ignored because data is provided."
+    CENTILES_ALREADY_COMPUTED_FOR_CENTILES = "Centiles are already computed for {dataset_name} for centiles {centiles}, skipping computation."
+
 class Errors:
     ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
     INVALID_ENVIRONMENT = "The python environment {environment} is invalid because it has no /bin/python file. Please specify a valid python environment."
@@ -157,44 +171,45 @@ class Errors:
     ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Predict with cross-validation is not supported. Please use fit_predict instead."
     ERROR_WARP_STRING_INVALID = "Invalid warp string: {warp_string}"
     ENSURE_POSITIVE_DISTRIBUTION = "Distribution for {name} needs to be positive."
+
 class Output:
+
     _show_messages = True  # Default to showing output
     _show_warnings = True
     _show_pid = True
-
-    @classmethod
-    def set_show_messages(cls, value: bool) -> None:
-        cls._show_messages = value
-
-    @classmethod
-    def set_show_pid(cls, value: bool) -> None:
-        cls._show_pid = value
+    _show_timestamp = True
 
     @classmethod
     def print(cls, message: str, *args, **kwargs) -> None:
         """Print message only if show_messages mode is enabled"""
         if cls._show_messages:
+            message = message.format(*args, **kwargs)
+            if cls._show_timestamp:
+                message = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
             if cls._show_pid:
-                print("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
-            else:
-                print(message.format(*args, **kwargs))
+                message = "Process: " + str(os.getpid()) + " - " + message
+            print(message)
 
     @classmethod
     def warning(cls, message: str, *args, **kwargs) -> None:
         """Print warning message only if show_warnings mode is enabled"""
         if cls._show_warnings:
+            message = message.format(*args, **kwargs)
+            if cls._show_timestamp:
+                message = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
             if cls._show_pid:
-                warnings.warn("Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs))
-            else:
-                warnings.warn(message.format(*args, **kwargs))
+                message = "Process: " + str(os.getpid()) + " - " + message
+            warnings.warn(message)
 
     @classmethod
     def error(cls, message: str, *args, **kwargs) -> str:
         """Print error message"""
+        message = message.format(*args, **kwargs)
+        if cls._show_timestamp:
+            message = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
         if cls._show_pid:
-            return "Process: " + str(os.getpid()) + " - " + message.format(*args, **kwargs)
-        else:
-            return message.format(*args, **kwargs)
+            message = "Process: " + str(os.getpid()) + " - " + message
+        return message
 
     @classmethod
     def get_show_pid(cls) -> bool:
@@ -207,3 +222,23 @@ class Output:
     @classmethod
     def get_show_warnings(cls) -> bool:
         return cls._show_warnings
+
+    @classmethod
+    def get_show_timestamp(cls) -> bool:
+        return cls._show_timestamp
+    
+    @classmethod
+    def set_show_messages(cls, value: bool) -> None:
+        cls._show_messages = value
+
+    @classmethod
+    def set_show_pid(cls, value: bool) -> None:
+        cls._show_pid = value
+
+    @classmethod
+    def set_show_timestamp(cls, value: bool) -> None:
+        cls._show_timestamp = value
+
+    @classmethod
+    def set_show_warnings(cls, value: bool) -> None:
+        cls._show_warnings = value

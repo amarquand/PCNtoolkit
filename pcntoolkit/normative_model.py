@@ -347,8 +347,13 @@ class NormativeModel:
         # Drop the centiles and dimensions if they already exist
         centiles_already_computed = "centiles" in data or "centile" in data.coords
         if centiles_already_computed:
+            if not kwargs.get("recompute", False):
+                if all([c in data.centile.values for c in centiles]):
+                    Output.warning(Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, centiles=centiles)
+                    return data
             data = data.drop_vars(["centiles"])
             data = data.drop_dims(["centile"])
+          
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["centiles"] = xr.DataArray(
@@ -932,8 +937,10 @@ class NormativeModel:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
+                    old_results['subjects'] = old_results['subjects'].astype(str)
+                    old_results.set_index(['subjects'], inplace=True)
                     # Merge on subjects, keeping right (new) values for overlapping columns
                     new_results = old_results.merge(zdf, on="subjects", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
@@ -954,8 +961,10 @@ class NormativeModel:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = pd.read_csv(f, index_col=[0, 1]) if os.path.getsize(res_path) > 0 else None
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
+                    old_results['subjects'] = old_results['subjects'].astype(str)
+                    old_results.set_index(['subjects', 'centile'], inplace=True)
                     # Merge on subjects, keeping right (new) values for overlapping columns
                     new_results = old_results.merge(centiles, on=["subjects", "centile"], how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
@@ -971,12 +980,13 @@ class NormativeModel:
     def save_statistics(self, data: NormData) -> None:
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
+        dtypes = {'subjects': str}
         res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
-                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                old_results = pd.read_csv(f, index_col=0, dtype=dtypes) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
                     # Merge on subjects, keeping right (new) values for overlapping columns
                     new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))

@@ -21,9 +21,6 @@ from pcntoolkit.math.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Output
 
-logger = logging.getLogger("pymc")
-logger.propagate = False
-
 
 class HBR(RegressionModel):
     """
@@ -109,8 +106,10 @@ class HBR(RegressionModel):
         -------
         None
         """
-        self.pymc_model = self.likelihood.compile(X, be, be_maps, Y)
+        self.pymc_model : pm.Model= self.likelihood.compile(X, be, be_maps, Y)
         with self.pymc_model:
+            for random_var in self.pymc_model.basic_RVs:
+                print(f"{random_var} : {random_var.shape.eval()}")
             self.idata = pm.sample(
                 self.draws,
                 tune=self.tune,
@@ -157,6 +156,8 @@ class HBR(RegressionModel):
             del self.idata.constant_data
 
         with self.pymc_model:
+            for random_var in self.pymc_model.basic_RVs:
+                print(f"{random_var} : {random_var.shape.eval()}")
             idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=True,
@@ -213,6 +214,8 @@ class HBR(RegressionModel):
             del self.idata.constant_data
 
         with self.pymc_model:
+            for random_var in self.pymc_model.basic_RVs:
+                print(f"{random_var} : {random_var.shape.eval()}")
             idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=True,
@@ -262,6 +265,8 @@ class HBR(RegressionModel):
         else:
             self.likelihood.update_data(self.pymc_model, X, be, be_maps, Y)
         with self.pymc_model:
+            for random_var in self.pymc_model.basic_RVs:
+                print(f"{random_var} : {random_var.shape.eval()}")
             logp = pm.compute_log_likelihood(
                 self.idata,
                 var_names=["Yhat"],
@@ -342,6 +347,8 @@ class HBR(RegressionModel):
         )
         new_hbr_model_model = new_hbr_model.likelihood.compile(X, be, be_maps, Y)
         with new_hbr_model_model:
+            for random_var in self.pymc_model.basic_RVs:
+                print(f"{random_var} : {random_var.shape.eval()}")
             new_hbr_model.idata = pm.sample(
                 kwargs.get("draws", self.draws),
                 tune=kwargs.get("tune", self.tune),
