@@ -106,10 +106,8 @@ class HBR(RegressionModel):
         -------
         None
         """
-        self.pymc_model : pm.Model= self.likelihood.compile(X, be, be_maps, Y)
+        self.pymc_model : pm.Model = self.likelihood.compile(X, be, be_maps, Y)
         with self.pymc_model:
-            for random_var in self.pymc_model.basic_RVs:
-                print(f"{random_var} : {random_var.shape.eval()}")
             self.idata = pm.sample(
                 self.draws,
                 tune=self.tune,
@@ -141,43 +139,10 @@ class HBR(RegressionModel):
         xr.DataArray
             Z-values mapped to Y space
         """
-        if not self.is_fitted:
-            raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
-        if not self.pymc_model:
-            # If a model is loaded and has no model, it is created here
-            # TODO check if the predictions from the loaded model are correct
-            self.pymc_model = self.likelihood.compile(X, be, be_maps, Y)
-        else:
-            self.likelihood.update_data(self.pymc_model, X, be, be_maps, Y)
+        fn = self.likelihood.forward
+        kwargs = {"Y": np.squeeze(Y.values)[:, None]}
+        return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
 
-        if hasattr(self.idata, "posterior_predictive"):
-            del self.idata.posterior_predictive
-        if hasattr(self.idata, "constant_data"):
-            del self.idata.constant_data
-
-        with self.pymc_model:
-            for random_var in self.pymc_model.basic_RVs:
-                print(f"{random_var} : {random_var.shape.eval()}")
-            idata = pm.sample_posterior_predictive(
-                self.idata,
-                extend_inferencedata=True,
-                var_names=self.likelihood.get_var_names() + ["Yhat"],
-                progressbar=False,
-            )
-
-        var_names = self.likelihood.get_var_names()
-        post_pred = az.extract(
-            idata,
-            "posterior_predictive",
-            var_names=var_names,
-        )
-
-        n_subjects = self.pymc_model.dim_lengths["subjects"].eval().item()
-        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
-        z_mapped = xr.apply_ufunc(self.likelihood.forward, *array_of_vars, kwargs={"Y": np.squeeze(Y.values)[:, None]}).mean(
-            dim="sample"
-        )
-        return z_mapped
 
     def backward(self, X, be, be_maps, Z) -> xr.DataArray:  # type: ignore
         """
@@ -199,43 +164,46 @@ class HBR(RegressionModel):
         xr.DataArray
             Z-values mapped to Y space
         """
+        Y = xr.DataArray(np.zeros_like(Z.values), dims=Z.dims)
+        fn = self.likelihood.backward
+        kwargs = kwargs={"Z": np.squeeze(Z.values)[:, None]}
+        return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
+
+    def generic_MCMC_apply(self, X, be, be_maps, Y, fn, kwargs):
+        """
+        Apply a generic function to likelihood parameters
+        """
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
 
-        empty_y = xr.DataArray(np.zeros_like(Z.values), dims=Z.dims)
-        if not self.pymc_model:
-            self.pymc_model = self.likelihood.compile(X, be, be_maps, empty_y)
-        else:
-            self.likelihood.update_data(self.pymc_model, X, be, be_maps, empty_y)
-
-        if hasattr(self.idata, "posterior_predictive"):
+        model = self.likelihood.create_model_with_data(X, be, be_maps, Y)
+        params = self.likelihood.compile_params(model, X, be, be_maps, Y)
+        var_names = [f"{k}_per_subject" for k,_ in params.items()]
+        if hasattr(self.idata, 'posterior_predictive'):
             del self.idata.posterior_predictive
-        if hasattr(self.idata, "constant_data"):
-            del self.idata.constant_data
-
-        with self.pymc_model:
-            for random_var in self.pymc_model.basic_RVs:
-                print(f"{random_var} : {random_var.shape.eval()}")
+        with model:
+            for p, d in params.items():
+                pm.Deterministic(f"{p}_per_subject", d, dims=('subjects',))
             idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=True,
-                var_names=self.likelihood.get_var_names() + ["Yhat"],
+                var_names=var_names,
                 progressbar=False,
             )
 
-        var_names = self.likelihood.get_var_names()
         post_pred = az.extract(
             idata,
             "posterior_predictive",
             var_names=var_names,
         )
 
-        n_subjects = self.pymc_model.dim_lengths["subjects"].eval().item()
+        n_subjects = model.dim_lengths["subjects"].eval().item()
         array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
-        y_mapped = xr.apply_ufunc(self.likelihood.backward, *array_of_vars, kwargs={"Z": np.squeeze(Z.values)[:, None]}).mean(
+        result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(
             dim="sample"
-        )
-        return y_mapped
+        )       
+        return result
+
 
     def elemwise_logp(self, X, be, be_maps, Y) -> xr.DataArray:  # type: ignore
         """
@@ -265,8 +233,7 @@ class HBR(RegressionModel):
         else:
             self.likelihood.update_data(self.pymc_model, X, be, be_maps, Y)
         with self.pymc_model:
-            for random_var in self.pymc_model.basic_RVs:
-                print(f"{random_var} : {random_var.shape.eval()}")
+
             logp = pm.compute_log_likelihood(
                 self.idata,
                 var_names=["Yhat"],
@@ -285,14 +252,14 @@ class HBR(RegressionModel):
         os.makedirs(resultsdir, exist_ok=True)
         if self.is_fitted:
             if self.idata is not None:
-                az.summary(self.idata, fmt="wide", var_names=["~_samples"], filter_vars="like").to_csv(
+                az.summary(self.idata, fmt="wide", var_names=["~_per_subject"], filter_vars="like").to_csv(
                     os.path.join(resultsdir, self.name + "_summary.csv")
                 )
-                az.plot_trace(self.idata, var_names="~_samples", filter_vars="like")
+                az.plot_trace(self.idata, var_names="~_per_subject", filter_vars="like")
                 plt.tight_layout()
                 plt.savefig(os.path.join(plotdir, self.name + "_trace.png"))
                 plt.close()
-                az.plot_autocorr(self.idata, var_names="~_samples", filter_vars="like")
+                az.plot_autocorr(self.idata, var_names="~_per_subject", filter_vars="like")
                 plt.tight_layout()
                 plt.savefig(os.path.join(plotdir, self.name + "_autocorr.png"))
                 plt.close()
@@ -347,8 +314,6 @@ class HBR(RegressionModel):
         )
         new_hbr_model_model = new_hbr_model.likelihood.compile(X, be, be_maps, Y)
         with new_hbr_model_model:
-            for random_var in self.pymc_model.basic_RVs:
-                print(f"{random_var} : {random_var.shape.eval()}")
             new_hbr_model.idata = pm.sample(
                 kwargs.get("draws", self.draws),
                 tune=kwargs.get("tune", self.tune),
@@ -507,68 +472,6 @@ class HBR(RegressionModel):
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
-            # self.replace_samples_in_idata_posterior()
-
-    # def remove_samples_from_idata_posterior(self) -> None:
-    #     """
-    #     Remove sample variables from the posterior group of inference data.
-
-    #     This method removes variables ending with '_samples' from the posterior group
-    #     before saving to avoid privacy issues. The variables can be recomputed from the
-    #     model parameters. The names of removed variables are stored in idata.attrs['removed_samples'].
-
-    #     Parameters
-    #     ----------
-    #     None
-
-    #     Returns
-    #     -------
-    #     None
-
-    #     Notes
-    #     -----
-    #     This is used internally before saving the inference data to disk to reduce
-    #     storage size, since sample variables can be recomputed from the model parameters.
-    #     """
-    #     post: xr.Dataset = self.idata.posterior  # type: ignore
-    #     for name in post.variables.mapping.keys():
-    #         if str(name).endswith("_samples"):
-    #             post.drop_vars(str(name))
-    #             if "removed_samples" not in self.idata.attrs:
-    #                 self.idata.attrs["removed_samples"] = []
-    #             self.idata.attrs["removed_samples"].append(name)
-
-    # def replace_samples_in_idata_posterior(self) -> None:
-    #     """
-    #     Replace previously removed sample variables in the posterior group.
-
-    #     This method adds back placeholder arrays for variables that were removed by
-    #     remove_samples_from_idata_posterior(). The arrays are initialized with zeros
-    #     and will be populated when the model is used.
-
-    #     Parameters
-    #     ----------
-    #     None
-
-    #     Returns
-    #     -------
-    #     None
-
-    #     Notes
-    #     -----
-    #     This is used internally after loading inference data from disk to restore
-    #     the structure needed for model predictions. The actual values will be
-    #     recomputed when needed.
-    #     """
-    #     post: xr.Dataset = self.idata.posterior  # type: ignore
-    #     for name in self.idata.attrs["removed_samples"]:
-    #         post[name] = xr.DataArray(
-    #             np.zeros(post[name].shape),
-    #             dims=post[name].dims,
-    #         )
-
-    # # pylint: disable=C0116
-
 
 PM_DISTMAP = {
     "Normal": pm.Normal,
@@ -870,7 +773,7 @@ class RandomPrior(BasePrior):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ):
-        outdims = "subjects" if not self.dims else ("subjects", *self.dims)
+        # outdims = "subjects" if not self.dims else ("subjects", *self.dims)
         with model:
             self.mu.compile(model, X, be, be_maps, Y)
             if self.dims:
@@ -893,7 +796,7 @@ class RandomPrior(BasePrior):
                     dims=be_dims,
                 )
                 acc += self.scaled_offsets[be_i][model[f"{be_i}_data"]]
-            self.dist = pm.Deterministic(self.name, acc, dims=outdims)
+            self.dist = acc
         return self.dist
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "RandomPrior":
@@ -1169,7 +1072,12 @@ class Likelihood(ABC):
         self.name = name
 
     def compile(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> pm.Model:
-        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values}
+        model = self.create_model_with_data(X, be, be_maps, Y)
+        self._compile(model, X, be, be_maps, Y)
+        return model
+    
+    def create_model_with_data(self, X, be, be_maps, Y) -> pm.Model:
+        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values, 'subjects': X.coords['subjects'].values}
         for _be, _map in be_maps.items():
             coords[_be] = [k for k in sorted(_map.keys(), key=(lambda v: _map[v]))]
 
@@ -1179,11 +1087,9 @@ class Likelihood(ABC):
                 pm.Data(
                     f"{be_name}_data",
                     be.sel(batch_effect_dims=be_name).values,
-                    coords={"subjects": be.coords["subjects"].values},
+                    dims=("subjects",),
                 )
             pm.Data("Y", Y.values, dims=("subjects",))
-
-        self._compile(model, X, be, be_maps, Y)
         return model
 
     def update_data(
@@ -1218,6 +1124,18 @@ class Likelihood(ABC):
         Y: xr.DataArray,
     ) -> pm.Model:
         pass
+
+    @abstractmethod
+    def compile_params(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> pm.Model:
+        pass
+
 
     @abstractmethod
     def forward(self, *args, **kwargs):
@@ -1276,10 +1194,6 @@ class Likelihood(ABC):
         pass
 
     @abstractmethod
-    def get_var_names(self) -> List[str]:
-        pass
-
-    @abstractmethod
     def has_random_effect(self) -> bool:
         pass
 
@@ -1300,13 +1214,20 @@ class NormalLikelihood(Likelihood):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ) -> pm.Model:
+        compiled_params = self.compile_params(model, X, be, be_maps, Y)
         with model:
-            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
-            sigma_samples = self.sigma.compile(model, X, be, be_maps, Y)
-            mu_samples = pm.Deterministic("mu_samples", mu_samples, dims=self.mu.sample_dims)
-            sigma_samples = pm.Deterministic("sigma_samples", sigma_samples, dims=self.sigma.sample_dims)
-            pm.Normal("Yhat", mu=mu_samples, sigma=sigma_samples, observed=model["Y"], dims="subjects")
+            pm.Normal("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
         return model
+    
+    def compile_params(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> pm.Model:
+        return {"mu":self.mu.compile(model, X, be, be_maps, Y), "sigma":self.sigma.compile(model, X, be, be_maps, Y)}
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
@@ -1339,9 +1260,6 @@ class NormalLikelihood(Likelihood):
     @classmethod
     def _from_args(cls, args: Dict[str, Any]) -> "NormalLikelihood":
         return cls(mu=prior_from_args("mu", args), sigma=prior_from_args("sigma", args))
-
-    def get_var_names(self) -> List[str]:
-        return ["mu_samples", "sigma_samples"]
 
     def has_random_effect(self) -> bool:
         return self.mu.has_random_effect or self.sigma.has_random_effect

@@ -349,7 +349,7 @@ class NormativeModel:
         if centiles_already_computed:
             if not kwargs.get("recompute", False):
                 if all([c in data.centile.values for c in centiles]):
-                    Output.warning(Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, centiles=centiles)
+                    Output.warning(Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, dataset_name = data.attrs['name'], centiles=centiles)
                     return data
             data = data.drop_vars(["centiles"])
             data = data.drop_dims(["centile"])
