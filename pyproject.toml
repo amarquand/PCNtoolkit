@@ -1,47 +1,66 @@
-[tool.poetry]
+[project]
 name = "pcntoolkit"
 version = "1.0.0-alpha"
 description = "Predictive Clinical Neuroscience Toolkit"
-authors = ["Andre Marquand"]
-license = "GNU GPLv3"
+keywords = ["neuroscience", "machine learning", "clinical neuroscience", "predictive modeling", "clinical prediction", "normative modelling"]
+authors = [
+    {name = "Andre Marquand"},
+    {name = "Stijn de Boer"},
+    {name = "Seyed Mostafa Kia"},
+    {name = "Thomas Wolfers"},
+    {name = "Johanna Bayer"},
+    {name = "Charlotte Fraza"},
+    {name = "Saige Rutherford"},
+    {name = "Pierre Berthet"},
+    {name = "Maarten Mennes"},
+    {name = "Hester Huijsdens"},
+    {name = "Linden Parkes"},
+]
+maintainers = [
+    {name = "Andre Marquand"},
+    {name = "Stijn de Boer"},
+]
+license = {text = "GNU GPLv3"}
 readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "nibabel>=5.3.1",
+    "numpy>=1.26.4,<2.0.0",
+    "pymc>=5.19.1",
+    "scikit-learn>=1.5.2",
+    "six>=1.16.0",
+    "scipy>=1.12",
+    "matplotlib>=3.9.2",
+    "seaborn>=0.13.2",
+    "numba>=0.60.0",
+    "torch>=2.1.1",
+    "nutpie>=0.13.2",
+    "joblib>=1.4.2",
+    "dill>=0.3.9",
+    "ipywidgets>=8.1.5",
+    "ipykernel>=6.29.5"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-nibabel = "^5.3.1"          
-numpy = "^1.26.4"    
-pymc = "^5.19.1"              
-scikit-learn = "^1.5.2"      
-six = "^1.16.0"          
-scipy = "^1.12"
-matplotlib = "^3.9.2"
-seaborn = "^0.13.2"
-numba = "^0.60.0"
-torch = ">=2.1.1"
-nutpie = "^0.13.2"
-joblib = "^1.4.2"
-dill = "^0.3.9"
+[project.optional-dependencies]
+dev = [
+    "sphinx-tabs>=3.4.7",
+    "pytest>=8.3.3",
+    "black>=24.10.0",
+    "sphinx-rtd-theme>=3.0.2",
+    "ruff>=0.8.6",
+    "pytest-cov>=6.0.0",
+]   
 
-
-[tool.poetry.group.dev.dependencies]
-sphinx-tabs = "^3.4.7"
-pytest = "^8.3.3"
-ipywidgets = "^8.1.5"
-black = "^24.10.0"
-ipykernel = "^6.29.5"
-sphinx-rtd-theme = "^3.0.2"
-ruff = "^0.8.6"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[requires-python]
-python_version = ">=3.10,<3.13"
-
-[tool.poetry.scripts]
+[project.scripts]
 normative = "pcntoolkit.normative:entrypoint"
 
+[project.urls]
+Documentation = "https://pcntoolkit.readthedocs.io/en/latest/"
+Source = "https://github.com/amarquand/PCNtoolkit"
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
