@@ -451,32 +451,6 @@ class Evaluator:
         mape = np.abs((y - yhat) / y).mean()
         return float(mape)
 
-
-    # def mace(nm, x_test, y_test, be_test, quantiles=[0.05, 0.25, 0.5, 0.75, 0.95], plot=False):
-    #     """
-    #     Calculate Mean Absolute Centile Error.
-    #     """
-        
-    #     # Get the quantiles of the normal distribution
-    #     z_scores = stats.norm.ppf(quantiles)
-    #     # Get the unique batch ids
-    #     batch_ids = np.unique(be_test)    
-    #     # Initialize the batch mace
-    #     batch_mace = np.zeros([len(batch_ids),])
-
-    #     for b, batch_id in enumerate(batch_ids):
-    #         # Get the model predictions for the batch
-    #         model_be = np.repeat(np.array([[batch_id]]), x_test[be_test==batch_id,:].shape[0])
-    #         # Get the centiles for the batch
-    #         mcmc_quantiles = nm.get_mcmc_quantiles(x_test[be_test==batch_id,:], model_be, z_scores=z_scores).T
-    #         # Compute the empirical quantile
-    #         empirical_quantile = (mcmc_quantiles >= y_test[be_test==batch_id,0:1]).mean(axis=0)
-    #         # Calculate the mace for the batch
-    #         batch_mace[b] = np.abs((np.array(quantiles) - empirical_quantile)).mean()
-            
-        
-    #     return batch_mace.mean()
-
     def empty_statistic(self) -> xr.DataArray:
         return xr.DataArray(
             np.zeros(len(self.response_vars)),
