@@ -106,7 +106,7 @@ class HBR(RegressionModel):
         -------
         None
         """
-        self.pymc_model : pm.Model = self.likelihood.compile(X, be, be_maps, Y)
+        self.pymc_model: pm.Model = self.likelihood.compile(X, be, be_maps, Y)
         with self.pymc_model:
             self.idata = pm.sample(
                 self.draws,
@@ -143,7 +143,6 @@ class HBR(RegressionModel):
         kwargs = {"Y": np.squeeze(Y.values)[:, None]}
         return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
 
-
     def backward(self, X, be, be_maps, Z) -> xr.DataArray:  # type: ignore
         """
         Map Z values to Y space using MCMC samples
@@ -166,7 +165,7 @@ class HBR(RegressionModel):
         """
         Y = xr.DataArray(np.zeros_like(Z.values), dims=Z.dims)
         fn = self.likelihood.backward
-        kwargs = kwargs={"Z": np.squeeze(Z.values)[:, None]}
+        kwargs = kwargs = {"Z": np.squeeze(Z.values)[:, None]}
         return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
 
     def generic_MCMC_apply(self, X, be, be_maps, Y, fn, kwargs):
@@ -178,12 +177,12 @@ class HBR(RegressionModel):
 
         model = self.likelihood.create_model_with_data(X, be, be_maps, Y)
         params = self.likelihood.compile_params(model, X, be, be_maps, Y)
-        var_names = [f"{k}_per_subject" for k,_ in params.items()]
-        if hasattr(self.idata, 'posterior_predictive'):
+        var_names = [f"{k}_per_subject" for k, _ in params.items()]
+        if hasattr(self.idata, "posterior_predictive"):
             del self.idata.posterior_predictive
         with model:
-            for p, d in params.items():
-                pm.Deterministic(f"{p}_per_subject", d, dims=('subjects',))
+            for param_name, (value, dims) in params.items():
+                pm.Deterministic(f"{param_name}_per_subject", value, dims=dims)
             idata = pm.sample_posterior_predictive(
                 self.idata,
                 extend_inferencedata=True,
@@ -199,11 +198,8 @@ class HBR(RegressionModel):
 
         n_subjects = model.dim_lengths["subjects"].eval().item()
         array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
-        result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(
-            dim="sample"
-        )       
+        result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(dim="sample")
         return result
-
 
     def elemwise_logp(self, X, be, be_maps, Y) -> xr.DataArray:  # type: ignore
         """
@@ -233,7 +229,6 @@ class HBR(RegressionModel):
         else:
             self.likelihood.update_data(self.pymc_model, X, be, be_maps, Y)
         with self.pymc_model:
-
             logp = pm.compute_log_likelihood(
                 self.idata,
                 var_names=["Yhat"],
@@ -472,6 +467,7 @@ class HBR(RegressionModel):
                 self.idata = az.from_netcdf(path)
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
+
 
 PM_DISTMAP = {
     "Normal": pm.Normal,
@@ -885,7 +881,7 @@ class LinearPrior(BasePrior):
 
     def _compile(self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray):
         if not self.basis_function.is_fitted:
-            self.basis_function.fit(X.values) # Do this indexing to avoid ordering issues
+            self.basis_function.fit(X.values)  # Do this indexing to avoid ordering issues
         mapped_X = self.basis_function.transform(X.values)
         covs = f"{self.name}_covariates"
         self.covariate_dims = [f"{covs}_{i}" for i in range(mapped_X.shape[1])]
@@ -1075,9 +1071,9 @@ class Likelihood(ABC):
         model = self.create_model_with_data(X, be, be_maps, Y)
         self._compile(model, X, be, be_maps, Y)
         return model
-    
+
     def create_model_with_data(self, X, be, be_maps, Y) -> pm.Model:
-        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values, 'subjects': X.coords['subjects'].values}
+        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values, "subjects": X.coords["subjects"].values}
         for _be, _map in be_maps.items():
             coords[_be] = [k for k in sorted(_map.keys(), key=(lambda v: _map[v]))]
 
@@ -1135,7 +1131,6 @@ class Likelihood(ABC):
         Y: xr.DataArray,
     ) -> dict[str, Any]:
         pass
-
 
     @abstractmethod
     def forward(self, *args, **kwargs):
@@ -1215,10 +1210,11 @@ class NormalLikelihood(Likelihood):
         Y: xr.DataArray,
     ) -> pm.Model:
         compiled_params = self.compile_params(model, X, be, be_maps, Y)
+        compiled_params = {k: v[0] for k, v in compiled_params.items()}
         with model:
             pm.Normal("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
         return model
-    
+
     def compile_params(
         self,
         model: pm.Model,
@@ -1227,7 +1223,10 @@ class NormalLikelihood(Likelihood):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ) -> dict[str, Any]:
-        return {"mu":self.mu.compile(model, X, be, be_maps, Y), "sigma":self.sigma.compile(model, X, be, be_maps, Y)}
+        return {
+            "mu": (self.mu.compile(model, X, be, be_maps, Y), self.mu.sample_dims),
+            "sigma": (self.sigma.compile(model, X, be, be_maps, Y), self.sigma.sample_dims),
+        }
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
@@ -1286,10 +1285,11 @@ class SHASHbLikelihood(Likelihood):
         Y: xr.DataArray,
     ) -> pm.Model:
         compiled_params = self.compile_params(model, X, be, be_maps, Y)
+        compiled_params = {k: v[0] for k, v in compiled_params.items()}
         with model:
             SHASHb("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
         return model
-    
+
     def compile_params(
         self,
         model: pm.Model,
@@ -1298,8 +1298,12 @@ class SHASHbLikelihood(Likelihood):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ) -> dict[str, Any]:
-        return {"mu":self.mu.compile(model, X, be, be_maps, Y), "sigma":self.sigma.compile(model, X, be, be_maps, Y), "epsilon":self.epsilon.compile(model, X, be, be_maps, Y), "delta":self.delta.compile(model, X, be, be_maps, Y)}
-
+        return {
+            "mu": (self.mu.compile(model, X, be, be_maps, Y), self.mu.sample_dims),
+            "sigma": (self.sigma.compile(model, X, be, be_maps, Y), self.sigma.sample_dims),
+            "epsilon": (self.epsilon.compile(model, X, be, be_maps, Y), self.epsilon.sample_dims),
+            "delta": (self.delta.compile(model, X, be, be_maps, Y), self.delta.sample_dims),
+        }
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "SHASHbLikelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
@@ -1507,7 +1511,7 @@ class SHASHo2Likelihood(Likelihood):
                 dims="subjects",
             )
         return model
-    
+
     def has_random_effect(self) -> bool:
         return (
             self.mu.has_random_effect
@@ -1593,7 +1597,7 @@ class BetaLikelihood(Likelihood):
                 dims="subjects",
             )
         return model
-    
+
     def forward(self, *args, **kwargs):
         alpha, beta = args
         Y = kwargs.get("Y", None)
