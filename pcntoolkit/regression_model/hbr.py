@@ -1133,7 +1133,7 @@ class Likelihood(ABC):
         be: xr.DataArray,
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
-    ) -> pm.Model:
+    ) -> dict[str, Any]:
         pass
 
 
@@ -1226,7 +1226,7 @@ class NormalLikelihood(Likelihood):
         be: xr.DataArray,
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
-    ) -> pm.Model:
+    ) -> dict[str, Any]:
         return {"mu":self.mu.compile(model, X, be, be_maps, Y), "sigma":self.sigma.compile(model, X, be, be_maps, Y)}
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
@@ -1285,25 +1285,21 @@ class SHASHbLikelihood(Likelihood):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ) -> pm.Model:
+        compiled_params = self.compile_params(model, X, be, be_maps, Y)
         with model:
-            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
-            sigma_samples = self.sigma.compile(model, X, be, be_maps, Y)
-            epsilon_samples = self.epsilon.compile(model, X, be, be_maps, Y)
-            delta_samples = self.delta.compile(model, X, be, be_maps, Y)
-            mu_samples = pm.Deterministic("mu_samples", mu_samples, dims=self.mu.sample_dims)
-            sigma_samples = pm.Deterministic("sigma_samples", sigma_samples, dims=self.sigma.sample_dims)
-            epsilon_samples = pm.Deterministic("epsilon_samples", epsilon_samples, dims=self.epsilon.sample_dims)
-            delta_samples = pm.Deterministic("delta_samples", delta_samples, dims=self.delta.sample_dims)
-            SHASHb(
-                "Yhat",
-                mu=mu_samples,
-                sigma=sigma_samples,
-                epsilon=epsilon_samples,
-                delta=delta_samples,
-                observed=model["Y"],
-                dims="subjects",
-            )
+            SHASHb("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
         return model
+    
+    def compile_params(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> dict[str, Any]:
+        return {"mu":self.mu.compile(model, X, be, be_maps, Y), "sigma":self.sigma.compile(model, X, be, be_maps, Y), "epsilon":self.epsilon.compile(model, X, be, be_maps, Y), "delta":self.delta.compile(model, X, be, be_maps, Y)}
+
 
     def transfer(self, idata: az.InferenceData, **kwargs) -> "SHASHbLikelihood":
         new_mu = self.mu.transfer(idata, **kwargs)

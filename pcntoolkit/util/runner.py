@@ -150,15 +150,24 @@ class Runner:
         else:
             return self.load_model(into=into)
 
-    def set_unique_temp_and_log_dir(self):
+    def set_task_id(self, task_name: str , model: NormativeModel, data: NormData):
+        unique_id = ""
+        if task_name is not None:
+            unique_id = task_name + "_"
+        if model.name is not None:
+            unique_id = unique_id + model.name + "_"
+        if data.name is not None:
+            unique_id = unique_id + data.name + "_"
         milliseconds = time.time() * 1000 % 1000
         milliseconds = f"{milliseconds:03f}"
-        self.task_id = time.strftime("%Y-%m-%d_%H:%M:%S") + "_" + milliseconds
+        self.task_id = unique_id + "_" + time.strftime("%Y-%m-%d_%H:%M:%S") + "_" + milliseconds
+        Output.print(Messages.TASK_ID_CREATED, task_id=self.task_id)
+
+    def create_temp_and_log_dir(self):
         self.unique_temp_dir = os.path.join(self.temp_dir, self.task_id)
         self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
         os.makedirs(self.unique_temp_dir, exist_ok=True)
         os.makedirs(self.unique_log_dir, exist_ok=True)
-        Output.print(Messages.TASK_TIMESTAMP_CREATED, timestamp=self.task_id)
         Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
         Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
 
@@ -185,7 +194,8 @@ class Runner:
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("fit",model, data)
+        self.create_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         return self.wait_or_finish(observe,into=model)
@@ -222,7 +232,8 @@ class Runner:
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("fit_predict",model, fit_data)
+        self.create_temp_and_log_dir()
         fn = self.get_fit_predict_chunk_fn(model, save_dir)
         self.submit_jobs(
             fn,
@@ -254,7 +265,8 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("predict",model, data)
+        self.create_temp_and_log_dir()
         fn = self.get_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
         self.wait_or_finish(observe)
@@ -285,7 +297,8 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("transfer",model, data)
+        self.create_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
         return self.wait_or_finish(observe)
@@ -323,7 +336,8 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("transfer_predict",model, fit_data)
+        self.create_temp_and_log_dir()
         fn = self.get_transfer_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         return self.wait_or_finish(observe)
@@ -354,7 +368,8 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("extend",model, data)
+        self.create_temp_and_log_dir()
         fn = self.get_extend_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
         return self.wait_or_finish(observe)
@@ -392,7 +407,8 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_unique_temp_and_log_dir()
+        self.set_task_id("extend_predict",model, fit_data)
+        self.create_temp_and_log_dir()
         fn = self.get_extend_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
         return self.wait_or_finish(observe)
@@ -651,7 +667,7 @@ class Runner:
             self.job_commands.clear()
 
             for i, (first_chunk, second_chunk) in enumerate(zip(first_chunks, second_chunks)):
-                job_name = f"ptk_job_{i}"
+                job_name = f"{self.task_id}_job_{i}"
                 if mode == "unary":
                     chunk_tuple = (first_chunk,)
                 else:
@@ -707,9 +723,16 @@ class Runner:
 #SBATCH --error={err_file}
 #SBATCH --output={out_file}
 
+
 {self.preamble}
 source activate {self.environment}
-PYTHONBUFFERED=1 python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
+# Force Python to use unbuffered output
+export PYTHONUNBUFFERED=1
+# Force stdout/stderr to be unbuffered
+exec 1> >(tee -a {out_file})
+exec 2> >(tee -a {err_file})
+python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
+
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
     touch {success_file}
@@ -770,6 +793,7 @@ exit $exit_code
             "active_jobs": self.active_jobs,
             "log_dir": self.log_dir,
             "temp_dir": self.temp_dir,
+            "task_id": self.task_id,
             "unique_log_dir": self.unique_log_dir,
             "unique_temp_dir": self.unique_temp_dir,
             "job_type": self.job_type,
@@ -803,13 +827,13 @@ exit $exit_code
             state = json.load(f)
 
         runner = cls(job_type=state["job_type"], n_jobs=state["n_jobs"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
+        runner.task_id = state["task_id"]
         runner.unique_log_dir = state["unique_log_dir"]
         runner.unique_temp_dir = state["unique_temp_dir"]
         runner.save_dir = state["save_dir"]
         runner.job_commands = state["job_commands"]
         runner.active_jobs = state["active_jobs"]
         runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
-
         Output.print(
             Messages.RUNNER_LOADED,
             n_active_jobs=len(runner.active_jobs),

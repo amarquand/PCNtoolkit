@@ -61,7 +61,6 @@ def load_fcon1000(n_response_vars=None,n_largest_sites=None):
     )
     return norm_data
 
-
 def load_lifespan_big(n_response_vars=None, n_largest_sites=None, n_subjects=None):
     subject_ids = ['participant_id']
     covariates = ['age']
@@ -220,7 +219,9 @@ def main():
         ),
     )
 
+
     model = NormativeModel(
+        name = "SHASHb2",
         template_regression_model=template_hbr,
         # Whether to save the model after fitting.
         savemodel=True,
@@ -231,7 +232,7 @@ def main():
         # Whether to save the plots after fitting.
         saveplots=True,
         # The directory to save the model, results, and plots.
-        save_dir=os.path.join(resource_dir, f"hbr_SHASHb2_{data}/save_dir"),
+        save_dir=os.path.join(resource_dir, f"testmodel_{data}/save_dir"),
         # The scaler to use for the input data. Can be either one of "standardize", "minmax", "robustminmax", "none"
         inscaler="standardize",
         # The scaler to use for the output data. Can be either one of "standardize", "minmax", "robustminmax", "none"
@@ -242,12 +243,12 @@ def main():
         cross_validate=False,
         parallelize=True,
         environment=conda_env_path,
-        job_type="torque",  # or "torque" if you are on a torque cluster
-        n_jobs=100,
-        time_limit="30:00:00",
+        job_type="slurm",  # or "torque" if you are on a torque cluster
+        n_jobs=4,
+        time_limit="50:00:00",
         memory="16GB",
         n_cores=16,
-        max_retries=10,
+        max_retries=3,
         log_dir=os.path.join(resource_dir, "runner_output/log_dir"),
         temp_dir=os.path.join(resource_dir, "runner_output/temp_dir"),
     )

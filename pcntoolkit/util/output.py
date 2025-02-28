@@ -68,7 +68,7 @@ Total failed jobs: {total_failed_jobs}
         "Failed jobs: {n_failed_jobs}\n"
         "---------------------------------------------------------"
     )
-    TASK_TIMESTAMP_CREATED = "Task ID created: {timestamp}"
+    TASK_ID_CREATED = "Task ID created: {task_id}"
     LOG_DIR_CREATED = "Log directory created:\n\t{log_dir}"
     TEMP_DIR_CREATED = "Temporary directory created:\n\t{temp_dir}"
     HARMONIZING_DATA = "Harmonizing data on {n_models} response variables."
