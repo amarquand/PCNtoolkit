@@ -59,7 +59,7 @@ class NormativeModel:
         save_dir: str = "./saves",
         inscaler: str = "none",
         outscaler: str = "none",
-        normative_model_name: Optional[str] = None,
+        name: Optional[str] = None,
     ):
         self.savemodel: bool = savemodel
         self.evaluate_model: bool = evaluate_model
@@ -68,7 +68,7 @@ class NormativeModel:
         self.save_dir: str = save_dir
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
-        self.normative_model_name: Optional[str] = normative_model_name
+        self.name: Optional[str] = name
         self.response_vars: list[str] = None  # type: ignore
         self.template_regression_model: RegressionModel = template_regression_model
         self.regression_models: dict[str, RegressionModel] = {}
@@ -784,7 +784,7 @@ class NormativeModel:
             "saveresults": self.saveresults,
             "saveplots": self.saveplots,
             "evaluate_model": self.evaluate_model,
-            "normative_model_name": self.normative_model_name,
+            "normative_model_name": self.name,
             "template_regression_model": self.template_regression_model.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
             "is_fitted": self.is_fitted,
