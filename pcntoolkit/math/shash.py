@@ -100,66 +100,17 @@ def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArr
 
 
 class KnuOp(BinaryScalarOp):
-    """Modified Bessel function of the second kind, PyTensor wrapper for scipy.special.kv.
-
-    This class implements a PyTensor operation for computing the modified Bessel function
-    of the second kind (K_nu(x)). It wraps scipy.special.kv to provide automatic
-    differentiation capabilities within PyTensor computational graphs.
-
-    Parameters
-    ----------
-    dtype_converter : callable
-        Function to convert input types (typically upgrade_to_float)
-    name : str
-        Name of the operation
-
-    Notes
-    -----
-    The modified Bessel function K_nu(x) is a solution to the modified Bessel
-    differential equation. This implementation supports automatic differentiation
-    with respect to both the order (nu) and the argument (x).
-
-    See Also
-    --------
-    scipy.special.kv : The underlying modified Bessel function implementation
-    KnuPrimeOp : Derivative of the modified Bessel function
-    """
+   
 
     nfunc_spec = ("scipy.special.kv", 2, 1)
 
     @staticmethod
     def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
-        """Static implementation of the modified Bessel function.
-
-        Parameters
-        ----------
-        p : float or int
-            Order of the modified Bessel function
-        x : float or int
-            Argument where the function is evaluated
-
-        Returns
-        -------
-        float
-            Value of the modified Bessel function K_p(x)
-        """
+     
         return spp.kv(p, x)
 
     def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
-        """Implementation of the modified Bessel function.
-
-        Parameters
-        ----------
-        p : float or int
-            Order of the modified Bessel function
-        x : float or int
-            Argument where the function is evaluated
-
-        Returns
-        -------
-        float
-            Value of the modified Bessel function K_p(x)
-        """
+       
         return KnuOp.st_impl(p, x)
 
     def grad(
@@ -167,25 +118,7 @@ class KnuOp(BinaryScalarOp):
         inputs: Sequence[Variable[Any, Any]],
         output_gradients: Sequence[Variable[Any, Any]],
     ) -> List[Variable]:
-        """Compute gradients of the modified Bessel function.
-
-        Parameters
-        ----------
-        inputs : list of Variables
-            List containing the order (p) and argument (x)
-        output_grads : list of Variables
-            List containing the gradient with respect to the output
-
-        Returns
-        -------
-        list of Variables
-            Gradients with respect to p and x
-
-        Notes
-        -----
-        The gradient with respect to p is computed using finite differences
-        due to the lack of a closed-form expression.
-        """
+   
         dp = 1e-16
         (p, x) = inputs
         (gz,) = output_gradients
@@ -194,72 +127,20 @@ class KnuOp(BinaryScalarOp):
         return [gz * dfdp, gz * knupop(p, x)]  # type: ignore
 
 class KnuPrimeOp(BinaryScalarOp):
-    """Derivative of the modified Bessel function of the second kind.
-
-    This class implements a PyTensor operation for computing the derivative of the
-    modified Bessel function of the second kind with respect to its argument.
-    It wraps scipy.special.kvp.
-
-    Parameters
-    ----------
-    dtype_converter : callable
-        Function to convert input types (typically upgrade_to_float)
-    name : str
-        Name of the operation
-    """
 
     nfunc_spec = ("scipy.special.kvp", 2, 1)
 
     @staticmethod
     def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
-        """Static implementation of the Bessel function derivative.
 
-        Parameters
-        ----------
-        p : float or int
-            Order of the modified Bessel function
-        x : float or int
-            Argument where the derivative is evaluated
-
-        Returns
-        -------
-        float
-            Value of the derivative K'_p(x)
-        """
         return spp.kvp(p, x)
 
     def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
-        """Implementation of the Bessel function derivative.
 
-        Parameters
-        ----------
-        p : float or int
-            Order of the modified Bessel function
-        x : float or int
-            Argument where the derivative is evaluated
-
-        Returns
-        -------
-        float
-            Value of the derivative K'_p(x)
-        """
         return KnuPrimeOp.st_impl(p, x)
 
     def grad(self, inputs: Sequence[Variable[Any, Any]], grads: Sequence[Variable[Any, Any]]) -> List[Variable]:
-        """Compute gradients of the Bessel function derivative.
 
-        Parameters
-        ----------
-        inputs : list of Variables
-            List containing the order (p) and argument (x)
-        grads : list of Variables
-            List containing the gradient with respect to the output
-
-        Returns
-        -------
-        list of Variables
-            Gradients with respect to p and x (not implemented)
-        """
         return [grad_not_implemented(self, 0, "p"), grad_not_implemented(self, 1, "x")]
 
 
@@ -271,25 +152,14 @@ knupop = KnuPrimeOp(upgrade_to_float, name="knupop")
 ##### Constants #####
 
 CONST1 = np.exp(0.25) / np.power(8.0 * np.pi, 0.5)
-"""Constant used in P function calculations."""
 
 CONST2 = -np.log(2 * np.pi) / 2
-"""Constant used in log-probability calculations."""
 
 
 ##### SHASH Distributions #####
 
 class SHASHrv(RandomVariable):
-    """Random variable class for the base SHASH distribution.
 
-    This class implements sampling from the basic SHASH distribution
-    without location and scale parameters.
-
-    Notes
-    -----
-    The base SHASH distribution is obtained by applying the sinh-arcsinh
-    transformation to a standard normal distribution.
-    """
 
     name = "shash"
     signature = "(),()->()"
@@ -304,24 +174,7 @@ class SHASHrv(RandomVariable):
         delta: float,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-        """Generate random samples from the base SHASH distribution.
-
-        Parameters
-        ----------
-        rng : Generator
-            NumPy random number generator
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-        size : int or tuple of ints, optional
-            Output shape. Default is None.
-
-        Returns
-        -------
-        NDArray[np.float64]
-            Array of random samples from the distribution
-        """
+      
         return np.sinh((np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta)
 
 
@@ -329,18 +182,6 @@ shash = SHASHrv()
 
 
 class SHASH(Continuous):
-    """Sinh-arcsinh distribution based on standard normal.
-
-    A flexible distribution family that extends the normal distribution by adding
-    skewness and kurtosis parameters while maintaining many desirable properties.
-
-    Parameters
-    ----------
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-    """
 
     rv_op = shash
     my_K = Elemwise(knuop)
@@ -348,18 +189,7 @@ class SHASH(Continuous):
     @staticmethod
     @lru_cache(maxsize=128)
     def P(q: float) -> float:
-        """The P function as given in Jones et al.
 
-        Parameters
-        ----------
-        q : float
-            Input parameter for the P function
-
-        Returns
-        -------
-        float
-            Result of the P function computation
-        """
         K1 = SHASH.my_K((q + 1) / 2, 0.25)
         K2 = SHASH.my_K((q - 1) / 2, 0.25)
         a: Variable[Any, Any] = (K1 + K2) * CONST1  # type: ignore
@@ -367,66 +197,17 @@ class SHASH(Continuous):
 
     @staticmethod
     def m1(epsilon: float, delta: float) -> float:
-        """The first moment of the SHASH distribution parametrized by epsilon and delta.
 
-        Parameters
-        ----------
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            First moment of the SHASH distribution
-        """
         return np.sinh(epsilon / delta) * SHASH.P(1 / delta)
 
     @staticmethod
     def m2(epsilon: float, delta: float) -> float:
-        """The second moment of the SHASH distribution parametrized by epsilon and delta.
 
-        Parameters
-        ----------
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            Second moment of the SHASH distribution
-        """
         return (np.cosh(2 * epsilon / delta) * SHASH.P(2 / delta) - 1) / 2
 
     @staticmethod
     def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
-        """Compute both first and second moments of the SHASH distribution.
 
-        This method efficiently calculates both moments together to avoid redundant
-        computations of the P function.
-
-        Parameters
-        ----------
-        epsilon : float
-            Skewness parameter controlling distribution asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        mean : float
-            First moment (mean) of the distribution
-        var : float
-            Second central moment (variance) of the distribution
-
-        Notes
-        -----
-        This method is more efficient than calling m1() and m2() separately
-        as it reuses intermediate calculations.
-        """
         inv_delta = 1.0 / delta
         two_inv_delta = 2.0 * inv_delta
         p1 = SHASH.P(inv_delta)
@@ -441,43 +222,13 @@ class SHASH(Continuous):
 
     @classmethod
     def dist(cls, epsilon: pt.TensorLike, delta: pt.TensorLike, **kwargs: Any) -> Any:
-        """Create a SHASH distribution with given parameters.
 
-        Parameters
-        ----------
-        epsilon : TensorLike
-            Skewness parameter controlling distribution asymmetry
-        delta : TensorLike
-            Kurtosis parameter controlling tail weight
-        **kwargs : dict
-            Additional arguments passed to the distribution constructor
-
-        Returns
-        -------
-        SHASH
-            A SHASH distribution instance
-        """
         epsilon = as_tensor_variable(floatX(epsilon))
         delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
     def logp(value: ArrayLike, epsilon: float, delta: float) -> float:  # type: ignore
-        """Calculate the log probability density of the SHASH distribution.
 
-        Parameters
-        ----------
-        value : array_like
-            Points at which to evaluate the log probability density
-        epsilon : float
-            Skewness parameter controlling distribution asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            Log probability density at the specified points
-        """
         this_S = S(value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
@@ -487,16 +238,6 @@ class SHASH(Continuous):
 
 
 class SHASHoRV(RandomVariable):
-    """Random variable class for the location-scale SHASH distribution.
-
-    This class implements sampling from a SHASH distribution that has been
-    transformed to include location (mu) and scale (sigma) parameters.
-
-    Notes
-    -----
-    The transformation is y = sigma * x + mu, where x follows the base SHASH
-    distribution with parameters epsilon and delta.
-    """
 
     name = "shasho"
     signature = "(),(),(),()->()"
@@ -513,28 +254,7 @@ class SHASHoRV(RandomVariable):
         delta: pt.TensorLike,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-        """Generate random samples from the location-scale SHASH distribution.
 
-        Parameters
-        ----------
-        rng : Generator
-            NumPy random number generator
-        mu : TensorLike
-            Location parameter (mean)
-        sigma : TensorLike
-            Scale parameter (standard deviation)
-        epsilon : TensorLike
-            Skewness parameter
-        delta : TensorLike
-            Kurtosis parameter
-        size : int or tuple of ints, optional
-            Output shape. Default is None.
-
-        Returns
-        -------
-        NDArray[np.float64]
-            Array of random samples from the distribution
-        """
         s = rng.normal(size=size)
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu  # type: ignore
 
@@ -543,27 +263,6 @@ shasho = SHASHoRV()
 
 
 class SHASHo(Continuous):
-    """Location-scale variant of the SHASH distribution.
-
-    This distribution extends the base SHASH distribution by adding
-    location (mu) and scale (sigma) parameters.
-
-    Parameters
-    ----------
-    mu : float
-        Location parameter (mean)
-    sigma : float
-        Scale parameter (standard deviation)
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-
-    Notes
-    -----
-    The distribution is obtained by applying the transformation
-    Y = mu + sigma * X where X follows the base SHASH distribution.
-    """
 
     rv_op = shasho
 
@@ -576,26 +275,7 @@ class SHASHo(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-        """Create a SHASHo distribution with given parameters.
 
-        Parameters
-        ----------
-        mu : TensorLike
-            Location parameter (mean)
-        sigma : TensorLike
-            Scale parameter (standard deviation)
-        epsilon : TensorLike
-            Skewness parameter controlling asymmetry
-        delta : TensorLike
-            Kurtosis parameter controlling tail weight
-        **kwargs : dict
-            Additional arguments passed to the distribution constructor
-
-        Returns
-        -------
-        SHASHo
-            A location-scale SHASH distribution instance
-        """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -609,26 +289,7 @@ class SHASHo(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-        """Calculate the log probability density of the SHASHo distribution.
 
-        Parameters
-        ----------
-        value : array_like
-            Points at which to evaluate the log probability density
-        mu : float
-            Location parameter (mean)
-        sigma : float
-            Scale parameter (standard deviation)
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            Log probability density at the specified points
-        """
         remapped_value = (value - mu) / sigma  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
@@ -639,16 +300,6 @@ class SHASHo(Continuous):
 
 
 class SHASHo2RV(RandomVariable):
-    """Random variable class for the alternative parameterization of SHASH distribution.
-
-    This class implements sampling from a SHASH distribution where the scale parameter
-    is adjusted by the kurtosis parameter (sigma/delta).
-
-    Notes
-    -----
-    The transformation is y = (sigma/delta) * x + mu, where x follows the base SHASH
-    distribution with parameters epsilon and delta.
-    """
 
     name = "shasho2"
     signature = "(),(),(),()->()"
@@ -665,29 +316,7 @@ class SHASHo2RV(RandomVariable):
         delta: pt.TensorLike,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-        """Generate random samples from the alternative parameterization SHASH distribution.
 
-        Parameters
-        ----------
-        rng : Generator
-            NumPy random number generator
-        mu : TensorLike
-            Location parameter (mean)
-        sigma : TensorLike
-            Scale parameter (before delta adjustment)
-        epsilon : TensorLike
-            Skewness parameter
-        delta : TensorLike
-            Kurtosis parameter
-        size : int or tuple of ints, optional
-            Output shape. Default is None.
-
-        Returns
-        -------
-        NDArray[np.float64]
-            Array of random samples from the distribution
-
-        """
         s = rng.normal(size=size)
         sigma_d = sigma / delta  # type: ignore
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma_d + mu  # type: ignore
@@ -697,27 +326,6 @@ shasho2 = SHASHo2RV()
 
 
 class SHASHo2(Continuous):
-    """Alternative parameterization of the SHASH distribution.
-
-    This distribution extends the base SHASH distribution by adding location (mu)
-    and an adjusted scale parameter (sigma/delta).
-
-    Parameters
-    ----------
-    mu : float
-        Location parameter (mean)
-    sigma : float
-        Scale parameter (before delta adjustment)
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-
-    Notes
-    -----
-    The distribution is obtained by applying the transformation
-    Y = mu + (sigma/delta) * X where X follows the base SHASH distribution.
-    """
 
     rv_op = shasho2
 
@@ -730,26 +338,7 @@ class SHASHo2(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-        """Create a SHASHo2 distribution with given parameters.
 
-        Parameters
-        ----------
-        mu : TensorLike
-            Location parameter (mean)
-        sigma : TensorLike
-            Scale parameter (before delta adjustment)
-        epsilon : TensorLike
-            Skewness parameter controlling asymmetry
-        delta : TensorLike
-            Kurtosis parameter controlling tail weight
-        **kwargs : dict
-            Additional arguments passed to the distribution constructor
-
-        Returns
-        -------
-        SHASHo2
-            An alternative parameterization SHASH distribution instance
-        """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -763,32 +352,7 @@ class SHASHo2(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-        """Calculate the log probability density of the SHASHo2 distribution.
 
-        Parameters
-        ----------
-        value : array_like
-            Points at which to evaluate the log probability density
-        mu : float
-            Location parameter (mean)
-        sigma : float
-            Scale parameter (before delta adjustment)
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            Log probability density at the specified points
-
-        Notes
-        -----
-        The implementation follows Jones et al. (2009) equation (2.2)
-        with additional location-scale transformation where scale is
-        adjusted by the kurtosis parameter.
-        """
         sigma_d = sigma / delta
         remapped_value = (value - mu) / sigma_d  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
@@ -800,12 +364,6 @@ class SHASHo2(Continuous):
 
 
 class SHASHbRV(RandomVariable):
-    """Random variable class for the standardized SHASH distribution.
-
-    This class implements sampling from a SHASH distribution that has been
-    standardized to have zero mean and unit variance before applying
-    location and scale transformations.
-    """
 
     name = "shashb"
     signature = "(),(),(),()->()"
@@ -822,63 +380,17 @@ class SHASHbRV(RandomVariable):
         delta: float,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-        """Generate random samples from standardized SHASH distribution.
 
-        Parameters
-        ----------
-        rng : Generator
-            NumPy random number generator
-        mu : float
-            Location parameter (mean)
-        sigma : float
-            Scale parameter (standard deviation)
-        epsilon : float
-            Skewness parameter
-        delta : float
-            Kurtosis parameter
-        size : int or tuple of ints, optional
-            Output shape. Default is None.
-
-        Returns
-        -------
-        NDArray[np.float64]
-            Array of random samples from the distribution
-        """
         s = rng.normal(size=size)
 
         def P(q: float) -> float:
-            """Helper function to compute P function.
-
-            Parameters
-            ----------
-            q : float
-                Input parameter
-
-            Returns
-            -------
-            float
-                P function value
-            """
             K1 = kv((q + 1) / 2, 0.25)
             K2 = kv((q - 1) / 2, 0.25)
             a = (K1 + K2) * CONST1
             return a
 
         def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
-            """Helper function to compute moments.
 
-            Parameters
-            ----------
-            epsilon : float
-                Skewness parameter
-            delta : float
-                Kurtosis parameter
-
-            Returns
-            -------
-            Tuple[float, float]
-                Mean and variance
-            """
             inv_delta = 1.0 / delta
             two_inv_delta = 2.0 * inv_delta
             p1 = P(inv_delta)
@@ -900,33 +412,6 @@ shashb = SHASHbRV()
 
 
 class SHASHb(Continuous):
-    """Standardized variant of the SHASH distribution.
-
-    This distribution extends the base SHASH distribution by standardizing it
-    to have zero mean and unit variance before applying location and scale
-    transformations.
-
-    Parameters
-    ----------
-    mu : float
-        Location parameter (mean)
-    sigma : float
-        Scale parameter (standard deviation)
-    epsilon : float
-        Skewness parameter controlling asymmetry
-    delta : float
-        Kurtosis parameter controlling tail weight
-
-    Notes
-    -----
-    The distribution is obtained by:
-    1. Starting with base SHASH distribution
-    2. Standardizing to zero mean and unit variance
-    3. Applying Y = mu + sigma * X transformation
-
-    This standardization can improve numerical stability and parameter
-    interpretability in some applications.
-    """
 
     rv_op = shashb
 
@@ -939,26 +424,7 @@ class SHASHb(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-        """Create a SHASHb distribution with given parameters.
 
-        Parameters
-        ----------
-        mu : TensorLike
-            Location parameter (mean)
-        sigma : TensorLike
-            Scale parameter (standard deviation)
-        epsilon : TensorLike
-            Skewness parameter controlling asymmetry
-        delta : TensorLike
-            Kurtosis parameter controlling tail weight
-        **kwargs : dict
-            Additional arguments passed to the distribution constructor
-
-        Returns
-        -------
-        SHASHb
-            A standardized SHASH distribution instance
-        """
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -972,26 +438,7 @@ class SHASHb(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-        """Calculate the log probability density of the SHASHb distribution.
 
-        Parameters
-        ----------
-        value : array_like
-            Points at which to evaluate the log probability density
-        mu : float
-            Location parameter (mean)
-        sigma : float
-            Scale parameter (standard deviation)
-        epsilon : float
-            Skewness parameter controlling asymmetry
-        delta : float
-            Kurtosis parameter controlling tail weight
-
-        Returns
-        -------
-        float
-            Log probability density at the specified points
-        """
         mean, var = SHASH.m1m2(epsilon, delta)
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
