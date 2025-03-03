@@ -117,7 +117,6 @@ def execute_nm(processing_dir,
     split_nm(processing_dir,
              respfile_path,
              batch_size,
-             binary,
              **kwargs)
 
     batch_dir = glob.glob(processing_dir + 'batch_*')
@@ -182,7 +181,6 @@ def execute_nm(processing_dir,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
-                                  log_path=log_path,
                                   **kwargs)
 
                     job_id = sbatch_nm(job_path=batch_job_path)
@@ -227,10 +225,9 @@ def execute_nm(processing_dir,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
-                                  log_path=log_path,
                                   **kwargs)
 
-                    job_id = sbatch_nm(job_path=batch_job_path,)
+                    job_id = sbatch_nm(job_path=batch_job_path)
                     job_ids.append(job_id)
                 elif cluster_spec == 'new':
                     # this part requires addition in different envioronment [
@@ -272,7 +269,6 @@ def execute_nm(processing_dir,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
-                                  log_path=log_path,
                                   **kwargs)
 
                     job_id = sbatch_nm(job_path=batch_job_path)
@@ -359,7 +355,6 @@ def execute_nm(processing_dir,
 def split_nm(processing_dir,
              respfile_path,
              batch_size,
-             binary,
              **kwargs):
     ''' This function prepares the input files for normative_parallel.
 
@@ -379,6 +374,7 @@ def split_nm(processing_dir,
     '''
 
     testrespfile_path = kwargs.get('testrespfile_path', None)
+    binary =  testrespfile_path = kwargs.get('binary', False)
 
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != '.pkl'):
@@ -1095,7 +1091,6 @@ def sbatchwrap_nm(processing_dir,
                   respfile_path,
                   memory,
                   duration,
-                  log_path,
                   func='estimate',
                   **kwargs):
     '''This function wraps normative modelling into a bash script to run it
@@ -1126,6 +1121,7 @@ def sbatchwrap_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path = kwargs.get('testrespfile_path', None)
+    log_path = kwargs.get('log_path', '')
     alg = kwargs.get('alg', None)
     configparam = kwargs.get('configparam', None)
 
