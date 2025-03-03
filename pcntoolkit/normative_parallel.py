@@ -374,7 +374,7 @@ def split_nm(processing_dir,
     '''
 
     testrespfile_path = kwargs.get('testrespfile_path', None)
-    binary =  testrespfile_path = kwargs.get('binary', False)
+    binary =  kwargs.get('binary', False)
 
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != '.pkl'):
