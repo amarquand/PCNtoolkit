@@ -86,7 +86,7 @@ def execute_nm(processing_dir,
     :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file
     :param testrespfile_path: Full path to a .txt file that contains all test features
     :param log_path: Path for saving log files
-    :param binary: If True uses binary format for response file otherwise it is text
+    :param binary: If 'True' (string not boolean) uses binary format for response file otherwise it is text, defaulted to 'False'.
     :param cluster_spec: 'torque' for PBS Torque and 'slurm' for Slurm clusters. 
     :param interactive: If False (default) the user should manually 
                         rerun the failed jobs or collect the results.
@@ -111,7 +111,7 @@ def execute_nm(processing_dir,
     outputsuffix = "_" + outputsuffix.replace("_", "")
     cluster_spec = kwargs.get('cluster_spec', 'torque')
     log_path = kwargs.get('log_path', None)
-    binary = kwargs.get('binary', False)
+    binary = str(kwargs.get('binary', 'False'))=='True'
     cores = kwargs.get('n_cores_per_batch','1')
 
     split_nm(processing_dir,
@@ -308,9 +308,9 @@ def execute_nm(processing_dir,
                             sbatchrerun_nm(processing_dir,
                                            memory=memory,
                                            duration=duration,
-                                           binary=binary,
                                            log_path=log_path,
-                                           interactive=interactive)
+                                           interactive=interactive,
+                                           **kwargs)
 
                     else:
                         success = True
@@ -324,9 +324,9 @@ def execute_nm(processing_dir,
                         sbatchrerun_nm(processing_dir,
                                        memory=memory,
                                        duration=duration,
-                                       binary=binary,
                                        log_path=log_path,
-                                       interactive=interactive)
+                                       interactive=interactive,
+                                       **kwargs)
 
         if interactive == 'query':
             response = yes_or_no('Collect the results?')
@@ -1191,7 +1191,7 @@ def sbatchwrap_nm(processing_dir,
     print("log_path: ", log_path)
     # add in optional arguments.
     for k in kwargs:
-        job_call = [job_call[0] + ' ' + k + '=' + kwargs[k]]
+        job_call = [job_call[0] + ' ' + k + '=' + str(kwargs[k])]
 
 
     # writes bash file into processing dir
@@ -1233,7 +1233,6 @@ def sbatchrerun_nm(processing_dir,
                    duration,
                    new_memory=False,
                    new_duration=False,
-                   binary=False,
                    interactive=False,
                    **kwargs):
     '''This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
@@ -1254,7 +1253,7 @@ def sbatchrerun_nm(processing_dir,
     '''
 
     # log_path = kwargs.get('log_path', None)
-
+    binary = str(kwargs.get('binary', 'False'))=='True'
     job_ids = []
 
     start_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
