@@ -1153,7 +1153,10 @@ def sbatchwrap_nm(processing_dir,
                         ]
 
     # creates call of function for normative modelling
-    if (testrespfile_path is not None) and (testcovfile_path is not None):
+    if func == 'predict' or func == 'fit':
+         job_call = [python_path + ' ' + normative_path + ' -c ' +
+                    covfile_path + ' -f ' + func]
+    elif (testrespfile_path is not None) and (testcovfile_path is not None):
         job_call = [python_path + ' ' + normative_path + ' -c ' +
                     covfile_path + ' -t ' + testcovfile_path + ' -r ' +
                     testrespfile_path + ' -f ' + func]
@@ -1162,10 +1165,7 @@ def sbatchwrap_nm(processing_dir,
                     covfile_path + ' -t ' + testcovfile_path + ' -f ' + func]
     elif cv_folds is not None:
         job_call = [python_path + ' ' + normative_path + ' -c ' +
-                    covfile_path + ' -k ' + str(cv_folds) + ' -f ' + func]
-    elif func != 'estimate':
-        job_call = [python_path + ' ' + normative_path + ' -c ' +
-                    covfile_path + ' -f ' + func]
+                    covfile_path + ' -k ' + str(cv_folds) + ' -f ' + func]       
     else:
         raise ValueError("""For 'estimate' function either testrespfile_path or cv_folds
               must be specified.""")
