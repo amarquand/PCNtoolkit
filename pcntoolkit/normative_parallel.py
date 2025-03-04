@@ -107,9 +107,9 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get('cv_folds', None)
     testcovfile_path = kwargs.get('testcovfile_path', None)
     testrespfile_path = kwargs.get('testrespfile_path', None)
-    outputsuffix = kwargs.get('outputsuffix', 'estimate')
+    outputsuffix = kwargs.get('outputsuffix', func)
     outputsuffix = "_" + outputsuffix.replace("_", "")
-    cluster_spec = kwargs.get('cluster_spec', 'torque')
+    cluster_spec = kwargs.get('cluster_spec', 'slurm')
     log_path = kwargs.get('log_path', None)
     binary = str(kwargs.get('binary', 'False'))=='True'
     cores = kwargs.get('n_cores_per_batch','1')
@@ -308,7 +308,6 @@ def execute_nm(processing_dir,
                             sbatchrerun_nm(processing_dir,
                                            memory=memory,
                                            duration=duration,
-                                           log_path=log_path,
                                            interactive=interactive,
                                            **kwargs)
 
@@ -324,7 +323,6 @@ def execute_nm(processing_dir,
                         sbatchrerun_nm(processing_dir,
                                        memory=memory,
                                        duration=duration,
-                                       log_path=log_path,
                                        interactive=interactive,
                                        **kwargs)
 
@@ -1186,12 +1184,13 @@ def sbatchwrap_nm(processing_dir,
     job_call = [job_call[0] + ' ' + respfile_path]
 
     # If count jobsdone is true, we need to add the log_path to the job_call
-    job_call = [job_call[0] + ' log_path=' + log_path]
+    #job_call = [job_call[0] + ' log_path=' + log_path]
     
-    print("log_path: ", log_path)
+    #print("log_path: ", log_path)
     # add in optional arguments.
     for k in kwargs:
-        job_call = [job_call[0] + ' ' + k + '=' + str(kwargs[k])]
+        if k not in ['alg', 'testcovfile_path', 'testrespfile_path']:
+            job_call = [job_call[0] + ' ' + k + '=' + str(kwargs[k])]
 
 
     # writes bash file into processing dir
