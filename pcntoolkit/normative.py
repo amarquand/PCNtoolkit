@@ -136,7 +136,18 @@ def get_args(*args):
         maskfile = None
     else:
         maskfile = os.path.join(wdir, parsed_args.maskfile)
-    if parsed_args.testcov is None and parsed_args.cvfolds is not None:
+
+    if parsed_args.func == 'predict': # the cov and resp files are already the test set
+        testcov = None
+        testresp = None
+        cvfolds = None
+        print("Predictions are made on the test set in the covfile and respfile.")
+    elif parsed_args.func == 'fit': # the cov and resp files used to fit the model
+        testcov = None
+        testresp = None
+        cvfolds = None
+        print("Models are fitted on the training set in the covfile and respfile.")
+    elif parsed_args.func == 'estimate' and parsed_args.testcov is None and parsed_args.cvfolds is not None: # K-Fold using estimate
         testcov = None
         testresp = None
         cvfolds = int(parsed_args.cvfolds)
