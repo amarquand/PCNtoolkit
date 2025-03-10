@@ -659,8 +659,11 @@ def collect_nm(processing_dir,
         if Z_filenames:
             Z_filenames = fileio.sort_nicely(Z_filenames)
             Z_dfs = []
+            voxel_count = []
             for Z_filename in Z_filenames:
-                Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
+                Zi = pd.DataFrame(fileio.load(Z_filename))
+                Z_dfs.append(Zi)
+                voxel_count.append(Zi.shape[1])                 
             Z_dfs = pd.concat(Z_dfs, ignore_index=True, axis=1)
             fileio.save(Z_dfs, processing_dir + 'Z' + outputsuffix +
                         file_extentions)
@@ -803,26 +806,33 @@ def collect_nm(processing_dir,
             sY = []
             X_scalers = []
             Y_scalers = []
+            vVox = []
+            vox_offset = 0
             if meta_filenames:
                 meta_filenames = fileio.sort_nicely(meta_filenames)
                 with open(meta_filenames[0], 'rb') as file:
                     meta_data = pickle.load(file)
 
-                for meta_filename in meta_filenames:
+                for ix, meta_filename in enumerate(meta_filenames):
                     with open(meta_filename, 'rb') as file:
                         meta_data = pickle.load(file)
                     mY.append(meta_data['mean_resp'])
                     sY.append(meta_data['std_resp'])
+                    if 'valid_voxels' in meta_data.keys():
+                        vVox.append(meta_data['valid_voxels'] + vox_offset)
+                        vox_offset = vox_offset + voxel_count[ix]
                     if meta_data['inscaler'] in ['standardize', 'minmax',
                                                  'robminmax']:
                         X_scalers.append(meta_data['scaler_cov'])
                     if meta_data['outscaler'] in ['standardize', 'minmax',
                                                   'robminmax']:
                         Y_scalers.append(meta_data['scaler_resp'])
-                meta_data['mean_resp'] = [np.squeeze(np.concatenate(mY))]
-                meta_data['std_resp'] = [np.squeeze(np.concatenate(sY))]
+                meta_data['mean_resp'] = [np.squeeze(np.column_stack(mY))]
+                meta_data['std_resp'] = [np.squeeze(np.column_stack(sY))]
                 meta_data['scaler_cov'] = X_scalers
                 meta_data['scaler_resp'] = Y_scalers
+                if 'valid_voxels' in meta_data.keys():
+                    meta_data['valid_voxels'] = np.concatenate(vVox)
 
                 with open(os.path.join(processing_dir, 'Models',
                                        'meta_data.md'), 'wb') as file:
