@@ -1132,6 +1132,7 @@ def sbatchwrap_nm(processing_dir,
     log_path = kwargs.get('log_path', '')
     alg = kwargs.get('alg', None)
     configparam = kwargs.get('configparam', None)
+    partition_name = kwargs.pop('partition_name', None)
 
     # change to processing dir
     os.chdir(processing_dir)
@@ -1145,6 +1146,7 @@ def sbatchwrap_nm(processing_dir,
     sbatch_memory = '#SBATCH --mem-per-cpu=' + str(memory) + '\n'
     sbatch_log_out = '#SBATCH -o ' + log_path + '%x_%j.out' + '\n'
     sbatch_log_error = '#SBATCH -e ' + log_path + '%x_%j.err' + '\n'
+    sbatch_partition = '#SBATCH --partition=' + str(partition_name) + '\n'
     # sbatch_module = 'module purge\n'
     # sbatch_anaconda = 'module load anaconda3\n'
     sbatch_exit = 'set -o errexit\n'
@@ -1161,6 +1163,8 @@ def sbatchwrap_nm(processing_dir,
                         sbatch_log_out +
                         sbatch_log_error
                         ]
+    if partition_name:
+        bash_environment[0] += sbatch_partition
 
     # creates call of function for normative modelling
     if func == 'predict' or func == 'fit':
