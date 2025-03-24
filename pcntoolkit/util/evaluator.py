@@ -437,8 +437,8 @@ class Evaluator:
         y = data["Y"].values
         centile_list = data.centile.values
         centile_data = data.centiles.values
-        empirical_centiles = (centile_data >= y).mean(axis=0)
-        mace = np.abs(np.subtract.outer(centile_list, empirical_centiles)).mean()
+        empirical_centiles = (centile_data >= y).mean(axis=1)
+        mace = np.abs(centile_list - empirical_centiles).mean()
         return float(mace)
     
 
