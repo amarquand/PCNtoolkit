@@ -118,3 +118,4 @@ test/output/*
 examples/sandbox.py
 examples/sandbox.ipynb
 poetry.lock
+examples/01_nm_hbr.ipynb
