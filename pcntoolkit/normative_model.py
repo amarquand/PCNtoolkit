@@ -140,6 +140,7 @@ class NormativeModel:
             - Y: (n_samples, n_response_vars)
 
         """
+        self.ensure_save_dirs() 
         self.register_data_info(data)
         self.preprocess(data)
         Output.print(Messages.FITTING_MODELS, n_models=len(self.response_vars))
@@ -764,9 +765,10 @@ class NormativeModel:
 
     def ensure_save_dirs(self) -> None:
         """
-        Ensures that the save directories for results and plots are created when they are not there yet
+        Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
         """
         os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
         if self.saveplots:
             os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
 
@@ -901,7 +903,6 @@ class NormativeModel:
 
 
     def save_zscores(self, data: NormData) -> None:
-        self.ensure_save_dirs()
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         zdf.index = zdf.index.astype(str)
@@ -931,7 +932,6 @@ class NormativeModel:
 
 
     def save_centiles(self, data: NormData) -> None:
-        self.ensure_save_dirs()
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
         centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
@@ -965,7 +965,6 @@ class NormativeModel:
             )
 
     def save_logp(self, data: NormData) -> None:
-        self.ensure_save_dirs()
         logp = data.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
         logp.index = logp.index.astype(str)
@@ -992,7 +991,6 @@ class NormativeModel:
 
 
     def save_statistics(self, data: NormData) -> None:
-        self.ensure_save_dirs()
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
         res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
