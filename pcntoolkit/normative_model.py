@@ -762,6 +762,14 @@ class NormativeModel:
             with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
+    def ensure_save_dirs(self) -> None:
+        """
+        Ensures that the save directories for results and plots are created when they are not there yet
+        """
+        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
+        if self.saveplots:
+            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
+
     def to_dict(self):
         my_dict = {
             "save_dir": self.save_dir,
@@ -893,6 +901,7 @@ class NormativeModel:
 
 
     def save_zscores(self, data: NormData) -> None:
+        self.ensure_save_dirs()
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         zdf.index = zdf.index.astype(str)
@@ -922,6 +931,7 @@ class NormativeModel:
 
 
     def save_centiles(self, data: NormData) -> None:
+        self.ensure_save_dirs()
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
         centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
@@ -955,6 +965,7 @@ class NormativeModel:
             )
 
     def save_logp(self, data: NormData) -> None:
+        self.ensure_save_dirs()
         logp = data.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
         logp.index = logp.index.astype(str)
@@ -981,6 +992,7 @@ class NormativeModel:
 
 
     def save_statistics(self, data: NormData) -> None:
+        self.ensure_save_dirs()
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")
         mdf.columns = mdf.columns.droplevel(0)
         res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
