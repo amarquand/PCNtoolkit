@@ -104,7 +104,9 @@ def plot_centiles(
     centile_data.X.loc[{"covariates": covariate}] = np.linspace(covariate_range[0], covariate_range[1], 150)
     for be, v in batch_effects.items():
         centile_data.batch_effects.loc[{"batch_effect_dims": be}] = v[0]
-    model.compute_centiles(centile_data, centiles=centiles, **kwargs)
+        
+    if not hasattr(centile_data, "centiles"):
+        model.compute_centiles(centile_data, centiles=centiles, **kwargs)
 
     if harmonize_data and scatter_data:
         if model.has_batch_effect:

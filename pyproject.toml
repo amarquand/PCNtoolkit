@@ -91,7 +91,6 @@ indent-width = 4
 target-version = "py312"
 
 
-
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

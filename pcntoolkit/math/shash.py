@@ -43,9 +43,8 @@ from pytensor.gradient import grad_not_implemented
 from pytensor.graph.basic import Variable
 from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
 from pytensor.tensor import as_tensor_variable  # type: ignore
-from pytensor.tensor.elemwise import Elemwise
+from pytensor.tensor.elemwise import Elemwise, scalar_elemwise
 from pytensor.tensor.random.op import RandomVariable  # type: ignore
-from scipy.special import kv  # type: ignore
 
 # pylint: disable=arguments-differ
 
@@ -99,19 +98,17 @@ def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArr
     return frac1 * acc
 
 
-class KnuOp(BinaryScalarOp):
+class Kv(BinaryScalarOp):
    
 
     nfunc_spec = ("scipy.special.kv", 2, 1)
 
     @staticmethod
     def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
-     
-        return spp.kv(p, x)
+        return spp.kve(p, x) * np.exp(-x)
 
     def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
-       
-        return KnuOp.st_impl(p, x)
+        return self.st_impl(p, x)
 
     def grad(
         self,
@@ -123,31 +120,13 @@ class KnuOp(BinaryScalarOp):
         (p, x) = inputs
         (gz,) = output_gradients
         # Use finite differences for derivative with respect to p
-        dfdp = (knuop(p + dp, x) - knuop(p - dp, x)) / (2 * dp)  # type: ignore
-        return [gz * dfdp, gz * knupop(p, x)]  # type: ignore
+        dfdp = (kv(p + dp, x) - kv(p - dp, x)) / (2 * dp)  # type: ignore
+        return [gz * dfdp, grad_not_implemented(self, 1, "x")]  # type: ignore
 
-class KnuPrimeOp(BinaryScalarOp):
-
-    nfunc_spec = ("scipy.special.kvp", 2, 1)
-
-    @staticmethod
-    def st_impl(p: Union[float, int], x: Union[float, int]) -> float:
-
-        return spp.kvp(p, x)
-
-    def impl(self, p: Union[float, int], x: Union[float, int]) -> float:
-
-        return KnuPrimeOp.st_impl(p, x)
-
-    def grad(self, inputs: Sequence[Variable[Any, Any]], grads: Sequence[Variable[Any, Any]]) -> List[Variable]:
-
-        return [grad_not_implemented(self, 0, "p"), grad_not_implemented(self, 1, "x")]
 
 
 # Create operation instances
-knuop = KnuOp(upgrade_to_float, name="knuop")
-knupop = KnuPrimeOp(upgrade_to_float, name="knupop")
-
+kv = Kv(upgrade_to_float, name="kv") #type:ignore
 
 ##### Constants #####
 
@@ -184,7 +163,7 @@ shash = SHASHrv()
 class SHASH(Continuous):
 
     rv_op = shash
-    my_K = Elemwise(knuop)
+    my_K = Elemwise(kv)
 
     @staticmethod
     @lru_cache(maxsize=128)
@@ -384,8 +363,8 @@ class SHASHbRV(RandomVariable):
         s = rng.normal(size=size)
 
         def P(q: float) -> float:
-            K1 = kv((q + 1) / 2, 0.25)
-            K2 = kv((q - 1) / 2, 0.25)
+            K1 = spp.kv((q + 1) / 2, 0.25)
+            K2 = spp.kv((q - 1) / 2, 0.25)
             a = (K1 + K2) * CONST1
             return a
 
