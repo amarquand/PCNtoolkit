@@ -2,6 +2,7 @@ import os
 import warnings
 from datetime import datetime
 
+
 class Messages:
     FITTING_MODELS = "Fitting models on {n_models} response variables."
     FITTING_MODEL = "Fitting model for {model_name}."
@@ -34,7 +35,7 @@ class Messages:
 ---------------------------------------------------------
               PCNtoolkit Job Status Monitor ®
 ---------------------------------------------------------
-Task ID: {timestamp}
+Task ID: {task_id}
 ---------------------------------------------------------
 Job ID      Name          State      Time      Nodes
 ---------------------------------------------------------
