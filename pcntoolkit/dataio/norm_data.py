@@ -37,7 +37,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split  # type: i
 # import datavars from xarray
 from xarray.core.types import DataVars
 
-from pcntoolkit.util.output import Output, Messages, Warnings
+from pcntoolkit.util.output import Messages, Output, Warnings
 
 
 class NormData(xr.Dataset):
@@ -788,7 +788,10 @@ class NormData(xr.Dataset):
 
         to_return = self.where(mask).dropna(dim="subjects", how="all")
         if isinstance(to_return, xr.Dataset):
-            to_return = NormData.from_xarray(f"{self.attrs['name']}_selected", to_return)
+            if invert:
+                to_return = NormData.from_xarray(f"{self.attrs['name']}_not_selected", to_return)
+            else:
+                to_return = NormData.from_xarray(f"{self.attrs['name']}_selected", to_return)
         to_return.register_batch_effects()
         return to_return
 

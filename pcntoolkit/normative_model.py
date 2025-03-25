@@ -104,7 +104,7 @@ class NormativeModel:
         save_dir = kwargs.get("save_dir", "./saves")
         inscaler = kwargs.get("inscaler", "none")
         outscaler = kwargs.get("outscaler", "none")
-        normative_model_name = kwargs.get("normative_model_name", None)
+        name = kwargs.get("name", None)
         assert "alg" in kwargs, "Algorithm must be specified"
         if kwargs["alg"] == "blr":
             template_regression_model = BLR.from_args("template", kwargs)
@@ -123,7 +123,7 @@ class NormativeModel:
             save_dir=save_dir,
             inscaler=inscaler,
             outscaler=outscaler,
-            normative_model_name=normative_model_name,
+            name=name,
         )
 
     def fit(self, data: NormData) -> None:
@@ -150,24 +150,21 @@ class NormativeModel:
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
         self.postprocess(data)
-        if self.savemodel:
-            self.save()
-        if self.evaluate_model:
-            self.evaluate(data)
-        if self.saveresults:
-            self.save_results(data)
-        if self.saveplots:
-            self.save_plots(data)
+        self.predict(data) # Make sure everything is evaluated and saved
 
     def predict(self, data: NormData) -> NormData:
-        """Computes Z-scores for each response variable using fitted regression models."""
+        """Computes Z-scores and centiles for each response variable using fitted regression models."""
         self.compute_zscores(data)
+        self.compute_centiles(data)
+        self.compute_logp(data)
+        if self.saveresults:
+            self.save_zscores(data)
+            self.save_centiles(data)
+            self.save_logp(data)
         if self.evaluate_model:
             self.evaluate(data)
-        if self.saveresults:
-            self.save_results(data)
-        if self.saveplots:
-            self.save_plots(data)
+            if self.saveresults:
+                self.save_statistics(data)
         return data
 
     def synthesize(
@@ -403,11 +400,11 @@ class NormativeModel:
             coords={"subjects": data.subjects},
         )
 
-        Output.print(Messages.COMPUTING_CENTILES, n_models=len(respvar_intersection))
+        Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             X, be, be_maps, Y = self.extract_data(resp_predict_data)
-            Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
+            Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, be_maps, Y)
 
         self.postprocess(data)
@@ -415,21 +412,15 @@ class NormativeModel:
 
     def evaluate(self, data: NormData) -> None:
         """
-        Evaluates the model performance.
+        Evaluates the model performance on the data.
         This method performs the following steps:
         1. Preprocesses the data
-        2. Computes the Z-scores
-        3. Computes the centiles
-        4. Computes the log-probability of the data
+
         5. Evaluates the model performance
         6. Postprocesses the data
         """
         self.preprocess(data)
-        self.compute_zscores(data)
-        self.compute_centiles(data)
-        self.compute_logp(data)
         self.evaluator.evaluate(data)
-        # self.model_specific_evaluation()
         self.postprocess(data)
 
     def model_specific_evaluation(self) -> None:
@@ -498,12 +489,6 @@ class NormativeModel:
         new_model.postprocess(transfer_data)
         if new_model.savemodel:
             new_model.save()
-        if new_model.evaluate_model:
-            new_model.evaluate(transfer_data)
-        if new_model.saveresults:
-            new_model.save_results(transfer_data)
-        if new_model.saveplots:
-            new_model.save_plots(transfer_data)
         return new_model
 
     def transfer_predict(self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None) -> NormativeModel:
@@ -784,7 +769,7 @@ class NormativeModel:
             "saveresults": self.saveresults,
             "saveplots": self.saveplots,
             "evaluate_model": self.evaluate_model,
-            "normative_model_name": self.name,
+            "name": self.name,
             "template_regression_model": self.template_regression_model.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
             "is_fitted": self.is_fitted,
@@ -843,7 +828,7 @@ class NormativeModel:
         outscaler = metadata["outscaler"]
         saveplots = metadata["saveplots"]
         evaluate_model = metadata["evaluate_model"]
-        normative_model_name = metadata["normative_model_name"]
+        name = metadata["name"]
 
         response_vars = []
         outscalers = {}
@@ -875,7 +860,7 @@ class NormativeModel:
                 save_dir=save_dir,
                 inscaler=inscaler,
                 outscaler=outscaler,
-                normative_model_name=normative_model_name,
+                name=name,
             )
         else:
             self = into
@@ -906,28 +891,6 @@ class NormativeModel:
 
         return self
 
-    def save_results(self, data: NormData) -> None:
-        Output.print(Messages.SAVING_RESULTS, save_dir=self.save_dir)
-        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
-        if hasattr(data, "Z"):
-            self.save_zscores(data)
-        if hasattr(data, "centiles"):
-            self.save_centiles(data)
-        if hasattr(data, "statistics"):
-            self.save_statistics(data)
-
-    def save_plots(self, data: NormData) -> None:
-        os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
-        if hasattr(data, "Z"):
-            plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
-        if hasattr(data, "centiles"):
-            plot_centiles(
-                self,
-                save_dir=os.path.join(self.save_dir, "plots"),
-                show_other_data=True,
-                harmonize_data=True,
-                scatter_data=data,
-            )
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
@@ -954,6 +917,10 @@ class NormativeModel:
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
+        if self.saveplots:
+            plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
+
+
     def save_centiles(self, data: NormData) -> None:
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
@@ -978,6 +945,40 @@ class NormativeModel:
                 new_results.to_csv(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        if self.saveplots:
+            plot_centiles(
+                self,
+                save_dir=os.path.join(self.save_dir, "plots"),
+                show_other_data=True,
+                harmonize_data=True,
+                scatter_data=data,
+            )
+
+    def save_logp(self, data: NormData) -> None:
+        logp = data.logp.to_dataframe().unstack(level="response_vars")
+        logp.columns = logp.columns.droplevel(0)
+        logp.index = logp.index.astype(str)
+        res_path = os.path.join(self.save_dir, "results", f"logp_{data.name}.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    old_results['subjects'] = old_results['subjects'].astype(str)
+                    old_results.set_index(['subjects'], inplace=True)
+                    # Merge on subjects, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(logp, on="subjects", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                else:
+                    new_results = logp
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
 
     def save_statistics(self, data: NormData) -> None:
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")

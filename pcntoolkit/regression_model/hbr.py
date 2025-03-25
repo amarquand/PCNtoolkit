@@ -178,14 +178,12 @@ class HBR(RegressionModel):
         model = self.likelihood.create_model_with_data(X, be, be_maps, Y)
         params = self.likelihood.compile_params(model, X, be, be_maps, Y)
         var_names = [f"{k}_per_subject" for k, _ in params.items()]
-        if hasattr(self.idata, "posterior_predictive"):
-            del self.idata.posterior_predictive
         with model:
             for param_name, (value, dims) in params.items():
                 pm.Deterministic(f"{param_name}_per_subject", value, dims=dims)
             idata = pm.sample_posterior_predictive(
                 self.idata,
-                extend_inferencedata=True,
+                extend_inferencedata=False,
                 var_names=var_names,
                 progressbar=False,
             )
