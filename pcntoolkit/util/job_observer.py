@@ -22,12 +22,12 @@ class JobStatus:
 
 
 class JobObserver:
-    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs", uuid: str = ""):
+    def __init__(self, active_job_ids: Dict[str, str], job_type: str = "local", log_dir: str = "logs", task_id: str = ""):
         self.all_job_ids = copy.deepcopy(active_job_ids)
         self.active_job_ids = copy.deepcopy(active_job_ids)
         self.job_type = job_type
         self.log_dir = log_dir
-        self.task_uuid = uuid
+        self.task_id = task_id
         # Reverse mapping from job_id to job_name for looking up success files
         self.job_id_to_name = {v: k for k, v in active_job_ids.items()}
 
@@ -156,7 +156,7 @@ class JobObserver:
         Output.set_show_messages(True)
         if in_notebook:
             clear_output(wait=True)
-        Output.print(Messages.JOB_STATUS_MONITOR, uuid=self.task_uuid)
+        Output.print(Messages.JOB_STATUS_MONITOR, task_id=self.task_id)
         for status in sorted(statuses, key=lambda x: x.job_id):
             Output.print(
                     Messages.JOB_STATUS_LINE,
