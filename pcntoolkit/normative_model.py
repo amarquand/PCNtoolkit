@@ -152,6 +152,8 @@ class NormativeModel:
         self.is_fitted = True
         self.postprocess(data)
         self.predict(data) # Make sure everything is evaluated and saved
+        if self.savemodel: # Make sure model is saved 
+            self.save()
 
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
@@ -437,6 +439,8 @@ class NormativeModel:
         """
         self.fit(fit_data)
         self.predict(predict_data)
+        if self.savemodel: #Make sure model is saved 
+            self.save()
         return predict_data
 
     def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray]:
