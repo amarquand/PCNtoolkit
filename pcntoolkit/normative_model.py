@@ -814,6 +814,9 @@ class NormativeModel:
         if hasattr(self, "batch_effect_covariate_ranges"):
             my_dict["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
 
+        if hasattr(self, "covariate_ranges"):
+            my_dict["covariate_ranges"] = copy.deepcopy(self.covariate_ranges)
+
         return my_dict
 
     @classmethod
@@ -900,6 +903,10 @@ class NormativeModel:
 
         if "covariates" in metadata:
             self.covariates = metadata["covariates"]
+        
+        if "covariate_ranges" in metadata:
+            self.covariate_ranges = metadata["covariate_ranges"]
+
 
         self.is_fitted = metadata["is_fitted"]
 
