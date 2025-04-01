@@ -156,6 +156,7 @@ class NormativeModel:
             self.save()
 
     def predict(self, data: NormData) -> NormData:
+        self.ensure_save_dirs() 
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
         self.compute_zscores(data)
         self.compute_centiles(data)
@@ -187,6 +188,7 @@ class NormativeModel:
         covariate_range_per_batch_effect : bool, optional
             If True, the covariate range is different for each batch effect.
         """
+        self.ensure_save_dirs() 
         assert self.is_fitted
         if data:
             self.check_compatibility(data)
@@ -246,6 +248,7 @@ class NormativeModel:
         reference_batch_effect : dict[str, str]
             Reference batch effect.
         """
+        self.ensure_save_dirs() 
         self.preprocess(data)
         _, be, _, _ = self.extract_data(data)
         ref_be_array = be.astype(str)
@@ -464,6 +467,7 @@ class NormativeModel:
         """
         Transfers the model to a new dataset.
         """
+        self.ensure_save_dirs() 
         new_model = NormativeModel(
             copy.deepcopy(self.template_regression_model),
             savemodel=True,
@@ -513,6 +517,7 @@ class NormativeModel:
         """
         Extends the model to a new dataset.
         """
+        self.ensure_save_dirs() 
         synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
         self.postprocess(synth)
         self.postprocess(data)
