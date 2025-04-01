@@ -269,6 +269,7 @@ class NormData(xr.Dataset):
         batch_effects: List[str] | None = None,
         response_vars: List[str | LiteralString] | None = None,
         subject_ids: List[str] | None = None,
+        remove_Nan: bool = False, 
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """
@@ -288,12 +289,26 @@ class NormData(xr.Dataset):
             The list of column names to be used as response variables in the dataset.
         attrs : Mapping[str, Any] | None, optional
             Additional attributes for the dataset, by default None.
+        remove_Nan: bool 
+            Wheter or not to remove NAN values from the dataframe before creationg of the class object. By default False 
 
         Returns
         -------
         NormData
             An instance of NormData.
         """
+
+        if remove_Nan:
+            cols_to_check = []
+            if covariates:
+                cols_to_check += covariates
+            if response_vars:
+                cols_to_check += response_vars
+            if batch_effects:
+                cols_to_check += batch_effects
+            dataframe = dataframe.dropna(subset=cols_to_check)
+        else:
+            print("Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training.")
 
         data_vars = {}
         coords = {}

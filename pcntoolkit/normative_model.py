@@ -140,6 +140,7 @@ class NormativeModel:
             - Y: (n_samples, n_response_vars)
 
         """
+        self.ensure_save_dirs() 
         self.register_data_info(data)
         self.preprocess(data)
         Output.print(Messages.FITTING_MODELS, n_models=len(self.response_vars))
@@ -151,8 +152,11 @@ class NormativeModel:
         self.is_fitted = True
         self.postprocess(data)
         self.predict(data) # Make sure everything is evaluated and saved
+        if self.savemodel: # Make sure model is saved 
+            self.save()
 
     def predict(self, data: NormData) -> NormData:
+        self.ensure_save_dirs() 
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
         self.compute_zscores(data)
         self.compute_centiles(data)
@@ -184,6 +188,7 @@ class NormativeModel:
         covariate_range_per_batch_effect : bool, optional
             If True, the covariate range is different for each batch effect.
         """
+        self.ensure_save_dirs() 
         assert self.is_fitted
         if data:
             self.check_compatibility(data)
@@ -243,6 +248,7 @@ class NormativeModel:
         reference_batch_effect : dict[str, str]
             Reference batch effect.
         """
+        self.ensure_save_dirs() 
         self.preprocess(data)
         _, be, _, _ = self.extract_data(data)
         ref_be_array = be.astype(str)
@@ -436,6 +442,8 @@ class NormativeModel:
         """
         self.fit(fit_data)
         self.predict(predict_data)
+        if self.savemodel: #Make sure model is saved 
+            self.save()
         return predict_data
 
     def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray]:
@@ -459,6 +467,7 @@ class NormativeModel:
         """
         Transfers the model to a new dataset.
         """
+        self.ensure_save_dirs() 
         new_model = NormativeModel(
             copy.deepcopy(self.template_regression_model),
             savemodel=True,
@@ -508,6 +517,7 @@ class NormativeModel:
         """
         Extends the model to a new dataset.
         """
+        self.ensure_save_dirs() 
         synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
         self.postprocess(synth)
         self.postprocess(data)
@@ -762,6 +772,15 @@ class NormativeModel:
             with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
+    def ensure_save_dirs(self) -> None:
+        """
+        Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
+        """
+        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
+        if self.saveplots:
+            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
+
     def to_dict(self):
         my_dict = {
             "save_dir": self.save_dir,
@@ -799,6 +818,9 @@ class NormativeModel:
             }
         if hasattr(self, "batch_effect_covariate_ranges"):
             my_dict["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
+
+        if hasattr(self, "covariate_ranges"):
+            my_dict["covariate_ranges"] = copy.deepcopy(self.covariate_ranges)
 
         return my_dict
 
@@ -886,6 +908,10 @@ class NormativeModel:
 
         if "covariates" in metadata:
             self.covariates = metadata["covariates"]
+        
+        if "covariate_ranges" in metadata:
+            self.covariate_ranges = metadata["covariate_ranges"]
+
 
         self.is_fitted = metadata["is_fitted"]
 
