@@ -136,7 +136,18 @@ def get_args(*args):
         maskfile = None
     else:
         maskfile = os.path.join(wdir, parsed_args.maskfile)
-    if parsed_args.testcov is None and parsed_args.cvfolds is not None:
+
+    if parsed_args.func == 'predict': # the cov and resp files are already the test set
+        testcov = None
+        testresp = None
+        cvfolds = None
+        print("Predictions are made on the test set in the covfile and respfile.")
+    elif parsed_args.func == 'fit': # the cov and resp files used to fit the model
+        testcov = None
+        testresp = None
+        cvfolds = None
+        print("Models are fitted on the training set in the covfile and respfile.")
+    elif parsed_args.func == 'estimate' and parsed_args.testcov is None and parsed_args.cvfolds is not None: # K-Fold using estimate
         testcov = None
         testresp = None
         cvfolds = int(parsed_args.cvfolds)
@@ -745,6 +756,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
      When using parallel prediction, do not pass the model path. It will be 
      automatically decided.
     :param outputsuffix: Text string to add to the output filenames
+    :param inputsuffix: Defaults to 'fit'. Needs to be specified carefully for proper functioning. Should be set to the outputsuffix of the fitted model.
     :param batch_size: batch size (for use with normative_parallel)
     :param job_id: batch id, 'None' when non-parallel module is used.
     :param fold: which cross-validation fold to use (default = 0)
@@ -764,7 +776,7 @@ def predict(covfile, respfile, maskfile=None, **kwargs):
     batch_size = kwargs.pop('batch_size', None)
     outputsuffix = kwargs.pop('outputsuffix', 'predict')
     outputsuffix = "_" + outputsuffix.replace("_", "")
-    inputsuffix = kwargs.pop('inputsuffix', 'estimate')
+    inputsuffix = kwargs.pop('inputsuffix', 'fit')
     inputsuffix = "_" + inputsuffix.replace("_", "")
     alg = kwargs.pop('alg')
     models = kwargs.pop('models', None)
