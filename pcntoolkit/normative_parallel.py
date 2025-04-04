@@ -827,8 +827,16 @@ def collect_nm(processing_dir,
                     if meta_data['outscaler'] in ['standardize', 'minmax',
                                                   'robminmax']:
                         Y_scalers.append(meta_data['scaler_resp'])
-                meta_data['mean_resp'] = [np.squeeze(np.column_stack(mY))]
-                meta_data['std_resp'] = [np.squeeze(np.column_stack(sY))]
+                #meta_data['mean_resp'] = [np.squeeze(np.column_stack(mY))]
+                #meta_data['std_resp'] = [np.squeeze(np.column_stack(sY))]
+                if type(mY[0]) is list:
+                    # sometimes (e.g. estimate()) meta data is a list of lists
+                    meta_data['mean_resp'] = [np.concatenate(np.column_stack(mY))]
+                    meta_data['std_resp'] = [np.concatenate(np.column_stack(sY))]
+                else:
+                    # other times (e.g. transfer()), a list of arrays is used
+                    meta_data['mean_resp'] = [np.concatenate(mY)]
+                    meta_data['std_resp'] = [np.concatenate(sY)]
                 meta_data['scaler_cov'] = X_scalers
                 meta_data['scaler_resp'] = Y_scalers
                 if 'valid_voxels' in meta_data.keys():
