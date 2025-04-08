@@ -65,7 +65,7 @@ class NormativeModel:
         self.evaluate_model: bool = evaluate_model
         self.saveresults: bool = saveresults
         self.saveplots: bool = saveplots
-        self.save_dir: str = save_dir
+        self.save_dir = save_dir
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
         self.name: Optional[str] = name
@@ -151,6 +151,8 @@ class NormativeModel:
         self.is_fitted = True
         self.postprocess(data)
         self.predict(data) # Make sure everything is evaluated and saved
+        if self.savemodel: # Make sure model is saved 
+            self.save()
 
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
@@ -436,6 +438,8 @@ class NormativeModel:
         """
         self.fit(fit_data)
         self.predict(predict_data)
+        if self.savemodel: #Make sure model is saved 
+            self.save()
         return predict_data
 
     def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray]:
@@ -487,6 +491,7 @@ class NormativeModel:
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
+        new_model.predict(transfer_data) # Make sure everything is evaluated and saved
         if new_model.savemodel:
             new_model.save()
         return new_model
@@ -762,6 +767,7 @@ class NormativeModel:
             with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
+
     def to_dict(self):
         my_dict = {
             "save_dir": self.save_dir,
@@ -799,6 +805,9 @@ class NormativeModel:
             }
         if hasattr(self, "batch_effect_covariate_ranges"):
             my_dict["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
+
+        if hasattr(self, "covariate_ranges"):
+            my_dict["covariate_ranges"] = copy.deepcopy(self.covariate_ranges)
 
         return my_dict
 
@@ -886,11 +895,32 @@ class NormativeModel:
 
         if "covariates" in metadata:
             self.covariates = metadata["covariates"]
+        
+        if "covariate_ranges" in metadata:
+            self.covariate_ranges = metadata["covariate_ranges"]
+
 
         self.is_fitted = metadata["is_fitted"]
 
         return self
 
+    @property
+    def save_dir(self) -> str:
+        return self._save_dir
+    
+    @save_dir.setter
+    def save_dir(self, value: str) -> None:
+        self._save_dir = value
+        self.set_ensure_save_dirs()
+
+    def set_ensure_save_dirs(self) -> str:
+        """
+        Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
+        """
+        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
+        if self.saveplots:
+            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
