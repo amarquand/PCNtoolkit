@@ -326,7 +326,7 @@ class Evaluator:
         yhat = data["Yhat"].values
 
         mse = np.mean((y - yhat) ** 2)
-        variance = np.var((y - np.mean(y)) ** 2)
+        variance = np.var(y)
         smse = float(mse / variance if variance != 0 else 0)
 
         return smse
