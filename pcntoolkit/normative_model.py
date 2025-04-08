@@ -65,7 +65,7 @@ class NormativeModel:
         self.evaluate_model: bool = evaluate_model
         self.saveresults: bool = saveresults
         self.saveplots: bool = saveplots
-        self.save_dir: str = save_dir
+        self.save_dir = save_dir
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
         self.name: Optional[str] = name
@@ -140,7 +140,6 @@ class NormativeModel:
             - Y: (n_samples, n_response_vars)
 
         """
-        self.ensure_save_dirs() 
         self.register_data_info(data)
         self.preprocess(data)
         Output.print(Messages.FITTING_MODELS, n_models=len(self.response_vars))
@@ -156,7 +155,6 @@ class NormativeModel:
             self.save()
 
     def predict(self, data: NormData) -> NormData:
-        self.ensure_save_dirs() 
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
         self.compute_zscores(data)
         self.compute_centiles(data)
@@ -188,7 +186,6 @@ class NormativeModel:
         covariate_range_per_batch_effect : bool, optional
             If True, the covariate range is different for each batch effect.
         """
-        self.ensure_save_dirs() 
         assert self.is_fitted
         if data:
             self.check_compatibility(data)
@@ -248,7 +245,6 @@ class NormativeModel:
         reference_batch_effect : dict[str, str]
             Reference batch effect.
         """
-        self.ensure_save_dirs() 
         self.preprocess(data)
         _, be, _, _ = self.extract_data(data)
         ref_be_array = be.astype(str)
@@ -467,7 +463,6 @@ class NormativeModel:
         """
         Transfers the model to a new dataset.
         """
-        self.ensure_save_dirs() 
         new_model = NormativeModel(
             copy.deepcopy(self.template_regression_model),
             savemodel=True,
@@ -496,6 +491,7 @@ class NormativeModel:
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
+        new_model.predict(transfer_data) # Make sure everything is evaluated and saved
         if new_model.savemodel:
             new_model.save()
         return new_model
@@ -517,7 +513,6 @@ class NormativeModel:
         """
         Extends the model to a new dataset.
         """
-        self.ensure_save_dirs() 
         synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
         self.postprocess(synth)
         self.postprocess(data)
@@ -772,14 +767,6 @@ class NormativeModel:
             with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
-    def ensure_save_dirs(self) -> None:
-        """
-        Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
-        """
-        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
-        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
-        if self.saveplots:
-            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
 
     def to_dict(self):
         my_dict = {
@@ -917,6 +904,23 @@ class NormativeModel:
 
         return self
 
+    @property
+    def save_dir(self) -> str:
+        return self._save_dir
+    
+    @save_dir.setter
+    def save_dir(self, value: str) -> None:
+        self._save_dir = value
+        self.set_ensure_save_dirs()
+
+    def set_ensure_save_dirs(self) -> str:
+        """
+        Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
+        """
+        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
+        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
+        if self.saveplots:
+            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
 
     def save_zscores(self, data: NormData) -> None:
         zdf = data.Z.to_dataframe().unstack(level="response_vars")
