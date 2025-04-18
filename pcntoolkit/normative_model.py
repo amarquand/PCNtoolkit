@@ -157,7 +157,7 @@ class NormativeModel:
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
         self.compute_zscores(data)
-        self.compute_centiles(data)
+        self.compute_centiles(data, recompute=True)
         self.compute_logp(data)
         if self.saveresults:
             self.save_zscores(data)
