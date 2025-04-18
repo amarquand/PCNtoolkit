@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import copy
-import logging
 import os
 from abc import ABC, abstractmethod
-from tkinter.tix import Y_REGION
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import arviz as az  # type: ignore
@@ -437,7 +435,6 @@ class HBR(RegressionModel):
         """
         if self.is_fitted:
             if hasattr(self, "idata"):
-                # self.remove_samples_from_idata_posterior()
                 self.idata.to_netcdf(path, groups=["posterior"])
             else:
                 raise ValueError(Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA))
