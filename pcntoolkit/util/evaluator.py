@@ -5,7 +5,7 @@ import xarray as xr
 from scipy import stats  # type: ignore
 
 from pcntoolkit.dataio.norm_data import NormData
-
+from sklearn.metrics import r2_score
 
 class Evaluator:
     """
@@ -282,11 +282,11 @@ class Evaluator:
 
     def _evaluate_R2(self, data: NormData) -> float:
         """
-        Calculate S2 for model predictions.
+        Calculate R2 for model predictions.
         """
         y = data["Y"].values
         yhat = data["Yhat"].values
-        r2 = 1 - np.var(y - yhat) / np.var(y)
+        r2 = r2_score(y, yhat)
         return float(r2)
 
     def _evaluate_rmse(self, data: NormData) -> float:
