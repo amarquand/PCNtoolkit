@@ -167,7 +167,7 @@ class Runner:
         self.unique_temp_dir = os.path.join(self.temp_dir, self.task_id)
         self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
         os.makedirs(self.unique_temp_dir, exist_ok=True)
-        with open(os.path.join(self.unique_temp_dir, "README.txt")) as file:
+        with open(os.path.join(self.unique_temp_dir, "README.txt"), "wt") as file:
             file.write("The contents of the folder containing this README file are temporary files used by the Runner. Once the Runner has successfully finished all its jobs, this folder and all its contents can be safely deleted.")
         os.makedirs(self.unique_log_dir, exist_ok=True)
         Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
