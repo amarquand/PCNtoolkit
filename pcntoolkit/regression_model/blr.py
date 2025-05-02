@@ -21,8 +21,8 @@ import xarray as xr
 from scipy import linalg, optimize  # type: ignore
 from scipy.linalg import LinAlgError  # type: ignore
 
-from pcntoolkit.math.basis_function import BasisFunction, create_basis_function
-from pcntoolkit.math.warp import *
+from pcntoolkit.math_functions.basis_function import BasisFunction, create_basis_function
+from pcntoolkit.mamath_functionsth.warp import *
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 

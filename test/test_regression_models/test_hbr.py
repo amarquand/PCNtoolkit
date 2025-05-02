@@ -8,7 +8,7 @@ import pymc as pm
 import pytest
 import xarray as xr
 
-from pcntoolkit.math.basis_function import BsplineBasisFunction
+from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
 from pcntoolkit.regression_model.hbr import (  # noqa: F401, F403
     HBR,
     BasePrior,
