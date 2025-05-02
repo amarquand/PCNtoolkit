@@ -13,7 +13,7 @@ import scipy.stats as stats
 import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.math.scaler import Scaler
+from pcntoolkit.math_functions.scaler import Scaler
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr import BLR  # noqa: F401 # type: ignore

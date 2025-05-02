@@ -13,9 +13,9 @@ import scipy.stats as stats
 import xarray as xr
 from pymc import math
 
-from pcntoolkit.math.basis_function import BasisFunction, LinearBasisFunction
-from pcntoolkit.math.factorize import *
-from pcntoolkit.math.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
+from pcntoolkit.math_functions.basis_function import BasisFunction, LinearBasisFunction
+from pcntoolkit.math_functions.factorize import *
+from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Output
 

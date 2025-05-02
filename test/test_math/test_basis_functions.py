@@ -1,6 +1,6 @@
 import pytest
 
-from pcntoolkit.math.basis_function import create_basis_function
+from pcntoolkit.math_functions.basis_function import create_basis_function
 from test.fixtures.norm_data_fixtures import *
 
 
