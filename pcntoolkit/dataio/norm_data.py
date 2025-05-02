@@ -178,6 +178,9 @@ class NormData(xr.Dataset):
                 batch_effects = batch_effects[:, None]
             data_vars["batch_effects"] = (["subjects", "batch_effect_dims"], batch_effects)
             coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+        else:
+            data_vars["batch_effects"] = (["subjects", "batch_effect_dims"], np.zeros((lengths[0], 1)))
+            coords["batch_effect_dims"] = ["dummy_batch_effect"]
         assert len(set(lengths)) == 1, "All arrays must have the same number of subjects"
         return cls(name, data_vars, coords, attrs)
 
@@ -334,6 +337,10 @@ class NormData(xr.Dataset):
         if batch_effects is not None and len(batch_effects) > 0:
             data_vars["batch_effects"] = (["subjects", "batch_effect_dims"], dataframe[batch_effects].to_numpy())
             coords["batch_effect_dims"] = batch_effects
+        else: 
+            # Initialize batch effects as zeros
+            data_vars["batch_effects"] = (["subjects", "batch_effect_dims"], np.zeros((len(dataframe), 1)))
+            coords["batch_effect_dims"] = ["dummy_batch_effect"]
 
         return cls(
             name,
