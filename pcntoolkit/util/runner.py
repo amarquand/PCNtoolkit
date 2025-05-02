@@ -14,7 +14,7 @@ from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.util.job_observer import JobObserver
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
-
+from pcntoolkit.dataio.fileio import create_incremental_backup
 
 class Runner:
     cross_validate: bool = False
@@ -571,14 +571,22 @@ class Runner:
         fn: Callable,
         chunk: tuple[NormData] | tuple[NormData, NormData | None],
     ) -> tuple[str, str]:
-        python_callable_path = os.path.join(self.unique_temp_dir, f"python_callable_{job_name}.pkl")
-        data_path = os.path.join(self.unique_temp_dir, f"data_{job_name}.pkl")
+        python_callable_path = self.get_python_callable_path(job_name)
+        data_path = self.get_data_path(job_name)
         os.makedirs(os.path.dirname(self.unique_temp_dir), exist_ok=True)
         with open(python_callable_path, "wb") as f:
             pickle.dump(fn, f)
         with open(data_path, "wb") as f:
             pickle.dump(chunk, f)
         return python_callable_path, data_path
+
+    def get_data_path(self, job_name):
+        data_path = os.path.join(self.unique_temp_dir, f"data_{job_name}.pkl")
+        return data_path
+
+    def get_python_callable_path(self, job_name):
+        python_callable_path = os.path.join(self.unique_temp_dir, f"python_callable_{job_name}.pkl")
+        return python_callable_path
 
     def check_job_status(self, job_name: str) -> tuple[bool, bool, Optional[str]]:
         """Check if a job has failed by looking for success file.
@@ -676,10 +684,7 @@ class Runner:
                     chunk_tuple = (first_chunk, second_chunk)
                 python_callable_path, data_path = self.save_callable_and_data(job_name, fn, chunk_tuple)
 
-                if self.job_type == "slurm":
-                    command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
-                elif self.job_type == "torque":
-                    command = self.wrap_in_torque_job(job_name, python_callable_path, data_path)
+                command = self.wrap_in_job(job_name, python_callable_path, data_path)
 
                 process = subprocess.Popen(
                     command,
@@ -706,13 +711,16 @@ class Runner:
                 chunk_tuple = (first_data_source, second_data_source)
             fn(*chunk_tuple)
 
-    def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
-        job_path = os.path.join(self.unique_temp_dir, f"{job_name}.sh")
-        current_file_path = os.path.abspath(__file__)
-        out_file = os.path.join(self.unique_log_dir, f"{job_name}.out")
-        err_file = os.path.join(self.unique_log_dir, f"{job_name}.err")
-        success_file = os.path.join(self.unique_log_dir, f"{job_name}.success")
+    def wrap_in_job(self, job_name, python_callable_path, data_path):
+        if self.job_type == "slurm":
+            command = self.wrap_in_slurm_job(job_name, python_callable_path, data_path)
+        elif self.job_type == "torque":
+            command = self.wrap_in_torque_job(job_name, python_callable_path, data_path)
+        return command
 
+    def wrap_in_slurm_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
+        job_path, out_file, err_file, success_file = self.get_all_job_file_paths(job_name)
+        current_file_path = os.path.abspath(__file__)
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/bash
@@ -744,13 +752,19 @@ exit $exit_code
             )
         return ["sbatch", job_path]
 
-    def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
+    def get_all_job_file_paths(self, job_name):
         job_path = os.path.join(self.unique_temp_dir, f"{job_name}.sh")
-        current_file_path = os.path.abspath(__file__)
         out_file = os.path.join(self.unique_log_dir, f"{job_name}.out")
         err_file = os.path.join(self.unique_log_dir, f"{job_name}.err")
         success_file = os.path.join(self.unique_log_dir, f"{job_name}.success")
+        create_incremental_backup(job_path)
+        create_incremental_backup(out_file)
+        create_incremental_backup(err_file)
+        return job_path,out_file,err_file,success_file
 
+    def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
+        job_path, out_file, err_file, success_file = self.get_all_job_file_paths(job_name)
+        current_file_path = os.path.abspath(__file__)
         with open(job_path, "w") as f:
             f.write(
                 f"""#!/bin/sh
@@ -803,9 +817,11 @@ exit $exit_code
             "save_dir": self.save_dir,
             "job_commands": self.job_commands,
             "failed_jobs": self.failed_jobs,
+            "environment":self.environment
         }
 
         runner_file = os.path.join(self.unique_temp_dir, "runner_state.json")
+        create_incremental_backup(runner_file)
         Output.print(Messages.SAVING_RUNNER_STATE, runner_file=runner_file)
         with open(runner_file, "w") as f:
             json.dump(runner_state, f, indent=4)
@@ -835,6 +851,7 @@ exit $exit_code
         runner.save_dir = state["save_dir"]
         runner.job_commands = state["job_commands"]
         runner.active_jobs = state["active_jobs"]
+        runner.environment = state['environment']
         runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
         Output.print(
             Messages.RUNNER_LOADED,
@@ -852,6 +869,10 @@ exit $exit_code
     def re_submit_failed_jobs(self, observe: bool = True) -> None:
         for job_name, command in self.job_commands.items():
             if job_name in self.failed_jobs:
+                python_callable_path = self.get_python_callable_path(job_name)
+                data_path = self.get_data_path(job_name)
+                command = self.wrap_in_job(job_name, python_callable_path, data_path)
+
                 process = subprocess.Popen(
                     command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True
                 )
@@ -866,7 +887,7 @@ exit $exit_code
                     raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))                
                 
                 if job_id:
-                    self.active_jobs[job_name] = job_id.group(1)
+                    self.active_jobs[job_name] = job_id
                     self.job_commands[job_name] = command
                
         self.failed_jobs.clear()

@@ -8,6 +8,9 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 
+import shutil
+import re
+
 from pcntoolkit.util.output import Errors, Messages, Output
 
 path = os.path.abspath(os.path.dirname(__file__))
@@ -524,3 +527,42 @@ def load(filename, mask=None, text=False, vol=True):
                         return x
                     except Exception:
                         raise ValueError(Output.error(Errors.UNKNOWN_FILE_TYPE, filename=filename))
+
+
+def create_incremental_backup(filepath):
+    """
+    Create an incremental backup of a file using the `.bak{n}` naming scheme.
+
+    If the file does not exist, an empty file is created at the specified path.
+    A backup is then created in the same directory with the following format:
+        original_name.bak{n}.original_extension
+    where {n} is incremented based on existing backups.
+    """
+    directory, filename = os.path.split(filepath)
+    name, ext = os.path.splitext(filename)
+    
+    if not os.path.exists(filepath):
+        # Create an empty file
+        with open(filepath, 'w') as f:
+            pass
+    else:
+        print("File exists:")
+
+    # Pattern: name.bakN.ext
+    regex = re.compile(rf"^{re.escape(name)}\.bak(\d+){re.escape(ext)}$")
+
+    existing = [
+        f for f in os.listdir(directory)
+        if regex.match(f)
+    ]
+
+    numbers = [
+        int(regex.match(f).group(1)) for f in existing
+    ] if existing else []
+
+    next_n = max(numbers, default=0) + 1
+    backup_name = f"{name}.bak{next_n}{ext}"
+    backup_path = os.path.join(directory, backup_name)
+
+    shutil.copy2(filepath, backup_path)
+    return backup_path
