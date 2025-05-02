@@ -151,9 +151,12 @@ class JobObserver:
 
     def show_job_status_monitor(self,in_notebook, statuses):
         show_pid = Output.get_show_pid()
-        Output.set_show_pid(False)
         show_messages = Output.get_show_messages()
+        show_timestamp = Output.get_show_timestamp()
+        
+        Output.set_show_pid(False)
         Output.set_show_messages(True)
+        Output.set_show_timestamp(False)
         if in_notebook:
             clear_output(wait=True)
         Output.print(Messages.JOB_STATUS_MONITOR, task_id=self.task_id)
@@ -193,4 +196,5 @@ class JobObserver:
 
         Output.set_show_messages(show_messages)
         Output.set_show_pid(show_pid)
+        Output.set_show_timestamp(show_timestamp)
 
