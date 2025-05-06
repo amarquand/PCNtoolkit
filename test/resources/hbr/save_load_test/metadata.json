@@ -12,7 +12,7 @@
         "outscaler": "none",
         "perform_cv": false,
         "cv_folds": 0,
-        "normative_model_name": "NormHBR"
+        "name": "NormHBR"
     },
     "response_vars": [
         "response_var_0",

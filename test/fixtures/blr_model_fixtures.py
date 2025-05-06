@@ -1,7 +1,7 @@
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.math.basis_function import BasisFunction, BsplineBasisFunction, LinearBasisFunction
+from pcntoolkit.math_functions.basis_function import BasisFunction, BsplineBasisFunction, LinearBasisFunction
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.regression_model.blr import BLR
 from test.fixtures.norm_data_fixtures import *

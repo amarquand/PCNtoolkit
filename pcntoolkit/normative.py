@@ -109,7 +109,7 @@ def load_response_vars(datafile: str, maskfile: str | None = None, vol: bool = T
     Load response variables from file. This will load the data and mask it if
     necessary. If the data is in ascii format it will be converted into a numpy
     array. If the data is in neuroimaging format it will be reshaped into a
-    2D array (subjects x variables) and a mask will be created if necessary.
+    2D array (observations x variables) and a mask will be created if necessary.
 
     :param datafile: File containing the response variables
     :param maskfile: Mask file (nifti only)
