@@ -65,7 +65,8 @@ class NormativeModel:
         self.evaluate_model: bool = evaluate_model
         self.saveresults: bool = saveresults
         self.saveplots: bool = saveplots
-        self.save_dir = save_dir
+        self._save_dir = save_dir
+        self.set_ensure_save_dirs()
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
         self.name: Optional[str] = name
@@ -150,8 +151,8 @@ class NormativeModel:
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
         self.postprocess(data)
-        self.predict(data) # Make sure everything is evaluated and saved
-        if self.savemodel: # Make sure model is saved 
+        self.predict(data)  # Make sure everything is evaluated and saved
+        if self.savemodel:  # Make sure model is saved
             self.save()
 
     def predict(self, data: NormData) -> NormData:
@@ -160,12 +161,14 @@ class NormativeModel:
         self.compute_centiles(data, recompute=True)
         self.compute_logp(data)
         if self.saveresults:
+            self.set_ensure_save_dirs()
             self.save_zscores(data)
             self.save_centiles(data)
             self.save_logp(data)
         if self.evaluate_model:
             self.evaluate(data)
             if self.saveresults:
+                self.set_ensure_save_dirs()
                 self.save_statistics(data)
         return data
 
@@ -199,28 +202,30 @@ class NormativeModel:
                 data["X"] = self.sample_covariates(data.batch_effects, covariate_range_per_batch_effect)
         else:
             if n_samples is None:
-                n_samples = self.n_fit_subjects
+                n_samples = self.n_fit_observations
             bes = self.sample_batch_effects(n_samples)
             X = self.sample_covariates(bes, covariate_range_per_batch_effect)
+            subjects = xr.DataArray(np.arange(n_samples), dims=("observations",))
             data = NormData(
                 name="synthesized",
-                data_vars={"X": X, "batch_effects": bes},
+                data_vars={"X": X, "batch_effects": bes, "subjects": subjects},
                 coords={
-                    "subjects": np.arange(n_samples),
+                    "observations": np.arange(n_samples),
                     "response_vars": self.response_vars,
                 },
+                attrs={'real_ids':False}
             )
 
         data["Z"] = xr.DataArray(
             np.random.randn(n_samples, len(self.response_vars)),  # type: ignore
-            dims=("subjects", "response_vars"),
-            coords=(data.coords["subjects"], data.coords["response_vars"]),
+            dims=("observations", "response_vars"),
+            coords=(data.coords["observations"], data.coords["response_vars"]),
         )
 
         data["Y"] = xr.DataArray(
             np.zeros((n_samples, len(self.response_vars))),  # type: ignore
-            dims=("subjects", "response_vars"),
-            coords=(data.coords["subjects"], data.coords["response_vars"]),
+            dims=("observations", "response_vars"),
+            coords=(data.coords["observations"], data.coords["response_vars"]),
         )
         self.preprocess(data)
         Output.print(Messages.SYNTHESIZING_DATA, n_models=len(self.response_vars))
@@ -262,8 +267,8 @@ class NormativeModel:
 
         data["Y_harmonized"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(self.response_vars))),
-            dims=("subjects", "response_vars"),
-            coords={"subjects": data.subjects, "response_vars": self.response_vars},
+            dims=("observations", "response_vars"),
+            coords={"observations": data.observations, "response_vars": self.response_vars},
         )
         for responsevar in self.response_vars:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
@@ -301,9 +306,9 @@ class NormativeModel:
 
         data["Z"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
-            dims=("subjects", "response_vars"),
+            dims=("observations", "response_vars"),
             coords={
-                "subjects": data.subjects,
+                "observations": data.observations,
                 "response_vars": list(respvar_intersection),
             },
         )
@@ -348,16 +353,17 @@ class NormativeModel:
         if centiles_already_computed:
             if not kwargs.get("recompute", False):
                 if all([c in data.centile.values for c in centiles]):
-                    Output.warning(Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, dataset_name = data.attrs['name'], centiles=centiles)
+                    Output.warning(
+                        Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, dataset_name=data.attrs["name"], centiles=centiles
+                    )
                     return data
             data = data.drop_vars(["centiles"])
             data = data.drop_dims(["centile"])
-          
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["centiles"] = xr.DataArray(
             np.zeros((centiles.shape[0], data.X.shape[0], len(respvar_intersection))),
-            dims=("centile", "subjects", "response_vars"),
+            dims=("centile", "observations", "response_vars"),
             coords={"centile": centiles},
         )
 
@@ -367,7 +373,7 @@ class NormativeModel:
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
             X, be, be_maps, _ = self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
-                Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("subjects",))
+                Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("observations",))
                 data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, be_maps, Z)
 
         self.postprocess(data)
@@ -398,8 +404,8 @@ class NormativeModel:
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["logp"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
-            dims=("subjects", "response_vars"),
-            coords={"subjects": data.subjects},
+            dims=("observations", "response_vars"),
+            coords={"observations": data.observations},
         )
 
         Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
@@ -438,7 +444,7 @@ class NormativeModel:
         """
         self.fit(fit_data)
         self.predict(predict_data)
-        if self.savemodel: #Make sure model is saved 
+        if self.savemodel:  # Make sure model is saved
             self.save()
         return predict_data
 
@@ -491,7 +497,7 @@ class NormativeModel:
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
-        new_model.predict(transfer_data) # Make sure everything is evaluated and saved
+        new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
         if new_model.savemodel:
             new_model.save()
         return new_model
@@ -504,12 +510,7 @@ class NormativeModel:
         new_model.predict(predict_data)
         return new_model
 
-    def extend(
-        self,
-        data: NormData,
-        save_dir: str | None = None,
-        n_synth_samples: int | None = None
-    ) -> NormativeModel:
+    def extend(self, data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
         """
         Extends the model to a new dataset.
         """
@@ -634,12 +635,12 @@ class NormativeModel:
         # ! check if synthesize, harmonize, etc. also do this correctly, and if xarrays passed to fit and predict are also indexed properly
         mapped_batch_effects = xr.DataArray(
             np.zeros(batch_effects.values.shape).astype(int),
-            dims=("subjects", "batch_effect_dims"),
+            dims=("observations", "batch_effect_dims"),
             coords={"batch_effect_dims": list(self.unique_batch_effects.keys())},
         )
         for i, be in enumerate(self.unique_batch_effects.keys()):
             for j, v in enumerate(batch_effects.sel(batch_effect_dims=be).values):
-                mapped_batch_effects.loc[{"subjects": j, "batch_effect_dims": be}] = self.batch_effects_maps[be][v]
+                mapped_batch_effects.loc[{"observations": j, "batch_effect_dims": be}] = self.batch_effects_maps[be][v]
 
         return mapped_batch_effects
 
@@ -659,8 +660,8 @@ class NormativeModel:
 
         bes = xr.DataArray(
             np.zeros((n_samples, len(self.batch_effect_counts.keys()))).astype(str),
-            dims=("subjects", "batch_effect_dims"),
-            coords={"subjects": np.arange(n_samples), "batch_effect_dims": self.batch_effect_dims},
+            dims=("observations", "batch_effect_dims"),
+            coords={"observations": np.arange(n_samples), "batch_effect_dims": self.batch_effect_dims},
         )
         for be in self.batch_effect_dims:
             countsum = np.sum(list(self.batch_effect_counts[be].values()))
@@ -679,22 +680,22 @@ class NormativeModel:
         """
         X = xr.DataArray(
             np.zeros((bes.shape[0], len(self.covariates))),
-            dims=("subjects", "covariates"),
-            coords={"subjects": np.arange(bes.shape[0]), "covariates": self.covariates},
+            dims=("observations", "covariates"),
+            coords={"observations": np.arange(bes.shape[0]), "covariates": self.covariates},
         )
         if covariate_range_per_batch_effect:
             for c in self.covariates:
                 for i in range(X.shape[0]):
                     running_min, running_max = -np.inf, np.inf
                     for k in self.batch_effect_dims:
-                        my_be = bes.sel({"subjects": i, "batch_effect_dims": k}).values.item()
+                        my_be = bes.sel({"observations": i, "batch_effect_dims": k}).values.item()
                         running_min = max(running_min, self.batch_effect_covariate_ranges[k][my_be][c]["min"])
                         running_max = min(running_max, self.batch_effect_covariate_ranges[k][my_be][c]["max"])
 
-                    X.loc[{"subjects": i, "covariates": c}] = np.random.uniform(running_min, running_max, size=1).item()
+                    X.loc[{"observations": i, "covariates": c}] = np.random.uniform(running_min, running_max, size=1).item()
         else:
             for c in self.covariates:
-                X.loc[{"subjects": np.arange(bes.shape[0]), "covariates": c}] = np.random.uniform(
+                X.loc[{"observations": np.arange(bes.shape[0]), "covariates": c}] = np.random.uniform(
                     self.covariate_ranges[c]["min"], self.covariate_ranges[c]["max"], size=(bes.shape[0])
                 )
         return X
@@ -754,6 +755,7 @@ class NormativeModel:
         modelpath = os.path.join(savepath, "model")
         os.makedirs(modelpath, exist_ok=True)
         my_dict = self.to_dict()
+        self.set_ensure_save_dirs()
         Output.print(Messages.SAVING_MODEL, save_dir=savepath)
         with open(os.path.join(modelpath, "normative_model.json"), "w", encoding="utf-8") as f:
             json.dump(my_dict, f, indent=4)
@@ -767,9 +769,9 @@ class NormativeModel:
             with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
                 json.dump(reg_model_dict, f, indent=4)
 
-
     def to_dict(self):
         my_dict = {
+            "name":self.name,
             "save_dir": self.save_dir,
             "savemodel": self.savemodel,
             "saveresults": self.saveresults,
@@ -895,10 +897,9 @@ class NormativeModel:
 
         if "covariates" in metadata:
             self.covariates = metadata["covariates"]
-        
+
         if "covariate_ranges" in metadata:
             self.covariate_ranges = metadata["covariate_ranges"]
-
 
         self.is_fitted = metadata["is_fitted"]
 
@@ -907,13 +908,13 @@ class NormativeModel:
     @property
     def save_dir(self) -> str:
         return self._save_dir
-    
+
     @save_dir.setter
     def save_dir(self, value: str) -> None:
         self._save_dir = value
         self.set_ensure_save_dirs()
 
-    def set_ensure_save_dirs(self) -> str:
+    def set_ensure_save_dirs(self):
         """
         Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
         """
@@ -933,10 +934,10 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results['subjects'] = old_results['subjects'].astype(str)
-                    old_results.set_index(['subjects'], inplace=True)
-                    # Merge on subjects, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(zdf, on="subjects", how="outer", suffixes=("_old", ""))
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(zdf, on="observations", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -950,7 +951,6 @@ class NormativeModel:
         if self.saveplots:
             plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
 
-
     def save_centiles(self, data: NormData) -> None:
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
@@ -962,10 +962,10 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results['subjects'] = old_results['subjects'].astype(str)
-                    old_results.set_index(['subjects', 'centile'], inplace=True)
-                    # Merge on subjects, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(centiles, on=["subjects", "centile"], how="outer", suffixes=("_old", ""))
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations", "centile"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(centiles, on=["observations", "centile"], how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -995,10 +995,10 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results['subjects'] = old_results['subjects'].astype(str)
-                    old_results.set_index(['subjects'], inplace=True)
-                    # Merge on subjects, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(logp, on="subjects", how="outer", suffixes=("_old", ""))
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(logp, on="observations", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
                 else:
@@ -1008,7 +1008,6 @@ class NormativeModel:
                 new_results.to_csv(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
 
     def save_statistics(self, data: NormData) -> None:
         mdf = data.statistics.to_dataframe().unstack(level="response_vars")
@@ -1020,7 +1019,7 @@ class NormativeModel:
                 f.seek(0)
                 old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    # Merge on subjects, keeping right (new) values for overlapping columns
+                    # Merge on observations, keeping right (new) values for overlapping columns
                     new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))
                     # Drop columns ending with '_old' as they're the duplicates from old_results
                     new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
@@ -1066,7 +1065,7 @@ class NormativeModel:
         return list(self.unique_batch_effects.keys())
 
     @property
-    def n_fit_subjects(self) -> int:
+    def n_fit_observations(self) -> int:
         """Returns the number of batch effects.
         Returns:
             int: The number of batch effects.

@@ -253,7 +253,7 @@ class BLR(RegressionModel):
             toreturn = (warped_y - self.ys) / np.sqrt(self.s2)
         else:
             toreturn = (np_Y - self.ys) / np.sqrt(self.s2)
-        return xr.DataArray(toreturn, dims=("subjects",))
+        return xr.DataArray(toreturn, dims=("observations",))
 
     def backward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Z: xr.DataArray) -> xr.DataArray:
         """
@@ -284,7 +284,7 @@ class BLR(RegressionModel):
         centiles = np_Z * np.sqrt(self.s2) + self.ys
         if self.warp:
             centiles = self.warp.invf(centiles, self.gamma)
-        return xr.DataArray(centiles, dims=("subjects",))
+        return xr.DataArray(centiles, dims=("observations",))
 
     def elemwise_logp(
         self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
@@ -331,7 +331,7 @@ class BLR(RegressionModel):
             # Add log determinant of Jacobian for warped models
             logp += np.log(self.warp.df(y, self.gamma))
 
-        return xr.DataArray(logp, dims=("subjects",))
+        return xr.DataArray(logp, dims=("observations",))
     
     def model_specific_evaluation(self, path: str) -> None:
         """

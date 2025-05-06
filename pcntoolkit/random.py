@@ -283,7 +283,7 @@ def make_velocity_plots(idp_nr, measure, data= data, seletced_sex = 'male', mode
             plt.plot(x[:,0], q[:,ir], color = 'black', alpha =0.6, linewidth = 1)
             #plt.plot(x[:,0], test_q2[0:100,ir+1], color = 'red')
             
-    lmap = {'blr':'W-BLR','SHASHo':'$\mathcal{S}_o$', 'SHASHb_1':'$\mathcal{S}_{b1}$','SHASHb_2':'$\mathcal{S}_{b2}$',  'Normal':'$\mathcal{N}$'}
+    lmap = {'blr':'W-BLR','SHASHo':'$\\mathcal{S}_o$', 'SHASHb_1':'$\\mathcal{S}_{b1}$','SHASHb_2':'$\\mathcal{S}_{b2}$',  'Normal':'$\\mathcal{N}$'}
     
     plt.plot(np.array([73,75]), q_for_thrivelines_demented, color = 'black', linestyle="--", linewidth = 2)
     #for range(:
