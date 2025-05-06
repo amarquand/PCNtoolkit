@@ -5,7 +5,7 @@ import numpy as np
 import pymc as pm
 import pytest
 
-from pcntoolkit.math.factorize import *
+from pcntoolkit.math_functions.factorize import *
 
 
 @pytest.mark.parametrize("mu, sigma", [(0, 1), (1, 2), (-1, 0.5)])

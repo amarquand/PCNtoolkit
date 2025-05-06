@@ -148,7 +148,7 @@ def hbr_model_args(save_dir_hbr):
         "save_dir": save_dir_hbr,
         "inscaler": "standardize",
         "outscaler": "standardize",
-        "normative_model_name": "hbr_test_model",
+        "name": "hbr_test_model",
         "alg": "hbr",
         "likelihood": "Normal",
         "linear_mu": True,
@@ -168,7 +168,7 @@ def hbr_model_args(save_dir_hbr):
 def test_hbr_model_to_and_from_dict_and_args(hbr_model_args: dict, norm_data_from_arrays: NormData, save_dir_hbr):
     model = NormativeModel.from_args(**hbr_model_args)
     model_dict = model.to_dict()
-    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","normative_model_name"]:
+    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","name"]:
         assert model_dict[k] == hbr_model_args[k]
     tmplt = model.template_regression_model
     assert isinstance(tmplt, HBR)
@@ -224,7 +224,7 @@ def blr_model_args(save_dir_blr):
         "save_dir": save_dir_blr,
         "inscaler": "standardize",
         "outscaler": "standardize",
-        "normative_model_name": "blr_test_model",
+        "name": "blr_test_model",
         "alg": "blr",
         "n_iter": 10,
         "tol": 1e-3,
@@ -243,7 +243,7 @@ def blr_model_args(save_dir_blr):
 def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_from_arrays: NormData, save_dir_blr):
     model = NormativeModel.from_args(**blr_model_args)
     model_dict = model.to_dict()
-    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","normative_model_name"]:
+    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","name"]:
         assert model_dict[k] == blr_model_args[k]
     tmplt = model.template_regression_model
     assert isinstance(tmplt, BLR)

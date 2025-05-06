@@ -1,6 +1,6 @@
 import pytest
 
-from pcntoolkit.math.warp import *
+from pcntoolkit.math_functions.warp import *
 
 
 def test_parseWarpString():

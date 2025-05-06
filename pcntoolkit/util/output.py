@@ -82,7 +82,8 @@ Total failed jobs: {total_failed_jobs}
     EXECUTION_FAILED = "Execution of callable failed, attempt {attempt} of {total} with error: \n{error}"
     EXECUTION_SUCCESSFUL = "Execution of callable successful, attempt {attempt} of {total}."
     DATASET_CREATED = """Dataset \"{name}\" created.
-    - {n_subjects} subjects
+    - {n_observations} observations
+    - {n_subjects} unique subjects
     - {n_covariates} covariates
     - {n_response_vars} response variables
     - {n_batch_effects} batch effects:

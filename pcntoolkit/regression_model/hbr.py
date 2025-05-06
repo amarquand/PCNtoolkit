@@ -13,9 +13,9 @@ import scipy.stats as stats
 import xarray as xr
 from pymc import math
 
-from pcntoolkit.math.basis_function import BasisFunction, LinearBasisFunction
-from pcntoolkit.math.factorize import *
-from pcntoolkit.math.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
+from pcntoolkit.math_functions.basis_function import BasisFunction, LinearBasisFunction
+from pcntoolkit.math_functions.factorize import *
+from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Output
 
@@ -192,8 +192,8 @@ class HBR(RegressionModel):
             var_names=var_names,
         )
 
-        n_subjects = model.dim_lengths["subjects"].eval().item()
-        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_subjects, x), var_names))
+        n_observations = model.dim_lengths["observations"].eval().item()
+        array_of_vars = list(map(lambda x: self.extract_and_reshape(post_pred, n_observations, x), var_names))
         result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(dim="sample")
         return result
 
@@ -320,11 +320,11 @@ class HBR(RegressionModel):
     def has_batch_effect(self) -> bool:
         return False
 
-    def extract_and_reshape(self, post_pred, subjects, var_name: str) -> xr.DataArray:
+    def extract_and_reshape(self, post_pred, observations, var_name: str) -> xr.DataArray:
         preds = post_pred[var_name].values
         if len(preds.shape) == 1:
-            preds = np.repeat(preds[None, :], subjects, axis=0)
-        return xr.DataArray(np.squeeze(preds), dims=["subjects", "sample"])
+            preds = np.repeat(preds[None, :], observations, axis=0)
+        return xr.DataArray(np.squeeze(preds), dims=["observations", "sample"])
 
     def to_dict(self, path: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -742,7 +742,7 @@ class RandomPrior(BasePrior):
         self.sigmas = {}
         self.offsets = {}
         self.scaled_offsets = {}
-        self.sample_dims = ("subjects",)
+        self.sample_dims = ("observations",)
 
     @property
     def dims(self):
@@ -764,7 +764,7 @@ class RandomPrior(BasePrior):
         be_maps: dict[str, dict[str, int]],
         Y: xr.DataArray,
     ):
-        # outdims = "subjects" if not self.dims else ("subjects", *self.dims)
+        # outdims = "observations" if not self.dims else ("observations", *self.dims)
         with model:
             self.mu.compile(model, X, be, be_maps, Y)
             if self.dims:
@@ -858,7 +858,7 @@ class LinearPrior(BasePrior):
         self.slope.dims = ("covariates",) if not self.dims else ("covariates", *self.dims)
         self.intercept = intercept or get_default_intercept()
         self.intercept.dims = self.dims
-        self.sample_dims = ("subjects",)
+        self.sample_dims = ("observations",)
         self.set_name(self.name)
         self.basis_function = basis_function
 
@@ -884,7 +884,7 @@ class LinearPrior(BasePrior):
         if not model.coords.get(covs):
             model.add_coords({covs: self.covariate_dims})
         with model:
-            pm_X = pm.Data(f"{self.name}_X", mapped_X, dims=("subjects", covs))
+            pm_X = pm.Data(f"{self.name}_X", mapped_X, dims=("observations", covs))
 
         self.slope.dims = (covs,) if not self.dims else (covs, *self.dims)
         self.intercept.dims = self.dims
@@ -917,7 +917,7 @@ class LinearPrior(BasePrior):
         self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
     ):
         mapped_X = self.basis_function.transform(X.values)
-        model.set_data(f"{self.name}_X", mapped_X, coords={"subjects": X.coords["subjects"].values})
+        model.set_data(f"{self.name}_X", mapped_X, coords={"observations": X.coords["observations"].values})
 
     def to_dict(self):
         dct = super().to_dict()
@@ -1068,7 +1068,7 @@ class Likelihood(ABC):
         return model
 
     def create_model_with_data(self, X, be, be_maps, Y) -> pm.Model:
-        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values, "subjects": X.coords["subjects"].values}
+        coords = {"batch_effect_dims": be.coords["batch_effect_dims"].values, "observations": X.coords["observations"].values}
         for _be, _map in be_maps.items():
             coords[_be] = [k for k in sorted(_map.keys(), key=(lambda v: _map[v]))]
 
@@ -1078,16 +1078,16 @@ class Likelihood(ABC):
                 pm.Data(
                     f"{be_name}_data",
                     be.sel(batch_effect_dims=be_name).values,
-                    dims=("subjects",),
+                    dims=("observations",),
                 )
-            pm.Data("Y", Y.values, dims=("subjects",))
+            pm.Data("Y", Y.values, dims=("observations",))
         return model
 
     def update_data(
         self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
     ):
         with model:
-            model.set_data(name="Y", values=Y.values, coords={"subjects": Y.coords["subjects"].values})
+            model.set_data(name="Y", values=Y.values, coords={"observations": Y.coords["observations"].values})
             for be_name in be.coords["batch_effect_dims"].values:
                 model.set_data(
                     name=f"{be_name}_data",
@@ -1207,7 +1207,7 @@ class NormalLikelihood(Likelihood):
         compiled_params = self.compile_params(model, X, be, be_maps, Y)
         compiled_params = {k: v[0] for k, v in compiled_params.items()}
         with model:
-            pm.Normal("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
+            pm.Normal("Yhat", **compiled_params, observed=model["Y"], dims="observations")
         return model
 
     def compile_params(
@@ -1282,7 +1282,7 @@ class SHASHbLikelihood(Likelihood):
         compiled_params = self.compile_params(model, X, be, be_maps, Y)
         compiled_params = {k: v[0] for k, v in compiled_params.items()}
         with model:
-            SHASHb("Yhat", **compiled_params, observed=model["Y"], dims="subjects")
+            SHASHb("Yhat", **compiled_params, observed=model["Y"], dims="observations")
         return model
 
     def compile_params(
@@ -1410,7 +1410,7 @@ class SHASHoLikelihood(Likelihood):
                 epsilon=epsilon_samples,
                 delta=delta_samples,
                 observed=model["Y"],
-                dims="subjects",
+                dims="observations",
             )
         return model
 
@@ -1503,7 +1503,7 @@ class SHASHo2Likelihood(Likelihood):
                 epsilon=epsilon_samples,
                 delta=delta_samples,
                 observed=model["Y"],
-                dims="subjects",
+                dims="observations",
             )
         return model
 
@@ -1589,7 +1589,7 @@ class BetaLikelihood(Likelihood):
                 alpha=alpha_samples,
                 beta=beta_samples,
                 observed=model["Y"],
-                dims="subjects",
+                dims="observations",
             )
         return model
 
