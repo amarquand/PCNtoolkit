@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pytest
 
@@ -37,7 +39,7 @@ def test_norm_data_creation(
     assert norm_data.batch_effects.shape == (n_train_subjects, len(batch_effect_values))
     assert norm_data.covariates.shape == (n_covariates,)
     assert norm_data.batch_effect_dims.shape == (n_batch_effect_dims,)
-    assert norm_data.coords["subjects"].shape == (n_train_subjects,)
+    assert norm_data.coords["observations"].shape == (n_train_subjects,)
     assert norm_data.coords["covariates"].shape == (n_covariates,)
     assert norm_data.coords["batch_effect_dims"].shape == (n_batch_effect_dims,)
 
@@ -68,7 +70,7 @@ def test_split_with_stratify(
         assert split.batch_effects.shape == (expected_samples, len(batch_effect_values))
         assert split.covariates.shape == (n_covariates,)
         assert split.batch_effect_dims.shape == (len(batch_effect_values),)
-        assert split.coords["subjects"].shape == (expected_samples,)
+        assert split.coords["observations"].shape == (expected_samples,)
         assert split.coords["covariates"].to_numpy().tolist() == [f"covariate_{i}" for i in range(n_covariates)]
         assert split.coords["batch_effect_dims"].to_numpy().tolist() == [
             f"batch_effect_{i}" for i in range(len(batch_effect_values))
@@ -138,3 +140,30 @@ def test_chunk(norm_data_from_arrays):
     chunks = norm_data_from_arrays.chunk(n_chunks=2)
     for i, chunk in enumerate(chunks):
         assert chunk.response_vars == ["response_var_{}".format(i)]
+
+
+def test_merge(norm_data_from_arrays:NormData):
+    datacopy = copy.deepcopy(norm_data_from_arrays)
+    merged = datacopy.merge(norm_data_from_arrays)
+    assert merged.X.to_numpy().shape[0] == 2*norm_data_from_arrays.X.to_numpy().shape[0]
+
+def test_to_dataframe():
+    # create data with duplicate subject IDs
+    n_subjects = 100
+    n_samples = 150
+
+    subjects = np.random.choice(n_subjects, n_samples, replace=True)
+    coefs = np.random.rand(n_subjects, 2)
+    covariates = np.random.choice(10, n_samples, replace=True) + 1
+    responses1 = covariates + 0.1 * covariates * coefs[subjects, 0] + np.random.randn(n_samples) * 0.03
+    responses2 = covariates + 0.1 * covariates * coefs[subjects, 1] + np.random.randn(n_samples) * 0.03
+
+    df = pd.DataFrame(
+        {"subjects": subjects, "age": covariates, "resp1": responses1, "resp2": responses2},
+    )
+    data = NormData.from_dataframe(
+        name="dummy", dataframe=df, covariates=["age"], response_vars=["resp1", "resp2"], subject_ids="subjects"
+    )
+
+    print(df)
+    print(data.to_dataframe())
