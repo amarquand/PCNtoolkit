@@ -84,7 +84,6 @@ class BasisFunction(ABC):
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(X.shape[1])]
         for i in self.basis_column:
-
             self.fit_column(X, i)
         self.is_fitted = True
 
