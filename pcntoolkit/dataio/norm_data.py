@@ -838,7 +838,7 @@ class NormData(xr.Dataset):
         if invert:
             mask = ~mask
 
-        to_return = self.where(mask).dropna(dim="obervations", how="all")
+        to_return = self.where(mask).dropna(dim="observations", how="all")
         if isinstance(to_return, xr.Dataset):
             if invert:
                 to_return = NormData.from_xarray(f"{self.attrs['name']}_not_selected", to_return)
