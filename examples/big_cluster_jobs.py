@@ -1,21 +1,22 @@
 
-import warnings
 import logging
-
-import pandas as pd
-from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model import NormativeModel
-from pcntoolkit.regression_model.blr import BLR
-from pcntoolkit.regression_model.test_model import TestModel
-from pcntoolkit.math.basis_function import BsplineBasisFunction
-from pcntoolkit.util.runner import Runner
-import numpy as np
-import pcntoolkit.util.output
 import os
 import sys
+import warnings
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
-from pcntoolkit.regression_model.hbr import NormalLikelihood, make_prior, HBR, SHASHbLikelihood
+
+import pcntoolkit.util.output
+from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
+from pcntoolkit.normative_model import NormativeModel
+from pcntoolkit.regression_model.blr import BLR
+from pcntoolkit.regression_model.hbr import HBR, NormalLikelihood, SHASHbLikelihood, make_prior
+from pcntoolkit.regression_model.test_model import TestModel
+from pcntoolkit.util.runner import Runner
 
 # Get the conda environment path
 conda_env_path = os.path.join(os.path.dirname(os.path.dirname(sys.executable)))
