@@ -119,3 +119,6 @@ examples/sandbox.py
 examples/sandbox.ipynb
 poetry.lock
 examples/01_nm_hbr.ipynb
+examples/saves/*
+pcntoolkit/saves/*
+pcntoolkit/saves/plots/*

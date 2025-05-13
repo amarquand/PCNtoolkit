@@ -14,6 +14,7 @@ import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.math_functions.scaler import Scaler
+from pcntoolkit.math_functions.thrive import get_correlation_matrix, get_thrive_Z_X
 
 # pylint: disable=unused-import
 from pcntoolkit.regression_model.blr import BLR  # noqa: F401 # type: ignore
@@ -147,11 +148,12 @@ class NormativeModel:
         for responsevar in self.response_vars:
             Output.print(Messages.FITTING_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y = self.extract_data(resp_fit_data)
+            X, be, be_maps, Y,_ = self.extract_data(resp_fit_data)
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
         self.postprocess(data)
         self.predict(data)  # Make sure everything is evaluated and saved
+        # self.compute_correlation_matrix(data)
         if self.savemodel:  # Make sure model is saved
             self.save()
 
@@ -233,7 +235,7 @@ class NormativeModel:
             Output.print(Messages.SYNTHESIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
             resp_Z_data = data.Z.sel({"response_vars": responsevar})
-            X, be, be_maps, _ = self.extract_data(resp_fit_data)
+            X, be, be_maps, _,_ = self.extract_data(resp_fit_data)
             Z_pred = self[responsevar].backward(X, be, be_maps, resp_Z_data)
             data["Y"].loc[{"response_vars": responsevar}] = Z_pred
         self.postprocess(data)
@@ -251,7 +253,7 @@ class NormativeModel:
             Reference batch effect.
         """
         self.preprocess(data)
-        _, be, _, _ = self.extract_data(data)
+        _, be, _, _,_ = self.extract_data(data)
         ref_be_array = be.astype(str)
         if not reference_batch_effect:
             ref_be = {k: v[0] for k, v in data.get_single_batch_effect().items()}
@@ -270,13 +272,26 @@ class NormativeModel:
             dims=("observations", "response_vars"),
             coords={"observations": data.observations, "response_vars": self.response_vars},
         )
+        if hasattr(data, 'thrive_Y'):
+            data["thrive_Y_harmonized"] = xr.DataArray(
+                np.zeros(data.thrive_Y.shape),
+                dims=("observations", "response_vars", "offset"),
+                coords={"observations": data.observations, "response_vars": self.response_vars},
+            )
         for responsevar in self.response_vars:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y = self.extract_data(resp_fit_data)
+            X, be, be_maps, Y,_ = self.extract_data(resp_fit_data)
             Z_pred = self[responsevar].forward(X, be, be_maps, Y)
             Y_harmonized = self[responsevar].backward(X, ref_be_array, be_maps, Z_pred)
             data["Y_harmonized"].loc[{"response_vars": responsevar}] = Y_harmonized
+            if hasattr(data, 'thrive_Y'):
+                for o in data.offset:
+                    offset_X = X.copy()
+                    # ! here
+                    offset_X.loc[{"covariates":self.thrive_covariate}] = resp_fit_data.thrive_X.sel({"offset":o})
+                    thrive_Y_harmonized = self[responsevar].backward(offset_X, ref_be_array, be_maps, resp_fit_data.thrive_Z.sel({"offset":o}))
+                    data["thrive_Y_harmonized"].loc[{"response_vars": responsevar, "offset":o}] = thrive_Y_harmonized
         self.is_fitted = True
 
         self.postprocess(data)
@@ -316,7 +331,7 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y = self.extract_data(resp_predict_data)
+            X, be, be_maps, Y,_ = self.extract_data(resp_predict_data)
             data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be, be_maps, Y)
 
         self.postprocess(data)
@@ -371,7 +386,7 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
-            X, be, be_maps, _ = self.extract_data(resp_predict_data)
+            X, be, be_maps, _ ,_= self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
                 Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("observations",))
                 data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, be_maps, Z)
@@ -411,11 +426,84 @@ class NormativeModel:
         Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y = self.extract_data(resp_predict_data)
+            X, be, be_maps, Y,_ = self.extract_data(resp_predict_data)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, be_maps, Y)
 
         self.postprocess(data)
+        return data
+    
+
+    def compute_correlation_matrix(self, data, bandwidth=5, covariate="age"):
+        self.thrive_covariate = covariate
+        self.correlation_matrix = get_correlation_matrix(data, bandwidth, covariate)
+
+
+    def compute_thrivelines(
+        self: NormativeModel, data: NormData, span: int = 5, step: int = 1, z_thrive:float=0., covariate="age", **kwargs
+    ) -> NormData:
+        """
+        Computes the thrivelines for each responsevar in the data
+        """
+        data.attrs['thrive_covariate'] = self.thrive_covariate
+        self.preprocess(data)
+        # TODO: Write utility function to create a normdata object for easy thriveline creation (with appropriate Z scores)
+        offsets = np.arange(0, span + 1, step=step)
+        # Compute the thrivelines
+        # Add them to the dataset, label them correctly
+
+        # Drop the thrivelines and dimensions if they already exist
+        centiles_already_computed = ("thrive_Z" in data or "thrive_Y" in data or "offset" in data.coords) and (data.attrs['z_thrive'] == z_thrive)
+        if centiles_already_computed:
+            if not kwargs.get("recompute", False):
+                if all([c in data.offset.values for c in offsets]):
+                    Output.warning(Warnings.THRIVELINES_ALREADY_COMPUTED_FOR, dataset_name=data.attrs["name"], offsets=offsets)
+                    return data
+            data = data.drop_vars(["thrive_Z"])
+            data = data.drop_vars(["thrive_Y"])
+            data = data.drop_dims(["offset"])
+        data.attrs['z_thrive'] = z_thrive
+
+        # Make Z-score predictions if needed
+        if not hasattr(data, "Z"):
+            self.predict(data)
+
+        respvar_intersection = list(set(self.response_vars).intersection(data.response_vars.values))
+
+        # Get the covariate matrix that was derived during fit
+        cormat = self.correlation_matrix
+
+        # Create X, Y, and Z for thrivelines data
+        data["thrive_Z"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(respvar_intersection), offsets.shape[0])),
+            dims=("observations", "response_vars", "offset"),
+            coords={"offset": offsets},
+        )
+        data["thrive_Y"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(respvar_intersection), offsets.shape[0])),
+            dims=("observations", "response_vars", "offset"),
+            coords={"offset": offsets},
+        )
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
+            X, be, be_maps, m, Z = self.extract_data(resp_predict_data)
+            X_cov = self.inscalers[covariate].inverse_transform(X.sel({"covariates": covariate}, drop=False))
+            thrive_Z, thrive_X = get_thrive_Z_X(cormat.sel({"response_vars": responsevar}), X_cov, Z, span, z_thrive=z_thrive)
+            data["thrive_X"] = xr.DataArray(
+                self.inscalers[covariate].transform(thrive_X),
+                dims=("observations", "offset"),
+                coords={"offset": offsets},
+            )
+            data["thrive_Z"].loc[{"response_vars": responsevar}] = thrive_Z
+            for io, o in enumerate(offsets):
+                this_Z = thrive_Z[:, io]
+                offset_X = X.copy()
+                offset_X.loc[{"covariates":self.thrive_covariate}] = data.thrive_X.sel({"offset":o})
+                scaled_thrive_Y = self[responsevar].backward(
+                    X, be, be_maps, this_Z
+                )
+                data["thrive_Y"].loc[{"response_vars": responsevar, "offset": o}] = scaled_thrive_Y
+        # self.postprocess(data)
         return data
 
     def evaluate(self, data: NormData) -> None:
@@ -448,7 +536,7 @@ class NormativeModel:
             self.save()
         return predict_data
 
-    def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray]:
+    def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
         if hasattr(data, "X"):
             X = data.X
         else:
@@ -463,7 +551,12 @@ class NormativeModel:
             Y = data.Y
         else:
             Y = None
-        return X, batch_effects, batch_effects_maps, Y  # type: ignore
+
+        if hasattr(data, "Z"):
+            Z = data.Z 
+        else:
+            Z = None
+        return X, batch_effects, batch_effects_maps, Y, Z  # type: ignore
 
     def transfer(self, transfer_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
         """
@@ -493,7 +586,7 @@ class NormativeModel:
         for responsevar in self.response_vars:
             Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
             resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y = new_model.extract_data(resp_transfer_data)
+            X, be, be_maps, Y,_ = new_model.extract_data(resp_transfer_data)
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
@@ -777,7 +870,6 @@ class NormativeModel:
             "saveresults": self.saveresults,
             "saveplots": self.saveplots,
             "evaluate_model": self.evaluate_model,
-            "name": self.name,
             "template_regression_model": self.template_regression_model.to_dict(),
             "inscalers": {k: v.to_dict() for k, v in self.inscalers.items()},
             "is_fitted": self.is_fitted,
@@ -1071,6 +1163,7 @@ class NormativeModel:
             int: The number of batch effects.
         """
         return sum(self.batch_effect_counts[self.batch_effect_dims[0]].values())
+    
 
 
 # Factory methods #########################################################################################

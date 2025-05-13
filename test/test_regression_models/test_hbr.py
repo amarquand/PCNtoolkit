@@ -150,7 +150,7 @@ def extract_data(fitted_norm_hbr_model: NormativeModel, norm_data_from_arrays: N
     fitted_norm_hbr_model.predict(norm_data_from_arrays)
     responsevar = fitted_norm_hbr_model.response_vars[0]
     resp_model: HBR = fitted_norm_hbr_model[responsevar]  # type: ignore
-    return resp_model.pymc_model, *fitted_norm_hbr_model.extract_data(norm_data_from_arrays.sel(response_vars=responsevar))
+    return resp_model.pymc_model, *fitted_norm_hbr_model.extract_data(norm_data_from_arrays.sel(response_vars=responsevar))[:-1]
 
 
 def test_normal_fixed_prior(extract_data):

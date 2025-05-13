@@ -73,6 +73,17 @@ class RegressionModel(ABC):
     def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
         """
         Fit the model to the data.
+
+        Parameters
+        ----------
+        X: xr.DataArray containing covariates
+        be: xr.DataArray containing batch effects
+        be_maps: dictionary of dictionaries mapping batch effect to indices
+        Y: xr.DataArray containing covariates
+
+        Returns
+        -------
+        Nothing
         """
         pass
 
@@ -82,12 +93,14 @@ class RegressionModel(ABC):
 
         Parameters
         ----------
-        NormData : NormData 
-            Data for normative modeling
+        X: xr.DataArray containing covariates
+        be: xr.DataArray containing batch effects
+        be_maps: dictionary of dictionaries mapping batch effect to indices
+        Y: xr.DataArray containing covariates
 
         Returns
         -------
-        NormData
+        xr.DataArray
             Data with Z-scores derived from Y values
         """
         pass
@@ -98,12 +111,14 @@ class RegressionModel(ABC):
 
         Parameters
         ----------
-        NormData : NormData
-            Data for normative modeling
+        X: xr.DataArray containing covariates
+        be: xr.DataArray containing batch effects
+        be_maps: dictionary of dictionaries mapping batch effect to indices
+        Y: xr.DataArray containing covariates
 
         Returns
         -------
-        NormData
+        xr.DataArray
             Data with Y values derived from Z-scores
         """
 
@@ -119,14 +134,10 @@ class RegressionModel(ABC):
 
         Parameters
         ----------
-        X : xr.DataArray
-            Covariate data
-        be : xr.DataArray
-            Batch effect data
-        be_maps : dict[str, dict[str, int]]
-            Batch effect maps
-        Y : xr.DataArray
-            Response data
+        X: xr.DataArray containing covariates
+        be: xr.DataArray containing batch effects
+        be_maps: dictionary of dictionaries mapping batch effect to indices
+        Y: xr.DataArray containing covariates
 
         Returns
         -------

@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd  # type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
+from torch import scatter
 
 from pcntoolkit.dataio.norm_data import NormData
 
@@ -30,6 +31,8 @@ def plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
+    show_thrivelines:bool=False,
+    z_thrive :float= 0.,
     save_dir: str | None = None,
     show_centile_labels: bool = True,
     show_legend: bool = True,
@@ -106,7 +109,9 @@ def plot_centiles(
         centile_data.batch_effects.loc[{"batch_effect_dims": be}] = v[0]
         
     if not hasattr(centile_data, "centiles"):
-        model.compute_centiles(centile_data, centiles=centiles, **kwargs)
+        model.compute_centiles(centile_data, centiles=centiles, **kwargs)    
+    if scatter_data and show_thrivelines:
+        model.compute_thrivelines(scatter_data, z_thrive=z_thrive)
 
     if harmonize_data and scatter_data:
         if model.has_batch_effect:
@@ -127,6 +132,7 @@ def plot_centiles(
             hue_data=hue_data,
             markers_data=markers_data,
             show_other_data=show_other_data,
+            show_thrivelines=show_thrivelines,
             palette=palette,
             save_dir=save_dir,
             show_centile_labels=show_centile_labels,
@@ -146,6 +152,7 @@ def _plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
+    show_thrivelines:bool=False,
     palette: str = "viridis",
     save_dir: str | None = None,
     show_centile_labels: bool = True,
@@ -208,8 +215,10 @@ def _plot_centiles(
     plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
 
     if scatter_data:
-        df = scatter_data.sel(filter_dict).to_dataframe()
+        scatter_filter = scatter_data.sel(filter_dict)
+        df = scatter_filter.to_dataframe()
         scatter_data_name = "Y_harmonized" if harmonize_data else "Y"
+        thriveline_data_name = "thrive_Y_harmonized" if harmonize_data else "thrive_Y"
         columns = [("X", covariate), (scatter_data_name, response_var)]
         columns.extend([("batch_effects", be.item()) for be in scatter_data.batch_effect_dims])
         df = df[columns]
@@ -226,6 +235,8 @@ def _plot_centiles(
                 zorder=1,
                 linewidth=0,
             )
+            if show_thrivelines:
+                plt.plot(scatter_filter.thrive_X.to_numpy().T, scatter_filter[thriveline_data_name].to_numpy().T)
         else:
             idx = np.full(len(df), True)
             for j in batch_effects:
@@ -245,6 +256,9 @@ def _plot_centiles(
                 zorder=1,
                 linewidth=0,
             )
+            if show_thrivelines:
+                plt.plot(scatter_filter.thrive_X.to_numpy().T, scatter_filter[thriveline_data_name].to_numpy().T)
+            
             if show_other_data:
                 non_be_df = df[~idx]
                 non_be_df["marker"] = ["Other data"] * len(non_be_df)
@@ -259,6 +273,7 @@ def _plot_centiles(
                     alpha=0.4,
                     zorder=0,
                 )
+            
             if show_legend:
                 legend = scatter.get_legend()
                 if legend:
@@ -271,6 +286,7 @@ def _plot_centiles(
                     )
             else:
                 plt.legend().remove()
+            
     title = f"Centiles of {response_var}"
     if scatter_data:
         if harmonize_data:
@@ -279,6 +295,7 @@ def _plot_centiles(
         else:
             plotname = f"centiles_{response_var}_{scatter_data.name}"
             title = f"{title}\n With raw {scatter_data.name} data"
+        
     plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)

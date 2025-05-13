@@ -45,7 +45,7 @@ def fitted_blr_model(blr_model: BLR, norm_data_from_arrays: NormData, fitted_nor
     os.makedirs(fitted_norm_blr_model.save_dir, exist_ok=True)
     be_maps = fitted_norm_blr_model.batch_effects_maps
     response_var = norm_data_from_arrays.response_vars[0]
-    X, be, be_maps, Y = fitted_norm_blr_model.extract_data(norm_data_from_arrays.sel(response_vars=response_var))
+    X, be, be_maps, Y, _ = fitted_norm_blr_model.extract_data(norm_data_from_arrays.sel(response_vars=response_var))
     blr_model.fit(X, be, be_maps, Y)
     return blr_model
 
@@ -64,6 +64,7 @@ def new_norm_blr_model(blr_model, save_dir_blr):
 
 @pytest.fixture
 def fitted_norm_blr_model(new_norm_blr_model: NormativeModel, norm_data_from_arrays: NormData):
+    print("removing items")
     if os.path.exists(new_norm_blr_model.save_dir):
         shutil.rmtree(new_norm_blr_model.save_dir)
     os.makedirs(new_norm_blr_model.save_dir, exist_ok=True)

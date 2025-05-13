@@ -112,7 +112,9 @@ class Warnings:
     DATA_ALREADY_SCALED = "Data is already scaled, skipping scaling back to original scale."
     NO_COVARIATES = "No covariates provided for dataset {dataset_name}."
     SYNTHESIZE_N_SAMPLES_IGNORED = "n_samples is ignored because data is provided."
-    CENTILES_ALREADY_COMPUTED_FOR_CENTILES = "Centiles are already computed for {dataset_name} for centiles {centiles}, skipping computation."
+    CENTILES_ALREADY_COMPUTED_FOR_CENTILES = "Centiles are already computed for {dataset_name} for centiles {centiles}, skipping computation. Force recompute by passing recompute=True to compute_centiles"
+    THRIVELINES_ALREADY_COMPUTED_FOR = "Thrivelines are already computed for {dataset_name} for offsets {offsets}, skipping computation. Force recompute by passing recompute=True to compute_thrivelines"  
+    REMOVE_NAN_SET_TO_FALSE = "Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training."
 
 class Errors:
     ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
@@ -173,7 +175,8 @@ class Errors:
     ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Predict with cross-validation is not supported. Please use fit_predict instead."
     ERROR_WARP_STRING_INVALID = "Invalid warp string: {warp_string}"
     ENSURE_POSITIVE_DISTRIBUTION = "Distribution for {name} needs to be positive."
-
+    OFFSETS_NOT_1D = "Offsets must be a 1-d array or list"
+    OFFSET_NOT_VALID = "Invalid list of offsets provided"
 class Output:
 
     _show_messages = True  # Default to showing output
