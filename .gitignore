@@ -123,3 +123,4 @@ examples/saves/*
 pcntoolkit/saves/*
 pcntoolkit/saves/plots/*
 pcntoolkit/util/plotter.py
+examples/cluster_job_test.py
