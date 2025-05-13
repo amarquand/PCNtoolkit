@@ -122,3 +122,4 @@ examples/01_nm_hbr.ipynb
 examples/saves/*
 pcntoolkit/saves/*
 pcntoolkit/saves/plots/*
+pcntoolkit/util/plotter.py

@@ -94,10 +94,8 @@ def plot_centiles(
     if batch_effects == "all":
         batch_effects = model.unique_batch_effects
     elif batch_effects is None:
-        if model.has_batch_effect:
-            batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
-        else:
-            batch_effects = {}
+        batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
+
 
     if plt_kwargs is None:
         plt_kwargs = {}
@@ -115,10 +113,10 @@ def plot_centiles(
 
     if harmonize_data and scatter_data:
         if model.has_batch_effect:
-            model.harmonize(scatter_data)
-        else:
-            reference_batch_effect = {k: v[0] for k, v in batch_effects}
+            reference_batch_effect = {k: v[0] for k, v in batch_effects.items()}
             model.harmonize(scatter_data, reference_batch_effect=reference_batch_effect)
+        else:
+            model.harmonize(scatter_data)
 
     for response_var in model.response_vars:
         _plot_centiles(
@@ -540,7 +538,7 @@ def _plot_ridge(data, variable, response_var, split_by, save_dir, **kwargs):
     g.set_titles("")
     g.set(yticks=[], ylabel="")
     g.despine(bottom=True, left=True)
-
+    plt.tight_layout()
     if save_dir:
         plt.savefig(os.path.join(save_dir, f"ridge_{response_var}_{variable}_{split_by}_{data.name}.png"))
     else:
