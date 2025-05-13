@@ -4,6 +4,7 @@ from .normative_model import NormativeModel
 from .regression_model.blr import BLR
 from .regression_model.hbr import HBR, BetaLikelihood, NormalLikelihood, SHASHbLikelihood, make_prior
 from .util.plotter import plot_centiles, plot_qq, plot_ridge
+from .util.runner import Runner
 
 __all__ = [
     "NormData",

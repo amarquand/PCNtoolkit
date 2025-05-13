@@ -101,7 +101,7 @@ def plot_centiles(
         plt_kwargs = {}
     palette = plt_kwargs.pop("cmap", "viridis")
 
-    centile_data = model.synthesize(n_samples=150, covariate_range_per_batch_effect=False)
+    centile_data = model.synthesize(n_samples=150, covariate_range_per_batch_effect=True)
     centile_data.X.loc[{"covariates": covariate}] = np.linspace(covariate_range[0], covariate_range[1], 150)
     for be, v in batch_effects.items():
         centile_data.batch_effects.loc[{"batch_effect_dims": be}] = v[0]
