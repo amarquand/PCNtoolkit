@@ -3,9 +3,10 @@ from typing import List, Tuple
 import numpy as np
 import xarray as xr
 from scipy import stats  # type: ignore
+from sklearn.metrics import r2_score
 
 from pcntoolkit.dataio.norm_data import NormData
-from sklearn.metrics import r2_score
+
 
 class Evaluator:
     """
@@ -278,7 +279,7 @@ class Evaluator:
         y = data["Y"].values
         yhat = data["Yhat"].values
         rho, p_rho = stats.spearmanr(y, yhat)
-        return float(rho), float(p_rho)
+        return float(rho), float(p_rho) #type:ignore
 
     def _evaluate_R2(self, data: NormData) -> float:
         """

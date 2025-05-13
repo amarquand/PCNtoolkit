@@ -38,7 +38,7 @@ class BLR(RegressionModel):
 
     def __init__(
         self,
-        name: str,
+        name: str = "template",
         n_iter: int = 300,
         tol: float = 1e-5,
         ard: bool = False,
@@ -47,10 +47,10 @@ class BLR(RegressionModel):
         l_bfgs_b_epsilon: float = 0.1,
         l_bfgs_b_norm: str = "l2",
         intercept: bool = True,
-        fixed_effect: bool = True,
+        fixed_effect: bool = False,
         heteroskedastic: bool = False,
         intercept_var: bool = False,
-        fixed_effect_var: bool = True,
+        fixed_effect_var: bool = False,
         warp_name: Optional[str] = None,
         warp_reparam: bool = False,
         basis_function_mean: BasisFunction = None,  # type: ignore

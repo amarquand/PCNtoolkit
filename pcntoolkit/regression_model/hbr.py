@@ -31,8 +31,8 @@ class HBR(RegressionModel):
 
     def __init__(
         self,
-        name: str,
-        likelihood: Likelihood,
+        name: str = "template",
+        likelihood: Likelihood = None, #type:ignore
         draws: int = 1500,
         tune: int = 500,
         cores: int = 4,

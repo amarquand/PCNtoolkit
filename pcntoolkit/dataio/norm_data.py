@@ -11,6 +11,7 @@ is used by all the models in the toolkit.
 from __future__ import annotations
 
 import copy
+import os
 from functools import reduce
 
 # pylint: disable=deprecated-class
@@ -82,7 +83,8 @@ class NormData(xr.Dataset):
         "batch_effect_counts",
         "batch_effect_covariate_ranges",
         "covariate_ranges",
-        "real_ids",  # Whether the ids are real or synthetic
+        "real_ids",
+        "thrive_covariate"  # Whether the ids are real or synthetic
     )
 
     def __init__(
@@ -112,7 +114,7 @@ class NormData(xr.Dataset):
         attrs["name"] = name  # type: ignore
         super().__init__(data_vars=data_vars, coords=coords, attrs=attrs)
         self["batch_effects"] = self["batch_effects"].astype(str)
-        attrs['real_ids'] = attrs.get('real_ids', False)
+        attrs["real_ids"] = attrs.get("real_ids", False)
         self.register_batch_effects()
         be_str = (
             "\t" + ("".join([f"\t{be} ({len(self.unique_batch_effects[be])})\n" for be in self.unique_batch_effects])).strip()
@@ -327,7 +329,7 @@ class NormData(xr.Dataset):
                 cols_to_check += batch_effects
             dataframe = dataframe.dropna(subset=cols_to_check)
         else:
-            print("Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training.")
+            Output.warning(Warnings.REMOVE_NAN_SET_TO_FALSE)
 
         data_vars = {}
         coords = {}
@@ -682,7 +684,7 @@ class NormData(xr.Dataset):
             return False
         return True
 
-    def scale_forward(self, inscalers: Dict[str, Any], outscaler: Dict[str, Any]) -> None:
+    def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """
         Scale the data forward in-place using provided scalers.
 
@@ -705,11 +707,18 @@ class NormData(xr.Dataset):
                     dims=self.X.dims,
                     attrs=self.X.attrs,
                 )
+            if "thrive_X" in self.data_vars:
+                self["thrive_X"] = xr.DataArray(
+                    inscalers[self.attrs['thrive_covariate']].transform(self.thrive_X.data),
+                    coords=self.thrive_X.coords,
+                    dims=self.thrive_X.dims,
+                    attrs=self.thrive_X.attrs,
+                )    
             # Scale y column-wise using the outscalers
             if "Y" in self.data_vars:
                 scaled_y = np.zeros(self.Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_y[:, i] = outscaler[responsevar].transform(self.Y.sel(response_vars=responsevar).data)
+                    scaled_y[:, i] = outscalers[responsevar].transform(self.Y.sel(response_vars=responsevar).data)
                 self["Y"] = xr.DataArray(
                     scaled_y,
                     coords=self.Y.coords,
@@ -719,7 +728,7 @@ class NormData(xr.Dataset):
             if "Y_harmonized" in self.data_vars:
                 scaled_Y_harmonized = np.zeros(self.Y_harmonized.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_Y_harmonized[:, i] = outscaler[responsevar].transform(
+                    scaled_Y_harmonized[:, i] = outscalers[responsevar].transform(
                         self.Y_harmonized.sel(response_vars=responsevar).data
                     )
                 self["Y_harmonized"] = xr.DataArray(
@@ -731,14 +740,25 @@ class NormData(xr.Dataset):
             if "centiles" in self.data_vars:
                 scaled_centiles = np.zeros(self.centiles.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_centiles[:, :, i] = outscaler[responsevar].transform(self.centiles.sel(response_vars=responsevar).data)
+                    scaled_centiles[:, :, i] = outscalers[responsevar].transform(self.centiles.sel(response_vars=responsevar).data)
                 self["centiles"] = xr.DataArray(
                     scaled_centiles,
                     coords=self.centiles.coords,
                     dims=self.centiles.dims,
                     attrs=self.centiles.attrs,
                 )
-
+            if "thrive_Y" in self.data_vars:
+                scaled_thrive_Y = np.zeros(self.thrive_Y.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    scaled_thrive_Y[:, i,:] = outscalers[responsevar].transform(
+                        self.thrive_Y.sel(response_vars=responsevar).data
+                    )
+                self["thrive_Y"] = xr.DataArray(
+                    scaled_thrive_Y,
+                    coords=self.thrive_Y.coords,
+                    dims=self.thrive_Y.dims,
+                    attrs=self.thrive_Y.attrs,
+                )
             self.attrs["is_scaled"] = True
 
     def scale_backward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
@@ -763,6 +783,13 @@ class NormData(xr.Dataset):
                     dims=self.X.dims,
                     attrs=self.X.attrs,
                 )
+            if "thrive_X" in self.data_vars:
+                self["thrive_X"] = xr.DataArray(
+                    inscalers[self.attrs['thrive_covariate']].inverse_transform(self.thrive_X.data),
+                    coords=self.thrive_X.coords,
+                    dims=self.thrive_X.dims,
+                    attrs=self.thrive_X.attrs,
+                )    
             if "Y" in self.data_vars:
                 unscaled_y = np.zeros(self.Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
@@ -799,6 +826,20 @@ class NormData(xr.Dataset):
                     dims=self.centiles.dims,
                     attrs=self.centiles.attrs,
                 )
+
+            if "thrive_Y" in self.data_vars:
+                unscaled_thrive_Y = np.zeros(self.thrive_Y.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    unscaled_thrive_Y[:, i,:] = outscalers[responsevar].inverse_transform(
+                        self.thrive_Y.sel(response_vars=responsevar).data
+                    )
+                self["thrive_Y"] = xr.DataArray(
+                    unscaled_thrive_Y,
+                    coords=self.thrive_Y.coords,
+                    dims=self.thrive_Y.dims,
+                    attrs=self.thrive_Y.attrs,
+                )
+
             self.attrs["is_scaled"] = False
 
     def split_batch_effects(
@@ -883,7 +924,7 @@ class NormData(xr.Dataset):
 
         acc.append(be)
 
-        subjects = xr.DataArray.to_dataframe(self.subjects, dim_order)[['subjects']]
+        subjects = xr.DataArray.to_dataframe(self.subjects, dim_order)[["subjects"]]
         subjects.columns = [
             ("subjects", "subjects"),
         ]
@@ -956,3 +997,247 @@ class NormData(xr.Dataset):
     @property
     def response_var_list(self) -> xr.DataArray:
         return self.response_vars.to_numpy().copy().tolist()
+
+
+
+
+def load_fcon1000():
+    resource_dir = "pcntoolkit_resources"
+    os.makedirs(os.path.join(resource_dir, "data"), exist_ok=True)
+    if not os.path.exists(os.path.join(resource_dir, "data/fcon1000.csv")):
+        pd.read_csv(
+            "https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv"
+        ).to_csv(os.path.join(resource_dir, "data/fcon1000.csv"), index=False)
+
+    data = pd.read_csv(os.path.join(resource_dir, "data/fcon1000.csv"))
+    subject_ids = "sub_id"
+    covariates = ["age"]
+    batch_effects = ["sex", "site"]
+    response_vars = [
+        "lh_G&S_frontomargin_thickness",
+        "lh_G&S_occipital_inf_thickness",
+        "lh_G&S_paracentral_thickness",
+        "lh_G&S_subcentral_thickness",
+        "lh_G&S_transv_frontopol_thickness",
+        "lh_G&S_cingul-Ant_thickness",
+        "lh_G&S_cingul-Mid-Ant_thickness",
+        "lh_G&S_cingul-Mid-Post_thickness",
+        "lh_G_cingul-Post-dorsal_thickness",
+        "lh_G_cingul-Post-ventral_thickness",
+        "lh_G_cuneus_thickness",
+        "lh_G_front_inf-Opercular_thickness",
+        "lh_G_front_inf-Orbital_thickness",
+        "lh_G_front_inf-Triangul_thickness",
+        "lh_G_front_middle_thickness",
+        "lh_G_front_sup_thickness",
+        "lh_G_Ins_lg&S_cent_ins_thickness",
+        "lh_G_insular_short_thickness",
+        "lh_G_occipital_middle_thickness",
+        "lh_G_occipital_sup_thickness",
+        "lh_G_oc-temp_lat-fusifor_thickness",
+        "lh_G_oc-temp_med-Lingual_thickness",
+        "lh_G_oc-temp_med-Parahip_thickness",
+        "lh_G_orbital_thickness",
+        "lh_G_pariet_inf-Angular_thickness",
+        "lh_G_pariet_inf-Supramar_thickness",
+        "lh_G_parietal_sup_thickness",
+        "lh_G_postcentral_thickness",
+        "lh_G_precentral_thickness",
+        "lh_G_precuneus_thickness",
+        "lh_G_rectus_thickness",
+        "lh_G_subcallosal_thickness",
+        "lh_G_temp_sup-G_T_transv_thickness",
+        "lh_G_temp_sup-Lateral_thickness",
+        "lh_G_temp_sup-Plan_polar_thickness",
+        "lh_G_temp_sup-Plan_tempo_thickness",
+        "lh_G_temporal_inf_thickness",
+        "lh_G_temporal_middle_thickness",
+        "lh_Lat_Fis-ant-Horizont_thickness",
+        "lh_Lat_Fis-ant-Vertical_thickness",
+        "lh_Lat_Fis-post_thickness",
+        "lh_Pole_occipital_thickness",
+        "lh_Pole_temporal_thickness",
+        "lh_S_calcarine_thickness",
+        "lh_S_central_thickness",
+        "lh_S_cingul-Marginalis_thickness",
+        "lh_S_circular_insula_ant_thickness",
+        "lh_S_circular_insula_inf_thickness",
+        "lh_S_circular_insula_sup_thickness",
+        "lh_S_collat_transv_ant_thickness",
+        "lh_S_collat_transv_post_thickness",
+        "lh_S_front_inf_thickness",
+        "lh_S_front_middle_thickness",
+        "lh_S_front_sup_thickness",
+        "lh_S_interm_prim-Jensen_thickness",
+        "lh_S_intrapariet&P_trans_thickness",
+        "lh_S_oc_middle&Lunatus_thickness",
+        "lh_S_oc_sup&transversal_thickness",
+        "lh_S_occipital_ant_thickness",
+        "lh_S_oc-temp_lat_thickness",
+        "lh_S_oc-temp_med&Lingual_thickness",
+        "lh_S_orbital_lateral_thickness",
+        "lh_S_orbital_med-olfact_thickness",
+        "lh_S_orbital-H_Shaped_thickness",
+        "lh_S_parieto_occipital_thickness",
+        "lh_S_pericallosal_thickness",
+        "lh_S_postcentral_thickness",
+        "lh_S_precentral-inf-part_thickness",
+        "lh_S_precentral-sup-part_thickness",
+        "lh_S_suborbital_thickness",
+        "lh_S_subparietal_thickness",
+        "lh_S_temporal_inf_thickness",
+        "lh_S_temporal_sup_thickness",
+        "lh_S_temporal_transverse_thickness",
+        "lh_MeanThickness_thickness",
+        "BrainSegVolNotVent",
+        "eTIV",
+        "rh_G&S_frontomargin_thickness",
+        "rh_G&S_occipital_inf_thickness",
+        "rh_G&S_paracentral_thickness",
+        "rh_G&S_subcentral_thickness",
+        "rh_G&S_transv_frontopol_thickness",
+        "rh_G&S_cingul-Ant_thickness",
+        "rh_G&S_cingul-Mid-Ant_thickness",
+        "rh_G&S_cingul-Mid-Post_thickness",
+        "rh_G_cingul-Post-dorsal_thickness",
+        "rh_G_cingul-Post-ventral_thickness",
+        "rh_G_cuneus_thickness",
+        "rh_G_front_inf-Opercular_thickness",
+        "rh_G_front_inf-Orbital_thickness",
+        "rh_G_front_inf-Triangul_thickness",
+        "rh_G_front_middle_thickness",
+        "rh_G_front_sup_thickness",
+        "rh_G_Ins_lg&S_cent_ins_thickness",
+        "rh_G_insular_short_thickness",
+        "rh_G_occipital_middle_thickness",
+        "rh_G_occipital_sup_thickness",
+        "rh_G_oc-temp_lat-fusifor_thickness",
+        "rh_G_oc-temp_med-Lingual_thickness",
+        "rh_G_oc-temp_med-Parahip_thickness",
+        "rh_G_orbital_thickness",
+        "rh_G_pariet_inf-Angular_thickness",
+        "rh_G_pariet_inf-Supramar_thickness",
+        "rh_G_parietal_sup_thickness",
+        "rh_G_postcentral_thickness",
+        "rh_G_precentral_thickness",
+        "rh_G_precuneus_thickness",
+        "rh_G_rectus_thickness",
+        "rh_G_subcallosal_thickness",
+        "rh_G_temp_sup-G_T_transv_thickness",
+        "rh_G_temp_sup-Lateral_thickness",
+        "rh_G_temp_sup-Plan_polar_thickness",
+        "rh_G_temp_sup-Plan_tempo_thickness",
+        "rh_G_temporal_inf_thickness",
+        "rh_G_temporal_middle_thickness",
+        "rh_Lat_Fis-ant-Horizont_thickness",
+        "rh_Lat_Fis-ant-Vertical_thickness",
+        "rh_Lat_Fis-post_thickness",
+        "rh_Pole_occipital_thickness",
+        "rh_Pole_temporal_thickness",
+        "rh_S_calcarine_thickness",
+        "rh_S_central_thickness",
+        "rh_S_cingul-Marginalis_thickness",
+        "rh_S_circular_insula_ant_thickness",
+        "rh_S_circular_insula_inf_thickness",
+        "rh_S_circular_insula_sup_thickness",
+        "rh_S_collat_transv_ant_thickness",
+        "rh_S_collat_transv_post_thickness",
+        "rh_S_front_inf_thickness",
+        "rh_S_front_middle_thickness",
+        "rh_S_front_sup_thickness",
+        "rh_S_interm_prim-Jensen_thickness",
+        "rh_S_intrapariet&P_trans_thickness",
+        "rh_S_oc_middle&Lunatus_thickness",
+        "rh_S_oc_sup&transversal_thickness",
+        "rh_S_occipital_ant_thickness",
+        "rh_S_oc-temp_lat_thickness",
+        "rh_S_oc-temp_med&Lingual_thickness",
+        "rh_S_orbital_lateral_thickness",
+        "rh_S_orbital_med-olfact_thickness",
+        "rh_S_orbital-H_Shaped_thickness",
+        "rh_S_parieto_occipital_thickness",
+        "rh_S_pericallosal_thickness",
+        "rh_S_postcentral_thickness",
+        "rh_S_precentral-inf-part_thickness",
+        "rh_S_precentral-sup-part_thickness",
+        "rh_S_suborbital_thickness",
+        "rh_S_subparietal_thickness",
+        "rh_S_temporal_inf_thickness",
+        "rh_S_temporal_sup_thickness",
+        "rh_S_temporal_transverse_thickness",
+        "rh_MeanThickness_thickness",
+        "Left-Lateral-Ventricle",
+        "Left-Inf-Lat-Vent",
+        "Left-Cerebellum-White-Matter",
+        "Left-Cerebellum-Cortex",
+        "Left-Thalamus-Proper",
+        "Left-Caudate",
+        "Left-Putamen",
+        "Left-Pallidum",
+        "3rd-Ventricle",
+        "4th-Ventricle",
+        "Brain-Stem",
+        "Left-Hippocampus",
+        "Left-Amygdala",
+        "CSF",
+        "Left-Accumbens-area",
+        "Left-VentralDC",
+        "Left-vessel",
+        "Left-choroid-plexus",
+        "Right-Lateral-Ventricle",
+        "Right-Inf-Lat-Vent",
+        "Right-Cerebellum-White-Matter",
+        "Right-Cerebellum-Cortex",
+        "Right-Thalamus-Proper",
+        "Right-Caudate",
+        "Right-Putamen",
+        "Right-Pallidum",
+        "Right-Hippocampus",
+        "Right-Amygdala",
+        "Right-Accumbens-area",
+        "Right-VentralDC",
+        "Right-vessel",
+        "Right-choroid-plexus",
+        "5th-Ventricle",
+        "WM-hypointensities",
+        "Left-WM-hypointensities",
+        "Right-WM-hypointensities",
+        "non-WM-hypointensities",
+        "Left-non-WM-hypointensities",
+        "Right-non-WM-hypointensities",
+        "Optic-Chiasm",
+        "CC_Posterior",
+        "CC_Mid_Posterior",
+        "CC_Central",
+        "CC_Mid_Anterior",
+        "CC_Anterior",
+        "BrainSegVol",
+        "BrainSegVolNotVentSurf",
+        "lhCortexVol",
+        "rhCortexVol",
+        "CortexVol",
+        "lhCerebralWhiteMatterVol",
+        "rhCerebralWhiteMatterVol",
+        "CerebralWhiteMatterVol",
+        "SubCortGrayVol",
+        "TotalGrayVol",
+        "SupraTentorialVol",
+        "SupraTentorialVolNotVent",
+        "SupraTentorialVolNotVentVox",
+        "MaskVol",
+        "BrainSegVol-to-eTIV",
+        "MaskVol-to-eTIV",
+        "lhSurfaceHoles",
+        "rhSurfaceHoles",
+        "SurfaceHoles",
+        "EstimatedTotalIntraCranialVol",
+    ]
+    norm_data = NormData.from_dataframe(
+        name="fcon1000",
+        dataframe=data,
+        covariates=covariates,
+        batch_effects=batch_effects,
+        response_vars=response_vars,
+        subject_ids=subject_ids,
+    )
+    return norm_data
