@@ -595,11 +595,11 @@ class NormativeModel:
             new_model.save()
         return new_model
 
-    def transfer_predict(self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None) -> NormativeModel:
+    def transfer_predict(self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
         """
         Transfers the model to a new dataset and predicts the data.
         """
-        new_model = self.transfer(transfer_data, save_dir)
+        new_model = self.transfer(transfer_data, save_dir, **kwargs)
         new_model.predict(predict_data)
         return new_model
 
@@ -1164,6 +1164,3 @@ class NormativeModel:
         """
         return sum(self.batch_effect_counts[self.batch_effect_dims[0]].values())
     
-
-
-# Factory methods #########################################################################################

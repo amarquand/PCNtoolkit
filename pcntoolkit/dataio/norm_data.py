@@ -1239,5 +1239,6 @@ def load_fcon1000():
         batch_effects=batch_effects,
         response_vars=response_vars,
         subject_ids=subject_ids,
+        remove_Nan=True
     )
     return norm_data
