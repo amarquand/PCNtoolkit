@@ -996,16 +996,21 @@ class NormData(xr.Dataset):
 
 
 
-
-def load_fcon1000():
-    resource_dir = "pcntoolkit_resources"
-    os.makedirs(os.path.join(resource_dir, "data"), exist_ok=True)
-    if not os.path.exists(os.path.join(resource_dir, "data/fcon1000.csv")):
-        pd.read_csv(
+def load_fcon1000(save_path:str|None=  None):
+    """Download and save fcon dataset to specified path, or load it from there if it is already downloaded
+    """
+    if not save_path:
+        save_path = os.path.join("pcntoolkit_resources", "data")
+    os.makedirs(save_path, exist_ok=True)
+    data_path = os.path.join(save_path, "fcon1000.csv")
+    if not os.path.exists(data_path):
+        data = pd.read_csv(
             "https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv"
-        ).to_csv(os.path.join(resource_dir, "data/fcon1000.csv"), index=False)
+        )
+        data.to_csv(data_path, index=False)
+    else:
+        data = pd.read_csv(data_path)
 
-    data = pd.read_csv(os.path.join(resource_dir, "data/fcon1000.csv"))
     subject_ids = "sub_id"
     covariates = ["age"]
     batch_effects = ["sex", "site"]
