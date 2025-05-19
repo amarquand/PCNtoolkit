@@ -850,14 +850,13 @@ class NormData(xr.Dataset):
         """
         Split the data into two datasets, one with the specified batch effects and one without.
         """
-        A = self.select_batch_effects(batch_effects)
-        B = self.select_batch_effects(batch_effects, invert=True)
-        if names is not None:
-            A.name = names[0]
-            B.name = names[1]
+        if names is None:
+            names = ['selected', 'not_selected']
+        A = self.select_batch_effects(names[0], batch_effects)
+        B = self.select_batch_effects(names[1], batch_effects, invert=True)
         return A, B
 
-    def select_batch_effects(self, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
+    def select_batch_effects(self, name, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
         """
         Select only the specified batch effects.
 
@@ -881,10 +880,7 @@ class NormData(xr.Dataset):
 
         to_return = self.where(mask).dropna(dim="observations", how="all")
         if isinstance(to_return, xr.Dataset):
-            if invert:
-                to_return = NormData.from_xarray(f"{self.attrs['name']}_not_selected", to_return)
-            else:
-                to_return = NormData.from_xarray(f"{self.attrs['name']}_selected", to_return)
+            to_return = NormData.from_xarray(name, to_return)
         to_return.register_batch_effects()
         return to_return
 
