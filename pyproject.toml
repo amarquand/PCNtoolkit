@@ -3,7 +3,8 @@ name = "pcntoolkit"
 version = "1.0.0a4"
 description = "Predictive Clinical Neuroscience Toolkit"
 readme = "README.md"
-license = { text = "GNU GPLv3" }
+license = "GPL-3.0-only"
+
 
 authors = [
     { name = "Andre Marquand" },
