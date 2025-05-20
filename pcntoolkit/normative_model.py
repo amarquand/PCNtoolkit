@@ -273,13 +273,13 @@ class NormativeModel:
         data["Y_harmonized"] = xr.DataArray(
             np.zeros((data.X.shape[0], n_vars)),
             dims=("observations", "response_vars"),
-            coords={"observations": data.observations, "response_vars": self.response_vars},
+            coords={"observations": data.observations, "response_vars": data.response_vars},
         )
         if hasattr(data, 'thrive_Y'):
             data["thrive_Y_harmonized"] = xr.DataArray(
                 np.zeros(data.thrive_Y.shape),
                 dims=("observations", "response_vars", "offset"),
-                coords={"observations": data.observations, "response_vars": self.response_vars},
+                coords={"observations": data.observations, "response_vars": data.response_vars},
             )
         for responsevar in respvar_intersection:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
