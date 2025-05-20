@@ -1041,7 +1041,7 @@ class NormativeModel:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
         if self.saveplots:
-            plot_qq(data, save_dir=os.path.join(self.save_dir, "plots"))
+            plot_qq(data, plot_id_line=True, save_dir=os.path.join(self.save_dir, "plots"))
 
     def save_centiles(self, data: NormData) -> None:
         centiles = data.centiles.to_dataframe().unstack(level="response_vars")
