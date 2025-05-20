@@ -265,10 +265,13 @@ class NormativeModel:
         for k, v in ref_be.items():
             ref_be_array.loc[{"batch_effect_dims": k}] = v
         ref_be_array = self.map_batch_effects(ref_be_array)
-        Output.print(Messages.HARMONIZING_DATA, n_models=len(self.response_vars))
+
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
+        n_vars = len(respvar_intersection)
+        Output.print(Messages.HARMONIZING_DATA, n_models=n_vars)
 
         data["Y_harmonized"] = xr.DataArray(
-            np.zeros((data.X.shape[0], len(self.response_vars))),
+            np.zeros((data.X.shape[0], n_vars)),
             dims=("observations", "response_vars"),
             coords={"observations": data.observations, "response_vars": self.response_vars},
         )
@@ -278,7 +281,7 @@ class NormativeModel:
                 dims=("observations", "response_vars", "offset"),
                 coords={"observations": data.observations, "response_vars": self.response_vars},
             )
-        for responsevar in self.response_vars:
+        for responsevar in respvar_intersection:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
             X, be, be_maps, Y,_ = self.extract_data(resp_fit_data)
