@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import copy
-import fcntl
 import glob
 import json
 import os
 from typing import List, Optional, Tuple
+from unittest import result
 
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
 import xarray as xr
 
@@ -148,7 +147,7 @@ class NormativeModel:
         for responsevar in self.response_vars:
             Output.print(Messages.FITTING_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y,_ = self.extract_data(resp_fit_data)
+            X, be, be_maps, Y, _ = self.extract_data(resp_fit_data)
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
         self.postprocess(data)
@@ -159,19 +158,29 @@ class NormativeModel:
 
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores and centiles for each response variable using fitted regression models."""
+        self.set_ensure_save_dirs()
         self.compute_zscores(data)
         self.compute_centiles(data, recompute=True)
         self.compute_logp(data)
-        if self.saveresults:
-            self.set_ensure_save_dirs()
-            self.save_zscores(data)
-            self.save_centiles(data)
-            self.save_logp(data)
+
         if self.evaluate_model:
             self.evaluate(data)
-            if self.saveresults:
-                self.set_ensure_save_dirs()
-                self.save_statistics(data)
+        if self.saveresults:
+            resultsdir = os.path.join(self.save_dir, "results")
+            data.save_centiles(resultsdir)
+            data.save_zscores(resultsdir)
+            data.save_logp(resultsdir)
+            data.save_statistics(resultsdir)
+        if self.saveplots:
+            plotdir = os.path.join(self.save_dir, "plots")
+            plot_qq(data, plot_id_line=True, save_dir=plotdir)
+            plot_centiles(
+                self,
+                save_dir=plotdir,
+                show_other_data=True,
+                harmonize_data=True,
+                scatter_data=data,
+            )
         return data
 
     def synthesize(
@@ -215,7 +224,7 @@ class NormativeModel:
                     "observations": np.arange(n_samples),
                     "response_vars": self.response_vars,
                 },
-                attrs={'real_ids':False}
+                attrs={"real_ids": False},
             )
 
         data["Z"] = xr.DataArray(
@@ -235,7 +244,7 @@ class NormativeModel:
             Output.print(Messages.SYNTHESIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
             resp_Z_data = data.Z.sel({"response_vars": responsevar})
-            X, be, be_maps, _,_ = self.extract_data(resp_fit_data)
+            X, be, be_maps, _, _ = self.extract_data(resp_fit_data)
             Z_pred = self[responsevar].backward(X, be, be_maps, resp_Z_data)
             data["Y"].loc[{"response_vars": responsevar}] = Z_pred
         self.postprocess(data)
@@ -253,7 +262,7 @@ class NormativeModel:
             Reference batch effect.
         """
         self.preprocess(data)
-        _, be, _, _,_ = self.extract_data(data)
+        _, be, _, _, _ = self.extract_data(data)
         ref_be_array = be.astype(str)
         if not reference_batch_effect:
             ref_be = {k: v[0] for k, v in data.get_single_batch_effect().items()}
@@ -275,7 +284,7 @@ class NormativeModel:
             dims=("observations", "response_vars"),
             coords={"observations": data.observations, "response_vars": data.response_vars},
         )
-        if hasattr(data, 'thrive_Y'):
+        if hasattr(data, "thrive_Y"):
             data["thrive_Y_harmonized"] = xr.DataArray(
                 np.zeros(data.thrive_Y.shape),
                 dims=("observations", "response_vars", "offset"),
@@ -284,17 +293,19 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y,_ = self.extract_data(resp_fit_data)
+            X, be, be_maps, Y, _ = self.extract_data(resp_fit_data)
             Z_pred = self[responsevar].forward(X, be, be_maps, Y)
             Y_harmonized = self[responsevar].backward(X, ref_be_array, be_maps, Z_pred)
             data["Y_harmonized"].loc[{"response_vars": responsevar}] = Y_harmonized
-            if hasattr(data, 'thrive_Y'):
+            if hasattr(data, "thrive_Y"):
                 for o in data.offset:
                     offset_X = X.copy()
                     # ! here
-                    offset_X.loc[{"covariates":self.thrive_covariate}] = resp_fit_data.thrive_X.sel({"offset":o})
-                    thrive_Y_harmonized = self[responsevar].backward(offset_X, ref_be_array, be_maps, resp_fit_data.thrive_Z.sel({"offset":o}))
-                    data["thrive_Y_harmonized"].loc[{"response_vars": responsevar, "offset":o}] = thrive_Y_harmonized
+                    offset_X.loc[{"covariates": self.thrive_covariate}] = resp_fit_data.thrive_X.sel({"offset": o})
+                    thrive_Y_harmonized = self[responsevar].backward(
+                        offset_X, ref_be_array, be_maps, resp_fit_data.thrive_Z.sel({"offset": o})
+                    )
+                    data["thrive_Y_harmonized"].loc[{"response_vars": responsevar, "offset": o}] = thrive_Y_harmonized
         self.is_fitted = True
 
         self.postprocess(data)
@@ -334,7 +345,7 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y,_ = self.extract_data(resp_predict_data)
+            X, be, be_maps, Y, _ = self.extract_data(resp_predict_data)
             data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be, be_maps, Y)
 
         self.postprocess(data)
@@ -389,7 +400,7 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
-            X, be, be_maps, _ ,_= self.extract_data(resp_predict_data)
+            X, be, be_maps, _, _ = self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
                 Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("observations",))
                 data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, be_maps, Z)
@@ -429,26 +440,24 @@ class NormativeModel:
         Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y,_ = self.extract_data(resp_predict_data)
+            X, be, be_maps, Y, _ = self.extract_data(resp_predict_data)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, be_maps, Y)
 
         self.postprocess(data)
         return data
-    
 
     def compute_correlation_matrix(self, data, bandwidth=5, covariate="age"):
         self.thrive_covariate = covariate
         self.correlation_matrix = get_correlation_matrix(data, bandwidth, covariate)
 
-
     def compute_thrivelines(
-        self: NormativeModel, data: NormData, span: int = 5, step: int = 1, z_thrive:float=0., covariate="age", **kwargs
+        self: NormativeModel, data: NormData, span: int = 5, step: int = 1, z_thrive: float = 0.0, covariate="age", **kwargs
     ) -> NormData:
         """
         Computes the thrivelines for each responsevar in the data
         """
-        data.attrs['thrive_covariate'] = self.thrive_covariate
+        data.attrs["thrive_covariate"] = self.thrive_covariate
         self.preprocess(data)
         # TODO: Write utility function to create a normdata object for easy thriveline creation (with appropriate Z scores)
         offsets = np.arange(0, span + 1, step=step)
@@ -456,7 +465,9 @@ class NormativeModel:
         # Add them to the dataset, label them correctly
 
         # Drop the thrivelines and dimensions if they already exist
-        centiles_already_computed = ("thrive_Z" in data or "thrive_Y" in data or "offset" in data.coords) and (data.attrs['z_thrive'] == z_thrive)
+        centiles_already_computed = ("thrive_Z" in data or "thrive_Y" in data or "offset" in data.coords) and (
+            data.attrs["z_thrive"] == z_thrive
+        )
         if centiles_already_computed:
             if not kwargs.get("recompute", False):
                 if all([c in data.offset.values for c in offsets]):
@@ -465,7 +476,7 @@ class NormativeModel:
             data = data.drop_vars(["thrive_Z"])
             data = data.drop_vars(["thrive_Y"])
             data = data.drop_dims(["offset"])
-        data.attrs['z_thrive'] = z_thrive
+        data.attrs["z_thrive"] = z_thrive
 
         # Make Z-score predictions if needed
         if not hasattr(data, "Z"):
@@ -501,10 +512,8 @@ class NormativeModel:
             for io, o in enumerate(offsets):
                 this_Z = thrive_Z[:, io]
                 offset_X = X.copy()
-                offset_X.loc[{"covariates":self.thrive_covariate}] = data.thrive_X.sel({"offset":o})
-                scaled_thrive_Y = self[responsevar].backward(
-                    X, be, be_maps, this_Z
-                )
+                offset_X.loc[{"covariates": self.thrive_covariate}] = data.thrive_X.sel({"offset": o})
+                scaled_thrive_Y = self[responsevar].backward(X, be, be_maps, this_Z)
                 data["thrive_Y"].loc[{"response_vars": responsevar, "offset": o}] = scaled_thrive_Y
         # self.postprocess(data)
         return data
@@ -539,7 +548,9 @@ class NormativeModel:
             self.save()
         return predict_data
 
-    def extract_data(self, data: NormData) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
+    def extract_data(
+        self, data: NormData
+    ) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
         if hasattr(data, "X"):
             X = data.X
         else:
@@ -556,7 +567,7 @@ class NormativeModel:
             Y = None
 
         if hasattr(data, "Z"):
-            Z = data.Z 
+            Z = data.Z
         else:
             Z = None
         return X, batch_effects, batch_effects_maps, Y, Z  # type: ignore
@@ -589,7 +600,7 @@ class NormativeModel:
         for responsevar in self.response_vars:
             Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
             resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y,_ = new_model.extract_data(resp_transfer_data)
+            X, be, be_maps, Y, _ = new_model.extract_data(resp_transfer_data)
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
@@ -598,7 +609,9 @@ class NormativeModel:
             new_model.save()
         return new_model
 
-    def transfer_predict(self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
+    def transfer_predict(
+        self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None, **kwargs
+    ) -> NormativeModel:
         """
         Transfers the model to a new dataset and predicts the data.
         """
@@ -867,7 +880,7 @@ class NormativeModel:
 
     def to_dict(self):
         my_dict = {
-            "name":self.name,
+            "name": self.name,
             "save_dir": self.save_dir,
             "savemodel": self.savemodel,
             "saveresults": self.saveresults,
@@ -1000,6 +1013,14 @@ class NormativeModel:
 
         return self
 
+    def set_save_dir(self, save_dir: str) -> None:
+        """Override the save_dir in the norm_conf.
+
+        Args:
+            save_dir (str): New save directory.
+        """
+        self.save_dir = save_dir
+
     @property
     def save_dir(self) -> str:
         return self._save_dir
@@ -1017,122 +1038,6 @@ class NormativeModel:
         os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
         if self.saveplots:
             os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
-
-    def save_zscores(self, data: NormData) -> None:
-        zdf = data.Z.to_dataframe().unstack(level="response_vars")
-        zdf.columns = zdf.columns.droplevel(0)
-        zdf.index = zdf.index.astype(str)
-        res_path = os.path.join(self.save_dir, "results", f"Z_{data.name}.csv")
-        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.seek(0)
-                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
-                if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
-                    old_results.set_index(["observations"], inplace=True)
-                    # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(zdf, on="observations", how="outer", suffixes=("_old", ""))
-                    # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
-                else:
-                    new_results = zdf
-                f.seek(0)
-                f.truncate()
-                new_results.to_csv(f)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-        if self.saveplots:
-            plot_qq(data, plot_id_line=True, save_dir=os.path.join(self.save_dir, "plots"))
-
-    def save_centiles(self, data: NormData) -> None:
-        centiles = data.centiles.to_dataframe().unstack(level="response_vars")
-        centiles.columns = centiles.columns.droplevel(0)
-        centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
-        res_path = os.path.join(self.save_dir, "results", f"centiles_{data.name}.csv")
-        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.seek(0)
-                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
-                if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
-                    old_results.set_index(["observations", "centile"], inplace=True)
-                    # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(centiles, on=["observations", "centile"], how="outer", suffixes=("_old", ""))
-                    # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
-                else:
-                    new_results = centiles
-                f.seek(0)
-                f.truncate()
-                new_results.to_csv(f)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        if self.saveplots:
-            plot_centiles(
-                self,
-                save_dir=os.path.join(self.save_dir, "plots"),
-                show_other_data=True,
-                harmonize_data=True,
-                scatter_data=data,
-            )
-
-    def save_logp(self, data: NormData) -> None:
-        logp = data.logp.to_dataframe().unstack(level="response_vars")
-        logp.columns = logp.columns.droplevel(0)
-        logp.index = logp.index.astype(str)
-        res_path = os.path.join(self.save_dir, "results", f"logp_{data.name}.csv")
-        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.seek(0)
-                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
-                if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
-                    old_results.set_index(["observations"], inplace=True)
-                    # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(logp, on="observations", how="outer", suffixes=("_old", ""))
-                    # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
-                else:
-                    new_results = logp
-                f.seek(0)
-                f.truncate()
-                new_results.to_csv(f)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-    def save_statistics(self, data: NormData) -> None:
-        mdf = data.statistics.to_dataframe().unstack(level="response_vars")
-        mdf.columns = mdf.columns.droplevel(0)
-        res_path = os.path.join(self.save_dir, "results", f"statistics_{data.name}.csv")
-        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.seek(0)
-                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
-                if old_results is not None:
-                    # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))
-                    # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
-                else:
-                    new_results = mdf
-                f.seek(0)
-                f.truncate()
-                new_results.to_csv(f)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
-    def set_save_dir(self, save_dir: str) -> None:
-        """Override the save_dir in the norm_conf.
-
-        Args:
-            save_dir (str): New save directory.
-        """
-        self.save_dir = save_dir
 
     def __getitem__(self, key: str) -> RegressionModel:
         if key not in self.regression_models:
@@ -1166,4 +1071,3 @@ class NormativeModel:
             int: The number of batch effects.
         """
         return sum(self.batch_effect_counts[self.batch_effect_dims[0]].values())
-    

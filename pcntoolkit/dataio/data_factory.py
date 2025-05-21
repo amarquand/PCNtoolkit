@@ -1,9 +1,11 @@
 
+from __future__ import annotations
+
 import os
 
 import pandas as pd
 
-from pcntoolkit import NormData
+from pcntoolkit.dataio.norm_data import NormData
 
 
 def load_fcon1000(save_path:str|None=  None):
