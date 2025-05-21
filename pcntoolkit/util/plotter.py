@@ -101,10 +101,24 @@ def plot_centiles(
         plt_kwargs = {}
     palette = plt_kwargs.pop("cmap", "viridis")
 
-    centile_data = model.synthesize(n_samples=150, covariate_range_per_batch_effect=True)
-    centile_data.X.loc[{"covariates": covariate}] = np.linspace(covariate_range[0], covariate_range[1], 150)
-    for be, v in batch_effects.items():
-        centile_data.batch_effects.loc[{"batch_effect_dims": be}] = v[0]
+    # Create some synthetic data with a single batch effect
+    # The plotted covariate is just a linspace
+    centile_covariates = np.linspace(covariate_range[0], covariate_range[1], 150)
+    centile_df = pd.DataFrame({covariate:centile_covariates})
+
+    # Any other covariates are uniformly distributed across their span 
+    for cov in model.covariates:
+        if cov != covariate:
+            minc = model.covariate_ranges[cov]['min']
+            maxc = model.covariate_ranges[cov]['max']
+            centile_df[cov] =  np.random.rand(len(centile_df))*(maxc-minc) + minc
+    # Batch effects are the first ones in the highlighted batch effects
+    for (be, v) in batch_effects.items():
+        centile_df[be] = v[0]
+    # Response vars are all 0, we don't need them
+    for rv in model.response_vars:
+        centile_df[rv] = 0
+    centile_data = NormData.from_dataframe("centile", dataframe=centile_df, covariates=model.covariates, response_vars=model.response_vars, batch_effects=list(batch_effects.keys())) #type:ignore
         
     if not hasattr(centile_data, "centiles"):
         model.compute_centiles(centile_data, centiles=centiles, **kwargs)    
