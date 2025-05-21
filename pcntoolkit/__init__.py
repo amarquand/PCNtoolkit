@@ -1,4 +1,5 @@
-from .dataio.norm_data import NormData, load_fcon1000
+from .dataio.data_factory import load_fcon1000
+from .dataio.norm_data import NormData
 from .math_functions.basis_function import BsplineBasisFunction, LinearBasisFunction, PolynomialBasisFunction
 from .normative_model import NormativeModel
 from .regression_model.blr import BLR
