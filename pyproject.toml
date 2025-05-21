@@ -1,6 +1,6 @@
 [project]
 name = "pcntoolkit"
-version = "1.0.0a7"
+version = "1.0.0a8"
 description = "Predictive Clinical Neuroscience Toolkit"
 readme = "README.md"
 license = "GPL-3.0-only"
