@@ -11,6 +11,7 @@ is used by all the models in the toolkit.
 from __future__ import annotations
 
 import copy
+import fcntl
 import os
 from functools import reduce
 
@@ -84,7 +85,7 @@ class NormData(xr.Dataset):
         "batch_effect_covariate_ranges",
         "covariate_ranges",
         "real_ids",
-        "thrive_covariate"  # Whether the ids are real or synthetic
+        "thrive_covariate",  # Whether the ids are real or synthetic
     )
 
     def __init__(
@@ -168,10 +169,10 @@ class NormData(xr.Dataset):
         coords = {}
         attrs = attrs or {}
         if subject_ids is not None:
-            attrs["real_ids"] = True # type:ignore
+            attrs["real_ids"] = True  # type:ignore
             data_vars["subjects"] = (["observations"], subject_ids)
         else:
-            attrs["real_ids"] = False #type: ignore
+            attrs["real_ids"] = False  # type: ignore
             data_vars["subjects"] = (["observations"], list(np.arange(X.shape[0])))
 
         coords["observations"] = list(np.arange(X.shape[0]))
@@ -336,10 +337,10 @@ class NormData(xr.Dataset):
         attrs = attrs or {}
 
         if subject_ids is not None:
-            attrs["real_ids"] = True #type: ignore
+            attrs["real_ids"] = True  # type: ignore
             data_vars["subjects"] = (["observations"], dataframe[subject_ids].to_numpy())
         else:
-            attrs["real_ids"] = False #type: ignore
+            attrs["real_ids"] = False  # type: ignore
             data_vars["subjects"] = (["observations"], list(np.arange(len(dataframe))))
 
         coords["observations"] = list(np.arange(len(dataframe)))
@@ -612,6 +613,21 @@ class NormData(xr.Dataset):
             split2 = copy.deepcopy(self.isel(observations=test_idx))
             yield split1, split2
 
+    def batch_effects_split(
+        self,
+        batch_effects: Dict[str, List[str]],
+        names: Optional[Tuple[str, str]],
+    ) -> Tuple[NormData, NormData]:
+        """
+        Split the data into two datasets, one with the specified batch effects and one without.
+        """
+        if names is None:
+            names = ["selected", "not_selected"]  # type:ignore
+        assert names is not None, "names can not be None"
+        A = self.select_batch_effects(names[0], batch_effects)
+        B = self.select_batch_effects(names[1], batch_effects, invert=True)
+        return A, B
+
     def register_batch_effects(self) -> None:
         """
         Create a mapping of batch effects to unique values.
@@ -709,11 +725,11 @@ class NormData(xr.Dataset):
                 )
             if "thrive_X" in self.data_vars:
                 self["thrive_X"] = xr.DataArray(
-                    inscalers[self.attrs['thrive_covariate']].transform(self.thrive_X.data),
+                    inscalers[self.attrs["thrive_covariate"]].transform(self.thrive_X.data),
                     coords=self.thrive_X.coords,
                     dims=self.thrive_X.dims,
                     attrs=self.thrive_X.attrs,
-                )    
+                )
             # Scale y column-wise using the outscalers
             if "Y" in self.data_vars:
                 scaled_y = np.zeros(self.Y.shape)
@@ -740,7 +756,9 @@ class NormData(xr.Dataset):
             if "centiles" in self.data_vars:
                 scaled_centiles = np.zeros(self.centiles.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_centiles[:, :, i] = outscalers[responsevar].transform(self.centiles.sel(response_vars=responsevar).data)
+                    scaled_centiles[:, :, i] = outscalers[responsevar].transform(
+                        self.centiles.sel(response_vars=responsevar).data
+                    )
                 self["centiles"] = xr.DataArray(
                     scaled_centiles,
                     coords=self.centiles.coords,
@@ -750,7 +768,7 @@ class NormData(xr.Dataset):
             if "thrive_Y" in self.data_vars:
                 scaled_thrive_Y = np.zeros(self.thrive_Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_thrive_Y[:, i,:] = outscalers[responsevar].transform(
+                    scaled_thrive_Y[:, i, :] = outscalers[responsevar].transform(
                         self.thrive_Y.sel(response_vars=responsevar).data
                     )
                 self["thrive_Y"] = xr.DataArray(
@@ -785,11 +803,11 @@ class NormData(xr.Dataset):
                 )
             if "thrive_X" in self.data_vars:
                 self["thrive_X"] = xr.DataArray(
-                    inscalers[self.attrs['thrive_covariate']].inverse_transform(self.thrive_X.data),
+                    inscalers[self.attrs["thrive_covariate"]].inverse_transform(self.thrive_X.data),
                     coords=self.thrive_X.coords,
                     dims=self.thrive_X.dims,
                     attrs=self.thrive_X.attrs,
-                )    
+                )
             if "Y" in self.data_vars:
                 unscaled_y = np.zeros(self.Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
@@ -830,7 +848,7 @@ class NormData(xr.Dataset):
             if "thrive_Y" in self.data_vars:
                 unscaled_thrive_Y = np.zeros(self.thrive_Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    unscaled_thrive_Y[:, i,:] = outscalers[responsevar].inverse_transform(
+                    unscaled_thrive_Y[:, i, :] = outscalers[responsevar].inverse_transform(
                         self.thrive_Y.sel(response_vars=responsevar).data
                     )
                 self["thrive_Y"] = xr.DataArray(
@@ -841,21 +859,6 @@ class NormData(xr.Dataset):
                 )
 
             self.attrs["is_scaled"] = False
-
-    def split_batch_effects(
-        self,
-        batch_effects: Dict[str, List[str]],
-        names: Optional[Tuple[str, str]],
-    ) -> Tuple[NormData, NormData]:
-        """
-        Split the data into two datasets, one with the specified batch effects and one without.
-        """
-        if names is None:
-            names = ['selected', 'not_selected'] #type:ignore
-        assert names is not None, "names can not be None"
-        A = self.select_batch_effects(names[0], batch_effects)
-        B = self.select_batch_effects(names[1], batch_effects, invert=True)
-        return A, B
 
     def select_batch_effects(self, name, batch_effects: Dict[str, List[str]], invert: bool = False) -> NormData:
         """
@@ -942,6 +945,166 @@ class NormData(xr.Dataset):
         pandas_df.index = self.observations.values.astype(str)
         return pandas_df
 
+    def save_zscores(self, save_dir: str) -> None:
+        zdf = self.Z.to_dataframe().unstack(level="response_vars")
+        zdf.columns = zdf.columns.droplevel(0)
+        zdf.index = zdf.index.astype(str)
+        res_path = os.path.join(save_dir, f"Z_{self.name}.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(zdf, on="observations", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                else:
+                    new_results = zdf
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+    def load_zscores(self, save_dir) -> None:
+        Z_path = os.path.join(save_dir, f"Z_{self.name}.csv")
+        if os.path.isfile(Z_path):
+            df = pd.read_csv(Z_path)
+            non_index_columns = [i for i in list(df.columns) if not i == "observations"]
+            self["Z"] = xr.DataArray(
+                df[non_index_columns],
+                dims=("observations", "response_vars"),
+                coords={"observations": df["observations"], "response_vars": non_index_columns},
+            )
+
+    def save_centiles(self, save_dir: str) -> None:
+        centiles = self.centiles.to_dataframe().unstack(level="response_vars")
+        centiles.columns = centiles.columns.droplevel(0)
+        centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
+        res_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations", "centile"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(centiles, on=["observations", "centile"], how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                else:
+                    new_results = centiles
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+    def load_centiles(self, save_dir) -> None:
+        C_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
+        if os.path.isfile(C_path):
+            df = pd.read_csv(C_path)
+            response_vars = [i for i in list(df.columns) if not (i=='observations' or i == 'centile')] 
+            centiles = np.unique(df['centile'])
+            obs = np.unique(df['observations'])
+            obs.sort()
+            A = np.zeros((len(centiles), len(obs), len(response_vars)))
+            for i, c in enumerate(centiles):
+                sub = df[df['centile'] == c]
+                sub.sort_values(by='observations')
+                for j, rv in enumerate(response_vars):
+                    A[i,:,j] = sub[rv]
+
+            self['centiles'] = xr.DataArray(A, dims = ('centile', 'observations', 'response_vars'), coords={"centile":centiles, "observations":obs, "response_vars":response_vars})
+
+    def save_logp(self, save_dir: str) -> None:
+        logp = self.logp.to_dataframe().unstack(level="response_vars")
+        logp.columns = logp.columns.droplevel(0)
+        logp.index = logp.index.astype(str)
+        res_path = os.path.join(save_dir, f"logp_{self.name}.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results.set_index(["observations"], inplace=True)
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(logp, on="observations", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                else:
+                    new_results = logp
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+    def load_logp(self, save_dir) -> None:
+        logp_path = os.path.join(save_dir, f"logp_{self.name}.csv")
+        if os.path.isfile(logp_path):
+            df = pd.read_csv(logp_path)
+            non_index_columns = [i for i in list(df.columns) if not i == "observations"]
+            self["logp"] = xr.DataArray(
+                df[non_index_columns],
+                dims=("observations", "response_vars"),
+                coords={"observations": df["observations"], "response_vars": non_index_columns},
+            )
+
+    def save_statistics(self, save_dir: str) -> None:
+        mdf = self.statistics.to_dataframe().unstack(level="response_vars")
+        mdf.columns = mdf.columns.droplevel(0)
+        res_path = os.path.join(save_dir, f"statistics_{self.name}.csv")
+        with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.seek(0)
+                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                if old_results is not None:
+                    # Merge on observations, keeping right (new) values for overlapping columns
+                    new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))
+                    # Drop columns ending with '_old' as they're the duplicates from old_results
+                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                else:
+                    new_results = mdf
+                f.seek(0)
+                f.truncate()
+                new_results.to_csv(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+    def load_statistics(self, save_dir) -> None:
+        logp_path = os.path.join(save_dir, f"statistics_{self.name}.csv")
+        if os.path.isfile(logp_path):
+            df = pd.read_csv(logp_path)
+            df = df.set_index('statistic')
+            statistics = list(df.index)
+            self["statistics"] = xr.DataArray(
+                df.T,
+                dims=("response_vars", "statistic"),
+                coords={"statistic": statistics},
+            )
+
+
+    def load_results(self, save_dir: str) -> None:
+        """Loads the results (zscores, centiles, logp, statistics) back into the data
+
+        Args:
+            save_dir (str): Where the results are saved. I.e.: {save_dir}/Z_fit_test.csv
+        """
+        self.load_zscores(save_dir)
+        self.load_centiles(save_dir)
+        self.load_logp(save_dir)
+        self.load_statistics(save_dir)
+
     def create_statistics_group(self) -> None:
         """
         Initializes a DataArray for statistics with NaN values.
@@ -994,4 +1157,3 @@ class NormData(xr.Dataset):
     @property
     def response_var_list(self) -> xr.DataArray:
         return self.response_vars.to_numpy().copy().tolist()
-
