@@ -640,8 +640,9 @@ class NormData(xr.Dataset):
         for dim in self.batch_effect_dims.to_numpy():
             dim_subset = my_be.sel(batch_effect_dims=dim)
             uniques, counts = np.unique(dim_subset, return_counts=True)
+            
             self.attrs["unique_batch_effects"][dim] = list(uniques)
-            self.attrs["batch_effect_counts"][dim] = {k: v for k, v in zip(uniques, counts)}
+            self.attrs["batch_effect_counts"][dim] = {k: int(v) for k, v in zip(uniques, counts)}
             self.attrs["batch_effect_covariate_ranges"][dim] = {}
             if self.X is not None:
                 for u in uniques:
