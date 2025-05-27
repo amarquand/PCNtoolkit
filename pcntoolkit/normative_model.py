@@ -162,19 +162,15 @@ class NormativeModel:
         self.compute_zscores(data)
         self.compute_centiles(data, recompute=True)
         self.compute_logp(data)
-
         if self.evaluate_model:
             self.evaluate(data)
         if self.saveresults:
             resultsdir = os.path.join(self.save_dir, "results")
-            data.save_centiles(resultsdir)
-            data.save_zscores(resultsdir)
-            data.save_logp(resultsdir)
-            data.save_statistics(resultsdir)
+            data.save_results(resultsdir)
         if self.saveplots:
             plotdir = os.path.join(self.save_dir, "plots")
             plot_qq(data, plot_id_line=True, save_dir=plotdir)
-            plot_centiles(
+        plot_centiles(
                 self,
                 save_dir=plotdir,
                 show_other_data=True,
