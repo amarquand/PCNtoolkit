@@ -1093,7 +1093,17 @@ class NormData(xr.Dataset):
                 dims=("response_vars", "statistic"),
                 coords={"statistic": statistics},
             )
+    
+    def save_results(self, save_dir: str) -> None:
+        """Saves the results (zscores, centiles, logp, statistics) to disk
 
+        Args:
+            save_dir (str): Where the results are saved. I.e.: {save_dir}/Z_fit_test.csv
+        """
+        self.save_zscores(save_dir)
+        self.save_centiles(save_dir)
+        self.save_logp(save_dir)
+        self.save_statistics(save_dir)
 
     def load_results(self, save_dir: str) -> None:
         """Loads the results (zscores, centiles, logp, statistics) back into the data
