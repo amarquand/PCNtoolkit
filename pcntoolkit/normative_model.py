@@ -169,13 +169,13 @@ class NormativeModel:
         if self.saveplots:
             plotdir = os.path.join(self.save_dir, "plots")
             plot_qq(data, plot_id_line=True, save_dir=plotdir)
-        plot_centiles(
-                self,
-                save_dir=plotdir,
-                show_other_data=True,
-                harmonize_data=True,
-                scatter_data=data,
-            )
+            plot_centiles(
+                    self,
+                    save_dir=plotdir,
+                    show_other_data=True,
+                    harmonize_data=True,
+                    scatter_data=data,
+                )
         return data
 
     def synthesize(
