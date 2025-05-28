@@ -505,6 +505,8 @@ def load(filename, mask=None, text=False, vol=True):
     :param text: whether to write out a text file
     :param vol: whether to load the image as a volume
     """
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"File not found: {filename} ")
     try:
         x = pd.read_pickle(filename)
         return x.to_numpy()

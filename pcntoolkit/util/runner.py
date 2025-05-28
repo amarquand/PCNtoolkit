@@ -15,6 +15,7 @@ from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.util.job_observer import JobObserver
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
+from pcntoolkit.util.paths import get_default_log_dir, get_default_temp_dir
 
 
 class Runner:
@@ -121,13 +122,13 @@ class Runner:
         if self.cross_validate and self.cv_folds <= 1:
             raise ValueError(Output.error(Errors.ERROR_CROSS_VALIDATION_FOLDS, cv_folds=self.cv_folds))
         if log_dir is None:
-            self.log_dir = os.path.abspath("logs")
+            self.log_dir = get_default_log_dir()
             Output.print(Messages.NO_LOG_DIR_SPECIFIED, log_dir=self.log_dir)
         else:
             self.log_dir = os.path.abspath(log_dir)
         os.makedirs(self.log_dir, exist_ok=True)
         if temp_dir is None:
-            self.temp_dir = os.path.abspath("temp")
+            self.temp_dir = get_default_temp_dir()
             Output.print(Messages.NO_TEMP_DIR_SPECIFIED, temp_dir=self.temp_dir)
         else:
             self.temp_dir = os.path.abspath(temp_dir)

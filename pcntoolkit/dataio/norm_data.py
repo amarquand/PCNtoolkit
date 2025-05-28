@@ -142,8 +142,8 @@ class NormData(xr.Dataset):
         X: np.ndarray,
         Y: np.ndarray,
         batch_effects: np.ndarray | None = None,
-        attrs: Mapping[str, Any] | None = None,
         subject_ids: np.ndarray | None = None,
+        attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """Create a NormData object from numpy arrays.
 
