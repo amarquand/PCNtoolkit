@@ -1,15 +1,39 @@
 # Predictive Clinical Neuroscience Toolkit
-[![Gitter](https://badges.gitter.im/predictive-clinical-neuroscience/community.svg)](https://gitter.im/predictive-clinical-neuroscience/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Documentation Status](https://readthedocs.org/projects/pcntoolkit/badge/?version=latest)](https://pcntoolkit.readthedocs.io/en/latest/?badge=latest) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5207839.svg)](https://doi.org/10.5281/zenodo.5207839)
-
-
 Predictive Clinical Neuroscience software toolkit (formerly nispat). 
 
-Methods for normative modelling, spatial statistics and pattern recognition.
+A Python package for normative modelling, spatial statistics and pattern recognition.
 
-## Installation (alpha release)
+## Installation
 
+```bash
+pip install pcntoolkit
 ```
-%pip install https://github.com/amarquand/PCNtoolkit/archive/refs/tags/v1.alpha.1.zip
+
+## Documentation
+
+See the [documentation](https://pcntoolkit.readthedocs.io/en/latest/) for more details.
+
+
+## Example usage
+
+```python
+from pcntoolkit import {load_fcon, BLR, NormativeModel}
+
+fcon1000 = load_fcon()
+
+train, test = fcon1000.train_test_split()
+
+# Create a BLR model with heteroskedastic noise
+model = NormativeModel(BLR(heteroskedastic=True), 
+                       inscaler='standardize', 
+                       outscaler='standardize')
+
+model.fit_predict(train, test)
 ```
 
-See the example_notebooks folder for examples of how to use the toolkit.
+## Citation 
+
+If you use this software in your research, please cite:
+
+
+

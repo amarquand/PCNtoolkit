@@ -30,15 +30,19 @@ from typing import (
     Union,
 )
 
+import nibabel as nib
+
 # pylint: enable=deprecated-class
 import numpy as np
 import pandas as pd  # type: ignore
 import xarray as xr
+from nibabel.loadsave import load
 from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
 # import datavars from xarray
 from xarray.core.types import DataVars
 
+from pcntoolkit.dataio.fileio import load, load_nifti
 from pcntoolkit.util.output import Messages, Output, Warnings
 
 
@@ -202,6 +206,16 @@ class NormData(xr.Dataset):
         return cls(name, data_vars, coords, attrs)
 
     @classmethod
+    def from_paths(cls, name: str, covariates_path: str, responses_path: str, batch_effects_path: str, **kwargs) -> "NormData":  # type: ignore
+        """
+        Load a normative dataset from a dictionary of paths.
+        """
+        covs = load(covariates_path, **kwargs)
+        resp = load(responses_path, **kwargs)
+        batch_effects = load(batch_effects_path, **kwargs)
+        return cls.from_ndarrays(name, covs, resp, batch_effects, **kwargs)
+   
+    @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
         """
         Load a normative dataset from a FSL file.
@@ -218,24 +232,8 @@ class NormData(xr.Dataset):
         NormData
             An instance of NormData.
         """
-
-    @classmethod
-    def from_nifti(cls, nifti_folder, config_params) -> "NormData":  # type: ignore
-        """
-        Load a normative dataset from a Nifti file.
-
-        Parameters
-        ----------
-        nifti_folder : str
-            Path to the Nifti folder.
-        config_params : dict
-            Configuration parameters for loading the dataset.
-
-        Returns
-        -------
-        NormData
-            An instance of NormData.
-        """
+        img = load(fsl_folder)
+        dat = img.get_fdata()
 
     @classmethod
     def from_bids(cls, bids_folder, config_params) -> "NormData":  # type: ignore
@@ -709,7 +707,7 @@ class NormData(xr.Dataset):
         ----------
         inscalers : Dict[str, Any]
             Scalers for the covariate data.
-        outscaler : Dict[str, Any]
+        outscalers : Dict[str, Any]
             Scalers for the response variable data.
         """
         if not self.attrs["is_scaled"]:

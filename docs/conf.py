@@ -6,9 +6,9 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # Project information
 project = "PCNToolkit"
-copyright = "2024, Your Name"
-author = "Your Name"
-release = "0.1.0"
+copyright = "2025, Andre Marquand"
+author = "Andre Marquand"
+release = "1.0.0"
 
 # Extensions
 extensions = [
