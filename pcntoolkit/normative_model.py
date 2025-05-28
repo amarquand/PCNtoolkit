@@ -22,6 +22,7 @@ from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.regression_model.test_model import TestModel  # noqa: F401 # type: ignore
 from pcntoolkit.util.evaluator import Evaluator
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
+from pcntoolkit.util.paths import ensure_dir_exists, get_default_save_dir, get_save_subdirs
 from pcntoolkit.util.plotter import plot_centiles, plot_qq
 
 
@@ -56,7 +57,7 @@ class NormativeModel:
         evaluate_model: bool = True,
         saveresults: bool = True,
         saveplots: bool = True,
-        save_dir: str = "./saves",
+        save_dir: Optional[str] = None,
         inscaler: str = "none",
         outscaler: str = "none",
         name: Optional[str] = None,
@@ -65,7 +66,7 @@ class NormativeModel:
         self.evaluate_model: bool = evaluate_model
         self.saveresults: bool = saveresults
         self.saveplots: bool = saveplots
-        self._save_dir = save_dir
+        self._save_dir = save_dir if save_dir is not None else get_default_save_dir()
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
         self.name: Optional[str] = name
@@ -734,6 +735,41 @@ class NormativeModel:
         self.batch_effect_covariate_ranges = copy.deepcopy(data.batch_effect_covariate_ranges)
         self.covariate_ranges = copy.deepcopy(data.covariate_ranges)
 
+    # def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
+    #     """Map batch effects to their integer indices using vectorized operations.
+        
+    #     Parameters
+    #     ----------
+    #     batch_effects : xr.DataArray
+    #         Input batch effects array with dimensions (observations, batch_effect_dims)
+            
+    #     Returns
+    #     -------
+    #     xr.DataArray
+    #         Mapped batch effects with integer indices
+    #     """
+    #     # Create output array with same shape and coordinates
+    #     mapped_batch_effects = xr.DataArray(
+    #         np.zeros(batch_effects.shape).astype(int),
+    #         dims=batch_effects.dims,
+    #         coords=batch_effects.coords
+    #     )
+        
+    #     # Convert to numpy for faster operations
+    #     be_values = batch_effects.values
+    #     mapped_values = mapped_batch_effects.values
+        
+    #     # For each batch effect dimension, apply mapping
+    #     for i, be in enumerate(self.unique_batch_effects.keys()):
+    #         # Get the mapping dictionary for this batch effect
+    #         be_map = self.batch_effects_maps[be]
+    #         # Create a vectorized mapping function
+    #         vfunc = np.vectorize(lambda x: be_map[x])
+    #         # Apply mapping to the entire column at once
+    #         mapped_values[:, i] = vfunc(be_values[:, i])
+            
+    #     return mapped_batch_effects
+
     def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
         # TODO Use loc and sel here, not values[i,j]
         # ! check if synthesize, harmonize, etc. also do this correctly, and if xarrays passed to fit and predict are also indexed properly
@@ -1029,10 +1065,11 @@ class NormativeModel:
         """
         Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)
         """
-        os.makedirs(os.path.join(self.save_dir, "results"), exist_ok=True)
-        os.makedirs(os.path.join(self.save_dir, "model"), exist_ok=True)
+        model_dir, results_dir, plots_dir = get_save_subdirs(self.save_dir)
+        ensure_dir_exists(results_dir)
+        ensure_dir_exists(model_dir)
         if self.saveplots:
-            os.makedirs(os.path.join(self.save_dir, "plots"), exist_ok=True)
+            ensure_dir_exists(plots_dir)
 
     def __getitem__(self, key: str) -> RegressionModel:
         if key not in self.regression_models:
