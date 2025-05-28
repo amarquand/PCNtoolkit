@@ -10,18 +10,20 @@ from typing import Callable, Dict, Literal, Optional
 
 import cloudpickle as pickle
 
+from pcntoolkit.dataio.fileio import create_incremental_backup
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.util.job_observer import JobObserver
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
-from pcntoolkit.dataio.fileio import create_incremental_backup
+
 
 class Runner:
     cross_validate: bool = False
     cv_folds: int = 5
-    parallelize: bool = False
+    parallelize: bool = True
     job_type: str = "local"
-    n_jobs: int = 1
+    n_batches: int | None = None
+    batch_size: int | None = 2
     n_cores: int = 1
     time_limit_str: str | int = "00:05:00"
     time_limit_seconds: int = 300
@@ -37,7 +39,8 @@ class Runner:
         self,
         parallelize: bool = False,
         job_type: Literal["torque", "slurm"] = "slurm",
-        n_jobs: int = 1,
+        n_batches: int | None = None,
+        batch_size: int | None = None,
         n_cores: int = 1,
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
@@ -59,7 +62,7 @@ class Runner:
             Whether to parallelize the jobs.
         job_type : Literal["torque", "slurm"], optional
             The type of job to use.
-        n_jobs : int, optional
+        n_batches : int, optional
             The number of jobs to run in parallel.
         n_cores : int, optional
             The number of cores to use for each job.
@@ -84,7 +87,10 @@ class Runner:
         """
         self.parallelize = parallelize
         self.job_type = job_type
-        self.n_jobs = n_jobs
+        self.n_batches = n_batches
+        self.batch_size = batch_size
+        if self.n_batches is not None and self.batch_size is not None:
+            self.n_batches = None
         self.n_cores = n_cores
         try:
             if isinstance(time_limit, str):
@@ -669,9 +675,18 @@ class Runner:
         predict_data : Optional[NormData], optional
             Data to predict on, by default None
         """
+
+
         if self.parallelize:
-            first_chunks = first_data_source.chunk(self.n_jobs)
-            second_chunks = [None] * self.n_jobs if second_data_source is None else second_data_source.chunk(self.n_jobs)
+            if self.n_batches is None and self.batch_size is not None:
+                self.n_batches = len(first_data_source.response_vars) // self.batch_size
+            elif self.n_batches is not None and self.batch_size is None:
+                self.batch_size = len(first_data_source.response_vars) // self.n_batches
+            else:
+                raise ValueError("Either n_batches or batch_size must be specified")
+        
+            first_chunks = first_data_source.chunk(self.n_batches)
+            second_chunks = [None] * self.n_batches if second_data_source is None else second_data_source.chunk(self.n_batches)
 
             self.active_jobs.clear()
             self.job_commands.clear()
@@ -813,7 +828,8 @@ exit $exit_code
             "unique_log_dir": self.unique_log_dir,
             "unique_temp_dir": self.unique_temp_dir,
             "job_type": self.job_type,
-            "n_jobs": self.n_jobs,
+            "n_batches": self.n_batches,
+            "batch_size": self.batch_size,
             "save_dir": self.save_dir,
             "job_commands": self.job_commands,
             "failed_jobs": self.failed_jobs,
@@ -844,7 +860,7 @@ exit $exit_code
         with open(runner_file, "r") as f:
             state = json.load(f)
 
-        runner = cls(job_type=state["job_type"], n_jobs=state["n_jobs"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
+        runner = cls(job_type=state["job_type"], n_batches=state["n_batches"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
         runner.task_id = state["task_id"]
         runner.unique_log_dir = state["unique_log_dir"]
         runner.unique_temp_dir = state["unique_temp_dir"]
@@ -852,6 +868,7 @@ exit $exit_code
         runner.job_commands = state["job_commands"]
         runner.active_jobs = state["active_jobs"]
         runner.environment = state['environment']
+        runner.batch_size = state["batch_size"]
         runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
         Output.print(
             Messages.RUNNER_LOADED,

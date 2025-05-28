@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "PCNtoolkit"
+version: "1.0.0a8"
+date-released: "2025-05-27"
+doi: "10.5281/zenodo.5207839"
+authors:
+  - family-names: Marquand
+    given-names: Andre
+    orcid: 0000-0001-5903-203X
+    affiliation: Donders Institute for Brain, Cognition, and Behavior
+  - family-names: Wolfers
+    given-names: Saige
+    orcid: 0000-0003-3006-9044
+    affiliation: Donders Institute for Brain, Cognition, and Behavior
+  - family-names: Kia
+    given-names: Seyed Mostafa
+    orcid: 0000-0002-7128-814X
+    affiliation: Tilburg University
+  - family-names: Fraza
+    given-names: Charlotte
+    orcid: 0000-0002-7088-9250
+    affiliation: Donders Institute for Brain, Cognition, and Behavior
+  - family-names: Zabihi
+    given-names: Mariam
+    orcid: 0000-0002-7083-2318
+    affiliation: University College London
+  - family-names: Dinga 
+    given-names: Richard
+    orcid: 0000-0003-3040-1297
+    affiliation: Donders Institute for Brain, Cognition and Behaviour
+  - family-names: de Boer
+    given-names: Stijn
+    orcid: 0000-0002-8657-8959
+    affiliation: Donders Institute for Brain, Cognition and Behaviour
+keywords:
+  - normative modeling
+  - neuroscience
+  - federated learning
+  - Bayesian modeling
+  - software toolkit
+license: "MIT"
+repository-code: "https://github.com/amarquand/PCNtoolkit"
+url: "https://github.com/andmarquand/PCNtoolkit"
+abstract: >
+  PCNtoolkit is a lightweight Python package designed to support
+  normative modeling workflows in neuroscience.

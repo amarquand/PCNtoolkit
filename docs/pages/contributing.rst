@@ -1,7 +1,7 @@
 Contributing
 ============
 
-First off, thanks for taking the time to contribute! 🎉👍
+First off, thanks for considering contributing to PCNtoolkit! 🎉👍
 
 The following is a set of guidelines for contributing to PCNtoolkit. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
@@ -17,7 +17,6 @@ Before Submitting A Bug Report
 """"""""""""""""""""""""""""""
 
 * Check the debugging guide
-* Check the FAQs on the forum for a list of common questions and problems
 * Ensure the bug is not already reported by searching on GitHub under `Issues <https://github.com/amarquand/PCNtoolkit/issues>`_
 
 How Do I Submit A Good Bug Report?

@@ -140,7 +140,7 @@ def get_argparser() -> argparse.ArgumentParser:
     #  parse arguments
     parser = argparse.ArgumentParser(description="Normative Modeling")
     parser.add_argument("-a", "--alg", help="algorithm", dest="alg", default="gpr")
-    parser.add_argument("-f", "--func", help="Function to call", dest="func", default="estimate")
+    parser.add_argument("-f", "--func", help="Function to call", dest="func", default="fit")
     parser.add_argument("-r", "--responses", help="responses file", dest="resp", default=None)
     parser.add_argument("-c", "--covariates", help="covariates file", dest="cov", default=None)
     parser.add_argument(
@@ -158,7 +158,7 @@ def get_argparser() -> argparse.ArgumentParser:
         default=None,
     )
     parser.add_argument("-m", "--mask", help="mask file", dest="mask", default=None)
-    parser.add_argument("-k", "--cvfolds", help="cross-validation folds", dest="cvfolds", default=None)
+    parser.add_argument("-k", "--cvfolds", help="cross-validation folds", dest="cv_folds", default=None)
     return parser
 
 
@@ -201,6 +201,8 @@ def get_conf_dict_from_args() -> dict[str, str | int | float | bool]:
                             conf_dict[k] = False
                     except AttributeError:
                         pass
+    conf_dict['cross_validate'] = conf_dict.get("cv_folds",1) > 1
+    print(conf_dict)
     return conf_dict
 
 
@@ -236,7 +238,7 @@ def main(*args) -> None:
 
     """
     parsed_args = get_conf_dict_from_args()
-    match parsed_args["func"]:
+    match parsed_args.get("func", "fit"):
         case "fit":
             fit(parsed_args)
         case "predict":

@@ -66,7 +66,6 @@ class NormativeModel:
         self.saveresults: bool = saveresults
         self.saveplots: bool = saveplots
         self._save_dir = save_dir
-        self.set_ensure_save_dirs()
         self.inscaler: str = inscaler
         self.outscaler: str = outscaler
         self.name: Optional[str] = name

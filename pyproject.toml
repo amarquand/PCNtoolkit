@@ -8,16 +8,18 @@ license = "GPL-3.0-only"
 
 authors = [
     { name = "Andre Marquand" },
-    { name = "Seyed Mostafa Kia" },
-    { name = "Thomas Wolfers" },
-    { name = "Stijn de Boer" },
-    { name = "Johanna Bayer" },
-    { name = "Charlotte Fraza" },
     { name = "Saige Rutherford" },
-    { name = "Pierre Berthet" },
+    { name = "Seyed Mostafa Kia" },
+    { name = "Charlotte Fraza" },
+    { name = "Thomas Wolfers" },
+    { name = "Mariam Zabihi"},
+    { name = "Richard Dinga"},
+    { name = "Johanna Bayer" },
     { name = "Maarten Mennes" },
     { name = "Hester Huijsdens" },
     { name = "Linden Parkes" },
+    { name = "Pierre Berthet" },
+    { name = "Stijn de Boer" },
 ]
 
 requires-python = ">=3.10,<3.13"
@@ -42,6 +44,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "toml",
     "sphinx-tabs>=3.4.7",
     "pytest>=8.3.3",
     "black>=24.10.0",

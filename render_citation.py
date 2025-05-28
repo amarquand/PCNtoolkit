@@ -12,7 +12,7 @@ version = meta["version"]
 context = {
     "version": version,
     "date": date.today().isoformat(),
-    "doi": "10.5281/zenodo.XXXXXXX",  # Replace or make this dynamic
+    "doi": "10.5281/zenodo.5207839",
 }
 
 # Load and render template
