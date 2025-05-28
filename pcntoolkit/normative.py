@@ -201,8 +201,10 @@ def get_conf_dict_from_args() -> dict[str, str | int | float | bool]:
                             conf_dict[k] = False
                     except AttributeError:
                         pass
-    conf_dict['cross_validate'] = conf_dict.get("cv_folds",1) > 1
-    print(conf_dict)
+    cv = conf_dict.get("cv_folds",1)
+    cv = cv if cv else 1
+    conf_dict['cv_folds'] = cv
+    conf_dict['cross_validate'] = cv > 1
     return conf_dict
 
 
