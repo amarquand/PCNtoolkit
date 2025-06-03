@@ -296,7 +296,7 @@ class NormData(xr.Dataset):
         Parameters
         ----------
         name : str
-            The name of the dataset.
+            The name you want to give to the dataset. Will be used to name saved results.
         dataframe : pd.DataFrame
             The pandas DataFrame to load.
         covariates : List[str]
