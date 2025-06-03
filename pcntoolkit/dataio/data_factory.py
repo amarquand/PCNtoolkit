@@ -24,7 +24,7 @@ def load_fcon1000(save_path:str|None=  None):
         data = pd.read_csv(data_path)
 
     # Define the variables
-    sex_map = {"0": "F", "1": "M"}
+    sex_map = {0: "F", 1: "M"}
     data["sex"] = data["sex"].map(sex_map)
     subject_ids = "sub_id"
     covariates = ["age"]
