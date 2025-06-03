@@ -31,7 +31,7 @@ def plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
-    show_thrivelines:bool=False,
+    show_thrivelines:bool= False,
     z_thrive :float= 0.,
     save_dir: str | None = None,
     show_centile_labels: bool = True,
