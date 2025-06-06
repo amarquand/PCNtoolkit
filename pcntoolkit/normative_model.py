@@ -592,8 +592,10 @@ class NormativeModel:
         new_model.outscalers = copy.deepcopy(self.outscalers)
         new_model.preprocess(transfer_data)
         new_model.register_batch_effects(transfer_data)
-        Output.print(Messages.TRANSFERRING_MODELS, n_models=len(self.response_vars))
-        for responsevar in self.response_vars:
+        respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
+
+        Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
             Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
             resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
             X, be, be_maps, Y, _ = new_model.extract_data(resp_transfer_data)
