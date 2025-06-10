@@ -106,12 +106,14 @@ def plot_centiles(
     centile_covariates = np.linspace(covariate_range[0], covariate_range[1], 150)
     centile_df = pd.DataFrame({covariate:centile_covariates})
 
-    # Any other covariates are uniformly distributed across their span 
+    # TODO: use the mean here
+    # Any other covariates are taken to be the midpoint between the observed min and max
     for cov in model.covariates:
         if cov != covariate:
             minc = model.covariate_ranges[cov]['min']
             maxc = model.covariate_ranges[cov]['max']
-            centile_df[cov] =  np.random.rand(len(centile_df))*(maxc-minc) + minc
+            centile_df[cov] = (minc + maxc)/2  
+
     # Batch effects are the first ones in the highlighted batch effects
     for (be, v) in batch_effects.items():
         centile_df[be] = v[0]
