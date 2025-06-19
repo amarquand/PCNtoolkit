@@ -82,5 +82,3 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
-[tool.setuptools]
-packages = ["pcntoolkit"]
