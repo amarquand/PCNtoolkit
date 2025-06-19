@@ -1147,8 +1147,8 @@ class Likelihood(ABC):
             #     return SHASHoLikelihood._from_dict(dct)
             # case "SHASHo2":
             #     return SHASHo2Likelihood._from_dict(dct)
-            # case "beta":
-            #     return BetaLikelihood._from_dict(dct)
+            case "beta":
+                return BetaLikelihood._from_dict(dct)
             case _:
                 raise ValueError(f"Unknown likelihood: {likelihood}")
 
@@ -1164,8 +1164,8 @@ class Likelihood(ABC):
             #     return SHASHoLikelihood._from_args(args)
             # case "SHASHo2":
             #     return SHASHo2Likelihood._from_args(args)
-            # case "beta":
-            #     return BetaLikelihood._from_args(args)
+            case "beta":
+                return BetaLikelihood._from_args(args)
             case _:
                 raise ValueError(f"Unknown likelihood: {likelihood}")
 
