@@ -1,5 +1,5 @@
 """
-Module providing entry points for fitting and predicting with normative models.
+Module providing entry points for fitting and predicting with normative models from the command line.
 """
 
 import argparse

@@ -1,3 +1,7 @@
+"""
+Module providing the NormativeModel class, which is the main class for building and using normative models.
+"""
+
 from __future__ import annotations
 
 import copy
@@ -773,7 +777,6 @@ class NormativeModel:
     #     return mapped_batch_effects
 
     def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
-        # TODO Use loc and sel here, not values[i,j]
         # ! check if synthesize, harmonize, etc. also do this correctly, and if xarrays passed to fit and predict are also indexed properly
         mapped_batch_effects = xr.DataArray(
             np.zeros(batch_effects.values.shape).astype(int),
