@@ -233,7 +233,6 @@ def blr_model_args(save_dir_blr):
         "l_bfgs_b_l": 0.7,
         "l_bfgs_b_epsilon": 0.1,
         "l_bfgs_b_norm": "l2",
-        "intercept": False,
         "fixed_effect": True,
         "heteroskedastic": False,
         "fixed_effect_var":True
@@ -254,7 +253,6 @@ def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_fro
     assert tmplt.l_bfgs_b_l == 0.7
     assert tmplt.l_bfgs_b_epsilon == 0.1
     assert tmplt.l_bfgs_b_norm == "l2"
-    assert not tmplt.intercept
     assert tmplt.fixed_effect
     assert not tmplt.heteroskedastic
     assert tmplt.fixed_effect_var
@@ -270,7 +268,6 @@ def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_fro
     assert model1.l_bfgs_b_l == 0.7
     assert model1.l_bfgs_b_epsilon == 0.1
     assert model1.l_bfgs_b_norm == "l2"
-    assert not model1.intercept
     assert model1.fixed_effect
     assert model1.fixed_effect_var
     model.predict(norm_data_from_arrays)
@@ -294,6 +291,5 @@ def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_fro
     assert model1.l_bfgs_b_l == 0.7
     assert model1.l_bfgs_b_epsilon == 0.1
     assert model1.l_bfgs_b_norm == "l2"
-    assert not model1.intercept
     assert model1.fixed_effect
     assert model1.fixed_effect_var
