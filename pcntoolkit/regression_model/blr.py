@@ -46,7 +46,6 @@ class BLR(RegressionModel):
         l_bfgs_b_l: float = 0.1,
         l_bfgs_b_epsilon: float = 0.1,
         l_bfgs_b_norm: str = "l2",
-        intercept: bool = True,
         fixed_effect: bool = False,
         heteroskedastic: bool = False,
         intercept_var: bool = False,
@@ -82,8 +81,6 @@ class BLR(RegressionModel):
             L-BFGS-B parameter, by default 0.1
         l_bfgs_b_norm : str, optional
             L-BFGS-B parameter, by default "l2"
-        intercept : bool, optional
-            Whether to include an intercept term, by default False
         fixed_effect : bool, optional
             Whether to use a fixed effect, by default True
         heteroskedastic : bool, optional
@@ -116,7 +113,6 @@ class BLR(RegressionModel):
         self.l_bfgs_b_l = l_bfgs_b_l
         self.l_bfgs_b_epsilon = l_bfgs_b_epsilon
         self.l_bfgs_b_norm = l_bfgs_b_norm
-        self.intercept = intercept
         self.fixed_effect = fixed_effect
         self.heteroskedastic = heteroskedastic
         self.intercept_var = intercept_var
@@ -407,9 +403,12 @@ class BLR(RegressionModel):
             self.lambda_n_vec = np.ones(N) * beta
 
         if self.warp:
+
             gamma = hyp[n_lik_param : (n_lik_param + self.n_gamma)]
             n_lik_param += self.n_gamma
             if self.warp_reparam:
+                # ! This is bogus if WarpCompose is used, works only for single SinhArcsinh warps
+                # TODO: Pass warp_reparam to the warps themselves
                 delta = np.exp(gamma[1])
                 beta = beta / (delta**2)
         else:
@@ -706,7 +705,6 @@ class BLR(RegressionModel):
             be,
             be_maps,
             linear=True,
-            intercept=self.intercept,
             fixed_effect=self.fixed_effect,
         )
 
@@ -781,15 +779,20 @@ class BLR(RegressionModel):
         l_bfgs_b_l = args.get("l_bfgs_b_l", _default_instance.l_bfgs_b_l)
         l_bfgs_b_epsilon = args.get("l_bfgs_b_epsilon", _default_instance.l_bfgs_b_epsilon)
         l_bfgs_b_norm = args.get("l_bfgs_b_norm", _default_instance.l_bfgs_b_norm)
-        intercept = args.get("intercept", _default_instance.intercept)
         fixed_effect = args.get("fixed_effect", _default_instance.fixed_effect)
         heteroskedastic = args.get("heteroskedastic", _default_instance.heteroskedastic)
         intercept_var = args.get("intercept_var", _default_instance.intercept_var)
         fixed_effect_var = args.get("fixed_effect_var", _default_instance.fixed_effect_var)
         warp = args.get("warp", _default_instance.warp)
         warp_reparam = args.get("warp_reparam", _default_instance.warp_reparam)
-        basis_function_mean = args.get("basis_function_mean", _default_instance.basis_function_mean)
-        basis_function_var = args.get("basis_function_var", _default_instance.basis_function_var)
+        try: 
+            basis_function_mean = create_basis_function(args.get("basis_function_mean"))
+        except ValueError:
+            basis_function_mean = _default_instance.basis_function_mean
+        try:
+            basis_function_var = create_basis_function(args.get("basis_function_var"))
+        except ValueError:
+            basis_function_var = _default_instance.basis_function_var
         hyp0 = args.get("hyp0", _default_instance.hyp0)
         self = cls(
             name=name,
@@ -802,7 +805,6 @@ class BLR(RegressionModel):
             l_bfgs_b_l=l_bfgs_b_l,
             l_bfgs_b_epsilon=l_bfgs_b_epsilon,
             l_bfgs_b_norm=l_bfgs_b_norm,
-            intercept=intercept,
             fixed_effect=fixed_effect,
             heteroskedastic=heteroskedastic,
             intercept_var=intercept_var,
@@ -827,8 +829,14 @@ class BLR(RegressionModel):
             return WarpSinhArcsinh()
         elif warp.lower() == "warplog":
             return WarpLog()
+        elif warp.lower().startswith("warpcompose"):
+            # Expect a comma separated list of warp names: e.g. warpcompose(warpboxcox,warpaffine,warpsinharcsinh)
+            warps = []
+            for warp_name in warp.lower().split("warpcompose")[1].strip("[]").split(","):
+                warps.append(self.get_warp(warp_name.strip()))
+            return WarpCompose(warps)
         else:
-            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.warp))
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=warp))
 
     @property
     def has_batch_effect(self) -> bool:
