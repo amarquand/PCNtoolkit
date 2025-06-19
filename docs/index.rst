@@ -3,44 +3,44 @@ Welcome to PCNToolkit's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Setup:
 
    pages/quickstart
-   pages/contributing 
+   pages/citing.rst
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Background
 
-   pages/pcntoolkit_background.rst
+   pages/background.rst
    
 .. toctree::
    :maxdepth: 1
    :caption: Function & Class Docs
 
-   pages/modindex.rst
+   api.rst
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
 
-   pages/normative_modelling_walkthrough.rst
-   pages/HBR_NormativeModel_FCONdata_Tutorial.rst
-   pages/apply_normative_models.rst
-   pages/BLR_normativemodel_protocol.rst
-   pages/visualizations.rst
-   pages/post_hoc_analysis.rst
-   pages/other_predictive_models.rst
+   pages/tutorials/00_getting_started.rst
+   pages/tutorials/01_loading_data.rst
+   pages/tutorials/02_BLR.rst
+   pages/tutorials/03_HBR.rst
+   pages/tutorials/04_cluster.rst
+   pages/tutorials/05_command_line_interface.rst
 
 
 .. toctree::
    :maxdepth: 1
-   :caption: Other Useful Stuff
+   :caption: For developers
 
-   pages/FAQs.rst
-   pages/glossary.rst
-   pages/citing.rst
-   pages/acknowledgements.rst
+   pages/contributing.rst
+
+   .. pages/FAQs.rst
+   .. pages/glossary.rst
+   .. pages/acknowledgements.rst
       
