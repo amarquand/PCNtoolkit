@@ -591,12 +591,14 @@ class NormativeModel:
         else:
             new_model.save_dir = self.save_dir + "_transfer"
         new_model.covariates = copy.deepcopy(self.covariates)
-        new_model.response_vars = copy.deepcopy(self.response_vars)
         new_model.inscalers = copy.deepcopy(self.inscalers)
         new_model.outscalers = copy.deepcopy(self.outscalers)
+        
+        respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
+        new_model.response_vars = respvar_intersection
+        
         new_model.preprocess(transfer_data)
         new_model.register_batch_effects(transfer_data)
-        respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
 
         Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
