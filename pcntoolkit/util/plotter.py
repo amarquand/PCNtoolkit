@@ -99,7 +99,6 @@ def plot_centiles(
 
     if plt_kwargs is None:
         plt_kwargs = {}
-    palette = plt_kwargs.pop("cmap", "viridis")
 
     # Create some synthetic data with a single batch effect
     # The plotted covariate is just a linspace
@@ -127,6 +126,9 @@ def plot_centiles(
     if scatter_data and show_thrivelines:
         model.compute_thrivelines(scatter_data, z_thrive=z_thrive)
 
+    if not model.has_batch_effect:
+        batch_effects = {}
+
     if harmonize_data and scatter_data:
         if model.has_batch_effect:
             reference_batch_effect = {k: v[0] for k, v in batch_effects.items()}
@@ -147,7 +149,6 @@ def plot_centiles(
             markers_data=markers_data,
             show_other_data=show_other_data,
             show_thrivelines=show_thrivelines,
-            palette=palette,
             save_dir=save_dir,
             show_centile_labels=show_centile_labels,
             show_legend=show_legend,
@@ -167,7 +168,6 @@ def _plot_centiles(
     markers_data: str = "sex",
     show_other_data: bool = False,
     show_thrivelines:bool=False,
-    palette: str = "viridis",
     save_dir: str | None = None,
     show_centile_labels: bool = True,
     show_legend: bool = True,
@@ -175,7 +175,6 @@ def _plot_centiles(
 ) -> None:
     sns.set_style("whitegrid")
     plt.figure(**plt_kwargs)
-    cmap = plt.get_cmap(palette)
 
     filter_dict = {
         "covariates": covariate,
@@ -186,9 +185,14 @@ def _plot_centiles(
 
     for centile in centile_data.coords["centile"][::-1]:
         d_mean = abs(centile - 0.5)
-        if d_mean < 0.25:
+        if d_mean == 0:
+            thickness = 2
+        else:
+            thickness = 1
+        if d_mean <= 0.25:
             style = "-"
-        elif d_mean < 0.475:
+
+        elif d_mean <= 0.475:
             style = "--"
         else:
             style = ":"
@@ -196,13 +200,12 @@ def _plot_centiles(
         sns.lineplot(
             x=filtered.X,
             y=filtered.centiles.sel(centile=centile),
-            color=cmap(centile),
+            color="black",
             linestyle=style,
-            linewidth=1,
+            linewidth=thickness,
             zorder=2,
             legend="brief",
         )
-        color = cmap(centile)
         font = FontProperties()
         font.set_weight("bold")
         if show_centile_labels:
@@ -210,7 +213,7 @@ def _plot_centiles(
                 s=centile.item(),
                 x=filtered.X[0] - 1,
                 y=filtered.centiles.sel(centile=centile)[0],
-                color=color,
+                color="black",
                 horizontalalignment="right",
                 verticalalignment="center",
                 fontproperties=font,
@@ -219,7 +222,7 @@ def _plot_centiles(
                 s=centile.item(),
                 x=filtered.X[-1] + 1,
                 y=filtered.centiles.sel(centile=centile)[-1],
-                color=color,
+                color="black",
                 horizontalalignment="left",
                 verticalalignment="center",
                 fontproperties=font,
@@ -237,7 +240,7 @@ def _plot_centiles(
         columns.extend([("batch_effects", be.item()) for be in scatter_data.batch_effect_dims])
         df = df[columns]
         df.columns = [c[1] for c in df.columns]
-        if batch_effects == {}:
+        if (batch_effects == {}):
             sns.scatterplot(
                 df,
                 x=covariate,
@@ -314,7 +317,7 @@ def _plot_centiles(
     plt.xlabel(covariate)
     plt.ylabel(response_var)
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"{plotname}.png"))
+        plt.savefig(os.path.join(save_dir, f"{plotname}.png"), dpi=300)
     else:
         plt.show(block=False)
     plt.close()
