@@ -234,9 +234,9 @@ def main():
         saveplots=True,
         # The directory to save the model, results, and plots.
         save_dir=os.path.join(resource_dir, f"testmodel_{data}/save_dir"),
-        # The scaler to use for the input data. Can be either one of "standardize", "minmax", "robustminmax", "none"
+        # The scaler to use for the input data. Can be either one of "standardize", "minmax", "robminmax", "none"
         inscaler="standardize",
-        # The scaler to use for the output data. Can be either one of "standardize", "minmax", "robustminmax", "none"
+        # The scaler to use for the output data. Can be either one of "standardize", "minmax", "robminmax", "none"
         outscaler="standardize",
     )
 

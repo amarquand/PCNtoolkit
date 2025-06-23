@@ -14,7 +14,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
 import xarray as xr
+
+from pcntoolkit.util.output import Messages, Output
 
 
 class RegressionModel(ABC):
@@ -160,6 +163,14 @@ class RegressionModel(ABC):
         my_dict["is_fitted"] = self.is_fitted
         my_dict["is_from_dict"] = self.is_from_dict
         return my_dict
+        
+    def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
+        samples = np.zeros((data.X.shape[0], n_samples))
+        Output.print(Messages.COMPUTING_YHAT_MODEL, model_name=responsevar)
+        for s in range(n_samples):
+            Z = xr.DataArray(np.random.randn(data.X.shape[0]), dims=("observations",))
+            samples[:, s] = self.backward(X, be, be_maps, Z).values
+        return samples.mean(axis=1)
         
     @abstractmethod
     def to_dict(self, path: str | None = None) -> dict:

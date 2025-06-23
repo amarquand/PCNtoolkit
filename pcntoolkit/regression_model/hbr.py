@@ -17,7 +17,7 @@ from pcntoolkit.math_functions.basis_function import BasisFunction, LinearBasisF
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
 from pcntoolkit.regression_model.regression_model import RegressionModel
-from pcntoolkit.util.output import Errors, Output
+from pcntoolkit.util.output import Errors, Messages, Output
 
 
 class HBR(RegressionModel):
@@ -463,7 +463,12 @@ class HBR(RegressionModel):
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
 
-
+    def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
+        fn = self.likelihood.yhat
+        Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
+        yhat = self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs={})
+        return yhat
+    
 PM_DISTMAP = {
     "Normal": pm.Normal,
     # "Cauchy": pm.Cauchy,
@@ -1135,6 +1140,10 @@ class Likelihood(ABC):
     def backward(self, *args, **kwargs):
         pass
 
+    @abstractmethod
+    def yhat(self, *args, **kwargs):
+        pass
+
     @staticmethod
     def from_dict(dct: Dict[str, Any]) -> "Likelihood":
         likelihood = dct.pop("name", "Normal")
@@ -1242,7 +1251,14 @@ class NormalLikelihood(Likelihood):
     def backward(self, *args, **kwargs):
         mu, sigma = args
         Z = kwargs.get("Z", None)
+        if Z.ndim == 3:
+            sigma = sigma[:,:,None]
+            mu = mu[:,:,None]
         return Z * sigma + mu
+    
+    def yhat(self, *args, **kwargs):
+        mu, _ = args
+        return mu
 
     def to_dict(self) -> Dict[str, Any]:
         return {"name": self.name, "mu": self.mu.to_dict(), "sigma": self.sigma.to_dict()}
@@ -1373,6 +1389,9 @@ class SHASHbLikelihood(Likelihood):
         Y = SHASH_centered * sigma + mu
         return Y
 
+    def yhat(self, *args, **kwargs):
+        mu, _, _, _ = args
+        return mu
 
 class SHASHoLikelihood(Likelihood):
     def __init__(self, mu: BasePrior, sigma: BasePrior, epsilon: BasePrior, delta: BasePrior):
@@ -1592,6 +1611,30 @@ class BetaLikelihood(Likelihood):
                 dims="observations",
             )
         return model
+    
+    def compile_params(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> dict[str, Any]:
+        return {
+            "alpha": (self.alpha.compile(model, X, be, be_maps, Y), self.alpha.sample_dims),
+            "beta": (self.beta.compile(model, X, be, be_maps, Y), self.beta.sample_dims),
+        }
+
+    def transfer(self, idata: az.InferenceData, **kwargs) -> "BetaLikelihood":
+        new_alpha = self.alpha.transfer(idata, **kwargs)
+        new_beta = self.beta.transfer(idata, **kwargs)
+        return BetaLikelihood(new_alpha, new_beta)
+
+    def _update_data(
+        self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
+    ):
+        self.alpha.update_data(model, X, be, be_maps, Y)
+        self.beta.update_data(model, X, be, be_maps, Y)
 
     def forward(self, *args, **kwargs):
         alpha, beta = args
@@ -1606,6 +1649,10 @@ class BetaLikelihood(Likelihood):
         cdf_norm = stats.norm.cdf(Z)
         quantiles = stats.beta.ppf(cdf_norm, alpha, beta)
         return quantiles
+
+    def yhat(self, *args, **kwargs):
+        alpha, beta = args
+        return alpha/(alpha+beta)
 
     def has_random_effect(self) -> bool:
         return self.alpha.has_random_effect or self.beta.has_random_effect
