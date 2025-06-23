@@ -166,6 +166,7 @@ class NormativeModel:
         self.compute_zscores(data)
         self.compute_centiles(data, recompute=True)
         self.compute_logp(data)
+        self.compute_yhat(data)
         if self.evaluate_model:
             self.evaluate(data)
         if self.saveresults:
@@ -446,6 +447,24 @@ class NormativeModel:
 
         self.postprocess(data)
         return data
+
+    def compute_yhat(self, data: NormData) -> NormData:
+        """
+        Computes the predicted values for each response variable in the data.
+        """
+        self.preprocess(data)
+        respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
+        n_samples = 10000
+        data["Yhat"] = xr.DataArray(np.zeros((data.X.shape[0], len(respvar_intersection))), dims=("observations", "response_vars"), coords={"observations": data.observations, "response_vars": list(respvar_intersection)})
+        Output.print(Messages.COMPUTING_YHAT, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            resp_predict_data = data.sel({"response_vars": responsevar})
+            X, be, be_maps, _, _ = self.extract_data(resp_predict_data)
+            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, n_samples, responsevar, X, be, be_maps)    
+        self.postprocess(data)
+        return data
+
+
 
     def compute_correlation_matrix(self, data, bandwidth=5, covariate="age"):
         self.thrive_covariate = covariate

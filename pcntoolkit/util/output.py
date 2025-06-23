@@ -89,6 +89,8 @@ Total failed jobs: {total_failed_jobs}
     - {n_batch_effects} batch effects:
     {batch_effects}
     """
+    COMPUTING_YHAT = "Computing yhat for {n_models} response variables."
+    COMPUTING_YHAT_MODEL = "Computing yhat for {model_name}."
 
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"

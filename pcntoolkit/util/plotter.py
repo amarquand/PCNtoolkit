@@ -20,6 +20,7 @@ from pcntoolkit.util.output import Errors, Output
 
 sns.set_theme(style="darkgrid")
 
+
 def plot_centiles(
     model: "NormativeModel",
     centiles: List[float] | np.ndarray | None = None,
@@ -31,11 +32,12 @@ def plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
-    show_thrivelines:bool= False,
-    z_thrive :float= 0.,
+    show_thrivelines: bool = False,
+    z_thrive: float = 0.0,
     save_dir: str | None = None,
     show_centile_labels: bool = True,
     show_legend: bool = True,
+    show_yhat: bool = False,
     plt_kwargs: dict | None = None,
     **kwargs: Any,
 ) -> None:
@@ -96,35 +98,42 @@ def plot_centiles(
     elif batch_effects is None:
         batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
 
-
     if plt_kwargs is None:
         plt_kwargs = {}
 
     # Create some synthetic data with a single batch effect
     # The plotted covariate is just a linspace
     centile_covariates = np.linspace(covariate_range[0], covariate_range[1], 150)
-    centile_df = pd.DataFrame({covariate:centile_covariates})
+    centile_df = pd.DataFrame({covariate: centile_covariates})
 
     # TODO: use the mean here
     # Any other covariates are taken to be the midpoint between the observed min and max
     for cov in model.covariates:
         if cov != covariate:
-            minc = model.covariate_ranges[cov]['min']
-            maxc = model.covariate_ranges[cov]['max']
-            centile_df[cov] = (minc + maxc)/2  
+            minc = model.covariate_ranges[cov]["min"]
+            maxc = model.covariate_ranges[cov]["max"]
+            centile_df[cov] = (minc + maxc) / 2
 
     # Batch effects are the first ones in the highlighted batch effects
-    for (be, v) in batch_effects.items():
+    for be, v in batch_effects.items():
         centile_df[be] = v[0]
     # Response vars are all 0, we don't need them
     for rv in model.response_vars:
         centile_df[rv] = 0
-    centile_data = NormData.from_dataframe("centile", dataframe=centile_df, covariates=model.covariates, response_vars=model.response_vars, batch_effects=list(batch_effects.keys())) #type:ignore
-        
+    centile_data = NormData.from_dataframe(
+        "centile",
+        dataframe=centile_df,
+        covariates=model.covariates,
+        response_vars=model.response_vars,
+        batch_effects=list(batch_effects.keys()),
+    )  # type:ignore
+
     if not hasattr(centile_data, "centiles"):
-        model.compute_centiles(centile_data, centiles=centiles, **kwargs)    
+        model.compute_centiles(centile_data, centiles=centiles, **kwargs)
     if scatter_data and show_thrivelines:
         model.compute_thrivelines(scatter_data, z_thrive=z_thrive)
+    if show_yhat and not hasattr(centile_data, "yhat"):
+        model.compute_yhat(centile_data)
 
     if not model.has_batch_effect:
         batch_effects = {}
@@ -152,6 +161,7 @@ def plot_centiles(
             save_dir=save_dir,
             show_centile_labels=show_centile_labels,
             show_legend=show_legend,
+            show_yhat=show_yhat,
             plt_kwargs=plt_kwargs,
         )
 
@@ -167,10 +177,11 @@ def _plot_centiles(
     hue_data: str = "site",
     markers_data: str = "sex",
     show_other_data: bool = False,
-    show_thrivelines:bool=False,
+    show_thrivelines: bool = False,
     save_dir: str | None = None,
     show_centile_labels: bool = True,
     show_legend: bool = True,
+    show_yhat: bool = False,
     plt_kwargs: dict = None,  # type: ignore
 ) -> None:
     sns.set_style("whitegrid")
@@ -206,6 +217,7 @@ def _plot_centiles(
             zorder=2,
             legend="brief",
         )
+
         font = FontProperties()
         font.set_weight("bold")
         if show_centile_labels:
@@ -227,6 +239,8 @@ def _plot_centiles(
                 verticalalignment="center",
                 fontproperties=font,
             )
+    if show_yhat:
+        plt.plot(filtered.X, filtered.Yhat, color="red", linestyle="--", linewidth=thickness, zorder=2, label="$\\hat{Y}$")
 
     minx, maxx = plt.xlim()
     plt.xlim(minx - 0.1 * (maxx - minx), maxx + 0.1 * (maxx - minx))
@@ -240,7 +254,7 @@ def _plot_centiles(
         columns.extend([("batch_effects", be.item()) for be in scatter_data.batch_effect_dims])
         df = df[columns]
         df.columns = [c[1] for c in df.columns]
-        if (batch_effects == {}):
+        if batch_effects == {}:
             sns.scatterplot(
                 df,
                 x=covariate,
@@ -275,7 +289,7 @@ def _plot_centiles(
             )
             if show_thrivelines:
                 plt.plot(scatter_filter.thrive_X.to_numpy().T, scatter_filter[thriveline_data_name].to_numpy().T)
-            
+
             if show_other_data:
                 non_be_df = df[~idx]
                 non_be_df["marker"] = ["Other data"] * len(non_be_df)
@@ -290,7 +304,7 @@ def _plot_centiles(
                     alpha=0.4,
                     zorder=0,
                 )
-            
+
             if show_legend:
                 legend = scatter.get_legend()
                 if legend:
@@ -303,7 +317,7 @@ def _plot_centiles(
                     )
             else:
                 plt.legend().remove()
-            
+
     title = f"Centiles of {response_var}"
     if scatter_data:
         if harmonize_data:
@@ -312,7 +326,7 @@ def _plot_centiles(
         else:
             plotname = f"centiles_{response_var}_{scatter_data.name}"
             title = f"{title}\n With raw {scatter_data.name} data"
-        
+
     plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)
@@ -322,7 +336,7 @@ def _plot_centiles(
         plt.show(block=False)
     plt.close()
 
-
+    
 def plot_qq(
     data: NormData,
     plt_kwargs: dict | None = None,

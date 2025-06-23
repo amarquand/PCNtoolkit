@@ -33,14 +33,15 @@ class Evaluator:
         Parameters
         ----------
         data : NormData
-            Data container with predictions and actual values
+            Data container with predictions and actual values, and yhat
 
         Returns
         -------
         NormData
             Data container updated with evaluation statistics
         """
-        data["Yhat"] = data.centiles.sel(centile=0.5, method="nearest")
+        # data["Yhat"] = data.centiles.sel(centile=0.5, method="nearest")
+        assert "Yhat" in data.data_vars, "Yhat must be computed before evaluation"
         all_statistics = [
             "Rho",
             "Rho_p",

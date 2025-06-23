@@ -752,6 +752,18 @@ class NormData(xr.Dataset):
                     dims=self.Y_harmonized.dims,
                     attrs=self.Y_harmonized.attrs,
                 )
+
+            if "Yhat" in self.data_vars:
+                scaled_Yhat = np.zeros(self.Yhat.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    scaled_Yhat[:, i] = outscalers[responsevar].transform(self.Yhat.sel(response_vars=responsevar).data)
+                self["Yhat"] = xr.DataArray(
+                    scaled_Yhat,
+                    coords=self.Yhat.coords,
+                    dims=self.Yhat.dims,
+                    attrs=self.Yhat.attrs,
+                ) 
+                
             if "centiles" in self.data_vars:
                 scaled_centiles = np.zeros(self.centiles.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
@@ -829,6 +841,17 @@ class NormData(xr.Dataset):
                     coords=self.Y_harmonized.coords,
                     dims=self.Y_harmonized.dims,
                     attrs=self.Y_harmonized.attrs,
+                )
+
+            if "Yhat" in self.data_vars:
+                unscaled_Yhat = np.zeros(self.Yhat.shape)
+                for i, responsevar in enumerate(self.response_vars.to_numpy()):
+                    unscaled_Yhat[:, i] = outscalers[responsevar].inverse_transform(self.Yhat.sel(response_vars=responsevar).data)
+                self["Yhat"] = xr.DataArray(
+                    unscaled_Yhat,
+                    coords=self.Yhat.coords,
+                    dims=self.Yhat.dims,
+                    attrs=self.Yhat.attrs,
                 )
 
             if "centiles" in self.data_vars:
