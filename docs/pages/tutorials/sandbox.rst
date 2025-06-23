@@ -707,6 +707,93 @@
     Sampling: []
     Sampling: []
     Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:21 - Computing centiles for Right-Lateral-Ventricle.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:23 - Computing centiles for WM-hypointensities.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:24 - Computing centiles for Right-Amygdala.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:25 - Harmonizing data on 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:25 - Harmonizing data for Right-Amygdala.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:26 - Harmonizing data for Right-Lateral-Ventricle.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:27 - Harmonizing data for WM-hypointensities.
+
+
+.. parsed-literal::
+
+    Sampling: []
+    Sampling: []
+
+
+.. parsed-literal::
+
+    Process: 10589 - 2025-06-18 15:38:28 - Harmonizing data for CortexVol.
+
+
+.. parsed-literal::
+
+    Sampling: []
 
 
 .. code:: ipython3
@@ -1109,28 +1196,28 @@
         unique_batch_effects:           {&#x27;sex&#x27;: [&#x27;F&#x27;, &#x27;M&#x27;], &#x27;site&#x27;: [&#x27;AnnArbor_a&#x27;...
         batch_effect_counts:            {&#x27;sex&#x27;: {&#x27;F&#x27;: 589, &#x27;M&#x27;: 489}, &#x27;site&#x27;: {&#x27;A...
         batch_effect_covariate_ranges:  {&#x27;sex&#x27;: {&#x27;F&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;...
-        covariate_ranges:               {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.NormData</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-af76eddd-ce92-424b-934b-55cebde37fe2' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-af76eddd-ce92-424b-934b-55cebde37fe2' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>observations</span>: 1078</li><li><span class='xr-has-index'>response_vars</span>: 4</li><li><span class='xr-has-index'>covariates</span>: 1</li><li><span class='xr-has-index'>batch_effect_dims</span>: 2</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-9712b3ff-1c5f-484e-95a6-a3fc3ced6f88' class='xr-section-summary-in' type='checkbox'  checked><label for='section-9712b3ff-1c5f-484e-95a6-a3fc3ced6f88' class='xr-section-summary' >Coordinates: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>observations</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 ... 1074 1075 1076 1077</div><input id='attrs-ea6a900a-c40c-4444-a9d4-27f1bd6f3c3a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-ea6a900a-c40c-4444-a9d4-27f1bd6f3c3a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-fef25324-c786-4590-9116-fe95c7e23121' class='xr-var-data-in' type='checkbox'><label for='data-fef25324-c786-4590-9116-fe95c7e23121' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([   0,    1,    2, ..., 1075, 1076, 1077])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>response_vars</span></div><div class='xr-var-dims'>(response_vars)</div><div class='xr-var-dtype'>&lt;U34</div><div class='xr-var-preview xr-preview'>&#x27;WM-hypointensities&#x27; ... &#x27;Cortex...</div><input id='attrs-6e084903-66c2-4764-a0b3-2f236dce56cf' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-6e084903-66c2-4764-a0b3-2f236dce56cf' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-3e55ebf0-e70a-439c-bd54-5bcc166f9f8e' class='xr-var-data-in' type='checkbox'><label for='data-3e55ebf0-e70a-439c-bd54-5bcc166f9f8e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;WM-hypointensities&#x27;, &#x27;Right-Lateral-Ventricle&#x27;, &#x27;Right-Amygdala&#x27;,
-           &#x27;CortexVol&#x27;], dtype=&#x27;&lt;U34&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>covariates</span></div><div class='xr-var-dims'>(covariates)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;age&#x27;</div><input id='attrs-fc89ad56-7e29-4aa7-b17c-5727ab177d72' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-fc89ad56-7e29-4aa7-b17c-5727ab177d72' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-47aa44c2-e958-4c6b-99e5-484331d54222' class='xr-var-data-in' type='checkbox'><label for='data-47aa44c2-e958-4c6b-99e5-484331d54222' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;age&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>batch_effect_dims</span></div><div class='xr-var-dims'>(batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U4</div><div class='xr-var-preview xr-preview'>&#x27;sex&#x27; &#x27;site&#x27;</div><input id='attrs-eb2417b9-b2d8-4638-9d00-682f1ae8143a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-eb2417b9-b2d8-4638-9d00-682f1ae8143a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a3dcaf42-f53b-4600-9352-561181f2683b' class='xr-var-data-in' type='checkbox'><label for='data-a3dcaf42-f53b-4600-9352-561181f2683b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;&lt;U4&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-a7423c54-ab0a-4df0-900c-7922929d4972' class='xr-section-summary-in' type='checkbox'  checked><label for='section-a7423c54-ab0a-4df0-900c-7922929d4972' class='xr-section-summary' >Data variables: <span>(5)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>subjects</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;AnnArbor_a_sub04111&#x27; ... &#x27;Saint...</div><input id='attrs-8036840a-ada8-47cf-89d9-242028cb7147' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-8036840a-ada8-47cf-89d9-242028cb7147' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-31571828-8f5c-4a41-852b-22554e28e228' class='xr-var-data-in' type='checkbox'><label for='data-31571828-8f5c-4a41-852b-22554e28e228' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;AnnArbor_a_sub04111&#x27;, &#x27;AnnArbor_a_sub04619&#x27;,
+        covariate_ranges:               {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.NormData</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-9acbdf6d-57ac-4534-876e-9ddce4e0f6f9' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-9acbdf6d-57ac-4534-876e-9ddce4e0f6f9' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>observations</span>: 1078</li><li><span class='xr-has-index'>response_vars</span>: 4</li><li><span class='xr-has-index'>covariates</span>: 1</li><li><span class='xr-has-index'>batch_effect_dims</span>: 2</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-34e28fb7-0ec9-45ef-b02c-a50fe4b14c8f' class='xr-section-summary-in' type='checkbox'  checked><label for='section-34e28fb7-0ec9-45ef-b02c-a50fe4b14c8f' class='xr-section-summary' >Coordinates: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>observations</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 ... 1074 1075 1076 1077</div><input id='attrs-cea2b578-a076-462e-8efb-6b349624252c' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-cea2b578-a076-462e-8efb-6b349624252c' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-dc4df1ba-0c3f-490a-a87c-82dc1f55d910' class='xr-var-data-in' type='checkbox'><label for='data-dc4df1ba-0c3f-490a-a87c-82dc1f55d910' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([   0,    1,    2, ..., 1075, 1076, 1077])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>response_vars</span></div><div class='xr-var-dims'>(response_vars)</div><div class='xr-var-dtype'>&lt;U34</div><div class='xr-var-preview xr-preview'>&#x27;WM-hypointensities&#x27; ... &#x27;Cortex...</div><input id='attrs-5449ec49-d272-4bb5-9349-082fabccfd2a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5449ec49-d272-4bb5-9349-082fabccfd2a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2dad6e59-b179-41f5-9461-6422c618e468' class='xr-var-data-in' type='checkbox'><label for='data-2dad6e59-b179-41f5-9461-6422c618e468' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;WM-hypointensities&#x27;, &#x27;Right-Lateral-Ventricle&#x27;, &#x27;Right-Amygdala&#x27;,
+           &#x27;CortexVol&#x27;], dtype=&#x27;&lt;U34&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>covariates</span></div><div class='xr-var-dims'>(covariates)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;age&#x27;</div><input id='attrs-1f52af2d-0f69-4246-8c60-38bd216b88c4' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-1f52af2d-0f69-4246-8c60-38bd216b88c4' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-fe66c4dc-ae30-40e7-9ba4-55939fe6cd88' class='xr-var-data-in' type='checkbox'><label for='data-fe66c4dc-ae30-40e7-9ba4-55939fe6cd88' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;age&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>batch_effect_dims</span></div><div class='xr-var-dims'>(batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U4</div><div class='xr-var-preview xr-preview'>&#x27;sex&#x27; &#x27;site&#x27;</div><input id='attrs-3a91bac0-fdb4-40f0-9091-05d9304ed632' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-3a91bac0-fdb4-40f0-9091-05d9304ed632' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-847b90d9-9057-48e4-a972-fb60b67fddde' class='xr-var-data-in' type='checkbox'><label for='data-847b90d9-9057-48e4-a972-fb60b67fddde' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;&lt;U4&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-3ebae1de-d014-426f-b5fa-66bc151748c9' class='xr-section-summary-in' type='checkbox'  checked><label for='section-3ebae1de-d014-426f-b5fa-66bc151748c9' class='xr-section-summary' >Data variables: <span>(5)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>subjects</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;AnnArbor_a_sub04111&#x27; ... &#x27;Saint...</div><input id='attrs-99d1fab7-4d7b-40cc-9653-16059ebe1bff' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-99d1fab7-4d7b-40cc-9653-16059ebe1bff' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-31df57a2-ccd8-4bfa-a775-23ec26b49e9f' class='xr-var-data-in' type='checkbox'><label for='data-31df57a2-ccd8-4bfa-a775-23ec26b49e9f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;AnnArbor_a_sub04111&#x27;, &#x27;AnnArbor_a_sub04619&#x27;,
            &#x27;AnnArbor_a_sub13636&#x27;, ..., &#x27;SaintLouis_sub95967&#x27;,
-           &#x27;SaintLouis_sub97935&#x27;, &#x27;SaintLouis_sub99965&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.687e+03 3.906e+03 ... 4.638e+05</div><input id='attrs-b31fe7af-11b8-43a6-80db-401919771421' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b31fe7af-11b8-43a6-80db-401919771421' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6d0b5ef5-2445-441e-b6db-b666336bfeea' class='xr-var-data-in' type='checkbox'><label for='data-6d0b5ef5-2445-441e-b6db-b666336bfeea' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[1.68670000e+03, 3.90590000e+03, 1.24160000e+03, 4.46861118e+05],
+           &#x27;SaintLouis_sub97935&#x27;, &#x27;SaintLouis_sub99965&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.687e+03 3.906e+03 ... 4.638e+05</div><input id='attrs-b1ad3501-bf8b-4938-a2ae-7988ebe6fe36' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b1ad3501-bf8b-4938-a2ae-7988ebe6fe36' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-64ee606d-46e6-417f-8ec4-1df0a1c55e7b' class='xr-var-data-in' type='checkbox'><label for='data-64ee606d-46e6-417f-8ec4-1df0a1c55e7b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[1.68670000e+03, 3.90590000e+03, 1.24160000e+03, 4.46861118e+05],
            [1.37110000e+03, 9.50330000e+03, 1.47980000e+03, 5.32003625e+05],
            [1.41480000e+03, 9.70240000e+03, 1.68280000e+03, 4.75051320e+05],
            ...,
            [1.06100000e+03, 9.09200000e+03, 1.81310000e+03, 5.36279364e+05],
            [4.48300000e+02, 4.55260000e+03, 1.53860000e+03, 4.61674842e+05],
-           [5.09100000e+02, 3.38090000e+03, 1.60610000e+03, 4.63793416e+05]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>X</span></div><div class='xr-var-dims'>(observations, covariates)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>25.63 18.34 29.2 ... 27.0 29.0 23.0</div><input id='attrs-2b3f2816-99fa-4c7b-b8ee-fb2e5df1afd1' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-2b3f2816-99fa-4c7b-b8ee-fb2e5df1afd1' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a086fb63-bd0f-4b26-8a01-f0e53641b837' class='xr-var-data-in' type='checkbox'><label for='data-a086fb63-bd0f-4b26-8a01-f0e53641b837' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[25.63],
+           [5.09100000e+02, 3.38090000e+03, 1.60610000e+03, 4.63793416e+05]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>X</span></div><div class='xr-var-dims'>(observations, covariates)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>25.63 18.34 29.2 ... 27.0 29.0 23.0</div><input id='attrs-6736cd18-1d16-47f9-ada9-c4f6e24b7bfe' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-6736cd18-1d16-47f9-ada9-c4f6e24b7bfe' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6016faaf-4837-4a00-b068-1e24b04a6149' class='xr-var-data-in' type='checkbox'><label for='data-6016faaf-4837-4a00-b068-1e24b04a6149' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[25.63],
            [18.34],
            [29.2 ],
            ...,
            [27.  ],
            [29.  ],
-           [23.  ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>batch_effects</span></div><div class='xr-var-dims'>(observations, batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U17</div><div class='xr-var-preview xr-preview'>&#x27;M&#x27; &#x27;AnnArbor_a&#x27; ... &#x27;SaintLouis&#x27;</div><input id='attrs-0efcbd2b-05ee-499f-aa22-bc6b44cb1623' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0efcbd2b-05ee-499f-aa22-bc6b44cb1623' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d7eccac1-c54b-44c7-82aa-cfd2bb6d43f2' class='xr-var-data-in' type='checkbox'><label for='data-d7eccac1-c54b-44c7-82aa-cfd2bb6d43f2' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[&#x27;M&#x27;, &#x27;AnnArbor_a&#x27;],
+           [23.  ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>batch_effects</span></div><div class='xr-var-dims'>(observations, batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U17</div><div class='xr-var-preview xr-preview'>&#x27;M&#x27; &#x27;AnnArbor_a&#x27; ... &#x27;SaintLouis&#x27;</div><input id='attrs-f7ee9aab-9d34-4e4f-82e8-32a74af102ce' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-f7ee9aab-9d34-4e4f-82e8-32a74af102ce' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7a788b93-0dd1-4066-9b01-798d47f3c28d' class='xr-var-data-in' type='checkbox'><label for='data-7a788b93-0dd1-4066-9b01-798d47f3c28d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[&#x27;M&#x27;, &#x27;AnnArbor_a&#x27;],
            [&#x27;M&#x27;, &#x27;AnnArbor_a&#x27;],
            [&#x27;M&#x27;, &#x27;AnnArbor_a&#x27;],
            ...,
            [&#x27;M&#x27;, &#x27;SaintLouis&#x27;],
            [&#x27;F&#x27;, &#x27;SaintLouis&#x27;],
-           [&#x27;F&#x27;, &#x27;SaintLouis&#x27;]], dtype=&#x27;&lt;U17&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y_harmonized</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.521e+03 2.612e+03 ... 4.226e+05</div><input id='attrs-0bd843f3-d4de-4eb0-8b2f-fe1637a4b5a9' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0bd843f3-d4de-4eb0-8b2f-fe1637a4b5a9' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a8dd4777-e274-429b-9e67-5ff9a63cbd8f' class='xr-var-data-in' type='checkbox'><label for='data-a8dd4777-e274-429b-9e67-5ff9a63cbd8f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[  1521.35329944,   2611.96005006,   1008.6890209 ,
+           [&#x27;F&#x27;, &#x27;SaintLouis&#x27;]], dtype=&#x27;&lt;U17&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y_harmonized</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.521e+03 2.612e+03 ... 4.226e+05</div><input id='attrs-433f144e-2604-4059-bf8e-44a4d7e8383a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-433f144e-2604-4059-bf8e-44a4d7e8383a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-03a7ae52-15b9-48b4-acb1-3f8622ccd8aa' class='xr-var-data-in' type='checkbox'><label for='data-03a7ae52-15b9-48b4-acb1-3f8622ccd8aa' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[  1521.35329944,   2611.96005006,   1008.6890209 ,
             395430.33607247],
            [  1204.36841761,   8220.75190661,   1247.13984774,
             480676.92524313],
@@ -1142,12 +1229,12 @@
            [  1325.6579684 ,   4466.40498074,   1325.99813402,
             420456.24624241],
            [  1386.94954869,   3296.0924113 ,   1393.76175262,
-            422604.22492441]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-96f3a5f5-dc60-4a40-b41d-c5b98c595834' class='xr-section-summary-in' type='checkbox'  ><label for='section-96f3a5f5-dc60-4a40-b41d-c5b98c595834' class='xr-section-summary' >Indexes: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-index-name'><div>observations</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-b7682b89-254d-4ec7-9943-ca809cea15a1' class='xr-index-data-in' type='checkbox'/><label for='index-b7682b89-254d-4ec7-9943-ca809cea15a1' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([   0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
+            422604.22492441]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-d0137f6d-89dc-49c8-9039-01eb28e967e4' class='xr-section-summary-in' type='checkbox'  ><label for='section-d0137f6d-89dc-49c8-9039-01eb28e967e4' class='xr-section-summary' >Indexes: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-index-name'><div>observations</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-99ddb3f1-fa90-443d-a436-c6eb6b5bdc81' class='xr-index-data-in' type='checkbox'/><label for='index-99ddb3f1-fa90-443d-a436-c6eb6b5bdc81' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([   0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
            ...
            1068, 1069, 1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077],
-          dtype=&#x27;int64&#x27;, name=&#x27;observations&#x27;, length=1078))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>response_vars</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-91fd51fb-9a8d-4cc9-9b9e-7ad5bbe18ce5' class='xr-index-data-in' type='checkbox'/><label for='index-91fd51fb-9a8d-4cc9-9b9e-7ad5bbe18ce5' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;WM-hypointensities&#x27;, &#x27;Right-Lateral-Ventricle&#x27;, &#x27;Right-Amygdala&#x27;,
+          dtype=&#x27;int64&#x27;, name=&#x27;observations&#x27;, length=1078))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>response_vars</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-d16baf75-8a4c-40e2-957e-164b6ba58b23' class='xr-index-data-in' type='checkbox'/><label for='index-d16baf75-8a4c-40e2-957e-164b6ba58b23' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;WM-hypointensities&#x27;, &#x27;Right-Lateral-Ventricle&#x27;, &#x27;Right-Amygdala&#x27;,
            &#x27;CortexVol&#x27;],
-          dtype=&#x27;object&#x27;, name=&#x27;response_vars&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>covariates</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-798e5be2-c552-4449-b85b-c54bfec613ac' class='xr-index-data-in' type='checkbox'/><label for='index-798e5be2-c552-4449-b85b-c54bfec613ac' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;age&#x27;], dtype=&#x27;object&#x27;, name=&#x27;covariates&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>batch_effect_dims</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-df077f5a-b147-47e2-b241-8da7825abf4d' class='xr-index-data-in' type='checkbox'/><label for='index-df077f5a-b147-47e2-b241-8da7825abf4d' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;object&#x27;, name=&#x27;batch_effect_dims&#x27;))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-8ef224e1-74af-4b30-8c34-be691fc685d1' class='xr-section-summary-in' type='checkbox'  checked><label for='section-8ef224e1-74af-4b30-8c34-be691fc685d1' class='xr-section-summary' >Attributes: <span>(7)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>real_ids :</span></dt><dd>True</dd><dt><span>is_scaled :</span></dt><dd>False</dd><dt><span>name :</span></dt><dd>fcon1000</dd><dt><span>unique_batch_effects :</span></dt><dd>{&#x27;sex&#x27;: [&#x27;F&#x27;, &#x27;M&#x27;], &#x27;site&#x27;: [&#x27;AnnArbor_a&#x27;, &#x27;AnnArbor_b&#x27;, &#x27;Atlanta&#x27;, &#x27;Baltimore&#x27;, &#x27;Bangor&#x27;, &#x27;Beijing_Zang&#x27;, &#x27;Berlin_Margulies&#x27;, &#x27;Cambridge_Buckner&#x27;, &#x27;Cleveland&#x27;, &#x27;ICBM&#x27;, &#x27;Leiden_2180&#x27;, &#x27;Leiden_2200&#x27;, &#x27;Milwaukee_b&#x27;, &#x27;Munchen&#x27;, &#x27;NewYork_a&#x27;, &#x27;NewYork_a_ADHD&#x27;, &#x27;Newark&#x27;, &#x27;Oulu&#x27;, &#x27;Oxford&#x27;, &#x27;PaloAlto&#x27;, &#x27;Pittsburgh&#x27;, &#x27;Queensland&#x27;, &#x27;SaintLouis&#x27;]}</dd><dt><span>batch_effect_counts :</span></dt><dd>{&#x27;sex&#x27;: {&#x27;F&#x27;: 589, &#x27;M&#x27;: 489}, &#x27;site&#x27;: {&#x27;AnnArbor_a&#x27;: 24, &#x27;AnnArbor_b&#x27;: 32, &#x27;Atlanta&#x27;: 28, &#x27;Baltimore&#x27;: 23, &#x27;Bangor&#x27;: 20, &#x27;Beijing_Zang&#x27;: 198, &#x27;Berlin_Margulies&#x27;: 26, &#x27;Cambridge_Buckner&#x27;: 198, &#x27;Cleveland&#x27;: 31, &#x27;ICBM&#x27;: 85, &#x27;Leiden_2180&#x27;: 12, &#x27;Leiden_2200&#x27;: 19, &#x27;Milwaukee_b&#x27;: 46, &#x27;Munchen&#x27;: 15, &#x27;NewYork_a&#x27;: 83, &#x27;NewYork_a_ADHD&#x27;: 25, &#x27;Newark&#x27;: 19, &#x27;Oulu&#x27;: 102, &#x27;Oxford&#x27;: 22, &#x27;PaloAlto&#x27;: 17, &#x27;Pittsburgh&#x27;: 3, &#x27;Queensland&#x27;: 19, &#x27;SaintLouis&#x27;: 31}}</dd><dt><span>batch_effect_covariate_ranges :</span></dt><dd>{&#x27;sex&#x27;: {&#x27;F&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}, &#x27;M&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 9.21, &#x27;max&#x27;: 78.0}}}, &#x27;site&#x27;: {&#x27;AnnArbor_a&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 13.41, &#x27;max&#x27;: 40.98}}, &#x27;AnnArbor_b&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 79.0}}, &#x27;Atlanta&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 22.0, &#x27;max&#x27;: 57.0}}, &#x27;Baltimore&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 40.0}}, &#x27;Bangor&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 38.0}}, &#x27;Beijing_Zang&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 26.0}}, &#x27;Berlin_Margulies&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 23.0, &#x27;max&#x27;: 44.0}}, &#x27;Cambridge_Buckner&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 30.0}}, &#x27;Cleveland&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 24.0, &#x27;max&#x27;: 60.0}}, &#x27;ICBM&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 85.0}}, &#x27;Leiden_2180&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 27.0}}, &#x27;Leiden_2200&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 28.0}}, &#x27;Milwaukee_b&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 44.0, &#x27;max&#x27;: 65.0}}, &#x27;Munchen&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 63.0, &#x27;max&#x27;: 74.0}}, &#x27;NewYork_a&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 49.16}}, &#x27;NewYork_a_ADHD&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.69, &#x27;max&#x27;: 50.9}}, &#x27;Newark&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 21.0, &#x27;max&#x27;: 39.0}}, &#x27;Oulu&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 23.0}}, &#x27;Oxford&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 35.0}}, &#x27;PaloAlto&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 22.0, &#x27;max&#x27;: 46.0}}, &#x27;Pittsburgh&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 25.0, &#x27;max&#x27;: 47.0}}, &#x27;Queensland&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 34.0}}, &#x27;SaintLouis&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 21.0, &#x27;max&#x27;: 29.0}}}}</dd><dt><span>covariate_ranges :</span></dt><dd>{&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}</dd></dl></div></li></ul></div></div>
+          dtype=&#x27;object&#x27;, name=&#x27;response_vars&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>covariates</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-63a794cf-4d72-45e0-9aa7-03271182d1e7' class='xr-index-data-in' type='checkbox'/><label for='index-63a794cf-4d72-45e0-9aa7-03271182d1e7' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;age&#x27;], dtype=&#x27;object&#x27;, name=&#x27;covariates&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>batch_effect_dims</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-944a4013-bbb2-408f-875b-1611ff6ae980' class='xr-index-data-in' type='checkbox'/><label for='index-944a4013-bbb2-408f-875b-1611ff6ae980' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;object&#x27;, name=&#x27;batch_effect_dims&#x27;))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-906eb7b5-4d6c-409a-ad20-78da00b362e8' class='xr-section-summary-in' type='checkbox'  checked><label for='section-906eb7b5-4d6c-409a-ad20-78da00b362e8' class='xr-section-summary' >Attributes: <span>(7)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>real_ids :</span></dt><dd>True</dd><dt><span>is_scaled :</span></dt><dd>False</dd><dt><span>name :</span></dt><dd>fcon1000</dd><dt><span>unique_batch_effects :</span></dt><dd>{&#x27;sex&#x27;: [&#x27;F&#x27;, &#x27;M&#x27;], &#x27;site&#x27;: [&#x27;AnnArbor_a&#x27;, &#x27;AnnArbor_b&#x27;, &#x27;Atlanta&#x27;, &#x27;Baltimore&#x27;, &#x27;Bangor&#x27;, &#x27;Beijing_Zang&#x27;, &#x27;Berlin_Margulies&#x27;, &#x27;Cambridge_Buckner&#x27;, &#x27;Cleveland&#x27;, &#x27;ICBM&#x27;, &#x27;Leiden_2180&#x27;, &#x27;Leiden_2200&#x27;, &#x27;Milwaukee_b&#x27;, &#x27;Munchen&#x27;, &#x27;NewYork_a&#x27;, &#x27;NewYork_a_ADHD&#x27;, &#x27;Newark&#x27;, &#x27;Oulu&#x27;, &#x27;Oxford&#x27;, &#x27;PaloAlto&#x27;, &#x27;Pittsburgh&#x27;, &#x27;Queensland&#x27;, &#x27;SaintLouis&#x27;]}</dd><dt><span>batch_effect_counts :</span></dt><dd>{&#x27;sex&#x27;: {&#x27;F&#x27;: 589, &#x27;M&#x27;: 489}, &#x27;site&#x27;: {&#x27;AnnArbor_a&#x27;: 24, &#x27;AnnArbor_b&#x27;: 32, &#x27;Atlanta&#x27;: 28, &#x27;Baltimore&#x27;: 23, &#x27;Bangor&#x27;: 20, &#x27;Beijing_Zang&#x27;: 198, &#x27;Berlin_Margulies&#x27;: 26, &#x27;Cambridge_Buckner&#x27;: 198, &#x27;Cleveland&#x27;: 31, &#x27;ICBM&#x27;: 85, &#x27;Leiden_2180&#x27;: 12, &#x27;Leiden_2200&#x27;: 19, &#x27;Milwaukee_b&#x27;: 46, &#x27;Munchen&#x27;: 15, &#x27;NewYork_a&#x27;: 83, &#x27;NewYork_a_ADHD&#x27;: 25, &#x27;Newark&#x27;: 19, &#x27;Oulu&#x27;: 102, &#x27;Oxford&#x27;: 22, &#x27;PaloAlto&#x27;: 17, &#x27;Pittsburgh&#x27;: 3, &#x27;Queensland&#x27;: 19, &#x27;SaintLouis&#x27;: 31}}</dd><dt><span>batch_effect_covariate_ranges :</span></dt><dd>{&#x27;sex&#x27;: {&#x27;F&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}, &#x27;M&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 9.21, &#x27;max&#x27;: 78.0}}}, &#x27;site&#x27;: {&#x27;AnnArbor_a&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 13.41, &#x27;max&#x27;: 40.98}}, &#x27;AnnArbor_b&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 79.0}}, &#x27;Atlanta&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 22.0, &#x27;max&#x27;: 57.0}}, &#x27;Baltimore&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 40.0}}, &#x27;Bangor&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 38.0}}, &#x27;Beijing_Zang&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 26.0}}, &#x27;Berlin_Margulies&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 23.0, &#x27;max&#x27;: 44.0}}, &#x27;Cambridge_Buckner&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 30.0}}, &#x27;Cleveland&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 24.0, &#x27;max&#x27;: 60.0}}, &#x27;ICBM&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 19.0, &#x27;max&#x27;: 85.0}}, &#x27;Leiden_2180&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 27.0}}, &#x27;Leiden_2200&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 18.0, &#x27;max&#x27;: 28.0}}, &#x27;Milwaukee_b&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 44.0, &#x27;max&#x27;: 65.0}}, &#x27;Munchen&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 63.0, &#x27;max&#x27;: 74.0}}, &#x27;NewYork_a&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 49.16}}, &#x27;NewYork_a_ADHD&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.69, &#x27;max&#x27;: 50.9}}, &#x27;Newark&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 21.0, &#x27;max&#x27;: 39.0}}, &#x27;Oulu&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 23.0}}, &#x27;Oxford&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 35.0}}, &#x27;PaloAlto&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 22.0, &#x27;max&#x27;: 46.0}}, &#x27;Pittsburgh&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 25.0, &#x27;max&#x27;: 47.0}}, &#x27;Queensland&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 20.0, &#x27;max&#x27;: 34.0}}, &#x27;SaintLouis&#x27;: {&#x27;age&#x27;: {&#x27;min&#x27;: 21.0, &#x27;max&#x27;: 29.0}}}}</dd><dt><span>covariate_ranges :</span></dt><dd>{&#x27;age&#x27;: {&#x27;min&#x27;: 7.88, &#x27;max&#x27;: 85.0}}</dd></dl></div></li></ul></div></div>
 
 
 
@@ -1170,14 +1257,14 @@
 
 .. parsed-literal::
 
-    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:37:36 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:38:29 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
       warnings.warn(message)
     Sampling: []
 
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:36 - Dataset "centile" created.
+    Process: 10589 - 2025-06-18 15:38:29 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -1186,8 +1273,8 @@
         	sex (1)
     	site (1)
         
-    Process: 10589 - 2025-06-18 15:37:36 - Computing centiles for 4 response variables.
-    Process: 10589 - 2025-06-18 15:37:36 - Computing centiles for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:29 - Computing centiles for 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:29 - Computing centiles for CortexVol.
 
 
 .. parsed-literal::
@@ -1201,7 +1288,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:37 - Computing centiles for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:30 - Computing centiles for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1215,7 +1302,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:38 - Computing centiles for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:32 - Computing centiles for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1229,7 +1316,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:39 - Computing centiles for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:33 - Computing centiles for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1243,8 +1330,8 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:41 - Harmonizing data on 4 response variables.
-    Process: 10589 - 2025-06-18 15:37:41 - Harmonizing data for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:34 - Harmonizing data on 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:34 - Harmonizing data for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1255,7 +1342,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:42 - Harmonizing data for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:35 - Harmonizing data for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1266,7 +1353,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:43 - Harmonizing data for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:36 - Harmonizing data for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1277,7 +1364,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:43 - Harmonizing data for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:37 - Harmonizing data for CortexVol.
 
 
 .. parsed-literal::
@@ -1310,14 +1397,14 @@
 
 .. parsed-literal::
 
-    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:37:12 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:38:39 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
       warnings.warn(message)
     Sampling: []
 
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:12 - Dataset "centile" created.
+    Process: 10589 - 2025-06-18 15:38:39 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -1326,8 +1413,8 @@
         	sex (1)
     	site (1)
         
-    Process: 10589 - 2025-06-18 15:37:12 - Computing centiles for 4 response variables.
-    Process: 10589 - 2025-06-18 15:37:12 - Computing centiles for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:39 - Computing centiles for 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:39 - Computing centiles for CortexVol.
 
 
 .. parsed-literal::
@@ -1341,7 +1428,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:13 - Computing centiles for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:40 - Computing centiles for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1355,7 +1442,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:14 - Computing centiles for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:41 - Computing centiles for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1369,7 +1456,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:16 - Computing centiles for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:42 - Computing centiles for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1383,8 +1470,8 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:17 - Harmonizing data on 4 response variables.
-    Process: 10589 - 2025-06-18 15:37:17 - Harmonizing data for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:44 - Harmonizing data on 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:44 - Harmonizing data for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1395,7 +1482,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:18 - Harmonizing data for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:45 - Harmonizing data for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1406,7 +1493,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:19 - Harmonizing data for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:46 - Harmonizing data for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1417,7 +1504,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:37:20 - Harmonizing data for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:47 - Harmonizing data for CortexVol.
 
 
 .. parsed-literal::
@@ -1451,14 +1538,14 @@
 
 .. parsed-literal::
 
-    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:36:22 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:38:48 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
       warnings.warn(message)
     Sampling: []
 
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:22 - Dataset "centile" created.
+    Process: 10589 - 2025-06-18 15:38:48 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -1467,8 +1554,8 @@
         	sex (1)
     	site (1)
         
-    Process: 10589 - 2025-06-18 15:36:22 - Computing centiles for 4 response variables.
-    Process: 10589 - 2025-06-18 15:36:22 - Computing centiles for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:48 - Computing centiles for 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:48 - Computing centiles for CortexVol.
 
 
 .. parsed-literal::
@@ -1482,7 +1569,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:23 - Computing centiles for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:49 - Computing centiles for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1496,7 +1583,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:25 - Computing centiles for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:50 - Computing centiles for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1510,7 +1597,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:26 - Computing centiles for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:52 - Computing centiles for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1524,8 +1611,8 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:27 - Harmonizing data on 4 response variables.
-    Process: 10589 - 2025-06-18 15:36:27 - Harmonizing data for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:38:53 - Harmonizing data on 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:53 - Harmonizing data for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1536,7 +1623,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:28 - Harmonizing data for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:54 - Harmonizing data for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1547,7 +1634,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:29 - Harmonizing data for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:38:55 - Harmonizing data for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1558,7 +1645,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:30 - Harmonizing data for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:56 - Harmonizing data for CortexVol.
 
 
 .. parsed-literal::
@@ -1593,14 +1680,14 @@
 
 .. parsed-literal::
 
-    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:36:31 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:216: UserWarning: Process: 10589 - 2025-06-18 15:38:57 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
       warnings.warn(message)
     Sampling: []
 
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:31 - Dataset "centile" created.
+    Process: 10589 - 2025-06-18 15:38:57 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -1609,8 +1696,8 @@
         	sex (1)
     	site (1)
         
-    Process: 10589 - 2025-06-18 15:36:31 - Computing centiles for 4 response variables.
-    Process: 10589 - 2025-06-18 15:36:31 - Computing centiles for CortexVol.
+    Process: 10589 - 2025-06-18 15:38:57 - Computing centiles for 4 response variables.
+    Process: 10589 - 2025-06-18 15:38:57 - Computing centiles for CortexVol.
 
 
 .. parsed-literal::
@@ -1624,7 +1711,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:32 - Computing centiles for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:38:58 - Computing centiles for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1638,7 +1725,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:34 - Computing centiles for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:39:00 - Computing centiles for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1652,7 +1739,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:35 - Computing centiles for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:39:01 - Computing centiles for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1666,8 +1753,8 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:37 - Harmonizing data on 4 response variables.
-    Process: 10589 - 2025-06-18 15:36:37 - Harmonizing data for Right-Amygdala.
+    Process: 10589 - 2025-06-18 15:39:02 - Harmonizing data on 4 response variables.
+    Process: 10589 - 2025-06-18 15:39:02 - Harmonizing data for Right-Amygdala.
 
 
 .. parsed-literal::
@@ -1678,7 +1765,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:37 - Harmonizing data for Right-Lateral-Ventricle.
+    Process: 10589 - 2025-06-18 15:39:03 - Harmonizing data for Right-Lateral-Ventricle.
 
 
 .. parsed-literal::
@@ -1689,7 +1776,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:38 - Harmonizing data for WM-hypointensities.
+    Process: 10589 - 2025-06-18 15:39:04 - Harmonizing data for WM-hypointensities.
 
 
 .. parsed-literal::
@@ -1700,7 +1787,7 @@
 
 .. parsed-literal::
 
-    Process: 10589 - 2025-06-18 15:36:39 - Harmonizing data for CortexVol.
+    Process: 10589 - 2025-06-18 15:39:05 - Harmonizing data for CortexVol.
 
 
 .. parsed-literal::
