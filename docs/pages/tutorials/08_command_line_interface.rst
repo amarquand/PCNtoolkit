@@ -21,8 +21,6 @@ why not just use it as a python package?)
     import sys
     import pickle
 
-
-
 BLR Example
 -----------
 
@@ -60,7 +58,7 @@ Data preparation
 
 
 
-.. image:: 08_command_line_interface_files/08_command_line_interface_7_0.png
+.. image:: 08_command_line_interface_files/08_command_line_interface_6_0.png
 
 
 .. code:: ipython3
