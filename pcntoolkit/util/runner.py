@@ -278,7 +278,8 @@ class Runner:
         self.create_temp_and_log_dir()
         fn = self.get_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        self.wait_or_finish(observe)
+        return self.wait_or_finish(observe)
+
 
     def transfer(
         self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
