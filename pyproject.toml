@@ -1,6 +1,6 @@
 [project]
 name = "pcntoolkit"
-version = "1.0.0a8"
+version = "1.0.0a15"
 description = "Predictive Clinical Neuroscience Toolkit"
 readme = "README.md"
 license = "GPL-3.0-only"
@@ -8,10 +8,12 @@ license = "GPL-3.0-only"
 
 authors = [
     { name = "Andre Marquand" },
-    { name = "Saige Rutherford" },
+    { name = "Stijn de Boer" },
     { name = "Seyed Mostafa Kia" },
+    { name = "Saige Rutherford" },
     { name = "Charlotte Fraza" },
     { name = "Barbora Rehák Bučková" },
+    { name = "Pieter Barkema"},
     { name = "Thomas Wolfers" },
     { name = "Mariam Zabihi"},
     { name = "Richard Dinga"},
@@ -20,7 +22,6 @@ authors = [
     { name = "Hester Huijsdens" },
     { name = "Linden Parkes" },
     { name = "Pierre Berthet" },
-    { name = "Stijn de Boer" },
 ]
 
 requires-python = ">=3.10,<3.13"
