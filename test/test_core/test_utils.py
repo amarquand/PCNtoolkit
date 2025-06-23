@@ -11,13 +11,14 @@ from pcntoolkit.regression_model.blr import BLR
 from pcntoolkit.util.runner import Runner
 from test.fixtures.blr_model_fixtures import *
 from test.fixtures.norm_data_fixtures import *
+from test.fixtures.test_model_fixtures import *
 
 
 class TestRunner:
     """Test the Runner utility class."""
     
     @pytest.fixture(autouse=True)
-    def setup(self, synthetic_data, temp_output_dir, norm_data_from_arrays, blr_model):
+    def setup(self, synthetic_data, temp_output_dir, norm_data_from_arrays, test_model):
         """Setup test environment."""
         self.data = synthetic_data
         self.output_dir = temp_output_dir
@@ -27,7 +28,7 @@ class TestRunner:
         
         # Create model with BLR template
         self.model = NormativeModel(
-            template_regression_model=blr_model,
+            template_regression_model=test_model,
             save_dir=str(self.save_dir)
         )
     

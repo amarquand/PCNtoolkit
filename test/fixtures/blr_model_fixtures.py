@@ -33,7 +33,6 @@ def blr_model():
         fixed_effect=True,
         warp_name="WarpSinhArcsinh",
         basis_function_mean=BsplineBasisFunction(basis_column=0, degree=3, nknots=5),
-        warp_reparam=True,
     )
 
 
