@@ -1,9 +1,9 @@
 Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood
 ==========================================================================
 
-Welcome to this tutorial notebook that will go through the fitting,
-evaluation, transfering, and extending of Normative models with a
-Hierarchical Bayesian Regression model using a Beta likelihood.
+Welcome to this tutorial notebook that will go through the fitting and
+evaluation of Normative models with a Hierarchical Bayesian Regression
+model using a Beta likelihood.
 
 Let’s jump right in.
 

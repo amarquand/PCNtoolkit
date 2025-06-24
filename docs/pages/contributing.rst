@@ -16,7 +16,6 @@ This section guides you through submitting a bug report. Following these guideli
 Before Submitting A Bug Report
 """"""""""""""""""""""""""""""
 
-* Check the debugging guide
 * Ensure the bug is not already reported by searching on GitHub under `Issues <https://github.com/amarquand/PCNtoolkit/issues>`_
 
 How Do I Submit A Good Bug Report?

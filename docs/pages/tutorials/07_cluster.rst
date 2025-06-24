@@ -177,7 +177,7 @@ Imports
 
 
 
-.. image:: 06_cluster_files/06_cluster_5_0.png
+.. image:: 07_cluster_files/07_cluster_5_0.png
 
 
 Configure the regression model
@@ -200,8 +200,6 @@ Configure the regression model
         heteroskedastic=True,
         basis_function_var=BsplineBasisFunction(basis_column=0, degree=3, nknots=5),
         fixed_effect_var=False,
-        intercept=True,
-        intercept_var=True,
     )
 
 .. code:: ipython3
@@ -238,7 +236,7 @@ to first create a runner object.
         parallelize=True,
         environment=conda_env_path,
         job_type="slurm",  # or "torque" if you are on a torque cluster
-        n_jobs=2,
+        n_batches=2,
         time_limit="00:10:00",
         log_dir="resources/runner_output/log_dir",
         temp_dir="resources/runner_output/temp_dir",
@@ -330,19 +328,19 @@ inspect and use to predict on new data.
 
 
 
-.. image:: 06_cluster_files/06_cluster_14_1.png
+.. image:: 07_cluster_files/07_cluster_14_1.png
 
 
 
-.. image:: 06_cluster_files/06_cluster_14_2.png
+.. image:: 07_cluster_files/07_cluster_14_2.png
 
 
 
-.. image:: 06_cluster_files/06_cluster_14_3.png
+.. image:: 07_cluster_files/07_cluster_14_3.png
 
 
 
-.. image:: 06_cluster_files/06_cluster_14_4.png
+.. image:: 07_cluster_files/07_cluster_14_4.png
 
 
 Model extension

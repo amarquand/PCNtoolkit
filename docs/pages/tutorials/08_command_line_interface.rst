@@ -122,7 +122,7 @@ BLR configuration
     func = "fit_predict"
     
     # normative model configuration
-    save_dir = os.path.join(root_dir, "blr", "save_dir")
+    save_dir = os.path.join(root_dir, "blr_cli", "save_dir")
     savemodel = True
     saveresults = True
     basis_function = "linear"
@@ -153,10 +153,10 @@ Constructing command
 .. code:: ipython3
 
     command = "normative"
-    args = f"-a {alg} -f {func} -c {cov} -r {resp} -t {t_resp} -e {t_cov}"
+    args = f"-a {alg} -f {func} -c {cov} -r {resp} -t {t_resp} -e {t_cov} -k {cv_folds}"
     kwargs = f"be={be} t_be={t_be}"
     normative_model_kwargs = f"save_dir={save_dir} savemodel={savemodel} saveresults={saveresults} basis_function={basis_function} inscaler={inscaler} outscaler={outscaler}"
-    runner_kwargs = f"cross_validate={cross_validate} cv_folds={cv_folds} parallelize={parallelize} job_type={job_type} n_jobs={n_jobs} temp_dir={temp_dir} log_dir={log_dir} environment={python_env}"
+    runner_kwargs = f"cross_validate={cross_validate} parallelize={parallelize} job_type={job_type} n_jobs={n_jobs} temp_dir={temp_dir} log_dir={log_dir} environment={python_env}"
     blr_kwargs = f"optimizer={optimizer} n_iter={n_iter} heteroskedastic={heteroskedastic} fixed_effect={fixed_effect} warp={warp} warp_reparam={warp_reparam}"
     full_command = f"{command} {args} {kwargs} {runner_kwargs} {normative_model_kwargs} {blr_kwargs}"
 
@@ -167,7 +167,7 @@ Constructing command
 
 .. parsed-literal::
 
-    normative -a blr -f fit_predict -c /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/covariates.csv -r /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/responses.csv -t /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_responses.csv -e /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_covariates.csv be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/batch_effects.csv t_be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_batch_effects.csv cross_validate=True cv_folds=5 parallelize=True job_type=local n_jobs=2 temp_dir=resources/cli_example/temp log_dir=resources/cli_example/log environment=/opt/anaconda3/envs/dev_refactor save_dir=resources/cli_example/blr/save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
+    normative -a blr -f fit_predict -c /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/covariates.csv -r /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/responses.csv -t /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_responses.csv -e /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_covariates.csv -k 5 be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/batch_effects.csv t_be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_batch_effects.csv cross_validate=True parallelize=False job_type=local n_jobs=2 temp_dir=resources/cli_example/temp log_dir=resources/cli_example/log environment=/opt/anaconda3/envs/uv_refactor save_dir=resources/cli_example/blr_cli/save_dir savemodel=True saveresults=True basis_function=linear inscaler=standardize outscaler=standardize optimizer=l-bfgs-b n_iter=200 heteroskedastic=True fixed_effect=True warp=WarpSinhArcsinh warp_reparam=True
 
 
 Running command
@@ -180,28 +180,498 @@ Running command
 
 .. parsed-literal::
 
-    Process: 88053 - UUID for runner task created: 8f92a33e-270a-413c-89c4-7ac772f629af
-    Process: 88053 - Temporary directory created:
-    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/temp/8f92a33e-270a-413c-89c4-7ac772f629af
-    Process: 88053 - Log directory created:
-    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/log/8f92a33e-270a-413c-89c4-7ac772f629af
-    Traceback (most recent call last):
-      File "/opt/anaconda3/envs/forward_backward/bin/normative", line 8, in <module>
-        sys.exit(entrypoint())
-                 ^^^^^^^^^^^^
-      File "/opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pcntoolkit/normative.py", line 251, in entrypoint
-        main(*args[1:])
-      File "/opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pcntoolkit/normative.py", line 245, in main
-        fit_predict(parsed_args)
-      File "/opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pcntoolkit/normative.py", line 56, in fit_predict
-        runner.fit_predict(normative_model, fit_data, predict_data)
-      File "/opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pcntoolkit/util/runner.py", line 229, in fit_predict
-        self.submit_jobs(
-      File "/opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pcntoolkit/util/runner.py", line 674, in submit_jobs
-        command,
-        ^^^^^^^
-    UnboundLocalError: cannot access local variable 'command' where it is not associated with a value
-    [0m
+    Process: 30436 - 2025-06-24 12:23:35 - Dataset "fit_data" created.
+        - 862 observations
+        - 862 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (2)
+    	batch_effect_1 (23)
+        
+    Process: 30436 - 2025-06-24 12:23:35 - Dataset "predict_data" created.
+        - 216 observations
+        - 216 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (2)
+    	batch_effect_1 (23)
+        
+    Process: 30436 - 2025-06-24 12:23:35 - Task ID created: fit_predict_fit_data__2025-06-24_12:23:35_271.957031
+    Process: 30436 - 2025-06-24 12:23:35 - Temporary directory created:
+    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/temp/fit_predict_fit_data__2025-06-24_12:23:35_271.957031
+    Process: 30436 - 2025-06-24 12:23:35 - Log directory created:
+    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/log/fit_predict_fit_data__2025-06-24_12:23:35_271.957031
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:23:35 - Predict data not used in k-fold cross-validation
+      warnings.warn(message)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/sklearn/model_selection/_split.py:805: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
+      warnings.warn(
+    Process: 30436 - 2025-06-24 12:23:35 - Fitting models on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:35 - Fitting model for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:36 - Fitting model for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:37 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:37 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:38 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:38 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:38 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:38 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:42 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:23:47 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:23:47 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:47 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:47 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:23:47 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_0.
+    Process: 30436 - 2025-06-24 12:23:47 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:47 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:48 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:23:50 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:23:50 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:23:50 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:50 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:50 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:50 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:50 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:50 - Harmonizing data for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:50 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_0.
+    Process: 30436 - 2025-06-24 12:23:50 - Fitting models on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:50 - Fitting model for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:51 - Fitting model for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:55 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:55 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:56 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:23:56 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:23:56 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:23:59 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:04 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:04 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:04 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:04 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:04 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:04 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:04 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:04 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:05 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_1.
+    Process: 30436 - 2025-06-24 12:24:05 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:05 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:06 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:07 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:07 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:07 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:07 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:07 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:07 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:07 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:07 - Harmonizing data for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:07 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_1.
+    Process: 30436 - 2025-06-24 12:24:07 - Fitting models on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:07 - Fitting model for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:09 - Fitting model for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:11 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:11 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:12 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:12 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:12 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:12 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:12 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:16 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:20 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:20 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:20 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:20 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:20 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:20 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:20 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:20 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:21 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_2.
+    Process: 30436 - 2025-06-24 12:24:21 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:21 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:22 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:23 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:23 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:23 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:23 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:23 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:23 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:23 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:23 - Harmonizing data for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:23 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_2.
+    Process: 30436 - 2025-06-24 12:24:23 - Fitting models on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:23 - Fitting model for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:24 - Fitting model for response_var_1.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94207e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=4.43156e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:26 - Estimation of posterior distribution failed due to: 
+    Matrix is not positive definite
+      warnings.warn(message)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/scipy/optimize/_numdiff.py:619: RuntimeWarning: overflow encountered in divide
+      J_transposed[i] = df / dx
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=9.01735e-20): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.9526e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94221e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91067e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91467e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.92745e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94307e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.93861e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94208e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91452e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.9144e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91584e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91433e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.91442e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94214e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94331e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94272e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/regression_model/blr.py:469: LinAlgWarning: Ill-conditioned matrix (rcond=1.94215e-19): result may not be accurate.
+      invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
+    Process: 30436 - 2025-06-24 12:24:26 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:26 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:27 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:27 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:27 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:27 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:33 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:39 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:39 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:39 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:39 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:39 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_3.
+    Process: 30436 - 2025-06-24 12:24:39 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:39 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:41 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:42 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:42 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:42 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:42 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:42 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:42 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:42 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:42 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:42 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_3.
+    Process: 30436 - 2025-06-24 12:24:42 - Fitting models on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:42 - Fitting model for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:43 - Fitting model for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:45 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:45 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:46 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:46 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:46 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:46 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:50 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:55 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:55 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:55 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:55 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:55 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:55 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:55 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:55 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:56 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_4.
+    Process: 30436 - 2025-06-24 12:24:56 - Making predictions on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing z-scores for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing z-scores for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing z-scores for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing log-probabilities for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing log-probabilities for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing log-probabilities for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing yhat for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:56 - Computing yhat for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:57 - Computing yhat for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 30436 - 2025-06-24 12:24:58 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 30436 - 2025-06-24 12:24:58 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 30436 - 2025-06-24 12:24:58 - Computing centiles for 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:58 - Computing centiles for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:58 - Computing centiles for response_var_0.
+    Process: 30436 - 2025-06-24 12:24:58 - Harmonizing data on 2 response variables.
+    Process: 30436 - 2025-06-24 12:24:58 - Harmonizing data for response_var_1.
+    Process: 30436 - 2025-06-24 12:24:58 - Harmonizing data for response_var_0.
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 30436 - 2025-06-24 12:24:59 - Saving model to:
+    	resources/cli_example/blr_cli/save_dir/folds/fold_4.
+
 
 You can find the results in the resources/cli_example/blr/save_dir
 folder.
@@ -211,88 +681,9 @@ folder.
     import pandas as pd
     
     a = pd.read_csv(
-        "/Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/blr/save_dir/folds/fold_1/results/measures.csv",
+        "/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/blr_cli/save_dir/folds/fold_1/results/statistics_fit_data_fold_1_predict.csv",
         index_col=0,
     )
-
-
-::
-
-
-    ---------------------------------------------------------------------------
-
-    FileNotFoundError                         Traceback (most recent call last)
-
-    Cell In[10], line 3
-          1 import pandas as pd
-    ----> 3 a = pd.read_csv(
-          4     "/Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/blr/save_dir/folds/fold_1/results/measures.csv",
-          5     index_col=0,
-          6 )
-
-
-    File /opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pandas/io/parsers/readers.py:1026, in read_csv(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)
-       1013 kwds_defaults = _refine_defaults_read(
-       1014     dialect,
-       1015     delimiter,
-       (...)
-       1022     dtype_backend=dtype_backend,
-       1023 )
-       1024 kwds.update(kwds_defaults)
-    -> 1026 return _read(filepath_or_buffer, kwds)
-
-
-    File /opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pandas/io/parsers/readers.py:620, in _read(filepath_or_buffer, kwds)
-        617 _validate_names(kwds.get("names", None))
-        619 # Create the parser.
-    --> 620 parser = TextFileReader(filepath_or_buffer, **kwds)
-        622 if chunksize or iterator:
-        623     return parser
-
-
-    File /opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pandas/io/parsers/readers.py:1620, in TextFileReader.__init__(self, f, engine, **kwds)
-       1617     self.options["has_index_names"] = kwds["has_index_names"]
-       1619 self.handles: IOHandles | None = None
-    -> 1620 self._engine = self._make_engine(f, self.engine)
-
-
-    File /opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pandas/io/parsers/readers.py:1880, in TextFileReader._make_engine(self, f, engine)
-       1878     if "b" not in mode:
-       1879         mode += "b"
-    -> 1880 self.handles = get_handle(
-       1881     f,
-       1882     mode,
-       1883     encoding=self.options.get("encoding", None),
-       1884     compression=self.options.get("compression", None),
-       1885     memory_map=self.options.get("memory_map", False),
-       1886     is_text=is_text,
-       1887     errors=self.options.get("encoding_errors", "strict"),
-       1888     storage_options=self.options.get("storage_options", None),
-       1889 )
-       1890 assert self.handles is not None
-       1891 f = self.handles.handle
-
-
-    File /opt/anaconda3/envs/forward_backward/lib/python3.12/site-packages/pandas/io/common.py:873, in get_handle(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)
-        868 elif isinstance(handle, str):
-        869     # Check whether the filename is to be opened in binary mode.
-        870     # Binary mode does not support 'encoding' and 'newline'.
-        871     if ioargs.encoding and "b" not in ioargs.mode:
-        872         # Encoding
-    --> 873         handle = open(
-        874             handle,
-        875             ioargs.mode,
-        876             encoding=ioargs.encoding,
-        877             errors=errors,
-        878             newline="",
-        879         )
-        880     else:
-        881         # Binary mode
-        882         handle = open(handle, ioargs.mode)
-
-
-    FileNotFoundError: [Errno 2] No such file or directory: '/Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/blr/save_dir/folds/fold_1/results/measures.csv'
-
 
 HBR example
 -----------
@@ -338,6 +729,12 @@ Constructing command
     full_command = f"{command} {args} {kwargs} {normative_model_kwargs} {hbr_kwargs}"
     print(full_command)
 
+
+.. parsed-literal::
+
+    normative -a hbr -f fit_predict -c /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/covariates.csv -r /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/responses.csv -t /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_responses.csv -e /Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_covariates.csv be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/batch_effects.csv t_be=/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/data/test_batch_effects.csv save_dir=resources/cli_example/hbr/save_dir savemodel=True saveresults=True basis_function=bspline inscaler=standardize outscaler=standardize draws=1000 tune=500 chains=4 nuts_sampler=nutpie likelihood=Normal linear_mu=True random_intercept_mu=True random_slope_mu=False linear_sigma=True random_intercept_sigma=False random_slope_sigma=False
+
+
 Running command
 ~~~~~~~~~~~~~~~
 
@@ -348,47 +745,173 @@ Running command
 
 .. parsed-literal::
 
-    No python path specified. Using interpreter path of current process: /opt/anaconda3/envs/param2/bin/python
-    No log directory specified. Using default log directory: /Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/logs
-    No temp directory specified. Using default temp directory: /Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/temp
-    /opt/anaconda3/envs/param2/lib/python3.12/site-packages/pcntoolkit/util/runner.py:87: UserWarning: cv_folds is greater than 1, but cross-validation is disabled. This is likely unintended.
-      warnings.warn("cv_folds is greater than 1, but cross-validation is disabled. This is likely unintended.")
-    Configuration of normative model is valid.
-    Going to fit and predict 2 models
-    Fitting and predicting model for response_var_0
-    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hFitting and predicting model for response_var_1
-    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25h21817 Saving model to resources/cli_example/hbr/save_dir
-    Model saved to /Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/hbr/save_dir/model
-    Computing zscores for response_var_0
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hComputing zscores for response_var_1
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hComputing centiles for response_var_0
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hComputing centiles for response_var_1
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25h/opt/anaconda3/envs/param2/lib/python3.12/site-packages/pcntoolkit/util/evaluator.py:341: RuntimeWarning: invalid value encountered in log
-      nll = -np.mean(y * np.log(yhat) + (1 - y) * np.log(1 - yhat))
-    Computing centiles for response_var_0
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hComputing centiles for response_var_1
-    Sampling: [y_pred]
-    [2KSampling ... [32m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [35m100%[0m [36m0:00:00[0m / [33m0:00:00[0m/ [33m0:00:00[0m
-    [?25hResults and plots saved to /Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/hbr/save_dir/results and /Users/stijndeboer/Projects/PCN/PCNtoolkit/example_notebooks/resources/cli_example/hbr/save_dir/plots
-    Job Status Monitor:
-    ------------------------------------------------------------
-    Job ID     Name     State     Time     Nodes
-    ------------------------------------------------------------
-    [2K
-    All jobs completed!
-    [0m
+    Process: 31517 - 2025-06-24 12:26:40 - No log directory specified. Using default log directory: /Users/stijndeboer/.pcntoolkit/logs
+    Process: 31517 - 2025-06-24 12:26:40 - No temporary directory specified. Using default temporary directory: /Users/stijndeboer/.pcntoolkit/temp
+    Process: 31517 - 2025-06-24 12:26:40 - Dataset "fit_data" created.
+        - 862 observations
+        - 862 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (2)
+    	batch_effect_1 (23)
+        
+    Process: 31517 - 2025-06-24 12:26:40 - Dataset "predict_data" created.
+        - 216 observations
+        - 216 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (2)
+    	batch_effect_1 (23)
+        
+    Process: 31517 - 2025-06-24 12:26:40 - Task ID created: fit_predict_fit_data__2025-06-24_12:26:40_941.230957
+    Process: 31517 - 2025-06-24 12:26:40 - Temporary directory created:
+    	/Users/stijndeboer/.pcntoolkit/temp/fit_predict_fit_data__2025-06-24_12:26:40_941.230957
+    Process: 31517 - 2025-06-24 12:26:40 - Log directory created:
+    	/Users/stijndeboer/.pcntoolkit/logs/fit_predict_fit_data__2025-06-24_12:26:40_941.230957
+    Process: 31517 - 2025-06-24 12:26:40 - Fitting models on 2 response variables.
+    Process: 31517 - 2025-06-24 12:26:40 - Fitting model for response_var_0.
+    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 31517 - 2025-06-24 12:26:50 - Fitting model for response_var_1.
+    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 31517 - 2025-06-24 12:26:57 - Making predictions on 2 response variables.
+    Process: 31517 - 2025-06-24 12:26:57 - Computing z-scores for 2 response variables.
+    Process: 31517 - 2025-06-24 12:26:57 - Computing z-scores for response_var_1.
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:26:59 - Computing z-scores for response_var_0.
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:26:59 - Computing centiles for 2 response variables.
+    Process: 31517 - 2025-06-24 12:26:59 - Computing centiles for response_var_1.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:00 - Computing centiles for response_var_0.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:01 - Computing log-probabilities for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:02 - Computing log-probabilities for response_var_1.
+    Process: 31517 - 2025-06-24 12:27:02 - Computing log-probabilities for response_var_0.
+    Process: 31517 - 2025-06-24 12:27:03 - Computing yhat for 2 response variables.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 31517 - 2025-06-24 12:27:03 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 31517 - 2025-06-24 12:27:03 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 31517 - 2025-06-24 12:27:03 - Computing centiles for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:03 - Computing centiles for response_var_1.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:04 - Computing centiles for response_var_0.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:05 - Harmonizing data on 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:05 - Harmonizing data for response_var_1.
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:06 - Harmonizing data for response_var_0.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 31517 - 2025-06-24 12:27:06 - Saving model to:
+    	resources/cli_example/hbr/save_dir.
+    Process: 31517 - 2025-06-24 12:27:07 - Making predictions on 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:07 - Computing z-scores for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:07 - Computing z-scores for response_var_1.
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:07 - Computing z-scores for response_var_0.
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:07 - Computing centiles for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:07 - Computing centiles for response_var_1.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:08 - Computing centiles for response_var_0.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:09 - Computing log-probabilities for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:09 - Computing log-probabilities for response_var_1.
+    Process: 31517 - 2025-06-24 12:27:09 - Computing log-probabilities for response_var_0.
+    Process: 31517 - 2025-06-24 12:27:09 - Computing yhat for 2 response variables.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 31517 - 2025-06-24 12:27:10 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
+      warnings.warn(message)
+    Process: 31517 - 2025-06-24 12:27:10 - Dataset "centile" created.
+        - 150 observations
+        - 150 unique subjects
+        - 1 covariates
+        - 2 response variables
+        - 2 batch effects:
+        	batch_effect_0 (1)
+    	batch_effect_1 (1)
+        
+    Process: 31517 - 2025-06-24 12:27:10 - Computing centiles for 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:10 - Computing centiles for response_var_1.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:10 - Computing centiles for response_var_0.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:11 - Harmonizing data on 2 response variables.
+    Process: 31517 - 2025-06-24 12:27:11 - Harmonizing data for response_var_1.
+    Sampling: []
+    Sampling: []
+    Process: 31517 - 2025-06-24 12:27:12 - Harmonizing data for response_var_0.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:295: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      non_be_df["marker"] = ["Other data"] * len(non_be_df)
+    Process: 31517 - 2025-06-24 12:27:12 - Saving model to:
+    	resources/cli_example/hbr/save_dir.
+
 
