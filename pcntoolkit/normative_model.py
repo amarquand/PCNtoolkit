@@ -51,7 +51,11 @@ class NormativeModel:
     save_dir : str
         Directory to save the model, results, and plots.
     inscaler : str
-        Input scaler to use.
+        Input (X/covariates) scaler to use.
+    outscaler: str
+        Output (Y/response_vars) scaler to use.
+    name: str
+        Name of the model
     """
 
     def __init__(
@@ -143,7 +147,6 @@ class NormativeModel:
             - X: (n_samples, n_covariates)
             - batch_effects: (n_samples, n_batch_effects)
             - Y: (n_samples, n_response_vars)
-
         """
         self.register_data_info(data)
         self.preprocess(data)
@@ -161,7 +164,7 @@ class NormativeModel:
             self.save()
 
     def predict(self, data: NormData) -> NormData:
-        """Computes Z-scores and centiles for each response variable using fitted regression models."""
+        """Computes Z-scores, centiles, logp, yhat for each observation using fitted regression models."""
         self.set_ensure_save_dirs()
         self.compute_zscores(data)
         self.compute_centiles(data, recompute=True)
@@ -187,7 +190,7 @@ class NormativeModel:
     def synthesize(
         self, data: NormData | None = None, n_samples: int | None = None, covariate_range_per_batch_effect=False
     ) -> NormData:  # type: ignore
-        """Returns synthetic Data
+        """Synthesize data from the model
 
         Parameters
         ----------
