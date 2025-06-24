@@ -48,7 +48,6 @@ class BLR(RegressionModel):
         l_bfgs_b_norm: str = "l2",
         fixed_effect: bool = False,
         heteroskedastic: bool = False,
-        intercept_var: bool = False,
         fixed_effect_var: bool = False,
         warp_name: Optional[str] = None,
         warp_reparam: bool = False,
@@ -82,13 +81,11 @@ class BLR(RegressionModel):
         l_bfgs_b_norm : str, optional
             L-BFGS-B parameter, by default "l2"
         fixed_effect : bool, optional
-            Whether to use a fixed effect, by default True
+            Whether to model a fixed effect in the mean, by default False
         heteroskedastic : bool, optional
             Whether to use heteroskedastic noise modeling, by default False
-        intercept_var : bool, optional
-            Whether to use an intercept variance term, by default False
         fixed_effect_var : bool, optional
-            Whether to use a fixed effect variance term, by default True
+            Whether to model a fixed effect in the variance, by default False
         warp_name : str, optional
             Name of the warp function to use, by default None
         warp_reparam : bool, optional
@@ -115,7 +112,6 @@ class BLR(RegressionModel):
         self.l_bfgs_b_norm = l_bfgs_b_norm
         self.fixed_effect = fixed_effect
         self.heteroskedastic = heteroskedastic
-        self.intercept_var = intercept_var
         self.fixed_effect_var = fixed_effect_var
         self.warp_name = warp_name
         self.initialize_warp()
@@ -127,7 +123,7 @@ class BLR(RegressionModel):
         self.basis_function_var = (
             copy.deepcopy(basis_function_var) if basis_function_var else create_basis_function(basis_function_var)
         )
-        self.models_variance = self.heteroskedastic or self.intercept_var or self.fixed_effect_var
+        self.models_variance = self.heteroskedastic or self.fixed_effect_var
         self.hyp0 = hyp0
         self.hyp: np.ndarray = None  # type: ignore
 
@@ -367,7 +363,7 @@ class BLR(RegressionModel):
         return np.ones(self.n_hyp)
 
     def parse_hyps(
-        self, hyp: np.ndarray, X: np.ndarray, var_X: Optional[np.ndarray] = None
+        self, hyp: np.ndarray, Phi: np.ndarray, Phi_var: Optional[np.ndarray] = None
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Parse hyperparameters into model parameters.
@@ -376,9 +372,9 @@ class BLR(RegressionModel):
         ----------
         hyp : np.ndarray
             Hyperparameter vector.
-        X : np.ndarray
+        Phi : np.ndarray
             Covariates.
-        var_X : np.ndarray (Optional)
+        Phi_var : np.ndarray (Optional)
             Variance of covariates.
 
         Returns
@@ -386,15 +382,15 @@ class BLR(RegressionModel):
         tuple[np.ndarray, np.ndarray, np.ndarray]
             Parsed alpha, beta and gamma parameters.
         """
-        N = X.shape[0]
+        N = Phi.shape[0]
         beta: np.ndarray = None  # type: ignore
         # Noise precision
         if self.models_variance:
-            if var_X is None or (var_X == 0).all():
+            if Phi_var is None or (Phi_var == 0).all():
                 raise ValueError(Output.error(Errors.ERROR_BLR_VAR_X_NOT_PROVIDED))
-            Dv = var_X.shape[1]
+            Dv = Phi_var.shape[1]
             w_d = np.asarray(hyp[0:Dv])
-            beta = np.exp(var_X.dot(w_d))
+            beta = np.exp(Phi_var.dot(w_d))
             n_lik_param = len(w_d)
             self.lambda_n_vec = beta
         else:
@@ -705,6 +701,7 @@ class BLR(RegressionModel):
             be,
             be_maps,
             linear=True,
+            intercept=True,
             fixed_effect=self.fixed_effect,
         )
 
@@ -716,7 +713,7 @@ class BLR(RegressionModel):
                 be,
                 be_maps,
                 linear=self.heteroskedastic,
-                intercept=self.intercept_var,
+                intercept=True,
                 fixed_effect=self.fixed_effect_var,
             )
         else:
@@ -781,7 +778,6 @@ class BLR(RegressionModel):
         l_bfgs_b_norm = args.get("l_bfgs_b_norm", _default_instance.l_bfgs_b_norm)
         fixed_effect = args.get("fixed_effect", _default_instance.fixed_effect)
         heteroskedastic = args.get("heteroskedastic", _default_instance.heteroskedastic)
-        intercept_var = args.get("intercept_var", _default_instance.intercept_var)
         fixed_effect_var = args.get("fixed_effect_var", _default_instance.fixed_effect_var)
         warp = args.get("warp", _default_instance.warp)
         warp_reparam = args.get("warp_reparam", _default_instance.warp_reparam)
@@ -807,7 +803,6 @@ class BLR(RegressionModel):
             l_bfgs_b_norm=l_bfgs_b_norm,
             fixed_effect=fixed_effect,
             heteroskedastic=heteroskedastic,
-            intercept_var=intercept_var,
             fixed_effect_var=fixed_effect_var,
             warp_name=warp,
             warp_reparam=warp_reparam,
@@ -887,6 +882,7 @@ def create_design_matrix(
             acc.append(
                 np.eye(len(v))[be[:, i]],
             )
+
     if len(acc) == 0:
         raise ValueError(Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED))
 
