@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import copy
 import glob
+import importlib.metadata
 import json
 import os
 from typing import List, Optional, Tuple
-from unittest import result
 
 import numpy as np
 import scipy.stats as stats
@@ -948,6 +948,7 @@ class NormativeModel:
             "is_fitted": self.is_fitted,
             "inscaler": self.inscaler,
             "outscaler": self.outscaler,
+            "ptk_version": importlib.metadata.version("pcntoolkit")
         }
 
         if hasattr(self, "covariates"):
