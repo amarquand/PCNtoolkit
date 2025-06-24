@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import xarray as xr
 from scipy import stats  # type: ignore
-from sklearn.metrics import r2_score
+from sklearn.metrics import explained_variance_score, r2_score
 
 from pcntoolkit.dataio.norm_data import NormData
 
@@ -53,6 +53,7 @@ class Evaluator:
             "ShapiroW",
             "MACE",
             "MAPE",
+            "EXPV"
         ]
         if statistics:
             self.statistics = [m for m in all_statistics if m in statistics]
@@ -80,6 +81,8 @@ class Evaluator:
             self.evaluate_mace(data)
         if "MAPE" in self.statistics:
             self.evaluate_mape(data)
+        if "EXPV" in self.statistics:
+            self.evaluate_expv(data)
         return data
 
     def create_statistics_group(self, data: NormData) -> None:
@@ -349,8 +352,7 @@ class Evaluator:
         """
         y = data["Y"].values
         yhat = data["Yhat"].values
-        expv = 1 - np.var(y - yhat) / np.var(y)
-        return float(expv)  # Explicitly cast to float
+        return float(explained_variance_score(y, yhat))
 
     def _evaluate_msll(self, data: NormData) -> float:
         """
