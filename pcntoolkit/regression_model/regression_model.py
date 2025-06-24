@@ -12,6 +12,7 @@ implement the abstract methods.
 
 from __future__ import annotations
 
+import importlib.metadata
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -158,10 +159,12 @@ class RegressionModel(ABC):
     @property
     def regmodel_dict(self) -> dict:
         my_dict: dict[str, str | dict | bool] = {}
+
         my_dict["name"] = self.name
         my_dict["type"] = self.__class__.__name__
         my_dict["is_fitted"] = self.is_fitted
         my_dict["is_from_dict"] = self.is_from_dict
+        my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
         return my_dict
         
     def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
