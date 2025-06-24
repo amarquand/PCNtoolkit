@@ -1,9 +1,9 @@
 Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood
 ============================================================================
 
-Welcome to this tutorial notebook that will go through the fitting,
-evaluation, transfering, and extending of Normative models with a
-Hierarchical Bayesian Regression model using a Normal likelihood.
+Welcome to this tutorial notebook that will go through the fitting and
+evaluation of Normative models with a Hierarchical Bayesian Regression
+model using a Normal likelihood.
 
 Let’s jump right in.
 

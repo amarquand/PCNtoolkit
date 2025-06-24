@@ -2,7 +2,7 @@ Welcome to PCNToolkit's documentation!
 ======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Setup:
 
    pages/quickstart
@@ -32,8 +32,9 @@ Welcome to PCNToolkit's documentation!
    pages/tutorials/03_HBR_Normal.rst
    pages/tutorials/04_HBR_SHASH.rst
    pages/tutorials/05_HBR_Beta.rst
-   pages/tutorials/06_cluster.rst
-   pages/tutorials/07_command_line_interface.rst
+   pages/tutorials/06_transfer_extend.rst
+   pages/tutorials/07_cluster.rst
+   pages/tutorials/08_command_line_interface.rst
 
 
 .. toctree::

@@ -31,9 +31,3 @@ model = NormativeModel(BLR(heteroskedastic=True),
 model.fit_predict(train, test)
 ```
 
-## Citation 
-
-If you use this software in your research, please cite:
-
-
-
