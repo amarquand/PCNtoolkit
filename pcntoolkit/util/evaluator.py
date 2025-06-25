@@ -174,7 +174,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel(response_vars=responsevar)
             expv = self._evaluate_expv(resp_predict_data)
-            data.statistics.loc[{"response_vars": responsevar, "statistic": "ExpV"}] = expv
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "EXPV"}] = expv
 
     def evaluate_msll(self, data: NormData) -> None:
         """

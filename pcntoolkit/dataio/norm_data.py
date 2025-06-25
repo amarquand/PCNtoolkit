@@ -214,7 +214,7 @@ class NormData(xr.Dataset):
         resp = load(responses_path, **kwargs)
         batch_effects = load(batch_effects_path, **kwargs)
         return cls.from_ndarrays(name, covs, resp, batch_effects, **kwargs)
-   
+
     @classmethod
     def from_fsl(cls, fsl_folder, config_params) -> "NormData":  # type: ignore
         """
@@ -638,7 +638,7 @@ class NormData(xr.Dataset):
         for dim in self.batch_effect_dims.to_numpy():
             dim_subset = my_be.sel(batch_effect_dims=dim)
             uniques, counts = np.unique(dim_subset, return_counts=True)
-            
+
             self.attrs["unique_batch_effects"][dim] = list(uniques)
             self.attrs["batch_effect_counts"][dim] = {k: int(v) for k, v in zip(uniques, counts)}
             self.attrs["batch_effect_covariate_ranges"][dim] = {}
@@ -762,8 +762,8 @@ class NormData(xr.Dataset):
                     coords=self.Yhat.coords,
                     dims=self.Yhat.dims,
                     attrs=self.Yhat.attrs,
-                ) 
-                
+                )
+
             if "centiles" in self.data_vars:
                 scaled_centiles = np.zeros(self.centiles.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
@@ -1032,18 +1032,22 @@ class NormData(xr.Dataset):
         C_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         if os.path.isfile(C_path):
             df = pd.read_csv(C_path)
-            response_vars = [i for i in list(df.columns) if not (i=='observations' or i == 'centile')] 
-            centiles = np.unique(df['centile'])
-            obs = np.unique(df['observations'])
+            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile")]
+            centiles = np.unique(df["centile"])
+            obs = np.unique(df["observations"])
             obs.sort()
             A = np.zeros((len(centiles), len(obs), len(response_vars)))
             for i, c in enumerate(centiles):
-                sub = df[df['centile'] == c]
-                sub.sort_values(by='observations')
+                sub = df[df["centile"] == c]
+                sub.sort_values(by="observations")
                 for j, rv in enumerate(response_vars):
-                    A[i,:,j] = sub[rv]
+                    A[i, :, j] = sub[rv]
 
-            self['centiles'] = xr.DataArray(A, dims = ('centile', 'observations', 'response_vars'), coords={"centile":centiles, "observations":obs, "response_vars":response_vars})
+            self["centiles"] = xr.DataArray(
+                A,
+                dims=("centile", "observations", "response_vars"),
+                coords={"centile": centiles, "observations": obs, "response_vars": response_vars},
+            )
 
     def save_logp(self, save_dir: str) -> None:
         logp = self.logp.to_dataframe().unstack(level="response_vars")
@@ -1107,14 +1111,14 @@ class NormData(xr.Dataset):
         logp_path = os.path.join(save_dir, f"statistics_{self.name}.csv")
         if os.path.isfile(logp_path):
             df = pd.read_csv(logp_path)
-            df = df.set_index('statistic')
+            df = df.set_index("statistic")
             statistics = list(df.index)
             self["statistics"] = xr.DataArray(
                 df.T,
                 dims=("response_vars", "statistic"),
                 coords={"statistic": statistics},
             )
-    
+
     def save_results(self, save_dir: str) -> None:
         """Saves the results (zscores, centiles, logp, statistics) to disk
 
@@ -1143,7 +1147,7 @@ class NormData(xr.Dataset):
 
         This method creates a DataArray with dimensions 'response_vars' and 'statistics',
         where 'response_vars' corresponds to the response variables in the dataset,
-        and 'statistics' includes statistics such as Rho, RMSE, SMSE, ExpV, NLL, and ShapiroW.
+        and 'statistics' includes statistics such as Rho, RMSE, SMSE, EXPV, NLL, and ShapiroW.
         The DataArray is filled with NaN values initially.
         """
         rv = self.response_vars.to_numpy().copy().tolist()
@@ -1153,7 +1157,7 @@ class NormData(xr.Dataset):
             dims=("response_vars", "statistics"),
             coords={
                 "response_vars": np.arange(len(rv)),
-                "statistics": ["Rho", "RMSE", "SMSE", "ExpV", "NLL", "ShapiroW"],
+                "statistics": ["Rho", "Rho_p", "R2", "RMSE", "SMSE", "MSLL", "NLL", "ShapiroW", "MACE", "MAPE", "EXPV"],
             },
         )
 
