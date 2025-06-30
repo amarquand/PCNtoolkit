@@ -17,8 +17,7 @@ at least version 0.27)
 .. code:: ipython3
 
     !pip install pcntoolkit
-    !pip install nutpie
-
+    
 .. code:: ipython3
 
     ! git clone https://github.com/predictive-clinical-neuroscience/braincharts.git
