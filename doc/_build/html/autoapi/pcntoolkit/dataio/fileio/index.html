@@ -1,0 +1,548 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.dataio.fileio &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="pcntoolkit.dataio.norm_data" href="../norm_data/index.html" />
+    <link rel="prev" title="pcntoolkit.dataio.data_factory" href="../data_factory/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../math_functions/index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative_model/index.html">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../util/index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">pcntoolkit</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit.dataio</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.dataio.fileio</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/pcntoolkit/dataio/fileio/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../data_factory/index.html" class="btn btn-neutral float-left" title="pcntoolkit.dataio.data_factory" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../norm_data/index.html" class="btn btn-neutral float-right" title="pcntoolkit.dataio.norm_data" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.dataio.fileio">
+<span id="pcntoolkit-dataio-fileio"></span><h1>pcntoolkit.dataio.fileio<a class="headerlink" href="#module-pcntoolkit.dataio.fileio" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.CIFTI_MAPPINGS" title="pcntoolkit.dataio.fileio.CIFTI_MAPPINGS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CIFTI_MAPPINGS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.CIFTI_VOL_ATLAS" title="pcntoolkit.dataio.fileio.CIFTI_VOL_ATLAS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CIFTI_VOL_ATLAS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="pcntoolkit.dataio.fileio.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="pcntoolkit.dataio.fileio.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.create_incremental_backup" title="pcntoolkit.dataio.fileio.create_incremental_backup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_incremental_backup</span></code></a>(filepath)</p></td>
+<td><p>Create an incremental backup of a file using the <cite>.bak{n}</cite> naming scheme.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.create_mask" title="pcntoolkit.dataio.fileio.create_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_mask</span></code></a>(data_array, mask[, verbose])</p></td>
+<td><p>Create a mask from a data array or a nifti file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.file_extension" title="pcntoolkit.dataio.fileio.file_extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_extension</span></code></a>(filename)</p></td>
+<td><p>Determine the file extension of a file (e.g. .nii.gz)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.file_stem" title="pcntoolkit.dataio.fileio.file_stem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_stem</span></code></a>(filename)</p></td>
+<td><p>Determine the file stem of a file (e.g. /path/to/file.nii.gz -&gt; file)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.file_type" title="pcntoolkit.dataio.fileio.file_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_type</span></code></a>(filename)</p></td>
+<td><p>Determine the file type of a file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.load" title="pcntoolkit.dataio.fileio.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>(filename[, mask, text, vol])</p></td>
+<td><p>Load array from a file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.load_ascii" title="pcntoolkit.dataio.fileio.load_ascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_ascii</span></code></a>(filename)</p></td>
+<td><p>Load an ascii file into a numpy array</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.load_cifti" title="pcntoolkit.dataio.fileio.load_cifti"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_cifti</span></code></a>(filename[, vol, mask, rmtmp])</p></td>
+<td><p>Load a cifti file into a numpy array</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.load_nifti" title="pcntoolkit.dataio.fileio.load_nifti"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_nifti</span></code></a>(datafile[, mask, vol])</p></td>
+<td><p>Load a nifti file into a numpy array</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.load_pd" title="pcntoolkit.dataio.fileio.load_pd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_pd</span></code></a>(filename)</p></td>
+<td><p>Load a csv file into a pandas dataframe</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.save" title="pcntoolkit.dataio.fileio.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(data, filename[, example, mask, text, dtype])</p></td>
+<td><p>Save a numpy array to a file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.save_ascii" title="pcntoolkit.dataio.fileio.save_ascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_ascii</span></code></a>(data, filename)</p></td>
+<td><p>Save a numpy array to an ascii file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.save_cifti" title="pcntoolkit.dataio.fileio.save_cifti"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_cifti</span></code></a>(data, filename, example[, mask, vol, volatlas])</p></td>
+<td><p>Save a cifti file from a numpy array</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.save_nifti" title="pcntoolkit.dataio.fileio.save_nifti"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_nifti</span></code></a>(data, filename, examplenii, mask[, dtype])</p></td>
+<td><p>Write output to nifti</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.save_pd" title="pcntoolkit.dataio.fileio.save_pd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_pd</span></code></a>(data, filename)</p></td>
+<td><p>Save a pandas dataframe to a csv file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.dataio.fileio.vol2vec" title="pcntoolkit.dataio.fileio.vol2vec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vol2vec</span></code></a>(dat, mask[, verbose])</p></td>
+<td><p>Vectorise a 3d image</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.create_incremental_backup">
+<span class="sig-name descname"><span class="pre">create_incremental_backup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#create_incremental_backup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.create_incremental_backup" title="Link to this definition"></a></dt>
+<dd><p>Create an incremental backup of a file using the <cite>.bak{n}</cite> naming scheme.</p>
+<p>If the file does not exist, an empty file is created at the specified path.
+A backup is then created in the same directory with the following format:</p>
+<blockquote>
+<div><p>original_name.bak{n}.original_extension</p>
+</div></blockquote>
+<p>where {n} is incremented based on existing backups.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.create_mask">
+<span class="sig-name descname"><span class="pre">create_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#create_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.create_mask" title="Link to this definition"></a></dt>
+<dd><p>Create a mask from a data array or a nifti file</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">create_mask</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_array</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>verbose</strong> – verbose output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.file_extension">
+<span class="sig-name descname"><span class="pre">file_extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#file_extension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.file_extension" title="Link to this definition"></a></dt>
+<dd><p>Determine the file extension of a file (e.g. .nii.gz)</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of the file to check</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.file_stem">
+<span class="sig-name descname"><span class="pre">file_stem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#file_stem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.file_stem" title="Link to this definition"></a></dt>
+<dd><p>Determine the file stem of a file (e.g. /path/to/file.nii.gz -&gt; file)</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">file_stem</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of the file to check</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.file_type">
+<span class="sig-name descname"><span class="pre">file_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#file_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.file_type" title="Link to this definition"></a></dt>
+<dd><p>Determine the file type of a file</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of the file to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>str: The file type (‘cifti’, ‘nifti’, ‘text’, or ‘binary’)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ValueError if file type is unknown</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.load" title="Link to this definition"></a></dt>
+<dd><p>Load array from a file.</p>
+<p>A beautiful waterfall of errors.</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">vol</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of the file to load</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>text</strong> – whether to write out a text file</p></li>
+<li><p><strong>vol</strong> – whether to load the image as a volume</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.load_ascii">
+<span class="sig-name descname"><span class="pre">load_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#load_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.load_ascii" title="Link to this definition"></a></dt>
+<dd><p>Load an ascii file into a numpy array</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of the file to load</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.load_cifti">
+<span class="sig-name descname"><span class="pre">load_cifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmtmp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#load_cifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.load_cifti" title="Link to this definition"></a></dt>
+<dd><p>Load a cifti file into a numpy array</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load_cifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">vol</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">rmtmp</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of the file to load</p></li>
+<li><p><strong>vol</strong> – whether to load the image as a volume</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>rmtmp</strong> – whether to remove temporary files</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.load_nifti">
+<span class="sig-name descname"><span class="pre">load_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datafile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#load_nifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.load_nifti" title="Link to this definition"></a></dt>
+<dd><p>Load a nifti file into a numpy array</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datafile</strong> – name of the file to load</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>vol</strong> – whether to load the image as a volume</p></li>
+<li><p><strong>verbose</strong> – verbose output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.load_pd">
+<span class="sig-name descname"><span class="pre">load_pd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#load_pd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.load_pd" title="Link to this definition"></a></dt>
+<dd><p>Load a csv file into a pandas dataframe</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load_pd</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of the file to load</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">example</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.save" title="Link to this definition"></a></dt>
+<dd><p>Save a numpy array to a file</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+<li><p><strong>example</strong> – example file to copy the geometry from</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>text</strong> – whether to write out a text file</p></li>
+<li><p><strong>dtype</strong> – data type for the output image (if different from the image)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.save_ascii">
+<span class="sig-name descname"><span class="pre">save_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#save_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.save_ascii" title="Link to this definition"></a></dt>
+<dd><p>Save a numpy array to an ascii file</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.save_cifti">
+<span class="sig-name descname"><span class="pre">save_cifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">example</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatlas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#save_cifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.save_cifti" title="Link to this definition"></a></dt>
+<dd><p>Save a cifti file from a numpy array</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_cifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="p">,</span> <span class="n">volatlas</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+<li><p><strong>example</strong> – example file to copy the geometry from</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>vol</strong> – whether to load the image as a volume</p></li>
+<li><p><strong>volatlas</strong> – atlas to use for the volume</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.save_nifti">
+<span class="sig-name descname"><span class="pre">save_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examplenii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#save_nifti"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.save_nifti" title="Link to this definition"></a></dt>
+<dd><p>Write output to nifti</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span> <span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+<li><p><strong>examplenii</strong> – nifti to copy the geometry and data type from</p></li>
+<li><p><strong>dtype</strong> – data type for the output image (if different from the image)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Mask<span class="colon">:</span></dt>
+<dd class="field-even"><p>nifti image containing a mask for the image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.save_pd">
+<span class="sig-name descname"><span class="pre">save_pd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#save_pd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.save_pd" title="Link to this definition"></a></dt>
+<dd><p>Save a pandas dataframe to a csv file</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_pd</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – pandas dataframe containing the data to write out</p></li>
+<li><p><strong>filename</strong> – where to store it</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.vol2vec">
+<span class="sig-name descname"><span class="pre">vol2vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/dataio/fileio.html#vol2vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.dataio.fileio.vol2vec" title="Link to this definition"></a></dt>
+<dd><p>Vectorise a 3d image</p>
+<p>Basic usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> – numpy array containing the data to write out</p></li>
+<li><p><strong>mask</strong> – nifti image containing a mask for the image</p></li>
+<li><p><strong>verbose</strong> – verbose output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.CIFTI_MAPPINGS">
+<span class="sig-name descname"><span class="pre">CIFTI_MAPPINGS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('dconn',</span> <span class="pre">'dtseries',</span> <span class="pre">'pconn',</span> <span class="pre">'ptseries',</span> <span class="pre">'dscalar',</span> <span class="pre">'dlabel',</span> <span class="pre">'pscalar',</span> <span class="pre">'pdconn',</span> <span class="pre">'dpconn',...</span></em><a class="headerlink" href="#pcntoolkit.dataio.fileio.CIFTI_MAPPINGS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.CIFTI_VOL_ATLAS">
+<span class="sig-name descname"><span class="pre">CIFTI_VOL_ATLAS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Atlas_ROIs.2.nii.gz'</span></em><a class="headerlink" href="#pcntoolkit.dataio.fileio.CIFTI_VOL_ATLAS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.dataio.fileio.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">b'.'</span></em><a class="headerlink" href="#pcntoolkit.dataio.fileio.path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../data_factory/index.html" class="btn btn-neutral float-left" title="pcntoolkit.dataio.data_factory" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../norm_data/index.html" class="btn btn-neutral float-right" title="pcntoolkit.dataio.norm_data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

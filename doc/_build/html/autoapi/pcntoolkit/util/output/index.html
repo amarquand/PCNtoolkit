@@ -1,0 +1,1027 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.util.output &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="pcntoolkit.util.paths" href="../paths/index.html" />
+    <link rel="prev" title="pcntoolkit.util.job_observer" href="../job_observer/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../dataio/index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../math_functions/index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative_model/index.html">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">pcntoolkit</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit.util</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.util.output</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/pcntoolkit/util/output/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../job_observer/index.html" class="btn btn-neutral float-left" title="pcntoolkit.util.job_observer" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../paths/index.html" class="btn btn-neutral float-right" title="pcntoolkit.util.paths" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.util.output">
+<span id="pcntoolkit-util-output"></span><h1>pcntoolkit.util.output<a class="headerlink" href="#module-pcntoolkit.util.output" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.util.output.Errors" title="pcntoolkit.util.output.Errors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Errors</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.util.output.Messages" title="pcntoolkit.util.output.Messages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Messages</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.util.output.Output" title="pcntoolkit.util.output.Output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Output</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.util.output.Warnings" title="pcntoolkit.util.output.Warnings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Warnings</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Errors</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Errors" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED">
+<span class="sig-name descname"><span class="pre">BLR_ERROR_NO_DESIGN_MATRIX_CREATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">design</span> <span class="pre">matrix</span> <span class="pre">created'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH">
+<span class="sig-name descname"><span class="pre">BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Hyperparameter</span> <span class="pre">vector</span> <span class="pre">invalid</span> <span class="pre">length'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.BLR_MODEL_NOT_FITTED">
+<span class="sig-name descname"><span class="pre">BLR_MODEL_NOT_FITTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Model</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">fitted</span> <span class="pre">before</span> <span class="pre">computing</span> <span class="pre">log</span> <span class="pre">probabilities'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.BLR_MODEL_NOT_FITTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.BLR_X_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">BLR_X_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'X</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">provided'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.BLR_X_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ENSURE_POSITIVE_DISTRIBUTION">
+<span class="sig-name descname"><span class="pre">ENSURE_POSITIVE_DISTRIBUTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Distribution</span> <span class="pre">for</span> <span class="pre">{name}</span> <span class="pre">needs</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">positive.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ENSURE_POSITIVE_DISTRIBUTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_ARGUMENT_SPECIFIED_TWICE">
+<span class="sig-name descname"><span class="pre">ERROR_ARGUMENT_SPECIFIED_TWICE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Argument</span> <span class="pre">{key}</span> <span class="pre">is</span> <span class="pre">specified</span> <span class="pre">twice.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_ARGUMENT_SPECIFIED_TWICE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BASIS_FUNCTION_NOT_FITTED">
+<span class="sig-name descname"><span class="pre">ERROR_BASIS_FUNCTION_NOT_FITTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Basis</span> <span class="pre">function</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">fitted.</span> <span class="pre">Please</span> <span class="pre">fit</span> <span class="pre">the</span> <span class="pre">basis</span> <span class="pre">function</span> <span class="pre">first.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BASIS_FUNCTION_NOT_FITTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BATCH_EFFECTS_NOT_LIST">
+<span class="sig-name descname"><span class="pre">ERROR_BATCH_EFFECTS_NOT_LIST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Items</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">batch_effect</span> <span class="pre">dict</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">string,</span> <span class="pre">not</span> <span class="pre">{batch_effect_type}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BATCH_EFFECTS_NOT_LIST" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH">
+<span class="sig-name descname"><span class="pre">ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Hyperparameter</span> <span class="pre">vector</span> <span class="pre">invalid</span> <span class="pre">length'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED">
+<span class="sig-name descname"><span class="pre">ERROR_BLR_PENALTY_NOT_RECOGNIZED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;Requested</span> <span class="pre">penalty</span> <span class="pre">({penalty})</span> <span class="pre">not</span> <span class="pre">recognized,</span> <span class="pre">choose</span> <span class="pre">between</span> <span class="pre">'L1'</span> <span class="pre">or</span> <span class="pre">'L2'.&quot;</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BLR_TRANSFER_NOT_IMPLEMENTED">
+<span class="sig-name descname"><span class="pre">ERROR_BLR_TRANSFER_NOT_IMPLEMENTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BLR</span> <span class="pre">transfer</span> <span class="pre">not</span> <span class="pre">implemented'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BLR_TRANSFER_NOT_IMPLEMENTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BLR_VAR_X_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">ERROR_BLR_VAR_X_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Variance</span> <span class="pre">of</span> <span class="pre">covariates</span> <span class="pre">(var_X)</span> <span class="pre">is</span> <span class="pre">required</span> <span class="pre">for</span> <span class="pre">models</span> <span class="pre">with</span> <span class="pre">variance.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BLR_VAR_X_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_BLR_WARPS_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">ERROR_BLR_WARPS_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">warp</span> <span class="pre">functions</span> <span class="pre">is</span> <span class="pre">required'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_BLR_WARPS_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_CDF_SHAPE">
+<span class="sig-name descname"><span class="pre">ERROR_CDF_SHAPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CDF</span> <span class="pre">shape</span> <span class="pre">{cdf_shape}</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">match</span> <span class="pre">data</span> <span class="pre">shape</span> <span class="pre">{data_shape}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_CDF_SHAPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_CROSS_VALIDATION_FOLDS">
+<span class="sig-name descname"><span class="pre">ERROR_CROSS_VALIDATION_FOLDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'If</span> <span class="pre">cross-validation</span> <span class="pre">is</span> <span class="pre">enabled,</span> <span class="pre">cv_folds</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">greater</span> <span class="pre">than</span> <span class="pre">1'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_CROSS_VALIDATION_FOLDS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_DATA_MUST_BE_1D">
+<span class="sig-name descname"><span class="pre">ERROR_DATA_MUST_BE_1D</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Data</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">1D</span> <span class="pre">array</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">N-dimensional</span> <span class="pre">array</span> <span class="pre">with</span> <span class="pre">a</span> <span class="pre">single</span> <span class="pre">column'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_DATA_MUST_BE_1D" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_ENVIRONMENT_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">ERROR_ENVIRONMENT_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Environment</span> <span class="pre">{environment}</span> <span class="pre">not</span> <span class="pre">found.</span> <span class="pre">Please</span> <span class="pre">specify</span> <span class="pre">the</span> <span class="pre">path</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">python</span> <span class="pre">environment</span> <span class="pre">using...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_ENVIRONMENT_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_FILE_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">ERROR_FILE_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'File</span> <span class="pre">not</span> <span class="pre">found:</span> <span class="pre">{path}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_FILE_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_HBRDATA_X_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">ERROR_HBRDATA_X_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'X</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">provided'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_HBRDATA_X_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA">
+<span class="sig-name descname"><span class="pre">ERROR_HBR_COULD_NOT_LOAD_IDATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Could</span> <span class="pre">not</span> <span class="pre">load</span> <span class="pre">idata</span> <span class="pre">from</span> <span class="pre">{path}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_HBR_FITTED_BUT_NO_IDATA">
+<span class="sig-name descname"><span class="pre">ERROR_HBR_FITTED_BUT_NO_IDATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HBR</span> <span class="pre">model</span> <span class="pre">is</span> <span class="pre">fitted</span> <span class="pre">but</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">have</span> <span class="pre">idata.</span> <span class="pre">This</span> <span class="pre">should</span> <span class="pre">not</span> <span class="pre">happen.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_HBR_FITTED_BUT_NO_IDATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_HBR_Y_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">ERROR_HBR_Y_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'y</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">provided</span> <span class="pre">for</span> <span class="pre">z-score</span> <span class="pre">computation'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_HBR_Y_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_MODEL_NOT_FITTED">
+<span class="sig-name descname"><span class="pre">ERROR_MODEL_NOT_FITTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Model</span> <span class="pre">needs</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">fitted</span> <span class="pre">before</span> <span class="pre">it</span> <span class="pre">can</span> <span class="pre">be</span> <span class="pre">transferred'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_MODEL_NOT_FITTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_MULTIPLE_COVARIATE_DIMS">
+<span class="sig-name descname"><span class="pre">ERROR_MULTIPLE_COVARIATE_DIMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Multiple</span> <span class="pre">covariate</span> <span class="pre">dimensions</span> <span class="pre">found:</span> <span class="pre">{covariate_dims}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_MULTIPLE_COVARIATE_DIMS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_NO_ENVIRONMENT_SPECIFIED">
+<span class="sig-name descname"><span class="pre">ERROR_NO_ENVIRONMENT_SPECIFIED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">python</span> <span class="pre">environment</span> <span class="pre">specified.</span> <span class="pre">Please</span> <span class="pre">specify</span> <span class="pre">the</span> <span class="pre">path</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">python</span> <span class="pre">environment</span> <span class="pre">using</span> <span class="pre">the...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_NO_ENVIRONMENT_SPECIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_PARSING_TIME_LIMIT">
+<span class="sig-name descname"><span class="pre">ERROR_PARSING_TIME_LIMIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Cannot</span> <span class="pre">parse</span> <span class="pre">{time_limit_str}</span> <span class="pre">as</span> <span class="pre">time</span> <span class="pre">limit'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_PARSING_TIME_LIMIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION">
+<span class="sig-name descname"><span class="pre">ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Predict</span> <span class="pre">with</span> <span class="pre">cross-validation</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">supported.</span> <span class="pre">Please</span> <span class="pre">use</span> <span class="pre">fit_predict</span> <span class="pre">instead.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_REQUIRED">
+<span class="sig-name descname"><span class="pre">ERROR_PREDICT_DATA_REQUIRED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Predict</span> <span class="pre">data</span> <span class="pre">is</span> <span class="pre">required</span> <span class="pre">for</span> <span class="pre">fit_predict</span> <span class="pre">without</span> <span class="pre">cross-validation'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_REQUIRED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION">
+<span class="sig-name descname"><span class="pre">ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Predict</span> <span class="pre">data</span> <span class="pre">is</span> <span class="pre">required</span> <span class="pre">for</span> <span class="pre">fit_predict</span> <span class="pre">without</span> <span class="pre">cross-validation'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_SCALER_NOT_FITTED">
+<span class="sig-name descname"><span class="pre">ERROR_SCALER_NOT_FITTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Scaler</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">fitted</span> <span class="pre">before</span> <span class="pre">{method}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_SCALER_NOT_FITTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_SCALER_TYPE_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">ERROR_SCALER_TYPE_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;Dictionary</span> <span class="pre">must</span> <span class="pre">contain</span> <span class="pre">'scaler_type'</span> <span class="pre">key&quot;</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_SCALER_TYPE_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_SOURCE_ARRAY_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">ERROR_SOURCE_ARRAY_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Source</span> <span class="pre">array</span> <span class="pre">{source_array_name}</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">exist</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">data.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_SOURCE_ARRAY_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_SUBMITTING_JOB">
+<span class="sig-name descname"><span class="pre">ERROR_SUBMITTING_JOB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Error</span> <span class="pre">submitting</span> <span class="pre">job</span> <span class="pre">{job_id}:</span> <span class="pre">{stderr}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_SUBMITTING_JOB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_CLASS">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_CLASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">class</span> <span class="pre">{class_name}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_CLASS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_DISTRIBUTION">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_DISTRIBUTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">distribution</span> <span class="pre">({dist_name})'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_DISTRIBUTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_FUNCTION">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_FUNCTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">function</span> <span class="pre">{func}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_FUNCTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_FUNCTION_FOR_CLASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">function</span> <span class="pre">{func}</span> <span class="pre">for</span> <span class="pre">class</span> <span class="pre">{class_name}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_LIKELIHOOD">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_LIKELIHOOD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unsupported</span> <span class="pre">likelihood</span> <span class="pre">({likelihood})'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_LIKELIHOOD" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_MAPPING">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_MAPPING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">mapping</span> <span class="pre">({mapping})'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_MAPPING" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_UNKNOWN_SCALER_TYPE">
+<span class="sig-name descname"><span class="pre">ERROR_UNKNOWN_SCALER_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Undefined</span> <span class="pre">scaler</span> <span class="pre">type:</span> <span class="pre">{scaler_type}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_UNKNOWN_SCALER_TYPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_WARP_STRING_INVALID">
+<span class="sig-name descname"><span class="pre">ERROR_WARP_STRING_INVALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Invalid</span> <span class="pre">warp</span> <span class="pre">string:</span> <span class="pre">{warp_string}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_WARP_STRING_INVALID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_Y_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">ERROR_Y_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'y</span> <span class="pre">not</span> <span class="pre">found</span> <span class="pre">in</span> <span class="pre">data'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_Y_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.ERROR_ZSCORES_INVERSE">
+<span class="sig-name descname"><span class="pre">ERROR_ZSCORES_INVERSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Z-scores</span> <span class="pre">inverse</span> <span class="pre">has</span> <span class="pre">invalid</span> <span class="pre">shape:</span> <span class="pre">Z_shape={Z_shape},</span> <span class="pre">X_shape={X_shape}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.ERROR_ZSCORES_INVERSE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.HBR_MODEL_NOT_FITTED">
+<span class="sig-name descname"><span class="pre">HBR_MODEL_NOT_FITTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HBR</span> <span class="pre">model</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">fitted'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.HBR_MODEL_NOT_FITTED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.INVALID_ENVIRONMENT">
+<span class="sig-name descname"><span class="pre">INVALID_ENVIRONMENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'The</span> <span class="pre">python</span> <span class="pre">environment</span> <span class="pre">{environment}</span> <span class="pre">is</span> <span class="pre">invalid</span> <span class="pre">because</span> <span class="pre">it</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">/bin/python</span> <span class="pre">file.</span> <span class="pre">Please...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.INVALID_ENVIRONMENT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.NORMATIVE_MODEL_CONFIGURATION_PROBLEMS">
+<span class="sig-name descname"><span class="pre">NORMATIVE_MODEL_CONFIGURATION_PROBLEMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.NORMATIVE_MODEL_CONFIGURATION_PROBLEMS" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;The following problems have been detected in the normative model configuration:</span>
+<span class="sd">{problems}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.NO_FLOAT_DATA_TYPE">
+<span class="sig-name descname"><span class="pre">NO_FLOAT_DATA_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Only</span> <span class="pre">float</span> <span class="pre">data</span> <span class="pre">types</span> <span class="pre">currently</span> <span class="pre">handled,</span> <span class="pre">not</span> <span class="pre">{data_type}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.NO_FLOAT_DATA_TYPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.OFFSETS_NOT_1D">
+<span class="sig-name descname"><span class="pre">OFFSETS_NOT_1D</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Offsets</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">1-d</span> <span class="pre">array</span> <span class="pre">or</span> <span class="pre">list'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.OFFSETS_NOT_1D" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.OFFSET_NOT_VALID">
+<span class="sig-name descname"><span class="pre">OFFSET_NOT_VALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Invalid</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">offsets</span> <span class="pre">provided'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.OFFSET_NOT_VALID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.REGRESSION_MODEL_CONFIGURATION_PROBLEMS">
+<span class="sig-name descname"><span class="pre">REGRESSION_MODEL_CONFIGURATION_PROBLEMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.REGRESSION_MODEL_CONFIGURATION_PROBLEMS" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;The following problems have been detected in the regression model configuration:</span>
+<span class="sd">{problems}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.SAMPLE_BATCH_EFFECTS">
+<span class="sig-name descname"><span class="pre">SAMPLE_BATCH_EFFECTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Cannot</span> <span class="pre">sample</span> <span class="pre">{n_samples}</span> <span class="pre">batch</span> <span class="pre">effects,</span> <span class="pre">because</span> <span class="pre">some</span> <span class="pre">batch</span> <span class="pre">effects</span> <span class="pre">have</span> <span class="pre">more</span> <span class="pre">levels</span> <span class="pre">than</span> <span class="pre">the...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.SAMPLE_BATCH_EFFECTS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.UNKNOWN_FILE_TYPE">
+<span class="sig-name descname"><span class="pre">UNKNOWN_FILE_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Unknown</span> <span class="pre">file</span> <span class="pre">type:</span> <span class="pre">{filename}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.UNKNOWN_FILE_TYPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.WB_COMMAND_FAILED">
+<span class="sig-name descname"><span class="pre">WB_COMMAND_FAILED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'wb_command</span> <span class="pre">failed</span> <span class="pre">with</span> <span class="pre">error:</span> <span class="pre">{error}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.WB_COMMAND_FAILED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Errors.WB_COMMAND_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">WB_COMMAND_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'wb_command</span> <span class="pre">not</span> <span class="pre">found</span> <span class="pre">in</span> <span class="pre">PATH'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Errors.WB_COMMAND_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Messages</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Messages" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED">
+<span class="sig-name descname"><span class="pre">BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Hyperparameters</span> <span class="pre">have</span> <span class="pre">not</span> <span class="pre">changed,</span> <span class="pre">exiting'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.BLR_RESTARTING_ESTIMATION_AT_HYP">
+<span class="sig-name descname"><span class="pre">BLR_RESTARTING_ESTIMATION_AT_HYP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Restarting</span> <span class="pre">estimation</span> <span class="pre">at</span> <span class="pre">hyp</span> <span class="pre">=</span> <span class="pre">{hyp},</span> <span class="pre">due</span> <span class="pre">to:</span> <span class="pre">{e}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.BLR_RESTARTING_ESTIMATION_AT_HYP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_CENTILES">
+<span class="sig-name descname"><span class="pre">COMPUTING_CENTILES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">centiles</span> <span class="pre">for</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_CENTILES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_CENTILES_MODEL">
+<span class="sig-name descname"><span class="pre">COMPUTING_CENTILES_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">centiles</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_CENTILES_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_LOGP">
+<span class="sig-name descname"><span class="pre">COMPUTING_LOGP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">log-probabilities</span> <span class="pre">for</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_LOGP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_LOGP_MODEL">
+<span class="sig-name descname"><span class="pre">COMPUTING_LOGP_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">log-probabilities</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_LOGP_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_YHAT">
+<span class="sig-name descname"><span class="pre">COMPUTING_YHAT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">yhat</span> <span class="pre">for</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_YHAT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_YHAT_MODEL">
+<span class="sig-name descname"><span class="pre">COMPUTING_YHAT_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">yhat</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_YHAT_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_ZSCORES">
+<span class="sig-name descname"><span class="pre">COMPUTING_ZSCORES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">z-scores</span> <span class="pre">for</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_ZSCORES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.COMPUTING_ZSCORES_MODEL">
+<span class="sig-name descname"><span class="pre">COMPUTING_ZSCORES_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Computing</span> <span class="pre">z-scores</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.COMPUTING_ZSCORES_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.DATASET_CREATED">
+<span class="sig-name descname"><span class="pre">DATASET_CREATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.DATASET_CREATED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Dataset &quot;{name}&quot; created.</span>
+<span class="sd">    - {n_observations} observations</span>
+<span class="sd">    - {n_subjects} unique subjects</span>
+<span class="sd">    - {n_covariates} covariates</span>
+<span class="sd">    - {n_response_vars} response variables</span>
+<span class="sd">    - {n_batch_effects} batch effects:</span>
+<span class="sd">    {batch_effects}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.EXECUTING_CALLABLE">
+<span class="sig-name descname"><span class="pre">EXECUTING_CALLABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Executing</span> <span class="pre">callable,</span> <span class="pre">attempt</span> <span class="pre">{attempt}</span> <span class="pre">of</span> <span class="pre">{total}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.EXECUTING_CALLABLE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.EXECUTION_FAILED">
+<span class="sig-name descname"><span class="pre">EXECUTION_FAILED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.EXECUTION_FAILED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Execution of callable failed, attempt {attempt} of {total} with error:</span>
+<span class="sd">{error}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.EXECUTION_SUCCESSFUL">
+<span class="sig-name descname"><span class="pre">EXECUTION_SUCCESSFUL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Execution</span> <span class="pre">of</span> <span class="pre">callable</span> <span class="pre">successful,</span> <span class="pre">attempt</span> <span class="pre">{attempt}</span> <span class="pre">of</span> <span class="pre">{total}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.EXECUTION_SUCCESSFUL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.EXTRACTING_CIFTI_SURFACE_DATA">
+<span class="sig-name descname"><span class="pre">EXTRACTING_CIFTI_SURFACE_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Extracting</span> <span class="pre">cifti</span> <span class="pre">surface</span> <span class="pre">data</span> <span class="pre">to</span> <span class="pre">{outstem}</span> <span class="pre">...'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.EXTRACTING_CIFTI_SURFACE_DATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.EXTRACTING_CIFTI_VOLUME_DATA">
+<span class="sig-name descname"><span class="pre">EXTRACTING_CIFTI_VOLUME_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Extracting</span> <span class="pre">cifti</span> <span class="pre">volume</span> <span class="pre">data</span> <span class="pre">to</span> <span class="pre">{niiname}</span> <span class="pre">...'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.EXTRACTING_CIFTI_VOLUME_DATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.FITTING_AND_PREDICTING_MODEL">
+<span class="sig-name descname"><span class="pre">FITTING_AND_PREDICTING_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fitting</span> <span class="pre">and</span> <span class="pre">predicting</span> <span class="pre">model</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.FITTING_AND_PREDICTING_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.FITTING_AND_PREDICTING_MODELS">
+<span class="sig-name descname"><span class="pre">FITTING_AND_PREDICTING_MODELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fitting</span> <span class="pre">and</span> <span class="pre">predicting</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.FITTING_AND_PREDICTING_MODELS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.FITTING_MODEL">
+<span class="sig-name descname"><span class="pre">FITTING_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fitting</span> <span class="pre">model</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.FITTING_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.FITTING_MODELS">
+<span class="sig-name descname"><span class="pre">FITTING_MODELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fitting</span> <span class="pre">models</span> <span class="pre">on</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.FITTING_MODELS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.GENERATING_MASK_AUTOMATICALLY">
+<span class="sig-name descname"><span class="pre">GENERATING_MASK_AUTOMATICALLY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Generating</span> <span class="pre">mask</span> <span class="pre">automatically</span> <span class="pre">...'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.GENERATING_MASK_AUTOMATICALLY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.HARMONIZING_DATA">
+<span class="sig-name descname"><span class="pre">HARMONIZING_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Harmonizing</span> <span class="pre">data</span> <span class="pre">on</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.HARMONIZING_DATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.HARMONIZING_DATA_MODEL">
+<span class="sig-name descname"><span class="pre">HARMONIZING_DATA_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Harmonizing</span> <span class="pre">data</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.HARMONIZING_DATA_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.JOB_STATUS_LINE">
+<span class="sig-name descname"><span class="pre">JOB_STATUS_LINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'{:&lt;11}</span> <span class="pre">{:&lt;9}</span> <span class="pre">{:&lt;10}</span> <span class="pre">{:&lt;9}</span> <span class="pre">{:&lt;14}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.JOB_STATUS_LINE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.JOB_STATUS_MONITOR">
+<span class="sig-name descname"><span class="pre">JOB_STATUS_MONITOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.JOB_STATUS_MONITOR" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">              PCNtoolkit Job Status Monitor ®</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">Task ID: {task_id}</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">Job ID      Name          State      Time      Nodes</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.JOB_STATUS_SUMMARY">
+<span class="sig-name descname"><span class="pre">JOB_STATUS_SUMMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.JOB_STATUS_SUMMARY" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">Total active jobs: {total_active_jobs}</span>
+<span class="sd">Total completed jobs: {total_completed_jobs}</span>
+<span class="sd">Total failed jobs: {total_failed_jobs}</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.LOADING_CALLABLE">
+<span class="sig-name descname"><span class="pre">LOADING_CALLABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Loading</span> <span class="pre">callable</span> <span class="pre">from</span> <span class="pre">{path}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.LOADING_CALLABLE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.LOADING_DATA">
+<span class="sig-name descname"><span class="pre">LOADING_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Loading</span> <span class="pre">data</span> <span class="pre">from</span> <span class="pre">{path}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.LOADING_DATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.LOADING_ROI_MASK">
+<span class="sig-name descname"><span class="pre">LOADING_ROI_MASK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Loading</span> <span class="pre">ROI</span> <span class="pre">mask</span> <span class="pre">...'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.LOADING_ROI_MASK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.LOADING_RUNNER_STATE">
+<span class="sig-name descname"><span class="pre">LOADING_RUNNER_STATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.LOADING_RUNNER_STATE" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Loading runner state from:</span>
+<span class="sd">       {runner_file}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.LOG_DIR_CREATED">
+<span class="sig-name descname"><span class="pre">LOG_DIR_CREATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.LOG_DIR_CREATED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Log directory created:</span>
+<span class="sd">       {log_dir}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.NORMATIVE_MODEL_CONFIGURATION_VALID">
+<span class="sig-name descname"><span class="pre">NORMATIVE_MODEL_CONFIGURATION_VALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Configuration</span> <span class="pre">of</span> <span class="pre">normative</span> <span class="pre">model</span> <span class="pre">is</span> <span class="pre">valid.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.NORMATIVE_MODEL_CONFIGURATION_VALID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.NO_LOG_DIR_SPECIFIED">
+<span class="sig-name descname"><span class="pre">NO_LOG_DIR_SPECIFIED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">log</span> <span class="pre">directory</span> <span class="pre">specified.</span> <span class="pre">Using</span> <span class="pre">default</span> <span class="pre">log</span> <span class="pre">directory:</span> <span class="pre">{log_dir}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.NO_LOG_DIR_SPECIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.NO_MORE_RUNNING_JOBS">
+<span class="sig-name descname"><span class="pre">NO_MORE_RUNNING_JOBS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.NO_MORE_RUNNING_JOBS" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">No more running jobs!</span>
+<span class="sd">---------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.NO_PYTHON_PATH_SPECIFIED">
+<span class="sig-name descname"><span class="pre">NO_PYTHON_PATH_SPECIFIED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">python</span> <span class="pre">path</span> <span class="pre">specified.</span> <span class="pre">Using</span> <span class="pre">interpreter</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">current</span> <span class="pre">process:</span> <span class="pre">{python_path}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.NO_PYTHON_PATH_SPECIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.NO_TEMP_DIR_SPECIFIED">
+<span class="sig-name descname"><span class="pre">NO_TEMP_DIR_SPECIFIED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">temporary</span> <span class="pre">directory</span> <span class="pre">specified.</span> <span class="pre">Using</span> <span class="pre">default</span> <span class="pre">temporary</span> <span class="pre">directory:</span> <span class="pre">{temp_dir}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.NO_TEMP_DIR_SPECIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.PREDICTING_MODEL">
+<span class="sig-name descname"><span class="pre">PREDICTING_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Making</span> <span class="pre">predictions</span> <span class="pre">on</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.PREDICTING_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.PREDICTING_MODELS">
+<span class="sig-name descname"><span class="pre">PREDICTING_MODELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Making</span> <span class="pre">predictions</span> <span class="pre">on</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.PREDICTING_MODELS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.REGRESSION_MODEL_CONFIGURATION_VALID">
+<span class="sig-name descname"><span class="pre">REGRESSION_MODEL_CONFIGURATION_VALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Configuration</span> <span class="pre">of</span> <span class="pre">regression</span> <span class="pre">model</span> <span class="pre">is</span> <span class="pre">valid.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.REGRESSION_MODEL_CONFIGURATION_VALID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.RUNNER_LOADED">
+<span class="sig-name descname"><span class="pre">RUNNER_LOADED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.RUNNER_LOADED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Runner loaded</span>
+<span class="sd">---------------------------------------------------------Active jobs: {n_active_jobs}</span>
+<span class="sd">Finished jobs: {n_finished_jobs}</span>
+<span class="sd">Failed jobs: {n_failed_jobs}</span>
+<span class="sd">---------------------------------------------------------&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_CENTILES">
+<span class="sig-name descname"><span class="pre">SAVING_CENTILES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_CENTILES" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving centiles to:</span>
+<span class="sd">       {save_dir}.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_MODEL">
+<span class="sig-name descname"><span class="pre">SAVING_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_MODEL" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving model to:</span>
+<span class="sd">       {save_dir}.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_RESULTS">
+<span class="sig-name descname"><span class="pre">SAVING_RESULTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_RESULTS" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving results to:</span>
+<span class="sd">       {save_dir}.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_RUNNER_STATE">
+<span class="sig-name descname"><span class="pre">SAVING_RUNNER_STATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_RUNNER_STATE" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving runner state to:</span>
+<span class="sd">       {runner_file}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_STATISTICS">
+<span class="sig-name descname"><span class="pre">SAVING_STATISTICS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_STATISTICS" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving statistics to:</span>
+<span class="sd">       {save_dir}.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SAVING_ZSCORES">
+<span class="sig-name descname"><span class="pre">SAVING_ZSCORES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SAVING_ZSCORES" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Saving z-scores to:</span>
+<span class="sd">       {save_dir}.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SYNTHESIZING_DATA">
+<span class="sig-name descname"><span class="pre">SYNTHESIZING_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Synthesizing</span> <span class="pre">data</span> <span class="pre">for</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SYNTHESIZING_DATA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.SYNTHESIZING_DATA_MODEL">
+<span class="sig-name descname"><span class="pre">SYNTHESIZING_DATA_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Synthesizing</span> <span class="pre">data</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.SYNTHESIZING_DATA_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.TASK_ID_CREATED">
+<span class="sig-name descname"><span class="pre">TASK_ID_CREATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Task</span> <span class="pre">ID</span> <span class="pre">created:</span> <span class="pre">{task_id}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.TASK_ID_CREATED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.TEMP_DIR_CREATED">
+<span class="sig-name descname"><span class="pre">TEMP_DIR_CREATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.TEMP_DIR_CREATED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Temporary directory created:</span>
+<span class="sd">       {temp_dir}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.TRANSFERRING_MODEL">
+<span class="sig-name descname"><span class="pre">TRANSFERRING_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Transferring</span> <span class="pre">model</span> <span class="pre">for</span> <span class="pre">{model_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.TRANSFERRING_MODEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Messages.TRANSFERRING_MODELS">
+<span class="sig-name descname"><span class="pre">TRANSFERRING_MODELS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Transferring</span> <span class="pre">models</span> <span class="pre">on</span> <span class="pre">{n_models}</span> <span class="pre">response</span> <span class="pre">variables.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Messages.TRANSFERRING_MODELS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Output</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.error">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.error" title="Link to this definition"></a></dt>
+<dd><p>Print error message</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.get_show_messages">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_show_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.get_show_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.get_show_messages" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.get_show_pid">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_show_pid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.get_show_pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.get_show_pid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.get_show_timestamp">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_show_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.get_show_timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.get_show_timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.get_show_warnings">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_show_warnings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.get_show_warnings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.get_show_warnings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.print">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.print" title="Link to this definition"></a></dt>
+<dd><p>Print message only if show_messages mode is enabled</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.set_show_messages">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_show_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.set_show_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.set_show_messages" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.set_show_pid">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_show_pid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.set_show_pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.set_show_pid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.set_show_timestamp">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_show_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.set_show_timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.set_show_timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.set_show_warnings">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_show_warnings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.set_show_warnings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.set_show_warnings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Output.warning">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Output.warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Output.warning" title="Link to this definition"></a></dt>
+<dd><p>Print warning message only if show_warnings mode is enabled</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Warnings</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/util/output.html#Warnings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.util.output.Warnings" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.BLR_BATCH_EFFECTS_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">BLR_BATCH_EFFECTS_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'batch_effects</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">provided,</span> <span class="pre">setting</span> <span class="pre">self.batch_effects</span> <span class="pre">to</span> <span class="pre">zeros'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.BLR_BATCH_EFFECTS_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED">
+<span class="sig-name descname"><span class="pre">BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Estimation of posterior distribution failed due to:</span>
+<span class="sd">{error}&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.BLR_VAR_X_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">BLR_VAR_X_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'var_X</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">provided,</span> <span class="pre">setting</span> <span class="pre">self.var_X</span> <span class="pre">to</span> <span class="pre">zeros'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.BLR_VAR_X_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.BLR_Y_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">BLR_Y_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'y</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">provided,</span> <span class="pre">setting</span> <span class="pre">self.y</span> <span class="pre">to</span> <span class="pre">zeros'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.BLR_Y_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES">
+<span class="sig-name descname"><span class="pre">CENTILES_ALREADY_COMPUTED_FOR_CENTILES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Centiles</span> <span class="pre">are</span> <span class="pre">already</span> <span class="pre">computed</span> <span class="pre">for</span> <span class="pre">{dataset_name}</span> <span class="pre">for</span> <span class="pre">centiles</span> <span class="pre">{centiles},</span> <span class="pre">skipping</span> <span class="pre">computation....</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.DATA_ALREADY_SCALED">
+<span class="sig-name descname"><span class="pre">DATA_ALREADY_SCALED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Data</span> <span class="pre">is</span> <span class="pre">already</span> <span class="pre">scaled,</span> <span class="pre">skipping</span> <span class="pre">scaling</span> <span class="pre">back</span> <span class="pre">to</span> <span class="pre">original</span> <span class="pre">scale.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.DATA_ALREADY_SCALED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.DATA_NOT_SCALED">
+<span class="sig-name descname"><span class="pre">DATA_NOT_SCALED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Data</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">scaled,</span> <span class="pre">skipping</span> <span class="pre">scaling</span> <span class="pre">back</span> <span class="pre">to</span> <span class="pre">original</span> <span class="pre">scale.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.DATA_NOT_SCALED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.DIR_DOES_NOT_EXIST">
+<span class="sig-name descname"><span class="pre">DIR_DOES_NOT_EXIST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'{dir_attr_str}</span> <span class="pre">({dir_attr})</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">exist,</span> <span class="pre">creating</span> <span class="pre">it</span> <span class="pre">for</span> <span class="pre">you.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.DIR_DOES_NOT_EXIST" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.ERROR_GETTING_JOB_STATUSES">
+<span class="sig-name descname"><span class="pre">ERROR_GETTING_JOB_STATUSES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Error</span> <span class="pre">getting</span> <span class="pre">job</span> <span class="pre">statuses:</span> <span class="pre">{stderr}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.ERROR_GETTING_JOB_STATUSES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.ERROR_PARSING_JOB_STATUS_LINE">
+<span class="sig-name descname"><span class="pre">ERROR_PARSING_JOB_STATUS_LINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Error</span> <span class="pre">parsing</span> <span class="pre">job</span> <span class="pre">status</span> <span class="pre">line:</span> <span class="pre">{line}</span> <span class="pre">-</span> <span class="pre">{error}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.ERROR_PARSING_JOB_STATUS_LINE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.ERROR_SUBMITTING_JOB">
+<span class="sig-name descname"><span class="pre">ERROR_SUBMITTING_JOB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Error</span> <span class="pre">submitting</span> <span class="pre">job</span> <span class="pre">{job_id}:</span> <span class="pre">{stderr}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.ERROR_SUBMITTING_JOB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.EXTRA_COVARIATES">
+<span class="sig-name descname"><span class="pre">EXTRA_COVARIATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'The</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}</span> <span class="pre">has</span> <span class="pre">too</span> <span class="pre">many</span> <span class="pre">covariates:</span> <span class="pre">{covariates}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.EXTRA_COVARIATES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.EXTRA_RESPONSE_VARS">
+<span class="sig-name descname"><span class="pre">EXTRA_RESPONSE_VARS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'The</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}</span> <span class="pre">has</span> <span class="pre">too</span> <span class="pre">many</span> <span class="pre">response</span> <span class="pre">variables:</span> <span class="pre">{response_vars}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.EXTRA_RESPONSE_VARS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.HBR_BATCH_EFFECTS_NOT_PROVIDED">
+<span class="sig-name descname"><span class="pre">HBR_BATCH_EFFECTS_NOT_PROVIDED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'batch_effects</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">provided,</span> <span class="pre">setting</span> <span class="pre">self.batch_effects</span> <span class="pre">to</span> <span class="pre">zeros'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.HBR_BATCH_EFFECTS_NOT_PROVIDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.LOAD_CIFTI_GENERIC_EXCEPTION">
+<span class="sig-name descname"><span class="pre">LOAD_CIFTI_GENERIC_EXCEPTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A</span> <span class="pre">general</span> <span class="pre">exception</span> <span class="pre">occurred</span> <span class="pre">while</span> <span class="pre">loading</span> <span class="pre">CIFTI</span> <span class="pre">file:</span> <span class="pre">{}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.LOAD_CIFTI_GENERIC_EXCEPTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.LOAD_NIFTI_GENERIC_EXCEPTION">
+<span class="sig-name descname"><span class="pre">LOAD_NIFTI_GENERIC_EXCEPTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A</span> <span class="pre">general</span> <span class="pre">exception</span> <span class="pre">occurred</span> <span class="pre">while</span> <span class="pre">loading</span> <span class="pre">NIFTI</span> <span class="pre">file:</span> <span class="pre">{}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.LOAD_NIFTI_GENERIC_EXCEPTION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.MISSING_COVARIATES">
+<span class="sig-name descname"><span class="pre">MISSING_COVARIATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'The</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}</span> <span class="pre">is</span> <span class="pre">missing</span> <span class="pre">the</span> <span class="pre">following</span> <span class="pre">covariates:</span> <span class="pre">{covariates}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.MISSING_COVARIATES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.MULTIPLE_BATCH_EFFECT_SUMMARY">
+<span class="sig-name descname"><span class="pre">MULTIPLE_BATCH_EFFECT_SUMMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;Multiple</span> <span class="pre">batch</span> <span class="pre">effect</span> <span class="pre">dimensions</span> <span class="pre">found.</span> <span class="pre">The</span> <span class="pre">summary</span> <span class="pre">printout</span> <span class="pre">currently</span> <span class="pre">uses</span> <span class="pre">the</span> <span class="pre">first</span> <span class="pre">dimension...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.MULTIPLE_BATCH_EFFECT_SUMMARY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.MULTIPLE_JOBS_FOUND_FOR_JOB_ID">
+<span class="sig-name descname"><span class="pre">MULTIPLE_JOBS_FOUND_FOR_JOB_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Multiple</span> <span class="pre">jobs</span> <span class="pre">found</span> <span class="pre">for</span> <span class="pre">job</span> <span class="pre">ID</span> <span class="pre">{job_id}:</span> <span class="pre">{job_name}.</span> <span class="pre">Please</span> <span class="pre">check</span> <span class="pre">the</span> <span class="pre">job</span> <span class="pre">statuses</span> <span class="pre">and</span> <span class="pre">try</span> <span class="pre">again.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.MULTIPLE_JOBS_FOUND_FOR_JOB_ID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.NO_COVARIATES">
+<span class="sig-name descname"><span class="pre">NO_COVARIATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">covariates</span> <span class="pre">provided</span> <span class="pre">for</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.NO_COVARIATES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.NO_RESPONSE_VARS">
+<span class="sig-name descname"><span class="pre">NO_RESPONSE_VARS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No</span> <span class="pre">response</span> <span class="pre">variables</span> <span class="pre">provided</span> <span class="pre">for</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}.</span> <span class="pre">Please</span> <span class="pre">provide</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">response...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.NO_RESPONSE_VARS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION">
+<span class="sig-name descname"><span class="pre">PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Predict</span> <span class="pre">data</span> <span class="pre">not</span> <span class="pre">used</span> <span class="pre">in</span> <span class="pre">k-fold</span> <span class="pre">cross-validation'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.REMOVE_NAN_SET_TO_FALSE">
+<span class="sig-name descname"><span class="pre">REMOVE_NAN_SET_TO_FALSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Warning:</span> <span class="pre">remove_NAN</span> <span class="pre">is</span> <span class="pre">set</span> <span class="pre">to</span> <span class="pre">False.</span> <span class="pre">Missing</span> <span class="pre">(NaN)</span> <span class="pre">values</span> <span class="pre">may</span> <span class="pre">cause</span> <span class="pre">errors</span> <span class="pre">during</span> <span class="pre">model...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.REMOVE_NAN_SET_TO_FALSE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.RESPONSE_VAR_NOT_FOUND">
+<span class="sig-name descname"><span class="pre">RESPONSE_VAR_NOT_FOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Response</span> <span class="pre">variable</span> <span class="pre">{response_var}</span> <span class="pre">not</span> <span class="pre">found</span> <span class="pre">in</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}.</span> <span class="pre">Setting</span> <span class="pre">to</span> <span class="pre">NaN.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.RESPONSE_VAR_NOT_FOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.SUBJECT_ID_MULTIPLE_COLUMNS">
+<span class="sig-name descname"><span class="pre">SUBJECT_ID_MULTIPLE_COLUMNS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Subject</span> <span class="pre">ID</span> <span class="pre">file</span> <span class="pre">contains</span> <span class="pre">multiple</span> <span class="pre">columns.</span> <span class="pre">Using</span> <span class="pre">the</span> <span class="pre">first</span> <span class="pre">column</span> <span class="pre">for</span> <span class="pre">subject</span> <span class="pre">IDs.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.SUBJECT_ID_MULTIPLE_COLUMNS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.SUBJECT_ID_UNEXPECTED_SHAPE">
+<span class="sig-name descname"><span class="pre">SUBJECT_ID_UNEXPECTED_SHAPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Subject</span> <span class="pre">ID</span> <span class="pre">data</span> <span class="pre">has</span> <span class="pre">an</span> <span class="pre">unexpected</span> <span class="pre">shape.</span> <span class="pre">Expected</span> <span class="pre">1D</span> <span class="pre">array</span> <span class="pre">or</span> <span class="pre">2D</span> <span class="pre">array</span> <span class="pre">with</span> <span class="pre">one</span> <span class="pre">column.</span> <span class="pre">Using...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.SUBJECT_ID_UNEXPECTED_SHAPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.SYNTHESIZE_N_SAMPLES_IGNORED">
+<span class="sig-name descname"><span class="pre">SYNTHESIZE_N_SAMPLES_IGNORED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'n_samples</span> <span class="pre">is</span> <span class="pre">ignored</span> <span class="pre">because</span> <span class="pre">data</span> <span class="pre">is</span> <span class="pre">provided.'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.SYNTHESIZE_N_SAMPLES_IGNORED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.THRIVELINES_ALREADY_COMPUTED_FOR">
+<span class="sig-name descname"><span class="pre">THRIVELINES_ALREADY_COMPUTED_FOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Thrivelines</span> <span class="pre">are</span> <span class="pre">already</span> <span class="pre">computed</span> <span class="pre">for</span> <span class="pre">{dataset_name}</span> <span class="pre">for</span> <span class="pre">offsets</span> <span class="pre">{offsets},</span> <span class="pre">skipping...</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.THRIVELINES_ALREADY_COMPUTED_FOR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.util.output.Warnings.UNKNOWN_BATCH_EFFECTS">
+<span class="sig-name descname"><span class="pre">UNKNOWN_BATCH_EFFECTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'The</span> <span class="pre">dataset</span> <span class="pre">{dataset_name}</span> <span class="pre">has</span> <span class="pre">unknown</span> <span class="pre">batch</span> <span class="pre">effects:</span> <span class="pre">{batch_effects}'</span></em><a class="headerlink" href="#pcntoolkit.util.output.Warnings.UNKNOWN_BATCH_EFFECTS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../job_observer/index.html" class="btn btn-neutral float-left" title="pcntoolkit.util.job_observer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../paths/index.html" class="btn btn-neutral float-right" title="pcntoolkit.util.paths" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

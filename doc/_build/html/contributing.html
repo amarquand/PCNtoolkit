@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="autoapi/index.html" />
+    <link rel="prev" title="Quickstart Guide" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-contribute">How Can I Contribute?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#before-submitting-a-bug-report">Before Submitting A Bug Report</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-do-i-submit-a-good-bug-report">How Do I Submit A Good Bug Report?</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#suggesting-enhancements">Suggesting Enhancements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#how-do-i-submit-a-good-enhancement-suggestion">How Do I Submit A Good Enhancement Suggestion?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#styleguides">Styleguides</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#git-commit-messages">Git Commit Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-styleguide">Python Styleguide</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#running-tests">Running Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#additional-notes">Additional Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/contributing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart Guide" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h1>
+<p>First off, thanks for taking the time to contribute! 🎉👍</p>
+<p>The following is a set of guidelines for contributing to PCNtoolkit. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.</p>
+<section id="how-can-i-contribute">
+<h2>How Can I Contribute?<a class="headerlink" href="#how-can-i-contribute" title="Link to this heading"></a></h2>
+<section id="reporting-bugs">
+<h3>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Link to this heading"></a></h3>
+<p>This section guides you through submitting a bug report. Following these guidelines helps maintainers and the community understand your report, reproduce the behavior, and find related reports.</p>
+<section id="before-submitting-a-bug-report">
+<h4>Before Submitting A Bug Report<a class="headerlink" href="#before-submitting-a-bug-report" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Check the debugging guide</p></li>
+<li><p>Check the FAQs on the forum for a list of common questions and problems</p></li>
+<li><p>Ensure the bug is not already reported by searching on GitHub under <a class="reference external" href="https://github.com/amarquand/PCNtoolkit/issues">Issues</a></p></li>
+</ul>
+</section>
+<section id="how-do-i-submit-a-good-bug-report">
+<h4>How Do I Submit A Good Bug Report?<a class="headerlink" href="#how-do-i-submit-a-good-bug-report" title="Link to this heading"></a></h4>
+<p>Bugs are tracked as <a class="reference external" href="https://github.com/amarquand/PCNtoolkit/issues">GitHub issues</a>. Create an issue and provide the following information:</p>
+<ul class="simple">
+<li><p>Use a clear and descriptive title for the issue to identify the problem</p></li>
+<li><p>Describe the exact steps which reproduce the problem in as much detail as possible</p></li>
+<li><p>Provide specific examples to demonstrate the steps. Include links to files or GitHub projects, or copy/pasteable snippets</p></li>
+</ul>
+</section>
+</section>
+<section id="suggesting-enhancements">
+<h3>Suggesting Enhancements<a class="headerlink" href="#suggesting-enhancements" title="Link to this heading"></a></h3>
+<p>This section guides you through submitting an enhancement suggestion, including completely new features and minor improvements to existing functionality.</p>
+<section id="how-do-i-submit-a-good-enhancement-suggestion">
+<h4>How Do I Submit A Good Enhancement Suggestion?<a class="headerlink" href="#how-do-i-submit-a-good-enhancement-suggestion" title="Link to this heading"></a></h4>
+<p>Enhancement suggestions are tracked as <a class="reference external" href="https://github.com/amarquand/PCNtoolkit/issues">GitHub issues</a>. Create an issue and provide the following information:</p>
+<ul class="simple">
+<li><p>Use a clear and descriptive title for the issue to identify the suggestion</p></li>
+<li><p>Provide a step-by-step description of the suggested enhancement in as much detail as possible</p></li>
+<li><p>Provide specific examples to demonstrate the steps</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="development-setup">
+<h2>Development Setup<a class="headerlink" href="#development-setup" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Fork the repo</p></li>
+<li><p>Clone your fork:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/your-username/pcntoolkit.git
+</pre></div>
+</div>
+</li>
+<li><p>Install development dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="styleguides">
+<h2>Styleguides<a class="headerlink" href="#styleguides" title="Link to this heading"></a></h2>
+<section id="git-commit-messages">
+<h3>Git Commit Messages<a class="headerlink" href="#git-commit-messages" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use the present tense (“Add feature” not “Added feature”)</p></li>
+<li><p>Use the imperative mood (“Move cursor to…” not “Moves cursor to…”)</p></li>
+<li><p>Limit the first line to 72 characters or less</p></li>
+<li><p>Reference issues and pull requests liberally after the first line</p></li>
+</ul>
+</section>
+<section id="python-styleguide">
+<h3>Python Styleguide<a class="headerlink" href="#python-styleguide" title="Link to this heading"></a></h3>
+<p>All Python code must adhere to <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8</a>, and we use <code class="docutils literal notranslate"><span class="pre">autopep8</span></code> for automatic code formatting. Please see the <a class="reference external" href="https://github.com/hhatto/autopep8">autopep8 documentation</a> for more details. The autopep8 settings can be found in setup.cfg.</p>
+</section>
+</section>
+<section id="running-tests">
+<h2>Running Tests<a class="headerlink" href="#running-tests" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/
+</pre></div>
+</div>
+</section>
+<section id="additional-notes">
+<h2>Additional Notes<a class="headerlink" href="#additional-notes" title="Link to this heading"></a></h2>
+<p>Feel free to propose changes to this document in a pull request.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,306 @@
+{
+    "model": {
+        "name": "CortexVol",
+        "type": "HBR",
+        "is_fitted": true,
+        "is_from_dict": false,
+        "likelihood": {
+            "name": "SHASHb",
+            "mu": {
+                "name": "mu",
+                "_dims": null,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ],
+                "slope": {
+                    "name": "slope_mu",
+                    "_dims": [
+                        "mu_covariates"
+                    ],
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0.0,
+                        10.0
+                    ],
+                    "dims": [
+                        "mu_covariates"
+                    ],
+                    "type": "Prior"
+                },
+                "intercept": {
+                    "name": "intercept_mu",
+                    "_dims": null,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "mu": {
+                        "name": "mu_intercept_mu",
+                        "_dims": null,
+                        "mapping": "identity",
+                        "mapping_params": [
+                            0,
+                            1
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    },
+                    "sigma": {
+                        "name": "sigma_intercept_mu",
+                        "_dims": null,
+                        "mapping": "softplus",
+                        "mapping_params": [
+                            0.0,
+                            3.0
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    },
+                    "dims": null,
+                    "type": "RandomPrior",
+                    "sex_sigma": {
+                        "name": "sex_sigma_intercept_mu",
+                        "_dims": null,
+                        "mapping": "softplus",
+                        "mapping_params": [
+                            0.0,
+                            3.0
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    },
+                    "site_sigma": {
+                        "name": "site_sigma_intercept_mu",
+                        "_dims": null,
+                        "mapping": "softplus",
+                        "mapping_params": [
+                            0.0,
+                            3.0
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    }
+                },
+                "basis_function": {
+                    "is_fitted": true,
+                    "basis_name": "bspline",
+                    "min": {
+                        "0": -1.5070961672516696
+                    },
+                    "max": {
+                        "0": 4.187332680317153
+                    },
+                    "compute_min": true,
+                    "compute_max": true,
+                    "basis_column": [
+                        0
+                    ],
+                    "degree": 3,
+                    "nknots": 5,
+                    "left_expand": 0.05,
+                    "right_expand": 0.05,
+                    "knot_method": "uniform",
+                    "knots": {
+                        "0": [
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -0.2258496765486846,
+                            1.3401182565327416,
+                            2.906086189614168,
+                            4.472054122695594,
+                            4.472054122695594,
+                            4.472054122695594,
+                            4.472054122695594
+                        ]
+                    },
+                    "basis_function": "BsplineBasisFunction"
+                },
+                "covariate_dims": [
+                    "mu_covariates_0",
+                    "mu_covariates_1",
+                    "mu_covariates_2",
+                    "mu_covariates_3",
+                    "mu_covariates_4",
+                    "mu_covariates_5",
+                    "mu_covariates_6"
+                ],
+                "one_dimensional": false,
+                "dims": null,
+                "type": "LinearPrior"
+            },
+            "sigma": {
+                "name": "sigma",
+                "_dims": null,
+                "mapping": "softplus",
+                "mapping_params": [
+                    0.0,
+                    3.0
+                ],
+                "slope": {
+                    "name": "slope_sigma",
+                    "_dims": [
+                        "sigma_covariates"
+                    ],
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0.0,
+                        2.0
+                    ],
+                    "dims": [
+                        "sigma_covariates"
+                    ],
+                    "type": "Prior"
+                },
+                "intercept": {
+                    "name": "intercept_sigma",
+                    "_dims": null,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        1.0,
+                        1.0
+                    ],
+                    "dims": null,
+                    "type": "Prior"
+                },
+                "basis_function": {
+                    "is_fitted": true,
+                    "basis_name": "bspline",
+                    "min": {
+                        "0": -1.5070961672516696
+                    },
+                    "max": {
+                        "0": 4.187332680317153
+                    },
+                    "compute_min": true,
+                    "compute_max": true,
+                    "basis_column": [
+                        0
+                    ],
+                    "degree": 3,
+                    "nknots": 5,
+                    "left_expand": 0.05,
+                    "right_expand": 0.05,
+                    "knot_method": "uniform",
+                    "knots": {
+                        "0": [
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -1.7918176096301108,
+                            -0.2258496765486846,
+                            1.3401182565327416,
+                            2.906086189614168,
+                            4.472054122695594,
+                            4.472054122695594,
+                            4.472054122695594,
+                            4.472054122695594
+                        ]
+                    },
+                    "basis_function": "BsplineBasisFunction"
+                },
+                "covariate_dims": [
+                    "sigma_covariates_0",
+                    "sigma_covariates_1",
+                    "sigma_covariates_2",
+                    "sigma_covariates_3",
+                    "sigma_covariates_4",
+                    "sigma_covariates_5",
+                    "sigma_covariates_6"
+                ],
+                "one_dimensional": false,
+                "dims": null,
+                "type": "LinearPrior"
+            },
+            "epsilon": {
+                "name": "epsilon",
+                "_dims": null,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    0.0,
+                    1.0
+                ],
+                "dims": null,
+                "type": "Prior"
+            },
+            "delta": {
+                "name": "delta",
+                "_dims": null,
+                "mapping": "softplus",
+                "mapping_params": [
+                    0.0,
+                    3.0,
+                    0.6
+                ],
+                "dist_name": "Normal",
+                "dist_params": [
+                    1.0,
+                    1.0
+                ],
+                "dims": null,
+                "type": "Prior"
+            }
+        },
+        "_name": "CortexVol",
+        "draws": 1500,
+        "tune": 500,
+        "cores": 16,
+        "chains": 4,
+        "nuts_sampler": "nutpie",
+        "init": "jitter+adapt_diag",
+        "progressbar": true,
+        "idata_path": "resources/hbr/save_dir/model/CortexVol/idata.nc"
+    },
+    "outscaler": {
+        "scaler_type": "standardize",
+        "adjust_outliers": false,
+        "m": 491939.0307627935,
+        "s": 52137.190799358075,
+        "min": 354847.58863400004,
+        "max": 697470.783103
+    }
+}
