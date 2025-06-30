@@ -7,9 +7,9 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Module Index &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
@@ -18,7 +18,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=0144e382"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -124,7 +124,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.check_jobs"><code class="docutils literal notranslate"><span class="pre">check_jobs()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.collect_nm"><code class="docutils literal notranslate"><span class="pre">collect_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.delete_nm"><code class="docutils literal notranslate"><span class="pre">delete_nm()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#normative_parallel.entrypoint"><code class="docutils literal notranslate"><span class="pre">entrypoint()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.execute_nm"><code class="docutils literal notranslate"><span class="pre">execute_nm()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#normative_parallel.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.qsub_nm"><code class="docutils literal notranslate"><span class="pre">qsub_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.rerun_nm"><code class="docutils literal notranslate"><span class="pre">rerun_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.retrieve_jobs"><code class="docutils literal notranslate"><span class="pre">retrieve_jobs()</span></code></a></li>
@@ -133,6 +135,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.sbatchwrap_nm"><code class="docutils literal notranslate"><span class="pre">sbatchwrap_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#normative_parallel.split_nm"><code class="docutils literal notranslate"><span class="pre">split_nm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trendsurf.create_basis"><code class="docutils literal notranslate"><span class="pre">create_basis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trendsurf.entrypoint"><code class="docutils literal notranslate"><span class="pre">entrypoint()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trendsurf.estimate"><code class="docutils literal notranslate"><span class="pre">estimate()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trendsurf.get_args"><code class="docutils literal notranslate"><span class="pre">get_args()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#trendsurf.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
@@ -174,7 +177,7 @@
 <li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html"><strong>DEMO ON NORMATIVE MODELING</strong></a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html#hierarchical-bayesian-regression-normative-modelling-and-transfer-onto-unseen-site">Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Using lifespan models to make predictions on new data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
@@ -734,7 +737,7 @@ this, yielding the mean standardized log loss</p>
 <span class="sig-prename descclassname"><span class="pre">normative.</span></span><span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative.html#extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative.extend" title="Link to this definition"></a></dt>
 <dd><p>This function extends an existing HBR model with data from new sites/scanners.</p>
 <p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>extend(covfile, respfile [extra_arguments])
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>transfer(covfile, respfile, trbefile, model_path, output_path, inputsuffix [extra_arguments])
 </pre></div>
 </div>
 <p>where the variables are defined below.</p>
@@ -749,13 +752,13 @@ this, yielding the mean standardized log loss</p>
 <li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
 <li><p><strong>job_id</strong> – batch id</p></li>
 <li><p><strong>output_path</strong> – the path for saving the  the extended model</p></li>
+<li><p><strong>inputsuffix</strong> – The suffix for the input models (default=’extend’)</p></li>
 <li><p><strong>informative_prior</strong> – use initial model prior or learn from scratch (default is False).</p></li>
-<li><p><strong>generation_factor</strong> – see below</p></li>
+<li><p><strong>generation_factor</strong> – generation factor refers to the number of samples generated for each</p></li>
 </ul>
 </dd>
 </dl>
-<p>generation factor refers to the number of samples generated for each
-combination of covariates and batch effects. Default is 10.</p>
+<p>combination of covariates and batch effects. Default is 10.</p>
 <p>All outputs are written to disk in the same format as the input.</p>
 </dd></dl>
 
@@ -897,8 +900,9 @@ That depend on those will also be returned (Z scores and error metrics)</p>
 When using parallel prediction, do not pass the model path. It will be
 automatically decided.</p></li>
 <li><p><strong>outputsuffix</strong> – Text string to add to the output filenames</p></li>
+<li><p><strong>inputsuffix</strong> – Defaults to ‘fit’. Needs to be specified carefully for proper functioning. Should be set to the outputsuffix of the fitted model.</p></li>
 <li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
-<li><p><strong>job_id</strong> – batch id</p></li>
+<li><p><strong>job_id</strong> – batch id, ‘None’ when non-parallel module is used.</p></li>
 <li><p><strong>fold</strong> – which cross-validation fold to use (default = 0)</p></li>
 <li><p><strong>fold</strong> – list of model IDs to predict (if not specified all are computed)</p></li>
 <li><p><strong>return_y</strong> – return the (transformed) response variable (default = False)</p></li>
@@ -943,7 +947,7 @@ None</p>
 the posterior distribution over the parameters as an informed prior for
 new data. currently only supported for HBR.</p>
 <p>Basic usage:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>transfer(covfile, respfile [extra_arguments])
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>transfer(covfile, respfile, trbefile, model_path, output_path, inputsuffix [extra_arguments])
 </pre></div>
 </div>
 <p>where the variables are defined below.</p>
@@ -953,10 +957,12 @@ new data. currently only supported for HBR.</p>
 <li><p><strong>covfile</strong> – transfer covariates used to predict the response variable</p></li>
 <li><p><strong>respfile</strong> – transfer response variables for the normative model</p></li>
 <li><p><strong>maskfile</strong> – mask used to apply to the data (nifti only)</p></li>
+<li><p><strong>trbefile</strong> – Training batch effects file</p></li>
 <li><p><strong>testcov</strong> – Test covariates</p></li>
 <li><p><strong>testresp</strong> – Test responses</p></li>
 <li><p><strong>model_path</strong> – Directory containing the normative model and metadata</p></li>
-<li><p><strong>trbefile</strong> – Training batch effects file</p></li>
+<li><p><strong>output_path</strong> – Address to output directory to save the transferred models</p></li>
+<li><p><strong>inputsuffix</strong> – The suffix for the inout models (default=’estimate’)</p></li>
 <li><p><strong>batch_size</strong> – batch size (for use with normative_parallel)</p></li>
 <li><p><strong>job_id</strong> – batch id</p></li>
 </ul>
@@ -1068,7 +1074,7 @@ on a torque cluster system.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.collect_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">collect_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_estimate'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#collect_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.collect_nm" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">collect_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputsuffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#collect_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.collect_nm" title="Link to this definition"></a></dt>
 <dd><p>Function to checks and collects all batches.</p>
 <p>Basic usage:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>collect_nm(processing_dir, job_name)
@@ -1115,6 +1121,11 @@ on a torque cluster system.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.entrypoint">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">entrypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#entrypoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.entrypoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.execute_nm">
 <span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">execute_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#execute_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.execute_nm" title="Link to this definition"></a></dt>
 <dd><p>Execute parallel normative models
@@ -1141,7 +1152,7 @@ functions.</p>
 <li><p><strong>testcovfile_path</strong> – Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file</p></li>
 <li><p><strong>testrespfile_path</strong> – Full path to a .txt file that contains all test features</p></li>
 <li><p><strong>log_path</strong> – Path for saving log files</p></li>
-<li><p><strong>binary</strong> – If True uses binary format for response file otherwise it is text</p></li>
+<li><p><strong>binary</strong> – If ‘True’ (string not boolean) uses binary format for response file otherwise it is text, defaulted to ‘False’.</p></li>
 <li><p><strong>cluster_spec</strong> – ‘torque’ for PBS Torque and ‘slurm’ for Slurm clusters.</p></li>
 <li><p><strong>interactive</strong> – If False (default) the user should manually
 rerun the failed jobs or collect the results.
@@ -1157,6 +1168,11 @@ endless loop in the case of bugs in the code.</p></li>
 <p>written by (primarily) T Wolfers, (adapted) SM Kia
 The documentation is adapated by S Rutherford.</p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="normative_parallel.main">
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.qsub_nm">
@@ -1237,7 +1253,7 @@ command.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.sbatchrerun_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchrerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#sbatchrerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchrerun_nm" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchrerun_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#sbatchrerun_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchrerun_nm" title="Link to this definition"></a></dt>
 <dd><p>This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.</p>
 <p>Basic usage:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rerun_nm(processing_dir, memory, duration)
@@ -1262,7 +1278,7 @@ command.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.sbatchwrap_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#sbatchwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchwrap_nm" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">sbatchwrap_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normative_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'estimate'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#sbatchwrap_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.sbatchwrap_nm" title="Link to this definition"></a></dt>
 <dd><p>This function wraps normative modelling into a bash script to run it
 on a torque cluster system.</p>
 <p>Basic usage:</p>
@@ -1294,7 +1310,7 @@ on a torque cluster system.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="normative_parallel.split_nm">
-<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">split_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#split_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.split_nm" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">normative_parallel.</span></span><span class="sig-name descname"><span class="pre">split_nm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processing_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respfile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/normative_parallel.html#split_nm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#normative_parallel.split_nm" title="Link to this definition"></a></dt>
 <dd><p>This function prepares the input files for normative_parallel.</p>
 <p>Basic usage:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>split_nm(processing_dir, respfile_path, batch_size, binary, testrespfile_path)
@@ -1344,6 +1360,11 @@ into the appropriate format</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trendsurf.entrypoint">
+<span class="sig-prename descclassname"><span class="pre">trendsurf.</span></span><span class="sig-name descname"><span class="pre">entrypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/trendsurf.html#entrypoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trendsurf.entrypoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="trendsurf.estimate">

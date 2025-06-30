@@ -7,9 +7,9 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>install &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
@@ -18,7 +18,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=0144e382"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -69,7 +69,7 @@
 <li class="toctree-l1"><a class="reference internal" href="normative_modelling_walkthrough.html"><strong>DEMO ON NORMATIVE MODELING</strong></a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="HBR_NormativeModel_FCONdata_Tutorial.html#hierarchical-bayesian-regression-normative-modelling-and-transfer-onto-unseen-site">Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apply_normative_models.html">Using lifespan models to make predictions on new data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
@@ -135,18 +135,6 @@
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
-<li><p>Install torch using the torch instructions.</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Command found on the torch website: https://pytorch.org/get-started/locally/</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="5">
-<li><p>Install required conda packages</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>numba<span class="w"> </span>nutpie<span class="w"> </span>-c<span class="w"> </span>conda-forge
-</pre></div>
-</div>
-<ol class="arabic simple" start="6">
 <li><p>Install PCNtoolkit (plus dependencies)</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pcntoolkit
@@ -174,32 +162,25 @@
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
-<li><p>Install other dependencies</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Command found on the torch website: https://pytorch.org/get-started/locally/</span>
-conda<span class="w"> </span>install<span class="w"> </span>numba<span class="w"> </span>nutpie<span class="w"> </span>-c<span class="w"> </span>conda-forge
-</pre></div>
-</div>
-<ol class="arabic simple" start="5">
 <li><p>Install pip dependencies</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>--no-cache-dir<span class="w"> </span>install<span class="w"> </span>nibabel<span class="w"> </span>sklearn<span class="w"> </span>torch<span class="w"> </span>glob3
 </pre></div>
 </div>
-<ol class="arabic simple" start="6">
+<ol class="arabic simple" start="5">
 <li><p>Clone the repo</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/amarquand/PCNtoolkit.git
 </pre></div>
 </div>
-<ol class="arabic simple" start="7">
+<ol class="arabic simple" start="6">
 <li><p>Install in the conda environment</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>PCNtoolkit/
 python3<span class="w"> </span>setup.py<span class="w"> </span>install
 </pre></div>
 </div>
-<ol class="arabic simple" start="8">
+<ol class="arabic simple" start="7">
 <li><p>Test</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import pcntoolkit as pk;print(pk.__file__)&quot;</span>
