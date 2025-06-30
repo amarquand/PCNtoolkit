@@ -1,8 +1,0 @@
-
-.wy-nav-content {
-   max-width: 90%;
-}
-
-
-@media screen and (max-width: 90%){.tablet-hide{display:none}}
-@media screen and (max-width: 90%){.mobile-hide{display:none}}
