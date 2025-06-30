@@ -1,0 +1,712 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.util.plotter &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.util.plotter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.util.plotter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A module for plotting functions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.font_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FontProperties</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio.norm_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormData</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.normative_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormativeModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;darkgrid&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot_centiles">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/plotter/index.html#pcntoolkit.util.plotter.plot_centiles">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_centiles</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;NormativeModel&quot;</span><span class="p">,</span>
+    <span class="n">centiles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">covariate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">covariate_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
+    <span class="n">batch_effects</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scatter_data</span><span class="p">:</span> <span class="n">NormData</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">harmonize_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">hue_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;site&quot;</span><span class="p">,</span>
+    <span class="n">markers_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sex&quot;</span><span class="p">,</span>
+    <span class="n">show_other_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">show_thrivelines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">z_thrive</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_centile_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_yhat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">plt_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate centile plots for response variables with optional data overlay.</span>
+
+<span class="sd">    This function creates visualization of centile curves for all response variables</span>
+<span class="sd">    in the dataset. It can optionally show the actual data points overlaid on the</span>
+<span class="sd">    centile curves, with customizable styling based on categorical variables.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: NormativeModel</span>
+<span class="sd">        The model to plot the centiles for.</span>
+<span class="sd">    centiles: List[float] | np.ndarray | None, optional</span>
+<span class="sd">        The centiles to plot. If None, the default centiles will be used.</span>
+<span class="sd">    covariate: str | None, optional</span>
+<span class="sd">        The covariate to plot on the x-axis. If None, the first covariate in the model will be used.</span>
+<span class="sd">    covariate_range: tuple[float, float], optional</span>
+<span class="sd">        The range of the covariate to plot on the x-axis. If None, the range of the covariate that was in the train data will be used.</span>
+<span class="sd">    batch_effects: Dict[str, List[str]] | None | Literal[&quot;all&quot;], optional</span>
+<span class="sd">        The batch effects to plot the centiles for. If None, the batch effect that appears first in alphabetical order will be used.</span>
+<span class="sd">    scatter_data: NormData | None, optional</span>
+<span class="sd">        Data to scatter on top of the centiles.</span>
+<span class="sd">    harmonize_data: bool, optional</span>
+<span class="sd">        Whether to harmonize the scatter data before plotting. Data will be harmonized to the batch effect for which the centiles were computed.</span>
+<span class="sd">    hue_data: str, optional</span>
+<span class="sd">        The column to use for color coding the data. If None, the data will not be color coded.</span>
+<span class="sd">    markers_data: str, optional</span>
+<span class="sd">        The column to use for marker styling the data. If None, the data will not be marker styled.</span>
+<span class="sd">    show_other_data: bool, optional</span>
+<span class="sd">        Whether to scatter data belonging to groups not in batch_effects.</span>
+<span class="sd">    save_dir: str | None, optional</span>
+<span class="sd">        The directory to save the plot to. If None, the plot will not be saved.</span>
+<span class="sd">    show_centile_labels: bool, optional</span>
+<span class="sd">        Whether to show the centile labels on the plot.</span>
+<span class="sd">    show_legend: bool, optional</span>
+<span class="sd">        Whether to show the legend on the plot.</span>
+<span class="sd">    plt_kwargs: dict, optional</span>
+<span class="sd">        Additional keyword arguments for the plot.</span>
+<span class="sd">    **kwargs: Any, optional</span>
+<span class="sd">        Additional keyword arguments for the model.compute_centiles method.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Displays the plot using matplotlib.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">covariate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">covariate</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">covariates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">covariate</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+    <span class="n">cov_min</span> <span class="o">=</span> <span class="n">covariate_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">covariate_ranges</span><span class="p">[</span><span class="n">covariate</span><span class="p">][</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+    <span class="n">cov_max</span> <span class="o">=</span> <span class="n">covariate_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">covariate_ranges</span><span class="p">[</span><span class="n">covariate</span><span class="p">][</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+    <span class="n">covariate_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">cov_min</span><span class="p">,</span> <span class="n">cov_max</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">batch_effects</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unique_batch_effects</span>
+    <span class="k">elif</span> <span class="n">batch_effects</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">unique_batch_effects</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">if</span> <span class="n">plt_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Create some synthetic data with a single batch effect</span>
+    <span class="c1"># The plotted covariate is just a linspace</span>
+    <span class="n">centile_covariates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">covariate_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">covariate_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">150</span><span class="p">)</span>
+    <span class="n">centile_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">covariate</span><span class="p">:</span> <span class="n">centile_covariates</span><span class="p">})</span>
+
+    <span class="c1"># TODO: use the mean here</span>
+    <span class="c1"># Any other covariates are taken to be the midpoint between the observed min and max</span>
+    <span class="k">for</span> <span class="n">cov</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">covariates</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cov</span> <span class="o">!=</span> <span class="n">covariate</span><span class="p">:</span>
+            <span class="n">minc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">covariate_ranges</span><span class="p">[</span><span class="n">cov</span><span class="p">][</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+            <span class="n">maxc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">covariate_ranges</span><span class="p">[</span><span class="n">cov</span><span class="p">][</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+            <span class="n">centile_df</span><span class="p">[</span><span class="n">cov</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">minc</span> <span class="o">+</span> <span class="n">maxc</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Batch effects are the first ones in the highlighted batch effects</span>
+    <span class="k">for</span> <span class="n">be</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch_effects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">centile_df</span><span class="p">[</span><span class="n">be</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Response vars are all 0, we don&#39;t need them</span>
+    <span class="k">for</span> <span class="n">rv</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">response_vars</span><span class="p">:</span>
+        <span class="n">centile_df</span><span class="p">[</span><span class="n">rv</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">centile_data</span> <span class="o">=</span> <span class="n">NormData</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span>
+        <span class="s2">&quot;centile&quot;</span><span class="p">,</span>
+        <span class="n">dataframe</span><span class="o">=</span><span class="n">centile_df</span><span class="p">,</span>
+        <span class="n">covariates</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">covariates</span><span class="p">,</span>
+        <span class="n">response_vars</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">response_vars</span><span class="p">,</span>
+        <span class="n">batch_effects</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">batch_effects</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+    <span class="p">)</span>  <span class="c1"># type:ignore</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">centile_data</span><span class="p">,</span> <span class="s2">&quot;centiles&quot;</span><span class="p">):</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">compute_centiles</span><span class="p">(</span><span class="n">centile_data</span><span class="p">,</span> <span class="n">centiles</span><span class="o">=</span><span class="n">centiles</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">scatter_data</span> <span class="ow">and</span> <span class="n">show_thrivelines</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">compute_thrivelines</span><span class="p">(</span><span class="n">scatter_data</span><span class="p">,</span> <span class="n">z_thrive</span><span class="o">=</span><span class="n">z_thrive</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_yhat</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">centile_data</span><span class="p">,</span> <span class="s2">&quot;yhat&quot;</span><span class="p">):</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">compute_yhat</span><span class="p">(</span><span class="n">centile_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">has_batch_effect</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">harmonize_data</span> <span class="ow">and</span> <span class="n">scatter_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">has_batch_effect</span><span class="p">:</span>
+            <span class="n">reference_batch_effect</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch_effects</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span><span class="n">scatter_data</span><span class="p">,</span> <span class="n">reference_batch_effect</span><span class="o">=</span><span class="n">reference_batch_effect</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span><span class="n">scatter_data</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">response_var</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">response_vars</span><span class="p">:</span>
+        <span class="n">_plot_centiles</span><span class="p">(</span>
+            <span class="n">centile_data</span><span class="o">=</span><span class="n">centile_data</span><span class="p">,</span>
+            <span class="n">response_var</span><span class="o">=</span><span class="n">response_var</span><span class="p">,</span>
+            <span class="n">covariate</span><span class="o">=</span><span class="n">covariate</span><span class="p">,</span>
+            <span class="n">covariate_range</span><span class="o">=</span><span class="n">covariate_range</span><span class="p">,</span>
+            <span class="n">batch_effects</span><span class="o">=</span><span class="n">batch_effects</span><span class="p">,</span>
+            <span class="n">scatter_data</span><span class="o">=</span><span class="n">scatter_data</span><span class="p">,</span>
+            <span class="n">harmonize_data</span><span class="o">=</span><span class="n">harmonize_data</span><span class="p">,</span>
+            <span class="n">hue_data</span><span class="o">=</span><span class="n">hue_data</span><span class="p">,</span>
+            <span class="n">markers_data</span><span class="o">=</span><span class="n">markers_data</span><span class="p">,</span>
+            <span class="n">show_other_data</span><span class="o">=</span><span class="n">show_other_data</span><span class="p">,</span>
+            <span class="n">show_thrivelines</span><span class="o">=</span><span class="n">show_thrivelines</span><span class="p">,</span>
+            <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
+            <span class="n">show_centile_labels</span><span class="o">=</span><span class="n">show_centile_labels</span><span class="p">,</span>
+            <span class="n">show_legend</span><span class="o">=</span><span class="n">show_legend</span><span class="p">,</span>
+            <span class="n">show_yhat</span><span class="o">=</span><span class="n">show_yhat</span><span class="p">,</span>
+            <span class="n">plt_kwargs</span><span class="o">=</span><span class="n">plt_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_centiles</span><span class="p">(</span>
+    <span class="n">centile_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+    <span class="n">response_var</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">covariate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+    <span class="n">covariate_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
+    <span class="n">batch_effects</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+    <span class="n">scatter_data</span><span class="p">:</span> <span class="n">NormData</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">harmonize_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">hue_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;site&quot;</span><span class="p">,</span>
+    <span class="n">markers_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sex&quot;</span><span class="p">,</span>
+    <span class="n">show_other_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">show_thrivelines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_centile_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_yhat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">plt_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;whitegrid&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="o">**</span><span class="n">plt_kwargs</span><span class="p">)</span>
+
+    <span class="n">filter_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;covariates&quot;</span><span class="p">:</span> <span class="n">covariate</span><span class="p">,</span>
+        <span class="s2">&quot;response_vars&quot;</span><span class="p">:</span> <span class="n">response_var</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">filtered</span> <span class="o">=</span> <span class="n">centile_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">filter_dict</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">centile</span> <span class="ow">in</span> <span class="n">centile_data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;centile&quot;</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">d_mean</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">centile</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d_mean</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">thickness</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">thickness</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">d_mean</span> <span class="o">&lt;=</span> <span class="mf">0.25</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
+
+        <span class="k">elif</span> <span class="n">d_mean</span> <span class="o">&lt;=</span> <span class="mf">0.475</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;--&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span>
+
+        <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">centiles</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">centile</span><span class="o">=</span><span class="n">centile</span><span class="p">),</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">legend</span><span class="o">=</span><span class="s2">&quot;brief&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">font</span> <span class="o">=</span> <span class="n">FontProperties</span><span class="p">()</span>
+        <span class="n">font</span><span class="o">.</span><span class="n">set_weight</span><span class="p">(</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_centile_labels</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                <span class="n">s</span><span class="o">=</span><span class="n">centile</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">centiles</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">centile</span><span class="o">=</span><span class="n">centile</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+                <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">fontproperties</span><span class="o">=</span><span class="n">font</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                <span class="n">s</span><span class="o">=</span><span class="n">centile</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">filtered</span><span class="o">.</span><span class="n">centiles</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">centile</span><span class="o">=</span><span class="n">centile</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">fontproperties</span><span class="o">=</span><span class="n">font</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_yhat</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">filtered</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">filtered</span><span class="o">.</span><span class="n">Yhat</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">hat</span><span class="si">{Y}</span><span class="s2">$&quot;</span><span class="p">)</span>
+
+    <span class="n">minx</span><span class="p">,</span> <span class="n">maxx</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">minx</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">),</span> <span class="n">maxx</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">scatter_data</span><span class="p">:</span>
+        <span class="n">scatter_filter</span> <span class="o">=</span> <span class="n">scatter_data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">filter_dict</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">scatter_filter</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">scatter_data_name</span> <span class="o">=</span> <span class="s2">&quot;Y_harmonized&quot;</span> <span class="k">if</span> <span class="n">harmonize_data</span> <span class="k">else</span> <span class="s2">&quot;Y&quot;</span>
+        <span class="n">thriveline_data_name</span> <span class="o">=</span> <span class="s2">&quot;thrive_Y_harmonized&quot;</span> <span class="k">if</span> <span class="n">harmonize_data</span> <span class="k">else</span> <span class="s2">&quot;thrive_Y&quot;</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">covariate</span><span class="p">),</span> <span class="p">(</span><span class="n">scatter_data_name</span><span class="p">,</span> <span class="n">response_var</span><span class="p">)]</span>
+        <span class="n">columns</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="s2">&quot;batch_effects&quot;</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">scatter_data</span><span class="o">.</span><span class="n">batch_effect_dims</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">batch_effects</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span>
+                <span class="n">df</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">covariate</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">response_var</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">scatter_data</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">show_thrivelines</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">scatter_filter</span><span class="o">.</span><span class="n">thrive_X</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">scatter_filter</span><span class="p">[</span><span class="n">thriveline_data_name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">batch_effects</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                    <span class="n">idx</span><span class="p">,</span>
+                    <span class="n">df</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">batch_effects</span><span class="p">[</span><span class="n">j</span><span class="p">]),</span>
+                <span class="p">)</span>
+            <span class="n">be_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">scatter</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">be_df</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">covariate</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">response_var</span><span class="p">,</span>
+                <span class="n">hue</span><span class="o">=</span><span class="n">hue_data</span> <span class="k">if</span> <span class="n">hue_data</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="n">markers_data</span> <span class="k">if</span> <span class="n">markers_data</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">show_thrivelines</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">scatter_filter</span><span class="o">.</span><span class="n">thrive_X</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">scatter_filter</span><span class="p">[</span><span class="n">thriveline_data_name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">show_other_data</span><span class="p">:</span>
+                <span class="n">non_be_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">non_be_df</span><span class="p">[</span><span class="s2">&quot;marker&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Other data&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_be_df</span><span class="p">)</span>
+                <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">non_be_df</span><span class="p">,</span>
+                    <span class="n">x</span><span class="o">=</span><span class="n">covariate</span><span class="p">,</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">response_var</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">&quot;marker&quot;</span><span class="p">,</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">show_legend</span><span class="p">:</span>
+                <span class="n">legend</span> <span class="o">=</span> <span class="n">scatter</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+                    <span class="n">handles</span> <span class="o">=</span> <span class="n">legend</span><span class="o">.</span><span class="n">legend_handles</span>
+                    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">legend</span><span class="o">.</span><span class="n">get_texts</span><span class="p">()]</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+                        <span class="n">handles</span><span class="p">,</span>
+                        <span class="n">labels</span><span class="p">,</span>
+                        <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Centiles of </span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">scatter_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">harmonize_data</span><span class="p">:</span>
+            <span class="n">plotname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;centiles_</span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">scatter_data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_harmonized&quot;</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2"> With harmonized </span><span class="si">{</span><span class="n">scatter_data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> data&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plotname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;centiles_</span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">scatter_data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n</span><span class="s2"> With raw </span><span class="si">{</span><span class="n">scatter_data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> data&quot;</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">covariate</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">response_var</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_dir</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">plotname</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    
+<div class="viewcode-block" id="plot_qq">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/plotter/index.html#pcntoolkit.util.plotter.plot_qq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_qq</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+    <span class="n">plt_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">plot_id_line</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">hue_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">markers_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">split_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot QQ plots for each response variable in the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : NormData</span>
+<span class="sd">        Data containing the response variables.</span>
+<span class="sd">    plt_kwargs : dict or None, optional</span>
+<span class="sd">        Additional keyword arguments for the plot. Defaults to None.</span>
+<span class="sd">    bound : int or float, optional</span>
+<span class="sd">        Axis limits for the plot. Defaults to 0.</span>
+<span class="sd">    plot_id_line : bool, optional</span>
+<span class="sd">        Whether to plot the identity line. Defaults to False.</span>
+<span class="sd">    hue_data : str or None, optional</span>
+<span class="sd">        Column to use for coloring. Defaults to None.</span>
+<span class="sd">    markers_data : str or None, optional</span>
+<span class="sd">        Column to use for marker styling. Defaults to None.</span>
+<span class="sd">    split_data : str or None, optional</span>
+<span class="sd">        Column to use for splitting data. Defaults to None.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random seed for reproducibility. Defaults to 42.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; plot_qq(data, plt_kwargs={&quot;figsize&quot;: (10, 6)}, bound=3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plt_kwargs</span> <span class="o">=</span> <span class="n">plt_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">response_var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;response_vars&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">():</span>
+        <span class="n">_plot_qq</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">response_var</span><span class="p">,</span>
+            <span class="n">plt_kwargs</span><span class="p">,</span>
+            <span class="n">bound</span><span class="p">,</span>
+            <span class="n">plot_id_line</span><span class="p">,</span>
+            <span class="n">hue_data</span><span class="p">,</span>
+            <span class="n">markers_data</span><span class="p">,</span>
+            <span class="n">split_data</span><span class="p">,</span>
+            <span class="n">seed</span><span class="p">,</span>
+            <span class="n">save_dir</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_qq</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+    <span class="n">response_var</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">plt_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">plot_id_line</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">hue_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">markers_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">split_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot a QQ plot for a single response variable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : NormData</span>
+<span class="sd">        Data containing the response variable.</span>
+<span class="sd">    response_var : str</span>
+<span class="sd">        The response variable to plot.</span>
+<span class="sd">    plt_kwargs : dict</span>
+<span class="sd">        Additional keyword arguments for the plot.</span>
+<span class="sd">    bound : float, optional</span>
+<span class="sd">        Axis limits for the plot. Not used if 0. Defaults to 0.</span>
+<span class="sd">    plot_id_line : bool, optional</span>
+<span class="sd">        Whether to plot the identity line. Defaults to False.</span>
+<span class="sd">    hue_data : str or None, optional</span>
+<span class="sd">        Column to use for coloring. Defaults to None.</span>
+<span class="sd">    markers_data : str or None, optional</span>
+<span class="sd">        Column to use for marker styling. Defaults to None.</span>
+<span class="sd">    split_data : str or None, optional</span>
+<span class="sd">        Column to use for splitting data. Defaults to None. All split data will be offset by 1.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random seed for reproducibility. Defaults to 42.</span>
+<span class="sd">    save_dir: str | None = None,</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; _plot_qq(data, &quot;response_var&quot;, plt_kwargs={&quot;figsize&quot;: (10, 6)}, bound=3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;whitegrid&quot;</span><span class="p">)</span>
+    <span class="n">filter_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;response_vars&quot;</span><span class="p">:</span> <span class="n">response_var</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">filt</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">filter_dict</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">filt</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+
+    <span class="c1"># Create labels for the axes</span>
+    <span class="n">tq</span> <span class="o">=</span> <span class="s2">&quot;theoretical quantiles&quot;</span>
+    <span class="n">rq</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2"> quantiles&quot;</span>
+
+    <span class="c1"># Filter columns needed for plotting</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="n">response_var</span><span class="p">)]</span>
+    <span class="n">columns</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="s2">&quot;batch_effects&quot;</span><span class="p">,</span> <span class="n">be</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">batch_effect_dims</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">rq</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">be</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">batch_effect_dims</span><span class="p">]</span>
+
+    <span class="c1"># Sort the dataframe by the response variable</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="n">rq</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Create a column for the theoretical quantiles</span>
+    <span class="n">rand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">rand</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">tq</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span>
+
+    <span class="k">if</span> <span class="n">split_data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">split_data</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
+            <span class="n">my_offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="mf">1.0</span>
+            <span class="n">my_id</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">my_id</span><span class="p">,</span> <span class="n">rq</span><span class="p">]</span> <span class="o">+=</span> <span class="n">i</span> <span class="o">*</span> <span class="mf">1.0</span>
+            <span class="n">rand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">rand</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">my_id</span><span class="p">,</span> <span class="n">tq</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span>
+
+    <span class="c1"># Plot the QQ-plot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="s2">&quot;theoretical quantiles&quot;</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">rq</span><span class="p">,</span>
+        <span class="n">hue</span><span class="o">=</span><span class="n">hue_data</span> <span class="k">if</span> <span class="n">hue_data</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">style</span><span class="o">=</span><span class="n">markers_data</span> <span class="k">if</span> <span class="n">markers_data</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">plt_kwargs</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot_id_line</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">split_data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">split_data</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
+                <span class="n">my_offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="mf">1.0</span>
+                <span class="n">my_id</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="n">my_offset</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">my_offset</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bound</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">((</span><span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="o">-</span><span class="n">bound</span><span class="p">,</span> <span class="n">bound</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">save_dir</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;qq_</span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="plot_ridge">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/plotter/index.html#pcntoolkit.util.plotter.plot_ridge">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_ridge</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">],</span> <span class="n">split_by</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot a ridge plot for each response variable in the data.</span>
+
+<span class="sd">    Creates a density plot for the variable split by the split_by variable.</span>
+
+<span class="sd">    Each density plot will be on a different row.</span>
+
+<span class="sd">    The hue of the density plot will be the split_by variable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : NormData</span>
+<span class="sd">        Data containing the response variable.</span>
+<span class="sd">    variable : Literal[&quot;Z&quot;, &quot;Y&quot;]</span>
+<span class="sd">        The variable to plot on the x-axis. (Z or Y)</span>
+<span class="sd">    split_by : str</span>
+<span class="sd">        The variable to split the data by.</span>
+<span class="sd">    save_dir : str | None, optional</span>
+<span class="sd">        The directory to save the plot to. Defaults to None.</span>
+<span class="sd">    **kwargs : Any, optional</span>
+<span class="sd">        Additional keyword arguments for the plot.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;axes.facecolor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)})</span>
+
+    <span class="k">for</span> <span class="n">response_var</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;response_vars&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">():</span>
+        <span class="n">_plot_ridge</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">response_var</span><span class="p">,</span> <span class="n">split_by</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_ridge</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">response_var</span><span class="p">,</span> <span class="n">split_by</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+    <span class="c1"># Select only the Z and batch_effects columns</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[(</span><span class="n">variable</span><span class="p">,</span> <span class="n">response_var</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;batch_effects&quot;</span><span class="p">,</span> <span class="n">split_by</span><span class="p">)]]</span>
+    <span class="c1"># Join column name levels with an underscore</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="c1"># Initialize the FacetGrid object</span>
+    <span class="n">palette</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;palette&quot;</span><span class="p">,</span> <span class="n">sns</span><span class="o">.</span><span class="n">cubehelix_palette</span><span class="p">(</span><span class="n">n_colors</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">split_by</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()),</span> <span class="n">rot</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">light</span><span class="o">=</span><span class="mf">0.7</span><span class="p">))</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="n">split_by</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">split_by</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="n">palette</span><span class="p">)</span>
+
+    <span class="c1"># Draw the densities in a few steps</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">bw_adjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">bw_adjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1"># passing color=None to refline() uses the hue mapping</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">refline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Define and use a simple function to label the plot in axes coordinates</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">variable</span><span class="p">)</span>
+
+    <span class="c1"># Set the subplots to overlap</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=-</span><span class="mf">0.25</span><span class="p">)</span>
+
+    <span class="c1"># Remove axes details that don&#39;t play well with overlap</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">yticks</span><span class="o">=</span><span class="p">[],</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">despine</span><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">save_dir</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;ridge_</span><span class="si">{</span><span class="n">response_var</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">split_by</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.math_functions.warp &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="pcntoolkit.normative" href="../../normative/index.html" />
+    <link rel="prev" title="pcntoolkit.math_functions.thrive" href="../thrive/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../dataio/index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative_model/index.html">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../util/index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">pcntoolkit</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit.math_functions</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.math_functions.warp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/pcntoolkit/math_functions/warp/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../thrive/index.html" class="btn btn-neutral float-left" title="pcntoolkit.math_functions.thrive" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../normative/index.html" class="btn btn-neutral float-right" title="pcntoolkit.normative" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.math_functions.warp">
+<span id="pcntoolkit-math-functions-warp"></span><h1>pcntoolkit.math_functions.warp<a class="headerlink" href="#module-pcntoolkit.math_functions.warp" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpAffine" title="pcntoolkit.math_functions.warp.WarpAffine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpAffine</span></code></a></p></td>
+<td><p>Affine warping function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p></td>
+<td><p>Base class for likelihood warping functions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBoxCox" title="pcntoolkit.math_functions.warp.WarpBoxCox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBoxCox</span></code></a></p></td>
+<td><p>Box-Cox warping function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpCompose" title="pcntoolkit.math_functions.warp.WarpCompose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpCompose</span></code></a></p></td>
+<td><p>Composition of multiple warping functions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpLog" title="pcntoolkit.math_functions.warp.WarpLog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpLog</span></code></a></p></td>
+<td><p>Logarithmic warping function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh" title="pcntoolkit.math_functions.warp.WarpSinhArcsinh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpSinhArcsinh</span></code></a></p></td>
+<td><p>Sin-hyperbolic arcsin warping function.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.warp.parseWarpString" title="pcntoolkit.math_functions.warp.parseWarpString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parseWarpString</span></code></a>(→ WarpBase)</p></td>
+<td><p>Parse a string into a WarpBase object.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpAffine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpAffine</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpAffine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpAffine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p>
+<p>Affine warping function.</p>
+<dl class="simple">
+<dt>Implements affine transformation y = a + b*x where:</dt><dd><ul class="simple">
+<li><p>a: offset parameter</p></li>
+<li><p>b: scale parameter (constrained positive through exp transform)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpAffine.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpAffine.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpAffine.df" title="Link to this definition"></a></dt>
+<dd><p>Compute derivative of affine warp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Affine parameters [a, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Constant derivative b</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpAffine.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpAffine.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpAffine.f" title="Link to this definition"></a></dt>
+<dd><p>Apply affine warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Affine parameters [a, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a + b*x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpAffine.invf">
+<span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpAffine.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpAffine.invf" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse affine warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Affine parameters [a, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(y - a)/b</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpAffine.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpAffine.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpBase</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Base class for likelihood warping functions.</p>
+<p>This class implements warping functions following Rios and Torab (2019)
+Compositionally-warped Gaussian processes <a href="#id6"><span class="problematic" id="id1">[1]_</span></a>.</p>
+<dl class="simple">
+<dt>All Warps must define the following methods:</dt><dd><ul class="simple">
+<li><p>get_n_params(): Return number of parameters</p></li>
+<li><p>f(): Warping function (Non-Gaussian field -&gt; Gaussian)</p></li>
+<li><p>invf(): Inverse warp</p></li>
+<li><p>df(): Derivatives</p></li>
+<li><p>warp_predictions(): Compute predictive distribution</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Rios, G., &amp; Tobar, F. (2019). Compositionally-warped Gaussian processes.
+Neural Networks, 118, 235-246.
+<a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0893608019301856">https://www.sciencedirect.com/science/article/pii/S0893608019301856</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.df">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.df" title="Link to this definition"></a></dt>
+<dd><p>Return the derivative of the warp, dw(x)/dx.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Warping parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Derivative values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.f">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.f" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the warping function.</p>
+<p>Maps non-Gaussian response variables to Gaussian variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values to warp</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Warping parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Warped values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.get_n_params">
+<span class="sig-name descname"><span class="pre">get_n_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase.get_n_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.get_n_params" title="Link to this definition"></a></dt>
+<dd><p>Return the number of parameters required by the warping function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AssertionError" title="(in Python v3.13)"><strong>AssertionError</strong></a> – If warp function is not initialized</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.invf">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.invf" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the inverse warping function.</p>
+<p>Maps Gaussian latent variables to non-Gaussian response variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values to inverse warp</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Warping parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Inverse warped values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.warp_predictions">
+<span class="sig-name descname"><span class="pre">warp_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBase.warp_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.warp_predictions" title="Link to this definition"></a></dt>
+<dd><p>Compute warped predictions from a Gaussian predictive distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Gaussian predictive mean</p></li>
+<li><p><strong>s2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Predictive variance</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Warping parameters</p></li>
+<li><p><strong>percentiles</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List[float]</span></code>, <em>optional</em>) – Desired percentiles of the warped likelihood, by default [0.025, 0.975]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>median: Median of the predictive distribution</p></li>
+<li><p>pred_interval: Predictive interval(s)</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple[NDArray[np.float64]</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBase.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBase.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBoxCox">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpBoxCox</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBoxCox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBoxCox" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p>
+<p>Box-Cox warping function.</p>
+<p>Implements the Box-Cox transform with a single parameter (lambda):
+y = (sign(x) * abs(x) ** lambda - 1) / lambda</p>
+<p>This follows the generalization in Bicken and Doksum (1981) JASA 76
+and allows x to assume negative values.</p>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Bickel, P. J., &amp; Doksum, K. A. (1981). An analysis of transformations
+revisited. Journal of the American Statistical Association, 76(374), 296-311.</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBoxCox.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBoxCox.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBoxCox.df" title="Link to this definition"></a></dt>
+<dd><p>Compute derivative of Box-Cox warp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values
+params : NDArray[np.float64]
+Box-Cox parameter [log(lambda)]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Derivative values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBoxCox.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBoxCox.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBoxCox.f" title="Link to this definition"></a></dt>
+<dd><p>Apply Box-Cox warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Box-Cox parameter [log(lambda)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Warped values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBoxCox.invf">
+<span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpBoxCox.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBoxCox.invf" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse Box-Cox warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Box-Cox parameter [log(lambda)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Inverse warped values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpBoxCox.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpBoxCox.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpCompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">warps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><span class="pre">WarpBase</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpCompose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p>
+<p>Composition of multiple warping functions.</p>
+<p>Allows chaining multiple warps together. Warps are applied in sequence:
+y = warp_n(…warp_2(warp_1(x)))</p>
+<p>Initialize composed warp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>warpnames</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[List[str]]</span></code>, <em>optional</em>) – List of warp class names to compose, by default None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If warpnames is None</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpCompose.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose.df" title="Link to this definition"></a></dt>
+<dd><p>Compute derivative of composed warping functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Combined parameters for all warps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Determinant</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">Jacobian</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">composed</span> <span class="pre">warping</span> <span class="pre">functions</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpCompose.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose.f" title="Link to this definition"></a></dt>
+<dd><p>Apply composed warping functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Combined parameters for all warps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Warped values after applying all transforms</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose.invf">
+<span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpCompose.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose.invf" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse composed warping functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>param</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Combined parameters for all warps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Inverse warped values after applying all inverse transforms</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpCompose.warps">
+<span class="sig-name descname"><span class="pre">warps</span></span><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpCompose.warps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpLog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpLog</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpLog" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p>
+<p>Logarithmic warping function.</p>
+<p>Implements y = log(x) warping transformation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpLog.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpLog.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpLog.df" title="Link to this definition"></a></dt>
+<dd><p>Compute derivative of logarithmic warp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Not used for logarithmic warp</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1/x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpLog.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpLog.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpLog.f" title="Link to this definition"></a></dt>
+<dd><p>Apply logarithmic warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[NDArray[np.float64]]</span></code>, <em>optional</em>) – Not used for logarithmic warp, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>log(x)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpLog.invf">
+<span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpLog.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpLog.invf" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse logarithmic warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[NDArray[np.float64]]</span></code>, <em>optional</em>) – Not used for logarithmic warp, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>exp(y)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpLog.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpLog.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpSinhArcsinh">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WarpSinhArcsinh</span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpSinhArcsinh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WarpBase</span></code></a></p>
+<p>Sin-hyperbolic arcsin warping function.</p>
+<dl class="simple">
+<dt>Implements warping function y = sinh(b * arcsinh(x) - a) with two parameters:</dt><dd><ul class="simple">
+<li><p>a: controls skew</p></li>
+<li><p>b: controls kurtosis (constrained positive through exp transform)</p></li>
+</ul>
+</dd>
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>a = 0: symmetric</p></li>
+<li><p>a &gt; 0: positive skew</p></li>
+<li><p>a &lt; 0: negative skew</p></li>
+<li><p>b = 1: mesokurtic</p></li>
+<li><p>b &gt; 1: leptokurtic</p></li>
+<li><p>b &lt; 1: platykurtic</p></li>
+</ul>
+</dd>
+</dl>
+<p>Uses alternative parameterization from Jones and Pewsey (2019) where:
+y = sinh(b * arcsinh(x) + epsilon * b) and a = -epsilon*b</p>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Jones, M. C., &amp; Pewsey, A. (2019). Sigmoid-type distributions:
+Generation and inference. Significance, 16(1), 12-15.</p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Jones, M. C., &amp; Pewsey, A. (2009). Sinh-arcsinh distributions.
+Biometrika, 96(4), 761-780.</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpSinhArcsinh.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpSinhArcsinh.df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh.df" title="Link to this definition"></a></dt>
+<dd><p>Compute derivative of sinh-arcsinh warp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Parameters [epsilon, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(b * cosh(b * arcsinh(x) - a)) / sqrt(1 + x^2)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpSinhArcsinh.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpSinhArcsinh.f"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh.f" title="Link to this definition"></a></dt>
+<dd><p>Apply sinh-arcsinh warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Parameters [epsilon, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>sinh(b * arcsinh(x) - a)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpSinhArcsinh.invf">
+<span class="sig-name descname"><span class="pre">invf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#WarpSinhArcsinh.invf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh.invf" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse sinh-arcsinh warping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Input values</p></li>
+<li><p><strong>params</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code>) – Parameters [epsilon, log(b)]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>sinh((arcsinh(y) + a) / b)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NDArray[np.float64]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.WarpSinhArcsinh.n_params">
+<span class="sig-name descname"><span class="pre">n_params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pcntoolkit.math_functions.warp.WarpSinhArcsinh.n_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.warp.parseWarpString">
+<span class="sig-name descname"><span class="pre">parseWarpString</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">warp_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.warp.WarpBase" title="pcntoolkit.math_functions.warp.WarpBase"><span class="pre">WarpBase</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/warp.html#parseWarpString"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.warp.parseWarpString" title="Link to this definition"></a></dt>
+<dd><p>Parse a string into a WarpBase object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>warp_string</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – String of a warp name or a composition of warps</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../thrive/index.html" class="btn btn-neutral float-left" title="pcntoolkit.math_functions.thrive" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../normative/index.html" class="btn btn-neutral float-right" title="pcntoolkit.normative" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,481 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.random &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="pcntoolkit.regression_model" href="../regression_model/index.html" />
+    <link rel="prev" title="pcntoolkit.normative_model" href="../normative_model/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../dataio/index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../math_functions/index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../normative_model/index.html">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pcntoolkit.random</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../util/index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.random</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/pcntoolkit/random/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../normative_model/index.html" class="btn btn-neutral float-left" title="pcntoolkit.normative_model" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../regression_model/index.html" class="btn btn-neutral float-right" title="pcntoolkit.regression_model" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.random">
+<span id="pcntoolkit-random"></span><h1>pcntoolkit.random<a class="headerlink" href="#module-pcntoolkit.random" title="Link to this heading"></a></h1>
+<p>Created on Fri Sep 27 13:34:31 2024</p>
+<p>&#64;author: johbay</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.OAS2_0157" title="pcntoolkit.random.OAS2_0157"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OAS2_0157</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.Z_measures" title="pcntoolkit.random.Z_measures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Z_measures</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.atlas" title="pcntoolkit.random.atlas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atlas</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.base_dir" title="pcntoolkit.random.base_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base_dir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.batch_dir" title="pcntoolkit.random.batch_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_dir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.data" title="pcntoolkit.random.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.data_all" title="pcntoolkit.random.data_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_all</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.data_demented" title="pcntoolkit.random.data_demented"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_demented</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.data_dir" title="pcntoolkit.random.data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_dir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.filtered_subjects" title="pcntoolkit.random.filtered_subjects"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filtered_subjects</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.idp_nr" title="pcntoolkit.random.idp_nr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">idp_nr</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.idps" title="pcntoolkit.random.idps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">idps</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.measure" title="pcntoolkit.random.measure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">measure</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.measures" title="pcntoolkit.random.measures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">measures</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.model_type" title="pcntoolkit.random.model_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_type</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.plot_data" title="pcntoolkit.random.plot_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_data</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.test_raw" title="pcntoolkit.random.test_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_raw</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.test_raw_demented" title="pcntoolkit.random.test_raw_demented"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_raw_demented</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.Fisher_transform" title="pcntoolkit.random.Fisher_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Fisher_transform</span></code></a>(r)</p></td>
+<td><p>Takes a correlation r and returns the Fisher-transformed value Phi.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.create_regression_matrix" title="pcntoolkit.random.create_regression_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_regression_matrix</span></code></a>(→ pandas.DataFrame)</p></td>
+<td><p>Create a regression matrix for a given diagonal gap.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.fisher_transform" title="pcntoolkit.random.fisher_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fisher_transform</span></code></a>(→ float)</p></td>
+<td><p>Apply Fisher transformation to correlation values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.flatten" title="pcntoolkit.random.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>(xss)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.generate_thrive_lines" title="pcntoolkit.random.generate_thrive_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_thrive_lines</span></code></a>(→ tuple[numpy.ndarray, ...)</p></td>
+<td><p>Generate thrive lines for downward or upward trends.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.get_subdiagonal" title="pcntoolkit.random.get_subdiagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_subdiagonal</span></code></a>(A[, gap])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.get_thrive_lines" title="pcntoolkit.random.get_thrive_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_thrive_lines</span></code></a>(lst[, step_results, current_result, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.make_correlation_matrix" title="pcntoolkit.random.make_correlation_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_correlation_matrix</span></code></a>(→ tuple[numpy.ndarray, ...)</p></td>
+<td><p>Creates a correlation matrix for age-based data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.make_velocity_plots" title="pcntoolkit.random.make_velocity_plots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_velocity_plots</span></code></a>(idp_nr, measure[, data, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.predicted_r" title="pcntoolkit.random.predicted_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predicted_r</span></code></a>(Phi)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.recursive_multiply" title="pcntoolkit.random.recursive_multiply"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recursive_multiply</span></code></a>(lst[, step_results, current_product])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.random.recursive_r_transform" title="pcntoolkit.random.recursive_r_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recursive_r_transform</span></code></a>(→ list[float])</p></td>
+<td><p>Apply inverse Fisher transformation and return correlation coefficients.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.random.reverse_z_transform" title="pcntoolkit.random.reverse_z_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reverse_z_transform</span></code></a>(z, mu, sigma)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.Fisher_transform">
+<span class="sig-name descname"><span class="pre">Fisher_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.Fisher_transform" title="Link to this definition"></a></dt>
+<dd><p>Takes a correlation r and returns the Fisher-transformed value Phi.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.create_regression_matrix">
+<span class="sig-name descname"><span class="pre">create_regression_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#pcntoolkit.random.create_regression_matrix" title="Link to this definition"></a></dt>
+<dd><p>Create a regression matrix for a given diagonal gap.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.fisher_transform">
+<span class="sig-name descname"><span class="pre">fisher_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#pcntoolkit.random.fisher_transform" title="Link to this definition"></a></dt>
+<dd><p>Apply Fisher transformation to correlation values.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xss</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.flatten" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.generate_thrive_lines">
+<span class="sig-name descname"><span class="pre">generate_thrive_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">space_between_anchors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_thrive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pcntoolkit.random.generate_thrive_lines" title="Link to this definition"></a></dt>
+<dd><p>Generate thrive lines for downward or upward trends.</p>
+<p>Parameters:
+- pred_r (list): List of predicted correlation values.
+- start_year (int): Starting year.
+- end_year (int): Ending year.
+- velocity_length (int): Length of years thirve lines should predict in the futurw
+- start_z (int): Lowest (starting) z value, for example -3
+- end_z (int): Higest (ending)  z value, for example 4
+- space_between_anchors (int): Spacing between anchors, for example thrive lines start every (1), every second (2) year etc.
+- z_thrive (float, optional): Additional z thrive factor for upward thrive. default is -1.96</p>
+<p>Returns:
+- velocity_list_age (np.ndarray): Flattened array of years for velocity.
+- velocity (np.ndarray): Flattened array of thrive line results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.get_subdiagonal">
+<span class="sig-name descname"><span class="pre">get_subdiagonal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.get_subdiagonal" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">correlation</span> <span class="pre">matrix.</span></code>)</p></li>
+<li><p><strong>gap</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">offset</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sub_diagonal</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">diagonal</span> <span class="pre">below</span> <span class="pre">the</span> <span class="pre">sub-diagnonal</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.get_thrive_lines">
+<span class="sig-name descname"><span class="pre">get_thrive_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_thrive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.96</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.get_thrive_lines" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.make_correlation_matrix">
+<span class="sig-name descname"><span class="pre">make_correlation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">re_estimate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pcntoolkit.random.make_correlation_matrix" title="Link to this definition"></a></dt>
+<dd><p>Creates a correlation matrix for age-based data.</p>
+<dl class="simple">
+<dt>For each pair i, j, of ages:</dt><dd><ul class="simple">
+<li><p>Find all subjects that have data for both ages</p></li>
+<li><p>Compute the correlation between the two measures for those subjects</p></li>
+<li><p>Store the correlation in the matrix at position (i, j)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Parameters:
+- data (pd.DataFrame): Data containing age, subject ID, visits, and measure columns.
+- measure (str): The column name of the measure to compute correlations.
+- re_estimate (bool): Whether to compute the correlation matrix.</p>
+<p>Returns:
+- A (np.ndarray): The correlation matrix.
+- Phi (np.ndarray): The Fisher-transformed correlation matrix.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.make_velocity_plots">
+<span class="sig-name descname"><span class="pre">make_velocity_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idp_nr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seletced_sex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'male'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SHAHSb_1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">re_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.make_velocity_plots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.predicted_r">
+<span class="sig-name descname"><span class="pre">predicted_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.predicted_r" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Phi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">member</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">type</span> <span class="pre">list</span></code>) – Fisher transformed correlation valuee.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>r_pred</strong> – correlation value in r space.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">single</span> <span class="pre">value</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.recursive_multiply">
+<span class="sig-name descname"><span class="pre">recursive_multiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_product</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.recursive_multiply" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.recursive_r_transform">
+<span class="sig-name descname"><span class="pre">recursive_r_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicted_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pcntoolkit.random.recursive_r_transform" title="Link to this definition"></a></dt>
+<dd><p>Apply inverse Fisher transformation and return correlation coefficients.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.random.reverse_z_transform">
+<span class="sig-name descname"><span class="pre">reverse_z_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcntoolkit.random.reverse_z_transform" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.OAS2_0157">
+<span class="sig-name descname"><span class="pre">OAS2_0157</span></span><a class="headerlink" href="#pcntoolkit.random.OAS2_0157" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.Z_measures">
+<span class="sig-name descname"><span class="pre">Z_measures</span></span><a class="headerlink" href="#pcntoolkit.random.Z_measures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.atlas">
+<span class="sig-name descname"><span class="pre">atlas</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SC'</span></em><a class="headerlink" href="#pcntoolkit.random.atlas" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.base_dir">
+<span class="sig-name descname"><span class="pre">base_dir</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/project_cephfs/3022017.06/projects/lifespan_hbr/johbay/'</span></em><a class="headerlink" href="#pcntoolkit.random.base_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.batch_dir">
+<span class="sig-name descname"><span class="pre">batch_dir</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/project_cephfs/3022017.06/projects/lifespan_hbr/johbay/Velocity/SHASHb_1_estimate_scaled_fixed_...</span></em><a class="headerlink" href="#pcntoolkit.random.batch_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#pcntoolkit.random.data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.data_all">
+<span class="sig-name descname"><span class="pre">data_all</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#pcntoolkit.random.data_all" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.data_demented">
+<span class="sig-name descname"><span class="pre">data_demented</span></span><a class="headerlink" href="#pcntoolkit.random.data_demented" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.data_dir">
+<span class="sig-name descname"><span class="pre">data_dir</span></span><a class="headerlink" href="#pcntoolkit.random.data_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.filtered_subjects">
+<span class="sig-name descname"><span class="pre">filtered_subjects</span></span><a class="headerlink" href="#pcntoolkit.random.filtered_subjects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.idp_nr">
+<span class="sig-name descname"><span class="pre">idp_nr</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pcntoolkit.random.idp_nr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.idps">
+<span class="sig-name descname"><span class="pre">idps</span></span><a class="headerlink" href="#pcntoolkit.random.idps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.measure">
+<span class="sig-name descname"><span class="pre">measure</span></span><a class="headerlink" href="#pcntoolkit.random.measure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.measures">
+<span class="sig-name descname"><span class="pre">measures</span></span><a class="headerlink" href="#pcntoolkit.random.measures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SHASHb_1'</span></em><a class="headerlink" href="#pcntoolkit.random.model_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.plot_data">
+<span class="sig-name descname"><span class="pre">plot_data</span></span><a class="headerlink" href="#pcntoolkit.random.plot_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.test_raw">
+<span class="sig-name descname"><span class="pre">test_raw</span></span><a class="headerlink" href="#pcntoolkit.random.test_raw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pcntoolkit.random.test_raw_demented">
+<span class="sig-name descname"><span class="pre">test_raw_demented</span></span><a class="headerlink" href="#pcntoolkit.random.test_raw_demented" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../normative_model/index.html" class="btn btn-neutral float-left" title="pcntoolkit.normative_model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../regression_model/index.html" class="btn btn-neutral float-right" title="pcntoolkit.regression_model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

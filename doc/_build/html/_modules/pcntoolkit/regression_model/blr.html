@@ -1,0 +1,1080 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.regression_model.blr &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.regression_model.blr</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.regression_model.blr</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Bayesian Linear Regression (BLR) implementation.</span>
+
+<span class="sd">This module implements Bayesian Linear Regression with support for:</span>
+<span class="sd">- L1/L2 regularization</span>
+<span class="sd">- Automatic Relevance Determination (ARD)</span>
+<span class="sd">- Heteroskedastic noise modeling</span>
+<span class="sd">- Multiple optimization methods (CG, Powell, Nelder-Mead, L-BFGS-B)</span>
+
+<span class="sd">The implementation follows standard Bayesian formulation with Gaussian priors</span>
+<span class="sd">and supports both homoskedastic and heteroskedastic noise models.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">linalg</span><span class="p">,</span> <span class="n">optimize</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinAlgError</span>  <span class="c1"># type: ignore</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.basis_function</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisFunction</span><span class="p">,</span> <span class="n">create_basis_function</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.warp</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.regression_model.regression_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegressionModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">Errors</span><span class="p">,</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">Output</span><span class="p">,</span> <span class="n">Warnings</span>
+
+
+<div class="viewcode-block" id="BLR">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BLR</span><span class="p">(</span><span class="n">RegressionModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bayesian Linear Regression model implementation.</span>
+
+<span class="sd">    This class implements Bayesian Linear Regression with various features including</span>
+<span class="sd">    automatic relevance determination (ARD), heteroskedastic noise modeling, and</span>
+<span class="sd">    multiple optimization methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;template&quot;</span><span class="p">,</span>
+        <span class="n">fixed_effect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">heteroskedastic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">fixed_effect_var</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">warp_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">warp_reparam</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">basis_function_mean</span><span class="p">:</span> <span class="n">BasisFunction</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+        <span class="n">basis_function_var</span><span class="p">:</span> <span class="n">BasisFunction</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+        <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+        <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+        <span class="n">ard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;l-bfgs-b&quot;</span><span class="p">,</span>
+        <span class="n">l_bfgs_b_l</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">l_bfgs_b_epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">l_bfgs_b_norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;l2&quot;</span><span class="p">,</span>
+        <span class="n">hyp0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_fitted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_from_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class implements Bayesian Linear Regression with various features including</span>
+<span class="sd">        automatic relevance determination (ARD), heteroskedastic noise modeling, and</span>
+<span class="sd">        multiple optimization methods.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Unique identifier for the model instance</span>
+<span class="sd">        fixed_effect : bool, optional</span>
+<span class="sd">            Whether to model a fixed effect in the mean, by default False</span>
+<span class="sd">        heteroskedastic : bool, optional</span>
+<span class="sd">            Whether to use heteroskedastic noise modeling, by default False</span>
+<span class="sd">        fixed_effect_var : bool, optional</span>
+<span class="sd">            Whether to model a fixed effect in the variance, by default False</span>
+<span class="sd">        warp_name : str, optional</span>
+<span class="sd">            Name of the warp function to use, by default None</span>
+<span class="sd">        warp_reparam : bool, optional</span>
+<span class="sd">            Whether to use a reparameterized warp function, by default False</span>
+<span class="sd">        basis_function_mean : BasisFunction, optional</span>
+<span class="sd">            Basis function for the mean, by default None</span>
+<span class="sd">        basis_function_var : BasisFunction, optional</span>
+<span class="sd">            Basis function for the variance, by default None</span>
+<span class="sd">        n_iter : int, optional</span>
+<span class="sd">            Number of iterations for the optimization, by default 300</span>
+<span class="sd">        tol : float, optional</span>
+<span class="sd">            Tolerance for the optimization, by default 1e-5</span>
+<span class="sd">        ard : bool, optional</span>
+<span class="sd">            Whether to use automatic relevance determination, by default False</span>
+<span class="sd">        optimizer : str, optional</span>
+<span class="sd">            Optimizer to use for the optimization, by default &quot;l-bfgs-b&quot;</span>
+<span class="sd">        l_bfgs_b_l : float, optional</span>
+<span class="sd">            L-BFGS-B parameter, by default 0.1</span>
+<span class="sd">        l_bfgs_b_epsilon : float, optional</span>
+<span class="sd">            L-BFGS-B parameter, by default 0.1</span>
+<span class="sd">        l_bfgs_b_norm : str, optional</span>
+<span class="sd">            L-BFGS-B parameter, by default &quot;l2&quot;</span>
+<span class="sd">        hyp0 : np.ndarray, optional</span>
+<span class="sd">            Initial hyperparameters, by default None</span>
+<span class="sd">        is_fitted : bool, optional</span>
+<span class="sd">            Whether the model has been fitted, by default False</span>
+<span class="sd">        is_from_dict : bool, optional</span>
+<span class="sd">            Whether the model was created from a dictionary, by default False</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_fitted</span><span class="p">,</span> <span class="n">is_from_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ard</span> <span class="o">=</span> <span class="n">ard</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_l</span> <span class="o">=</span> <span class="n">l_bfgs_b_l</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_epsilon</span> <span class="o">=</span> <span class="n">l_bfgs_b_epsilon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_norm</span> <span class="o">=</span> <span class="n">l_bfgs_b_norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect</span> <span class="o">=</span> <span class="n">fixed_effect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heteroskedastic</span> <span class="o">=</span> <span class="n">heteroskedastic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect_var</span> <span class="o">=</span> <span class="n">fixed_effect_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warp_name</span> <span class="o">=</span> <span class="n">warp_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_warp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warp_reparam</span> <span class="o">=</span> <span class="n">warp_reparam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_mean</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">basis_function_mean</span><span class="p">)</span> <span class="k">if</span> <span class="n">basis_function_mean</span> <span class="k">else</span> <span class="n">create_basis_function</span><span class="p">(</span><span class="n">basis_function_mean</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_var</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">basis_function_var</span><span class="p">)</span> <span class="k">if</span> <span class="n">basis_function_var</span> <span class="k">else</span> <span class="n">create_basis_function</span><span class="p">(</span><span class="n">basis_function_var</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models_variance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heteroskedastic</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span> <span class="o">=</span> <span class="n">hyp0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="BLR.initialize_warp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.initialize_warp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_warp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_warp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warp_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">get_n_params</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp_params</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_gamma</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp_params</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warp</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BLR.fit">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the Bayesian Linear Regression model to the data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_be</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">values</span>
+        <span class="c1"># Phi self.expand_basis</span>
+        <span class="n">Phi</span><span class="p">,</span> <span class="n">Phi_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_Phi_var</span><span class="p">(</span><span class="n">np_X</span><span class="p">,</span> <span class="n">np_be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_D</span> <span class="o">=</span> <span class="n">Phi_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Initialize hyperparameters if not provided</span>
+        <span class="n">hyp0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hyp</span><span class="p">()</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">Phi</span><span class="p">,</span> <span class="n">np_Y</span><span class="p">,</span> <span class="n">Phi_var</span><span class="p">)</span>
+
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">case</span> <span class="s2">&quot;cg&quot;</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_cg</span><span class="p">(</span>
+                    <span class="n">f</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span>
+                    <span class="n">x0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span>
+                    <span class="n">fprime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dloglik</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                    <span class="n">gtol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                    <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">,</span>
+                    <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;powell&quot;</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_powell</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;nelder-mead&quot;</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;l-bfgs-b&quot;</span><span class="p">:</span>
+                <span class="n">all_hyp_i</span> <span class="o">=</span> <span class="p">[</span><span class="n">hyp0</span><span class="p">]</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">store</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">hyp</span> <span class="o">=</span> <span class="n">X</span>
+                    <span class="n">all_hyp_i</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hyp</span><span class="p">)</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_l_bfgs_b</span><span class="p">(</span>
+                        <span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">penalized_loglik</span><span class="p">,</span>
+                        <span class="n">x0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_norm</span><span class="p">),</span>
+                        <span class="n">approx_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">epsilon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_epsilon</span><span class="p">,</span>
+                        <span class="n">callback</span><span class="o">=</span><span class="n">store</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">BLR_RESTARTING_ESTIMATION_AT_HYP</span><span class="p">,</span> <span class="n">hyp</span><span class="o">=</span><span class="n">all_hyp_i</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">out</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_l_bfgs_b</span><span class="p">(</span>
+                        <span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">penalized_loglik</span><span class="p">,</span>
+                        <span class="n">x0</span><span class="o">=</span><span class="n">all_hyp_i</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_norm</span><span class="p">),</span>
+                        <span class="n">approx_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">epsilon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_bfgs_b_epsilon</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_UNKNOWN_CLASS</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_hyps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">,</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">Phi_var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="BLR.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map Y values to Z space using BLR.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Z-values mapped to Y space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">BLR_MODEL_NOT_FITTED</span><span class="p">))</span>
+        <span class="n">np_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_be</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ys_s2</span><span class="p">(</span><span class="n">np_X</span><span class="p">,</span> <span class="n">np_be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="n">warped_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">np_Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+            <span class="n">toreturn</span> <span class="o">=</span> <span class="p">(</span><span class="n">warped_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">toreturn</span> <span class="o">=</span> <span class="p">(</span><span class="n">np_Y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">toreturn</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,))</span></div>
+
+
+<div class="viewcode-block" id="BLR.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Z</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map Z values to Y space using BLR.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Z : xr.DataArray</span>
+<span class="sd">            Z-score data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Z-values mapped to Y space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">BLR_MODEL_NOT_FITTED</span><span class="p">))</span>
+        <span class="n">np_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_be</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_Z</span> <span class="o">=</span> <span class="n">Z</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ys_s2</span><span class="p">(</span><span class="n">np_X</span><span class="p">,</span> <span class="n">np_be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">)</span>
+        <span class="n">centiles</span> <span class="o">=</span> <span class="n">np_Z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s2</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="n">centiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">invf</span><span class="p">(</span><span class="n">centiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">centiles</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,))</span></div>
+
+
+<div class="viewcode-block" id="BLR.elemwise_logp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.elemwise_logp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">elemwise_logp</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Compute log-probabilities for each observation in the data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Log-probabilities of the data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">BLR_MODEL_NOT_FITTED</span><span class="p">))</span>
+
+        <span class="n">np_X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_be</span> <span class="o">=</span> <span class="n">be</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">np_Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">values</span>
+        <span class="c1"># Get predictions (mean and variance)</span>
+        <span class="n">ys</span><span class="p">,</span> <span class="n">s2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys_s2</span><span class="p">(</span><span class="n">np_X</span><span class="p">,</span> <span class="n">np_be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="c1"># For warped models, transform the observations</span>
+            <span class="n">y_warped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">np_Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y_warped</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np_Y</span>
+
+        <span class="c1"># Compute log probabilities using Gaussian PDF</span>
+        <span class="c1"># log p(y|x) = -0.5 * (log(2π) + log(σ²) + (y-μ)²/σ²)</span>
+        <span class="n">logp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">ys</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">s2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="c1"># Add log determinant of Jacobian for warped models</span>
+            <span class="n">logp</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,))</span></div>
+
+
+<div class="viewcode-block" id="BLR.model_specific_evaluation">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.model_specific_evaluation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_specific_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model-specific evaluation metrics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BLR.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BLR</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_BLR_TRANSFER_NOT_IMPLEMENTED</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="BLR.init_hyp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.init_hyp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_hyp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># type:ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize model hyperparameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : BLRData</span>
+<span class="sd">            Training data containing features and targets</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Initialized hyperparameter vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">models_variance</span><span class="p">:</span>
+            <span class="n">n_beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_D</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_beta</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">n_alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span>
+        <span class="n">n_gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_hyp</span> <span class="o">=</span> <span class="n">n_beta</span> <span class="o">+</span> <span class="n">n_alpha</span> <span class="o">+</span> <span class="n">n_gamma</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_hyp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BLR.parse_hyps">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.parse_hyps">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_hyps</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Phi</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Phi_var</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse hyperparameters into model parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hyp : np.ndarray</span>
+<span class="sd">            Hyperparameter vector.</span>
+<span class="sd">        Phi : np.ndarray</span>
+<span class="sd">            Covariates.</span>
+<span class="sd">        Phi_var : np.ndarray (Optional)</span>
+<span class="sd">            Variance of covariates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[np.ndarray, np.ndarray, np.ndarray]</span>
+<span class="sd">            Parsed alpha, beta and gamma parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">beta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+        <span class="c1"># Noise precision</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">models_variance</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">Phi_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">Phi_var</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_BLR_VAR_X_NOT_PROVIDED</span><span class="p">))</span>
+            <span class="n">Dv</span> <span class="o">=</span> <span class="n">Phi_var</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">w_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Dv</span><span class="p">])</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">Phi_var</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w_d</span><span class="p">))</span>
+            <span class="n">n_lik_param</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_d</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+            <span class="n">n_lik_param</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span> <span class="p">:</span> <span class="p">(</span><span class="n">n_lik_param</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_gamma</span><span class="p">)]</span>
+            <span class="n">n_lik_param</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_gamma</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp_reparam</span><span class="p">:</span>
+                <span class="c1"># ! This is bogus if WarpCompose is used, works only for single SinhArcsinh warps</span>
+                <span class="c1"># TODO: Pass warp_reparam to the warps themselves</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gamma</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">/</span> <span class="p">(</span><span class="n">delta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># Coefficients precision</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="n">n_lik_param</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyp</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span>  <span class="c1"># type: ignore</span></div>
+
+
+<div class="viewcode-block" id="BLR.post">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.post">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">var_X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the posterior distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hyp : np.ndarray</span>
+<span class="sd">            Hyperparameter vector.</span>
+<span class="sd">        X : np.ndarray</span>
+<span class="sd">            Covariates.</span>
+<span class="sd">        y : np.ndarray</span>
+<span class="sd">            Responses.</span>
+<span class="sd">        var_X : np.ndarray</span>
+<span class="sd">            Variance of covariates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Store the number of samples and features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Check if hyperparameters have changed</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">):</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span>
+
+        <span class="c1"># Parse hyperparameters</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_hyps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span>
+
+        <span class="c1"># prior variance</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span> <span class="o">/</span> <span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span> <span class="o">*</span> <span class="n">alpha</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH</span><span class="p">))</span>
+
+        <span class="c1"># Compute the posterior precision and mean</span>
+        <span class="n">XtLambda_n</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">XtLambda_n</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span>
+        <span class="n">invAXt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">invAXt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BLR.loglik">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.loglik">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loglik</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">var_X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the negative log likelihood.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hyp : np.ndarray</span>
+<span class="sd">            Hyperparameter vector.</span>
+<span class="sd">        X : np.ndarray</span>
+<span class="sd">            Covariates.</span>
+<span class="sd">        y : np.ndarray</span>
+<span class="sd">            Responses.</span>
+<span class="sd">        var_X : np.ndarray</span>
+<span class="sd">            Variance of covariates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Negative log likelihood.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="n">y_unwarped</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+
+        <span class="n">something_big</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+
+        <span class="c1"># load posterior and prior covariance</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+                <span class="n">nlZ</span> <span class="o">=</span> <span class="n">something_big</span>
+                <span class="k">return</span> <span class="n">nlZ</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># compute the log determinants in a numerically stable way</span>
+            <span class="n">logdetA</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">))))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">something_big</span>
+            <span class="k">return</span> <span class="n">nlZ</span>
+
+        <span class="n">logdetSigma_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)))</span>  <span class="c1"># diagonal</span>
+        <span class="n">logdetSigma_n</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span><span class="p">))</span>
+
+        <span class="c1"># compute negative marginal log likelihood</span>
+        <span class="n">X_y_t_sLambda_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span><span class="p">)</span>
+        <span class="n">nlZ</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">logdetSigma_n</span>
+            <span class="o">-</span> <span class="n">logdetSigma_a</span>
+            <span class="o">-</span> <span class="n">X_y_t_sLambda_n</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X_y_t_sLambda_n</span><span class="p">)</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">logdetA</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="o">.</span><span class="n">df</span><span class="p">(</span><span class="n">y_unwarped</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)))</span>
+
+        <span class="c1"># make sure the output is finite to stop the minimizer getting upset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nlZ</span><span class="p">):</span>
+            <span class="n">nlZ</span> <span class="o">=</span> <span class="n">something_big</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlZ</span> <span class="o">=</span> <span class="n">nlZ</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">nlZ</span></div>
+
+
+<div class="viewcode-block" id="BLR.penalized_loglik">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.penalized_loglik">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">penalized_loglik</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">var_X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">regularizer_strength</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">norm</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;L1&quot;</span><span class="p">,</span> <span class="s2">&quot;L2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;L1&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the penalized log likelihood with L1 or L2 regularization.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hyp : np.ndarray</span>
+<span class="sd">            Hyperparameter vector</span>
+<span class="sd">        X : np.ndarray</span>
+<span class="sd">            Feature matrix</span>
+<span class="sd">        y : np.ndarray</span>
+<span class="sd">            Target vector</span>
+<span class="sd">        var_X : np.ndarray</span>
+<span class="sd">            Variance of features</span>
+<span class="sd">        regularizer_strength : float, optional</span>
+<span class="sd">            Regularization strength, by default 0.1</span>
+<span class="sd">        norm : {&quot;L1&quot;, &quot;L2&quot;}, optional</span>
+<span class="sd">            Type of regularization norm, by default &quot;L1&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Penalized negative log likelihood value</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If norm is not &quot;L1&quot; or &quot;L2&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">norm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;L1&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span> <span class="o">+</span> <span class="n">regularizer_strength</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hyp</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">norm</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;L2&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span> <span class="o">+</span> <span class="n">regularizer_strength</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">hyp</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_BLR_PENALTY_NOT_RECOGNIZED</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="n">norm</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="BLR.dloglik">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.dloglik">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dloglik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyp</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">var_X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to compute derivatives&quot;&quot;&quot;</span>
+
+        <span class="c1"># hyperparameters</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_hyps</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warp</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_UNKNOWN_FUNCTION_FOR_CLASS</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="s2">&quot;dloglik&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># load posterior and prior covariance</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hyp</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">var_X</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+                    <span class="k">return</span> <span class="n">dnlZ</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="c1"># precompute re-used quantities to maximise speed</span>
+        <span class="c1"># todo: revise implementation to use Cholesky throughout</span>
+        <span class="c1">#       that would remove the need to explicitly compute the inverse</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>  <span class="c1"># posterior covariance</span>
+        <span class="n">SX</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">XLn</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span>  <span class="c1"># = X.T.dot(self.Lambda_n)</span>
+        <span class="n">XLny</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">SXLny</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLny</span><span class="p">)</span>
+        <span class="n">XLnXm</span> <span class="o">=</span> <span class="n">XLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="c1"># initialise derivatives</span>
+        <span class="n">dnlZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hyp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="c1"># dnl2 = np.zeros(hyp.shape)</span>
+
+        <span class="c1"># noise precision parameter(s)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">beta</span><span class="p">):</span>
+            <span class="c1"># first compute derivative of Lambda_n with respect to beta</span>
+            <span class="n">dL_n_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">dLambda_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dL_n_vec</span><span class="p">)</span>
+
+            <span class="c1"># compute quantities used multiple times</span>
+            <span class="n">XdLnX</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">dA</span> <span class="o">=</span> <span class="n">XdLnX</span>
+
+            <span class="c1"># derivative of posterior parameters with respect to beta</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span> <span class="o">+</span> <span class="n">SX</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+            <span class="c1"># compute np.trace(self.Sigma_n.dot(dLambda_n)) efficiently</span>
+            <span class="n">trSigma_ndLambda_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">))</span>
+
+            <span class="c1"># compute  y.T.dot(Lambda_n) efficiently</span>
+            <span class="n">ytLn</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_n_vec</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="c1"># compute derivatives</span>
+            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span>
+                    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">trSigma_ndLambda_n</span>
+                    <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dLambda_n</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="n">ytLn</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XdLnX</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dA</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="o">*</span> <span class="n">beta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># scaling parameter(s)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">beta</span><span class="p">):</span>
+            <span class="c1"># first compute derivatives with respect to alpha</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">:</span>  <span class="c1"># are we using ARD?</span>
+                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">))</span>
+                <span class="n">dLambda_a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dLambda_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+
+            <span class="n">F</span> <span class="o">=</span> <span class="n">dLambda_a</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">S</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SXLny</span><span class="p">)</span>
+
+            <span class="c1"># compute np.trace(self.Sigma_a.dot(dLambda_a)) efficiently</span>
+            <span class="n">trSigma_adLambda_a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sigma_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dLambda_a</span><span class="p">))</span>
+
+            <span class="n">dnlZ</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">beta</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span>
+                    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">trSigma_adLambda_a</span>
+                    <span class="o">+</span> <span class="n">XLny</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XLnXm</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Lambda_a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="o">*</span> <span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># make sure the gradient is finite to stop the minimizer getting upset</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dnlZ</span><span class="p">)):</span>
+            <span class="n">bad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dnlZ</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bad</span><span class="p">:</span>
+                <span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span><span class="p">[</span><span class="n">b</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>  <span class="c1"># type: ignore</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dnlZ</span> <span class="o">=</span> <span class="n">dnlZ</span>
+        <span class="k">return</span> <span class="n">dnlZ</span></div>
+
+
+<div class="viewcode-block" id="BLR.Phi_Phi_var">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.Phi_Phi_var">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">Phi_Phi_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_mean</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_mean</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">Phi</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_mean</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span>
+            <span class="n">be</span><span class="p">,</span>
+            <span class="n">be_maps</span><span class="p">,</span>
+            <span class="n">linear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fixed_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">models_variance</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_var</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_var</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">Phi_var</span> <span class="o">=</span> <span class="n">create_design_matrix</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_var</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span>
+                <span class="n">be</span><span class="p">,</span>
+                <span class="n">be_maps</span><span class="p">,</span>
+                <span class="n">linear</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">heteroskedastic</span><span class="p">,</span>
+                <span class="n">intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">fixed_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect_var</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Phi_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">Phi_var</span></div>
+
+
+<div class="viewcode-block" id="BLR.ys_s2">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.ys_s2">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ys_s2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="n">Phi</span><span class="p">,</span> <span class="n">Phi_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi_Phi_var</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_hyps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyp</span><span class="p">,</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">Phi_var</span><span class="p">)</span>
+        <span class="n">ys</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">s2n</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">beta</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">s2n</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Phi</span> <span class="o">*</span> <span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">Phi</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ys</span> <span class="o">=</span> <span class="n">ys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span>
+        <span class="k">return</span> <span class="n">ys</span><span class="p">,</span> <span class="n">s2</span></div>
+
+
+<div class="viewcode-block" id="BLR.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">my_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regmodel_dict</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;warp&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="n">my_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;basis_function_mean&quot;</span><span class="p">,</span> <span class="s2">&quot;basis_function_var&quot;</span><span class="p">]:</span>
+                    <span class="n">my_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">my_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">my_dict</span></div>
+
+
+<div class="viewcode-block" id="BLR.from_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">my_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BLR&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a configuration from a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">my_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_warp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_from_dict</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_mean</span> <span class="o">=</span> <span class="n">BasisFunction</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;basis_function_mean&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_function_var</span> <span class="o">=</span> <span class="n">BasisFunction</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;basis_function_var&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="BLR.from_args">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.from_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BLR&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a configuration from command line arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_default_instance</span> <span class="o">=</span> <span class="n">BLR</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+        <span class="n">is_from_dict</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">is_fitted</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_fitted&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_fitted</span><span class="p">,</span> <span class="n">is_from_dict</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;BLR&quot;</span><span class="p">)</span>
+        <span class="n">n_iter</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_iter&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">n_iter</span><span class="p">)</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tol&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span>
+        <span class="n">ard</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ard&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">ard</span><span class="p">)</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="n">l_bfgs_b_l</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;l_bfgs_b_l&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">l_bfgs_b_l</span><span class="p">)</span>
+        <span class="n">l_bfgs_b_epsilon</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;l_bfgs_b_epsilon&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">l_bfgs_b_epsilon</span><span class="p">)</span>
+        <span class="n">l_bfgs_b_norm</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;l_bfgs_b_norm&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">l_bfgs_b_norm</span><span class="p">)</span>
+        <span class="n">fixed_effect</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixed_effect&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">fixed_effect</span><span class="p">)</span>
+        <span class="n">heteroskedastic</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;heteroskedastic&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">heteroskedastic</span><span class="p">)</span>
+        <span class="n">fixed_effect_var</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixed_effect_var&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">fixed_effect_var</span><span class="p">)</span>
+        <span class="n">warp</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">warp</span><span class="p">)</span>
+        <span class="n">warp_reparam</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;warp_reparam&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">warp_reparam</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">basis_function_mean</span> <span class="o">=</span> <span class="n">create_basis_function</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;basis_function_mean&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">basis_function_mean</span> <span class="o">=</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">basis_function_mean</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">basis_function_var</span> <span class="o">=</span> <span class="n">create_basis_function</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;basis_function_var&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">basis_function_var</span> <span class="o">=</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">basis_function_var</span>
+        <span class="n">hyp0</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hyp0&quot;</span><span class="p">,</span> <span class="n">_default_instance</span><span class="o">.</span><span class="n">hyp0</span><span class="p">)</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">is_fitted</span><span class="o">=</span><span class="n">is_fitted</span><span class="p">,</span>
+            <span class="n">is_from_dict</span><span class="o">=</span><span class="n">is_from_dict</span><span class="p">,</span>
+            <span class="n">n_iter</span><span class="o">=</span><span class="n">n_iter</span><span class="p">,</span>
+            <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span>
+            <span class="n">ard</span><span class="o">=</span><span class="n">ard</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">l_bfgs_b_l</span><span class="o">=</span><span class="n">l_bfgs_b_l</span><span class="p">,</span>
+            <span class="n">l_bfgs_b_epsilon</span><span class="o">=</span><span class="n">l_bfgs_b_epsilon</span><span class="p">,</span>
+            <span class="n">l_bfgs_b_norm</span><span class="o">=</span><span class="n">l_bfgs_b_norm</span><span class="p">,</span>
+            <span class="n">fixed_effect</span><span class="o">=</span><span class="n">fixed_effect</span><span class="p">,</span>
+            <span class="n">heteroskedastic</span><span class="o">=</span><span class="n">heteroskedastic</span><span class="p">,</span>
+            <span class="n">fixed_effect_var</span><span class="o">=</span><span class="n">fixed_effect_var</span><span class="p">,</span>
+            <span class="n">warp_name</span><span class="o">=</span><span class="n">warp</span><span class="p">,</span>
+            <span class="n">warp_reparam</span><span class="o">=</span><span class="n">warp_reparam</span><span class="p">,</span>
+            <span class="n">basis_function_mean</span><span class="o">=</span><span class="n">basis_function_mean</span><span class="p">,</span>
+            <span class="n">basis_function_var</span><span class="o">=</span><span class="n">basis_function_var</span><span class="p">,</span>
+            <span class="n">hyp0</span><span class="o">=</span><span class="n">hyp0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="BLR.get_warp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.BLR.get_warp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_warp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">warp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WarpBase</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">warp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;warpboxcox&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">WarpBoxCox</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;warpaffine&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">WarpAffine</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;warpsinharcsinh&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">WarpSinhArcsinh</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;warplog&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">WarpLog</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;warpcompose&quot;</span><span class="p">):</span>
+            <span class="c1"># Expect a comma separated list of warp names: e.g. warpcompose(warpboxcox,warpaffine,warpsinharcsinh)</span>
+            <span class="n">warps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">warp_name</span> <span class="ow">in</span> <span class="n">warp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;warpcompose&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;[]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+                <span class="n">warps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_warp</span><span class="p">(</span><span class="n">warp_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="n">WarpCompose</span><span class="p">(</span><span class="n">warps</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_UNKNOWN_CLASS</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="n">warp</span><span class="p">))</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_batch_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effect_var</span></div>
+
+
+
+<div class="viewcode-block" id="create_design_matrix">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/blr/index.html#pcntoolkit.regression_model.blr.create_design_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_design_matrix</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">be</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="n">linear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">fixed_effect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create design matrix for the model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : NormData</span>
+<span class="sd">        Input data containing features and batch effects.</span>
+<span class="sd">    linear : bool, default=False</span>
+<span class="sd">        Include linear terms in the design matrix.</span>
+<span class="sd">    intercept : bool, default=False</span>
+<span class="sd">        Include intercept term in the design matrix.</span>
+<span class="sd">    fixed_effect : bool, default=False</span>
+<span class="sd">        Include fixed effect for batch effects.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Design matrix combining all requested components.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If no components are selected for the design matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">linear</span><span class="p">:</span>
+        <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">intercept</span><span class="p">:</span>
+        <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c1"># Create one-hot encoding for fixed effect</span>
+    <span class="k">if</span> <span class="n">fixed_effect</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">be_maps</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))[</span><span class="n">be</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]],</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">BLR_ERROR_NO_DESIGN_MATRIX_CREATED</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

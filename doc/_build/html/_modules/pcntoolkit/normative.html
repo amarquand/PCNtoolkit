@@ -1,0 +1,420 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.normative &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.normative</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.normative</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module providing entry points for fitting and predicting with normative models from the command line.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cloudpickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pickle</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio</span><span class="w"> </span><span class="kn">import</span> <span class="n">fileio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio.norm_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.normative_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormativeModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">Errors</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">Runner</span>
+
+
+<div class="viewcode-block" id="fit">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.fit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit a new normative model.</span>
+
+<span class="sd">    :param conf_dict: Dictionary containing configuration options</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">fit_data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">normative_model</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">=</span> <span class="n">NormativeModel</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="o">**</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">runner</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">normative_model</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="predict">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.predict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Predict response variables using a saved normative model.</span>
+
+<span class="sd">    :param conf_dict: Dictionary containing configuration options</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">predict_data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">normative_model</span> <span class="o">=</span> <span class="n">NormativeModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">])</span>
+    <span class="n">runner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">normative_model</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="fit_predict">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.fit_predict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_predict</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit a normative model and predict response variables.</span>
+
+<span class="sd">    :param conf_dict: Dictionary containing configuration options</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">Runner</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">fit_data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">predict_data</span> <span class="o">=</span> <span class="n">load_test_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">fit_data</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">predict_data</span><span class="p">),</span> <span class="s2">&quot;Fit and predict data are not compatible.&quot;</span>
+
+    <span class="n">normative_model</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">=</span> <span class="n">NormativeModel</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="o">**</span><span class="n">conf_dict</span><span class="p">)</span>
+    <span class="n">runner</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">normative_model</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_data">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.load_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load the data from the configuration dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        NormData: NormData object containing the data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">respfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;resp&quot;</span><span class="p">)</span>
+    <span class="n">covfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;cov&quot;</span><span class="p">)</span>
+    <span class="n">maskfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">covfile</span><span class="p">)</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">load_response_vars</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="n">maskfile</span><span class="p">)</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;be&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">batch_effects</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">batch_effects</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If no batch effects are specified, create a zero array</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">NormData</span><span class="o">.</span><span class="n">from_ndarrays</span><span class="p">(</span><span class="s2">&quot;fit_data&quot;</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">batch_effects</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="load_test_data">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.load_test_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_test_data</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load the test data from the file specified in the configuration dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conf_dict (dict): dictionary containing the configuration options</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        NormData: NormData object containing the test data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">respfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;t_resp&quot;</span><span class="p">)</span>
+    <span class="n">covfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;t_cov&quot;</span><span class="p">)</span>
+    <span class="n">maskfile</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">covfile</span><span class="p">)</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">load_response_vars</span><span class="p">(</span><span class="n">respfile</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="n">maskfile</span><span class="p">)</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;t_be&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">batch_effects</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">batch_effects</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">NormData</span><span class="o">.</span><span class="n">from_ndarrays</span><span class="p">(</span><span class="s2">&quot;predict_data&quot;</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">batch_effects</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="load_response_vars">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.load_response_vars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_response_vars</span><span class="p">(</span><span class="n">datafile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">maskfile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load response variables from file. This will load the data and mask it if</span>
+<span class="sd">    necessary. If the data is in ascii format it will be converted into a numpy</span>
+<span class="sd">    array. If the data is in neuroimaging format it will be reshaped into a</span>
+<span class="sd">    2D array (observations x variables) and a mask will be created if necessary.</span>
+
+<span class="sd">    :param datafile: File containing the response variables</span>
+<span class="sd">    :param maskfile: Mask file (nifti only)</span>
+<span class="sd">    :param vol: If True, load the data as a 4D volume (nifti only)</span>
+<span class="sd">    :returns Y: Response variables</span>
+<span class="sd">    :returns volmask: Mask file (nifti only)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;nifti&quot;</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="n">vol</span><span class="p">)</span>
+        <span class="n">volmask</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">create_mask</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">maskfile</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">volmask</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">fileio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+        <span class="n">volmask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">file_type</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;cifti&quot;</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">Y</span><span class="p">,</span> <span class="n">volmask</span></div>
+
+
+
+<div class="viewcode-block" id="get_argparser">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.get_argparser">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_argparser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get an argument parser for the normative modeling functions.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        argparse.ArgumentParser: The argument parser</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#  parse arguments</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Normative Modeling&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-a&quot;</span><span class="p">,</span> <span class="s2">&quot;--alg&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;algorithm&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;alg&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;gpr&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--func&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Function to call&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="s2">&quot;--responses&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;responses file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;resp&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--covariates&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;covariates file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cov&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--test_responses&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;responses (test data)&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;t_resp&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-e&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--test_covariates&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;covariates (test data)&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;t_cov&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;--mask&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;mask file&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-k&quot;</span><span class="p">,</span> <span class="s2">&quot;--cvfolds&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;cross-validation folds&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;cv_folds&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+
+<div class="viewcode-block" id="get_conf_dict_from_args">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.get_conf_dict_from_args">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_conf_dict_from_args</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the arguments and return a dictionary with the configuration options.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Raised if an argument is specified twice.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict[str, str | int | float | bool]: A dictionary with the configuration option, parsed to the correct type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">get_argparser</span><span class="p">()</span>
+    <span class="n">known</span><span class="p">,</span> <span class="n">unknown</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
+
+    <span class="n">conf_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">known</span><span class="p">):</span>
+        <span class="n">conf_dict</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">known</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">conf_dict</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_ARGUMENT_SPECIFIED_TWICE</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">))</span>
+            <span class="n">conf_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">conf_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">conf_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
+                            <span class="n">conf_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">elif</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;false&quot;</span><span class="p">:</span>
+                            <span class="n">conf_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">conf_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cv_folds&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span> <span class="k">if</span> <span class="n">cv</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">conf_dict</span><span class="p">[</span><span class="s1">&#39;cv_folds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv</span>
+    <span class="n">conf_dict</span><span class="p">[</span><span class="s1">&#39;cross_validate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cv</span> <span class="o">&gt;</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">conf_dict</span></div>
+
+
+
+<div class="viewcode-block" id="make_synthetic_data">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.make_synthetic_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_synthetic_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create synthetic data for testing.&quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">batch_effects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_effects</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;covariates.csv&quot;</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;responses.csv&quot;</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;batch_effects.csv&quot;</span><span class="p">,</span> <span class="n">batch_effects</span><span class="p">)</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">batch_effects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_effects</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;covariates_test.csv&quot;</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;responses_test.csv&quot;</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s2">&quot;batch_effects_test.csv&quot;</span><span class="p">,</span> <span class="n">batch_effects</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function to run the normative modeling functions.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the function specified in the configuration dictionary is unknown.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parsed_args</span> <span class="o">=</span> <span class="n">get_conf_dict_from_args</span><span class="p">()</span>
+    <span class="k">match</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;fit&quot;</span><span class="p">):</span>
+        <span class="k">case</span> <span class="s2">&quot;fit&quot;</span><span class="p">:</span>
+            <span class="n">fit</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">)</span>
+        <span class="k">case</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
+            <span class="n">predict</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">)</span>
+        <span class="k">case</span> <span class="s2">&quot;fit_predict&quot;</span><span class="p">:</span>
+            <span class="n">fit_predict</span><span class="p">(</span><span class="n">parsed_args</span><span class="p">)</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_UNKNOWN_FUNCTION</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">parsed_args</span><span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">]))</span></div>
+
+
+
+<div class="viewcode-block" id="entrypoint">
+<a class="viewcode-back" href="../../autoapi/pcntoolkit/normative/index.html#pcntoolkit.normative.entrypoint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">entrypoint</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

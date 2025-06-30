@@ -1,0 +1,724 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.dataio.fileio &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.dataio.fileio</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.dataio.fileio</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">Errors</span><span class="p">,</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">Output</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># parent directory</span>
+<span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">path</span>
+
+<span class="n">CIFTI_MAPPINGS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;dconn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dtseries&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pconn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ptseries&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dscalar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dlabel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pscalar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pdconn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dpconn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pconnseries&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pconnscalar&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">CIFTI_VOL_ATLAS</span> <span class="o">=</span> <span class="s2">&quot;Atlas_ROIs.2.nii.gz&quot;</span>
+
+
+<div class="viewcode-block" id="create_mask">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.create_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_mask</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a mask from a data array or a nifti file</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">            create_mask(data_array, mask, verbose)</span>
+
+<span class="sd">    :param data_array: numpy array containing the data to write out</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param verbose: verbose output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create a (volumetric) mask either from an input nifti or the nifti itself</span>
+
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">LOADING_ROI_MASK</span><span class="p">)</span>
+        <span class="n">maskvol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">maskvol</span> <span class="o">=</span> <span class="n">maskvol</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],)</span>
+
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">GENERATING_MASK_AUTOMATICALLY</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">maskvol</span> <span class="o">=</span> <span class="n">data_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">maskvol</span> <span class="o">=</span> <span class="n">data_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">maskvol</span></div>
+
+
+
+<div class="viewcode-block" id="vol2vec">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.vol2vec">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Vectorise a 3d image</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                vol2vec(dat, mask, verbose)</span>
+
+<span class="sd">    :param dat: numpy array containing the data to write out</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param verbose: verbose output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># vectorise a 3d image</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],)</span>
+
+    <span class="c1"># mask = create_mask(dat, mask=mask, verbose=verbose)</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="c1"># mask the image</span>
+    <span class="n">maskid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="n">maskid</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="c1"># convert to 1-d array if the file only contains one volume</span>
+    <span class="k">if</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">dat</span></div>
+
+
+
+<div class="viewcode-block" id="file_type">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.file_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the file type of a file</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                    file_type(filename)</span>
+
+<span class="sd">    :param filename: name of the file to check</span>
+<span class="sd">    :returns: str: The file type (&#39;cifti&#39;, &#39;nifti&#39;, &#39;text&#39;, or &#39;binary&#39;)</span>
+<span class="sd">    :raises: ValueError if file type is unknown</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Map file extensions to types</span>
+    <span class="n">extension_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;cifti&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.dtseries.nii&quot;</span><span class="p">,</span> <span class="s2">&quot;.dscalar.nii&quot;</span><span class="p">,</span> <span class="s2">&quot;.dlabel.nii&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;nifti&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.nii.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;.nii&quot;</span><span class="p">,</span> <span class="s2">&quot;.img&quot;</span><span class="p">,</span> <span class="s2">&quot;.hdr&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;.tsv&quot;</span><span class="p">,</span> <span class="s2">&quot;.asc&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;binary&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.pkl&quot;</span><span class="p">,),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Check each type&#39;s extensions</span>
+    <span class="k">for</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">extensions</span> <span class="ow">in</span> <span class="n">extension_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ftype</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">UNKNOWN_FILE_TYPE</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="file_extension">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.file_extension">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">file_extension</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the file extension of a file (e.g. .nii.gz)</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                        file_extension(filename)</span>
+
+<span class="sd">    :param filename: name of the file to check</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="file_stem">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.file_stem">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">file_stem</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the file stem of a file (e.g. /path/to/file.nii.gz -&gt; file)</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                                file_stem(filename)</span>
+
+<span class="sd">    :param filename: name of the file to check</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># --------------</span>
+<span class="c1"># nifti routines</span>
+<span class="c1"># --------------</span>
+
+
+<div class="viewcode-block" id="load_nifti">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.load_nifti">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_nifti</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a nifti file into a numpy array</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                    load_nifti(datafile, mask, vol, verbose)</span>
+
+<span class="sd">    :param datafile: name of the file to load</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param vol: whether to load the image as a volume</span>
+<span class="sd">    :param verbose: verbose output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">vol</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">vol2vec</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dat</span></div>
+
+
+
+<div class="viewcode-block" id="save_nifti">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.save_nifti">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">examplenii</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write output to nifti</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        save_nifti(data, filename mask, dtype)</span>
+
+<span class="sd">    :param data: numpy array containing the data to write out</span>
+<span class="sd">    :param filename: where to store it</span>
+<span class="sd">    :param examplenii: nifti to copy the geometry and data type from</span>
+<span class="sd">    :mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param dtype: data type for the output image (if different from the image)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># load mask</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">!=</span> <span class="mi">0</span>
+
+    <span class="c1"># load example image</span>
+    <span class="n">ex_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">examplenii</span><span class="p">)</span>
+    <span class="n">ex_img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">nvol</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nvol</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># write data</span>
+    <span class="n">array_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span> <span class="n">nvol</span><span class="p">))</span>
+    <span class="n">array_data</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="n">array_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">dim</span> <span class="o">+</span> <span class="p">(</span><span class="n">nvol</span><span class="p">,))</span>
+    <span class="n">hdr</span> <span class="o">=</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">header</span>
+    <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">hdr</span><span class="o">.</span><span class="n">set_data_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">array_data</span> <span class="o">=</span> <span class="n">array_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">array_img</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">ex_img</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="n">hdr</span><span class="p">)</span>
+
+    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">array_img</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------</span>
+<span class="c1"># cifti routines</span>
+<span class="c1"># --------------</span>
+
+
+<div class="viewcode-block" id="load_cifti">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.load_cifti">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_cifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rmtmp</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a cifti file into a numpy array</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                        load_cifti(filename, vol, mask, rmtmp)</span>
+
+<span class="sd">    :param filename: name of the file to load</span>
+<span class="sd">    :param vol: whether to load the image as a volume</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param rmtmp: whether to remove temporary files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># parse the name</span>
+    <span class="n">dnam</span><span class="p">,</span> <span class="n">fnam</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">fpref</span> <span class="o">=</span> <span class="n">file_stem</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
+    <span class="n">outstem</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">fpref</span><span class="p">)</span>
+
+    <span class="c1"># extract surface data from the cifti file</span>
+    <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">EXTRACTING_CIFTI_SURFACE_DATA</span><span class="p">,</span> <span class="n">outstem</span><span class="o">=</span><span class="n">outstem</span><span class="p">)</span>
+    <span class="n">giinamel</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s2">&quot;-left.func.gii&quot;</span>
+    <span class="n">giinamer</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s2">&quot;-right.func.gii&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -metric CORTEX_LEFT &quot;</span> <span class="o">+</span> <span class="n">giinamel</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -metric CORTEX_RIGHT &quot;</span> <span class="o">+</span> <span class="n">giinamer</span><span class="p">)</span>
+
+    <span class="c1"># load the surface data</span>
+    <span class="n">giil</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giinamel</span><span class="p">)</span>
+    <span class="n">giir</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giinamer</span><span class="p">)</span>
+    <span class="n">Nimg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">)</span>
+    <span class="n">Nvert</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">Nimg</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">giir</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Gl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nvert</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">))</span>
+        <span class="n">Gr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nvert</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
+            <span class="n">Gl</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">giil</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">Gr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">giir</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">Gl</span><span class="p">,</span> <span class="n">Gr</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmtmp</span><span class="p">:</span>
+        <span class="c1"># clean up temporary files</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">giinamel</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">giinamer</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">vol</span><span class="p">:</span>
+        <span class="n">niiname</span> <span class="o">=</span> <span class="n">outstem</span> <span class="o">+</span> <span class="s2">&quot;-vol.nii&quot;</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">EXTRACTING_CIFTI_VOLUME_DATA</span><span class="p">,</span> <span class="n">niiname</span><span class="o">=</span><span class="n">niiname</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -volume-all &quot;</span> <span class="o">+</span> <span class="n">niiname</span><span class="p">)</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">niiname</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">volmask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">vol</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">out</span><span class="p">,</span> <span class="n">vol2vec</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">volmask</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rmtmp</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">niiname</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="save_cifti">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.save_cifti">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_cifti</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">volatlas</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a cifti file from a numpy array</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                            save_cifti(data, filename, example, mask, vol, volatlas)</span>
+
+<span class="sd">    :param data: numpy array containing the data to write out</span>
+<span class="sd">    :param filename: where to store it</span>
+<span class="sd">    :param example: example file to copy the geometry from</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param vol: whether to load the image as a volume</span>
+<span class="sd">    :param volatlas: atlas to use for the volume</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># do some sanity checks</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;float32&quot;</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># force 32 bit output</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;NIFTI_TYPE_FLOAT32&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">NO_FLOAT_DATA_TYPE</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">Nimg</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Nimg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># get the base filename</span>
+    <span class="n">dnam</span><span class="p">,</span> <span class="n">fnam</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">fstem</span> <span class="o">=</span> <span class="n">file_stem</span><span class="p">(</span><span class="n">fnam</span><span class="p">)</span>
+
+    <span class="c1"># Split the template</span>
+    <span class="n">estem</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">fstem</span><span class="p">)</span>
+    <span class="n">giiexnamel</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s2">&quot;-left.func.gii&quot;</span>
+    <span class="n">giiexnamer</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s2">&quot;-right.func.gii&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -metric CORTEX_LEFT &quot;</span> <span class="o">+</span> <span class="n">giiexnamel</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -metric CORTEX_RIGHT &quot;</span> <span class="o">+</span> <span class="n">giiexnamer</span><span class="p">)</span>
+
+    <span class="c1"># write left hemisphere</span>
+    <span class="n">giiexl</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giiexnamel</span><span class="p">)</span>
+    <span class="n">Nvertl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giiexl</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">garraysl</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
+        <span class="n">garraysl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiDataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Nvertl</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">datatype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="n">giil</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiImage</span><span class="p">(</span><span class="n">darrays</span><span class="o">=</span><span class="n">garraysl</span><span class="p">)</span>
+    <span class="n">fnamel</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s2">&quot;-left.func.gii&quot;</span>
+    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">giil</span><span class="p">,</span> <span class="n">fnamel</span><span class="p">)</span>
+
+    <span class="c1"># write right hemisphere</span>
+    <span class="n">giiexr</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">giiexnamer</span><span class="p">)</span>
+    <span class="n">Nvertr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">giiexr</span><span class="o">.</span><span class="n">darrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">garraysr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nimg</span><span class="p">):</span>
+        <span class="n">garraysr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiDataArray</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">Nvertl</span> <span class="p">:</span> <span class="n">Nvertl</span> <span class="o">+</span> <span class="n">Nvertr</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">datatype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="n">giir</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">gifti</span><span class="o">.</span><span class="n">GiftiImage</span><span class="p">(</span><span class="n">darrays</span><span class="o">=</span><span class="n">garraysr</span><span class="p">)</span>
+    <span class="n">fnamer</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s2">&quot;-right.func.gii&quot;</span>
+    <span class="n">nib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">giir</span><span class="p">,</span> <span class="n">fnamer</span><span class="p">)</span>
+
+    <span class="n">tmpfiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">fnamer</span><span class="p">,</span> <span class="n">fnamel</span><span class="p">,</span> <span class="n">giiexnamel</span><span class="p">,</span> <span class="n">giiexnamer</span><span class="p">]</span>
+
+    <span class="c1"># process volumetric data</span>
+    <span class="k">if</span> <span class="n">vol</span><span class="p">:</span>
+        <span class="n">niiexname</span> <span class="o">=</span> <span class="n">estem</span> <span class="o">+</span> <span class="s2">&quot;-vol.nii&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;wb_command -cifti-separate &quot;</span> <span class="o">+</span> <span class="n">example</span> <span class="o">+</span> <span class="s2">&quot; COLUMN -volume-all &quot;</span> <span class="o">+</span> <span class="n">niiexname</span><span class="p">)</span>
+        <span class="n">niivol</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">niiexname</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">niivol</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">volatlas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">volatlas</span> <span class="o">=</span> <span class="n">CIFTI_VOL_ATLAS</span>
+        <span class="n">fnamev</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s2">&quot;-vol.nii&quot;</span>
+
+        <span class="n">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">Nvertr</span> <span class="o">+</span> <span class="n">Nvertl</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">fnamev</span><span class="p">,</span> <span class="n">niiexname</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">tmpfiles</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">fnamev</span><span class="p">,</span> <span class="n">niiexname</span><span class="p">])</span>
+
+    <span class="c1"># write cifti</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">fstem</span> <span class="o">+</span> <span class="s2">&quot;.dtseries.nii&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span>
+        <span class="s2">&quot;wb_command -cifti-create-dense-timeseries &quot;</span>
+        <span class="o">+</span> <span class="n">fname</span>
+        <span class="o">+</span> <span class="s2">&quot; -volume &quot;</span>
+        <span class="o">+</span> <span class="n">fnamev</span>
+        <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+        <span class="o">+</span> <span class="n">volatlas</span>
+        <span class="o">+</span> <span class="s2">&quot; -left-metric &quot;</span>
+        <span class="o">+</span> <span class="n">fnamel</span>
+        <span class="o">+</span> <span class="s2">&quot; -right-metric &quot;</span>
+        <span class="o">+</span> <span class="n">fnamer</span>
+    <span class="p">)</span>
+
+    <span class="c1"># clean up</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tmpfiles</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------</span>
+<span class="c1"># ascii routines</span>
+<span class="c1"># --------------</span>
+
+
+<div class="viewcode-block" id="load_pd">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.load_pd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_pd</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a csv file into a pandas dataframe</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                    load_pd(filename)</span>
+
+<span class="sd">    :param filename: name of the file to load</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># based on pandas</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<div class="viewcode-block" id="save_pd">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.save_pd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_pd</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a pandas dataframe to a csv file</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        save_pd(data, filename)</span>
+
+<span class="sd">    :param data: pandas dataframe containing the data to write out</span>
+<span class="sd">    :param filename: where to store it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># based on pandas</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_ascii">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.load_ascii">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load an ascii file into a numpy array</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">            load_ascii(filename)</span>
+
+<span class="sd">    :param filename: name of the file to load</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># based on pandas</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<div class="viewcode-block" id="save_ascii">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.save_ascii">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a numpy array to an ascii file</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">        save_ascii(data, filename)</span>
+
+<span class="sd">    :param data: numpy array containing the data to write out</span>
+<span class="sd">    :param filename: where to store it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># based on pandas</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ----------------</span>
+<span class="c1"># generic routines</span>
+<span class="c1"># ----------------</span>
+
+
+<div class="viewcode-block" id="save">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.save">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a numpy array to a file</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                save(data, filename, example, mask, text, dtype)</span>
+
+<span class="sd">    :param data: numpy array containing the data to write out</span>
+<span class="sd">    :param filename: where to store it</span>
+<span class="sd">    :param example: example file to copy the geometry from</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param text: whether to write out a text file</span>
+<span class="sd">    :param dtype: data type for the output image (if different from the image)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;cifti&quot;</span><span class="p">:</span>
+        <span class="n">save_cifti</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;nifti&quot;</span><span class="p">:</span>
+        <span class="n">save_nifti</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">example</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">text</span> <span class="ow">or</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+        <span class="n">save_ascii</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">file_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;binary&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PICKLE_PROTOCOL</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.load">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load array from a file.</span>
+
+<span class="sd">    A beautiful waterfall of errors.</span>
+
+<span class="sd">    Basic usage::</span>
+
+<span class="sd">                    load(filename, mask, text, vol)</span>
+
+<span class="sd">    :param filename: name of the file to load</span>
+<span class="sd">    :param mask: nifti image containing a mask for the image</span>
+<span class="sd">    :param text: whether to write out a text file</span>
+<span class="sd">    :param vol: whether to load the image as a volume</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">load_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">x</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">load_nifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="n">vol</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">x</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">x</span> <span class="o">=</span> <span class="n">load_cifti</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">vol</span><span class="o">=</span><span class="n">vol</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">x</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">UNKNOWN_FILE_TYPE</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="create_incremental_backup">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/fileio/index.html#pcntoolkit.dataio.fileio.create_incremental_backup">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_incremental_backup</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an incremental backup of a file using the `.bak{n}` naming scheme.</span>
+
+<span class="sd">    If the file does not exist, an empty file is created at the specified path.</span>
+<span class="sd">    A backup is then created in the same directory with the following format:</span>
+<span class="sd">        original_name.bak{n}.original_extension</span>
+<span class="sd">    where {n} is incremented based on existing backups.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">directory</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="c1"># Create an empty file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File exists:&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Pattern: name.bakN.ext</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;^</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">\.bak(\d+)</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">)</span>
+
+    <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">existing</span>
+    <span class="p">]</span> <span class="k">if</span> <span class="n">existing</span> <span class="k">else</span> <span class="p">[]</span>
+
+    <span class="n">next_n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">numbers</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">backup_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.bak</span><span class="si">{</span><span class="n">next_n</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">backup_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">backup_name</span><span class="p">)</span>
+
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">backup_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">backup_path</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,940 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.math_functions.likelihood &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.math_functions.likelihood</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.math_functions.likelihood</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.basis_function</span><span class="w"> </span><span class="kn">import</span> <span class="n">BsplineBasisFunction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.factorize</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.prior</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">make_prior</span><span class="p">,</span> <span class="n">prior_from_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.shash</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">S_inv</span><span class="p">,</span> <span class="n">SHASHb</span><span class="p">,</span> <span class="n">SHASHo</span><span class="p">,</span> <span class="n">SHASHo2</span><span class="p">,</span> <span class="n">m</span>
+
+
+<div class="viewcode-block" id="Likelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Likelihood</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<div class="viewcode-block" id="Likelihood.compile">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.compile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_model_with_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.create_model_with_data">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.create_model_with_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model_with_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;batch_effect_dims&quot;</span><span class="p">:</span> <span class="n">be</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;batch_effect_dims&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="s2">&quot;observations&quot;</span><span class="p">:</span> <span class="n">X</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;observations&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">_be</span><span class="p">,</span> <span class="n">_map</span> <span class="ow">in</span> <span class="n">be_maps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">coords</span><span class="p">[</span><span class="n">_be</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">_map</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">_map</span><span class="p">[</span><span class="n">v</span><span class="p">]))]</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">be_name</span> <span class="ow">in</span> <span class="n">be</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;batch_effect_dims&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                <span class="n">pm</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">be_name</span><span class="si">}</span><span class="s2">_data&quot;</span><span class="p">,</span>
+                    <span class="n">be</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">batch_effect_dims</span><span class="o">=</span><span class="n">be_name</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,),</span>
+                <span class="p">)</span>
+            <span class="n">pm</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.update_data">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.update_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">):</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;observations&quot;</span><span class="p">:</span> <span class="n">Y</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;observations&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">})</span>
+            <span class="k">for</span> <span class="n">be_name</span> <span class="ow">in</span> <span class="n">be</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;batch_effect_dims&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">be_name</span><span class="si">}</span><span class="s2">_data&quot;</span><span class="p">,</span>
+                    <span class="n">values</span><span class="o">=</span><span class="n">be</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">batch_effect_dims</span><span class="o">=</span><span class="n">be_name</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Likelihood.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.transfer">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idata</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">InferenceData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Likelihood.compile_params">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.compile_params">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compile_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.forward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.backward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.yhat">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.yhat">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.from_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.from_dict">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="n">dct</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Normal&quot;</span><span class="p">)</span>
+        <span class="k">match</span> <span class="n">likelihood</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;Normal&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">NormalLikelihood</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;SHASHb&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">SHASHbLikelihood</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
+            <span class="c1"># case &quot;SHASHo&quot;:</span>
+            <span class="c1">#     return SHASHoLikelihood._from_dict(dct)</span>
+            <span class="c1"># case &quot;SHASHo2&quot;:</span>
+            <span class="c1">#     return SHASHo2Likelihood._from_dict(dct)</span>
+            <span class="k">case</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">BetaLikelihood</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown likelihood: </span><span class="si">{</span><span class="n">likelihood</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.from_args">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.from_args">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;likelihood&quot;</span><span class="p">,</span> <span class="s2">&quot;Normal&quot;</span><span class="p">)</span>
+        <span class="k">match</span> <span class="n">likelihood</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;Normal&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">NormalLikelihood</span><span class="o">.</span><span class="n">_from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;SHASHb&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">SHASHbLikelihood</span><span class="o">.</span><span class="n">_from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="c1"># case &quot;SHASHo&quot;:</span>
+            <span class="c1">#     return SHASHoLikelihood._from_args(args)</span>
+            <span class="c1"># case &quot;SHASHo2&quot;:</span>
+            <span class="c1">#     return SHASHo2Likelihood._from_args(args)</span>
+            <span class="k">case</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">BetaLikelihood</span><span class="o">.</span><span class="n">_from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown likelihood: </span><span class="si">{</span><span class="n">likelihood</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Likelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.to_dict">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Likelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.Likelihood.has_random_effect">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NormalLikelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NormalLikelihood</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="n">compiled_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compile_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">compiled_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">compiled_params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">&quot;Yhat&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">compiled_params</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;observations&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="NormalLikelihood.compile_params">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.compile_params">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compile_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="NormalLikelihood.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idata</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">InferenceData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Likelihood&quot;</span><span class="p">:</span>
+        <span class="n">new_mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">NormalLikelihood</span><span class="p">(</span><span class="n">new_mu</span><span class="p">,</span> <span class="n">new_sigma</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NormalLikelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span></div>
+
+
+<div class="viewcode-block" id="NormalLikelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">+</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="NormalLikelihood.yhat">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.yhat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="k">return</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="NormalLikelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;NormalLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]),</span> <span class="n">sigma</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;NormalLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+
+<div class="viewcode-block" id="NormalLikelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.NormalLikelihood.has_random_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">has_random_effect</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">has_random_effect</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SHASHbLikelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SHASHbLikelihood</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SHASHb&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="n">compiled_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compile_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">compiled_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">compiled_params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">SHASHb</span><span class="p">(</span><span class="s2">&quot;Yhat&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">compiled_params</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;observations&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="SHASHbLikelihood.compile_params">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.compile_params">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compile_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+            <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+            <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="SHASHbLikelihood.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idata</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">InferenceData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHbLikelihood&quot;</span><span class="p">:</span>
+        <span class="n">new_mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SHASHbLikelihood</span><span class="p">(</span><span class="n">new_mu</span><span class="p">,</span> <span class="n">new_sigma</span><span class="p">,</span> <span class="n">new_epsilon</span><span class="p">,</span> <span class="n">new_delta</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SHASHbLikelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.has_random_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">has_random_effect</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SHASHbLikelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+        <span class="p">}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHbLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;epsilon&quot;</span><span class="p">]),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;delta&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHbLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SHASHbLikelihood.get_var_names">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.get_var_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_var_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;mu_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;epsilon_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;delta_samples&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SHASHbLikelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">true_mu</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">true_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">m</span><span class="p">(</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_mu</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">SHASH_centered</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+        <span class="n">SHASH_uncentered</span> <span class="o">=</span> <span class="n">SHASH_centered</span> <span class="o">*</span> <span class="n">true_sigma</span> <span class="o">+</span> <span class="n">true_mu</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">SHASH_uncentered</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<div class="viewcode-block" id="SHASHbLikelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">true_mu</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">true_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">m</span><span class="p">(</span><span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_mu</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">SHASH_uncentered</span> <span class="o">=</span> <span class="n">S_inv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="n">SHASH_centered</span> <span class="o">=</span> <span class="p">(</span><span class="n">SHASH_uncentered</span> <span class="o">-</span> <span class="n">true_mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">true_sigma</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">SHASH_centered</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">+</span> <span class="n">mu</span>
+        <span class="k">return</span> <span class="n">Y</span></div>
+
+
+<div class="viewcode-block" id="SHASHbLikelihood.yhat">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.yhat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="k">return</span> <span class="n">mu</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SHASHoLikelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SHASHoLikelihood</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SHASHo&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">mu_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">sigma_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">epsilon_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">delta_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">mu_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;mu_samples&quot;</span><span class="p">,</span> <span class="n">mu_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">sigma_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;sigma_samples&quot;</span><span class="p">,</span> <span class="n">sigma_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">epsilon_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;epsilon_samples&quot;</span><span class="p">,</span> <span class="n">epsilon_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">delta_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;delta_samples&quot;</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">SHASHo</span><span class="p">(</span>
+                <span class="s2">&quot;Yhat&quot;</span><span class="p">,</span>
+                <span class="n">mu</span><span class="o">=</span><span class="n">mu_samples</span><span class="p">,</span>
+                <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_samples</span><span class="p">,</span>
+                <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon_samples</span><span class="p">,</span>
+                <span class="n">delta</span><span class="o">=</span><span class="n">delta_samples</span><span class="p">,</span>
+                <span class="n">observed</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span>
+                <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;observations&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="SHASHoLikelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.has_random_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">has_random_effect</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SHASHoLikelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+        <span class="p">}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHoLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;epsilon&quot;</span><span class="p">]),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;delta&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHoLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SHASHoLikelihood.get_var_names">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.get_var_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_var_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;mu_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;epsilon_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;delta_samples&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SHASHoLikelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">SHASH</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsinh</span><span class="p">(</span><span class="n">SHASH</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<div class="viewcode-block" id="SHASHoLikelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">SHASH</span> <span class="o">=</span> <span class="n">S_inv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">SHASH</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">+</span> <span class="n">mu</span>
+        <span class="k">return</span> <span class="n">Y</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SHASHo2Likelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SHASHo2Likelihood</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;SHASHo2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">mu_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">sigma_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">epsilon_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">delta_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">mu_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;mu_samples&quot;</span><span class="p">,</span> <span class="n">mu_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">sigma_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;sigma_samples&quot;</span><span class="p">,</span> <span class="n">sigma_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">epsilon_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;epsilon_samples&quot;</span><span class="p">,</span> <span class="n">epsilon_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">delta_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;delta_samples&quot;</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">SHASHo2</span><span class="p">(</span>
+                <span class="s2">&quot;Yhat&quot;</span><span class="p">,</span>
+                <span class="n">mu</span><span class="o">=</span><span class="n">mu_samples</span><span class="p">,</span>
+                <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_samples</span><span class="p">,</span>
+                <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon_samples</span><span class="p">,</span>
+                <span class="n">delta</span><span class="o">=</span><span class="n">delta_samples</span><span class="p">,</span>
+                <span class="n">observed</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span>
+                <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;observations&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="SHASHo2Likelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.has_random_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">has_random_effect</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">has_random_effect</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SHASHo2Likelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;epsilon&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+        <span class="p">}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHo2Likelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;epsilon&quot;</span><span class="p">]),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;delta&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SHASHo2Likelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">mu</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SHASHo2Likelihood.get_var_names">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.get_var_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_var_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;mu_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;epsilon_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;delta_samples&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SHASHo2Likelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">sigma_d</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">SHASH</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_d</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">SHASH</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<div class="viewcode-block" id="SHASHo2Likelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">sigma_d</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">SHASH</span> <span class="o">=</span> <span class="n">S_inv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">SHASH</span> <span class="o">*</span> <span class="n">sigma_d</span> <span class="o">+</span> <span class="n">mu</span>
+        <span class="k">return</span> <span class="n">Y</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BetaLikelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BetaLikelihood</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="n">BasePrior</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s2">&quot;beta&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">alpha_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="n">beta_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+            <span class="n">alpha_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;alpha_samples&quot;</span><span class="p">,</span> <span class="n">alpha_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">beta_samples</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="s2">&quot;beta_samples&quot;</span><span class="p">,</span> <span class="n">beta_samples</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">)</span>
+            <span class="n">pm</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span>
+                <span class="s2">&quot;Yhat&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_samples</span><span class="p">,</span>
+                <span class="n">beta</span><span class="o">=</span><span class="n">beta_samples</span><span class="p">,</span>
+                <span class="n">observed</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">],</span>
+                <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;observations&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="BetaLikelihood.compile_params">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.compile_params">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compile_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+            <span class="s2">&quot;beta&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">sample_dims</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="BetaLikelihood.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idata</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">InferenceData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BetaLikelihood&quot;</span><span class="p">:</span>
+        <span class="n">new_alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BetaLikelihood</span><span class="p">(</span><span class="n">new_alpha</span><span class="p">,</span> <span class="n">new_beta</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BetaLikelihood.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">cdf</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">cdf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<div class="viewcode-block" id="BetaLikelihood.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">cdf_norm</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">cdf_norm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">quantiles</span></div>
+
+
+<div class="viewcode-block" id="BetaLikelihood.yhat">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.yhat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="k">return</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="n">beta</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BetaLikelihood.has_random_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.has_random_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_random_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">has_random_effect</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">has_random_effect</span></div>
+
+
+<div class="viewcode-block" id="BetaLikelihood.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="s2">&quot;beta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;BetaLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">]),</span> <span class="n">beta</span><span class="o">=</span><span class="n">BasePrior</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;beta&quot;</span><span class="p">]))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;BetaLikelihood&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="n">beta</span><span class="o">=</span><span class="n">prior_from_args</span><span class="p">(</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+
+<div class="viewcode-block" id="BetaLikelihood.get_var_names">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.BetaLikelihood.get_var_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_var_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;alpha_samples&quot;</span><span class="p">,</span> <span class="s2">&quot;beta_samples&quot;</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_default_normal_likelihood">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/math_functions/likelihood/index.html#pcntoolkit.math_functions.likelihood.get_default_normal_likelihood">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_default_normal_likelihood</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">NormalLikelihood</span><span class="p">:</span>
+    <span class="s2">&quot;Return a normal likelihood with a random intercept of the mean, and heteroskedasticity&quot;</span>
+    <span class="k">return</span> <span class="n">NormalLikelihood</span><span class="p">(</span>
+        <span class="n">mu</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">,</span>
+            <span class="n">linear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">slope</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span><span class="n">dist_name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">,</span> <span class="n">dist_params</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)),</span>
+            <span class="n">intercept</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span>
+                <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mu</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span>
+                    <span class="s2">&quot;mu_intercept_mu&quot;</span><span class="p">,</span>
+                    <span class="n">dist_name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">,</span>
+                    <span class="n">dist_params</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+                    <span class="n">sigma</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span>
+                        <span class="s2">&quot;sigma_intercept_mu&quot;</span><span class="p">,</span>
+                        <span class="n">dist_name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">,</span>
+                        <span class="n">dist_params</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                        <span class="n">mapping</span><span class="o">=</span><span class="s2">&quot;softplus&quot;</span><span class="p">,</span>
+                        <span class="n">mapping_params</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">basis_function</span><span class="o">=</span><span class="n">BsplineBasisFunction</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">sigma</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span>
+            <span class="s2">&quot;sigma&quot;</span><span class="p">,</span>
+            <span class="n">linear</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">slope</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span><span class="n">dist_name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">,</span> <span class="n">dist_params</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)),</span>
+            <span class="n">intercept</span><span class="o">=</span><span class="n">make_prior</span><span class="p">(</span><span class="n">dist_name</span><span class="o">=</span><span class="s2">&quot;Normal&quot;</span><span class="p">,</span> <span class="n">dist_params</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="n">mapping</span><span class="o">=</span><span class="s2">&quot;softplus&quot;</span><span class="p">,</span> <span class="n">mapping_params</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)),</span>
+            <span class="n">basis_function</span><span class="o">=</span><span class="n">BsplineBasisFunction</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
