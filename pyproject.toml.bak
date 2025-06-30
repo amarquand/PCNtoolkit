@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pcntoolkit"
-version = "1.0.0-alpha"
+version = "1.0.0"
 description = "Predictive Clinical Neuroscience Toolkit"
 authors = ["Andre Marquand", "Stijn de Boer", "Seyed Mostafa Kia", "Thomas Wolfers", "Johanna Bayer", "Charlotte Fraza", "Saige Rutherford", "Pierre Berthet", "Maarten Mennes", "Hester Huijsdens", "Linden Parkes"]
 license = "GNU GPLv3"
