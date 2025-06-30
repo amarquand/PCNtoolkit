@@ -19,20 +19,8 @@ Basic installation (on a local machine)
 .. code-block:: bash
 
 	source activate <env_name>
-
-4. Install torch using the torch instructions.	
-
-.. code-block:: bash
-
-	# Command found on the torch website: https://pytorch.org/get-started/locally/
-
-5. Install required conda packages
 	
-.. code-block:: bash
-
-	conda install numba nutpie -c conda-forge
-	
-6. Install PCNtoolkit (plus dependencies)
+4. Install PCNtoolkit (plus dependencies)
 	
 .. code-block:: bash
 
@@ -62,29 +50,21 @@ Alternative installation (on a shared resource)
 	conda activate /shared/conda/<env_name>
 
 
-4. Install other dependencies
-	
-.. code-block:: bash
-
-	# Command found on the torch website: https://pytorch.org/get-started/locally/
-	conda install numba nutpie -c conda-forge
-
-	
-5. Install pip dependencies
+4. Install pip dependencies
 	
 .. code-block:: bash
 
 	pip --no-cache-dir install nibabel sklearn torch glob3 
 
 	
-6. Clone the repo
+5. Clone the repo
 	
 .. code-block:: bash
 
 	git clone https://github.com/amarquand/PCNtoolkit.git
 
 	
-7. Install in the conda environment
+6. Install in the conda environment
 	
 .. code-block:: bash
 
@@ -92,7 +72,7 @@ Alternative installation (on a shared resource)
 	python3 setup.py install
 
 	
-8. Test 
+7. Test 
 
 .. code-block:: bash
 

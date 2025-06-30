@@ -6,9 +6,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>fileio &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
@@ -17,7 +17,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=0144e382"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -61,7 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/normative_modelling_walkthrough.html"><strong>DEMO ON NORMATIVE MODELING</strong></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html#hierarchical-bayesian-regression-normative-modelling-and-transfer-onto-unseen-site">Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Using lifespan models to make predictions on new data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
@@ -113,12 +113,13 @@
 <span></span>from __future__ import print_function
 
 import os
-import sys
-import numpy as np
-import nibabel as nib
-import tempfile
-import pandas as pd
 import re
+import sys
+import tempfile
+
+import nibabel as nib
+import numpy as np
+import pandas as pd
 
 try:  # run as a package if installed
     from pcntoolkit import configs
@@ -132,11 +133,21 @@ except ImportError:
     del path
     import configs
 
-CIFTI_MAPPINGS = (&#39;dconn&#39;, &#39;dtseries&#39;, &#39;pconn&#39;, &#39;ptseries&#39;, &#39;dscalar&#39;,
-                  &#39;dlabel&#39;, &#39;pscalar&#39;, &#39;pdconn&#39;, &#39;dpconn&#39;,
-                  &#39;pconnseries&#39;, &#39;pconnscalar&#39;)
+CIFTI_MAPPINGS = (
+    &quot;dconn&quot;,
+    &quot;dtseries&quot;,
+    &quot;pconn&quot;,
+    &quot;ptseries&quot;,
+    &quot;dscalar&quot;,
+    &quot;dlabel&quot;,
+    &quot;pscalar&quot;,
+    &quot;pdconn&quot;,
+    &quot;dpconn&quot;,
+    &quot;pconnseries&quot;,
+    &quot;pconnscalar&quot;,
+)
 
-CIFTI_VOL_ATLAS = &#39;Atlas_ROIs.2.nii.gz&#39;
+CIFTI_VOL_ATLAS = &quot;Atlas_ROIs.2.nii.gz&quot;
 
 PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
@@ -147,18 +158,16 @@ PICKLE_PROTOCOL = configs.PICKLE_PROTOCOL
 
 <div class="viewcode-block" id="predictive_interval">
 <a class="viewcode-back" href="../pages/modindex.html#fileio.predictive_interval">[docs]</a>
-def predictive_interval(s2_forward,
-                        cov_forward,
-                        multiplicator):
+def predictive_interval(s2_forward, cov_forward, multiplicator):
     &quot;&quot;&quot;
     Calculates a predictive interval for the forward model
     &quot;&quot;&quot;
-  # calculates a predictive interval
+    # calculates a predictive interval
 
     PI = np.zeros(len(cov_forward))
     for i, xdot in enumerate(cov_forward):
         s = np.sqrt(s2_forward[i])
-        PI[i] = multiplicator*s
+        PI[i] = multiplicator * s
     return PI</div>
 
 
@@ -182,7 +191,7 @@ def create_mask(data_array, mask, verbose=False):
 
     if mask is not None:
         if verbose:
-            print(&#39;Loading ROI mask ...&#39;)
+            print(&quot;Loading ROI mask ...&quot;)
         maskvol = load_nifti(mask, vol=True)
         maskvol = maskvol != 0
     else:
@@ -192,7 +201,7 @@ def create_mask(data_array, mask, verbose=False):
             dim = data_array.shape[0:3] + (data_array.shape[3],)
 
         if verbose:
-            print(&#39;Generating mask automatically ...&#39;)
+            print(&quot;Generating mask automatically ...&quot;)
         if dim[3] == 1:
             maskvol = data_array[:, :, :] != 0
         else:
@@ -254,14 +263,14 @@ def file_type(filename):
     &quot;&quot;&quot;
     # routine to determine filetype
 
-    if filename.endswith((&#39;.dtseries.nii&#39;, &#39;.dscalar.nii&#39;, &#39;.dlabel.nii&#39;)):
-        ftype = &#39;cifti&#39;
-    elif filename.endswith((&#39;.nii.gz&#39;, &#39;.nii&#39;, &#39;.img&#39;, &#39;.hdr&#39;)):
-        ftype = &#39;nifti&#39;
-    elif filename.endswith((&#39;.txt&#39;, &#39;.csv&#39;, &#39;.tsv&#39;, &#39;.asc&#39;)):
-        ftype = &#39;text&#39;
-    elif filename.endswith((&#39;.pkl&#39;)):
-        ftype = &#39;binary&#39;
+    if filename.endswith((&quot;.dtseries.nii&quot;, &quot;.dscalar.nii&quot;, &quot;.dlabel.nii&quot;)):
+        ftype = &quot;cifti&quot;
+    elif filename.endswith((&quot;.nii.gz&quot;, &quot;.nii&quot;, &quot;.img&quot;, &quot;.hdr&quot;)):
+        ftype = &quot;nifti&quot;
+    elif filename.endswith((&quot;.txt&quot;, &quot;.csv&quot;, &quot;.tsv&quot;, &quot;.asc&quot;)):
+        ftype = &quot;text&quot;
+    elif filename.endswith((&quot;.pkl&quot;)):
+        ftype = &quot;binary&quot;
     else:
         raise ValueError(&quot;I don&#39;t know what to do with &quot; + filename)
 
@@ -286,20 +295,20 @@ def file_extension(filename):
 
     parts = filename.split(os.extsep)
 
-    if parts[-1] == &#39;gz&#39;:
-        if parts[-2] == &#39;nii&#39; or parts[-2] == &#39;img&#39; or parts[-2] == &#39;hdr&#39;:
-            ext = parts[-2] + &#39;.&#39; + parts[-1]
+    if parts[-1] == &quot;gz&quot;:
+        if parts[-2] == &quot;nii&quot; or parts[-2] == &quot;img&quot; or parts[-2] == &quot;hdr&quot;:
+            ext = parts[-2] + &quot;.&quot; + parts[-1]
         else:
             ext = parts[-1]
-    elif parts[-1] == &#39;nii&#39;:
+    elif parts[-1] == &quot;nii&quot;:
         if parts[-2] in CIFTI_MAPPINGS:
-            ext = parts[-2] + &#39;.&#39; + parts[-1]
+            ext = parts[-2] + &quot;.&quot; + parts[-1]
         else:
             ext = parts[-1]
     else:
         ext = parts[-1]
 
-    ext = &#39;.&#39; + ext
+    ext = &quot;.&quot; + ext
     return ext</div>
 
 
@@ -320,6 +329,7 @@ def file_stem(filename):
     stm = filename[0:idx]
 
     return stm</div>
+
 
 
 # --------------
@@ -344,9 +354,9 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
     &quot;&quot;&quot;
 
     if verbose:
-        print(&#39;Loading nifti: &#39; + datafile + &#39; ...&#39;)
+        print(&quot;Loading nifti: &quot; + datafile + &quot; ...&quot;)
     img = nib.load(datafile)
-    dat = img.get_data()
+    dat = img.get_fdata()
 
     if mask is not None:
         mask = load_nifti(mask, vol=True)
@@ -361,7 +371,7 @@ def load_nifti(datafile, mask=None, vol=False, verbose=False):
 <div class="viewcode-block" id="save_nifti">
 <a class="viewcode-back" href="../pages/modindex.html#fileio.save_nifti">[docs]</a>
 def save_nifti(data, filename, examplenii, mask, dtype=None):
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
     Write output to nifti
 
     Basic usage::
@@ -373,7 +383,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     :param examplenii: nifti to copy the geometry and data type from
     :mask: nifti image containing a mask for the image
     :param dtype: data type for the output image (if different from the image)
-    &#39;&#39;&#39;
+    &quot;&quot;&quot;
 
     # load mask
     if isinstance(mask, str):
@@ -393,7 +403,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     # write data
     array_data = np.zeros((np.prod(dim), nvol))
     array_data[mask.flatten(), :] = data
-    array_data = np.reshape(array_data, dim+(nvol,))
+    array_data = np.reshape(array_data, dim + (nvol,))
     hdr = ex_img.header
     if dtype is not None:
         hdr.set_data_dtype(dtype)
@@ -401,6 +411,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
     array_img = nib.Nifti1Image(array_data, ex_img.affine, hdr)
 
     nib.save(array_img, filename)</div>
+
 
 
 # --------------
@@ -412,7 +423,7 @@ def save_nifti(data, filename, examplenii, mask, dtype=None):
 <a class="viewcode-back" href="../pages/modindex.html#fileio.load_cifti">[docs]</a>
 def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     &quot;&quot;&quot;
-    Load a cifti file into a numpy array 
+    Load a cifti file into a numpy array
 
     Basic usage::
 
@@ -426,17 +437,24 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     # parse the name
     dnam, fnam = os.path.split(filename)
     fpref = file_stem(fnam)
-    outstem = os.path.join(tempfile.gettempdir(),
-                           str(os.getpid()) + &quot;-&quot; + fpref)
+    outstem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + &quot;-&quot; + fpref)
 
     # extract surface data from the cifti file
-    print(&quot;Extracting cifti surface data to &quot;, outstem, &#39;-*.func.gii&#39;, sep=&quot;&quot;)
-    giinamel = outstem + &#39;-left.func.gii&#39;
-    giinamer = outstem + &#39;-right.func.gii&#39;
-    os.system(&#39;wb_command -cifti-separate &#39; + filename +
-              &#39; COLUMN -metric CORTEX_LEFT &#39; + giinamel)
-    os.system(&#39;wb_command -cifti-separate &#39; + filename +
-              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giinamer)
+    print(&quot;Extracting cifti surface data to &quot;, outstem, &quot;-*.func.gii&quot;, sep=&quot;&quot;)
+    giinamel = outstem + &quot;-left.func.gii&quot;
+    giinamer = outstem + &quot;-right.func.gii&quot;
+    os.system(
+        &quot;wb_command -cifti-separate &quot;
+        + filename
+        + &quot; COLUMN -metric CORTEX_LEFT &quot;
+        + giinamel
+    )
+    os.system(
+        &quot;wb_command -cifti-separate &quot;
+        + filename
+        + &quot; COLUMN -metric CORTEX_RIGHT &quot;
+        + giinamer
+    )
 
     # load the surface data
     giil = nib.load(giinamel)
@@ -444,8 +462,7 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
     Nimg = len(giil.darrays)
     Nvert = len(giil.darrays[0].data)
     if Nimg == 1:
-        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data),
-                             axis=0)
+        out = np.concatenate((giil.darrays[0].data, giir.darrays[0].data), axis=0)
     else:
         Gl = np.zeros((Nvert, Nimg))
         Gr = np.zeros((Nvert, Nimg))
@@ -459,10 +476,11 @@ def load_cifti(filename, vol=False, mask=None, rmtmp=True):
         os.remove(giinamer)
 
     if vol:
-        niiname = outstem + &#39;-vol.nii&#39;
+        niiname = outstem + &quot;-vol.nii&quot;
         print(&quot;Extracting cifti volume data to &quot;, niiname, sep=&quot;&quot;)
-        os.system(&#39;wb_command -cifti-separate &#39; + filename +
-                  &#39; COLUMN -volume-all &#39; + niiname)
+        os.system(
+            &quot;wb_command -cifti-separate &quot; + filename + &quot; COLUMN -volume-all &quot; + niiname
+        )
         vol = load_nifti(niiname, vol=True)
         volmask = create_mask(vol)
         out = np.concatenate((out, vol2vec(vol, volmask)), axis=0)
@@ -492,13 +510,11 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     &quot;&quot;&quot;
 
     # do some sanity checks
-    if data.dtype == &#39;float32&#39; or \
-       data.dtype == &#39;float&#39; or \
-       data.dtype == &#39;float64&#39;:
-        data = data.astype(&#39;float32&#39;)  # force 32 bit output
-        dtype = &#39;NIFTI_TYPE_FLOAT32&#39;
+    if data.dtype == &quot;float32&quot; or data.dtype == &quot;float&quot; or data.dtype == &quot;float64&quot;:
+        data = data.astype(&quot;float32&quot;)  # force 32 bit output
+        dtype = &quot;NIFTI_TYPE_FLOAT32&quot;
     else:
-        raise ValueError(&#39;Only float data types currently handled&#39;)
+        raise ValueError(&quot;Only float data types currently handled&quot;)
 
     if len(data.shape) == 1:
         Nimg = 1
@@ -512,12 +528,20 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
 
     # Split the template
     estem = os.path.join(tempfile.gettempdir(), str(os.getpid()) + &quot;-&quot; + fstem)
-    giiexnamel = estem + &#39;-left.func.gii&#39;
-    giiexnamer = estem + &#39;-right.func.gii&#39;
-    os.system(&#39;wb_command -cifti-separate &#39; + example +
-              &#39; COLUMN -metric CORTEX_LEFT &#39; + giiexnamel)
-    os.system(&#39;wb_command -cifti-separate &#39; + example +
-              &#39; COLUMN -metric CORTEX_RIGHT &#39; + giiexnamer)
+    giiexnamel = estem + &quot;-left.func.gii&quot;
+    giiexnamer = estem + &quot;-right.func.gii&quot;
+    os.system(
+        &quot;wb_command -cifti-separate &quot;
+        + example
+        + &quot; COLUMN -metric CORTEX_LEFT &quot;
+        + giiexnamel
+    )
+    os.system(
+        &quot;wb_command -cifti-separate &quot;
+        + example
+        + &quot; COLUMN -metric CORTEX_RIGHT &quot;
+        + giiexnamer
+    )
 
     # write left hemisphere
     giiexl = nib.load(giiexnamel)
@@ -525,10 +549,10 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     garraysl = []
     for i in range(0, Nimg):
         garraysl.append(
-            nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i],
-                                           datatype=dtype))
+            nib.gifti.gifti.GiftiDataArray(data=data[0:Nvertl, i], datatype=dtype)
+        )
     giil = nib.gifti.gifti.GiftiImage(darrays=garraysl)
-    fnamel = fstem + &#39;-left.func.gii&#39;
+    fnamel = fstem + &quot;-left.func.gii&quot;
     nib.save(giil, fnamel)
 
     # write right hemisphere
@@ -537,39 +561,52 @@ def save_cifti(data, filename, example, mask=None, vol=True, volatlas=None):
     garraysr = []
     for i in range(0, Nimg):
         garraysr.append(
-            nib.gifti.gifti.GiftiDataArray(data=data[Nvertl:Nvertl+Nvertr, i],
-                                           datatype=dtype))
+            nib.gifti.gifti.GiftiDataArray(
+                data=data[Nvertl : Nvertl + Nvertr, i], datatype=dtype
+            )
+        )
     giir = nib.gifti.gifti.GiftiImage(darrays=garraysr)
-    fnamer = fstem + &#39;-right.func.gii&#39;
+    fnamer = fstem + &quot;-right.func.gii&quot;
     nib.save(giir, fnamer)
 
     tmpfiles = [fnamer, fnamel, giiexnamel, giiexnamer]
 
     # process volumetric data
     if vol:
-        niiexname = estem + &#39;-vol.nii&#39;
-        os.system(&#39;wb_command -cifti-separate &#39; + example +
-                  &#39; COLUMN -volume-all &#39; + niiexname)
+        niiexname = estem + &quot;-vol.nii&quot;
+        os.system(
+            &quot;wb_command -cifti-separate &quot; + example + &quot; COLUMN -volume-all &quot; + niiexname
+        )
         niivol = load_nifti(niiexname, vol=True)
         if mask is None:
             mask = create_mask(niivol)
 
         if volatlas is None:
             volatlas = CIFTI_VOL_ATLAS
-        fnamev = fstem + &#39;-vol.nii&#39;
+        fnamev = fstem + &quot;-vol.nii&quot;
 
-        save_nifti(data[Nvertr+Nvertl:, :], fnamev, niiexname, mask)
+        save_nifti(data[Nvertr + Nvertl :, :], fnamev, niiexname, mask)
         tmpfiles.extend([fnamev, niiexname])
 
     # write cifti
-    fname = fstem + &#39;.dtseries.nii&#39;
-    os.system(&#39;wb_command -cifti-create-dense-timeseries &#39; + fname +
-              &#39; -volume &#39; + fnamev + &#39; &#39; + volatlas +
-              &#39; -left-metric &#39; + fnamel + &#39; -right-metric &#39; + fnamer)
+    fname = fstem + &quot;.dtseries.nii&quot;
+    os.system(
+        &quot;wb_command -cifti-create-dense-timeseries &quot;
+        + fname
+        + &quot; -volume &quot;
+        + fnamev
+        + &quot; &quot;
+        + volatlas
+        + &quot; -left-metric &quot;
+        + fnamel
+        + &quot; -right-metric &quot;
+        + fnamer
+    )
 
     # clean up
     for f in tmpfiles:
         os.remove(f)</div>
+
 
 
 # --------------
@@ -591,9 +628,7 @@ def load_pd(filename):
     &quot;&quot;&quot;
 
     # based on pandas
-    x = pd.read_csv(filename,
-                    sep=&#39; &#39;,
-                    header=None)
+    x = pd.read_csv(filename, sep=&quot; &quot;, header=None)
     return x</div>
 
 
@@ -612,11 +647,7 @@ def save_pd(data, filename):
     :param filename: where to store it
     &quot;&quot;&quot;
     # based on pandas
-    data.to_csv(filename,
-                index=None,
-                header=None,
-                sep=&#39; &#39;,
-                na_rep=&#39;NaN&#39;)</div>
+    data.to_csv(filename, index=None, header=None, sep=&quot; &quot;, na_rep=&quot;NaN&quot;)</div>
 
 
 
@@ -656,6 +687,7 @@ def save_ascii(data, filename):
     np.savetxt(filename, data)</div>
 
 
+
 # ----------------
 # generic routines
 # ----------------
@@ -679,13 +711,13 @@ def save(data, filename, example=None, mask=None, text=False, dtype=None):
     :param dtype: data type for the output image (if different from the image)
     &quot;&quot;&quot;
 
-    if file_type(filename) == &#39;cifti&#39;:
+    if file_type(filename) == &quot;cifti&quot;:
         save_cifti(data.T, filename, example, vol=True)
-    elif file_type(filename) == &#39;nifti&#39;:
+    elif file_type(filename) == &quot;nifti&quot;:
         save_nifti(data.T, filename, example, mask, dtype=dtype)
-    elif text or file_type(filename) == &#39;text&#39;:
+    elif text or file_type(filename) == &quot;text&quot;:
         save_ascii(data, filename)
-    elif file_type(filename) == &#39;binary&#39;:
+    elif file_type(filename) == &quot;binary&quot;:
         data = pd.DataFrame(data)
         data.to_pickle(filename, protocol=PICKLE_PROTOCOL)</div>
 
@@ -707,16 +739,17 @@ def load(filename, mask=None, text=False, vol=True):
     :param vol: whether to load the image as a volume
     &quot;&quot;&quot;
 
-    if file_type(filename) == &#39;cifti&#39;:
+    if file_type(filename) == &quot;cifti&quot;:
         x = load_cifti(filename, vol=vol)
-    elif file_type(filename) == &#39;nifti&#39;:
+    elif file_type(filename) == &quot;nifti&quot;:
         x = load_nifti(filename, mask, vol=vol)
-    elif text or file_type(filename) == &#39;text&#39;:
+    elif text or file_type(filename) == &quot;text&quot;:
         x = load_ascii(filename)
-    elif file_type(filename) == &#39;binary&#39;:
+    elif file_type(filename) == &quot;binary&quot;:
         x = pd.read_pickle(filename)
         x = x.to_numpy()
     return x</div>
+
 
 
 # -------------------
@@ -752,11 +785,11 @@ def alphanum_key(s):
 
     Basic usage::
 
-                    alphanum_key(s) 
+                    alphanum_key(s)
 
     :param s: string to convert
     &quot;&quot;&quot;
-    return [tryint(c) for c in re.split(&#39;([0-9]+)&#39;, s)]</div>
+    return [tryint(c) for c in re.split(&quot;([0-9]+)&quot;, s)]</div>
 
 
 
@@ -768,7 +801,7 @@ def sort_nicely(l):
 
     Basic usage::
 
-        sort_nicely(l)  
+        sort_nicely(l)
 
     :param l: list of strings to sort
     &quot;&quot;&quot;

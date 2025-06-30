@@ -6,9 +6,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>normative_parallel &mdash; Predictive Clinical Neuroscience Toolkit 0.20 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_tabs.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit.css" />
       <link rel="stylesheet" type="text/css" href="../_static/pages/css/pcntoolkit_nomaxwidth.css" />
@@ -17,7 +17,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=0144e382"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -61,7 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../pages/normative_modelling_walkthrough.html"><strong>DEMO ON NORMATIVE MODELING</strong></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/HBR_NormativeModel_FCONdata_Tutorial.html#hierarchical-bayesian-regression-normative-modelling-and-transfer-onto-unseen-site">Hierarchical Bayesian Regression Normative Modelling and Transfer onto unseen site.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Braincharts: transfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pages/apply_normative_models.html">Using lifespan models to make predictions on new data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html">Predictive Clinical Neuroscience Toolkit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html#the-normative-modeling-framework-for-computational-psychiatry-protocol">The Normative Modeling Framework for Computational Psychiatry Protocol</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pages/BLR_normativemodel_protocol.html#data-preparation">Data Preparation</a></li>
@@ -130,21 +130,20 @@
 # S Rutherford, AF Marquand
 # -----------------------------------------------------------------------------
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
-import os
-import sys
-import glob
-import shutil
-import pickle
 import fileinput
+import glob
+import os
+import pickle
+import shutil
+import sys
 import time
+from datetime import datetime
+from subprocess import check_output, run
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from subprocess import run, check_output
-
 
 try:
     import pcntoolkit as ptk
@@ -157,8 +156,8 @@ except ImportError:
     ptkpath = os.path.abspath(os.path.dirname(__file__))
     if ptkpath not in sys.path:
         sys.path.append(ptkpath)
-    import dataio.fileio as fileio
     import configs
+    import dataio.fileio as fileio
     from util.utils import yes_or_no
 
 
@@ -201,7 +200,7 @@ def execute_nm(processing_dir,
     :param testcovfile_path: Full path to a .txt file that contains all covariates (subjects x covariates) for the test response file
     :param testrespfile_path: Full path to a .txt file that contains all test features
     :param log_path: Path for saving log files
-    :param binary: If True uses binary format for response file otherwise it is text
+    :param binary: If &#39;True&#39; (string not boolean) uses binary format for response file otherwise it is text, defaulted to &#39;False&#39;.
     :param cluster_spec: &#39;torque&#39; for PBS Torque and &#39;slurm&#39; for Slurm clusters. 
     :param interactive: If False (default) the user should manually 
                         rerun the failed jobs or collect the results.
@@ -222,16 +221,16 @@ def execute_nm(processing_dir,
     cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
     testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
     testrespfile_path = kwargs.get(&#39;testrespfile_path&#39;, None)
-    outputsuffix = kwargs.get(&#39;outputsuffix&#39;, &#39;_estimate&#39;)
-    cluster_spec = kwargs.pop(&#39;cluster_spec&#39;, &#39;torque&#39;)
+    outputsuffix = kwargs.get(&#39;outputsuffix&#39;, func)
+    outputsuffix = &quot;_&quot; + outputsuffix.replace(&quot;_&quot;, &quot;&quot;)
+    cluster_spec = kwargs.get(&#39;cluster_spec&#39;, &#39;slurm&#39;)
     log_path = kwargs.get(&#39;log_path&#39;, None)
-    binary = kwargs.pop(&#39;binary&#39;, False)
-    cores = kwargs.pop(&#39;n_cores_per_batch&#39;,&#39;1&#39;)
+    binary = str(kwargs.get(&#39;binary&#39;, &#39;False&#39;))==&#39;True&#39;
+    cores = kwargs.get(&#39;n_cores_per_batch&#39;,&#39;1&#39;)
 
     split_nm(processing_dir,
              respfile_path,
              batch_size,
-             binary,
              **kwargs)
 
     batch_dir = glob.glob(processing_dir + &#39;batch_*&#39;)
@@ -287,12 +286,12 @@ def execute_nm(processing_dir,
                     # update the response file
                     kwargs.update({&#39;testrespfile_path&#39;:
                                    batch_testrespfile_path})
-                    sbatchwrap_nm(batch_processing_dir,
-                                  python_path,
-                                  normative_path,
-                                  batch_job_name,
-                                  covfile_path,
-                                  batch_respfile_path,
+                    sbatchwrap_nm(processing_dir=batch_processing_dir,
+                                  python_path=python_path,
+                                  normative_path=normative_path,
+                                  job_name=batch_job_name,
+                                  covfile_path=covfile_path,
+                                  respfile_path=batch_respfile_path,
                                   func=func,
                                   memory=memory,
                                   duration=duration,
@@ -423,9 +422,8 @@ def execute_nm(processing_dir,
                             sbatchrerun_nm(processing_dir,
                                            memory=memory,
                                            duration=duration,
-                                           binary=binary,
-                                           log_path=log_path,
-                                           interactive=interactive)
+                                           interactive=interactive,
+                                           **kwargs)
 
                     else:
                         success = True
@@ -439,9 +437,8 @@ def execute_nm(processing_dir,
                         sbatchrerun_nm(processing_dir,
                                        memory=memory,
                                        duration=duration,
-                                       binary=binary,
-                                       log_path=log_path,
-                                       interactive=interactive)
+                                       interactive=interactive,
+                                       **kwargs)
 
         if interactive == &#39;query&#39;:
             response = yes_or_no(&#39;Collect the results?&#39;)
@@ -473,7 +470,6 @@ def execute_nm(processing_dir,
 def split_nm(processing_dir,
              respfile_path,
              batch_size,
-             binary,
              **kwargs):
     &#39;&#39;&#39; This function prepares the input files for normative_parallel.
 
@@ -492,7 +488,8 @@ def split_nm(processing_dir,
     witten by (primarily) T Wolfers (adapted) SM Kia, (adapted) S Rutherford.
     &#39;&#39;&#39;
 
-    testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
+    testrespfile_path = kwargs.get(&#39;testrespfile_path&#39;, None)
+    binary =  kwargs.get(&#39;binary&#39;, False)
 
     dummy, respfile_extension = os.path.splitext(respfile_path)
     if (binary and respfile_extension != &#39;.pkl&#39;):
@@ -594,7 +591,7 @@ def collect_nm(processing_dir,
                collect=False,
                binary=False,
                batch_size=None,
-               outputsuffix=&#39;_estimate&#39;):
+               outputsuffix=&#39;estimate&#39;):
     &#39;&#39;&#39;Function to checks and collects all batches.
 
     Basic usage::
@@ -614,6 +611,8 @@ def collect_nm(processing_dir,
     written by (primarily) T Wolfers, (adapted) SM Kia, (adapted) S Rutherford.
     &#39;&#39;&#39;
 
+    outputsuffix = &quot;_&quot; + outputsuffix.replace(&quot;_&quot;, &quot;&quot;)
+    
     if binary:
         file_extentions = &#39;.pkl&#39;
     else:
@@ -780,8 +779,11 @@ def collect_nm(processing_dir,
         if Z_filenames:
             Z_filenames = fileio.sort_nicely(Z_filenames)
             Z_dfs = []
+            voxel_count = []
             for Z_filename in Z_filenames:
-                Z_dfs.append(pd.DataFrame(fileio.load(Z_filename)))
+                Zi = pd.DataFrame(fileio.load(Z_filename))
+                Z_dfs.append(Zi)
+                voxel_count.append(Zi.shape[1])                 
             Z_dfs = pd.concat(Z_dfs, ignore_index=True, axis=1)
             fileio.save(Z_dfs, processing_dir + &#39;Z&#39; + outputsuffix +
                         file_extentions)
@@ -924,26 +926,41 @@ def collect_nm(processing_dir,
             sY = []
             X_scalers = []
             Y_scalers = []
+            vVox = []
+            vox_offset = 0
             if meta_filenames:
                 meta_filenames = fileio.sort_nicely(meta_filenames)
                 with open(meta_filenames[0], &#39;rb&#39;) as file:
                     meta_data = pickle.load(file)
 
-                for meta_filename in meta_filenames:
+                for ix, meta_filename in enumerate(meta_filenames):
                     with open(meta_filename, &#39;rb&#39;) as file:
                         meta_data = pickle.load(file)
                     mY.append(meta_data[&#39;mean_resp&#39;])
                     sY.append(meta_data[&#39;std_resp&#39;])
+                    if &#39;valid_voxels&#39; in meta_data.keys():
+                        vVox.append(meta_data[&#39;valid_voxels&#39;] + vox_offset)
+                        vox_offset = vox_offset + voxel_count[ix]
                     if meta_data[&#39;inscaler&#39;] in [&#39;standardize&#39;, &#39;minmax&#39;,
                                                  &#39;robminmax&#39;]:
                         X_scalers.append(meta_data[&#39;scaler_cov&#39;])
                     if meta_data[&#39;outscaler&#39;] in [&#39;standardize&#39;, &#39;minmax&#39;,
                                                   &#39;robminmax&#39;]:
                         Y_scalers.append(meta_data[&#39;scaler_resp&#39;])
-                meta_data[&#39;mean_resp&#39;] = np.squeeze(np.column_stack(mY))
-                meta_data[&#39;std_resp&#39;] = np.squeeze(np.column_stack(sY))
+                #meta_data[&#39;mean_resp&#39;] = [np.squeeze(np.column_stack(mY))]
+                #meta_data[&#39;std_resp&#39;] = [np.squeeze(np.column_stack(sY))]
+                if type(mY[0]) is list:
+                    # sometimes (e.g. estimate()) meta data is a list of lists
+                    meta_data[&#39;mean_resp&#39;] = [np.concatenate(np.column_stack(mY))]
+                    meta_data[&#39;std_resp&#39;] = [np.concatenate(np.column_stack(sY))]
+                else:
+                    # other times (e.g. transfer()), a list of arrays is used
+                    meta_data[&#39;mean_resp&#39;] = [np.concatenate(mY)]
+                    meta_data[&#39;std_resp&#39;] = [np.concatenate(sY)]
                 meta_data[&#39;scaler_cov&#39;] = X_scalers
                 meta_data[&#39;scaler_resp&#39;] = Y_scalers
+                if &#39;valid_voxels&#39; in meta_data.keys():
+                    meta_data[&#39;valid_voxels&#39;] = np.concatenate(vVox)
 
                 with open(os.path.join(processing_dir, &#39;Models&#39;,
                                        &#39;meta_data.md&#39;), &#39;wb&#39;) as file:
@@ -1055,11 +1072,11 @@ def bashwrap_nm(processing_dir,
     &#39;&#39;&#39;
 
     # here we use pop not get to remove the arguments as they used
-    cv_folds = kwargs.pop(&#39;cv_folds&#39;, None)
-    testcovfile_path = kwargs.pop(&#39;testcovfile_path&#39;, None)
-    testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
-    alg = kwargs.pop(&#39;alg&#39;, None)
-    configparam = kwargs.pop(&#39;configparam&#39;, None)
+    cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
+    testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
+    testrespfile_path = kwargs.get(&#39;testrespfile_path&#39;, None)
+    alg = kwargs.get(&#39;alg&#39;, None)
+    configparam = kwargs.get(&#39;configparam&#39;, None)
     # change to processing dir
     os.chdir(processing_dir)
     output_changedir = [&#39;cd &#39; + processing_dir + &#39;\n&#39;]
@@ -1225,7 +1242,6 @@ def sbatchwrap_nm(processing_dir,
                   respfile_path,
                   memory,
                   duration,
-                  log_path,
                   func=&#39;estimate&#39;,
                   **kwargs):
     &#39;&#39;&#39;This function wraps normative modelling into a bash script to run it
@@ -1253,11 +1269,13 @@ def sbatchwrap_nm(processing_dir,
     &#39;&#39;&#39;
 
     # here we use pop not get to remove the arguments as they used
-    cv_folds = kwargs.pop(&#39;cv_folds&#39;, None)
-    testcovfile_path = kwargs.pop(&#39;testcovfile_path&#39;, None)
-    testrespfile_path = kwargs.pop(&#39;testrespfile_path&#39;, None)
-    alg = kwargs.pop(&#39;alg&#39;, None)
-    configparam = kwargs.pop(&#39;configparam&#39;, None)
+    cv_folds = kwargs.get(&#39;cv_folds&#39;, None)
+    testcovfile_path = kwargs.get(&#39;testcovfile_path&#39;, None)
+    testrespfile_path = kwargs.get(&#39;testrespfile_path&#39;, None)
+    log_path = kwargs.get(&#39;log_path&#39;, &#39;&#39;)
+    alg = kwargs.get(&#39;alg&#39;, None)
+    configparam = kwargs.get(&#39;configparam&#39;, None)
+    partition_name = kwargs.pop(&#39;partition_name&#39;, None)
 
     # change to processing dir
     os.chdir(processing_dir)
@@ -1271,6 +1289,7 @@ def sbatchwrap_nm(processing_dir,
     sbatch_memory = &#39;#SBATCH --mem-per-cpu=&#39; + str(memory) + &#39;\n&#39;
     sbatch_log_out = &#39;#SBATCH -o &#39; + log_path + &#39;%x_%j.out&#39; + &#39;\n&#39;
     sbatch_log_error = &#39;#SBATCH -e &#39; + log_path + &#39;%x_%j.err&#39; + &#39;\n&#39;
+    sbatch_partition = &#39;#SBATCH --partition=&#39; + str(partition_name) + &#39;\n&#39;
     # sbatch_module = &#39;module purge\n&#39;
     # sbatch_anaconda = &#39;module load anaconda3\n&#39;
     sbatch_exit = &#39;set -o errexit\n&#39;
@@ -1287,9 +1306,14 @@ def sbatchwrap_nm(processing_dir,
                         sbatch_log_out +
                         sbatch_log_error
                         ]
+    if partition_name:
+        bash_environment[0] += sbatch_partition
 
     # creates call of function for normative modelling
-    if (testrespfile_path is not None) and (testcovfile_path is not None):
+    if func == &#39;predict&#39; or func == &#39;fit&#39;:
+         job_call = [python_path + &#39; &#39; + normative_path + &#39; -c &#39; +
+                    covfile_path + &#39; -f &#39; + func]
+    elif (testrespfile_path is not None) and (testcovfile_path is not None):
         job_call = [python_path + &#39; &#39; + normative_path + &#39; -c &#39; +
                     covfile_path + &#39; -t &#39; + testcovfile_path + &#39; -r &#39; +
                     testrespfile_path + &#39; -f &#39; + func]
@@ -1298,10 +1322,7 @@ def sbatchwrap_nm(processing_dir,
                     covfile_path + &#39; -t &#39; + testcovfile_path + &#39; -f &#39; + func]
     elif cv_folds is not None:
         job_call = [python_path + &#39; &#39; + normative_path + &#39; -c &#39; +
-                    covfile_path + &#39; -k &#39; + str(cv_folds) + &#39; -f &#39; + func]
-    elif func != &#39;estimate&#39;:
-        job_call = [python_path + &#39; &#39; + normative_path + &#39; -c &#39; +
-                    covfile_path + &#39; -f &#39; + func]
+                    covfile_path + &#39; -k &#39; + str(cv_folds) + &#39; -f &#39; + func]       
     else:
         raise ValueError(&quot;&quot;&quot;For &#39;estimate&#39; function either testrespfile_path or cv_folds
               must be specified.&quot;&quot;&quot;)
@@ -1319,9 +1340,15 @@ def sbatchwrap_nm(processing_dir,
     # add responses file
     job_call = [job_call[0] + &#39; &#39; + respfile_path]
 
+    # If count jobsdone is true, we need to add the log_path to the job_call
+    #job_call = [job_call[0] + &#39; log_path=&#39; + log_path]
+    
+    #print(&quot;log_path: &quot;, log_path)
     # add in optional arguments.
     for k in kwargs:
-        job_call = [job_call[0] + &#39; &#39; + k + &#39;=&#39; + kwargs[k]]
+        if k not in [&#39;alg&#39;, &#39;testcovfile_path&#39;, &#39;testrespfile_path&#39;]:
+            job_call = [job_call[0] + &#39; &#39; + k + &#39;=&#39; + str(kwargs[k])]
+
 
     # writes bash file into processing dir
     with open(processing_dir+job_name, &#39;w&#39;) as bash_file:
@@ -1368,7 +1395,6 @@ def sbatchrerun_nm(processing_dir,
                    duration,
                    new_memory=False,
                    new_duration=False,
-                   binary=False,
                    interactive=False,
                    **kwargs):
     &#39;&#39;&#39;This function reruns all failed batched in processing_dir after collect_nm has identified he failed batches.
@@ -1388,8 +1414,8 @@ def sbatchrerun_nm(processing_dir,
      written by (primarily) T Wolfers, (adapted) S Rutherford.
     &#39;&#39;&#39;
 
-    # log_path = kwargs.pop(&#39;log_path&#39;, None)
-
+    # log_path = kwargs.get(&#39;log_path&#39;, None)
+    binary = str(kwargs.get(&#39;binary&#39;, &#39;False&#39;))==&#39;True&#39;
     job_ids = []
 
     start_time = datetime.now().strftime(&quot;%Y-%m-%dT%H:%M:%S&quot;)
@@ -1555,6 +1581,23 @@ def check_jobs(jobs, cluster_spec, start_time=None, delay=60):
             print(&#39;All jobs are completed!&#39;)
             break
         time.sleep(delay)</div>
+
+
+
+<div class="viewcode-block" id="entrypoint">
+<a class="viewcode-back" href="../pages/modindex.html#normative_parallel.entrypoint">[docs]</a>
+def entrypoint(*args):
+    main(*args) </div>
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../pages/modindex.html#normative_parallel.main">[docs]</a>
+def main(*args):
+    execute_nm(*args)</div>
+
+
+if __name__ == &quot;__main__&quot;:
+    main(sys.argv[1:])
 
 </pre></div>
 

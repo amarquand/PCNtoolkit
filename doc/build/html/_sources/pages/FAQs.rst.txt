@@ -10,4 +10,4 @@ The PCNtoolkit developers have written a protocol for how to run a normative mod
 Rutherford, S., Kia, S. M., Wolfers, T., ... Beckmann, C. F., & Marquand, A. F. (2022). The Normative Modeling Framework for Computational Psychiatry. Nature Protocols. https://www.nature.com/articles/s41596-022-00696-5.
 
 
-Feel free to interact with the normative modeling community and browse the existing questions/answers on `Gitter <https://gitter.im/predictive-clinical-neuroscience/community?source=orgpage/>`__
+Feel free to interact with the normative modeling community and browse the existing questions/answers on `Github <https://github.com/amarquand/PCNtoolkit>`__
