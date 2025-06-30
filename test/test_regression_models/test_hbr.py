@@ -3,21 +3,18 @@ from __future__ import annotations
 import json
 import logging
 
-import numpy as np
-import pymc as pm
 import pytest
-import xarray as xr
 
-from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
-from pcntoolkit.regression_model.hbr import (  # noqa: F401, F403
-    HBR,
-    BasePrior,
+from pcntoolkit.math_functions.likelihood import NormalLikelihood
+from pcntoolkit.math_functions.prior import (
     LinearPrior,
-    NormalLikelihood,
     Prior,
     RandomPrior,
     make_prior,
     prior_from_args,
+)
+from pcntoolkit.regression_model.hbr import (  # noqa: F401, F403
+    HBR,
 )
 from test.fixtures.data_fixtures import *  # noqa: F401, F403
 from test.fixtures.hbr_model_fixtures import *  # noqa: F401, F403
@@ -139,7 +136,7 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
 
 @pytest.fixture(scope="module")
 def extract_data(fitted_norm_hbr_model: NormativeModel, norm_data_from_arrays: NormData):
-    fitted_norm_hbr_model.saveplots = False
+    fitted_norm_hbr_model.saveplots = False 
     fitted_norm_hbr_model.saveresults = True
     fitted_norm_hbr_model.savemodel = False
     fitted_norm_hbr_model.evaluate_model = True

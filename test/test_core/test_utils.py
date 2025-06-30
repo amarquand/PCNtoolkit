@@ -5,9 +5,7 @@ import shutil
 
 import pytest
 
-from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.normative import NormativeModel
-from pcntoolkit.regression_model.blr import BLR
 from pcntoolkit.util.runner import Runner
 from test.fixtures.blr_model_fixtures import *
 from test.fixtures.norm_data_fixtures import *

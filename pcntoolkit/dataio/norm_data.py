@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import fcntl
 import os
+from collections import defaultdict
 from functools import reduce
 
 # pylint: disable=deprecated-class
@@ -27,10 +28,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Union,
 )
-
-import nibabel as nib
 
 # pylint: enable=deprecated-class
 import numpy as np
@@ -42,7 +40,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split  # type: i
 # import datavars from xarray
 from xarray.core.types import DataVars
 
-from pcntoolkit.dataio.fileio import load, load_nifti
+from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
 
 
@@ -633,7 +631,8 @@ class NormData(xr.Dataset):
         my_be: xr.DataArray = self.batch_effects
         # create a dictionary with for each column in the batch effects, a dict from value to int
         self.attrs["unique_batch_effects"] = {}
-        self.attrs["batch_effect_counts"] = {}
+        self.attrs["batch_effect_counts"] = defaultdict(lambda : 0)
+        self.attrs["covariate_ranges"] = {}
         self.attrs["batch_effect_covariate_ranges"] = {}
         for dim in self.batch_effect_dims.to_numpy():
             dim_subset = my_be.sel(batch_effect_dims=dim)
@@ -651,7 +650,6 @@ class NormData(xr.Dataset):
                         my_min = my_c.min()
                         my_max = my_c.max()
                         self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"min": my_min, "max": my_max}
-        self.attrs["covariate_ranges"] = {}
         for c in self.covariates.to_numpy():
             my_c = self.X.sel(covariates=c).values
             my_min = my_c.min()
@@ -697,7 +695,49 @@ class NormData(xr.Dataset):
             )
         if len(missing_covariates) > 0 or len(extra_covariates) > 0 or len(extra_response_vars) > 0:
             return False
-        return True
+        return self.unique_batch_effects == other.unique_batch_effects
+    
+    def make_compatible(self: NormData, other: NormData):
+        """Ensures datasets are compatible by merging the batch effects maps
+        """
+        myu = self.unique_batch_effects
+        otu = other.unique_batch_effects
+        all_unique_batch_effects = {dim: list(set(val).union(set(otu[dim]))) for dim, val in myu.items()}
+
+        mycr = self.covariate_ranges
+        otcr = other.covariate_ranges
+        ncr = {
+            cov: {"min": min(mycr[cov]["min"], otcr[cov]["min"]), "max": max(mycr[cov]["max"], otcr[cov]["max"])}
+            for cov in self.covariates.to_numpy()
+        }
+
+        mybecr = self.batch_effect_covariate_ranges
+        otbecr = other.batch_effect_covariate_ranges
+        nbecr = {}
+        for dim, uniques in myu.items():
+            nbecr[dim] = {}
+            for u in uniques:
+                nbecr[dim][u] = {}
+                for c in self.covariates.to_numpy():
+                    match (u in mybecr[dim], u in otbecr[dim]):
+                        case True, True:
+                            nbecr[dim][u][c] = {
+                                "min": min(mybecr[dim][u][c]["min"], otbecr[dim][u][c]["min"]),
+                                "max": max(mybecr[dim][u][c]["max"], otbecr[dim][u][c]["max"]),
+                            }
+                        case True, False:
+                            nbecr[dim][u][c] = mybecr[dim][u][c]
+                        case False, True:
+                            nbecr[dim][u][c] = otbecr[dim][u][c]
+                        case False, False:
+                            raise ValueError("This should never happen")
+
+        self.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
+        other.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
+        self.covariate_ranges = copy.deepcopy(ncr)
+        other.covariate_ranges = copy.deepcopy(ncr)
+        self.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
+        other.covariate_ranges = copy.deepcopy(nbecr)
 
     def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """

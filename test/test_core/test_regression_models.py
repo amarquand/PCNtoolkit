@@ -2,19 +2,21 @@
 
 import numpy as np
 import pytest
-import xarray as xr
 
 from pcntoolkit.dataio.norm_data import NormData
-from pcntoolkit.normative_model import NormativeModel
-from pcntoolkit.regression_model.blr import BLR
-from pcntoolkit.regression_model.hbr import (
-    HBR,
+from pcntoolkit.math_functions.likelihood import NormalLikelihood
+from pcntoolkit.math_functions.prior import (
     LinearPrior,
-    NormalLikelihood,
     Prior,
     RandomPrior,
     make_prior,
 )
+from pcntoolkit.regression_model.blr import BLR
+from pcntoolkit.regression_model.hbr import HBR  # noqa: F401, F403
+from test.fixtures.data_fixtures import *  # noqa: F401, F403
+from test.fixtures.hbr_model_fixtures import *  # noqa: F401, F403
+from test.fixtures.norm_data_fixtures import *  # noqa: F401, F403
+from test.fixtures.path_fixtures import *
 
 
 class TestBLR:
