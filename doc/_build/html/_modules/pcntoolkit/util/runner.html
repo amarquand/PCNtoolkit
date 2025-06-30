@@ -1,0 +1,1183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.util.runner &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_cluster.html">Fitting normative models on a compute cluster</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.util.runner</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.util.runner</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cloudpickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio.fileio</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_incremental_backup</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio.norm_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.normative_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormativeModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.job_observer</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobObserver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">Errors</span><span class="p">,</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">Output</span><span class="p">,</span> <span class="n">Warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_default_log_dir</span><span class="p">,</span> <span class="n">get_default_temp_dir</span>
+
+
+<div class="viewcode-block" id="Runner">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Runner</span><span class="p">:</span>
+    <span class="n">cross_validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">cv_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">parallelize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">job_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
+    <span class="n">n_batches</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">n_cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">time_limit_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="s2">&quot;00:05:00&quot;</span>
+    <span class="n">time_limit_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span>
+    <span class="n">environment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+    <span class="n">preamble</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;module load anaconda3&quot;</span>
+    <span class="n">memory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;5gb&quot;</span>
+    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">random_sleep_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">log_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">temp_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parallelize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">job_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;torque&quot;</span><span class="p">,</span> <span class="s2">&quot;slurm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;slurm&quot;</span><span class="p">,</span>
+        <span class="n">n_batches</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">time_limit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="s2">&quot;00:05:00&quot;</span><span class="p">,</span>
+        <span class="n">memory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;5GB&quot;</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">random_sleep_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">environment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cross_validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cv_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">preamble</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;module load anaconda3&quot;</span><span class="p">,</span>        
+        <span class="n">log_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">temp_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the runner.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parallelize : bool, optional</span>
+<span class="sd">            Whether to parallelize the jobs.</span>
+<span class="sd">        job_type : Literal[&quot;torque&quot;, &quot;slurm&quot;], optional</span>
+<span class="sd">            The type of job to use.</span>
+<span class="sd">        n_batches : int, optional</span>
+<span class="sd">            The number of jobs to run in parallel.</span>
+<span class="sd">        n_cores : int, optional</span>
+<span class="sd">            The number of cores to use for each job.</span>
+<span class="sd">        time_limit : str | int, optional</span>
+<span class="sd">            The time limit for each job.</span>
+<span class="sd">        memory : str, optional</span>
+<span class="sd">            The memory to use for each job.</span>
+<span class="sd">        max_retries : int, optional</span>
+<span class="sd">            The maximum number of retries for each job.</span>
+<span class="sd">        environment : str, optional</span>
+<span class="sd">            The environment to use for each job.</span>
+<span class="sd">        cross_validate : bool, optional</span>
+<span class="sd">            Whether to cross-validate the model.</span>
+<span class="sd">        cv_folds : int, optional</span>
+<span class="sd">            The number of folds to use for cross-validation.</span>
+<span class="sd">        preamble : str, optional</span>
+<span class="sd">            The preamble to use for each job.</span>
+<span class="sd">        log_dir : str, optional</span>
+<span class="sd">            The directory to save the logs to.</span>
+<span class="sd">        temp_dir : str, optional</span>
+<span class="sd">            The directory to save the temporary files to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span> <span class="o">=</span> <span class="n">parallelize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">=</span> <span class="n">job_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="o">=</span> <span class="n">n_batches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_cores</span> <span class="o">=</span> <span class="n">n_cores</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_limit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_limit_str</span> <span class="o">=</span> <span class="n">time_limit</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_limit_seconds</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="mi">60</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_limit_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)))])</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_limit</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_limit_seconds</span> <span class="o">=</span> <span class="n">time_limit</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_limit_seconds</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">time_limit_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">3600</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">((</span><span class="n">s</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;0&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_PARSING_TIME_LIMIT</span><span class="p">,</span> <span class="n">time_limit_str</span><span class="o">=</span><span class="n">time_limit</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="o">=</span> <span class="n">max_retries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_sleep_scale</span> <span class="o">=</span> <span class="n">random_sleep_scale</span>
+        <span class="k">if</span> <span class="n">parallelize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">environment</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_NO_ENVIRONMENT_SPECIFIED</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Check if the environment is valid</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">environment</span><span class="p">,</span> <span class="s2">&quot;bin&quot;</span><span class="p">,</span> <span class="s2">&quot;python&quot;</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">INVALID_ENVIRONMENT</span><span class="p">,</span> <span class="n">environment</span><span class="o">=</span><span class="n">environment</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="n">environment</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">preamble</span> <span class="o">=</span> <span class="n">preamble</span>        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span> <span class="o">=</span> <span class="n">cross_validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span> <span class="o">=</span> <span class="n">cv_folds</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_CROSS_VALIDATION_FOLDS</span><span class="p">,</span> <span class="n">cv_folds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">log_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="n">get_default_log_dir</span><span class="p">()</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">NO_LOG_DIR_SPECIFIED</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">temp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">get_default_temp_dir</span><span class="p">()</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">NO_TEMP_DIR_SPECIFIED</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_observer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="Runner.wait_or_finish">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.wait_or_finish">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait_or_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">into</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">observe</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_observer</span> <span class="o">=</span> <span class="n">JobObserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_observer</span><span class="o">.</span><span class="n">wait_for_jobs</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finished_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_jobs_status</span><span class="p">()</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.set_task_id">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.set_task_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_task_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span> <span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+        <span class="n">unique_id</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">task_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">unique_id</span> <span class="o">=</span> <span class="n">task_name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">unique_id</span> <span class="o">=</span> <span class="n">unique_id</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">unique_id</span> <span class="o">=</span> <span class="n">unique_id</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+        <span class="n">milliseconds</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">%</span> <span class="mi">1000</span>
+        <span class="n">milliseconds</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">milliseconds</span><span class="si">:</span><span class="s2">03f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span> <span class="o">=</span> <span class="n">unique_id</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">_%H:%M:%S&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">milliseconds</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">TASK_ID_CREATED</span><span class="p">,</span> <span class="n">task_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.create_temp_and_log_dir">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.create_temp_and_log_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_temp_and_log_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="s2">&quot;README.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;The contents of the folder containing this README file are temporary files used by the Runner. Once the Runner has successfully finished all its jobs, this folder and all its contents can be safely deleted.&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">TEMP_DIR_CREATED</span><span class="p">,</span> <span class="n">temp_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">)</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">LOG_DIR_CREATED</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.fit">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit a normative model on a dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormBase</span>
+<span class="sd">            The normative model to fit.</span>
+<span class="sd">        data : NormData</span>
+<span class="sd">            The data to fit the model on.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.</span>
+<span class="sd">            If false, the function will dispatch the jobs and return. In that case, the model will not be loaded into the model object, it will have to be loaded manually using the load function when the jobs are done.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormativeModel | None</span>
+<span class="sd">            The fitted model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fit_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">first_data_source</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;unary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">,</span><span class="n">into</span><span class="o">=</span><span class="n">model</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.fit_predict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.fit_predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span>
+        <span class="n">fit_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+        <span class="n">predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit a normative model on a dataset and predict on another dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to fit.</span>
+<span class="sd">        fit_data : NormData</span>
+<span class="sd">            The data to fit the model on.</span>
+<span class="sd">        predict_data : Optional[NormData], optional</span>
+<span class="sd">            The data to predict on. Can be None if cross-validation is used.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish, then load the model into the model object</span>
+<span class="sd">            If false, the function will dispatch the jobs and return. In that case, the model will not be loaded into the model object, it will have to be loaded manually using the load function when the jobs are done.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormativeModel | None</span>
+<span class="sd">            The fitted and model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;fit_predict&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fit_predict_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span>
+            <span class="n">fn</span><span class="p">,</span>
+            <span class="n">first_data_source</span><span class="o">=</span><span class="n">fit_data</span><span class="p">,</span>
+            <span class="n">second_data_source</span><span class="o">=</span><span class="n">predict_data</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">model</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.predict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict on a dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to predict on.</span>
+<span class="sd">        data : NormData</span>
+<span class="sd">            The data to predict on.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None. If you want to load the model, use the runner.load_model function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span>
+        <span class="k">assert</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_predict_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">first_data_source</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;unary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Runner.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transfer a normative model to a new dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to transfer.</span>
+<span class="sd">        data : NormData</span>
+<span class="sd">            The data to transfer the model to.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then return the transfered model.</span>
+<span class="sd">            If false, the function will dispatch the jobs and return.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormBase | None</span>
+<span class="sd">            The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;_transfer&quot;</span>
+        <span class="k">assert</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;transfer&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;unary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="Runner.transfer_predict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.transfer_predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer_predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span>
+        <span class="n">fit_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+        <span class="n">predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transfer a normative model to a new dataset and predict on another dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to transfer.</span>
+<span class="sd">        fit_data : NormData</span>
+<span class="sd">            The data to transfer the model to.</span>
+<span class="sd">        predict_data : Optional[NormData], optional</span>
+<span class="sd">            The data to predict on. Can be None if cross-validation is used.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.</span>
+<span class="sd">            If false, the function will dispatch the jobs and return.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormBase | No   ne</span>
+<span class="sd">            The transfered model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;_transfer&quot;</span>
+        <span class="k">assert</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;transfer_predict&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transfer_predict_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.extend">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.extend">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend a normative model on a dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to extend.</span>
+<span class="sd">        data : NormData</span>
+<span class="sd">            The data to extend the model on.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.</span>
+<span class="sd">            If false, the function will dispatch the jobs and return.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormativeModel | None</span>
+<span class="sd">            The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;_extend&quot;</span>
+        <span class="k">assert</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;extend&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_extend_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;unary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.extend_predict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.extend_predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend_predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span>
+        <span class="n">fit_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+        <span class="n">predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend a normative model on a dataset and predict on another dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : NormativeModel</span>
+<span class="sd">            The normative model to extend.</span>
+<span class="sd">        fit_data : NormData</span>
+<span class="sd">            The data to extend the model on.</span>
+<span class="sd">        predict_data : Optional[NormData], optional</span>
+<span class="sd">            The data to predict on. Can be None if cross-validation is used.</span>
+<span class="sd">        save_dir : Optional[str], optional</span>
+<span class="sd">            The directory to save the model to. If None, the model will be saved in the model&#39;s save directory.</span>
+<span class="sd">        observe : bool, optional</span>
+<span class="sd">            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.</span>
+<span class="sd">            If false, the function will dispatch the jobs and return.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NormativeModel | None</span>
+<span class="sd">            The extended model. If observe is true, the function will wait for the jobs to finish and return the model object. If observe is false, the function will return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">+</span> <span class="s2">&quot;_extend&quot;</span>
+        <span class="k">assert</span> <span class="n">save_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_task_id</span><span class="p">(</span><span class="s2">&quot;extend_predict&quot;</span><span class="p">,</span><span class="n">model</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_temp_and_log_dir</span><span class="p">()</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_extend_predict_chunk_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submit_jobs</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_or_finish</span><span class="p">(</span><span class="n">observe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_fit_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_fit_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fit_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a callable that fits a model on a chunk of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_fit_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">fold_norm_model</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                    <span class="n">fold_norm_model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+                    <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span>
+                    <span class="n">fold_norm_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_fit_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">fit_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">fit_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_fit_predict_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_fit_predict_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fit_predict_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a callable that fits a model on a chunk of data and predicts on another chunk of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_fit_predict_chunk_fn</span><span class="p">(</span><span class="n">all_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">unused_predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">unused_predict_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_data</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">fold_norm_model</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                    <span class="n">fold_norm_model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+                    <span class="n">fit_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fit_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span>
+                    <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_predict&quot;</span>
+                    <span class="n">fold_norm_model</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_fit_predict_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">fit_predict_chunk_fn</span><span class="p">(</span><span class="n">fit_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">predict_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION</span><span class="p">))</span>
+                <span class="k">assert</span> <span class="n">predict_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># Make the linter happy</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">fit_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">fit_predict_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_predict_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_predict_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_predict_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads each fold model and predicts on the corresponding fold of data. Model n is used to predict on fold n.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">predict_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">predict_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_transfer_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_transfer_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_transfer_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a callable that transfers a model on a chunk of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_transfer_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+                        <span class="n">train_data</span><span class="p">,</span>
+                        <span class="n">save_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_transfer_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">transfer_chunk_fn</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">save_dir</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">transfer_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_transfer_predict_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_transfer_predict_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_transfer_predict_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_transfer_predict_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">unused_predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">unused_predict_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span>
+                    <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_predict&quot;</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">transfer_predict</span><span class="p">(</span>
+                        <span class="n">train_data</span><span class="p">,</span>
+                        <span class="n">predict_data</span><span class="p">,</span>
+                        <span class="n">save_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_transfer_predict_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">transfer_predict_chunk_fn</span><span class="p">(</span><span class="n">train_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">predict_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_PREDICT_DATA_REQUIRED</span><span class="p">))</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">transfer_predict</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">transfer_predict_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_extend_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_extend_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_extend_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_extend_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+                        <span class="n">save_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_extend_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">extend_chunk_fn</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">extend_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_extend_predict_chunk_fn">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_extend_predict_chunk_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_extend_predict_chunk_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">NormativeModel</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">kfold_extend_predict_chunk_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">unused_predict_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">unused_predict_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">Output</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">Warnings</span><span class="o">.</span><span class="n">PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i_fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">kfold_split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_folds</span><span class="p">)):</span>
+                    <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span>
+                    <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predict_data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_fold_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_fold</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_predict&quot;</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">extend_predict</span><span class="p">(</span>
+                        <span class="n">extend_data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+                        <span class="n">predict_data</span><span class="o">=</span><span class="n">predict_data</span><span class="p">,</span>
+                        <span class="n">save_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">i_fold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">kfold_extend_predict_chunk_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">extend_predict_chunk_fn</span><span class="p">(</span><span class="n">train_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span> <span class="n">predict_data</span><span class="p">:</span> <span class="n">NormData</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">predict_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_PREDICT_DATA_REQUIRED</span><span class="p">))</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">set_save_dir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">extend_predict</span><span class="p">(</span><span class="n">extend_data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span> <span class="n">predict_data</span><span class="o">=</span><span class="n">predict_data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">extend_predict_chunk_fn</span></div>
+
+
+<div class="viewcode-block" id="Runner.save_callable_and_data">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.save_callable_and_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_callable_and_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">job_name</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">chunk</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NormData</span><span class="p">,</span> <span class="n">NormData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="n">python_callable_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_python_callable_path</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+        <span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_path</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">python_callable_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_data_path">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_data_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_data_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">):</span>
+        <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;data_</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data_path</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_python_callable_path">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_python_callable_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_python_callable_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">):</span>
+        <span class="n">python_callable_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;python_callable_</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">python_callable_path</span></div>
+
+
+<div class="viewcode-block" id="Runner.check_job_status">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.check_job_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_job_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a job has failed by looking for success file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[bool, bool, Optional[str]]</span>
+<span class="sd">            (is_running, finished_with_error, error_message)</span>
+<span class="sd">            If job is still running, returns (True, False, None)</span>
+<span class="sd">            If job finished successfully, returns (False, False, None)</span>
+<span class="sd">            If job failed, returns (False, True, error_message)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span>
+
+        <span class="c1"># For cluster jobs, first check if job is still in queue/running</span>
+        <span class="n">is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;slurm&quot;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;squeue&quot;</span><span class="p">,</span> <span class="s2">&quot;-j&quot;</span><span class="p">,</span> <span class="n">job_id</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">is_running</span> <span class="o">=</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;torque&quot;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;qstat&quot;</span><span class="p">,</span> <span class="n">job_id</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">is_running</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">is_running</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>  <span class="c1"># Still running</span>
+
+        <span class="c1"># Job not running, check for success file</span>
+        <span class="n">success_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.success&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">success_file</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>  <span class="c1"># Finished successfully</span>
+
+        <span class="c1"># Job finished but no success file - read error output</span>
+        <span class="n">error_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.err&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">error_file</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">error_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;Job failed without error output&quot;</span></div>
+
+
+<div class="viewcode-block" id="Runner.check_jobs_status">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.check_jobs_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_jobs_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check all jobs in active_job_ids for errors.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[Dict[str, str], Dict[str, str], Dict[str, str]]</span>
+<span class="sd">            A tuple containing:</span>
+<span class="sd">            - A dictionary mapping job names to job IDs for running jobs</span>
+<span class="sd">            - A dictionary mapping job names to error messages for failed jobs</span>
+<span class="sd">            - A dictionary mapping job names to job IDs for finished jobs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">running_jobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">finished_jobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">failed_jobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">is_running</span><span class="p">,</span> <span class="n">finished_with_error</span><span class="p">,</span> <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_job_status</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_running</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">finished_with_error</span><span class="p">:</span>
+                    <span class="n">failed_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_msg</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">finished_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+            <span class="k">elif</span> <span class="n">is_running</span><span class="p">:</span>
+                <span class="n">running_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+        <span class="k">return</span> <span class="n">running_jobs</span><span class="p">,</span> <span class="n">finished_jobs</span><span class="p">,</span> <span class="n">failed_jobs</span></div>
+
+
+<div class="viewcode-block" id="Runner.submit_jobs">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.submit_jobs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit_jobs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">first_data_source</span><span class="p">:</span> <span class="n">NormData</span><span class="p">,</span>
+        <span class="n">second_data_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;unary&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;unary&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit jobs to the job scheduler.</span>
+
+<span class="sd">        The predict_data argument is optional, and if it is not provided, None is passed to the function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fn : Callable</span>
+<span class="sd">            Function to call. It should take two arguments.</span>
+<span class="sd">        fit_data : NormData</span>
+<span class="sd">            Data to fit the model on</span>
+<span class="sd">        predict_data : Optional[NormData], optional</span>
+<span class="sd">            Data to predict on, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallelize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_data_source</span><span class="o">.</span><span class="n">response_vars</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_data_source</span><span class="o">.</span><span class="n">response_vars</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either n_batches or batch_size must be specified&quot;</span><span class="p">)</span>
+        
+            <span class="n">first_chunks</span> <span class="o">=</span> <span class="n">first_data_source</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span><span class="p">)</span>
+            <span class="n">second_chunks</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span> <span class="k">if</span> <span class="n">second_data_source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">second_data_source</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">first_chunk</span><span class="p">,</span> <span class="n">second_chunk</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">first_chunks</span><span class="p">,</span> <span class="n">second_chunks</span><span class="p">)):</span>
+                <span class="n">job_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="si">}</span><span class="s2">_job_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;unary&quot;</span><span class="p">:</span>
+                    <span class="n">chunk_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_chunk</span><span class="p">,)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">chunk_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_chunk</span><span class="p">,</span> <span class="n">second_chunk</span><span class="p">)</span>
+                <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_callable_and_data</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">chunk_tuple</span><span class="p">)</span>
+
+                <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_in_job</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+
+                <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+                    <span class="n">command</span><span class="p">,</span>
+                    <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                    <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;slurm&quot;</span><span class="p">:</span>
+                        <span class="n">job_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Submitted batch job (\d+)&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;torque&quot;</span><span class="p">:</span>
+                        <span class="n">job_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(.*)&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_SUBMITTING_JOB</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">))</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;unary&quot;</span><span class="p">:</span>
+                <span class="n">chunk_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_data_source</span><span class="p">,)</span>
+            <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;binary&quot;</span><span class="p">:</span>
+                <span class="n">chunk_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_data_source</span><span class="p">,</span> <span class="n">second_data_source</span><span class="p">)</span>
+            <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">chunk_tuple</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.wrap_in_job">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.wrap_in_job">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_in_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;slurm&quot;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_in_slurm_job</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;torque&quot;</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_in_torque_job</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">command</span></div>
+
+
+<div class="viewcode-block" id="Runner.wrap_in_slurm_job">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.wrap_in_slurm_job">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_in_slurm_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">job_path</span><span class="p">,</span> <span class="n">out_file</span><span class="p">,</span> <span class="n">err_file</span><span class="p">,</span> <span class="n">success_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_job_file_paths</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+        <span class="n">current_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">job_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;#!/bin/bash</span>
+<span class="s2">    </span>
+<span class="s2">#SBATCH --job-name=</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span>
+<span class="s2">#SBATCH --nodes=1</span>
+<span class="s2">#SBATCH --cpus-per-task=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cores</span><span class="si">}</span>
+<span class="s2">#SBATCH --time=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_limit_str</span><span class="si">}</span>
+<span class="s2">#SBATCH --mem=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="si">}</span>
+<span class="s2">#SBATCH --error=</span><span class="si">{</span><span class="n">err_file</span><span class="si">}</span>
+<span class="s2">#SBATCH --output=</span><span class="si">{</span><span class="n">out_file</span><span class="si">}</span>
+
+
+<span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preamble</span><span class="si">}</span>
+<span class="s2">source activate </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">environment</span><span class="si">}</span>
+<span class="s2"># Force Python to use unbuffered output</span>
+<span class="s2">export PYTHONUNBUFFERED=1</span>
+<span class="s2"># Force stdout/stderr to be unbuffered</span>
+<span class="s2">exec 1&gt; &gt;(tee -a </span><span class="si">{</span><span class="n">out_file</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">exec 2&gt; &gt;(tee -a </span><span class="si">{</span><span class="n">err_file</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">python </span><span class="si">{</span><span class="n">current_file_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">python_callable_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">data_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">random_sleep_scale</span><span class="si">}</span>
+
+<span class="s2">exit_code=$?</span>
+<span class="s2">if [ $exit_code -eq 0 ]; then</span>
+<span class="s2">    touch </span><span class="si">{</span><span class="n">success_file</span><span class="si">}</span>
+<span class="s2">fi</span>
+<span class="s2">exit $exit_code</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;sbatch&quot;</span><span class="p">,</span> <span class="n">job_path</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Runner.get_all_job_file_paths">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.get_all_job_file_paths">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_job_file_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">):</span>
+        <span class="n">job_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.sh&quot;</span><span class="p">)</span>
+        <span class="n">out_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.out&quot;</span><span class="p">)</span>
+        <span class="n">err_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.err&quot;</span><span class="p">)</span>
+        <span class="n">success_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="s2">.success&quot;</span><span class="p">)</span>
+        <span class="n">create_incremental_backup</span><span class="p">(</span><span class="n">job_path</span><span class="p">)</span>
+        <span class="n">create_incremental_backup</span><span class="p">(</span><span class="n">out_file</span><span class="p">)</span>
+        <span class="n">create_incremental_backup</span><span class="p">(</span><span class="n">err_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job_path</span><span class="p">,</span><span class="n">out_file</span><span class="p">,</span><span class="n">err_file</span><span class="p">,</span><span class="n">success_file</span></div>
+
+
+<div class="viewcode-block" id="Runner.wrap_in_torque_job">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.wrap_in_torque_job">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_in_torque_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">job_path</span><span class="p">,</span> <span class="n">out_file</span><span class="p">,</span> <span class="n">err_file</span><span class="p">,</span> <span class="n">success_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_job_file_paths</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+        <span class="n">current_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">job_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;#!/bin/sh</span>
+
+<span class="s2">#PBS -N </span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span>
+<span class="s2">#PBS -l nodes=1:ppn=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cores</span><span class="si">}</span>
+<span class="s2">#PBS -l walltime=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_limit_str</span><span class="si">}</span>
+<span class="s2">#PBS -l mem=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="si">}</span>
+<span class="s2">#PBS -o </span><span class="si">{</span><span class="n">out_file</span><span class="si">}</span>
+<span class="s2">#PBS -e </span><span class="si">{</span><span class="n">err_file</span><span class="si">}</span>
+<span class="s2">#PBS -m a</span>
+
+<span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preamble</span><span class="si">}</span>
+<span class="s2">source activate </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">environment</span><span class="si">}</span>
+<span class="s2"># Force Python to use unbuffered output</span>
+<span class="s2">export PYTHONUNBUFFERED=1</span>
+<span class="s2"># Force stdout/stderr to be unbuffered</span>
+<span class="s2">exec 1&gt; &gt;(tee -a </span><span class="si">{</span><span class="n">out_file</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">exec 2&gt; &gt;(tee -a </span><span class="si">{</span><span class="n">err_file</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">python </span><span class="si">{</span><span class="n">current_file_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">python_callable_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">data_path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">random_sleep_scale</span><span class="si">}</span>
+
+<span class="s2">exit_code=$?</span>
+<span class="s2">if [ $exit_code -eq 0 ]; then</span>
+<span class="s2">    touch </span><span class="si">{</span><span class="n">success_file</span><span class="si">}</span>
+<span class="s2">fi</span>
+<span class="s2">exit $exit_code</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;qsub&quot;</span><span class="p">,</span> <span class="n">job_path</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Runner.load_model">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.load_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">into</span><span class="p">:</span> <span class="n">NormativeModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NormativeModel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;folds&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fold_</span><span class="si">{</span><span class="n">fold_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">NormativeModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NormativeModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.save">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the runner state to a JSON file in the save directory.&quot;&quot;&quot;</span>
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;active_jobs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span>
+            <span class="s2">&quot;log_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span>
+            <span class="s2">&quot;temp_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_dir</span><span class="p">,</span>
+            <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">,</span>
+            <span class="s2">&quot;unique_log_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span>
+            <span class="s2">&quot;unique_temp_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span>
+            <span class="s2">&quot;job_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span><span class="p">,</span>
+            <span class="s2">&quot;n_batches&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_batches</span><span class="p">,</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;save_dir&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span><span class="p">,</span>
+            <span class="s2">&quot;job_commands&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="p">,</span>
+            <span class="s2">&quot;failed_jobs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span><span class="p">,</span>
+            <span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">environment</span>
+        <span class="p">}</span>
+
+        <span class="n">runner_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_temp_dir</span><span class="p">,</span> <span class="s2">&quot;runner_state.json&quot;</span><span class="p">)</span>
+        <span class="n">create_incremental_backup</span><span class="p">(</span><span class="n">runner_file</span><span class="p">)</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">SAVING_RUNNER_STATE</span><span class="p">,</span> <span class="n">runner_file</span><span class="o">=</span><span class="n">runner_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">runner_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.load_from_state">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.load_from_state">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_from_state</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">runner_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Runner&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a runner from a saved state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        runner_file : str</span>
+<span class="sd">            Path to the runner state file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Runner</span>
+<span class="sd">            A runner instance with the saved state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">LOADING_RUNNER_STATE</span><span class="p">,</span> <span class="n">runner_file</span><span class="o">=</span><span class="n">runner_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">runner_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">runner</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">job_type</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;job_type&quot;</span><span class="p">],</span> <span class="n">n_batches</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;n_batches&quot;</span><span class="p">],</span> <span class="n">log_dir</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;log_dir&quot;</span><span class="p">],</span> <span class="n">temp_dir</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;temp_dir&quot;</span><span class="p">])</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">task_id</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;task_id&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">unique_log_dir</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;unique_log_dir&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">unique_temp_dir</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;unique_temp_dir&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">job_commands</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;job_commands&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">active_jobs</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;active_jobs&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;environment&#39;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span> <span class="n">runner</span><span class="o">.</span><span class="n">finished_jobs</span><span class="p">,</span> <span class="n">runner</span><span class="o">.</span><span class="n">failed_jobs</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">check_jobs_status</span><span class="p">()</span>
+        <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+            <span class="n">Messages</span><span class="o">.</span><span class="n">RUNNER_LOADED</span><span class="p">,</span>
+            <span class="n">n_active_jobs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">),</span>
+            <span class="n">n_finished_jobs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">finished_jobs</span><span class="p">),</span>
+            <span class="n">n_failed_jobs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">failed_jobs</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">runner</span></div>
+
+
+<div class="viewcode-block" id="Runner.from_args">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.from_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Runner&quot;</span><span class="p">:</span>
+        <span class="n">filtered_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">filtered_args</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Runner.re_submit_failed_jobs">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.Runner.re_submit_failed_jobs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">re_submit_failed_jobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">job_name</span><span class="p">,</span> <span class="n">command</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">job_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span><span class="p">:</span>
+                <span class="n">python_callable_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_python_callable_path</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+                <span class="n">data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_path</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_in_job</span><span class="p">(</span><span class="n">job_name</span><span class="p">,</span> <span class="n">python_callable_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+
+                <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+                    <span class="n">command</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">start_new_session</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+                <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;slurm&quot;</span><span class="p">:</span>
+                        <span class="n">job_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Submitted batch job (\d+)&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s2">&quot;torque&quot;</span><span class="p">:</span>
+                        <span class="n">job_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(.*)&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_SUBMITTING_JOB</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">))</span>                
+                
+                <span class="k">if</span> <span class="n">job_id</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">job_commands</span><span class="p">[</span><span class="n">job_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span>
+               
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">observe</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">job_observer</span> <span class="o">=</span> <span class="n">JobObserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">job_observer</span><span class="o">.</span><span class="n">wait_for_jobs</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">finished_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed_jobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_jobs_status</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="load_and_execute">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/runner/index.html#pcntoolkit.util.runner.load_and_execute">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_and_execute</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a callable and data from a pickle file and execute it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    args : list[str]</span>
+<span class="sd">        A list of arguments. The first argument is the path to the callable. The second argument is the path to the data. The third argument is the max number of retries.  The fourth argument is the scale of the random sleep.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">retries</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># Sleep for a random amount of time. </span>
+        <span class="c1"># Try to avoid some async access issues.</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">LOADING_CALLABLE</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">executable_path</span><span class="p">:</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">executable_path</span><span class="p">)</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">LOADING_DATA</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_path</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">EXECUTING_CALLABLE</span><span class="p">,</span> <span class="n">attempt</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">EXECUTION_SUCCESSFUL</span><span class="p">,</span> <span class="n">attempt</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">retries</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Output</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Messages</span><span class="o">.</span><span class="n">EXECUTION_FAILED</span><span class="p">,</span> <span class="n">attempt</span><span class="o">=</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">continue</span></div>
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">load_and_execute</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
