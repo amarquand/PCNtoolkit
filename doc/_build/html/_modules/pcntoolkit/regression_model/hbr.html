@@ -1,0 +1,641 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.regression_model.hbr &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.regression_model.hbr</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.regression_model.hbr</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">arviz</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">az</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pymc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pm</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.factorize</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.math_functions.likelihood</span><span class="w"> </span><span class="kn">import</span> <span class="n">Likelihood</span><span class="p">,</span> <span class="n">get_default_normal_likelihood</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.regression_model.regression_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegressionModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.util.output</span><span class="w"> </span><span class="kn">import</span> <span class="n">Errors</span><span class="p">,</span> <span class="n">Output</span>
+
+
+<div class="viewcode-block" id="HBR">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HBR</span><span class="p">(</span><span class="n">RegressionModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hierarchical Bayesian Regression model implementation.</span>
+
+<span class="sd">    This class implements a Bayesian hierarchical regression model using PyMC for</span>
+<span class="sd">    posterior sampling. It supports multiple likelihood functions and provides</span>
+<span class="sd">    methods for model fitting, prediction, and analysis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;template&quot;</span><span class="p">,</span>
+        <span class="n">likelihood</span><span class="p">:</span> <span class="n">Likelihood</span> <span class="o">=</span> <span class="n">get_default_normal_likelihood</span><span class="p">(),</span>  <span class="c1"># type:ignore</span>
+        <span class="n">draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1500</span><span class="p">,</span>
+        <span class="n">tune</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="n">cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">chains</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">nuts_sampler</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nutpie&quot;</span><span class="p">,</span>
+        <span class="n">init</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jitter+adapt_diag&quot;</span><span class="p">,</span>
+        <span class="n">progressbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_fitted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_from_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class implements a Bayesian hierarchical regression model using PyMC for</span>
+<span class="sd">        posterior sampling.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Unique identifier for the model instance</span>
+<span class="sd">        likelihood : Likelihood</span>
+<span class="sd">            Likelihood function to use for the model</span>
+<span class="sd">        draws : int, optional</span>
+<span class="sd">            Number of samples to draw from the posterior distribution per chain, by default 1000</span>
+<span class="sd">        tune : int, optional</span>
+<span class="sd">            Number of tuning samples to draw from the posterior distribution per chain, by default 500</span>
+<span class="sd">        cores : int, optional</span>
+<span class="sd">            Number of cores to use for parallel sampling, by default 4</span>
+<span class="sd">        chains : int, optional</span>
+<span class="sd">            Number of chains to use for parallel sampling, by default 4</span>
+<span class="sd">        nuts_sampler : str, optional</span>
+<span class="sd">            NUTS sampler to use for parallel sampling, by default &quot;nutpie&quot;</span>
+<span class="sd">        init : str, optional</span>
+<span class="sd">            Initialization method for the model, by default &quot;jitter+adapt_diag&quot;</span>
+<span class="sd">        progressbar : bool, optional</span>
+<span class="sd">            Whether to display a progress bar during sampling, by default True</span>
+<span class="sd">        is_fitted : bool, optional</span>
+<span class="sd">            Whether the model has been fitted, by default False</span>
+<span class="sd">        is_from_dict : bool, optional</span>
+<span class="sd">            Whether the model was created from a dictionary, by default False</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_fitted</span><span class="p">,</span> <span class="n">is_from_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span> <span class="ow">or</span> <span class="n">get_default_normal_likelihood</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draws</span> <span class="o">=</span> <span class="n">draws</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tune</span> <span class="o">=</span> <span class="n">tune</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="n">cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chains</span> <span class="o">=</span> <span class="n">chains</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span> <span class="o">=</span> <span class="n">nuts_sampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="n">init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progressbar</span> <span class="o">=</span> <span class="n">progressbar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">:</span> <span class="n">az</span><span class="o">.</span><span class="n">InferenceData</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="HBR.fit">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the model to training data using MCMC sampling.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">:</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idata</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draws</span><span class="p">,</span>
+                <span class="n">tune</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tune</span><span class="p">,</span>
+                <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
+                <span class="n">chains</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">,</span>
+                <span class="n">nuts_sampler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+                <span class="n">init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">,</span>
+                <span class="n">progressbar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">progressbar</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="HBR.forward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map Y values to Z space using MCMC samples</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Z-values mapped to Y space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">forward</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generic_MCMC_apply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HBR.backward">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.backward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map Z values to Y space using MCMC samples</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Z : xr.DataArray</span>
+<span class="sd">            Z-score data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Z-values mapped to Y space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="n">Z</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">backward</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">Z</span><span class="o">.</span><span class="n">values</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generic_MCMC_apply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HBR.generic_MCMC_apply">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.generic_MCMC_apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generic_MCMC_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply a generic function to likelihood parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">HBR_MODEL_NOT_FITTED</span><span class="p">))</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">create_model_with_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">compile_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">_per_subject&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="k">with</span> <span class="n">model</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dims</span><span class="p">)</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">_per_subject&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">)</span>
+            <span class="n">idata</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample_posterior_predictive</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span>
+                <span class="n">extend_inferencedata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+                <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">post_pred</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+            <span class="n">idata</span><span class="p">,</span>
+            <span class="s2">&quot;posterior_predictive&quot;</span><span class="p">,</span>
+            <span class="n">var_names</span><span class="o">=</span><span class="n">var_names</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">n_observations</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_lengths</span><span class="p">[</span><span class="s2">&quot;observations&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">array_of_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_and_reshape</span><span class="p">(</span><span class="n">post_pred</span><span class="p">,</span> <span class="n">n_observations</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">var_names</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">apply_ufunc</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">array_of_vars</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="HBR.elemwise_logp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.elemwise_logp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">elemwise_logp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute log-probabilities for each observation in the data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : xr.DataArray</span>
+<span class="sd">            Covariate data</span>
+<span class="sd">        be : xr.DataArray</span>
+<span class="sd">            Batch effect data</span>
+<span class="sd">        be_maps : dict[str, dict[str, int]]</span>
+<span class="sd">            Batch effect maps</span>
+<span class="sd">        Y : xr.DataArray</span>
+<span class="sd">            Response variable data</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xr.DataArray</span>
+<span class="sd">            Log-probabilities of the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">HBR_MODEL_NOT_FITTED</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">update_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="p">:</span>
+            <span class="n">logp</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">compute_log_likelihood</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span>
+                <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Yhat&quot;</span><span class="p">],</span>
+                <span class="n">extend_inferencedata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">progressbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">az</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="s2">&quot;log_likelihood&quot;</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Yhat&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="s2">&quot;sample&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HBR.model_specific_evaluation">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.model_specific_evaluation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_specific_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save model-specific evaluation metrics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plotdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;plots&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">plotdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">resultsdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">resultsdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;wide&quot;</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;~_per_subject&quot;</span><span class="p">],</span> <span class="n">filter_vars</span><span class="o">=</span><span class="s2">&quot;like&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">resultsdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_summary.csv&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">az</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;~_per_subject&quot;</span><span class="p">,</span> <span class="n">filter_vars</span><span class="o">=</span><span class="s2">&quot;like&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plotdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_trace.png&quot;</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">az</span><span class="o">.</span><span class="n">plot_autocorr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;~_per_subject&quot;</span><span class="p">,</span> <span class="n">filter_vars</span><span class="o">=</span><span class="s2">&quot;like&quot;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plotdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_autocorr.png&quot;</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span> <span class="s2">&quot;posterior_predictive&quot;</span><span class="p">):</span>
+                    <span class="n">az</span><span class="o">.</span><span class="n">plot_ppc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plotdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_ppc.png&quot;</span><span class="p">))</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pymc_model</span><span class="o">.</span><span class="n">to_graphviz</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plotdir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_model.png&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">HBR_MODEL_NOT_FITTED</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="HBR.transfer">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transfer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="n">be_maps</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HBR</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Perform transfer learning using existing model as prior.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                hbrconf : HBRConf</span>
+<span class="sd">                    Configuration for new model</span>
+<span class="sd">                transferdata : HBRData</span>
+<span class="sd">                    Data for transfer learning</span>
+<span class="sd">                freedom : float</span>
+<span class="sd">                    Parameter controlling influence of prior model (0-1)</span>
+<span class="sd">        x</span>
+<span class="sd">                Returns</span>
+<span class="sd">                -------</span>
+<span class="sd">                HBR</span>
+<span class="sd">                    New model instance with transferred knowledge</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_likelihood</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">new_hbr_model</span> <span class="o">=</span> <span class="n">HBR</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">new_likelihood</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">draws</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tune</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">progressbar</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_from_dict</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">new_hbr_model_model</span> <span class="o">=</span> <span class="n">new_hbr_model</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">new_hbr_model_model</span><span class="p">:</span>
+            <span class="n">new_hbr_model</span><span class="o">.</span><span class="n">idata</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;draws&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">draws</span><span class="p">),</span>
+                <span class="n">tune</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tune&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tune</span><span class="p">),</span>
+                <span class="n">cores</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cores&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">),</span>
+                <span class="n">chains</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chains&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chains</span><span class="p">),</span>
+                <span class="n">nuts_sampler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nuts_sampler&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="p">),</span>  <span class="c1"># type: ignore</span>
+                <span class="n">progressbar</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;progressbar&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">progressbar</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">new_hbr_model</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">new_hbr_model</span><span class="o">.</span><span class="n">pymc_model</span> <span class="o">=</span> <span class="n">new_hbr_model_model</span>
+        <span class="k">return</span> <span class="n">new_hbr_model</span></div>
+
+
+<div class="viewcode-block" id="HBR.has_batch_effect">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.has_batch_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_batch_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="HBR.extract_and_reshape">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.extract_and_reshape">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_and_reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">post_pred</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">var_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">post_pred</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">preds</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="n">observations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">preds</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;observations&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="HBR.to_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serialize model to dictionary format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : Optional[str], optional</span>
+<span class="sd">            Path to save inference data, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict[str, Any]</span>
+<span class="sd">            Dictionary containing serialized model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">my_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regmodel_dict</span>
+        <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;likelihood&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;likelihood&quot;</span><span class="p">,</span> <span class="s2">&quot;pymc_model&quot;</span><span class="p">,</span> <span class="s2">&quot;idata&quot;</span><span class="p">]:</span>
+                <span class="n">my_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">idata_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;idata.nc&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_idata</span><span class="p">(</span><span class="n">idata_path</span><span class="p">)</span>
+            <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;idata_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idata_path</span>
+        <span class="k">return</span> <span class="n">my_dict</span></div>
+
+
+<div class="viewcode-block" id="HBR.from_dict">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">my_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HBR&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create model instance from serialized dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dict : Dict[str, Any]</span>
+<span class="sd">            Dictionary containing serialized model</span>
+<span class="sd">        path : Optional[str], optional</span>
+<span class="sd">            Path to load inference data from, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        HBR</span>
+<span class="sd">            New model instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="n">likelihood</span><span class="p">:</span> <span class="n">Likelihood</span> <span class="o">=</span> <span class="n">Likelihood</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;likelihood&quot;</span><span class="p">])</span>
+        <span class="n">draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;draws&quot;</span><span class="p">]</span>
+        <span class="n">tune</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;tune&quot;</span><span class="p">]</span>
+        <span class="n">cores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;cores&quot;</span><span class="p">]</span>
+        <span class="n">chains</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;chains&quot;</span><span class="p">]</span>
+        <span class="n">nuts_sampler</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;nuts_sampler&quot;</span><span class="p">]</span>
+        <span class="n">init</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;init&quot;</span><span class="p">]</span>
+        <span class="n">progressbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;progressbar&quot;</span><span class="p">]</span>
+        <span class="n">is_fitted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">my_dict</span><span class="p">[</span><span class="s2">&quot;is_fitted&quot;</span><span class="p">]</span>
+        <span class="n">is_from_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">tune</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">nuts_sampler</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">progressbar</span><span class="p">,</span> <span class="n">is_fitted</span><span class="p">,</span> <span class="n">is_from_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_fitted</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">idata_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;idata.nc&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_idata</span><span class="p">(</span><span class="n">idata_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="HBR.from_args">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.from_args">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;HBR&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create model instance from command line arguments.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Name for new model instance</span>
+<span class="sd">        args : Dict[str, Any]</span>
+<span class="sd">            Dictionary of command line arguments</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        HBR</span>
+<span class="sd">            New model instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="n">Likelihood</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">draws</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;draws&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">tune</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tune&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cores&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">chains</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chains&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">nuts_sampler</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nuts_sampler&quot;</span><span class="p">,</span> <span class="s2">&quot;pymc&quot;</span><span class="p">)</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;init&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+        <span class="n">progressbar</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;progressbar&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">is_fitted</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_fitted&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">is_from_dict</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">tune</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">nuts_sampler</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">progressbar</span><span class="p">,</span> <span class="n">is_fitted</span><span class="p">,</span> <span class="n">is_from_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="HBR.save_idata">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.save_idata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_idata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save inference data to NetCDF file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str</span>
+<span class="sd">            Path to save inference data to. Should end in &#39;.nc&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If model is fitted but does not have inference data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;idata&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">idata</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;posterior&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_HBR_FITTED_BUT_NO_IDATA</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="HBR.load_idata">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.load_idata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_idata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load inference data from NetCDF file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str</span>
+<span class="sd">            Path to load inference data from. Should end in &#39;.nc&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If model is fitted but inference data cannot be loaded from path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">idata</span> <span class="o">=</span> <span class="n">az</span><span class="o">.</span><span class="n">from_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Output</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">Errors</span><span class="o">.</span><span class="n">ERROR_HBR_COULD_NOT_LOAD_IDATA</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="HBR.compute_yhat">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/regression_model/hbr/index.html#pcntoolkit.regression_model.hbr.HBR.compute_yhat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_yhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">responsevar</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">):</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">yhat</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;observations&quot;</span><span class="p">,))</span>
+        <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generic_MCMC_apply</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">be_maps</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{})</span>
+        <span class="k">return</span> <span class="n">yhat</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

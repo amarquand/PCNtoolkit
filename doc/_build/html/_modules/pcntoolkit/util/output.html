@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.util.output &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_cluster.html">Fitting normative models on a compute cluster</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.util.output</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.util.output</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+
+<div class="viewcode-block" id="Messages">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Messages">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Messages</span><span class="p">:</span>
+    <span class="n">FITTING_MODELS</span> <span class="o">=</span> <span class="s2">&quot;Fitting models on </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">FITTING_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Fitting model for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">PREDICTING_MODELS</span> <span class="o">=</span> <span class="s2">&quot;Making predictions on </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">PREDICTING_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Making predictions on </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">FITTING_AND_PREDICTING_MODELS</span> <span class="o">=</span> <span class="s2">&quot;Fitting and predicting </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">FITTING_AND_PREDICTING_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Fitting and predicting model for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">SAVING_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Saving model to:</span><span class="se">\n\t</span><span class="si">{save_dir}</span><span class="s2">.&quot;</span>
+    <span class="n">SAVING_RESULTS</span> <span class="o">=</span> <span class="s2">&quot;Saving results to:</span><span class="se">\n\t</span><span class="si">{save_dir}</span><span class="s2">.&quot;</span>
+    <span class="n">SAVING_STATISTICS</span> <span class="o">=</span> <span class="s2">&quot;Saving statistics to:</span><span class="se">\n\t</span><span class="si">{save_dir}</span><span class="s2">.&quot;</span>
+    <span class="n">SAVING_CENTILES</span> <span class="o">=</span> <span class="s2">&quot;Saving centiles to:</span><span class="se">\n\t</span><span class="si">{save_dir}</span><span class="s2">.&quot;</span>
+    <span class="n">SAVING_ZSCORES</span> <span class="o">=</span> <span class="s2">&quot;Saving z-scores to:</span><span class="se">\n\t</span><span class="si">{save_dir}</span><span class="s2">.&quot;</span>
+    <span class="n">TRANSFERRING_MODELS</span> <span class="o">=</span> <span class="s2">&quot;Transferring models on </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">TRANSFERRING_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Transferring model for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">COMPUTING_CENTILES</span> <span class="o">=</span> <span class="s2">&quot;Computing centiles for </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">COMPUTING_CENTILES_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Computing centiles for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">COMPUTING_ZSCORES</span> <span class="o">=</span> <span class="s2">&quot;Computing z-scores for </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">COMPUTING_ZSCORES_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Computing z-scores for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">COMPUTING_LOGP</span> <span class="o">=</span> <span class="s2">&quot;Computing log-probabilities for </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">COMPUTING_LOGP_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Computing log-probabilities for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">NORMATIVE_MODEL_CONFIGURATION_VALID</span> <span class="o">=</span> <span class="s2">&quot;Configuration of normative model is valid.&quot;</span>
+    <span class="n">LOADING_ROI_MASK</span> <span class="o">=</span> <span class="s2">&quot;Loading ROI mask ...&quot;</span>
+    <span class="n">GENERATING_MASK_AUTOMATICALLY</span> <span class="o">=</span> <span class="s2">&quot;Generating mask automatically ...&quot;</span>
+    <span class="n">EXTRACTING_CIFTI_SURFACE_DATA</span> <span class="o">=</span> <span class="s2">&quot;Extracting cifti surface data to </span><span class="si">{outstem}</span><span class="s2"> ...&quot;</span>
+    <span class="n">EXTRACTING_CIFTI_VOLUME_DATA</span> <span class="o">=</span> <span class="s2">&quot;Extracting cifti volume data to </span><span class="si">{niiname}</span><span class="s2"> ...&quot;</span>
+    <span class="n">BLR_RESTARTING_ESTIMATION_AT_HYP</span> <span class="o">=</span> <span class="s2">&quot;Restarting estimation at hyp = </span><span class="si">{hyp}</span><span class="s2">, due to: </span><span class="si">{e}</span><span class="s2">&quot;</span>
+    <span class="n">BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED</span> <span class="o">=</span> <span class="s2">&quot;Hyperparameters have not changed, exiting&quot;</span>
+    <span class="n">REGRESSION_MODEL_CONFIGURATION_VALID</span> <span class="o">=</span> <span class="s2">&quot;Configuration of regression model is valid.&quot;</span>
+    <span class="n">JOB_STATUS_MONITOR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">              PCNtoolkit Job Status Monitor ®</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">Task ID: </span><span class="si">{task_id}</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">Job ID      Name          State      Time      Nodes</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+    <span class="n">NO_MORE_RUNNING_JOBS</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">No more running jobs!</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+    <span class="n">JOB_STATUS_SUMMARY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">Total active jobs: </span><span class="si">{total_active_jobs}</span>
+<span class="s2">Total completed jobs: </span><span class="si">{total_completed_jobs}</span>
+<span class="s2">Total failed jobs: </span><span class="si">{total_failed_jobs}</span>
+<span class="s2">---------------------------------------------------------</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">JOB_STATUS_LINE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:&lt;11}</span><span class="s2"> </span><span class="si">{:&lt;9}</span><span class="s2"> </span><span class="si">{:&lt;10}</span><span class="s2"> </span><span class="si">{:&lt;9}</span><span class="s2"> </span><span class="si">{:&lt;14}</span><span class="s2">&quot;</span>
+    <span class="n">NO_PYTHON_PATH_SPECIFIED</span> <span class="o">=</span> <span class="s2">&quot;No python path specified. Using interpreter path of current process: </span><span class="si">{python_path}</span><span class="s2">&quot;</span>
+    <span class="n">NO_LOG_DIR_SPECIFIED</span> <span class="o">=</span> <span class="s2">&quot;No log directory specified. Using default log directory: </span><span class="si">{log_dir}</span><span class="s2">&quot;</span>
+    <span class="n">NO_TEMP_DIR_SPECIFIED</span> <span class="o">=</span> <span class="s2">&quot;No temporary directory specified. Using default temporary directory: </span><span class="si">{temp_dir}</span><span class="s2">&quot;</span>
+    <span class="n">SAVING_RUNNER_STATE</span> <span class="o">=</span> <span class="s2">&quot;Saving runner state to:</span><span class="se">\n\t</span><span class="si">{runner_file}</span><span class="s2">&quot;</span>
+    <span class="n">LOADING_RUNNER_STATE</span> <span class="o">=</span> <span class="s2">&quot;Loading runner state from:</span><span class="se">\n\t</span><span class="si">{runner_file}</span><span class="s2">&quot;</span>
+    <span class="n">RUNNER_LOADED</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Runner loaded</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;---------------------------------------------------------&quot;</span>
+        <span class="s2">&quot;Active jobs: </span><span class="si">{n_active_jobs}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;Finished jobs: </span><span class="si">{n_finished_jobs}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;Failed jobs: </span><span class="si">{n_failed_jobs}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;---------------------------------------------------------&quot;</span>
+    <span class="p">)</span>
+    <span class="n">TASK_ID_CREATED</span> <span class="o">=</span> <span class="s2">&quot;Task ID created: </span><span class="si">{task_id}</span><span class="s2">&quot;</span>
+    <span class="n">LOG_DIR_CREATED</span> <span class="o">=</span> <span class="s2">&quot;Log directory created:</span><span class="se">\n\t</span><span class="si">{log_dir}</span><span class="s2">&quot;</span>
+    <span class="n">TEMP_DIR_CREATED</span> <span class="o">=</span> <span class="s2">&quot;Temporary directory created:</span><span class="se">\n\t</span><span class="si">{temp_dir}</span><span class="s2">&quot;</span>
+    <span class="n">HARMONIZING_DATA</span> <span class="o">=</span> <span class="s2">&quot;Harmonizing data on </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">HARMONIZING_DATA_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Harmonizing data for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">SYNTHESIZING_DATA</span> <span class="o">=</span> <span class="s2">&quot;Synthesizing data for </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">SYNTHESIZING_DATA_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Synthesizing data for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span>
+    <span class="n">LOADING_CALLABLE</span> <span class="o">=</span> <span class="s2">&quot;Loading callable from </span><span class="si">{path}</span><span class="s2">.&quot;</span>
+    <span class="n">LOADING_DATA</span> <span class="o">=</span> <span class="s2">&quot;Loading data from </span><span class="si">{path}</span><span class="s2">.&quot;</span>
+    <span class="n">EXECUTING_CALLABLE</span> <span class="o">=</span> <span class="s2">&quot;Executing callable, attempt </span><span class="si">{attempt}</span><span class="s2"> of </span><span class="si">{total}</span><span class="s2">.&quot;</span>
+    <span class="n">EXECUTION_FAILED</span> <span class="o">=</span> <span class="s2">&quot;Execution of callable failed, attempt </span><span class="si">{attempt}</span><span class="s2"> of </span><span class="si">{total}</span><span class="s2"> with error: </span><span class="se">\n</span><span class="si">{error}</span><span class="s2">&quot;</span>
+    <span class="n">EXECUTION_SUCCESSFUL</span> <span class="o">=</span> <span class="s2">&quot;Execution of callable successful, attempt </span><span class="si">{attempt}</span><span class="s2"> of </span><span class="si">{total}</span><span class="s2">.&quot;</span>
+    <span class="n">DATASET_CREATED</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Dataset </span><span class="se">\&quot;</span><span class="si">{name}</span><span class="se">\&quot;</span><span class="s2"> created.</span>
+<span class="s2">    - </span><span class="si">{n_observations}</span><span class="s2"> observations</span>
+<span class="s2">    - </span><span class="si">{n_subjects}</span><span class="s2"> unique subjects</span>
+<span class="s2">    - </span><span class="si">{n_covariates}</span><span class="s2"> covariates</span>
+<span class="s2">    - </span><span class="si">{n_response_vars}</span><span class="s2"> response variables</span>
+<span class="s2">    - </span><span class="si">{n_batch_effects}</span><span class="s2"> batch effects:</span>
+<span class="s2">    </span><span class="si">{batch_effects}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">COMPUTING_YHAT</span> <span class="o">=</span> <span class="s2">&quot;Computing yhat for </span><span class="si">{n_models}</span><span class="s2"> response variables.&quot;</span>
+    <span class="n">COMPUTING_YHAT_MODEL</span> <span class="o">=</span> <span class="s2">&quot;Computing yhat for </span><span class="si">{model_name}</span><span class="s2">.&quot;</span></div>
+
+
+<div class="viewcode-block" id="Warnings">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Warnings">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Warnings</span><span class="p">:</span>
+    <span class="n">MISSING_COVARIATES</span> <span class="o">=</span> <span class="s2">&quot;The dataset </span><span class="si">{dataset_name}</span><span class="s2"> is missing the following covariates: </span><span class="si">{covariates}</span><span class="s2">&quot;</span>
+    <span class="n">EXTRA_COVARIATES</span> <span class="o">=</span> <span class="s2">&quot;The dataset </span><span class="si">{dataset_name}</span><span class="s2"> has too many covariates: </span><span class="si">{covariates}</span><span class="s2">&quot;</span>
+    <span class="n">EXTRA_RESPONSE_VARS</span> <span class="o">=</span> <span class="s2">&quot;The dataset </span><span class="si">{dataset_name}</span><span class="s2"> has too many response variables: </span><span class="si">{response_vars}</span><span class="s2">&quot;</span>
+    <span class="n">UNKNOWN_BATCH_EFFECTS</span> <span class="o">=</span> <span class="s2">&quot;The dataset </span><span class="si">{dataset_name}</span><span class="s2"> has unknown batch effects: </span><span class="si">{batch_effects}</span><span class="s2">&quot;</span>
+    <span class="n">BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED</span> <span class="o">=</span> <span class="s2">&quot;Estimation of posterior distribution failed due to: </span><span class="se">\n</span><span class="si">{error}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_GETTING_JOB_STATUSES</span> <span class="o">=</span> <span class="s2">&quot;Error getting job statuses: </span><span class="si">{stderr}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_PARSING_JOB_STATUS_LINE</span> <span class="o">=</span> <span class="s2">&quot;Error parsing job status line: </span><span class="si">{line}</span><span class="s2"> - </span><span class="si">{error}</span><span class="s2">&quot;</span>
+    <span class="n">PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION</span> <span class="o">=</span> <span class="s2">&quot;Predict data not used in k-fold cross-validation&quot;</span>
+    <span class="n">DIR_DOES_NOT_EXIST</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{dir_attr_str}</span><span class="s2"> (</span><span class="si">{dir_attr}</span><span class="s2">) does not exist, creating it for you.&quot;</span>
+    <span class="n">BLR_Y_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;y is not provided, setting self.y to zeros&quot;</span>
+    <span class="n">BLR_VAR_X_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;var_X is not provided, setting self.var_X to zeros&quot;</span>
+    <span class="n">BLR_BATCH_EFFECTS_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;batch_effects is not provided, setting self.batch_effects to zeros&quot;</span>
+    <span class="n">HBR_BATCH_EFFECTS_NOT_PROVIDED</span> <span class="o">=</span> <span class="n">BLR_BATCH_EFFECTS_NOT_PROVIDED</span>
+    <span class="n">ERROR_SUBMITTING_JOB</span> <span class="o">=</span> <span class="s2">&quot;Error submitting job </span><span class="si">{job_id}</span><span class="s2">: </span><span class="si">{stderr}</span><span class="s2">&quot;</span>
+    <span class="n">NO_RESPONSE_VARS</span> <span class="o">=</span> <span class="s2">&quot;No response variables provided for dataset </span><span class="si">{dataset_name}</span><span class="s2">. Please provide a list of response variables for which you want to fit or predict.&quot;</span>
+    <span class="n">RESPONSE_VAR_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Response variable </span><span class="si">{response_var}</span><span class="s2"> not found in dataset </span><span class="si">{dataset_name}</span><span class="s2">. Setting to NaN.&quot;</span>
+    <span class="n">MULTIPLE_JOBS_FOUND_FOR_JOB_ID</span> <span class="o">=</span> <span class="s2">&quot;Multiple jobs found for job ID </span><span class="si">{job_id}</span><span class="s2">: </span><span class="si">{job_name}</span><span class="s2">. Please check the job statuses and try again.&quot;</span>
+    <span class="n">DATA_NOT_SCALED</span> <span class="o">=</span> <span class="s2">&quot;Data is not scaled, skipping scaling back to original scale.&quot;</span>
+    <span class="n">DATA_ALREADY_SCALED</span> <span class="o">=</span> <span class="s2">&quot;Data is already scaled, skipping scaling back to original scale.&quot;</span>
+    <span class="n">NO_COVARIATES</span> <span class="o">=</span> <span class="s2">&quot;No covariates provided for dataset </span><span class="si">{dataset_name}</span><span class="s2">.&quot;</span>
+    <span class="n">SYNTHESIZE_N_SAMPLES_IGNORED</span> <span class="o">=</span> <span class="s2">&quot;n_samples is ignored because data is provided.&quot;</span>
+    <span class="n">CENTILES_ALREADY_COMPUTED_FOR_CENTILES</span> <span class="o">=</span> <span class="s2">&quot;Centiles are already computed for </span><span class="si">{dataset_name}</span><span class="s2"> for centiles </span><span class="si">{centiles}</span><span class="s2">, skipping computation. Force recompute by passing recompute=True to compute_centiles&quot;</span>
+    <span class="n">THRIVELINES_ALREADY_COMPUTED_FOR</span> <span class="o">=</span> <span class="s2">&quot;Thrivelines are already computed for </span><span class="si">{dataset_name}</span><span class="s2"> for offsets </span><span class="si">{offsets}</span><span class="s2">, skipping computation. Force recompute by passing recompute=True to compute_thrivelines&quot;</span>  
+    <span class="n">REMOVE_NAN_SET_TO_FALSE</span> <span class="o">=</span> <span class="s2">&quot;Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training.&quot;</span>
+    <span class="n">REMOVE_NAN_SET_TO_FALSE</span> <span class="o">=</span> <span class="s2">&quot;remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.&quot;</span>
+    <span class="n">SUBJECT_ID_MULTIPLE_COLUMNS</span> <span class="o">=</span> <span class="s2">&quot;Subject ID file contains multiple columns. Using the first column for subject IDs.&quot;</span>
+    <span class="n">SUBJECT_ID_UNEXPECTED_SHAPE</span> <span class="o">=</span> <span class="s2">&quot;Subject ID data has an unexpected shape. Expected 1D array or 2D array with one column. Using flattened data or first column.&quot;</span>
+    <span class="n">MULTIPLE_BATCH_EFFECT_SUMMARY</span> <span class="o">=</span> <span class="s2">&quot;Multiple batch effect dimensions found. The summary printout currently uses the first dimension for &#39;unique_batch_effects&#39; display.&quot;</span>
+    <span class="n">LOAD_CIFTI_GENERIC_EXCEPTION</span> <span class="o">=</span> <span class="s2">&quot;A general exception occurred while loading CIFTI file: </span><span class="si">{}</span><span class="s2">&quot;</span>
+    <span class="n">LOAD_NIFTI_GENERIC_EXCEPTION</span> <span class="o">=</span> <span class="s2">&quot;A general exception occurred while loading NIFTI file: </span><span class="si">{}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Errors">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Errors">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Errors</span><span class="p">:</span>
+    <span class="n">ERROR_ENVIRONMENT_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Environment </span><span class="si">{environment}</span><span class="s2"> not found. Please specify the path to the python environment using the environment keyword.&quot;</span>
+    <span class="n">INVALID_ENVIRONMENT</span> <span class="o">=</span> <span class="s2">&quot;The python environment </span><span class="si">{environment}</span><span class="s2"> is invalid because it has no /bin/python file. Please specify a valid python environment.&quot;</span>
+    <span class="n">SAMPLE_BATCH_EFFECTS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Cannot sample </span><span class="si">{n_samples}</span><span class="s2"> batch effects, because some batch effects have more levels than the number of samples.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">NORMATIVE_MODEL_CONFIGURATION_PROBLEMS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The following problems have been detected in the normative model configuration:</span><span class="se">\n</span><span class="si">{problems}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">REGRESSION_MODEL_CONFIGURATION_PROBLEMS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The following problems have been detected in the regression model configuration:</span><span class="se">\n</span><span class="si">{problems}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">UNKNOWN_FILE_TYPE</span> <span class="o">=</span> <span class="s2">&quot;Unknown file type: </span><span class="si">{filename}</span><span class="s2">&quot;</span>
+    <span class="n">NO_FLOAT_DATA_TYPE</span> <span class="o">=</span> <span class="s2">&quot;Only float data types currently handled, not </span><span class="si">{data_type}</span><span class="s2">&quot;</span>
+    <span class="n">BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH</span> <span class="o">=</span> <span class="s2">&quot;Hyperparameter vector invalid length&quot;</span>
+    <span class="n">BLR_MODEL_NOT_FITTED</span> <span class="o">=</span> <span class="s2">&quot;Model must be fitted before computing log probabilities&quot;</span>
+    <span class="n">ERROR_PARSING_TIME_LIMIT</span> <span class="o">=</span> <span class="s2">&quot;Cannot parse </span><span class="si">{time_limit_str}</span><span class="s2"> as time limit&quot;</span>
+    <span class="n">ERROR_CROSS_VALIDATION_FOLDS</span> <span class="o">=</span> <span class="s2">&quot;If cross-validation is enabled, cv_folds must be greater than 1&quot;</span>
+    <span class="n">ERROR_PREDICT_DATA_REQUIRED</span> <span class="o">=</span> <span class="s2">&quot;Predict data is required for fit_predict without cross-validation&quot;</span>
+    <span class="n">ERROR_SUBMITTING_JOB</span> <span class="o">=</span> <span class="s2">&quot;Error submitting job </span><span class="si">{job_id}</span><span class="s2">: </span><span class="si">{stderr}</span><span class="s2">&quot;</span>
+    <span class="n">BLR_X_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;X is not provided&quot;</span>
+    <span class="n">ERROR_UNKNOWN_FUNCTION</span> <span class="o">=</span> <span class="s2">&quot;Unknown function </span><span class="si">{func}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_ARGUMENT_SPECIFIED_TWICE</span> <span class="o">=</span> <span class="s2">&quot;Argument </span><span class="si">{key}</span><span class="s2"> is specified twice.&quot;</span>
+    <span class="n">ERROR_UNKNOWN_FUNCTION_FOR_CLASS</span> <span class="o">=</span> <span class="s2">&quot;Unknown function </span><span class="si">{func}</span><span class="s2"> for class </span><span class="si">{class_name}</span><span class="s2">&quot;</span>
+    <span class="n">BLR_ERROR_NO_DESIGN_MATRIX_CREATED</span> <span class="o">=</span> <span class="s2">&quot;No design matrix created&quot;</span>
+    <span class="n">ERROR_UNKNOWN_CLASS</span> <span class="o">=</span> <span class="s2">&quot;Unknown class </span><span class="si">{class_name}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_FILE_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;File not found: </span><span class="si">{path}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_MODEL_NOT_FITTED</span> <span class="o">=</span> <span class="s2">&quot;Model needs to be fitted before it can be transferred&quot;</span>
+    <span class="n">ERROR_BLR_VAR_X_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;Variance of covariates (var_X) is required for models with variance.&quot;</span>
+    <span class="n">ERROR_BLR_PENALTY_NOT_RECOGNIZED</span> <span class="o">=</span> <span class="s2">&quot;Requested penalty (</span><span class="si">{penalty}</span><span class="s2">) not recognized, choose between &#39;L1&#39; or &#39;L2&#39;.&quot;</span>
+    <span class="n">ERROR_BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH</span> <span class="o">=</span> <span class="s2">&quot;Hyperparameter vector invalid length&quot;</span>
+    <span class="n">ERROR_BLR_WARPS_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;A list of warp functions is required&quot;</span>
+    <span class="n">ERROR_HBRDATA_X_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;X must be provided&quot;</span>
+    <span class="n">ERROR_UNKNOWN_LIKELIHOOD</span> <span class="o">=</span> <span class="s2">&quot;Unsupported likelihood (</span><span class="si">{likelihood}</span><span class="s2">)&quot;</span>
+    <span class="n">ERROR_HBR_Y_NOT_PROVIDED</span> <span class="o">=</span> <span class="s2">&quot;y must be provided for z-score computation&quot;</span>
+    <span class="n">ERROR_HBR_FITTED_BUT_NO_IDATA</span> <span class="o">=</span> <span class="s2">&quot;HBR model is fitted but does not have idata. This should not happen.&quot;</span>
+    <span class="n">ERROR_HBR_COULD_NOT_LOAD_IDATA</span> <span class="o">=</span> <span class="s2">&quot;Could not load idata from </span><span class="si">{path}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_UNKNOWN_MAPPING</span> <span class="o">=</span> <span class="s2">&quot;Unknown mapping (</span><span class="si">{mapping}</span><span class="s2">)&quot;</span>
+    <span class="n">ERROR_UNKNOWN_DISTRIBUTION</span> <span class="o">=</span> <span class="s2">&quot;Unknown distribution (</span><span class="si">{dist_name}</span><span class="s2">)&quot;</span>
+    <span class="n">ERROR_SOURCE_ARRAY_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Source array </span><span class="si">{source_array_name}</span><span class="s2"> does not exist in the data.&quot;</span>
+    <span class="n">ERROR_BASIS_FUNCTION_NOT_FITTED</span> <span class="o">=</span> <span class="s2">&quot;Basis function is not fitted. Please fit the basis function first.&quot;</span>
+    <span class="n">ERROR_DATA_MUST_BE_1D</span> <span class="o">=</span> <span class="s2">&quot;Data must be a 1D array or a N-dimensional array with a single column&quot;</span>
+    <span class="n">ERROR_BATCH_EFFECTS_NOT_LIST</span> <span class="o">=</span> <span class="s2">&quot;Items of the batch_effect dict be a list or a string, not </span><span class="si">{batch_effect_type}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_SCALER_TYPE_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Dictionary must contain &#39;scaler_type&#39; key&quot;</span>
+    <span class="n">ERROR_UNKNOWN_SCALER_TYPE</span> <span class="o">=</span> <span class="s2">&quot;Undefined scaler type: </span><span class="si">{scaler_type}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_SCALER_NOT_FITTED</span> <span class="o">=</span> <span class="s2">&quot;Scaler must be fitted before </span><span class="si">{method}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Predict data is required for fit_predict without cross-validation&quot;</span>
+    <span class="p">)</span>
+    <span class="n">ERROR_NO_ENVIRONMENT_SPECIFIED</span> <span class="o">=</span> <span class="s2">&quot;No python environment specified. Please specify the path to the python environment using the environment keyword.&quot;</span>
+    <span class="n">ERROR_ZSCORES_INVERSE</span> <span class="o">=</span> <span class="s2">&quot;Z-scores inverse has invalid shape: Z_shape=</span><span class="si">{Z_shape}</span><span class="s2">, X_shape=</span><span class="si">{X_shape}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_CDF_SHAPE</span> <span class="o">=</span> <span class="s2">&quot;CDF shape </span><span class="si">{cdf_shape}</span><span class="s2"> does not match data shape </span><span class="si">{data_shape}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_Y_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;y not found in data&quot;</span>
+    <span class="n">HBR_MODEL_NOT_FITTED</span> <span class="o">=</span> <span class="s2">&quot;HBR model is not fitted&quot;</span>
+    <span class="n">ERROR_BLR_TRANSFER_NOT_IMPLEMENTED</span> <span class="o">=</span> <span class="s2">&quot;BLR transfer not implemented&quot;</span>
+    <span class="n">ERROR_MULTIPLE_COVARIATE_DIMS</span> <span class="o">=</span> <span class="s2">&quot;Multiple covariate dimensions found: </span><span class="si">{covariate_dims}</span><span class="s2">&quot;</span>
+    <span class="n">ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION</span> <span class="o">=</span> <span class="s2">&quot;Predict with cross-validation is not supported. Please use fit_predict instead.&quot;</span>
+    <span class="n">ERROR_WARP_STRING_INVALID</span> <span class="o">=</span> <span class="s2">&quot;Invalid warp string: </span><span class="si">{warp_string}</span><span class="s2">&quot;</span>
+    <span class="n">ENSURE_POSITIVE_DISTRIBUTION</span> <span class="o">=</span> <span class="s2">&quot;Distribution for </span><span class="si">{name}</span><span class="s2"> needs to be positive.&quot;</span>
+    <span class="n">OFFSETS_NOT_1D</span> <span class="o">=</span> <span class="s2">&quot;Offsets must be a 1-d array or list&quot;</span>
+    <span class="n">OFFSET_NOT_VALID</span> <span class="o">=</span> <span class="s2">&quot;Invalid list of offsets provided&quot;</span>
+    <span class="n">WB_COMMAND_FAILED</span> <span class="o">=</span> <span class="s2">&quot;wb_command failed with error: </span><span class="si">{error}</span><span class="s2">&quot;</span>
+    <span class="n">WB_COMMAND_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;wb_command not found in PATH&quot;</span></div>
+
+
+<div class="viewcode-block" id="Output">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Output</span><span class="p">:</span>
+
+    <span class="n">_show_messages</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Default to showing output</span>
+    <span class="n">_show_warnings</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_show_pid</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_show_timestamp</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Output.print">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.print">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print message only if show_messages mode is enabled&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_messages</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_timestamp</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_pid</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Process: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Output.warning">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.warning">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">warning</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print warning message only if show_warnings mode is enabled&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_warnings</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_timestamp</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+            <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_pid</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Process: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Output.error">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.error">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print error message&quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_timestamp</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_pid</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Process: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot; - &quot;</span> <span class="o">+</span> <span class="n">message</span>
+        <span class="k">return</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="Output.get_show_pid">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.get_show_pid">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_show_pid</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_pid</span></div>
+
+
+<div class="viewcode-block" id="Output.get_show_messages">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.get_show_messages">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_show_messages</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_messages</span></div>
+
+
+<div class="viewcode-block" id="Output.get_show_warnings">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.get_show_warnings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_show_warnings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_warnings</span></div>
+
+
+<div class="viewcode-block" id="Output.get_show_timestamp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.get_show_timestamp">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_show_timestamp</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_show_timestamp</span></div>
+
+    
+<div class="viewcode-block" id="Output.set_show_messages">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.set_show_messages">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_show_messages</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_show_messages</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Output.set_show_pid">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.set_show_pid">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_show_pid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_show_pid</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Output.set_show_timestamp">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.set_show_timestamp">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_show_timestamp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_show_timestamp</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Output.set_show_warnings">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/util/output/index.html#pcntoolkit.util.output.Output.set_show_warnings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_show_warnings</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_show_warnings</span> <span class="o">=</span> <span class="n">value</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

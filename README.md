@@ -3,6 +3,7 @@ Predictive Clinical Neuroscience software toolkit (formerly nispat).
 
 A Python package for normative modelling, spatial statistics and pattern recognition.
 
+# IMPORTANT 
 ## Deprecation warning
 
 This is PCNtoolkit version 1.X.X, released originally in June 2025. Any scripts, models, and results created with version 0.X.X are incompatible with this and future versions of the toolkit. 
