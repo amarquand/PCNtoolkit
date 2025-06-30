@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.math_functions.likelihood import NormalLikelihood
+from pcntoolkit.math_functions.prior import *
 from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.regression_model.blr import *
 from pcntoolkit.regression_model.hbr import *

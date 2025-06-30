@@ -1,10 +1,11 @@
-import copy
 
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.math_functions.likelihood import NormalLikelihood
+from pcntoolkit.math_functions.prior import make_prior
 from pcntoolkit.normative_model import NormativeModel
-from pcntoolkit.regression_model.hbr import HBR, NormalLikelihood, make_prior
+from pcntoolkit.regression_model.hbr import HBR
 from test.fixtures.data_fixtures import *
 from test.fixtures.path_fixtures import *
 
@@ -91,6 +92,7 @@ def train_and_save_hbr_model(
     new_norm_hbr_model,
     norm_data_from_arrays: NormData,
 ):
+    # pass
     if os.path.exists(new_norm_hbr_model.save_dir):
         shutil.rmtree(new_norm_hbr_model.save_dir)
     os.makedirs(new_norm_hbr_model.save_dir, exist_ok=True)

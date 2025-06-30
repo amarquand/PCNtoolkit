@@ -39,13 +39,6 @@ class BLR(RegressionModel):
     def __init__(
         self,
         name: str = "template",
-        n_iter: int = 300,
-        tol: float = 1e-5,
-        ard: bool = False,
-        optimizer: str = "l-bfgs-b",
-        l_bfgs_b_l: float = 0.1,
-        l_bfgs_b_epsilon: float = 0.1,
-        l_bfgs_b_norm: str = "l2",
         fixed_effect: bool = False,
         heteroskedastic: bool = False,
         fixed_effect_var: bool = False,
@@ -53,6 +46,13 @@ class BLR(RegressionModel):
         warp_reparam: bool = False,
         basis_function_mean: BasisFunction = None,  # type: ignore
         basis_function_var: BasisFunction = None,  # type: ignore
+        n_iter: int = 300,
+        tol: float = 1e-5,
+        ard: bool = False,
+        optimizer: str = "l-bfgs-b",
+        l_bfgs_b_l: float = 0.1,
+        l_bfgs_b_epsilon: float = 0.1,
+        l_bfgs_b_norm: str = "l2",
         hyp0: np.ndarray | None = None,
         is_fitted: bool = False,
         is_from_dict: bool = False,
@@ -66,20 +66,6 @@ class BLR(RegressionModel):
         ----------
         name : str
             Unique identifier for the model instance
-        n_iter : int, optional
-            Number of iterations for the optimization, by default 300
-        tol : float, optional
-            Tolerance for the optimization, by default 1e-5
-        ard : bool, optional
-            Whether to use automatic relevance determination, by default False
-        optimizer : str, optional
-            Optimizer to use for the optimization, by default "l-bfgs-b"
-        l_bfgs_b_l : float, optional
-            L-BFGS-B parameter, by default 0.1
-        l_bfgs_b_epsilon : float, optional
-            L-BFGS-B parameter, by default 0.1
-        l_bfgs_b_norm : str, optional
-            L-BFGS-B parameter, by default "l2"
         fixed_effect : bool, optional
             Whether to model a fixed effect in the mean, by default False
         heteroskedastic : bool, optional
@@ -94,6 +80,20 @@ class BLR(RegressionModel):
             Basis function for the mean, by default None
         basis_function_var : BasisFunction, optional
             Basis function for the variance, by default None
+        n_iter : int, optional
+            Number of iterations for the optimization, by default 300
+        tol : float, optional
+            Tolerance for the optimization, by default 1e-5
+        ard : bool, optional
+            Whether to use automatic relevance determination, by default False
+        optimizer : str, optional
+            Optimizer to use for the optimization, by default "l-bfgs-b"
+        l_bfgs_b_l : float, optional
+            L-BFGS-B parameter, by default 0.1
+        l_bfgs_b_epsilon : float, optional
+            L-BFGS-B parameter, by default 0.1
+        l_bfgs_b_norm : str, optional
+            L-BFGS-B parameter, by default "l2"
         hyp0 : np.ndarray, optional
             Initial hyperparameters, by default None
         is_fitted : bool, optional
@@ -301,7 +301,7 @@ class BLR(RegressionModel):
         xr.DataArray
             Log-probabilities of the data"""
         if not self.is_fitted:
-            raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED)  )
+            raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
 
         np_X = X.values
         np_be = be.values
@@ -324,7 +324,7 @@ class BLR(RegressionModel):
             logp += np.log(self.warp.df(y, self.gamma))
 
         return xr.DataArray(logp, dims=("observations",))
-    
+
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
@@ -399,7 +399,6 @@ class BLR(RegressionModel):
             self.lambda_n_vec = np.ones(N) * beta
 
         if self.warp:
-
             gamma = hyp[n_lik_param : (n_lik_param + self.n_gamma)]
             n_lik_param += self.n_gamma
             if self.warp_reparam:
@@ -509,7 +508,6 @@ class BLR(RegressionModel):
                 self.post(hyp, X, y, var_X)
             except ValueError as error:
                 Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
-
                 nlZ = something_big
                 return nlZ
 
@@ -596,7 +594,9 @@ class BLR(RegressionModel):
         alpha, beta, gamma = self.parse_hyps(hyp, X, var_X)
 
         if self.warp:
-            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="dloglik", class_name=self.__class__.__name__))
+            raise ValueError(
+                Output.error(Errors.ERROR_UNKNOWN_FUNCTION_FOR_CLASS, func="dloglik", class_name=self.__class__.__name__)
+            )
 
         # load posterior and prior covariance
         if (hyp != self.hyp).any() or not hasattr(self, "A"):
@@ -781,7 +781,7 @@ class BLR(RegressionModel):
         fixed_effect_var = args.get("fixed_effect_var", _default_instance.fixed_effect_var)
         warp = args.get("warp", _default_instance.warp)
         warp_reparam = args.get("warp_reparam", _default_instance.warp_reparam)
-        try: 
+        try:
             basis_function_mean = create_basis_function(args.get("basis_function_mean"))
         except ValueError:
             basis_function_mean = _default_instance.basis_function_mean
@@ -887,4 +887,3 @@ def create_design_matrix(
         raise ValueError(Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED))
 
     return np.concatenate(acc, axis=1)
-

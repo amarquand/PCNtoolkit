@@ -5,17 +5,16 @@ import sys
 import warnings
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
 import pcntoolkit.util.output
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
+from pcntoolkit.math_functions.likelihood import SHASHbLikelihood
+from pcntoolkit.math_functions.prior import make_prior
 from pcntoolkit.normative_model import NormativeModel
-from pcntoolkit.regression_model.blr import BLR
-from pcntoolkit.regression_model.hbr import HBR, NormalLikelihood, SHASHbLikelihood, make_prior
-from pcntoolkit.regression_model.test_model import TestModel
+from pcntoolkit.regression_model.hbr import HBR
 from pcntoolkit.util.runner import Runner
 
 # Get the conda environment path

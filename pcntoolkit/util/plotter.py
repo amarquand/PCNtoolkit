@@ -1,6 +1,5 @@
 """A module for plotting functions."""
 
-from re import L, S
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import matplotlib.pyplot as plt
@@ -8,15 +7,12 @@ import numpy as np
 import pandas as pd  # type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
-from torch import scatter
 
 from pcntoolkit.dataio.norm_data import NormData
 
 if TYPE_CHECKING:
     from pcntoolkit.normative_model import NormativeModel
 import os
-
-from pcntoolkit.util.output import Errors, Output
 
 sns.set_theme(style="darkgrid")
 
@@ -499,7 +495,7 @@ def _plot_qq(
     if bound != 0:
         plt.axis((-bound, bound, -bound, bound))
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"qq_{response_var}_{data.name}.png"))
+        plt.savefig(os.path.join(save_dir, f"qq_{response_var}_{data.name}.png"), dpi=300)
     else:
         plt.show(block=False)
     plt.close()
@@ -547,8 +543,8 @@ def _plot_ridge(data, variable, response_var, split_by, save_dir, **kwargs):
     df.columns = [df.columns[0][0], df.columns[1][1]]
 
     # Initialize the FacetGrid object
-    pal = sns.cubehelix_palette(n_colors=len(df[split_by].unique()), rot=1.5, light=0.7)
-    g = sns.FacetGrid(df, row=split_by, hue=split_by, aspect=15, height=0.5, palette=pal)
+    palette = kwargs.get("palette", sns.cubehelix_palette(n_colors=len(df[split_by].unique()), rot=1.5, light=0.7))
+    g = sns.FacetGrid(df, row=split_by, hue=split_by, aspect=15, height=0.5, palette=palette)
 
     # Draw the densities in a few steps
     g.map(sns.kdeplot, variable, bw_adjust=0.5, clip_on=False, fill=True, alpha=1, linewidth=1.5)
@@ -573,7 +569,7 @@ def _plot_ridge(data, variable, response_var, split_by, save_dir, **kwargs):
     g.despine(bottom=True, left=True)
     plt.tight_layout()
     if save_dir:
-        plt.savefig(os.path.join(save_dir, f"ridge_{response_var}_{variable}_{split_by}_{data.name}.png"))
+        plt.savefig(os.path.join(save_dir, f"ridge_{response_var}_{variable}_{split_by}_{data.name}.png"), dpi=300)
     else:
         plt.show(block=False)
     plt.close()
