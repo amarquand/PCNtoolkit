@@ -41,7 +41,6 @@ your computer).
 
 .. code:: ipython3
 
-    ! pip install nutpie
     ! pip install pcntoolkit
     ! pip install -r requirements.txt
 
