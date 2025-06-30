@@ -10,10 +10,6 @@ This is PCNtoolkit version 1.X.X, released originally in June 2025. Any scripts,
 
 To use the models created with versions 0.35 and earlier, please install the appropriate version using `pip install pcntoolkit==0.35`, or replace 0.35 with your desired version. The old version of the toolbox is also still available on [GitHub](https://github.com/amarquand/PCNtoolkit/tree/v0.35).
 
-*Documentation* of the earlier version is still available at:
-[https://pcntoolkit.readthedocs.io/en/v0.35/](https://pcntoolkit.readthedocs.io/en/v0.35/)
-
-
 ## Installation
 
 ```bash
