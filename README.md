@@ -6,7 +6,7 @@ A Python package for normative modelling, spatial statistics and pattern recogni
 # IMPORTANT 
 ## Deprecation warning
 
-This is PCNtoolkit version 1.X.X, released originally in June 2025. Any scripts, models, and results created with version 0.X.X are *not compatible* with this and future versions of the toolkit. 
+This is PCNtoolkit version 1.X.X, released originally in June 2025. Any scripts, models, and results created with version 0.X.X are **not compatible** with this and future versions of the toolkit. 
 
 To use the models created with versions 0.35 and earlier, please install the appropriate version using `pip install pcntoolkit==0.35`, or replace 0.35 with your desired version. 
 
