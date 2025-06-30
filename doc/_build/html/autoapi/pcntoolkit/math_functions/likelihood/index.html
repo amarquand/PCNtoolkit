@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.math_functions.likelihood &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="pcntoolkit.math_functions.prior" href="../prior/index.html" />
+    <link rel="prev" title="pcntoolkit.math_functions.factorize" href="../factorize/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../dataio/index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../normative_model/index.html">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../util/index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">pcntoolkit</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit.math_functions</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.math_functions.likelihood</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/pcntoolkit/math_functions/likelihood/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../factorize/index.html" class="btn btn-neutral float-left" title="pcntoolkit.math_functions.factorize" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../prior/index.html" class="btn btn-neutral float-right" title="pcntoolkit.math_functions.prior" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.math_functions.likelihood">
+<span id="pcntoolkit-math-functions-likelihood"></span><h1>pcntoolkit.math_functions.likelihood<a class="headerlink" href="#module-pcntoolkit.math_functions.likelihood" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood" title="pcntoolkit.math_functions.likelihood.BetaLikelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BetaLikelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood" title="pcntoolkit.math_functions.likelihood.NormalLikelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalLikelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood" title="pcntoolkit.math_functions.likelihood.SHASHbLikelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHASHbLikelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood" title="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHASHo2Likelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood" title="pcntoolkit.math_functions.likelihood.SHASHoLikelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHASHoLikelihood</span></code></a></p></td>
+<td><p>Helper class that provides a standard way to create an ABC using</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.get_default_normal_likelihood" title="pcntoolkit.math_functions.likelihood.get_default_normal_likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_normal_likelihood</span></code></a>(→ NormalLikelihood)</p></td>
+<td><p>Return a normal likelihood with a random intercept of the mean, and heteroskedasticity</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BetaLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.compile_params">
+<span class="sig-name descname"><span class="pre">compile_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymc.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.compile_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.compile_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.get_var_names">
+<span class="sig-name descname"><span class="pre">get_var_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.get_var_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.get_var_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.has_random_effect">
+<span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.transfer">
+<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">arviz.InferenceData</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood" title="pcntoolkit.math_functions.likelihood.BetaLikelihood"><span class="pre">BetaLikelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.transfer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.yhat">
+<span class="sig-name descname"><span class="pre">yhat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#BetaLikelihood.yhat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.yhat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.alpha" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.BetaLikelihood.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.BetaLikelihood.beta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.backward">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.compile">
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pymc.Model</span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.compile" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.compile_params">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compile_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymc.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.compile_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.compile_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.create_model_with_data">
+<span class="sig-name descname"><span class="pre">create_model_with_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pymc.Model</span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.create_model_with_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.create_model_with_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.forward">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.from_args">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><span class="pre">Likelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.from_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.from_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.from_dict">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><span class="pre">Likelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.from_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.has_random_effect">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.to_dict">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.transfer">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">arviz.InferenceData</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><span class="pre">Likelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.transfer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.update_data">
+<span class="sig-name descname"><span class="pre">update_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymc.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.update_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.update_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.yhat">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">yhat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#Likelihood.yhat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.yhat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.Likelihood.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.Likelihood.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NormalLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.compile_params">
+<span class="sig-name descname"><span class="pre">compile_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymc.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.compile_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.compile_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.has_random_effect">
+<span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.transfer">
+<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">arviz.InferenceData</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><span class="pre">Likelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.transfer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.yhat">
+<span class="sig-name descname"><span class="pre">yhat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#NormalLikelihood.yhat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.yhat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.mu" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.NormalLikelihood.sigma">
+<span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SHASHbLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.compile_params">
+<span class="sig-name descname"><span class="pre">compile_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymc.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be_maps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.compile_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.compile_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.get_var_names">
+<span class="sig-name descname"><span class="pre">get_var_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.get_var_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.get_var_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.has_random_effect">
+<span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.transfer">
+<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">arviz.InferenceData</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood" title="pcntoolkit.math_functions.likelihood.SHASHbLikelihood"><span class="pre">SHASHbLikelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.transfer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.yhat">
+<span class="sig-name descname"><span class="pre">yhat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHbLikelihood.yhat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.yhat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.delta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.epsilon">
+<span class="sig-name descname"><span class="pre">epsilon</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.mu" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHbLikelihood.sigma">
+<span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHbLikelihood.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SHASHo2Likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.get_var_names">
+<span class="sig-name descname"><span class="pre">get_var_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood.get_var_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.get_var_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.has_random_effect">
+<span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHo2Likelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.delta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.epsilon">
+<span class="sig-name descname"><span class="pre">epsilon</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.mu" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.sigma">
+<span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHo2Likelihood.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SHASHoLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prior/index.html#pcntoolkit.math_functions.prior.BasePrior" title="pcntoolkit.math_functions.prior.BasePrior"><span class="pre">pcntoolkit.math_functions.prior.BasePrior</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pcntoolkit.math_functions.likelihood.Likelihood" title="pcntoolkit.math_functions.likelihood.Likelihood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Likelihood</span></code></a></p>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.get_var_names">
+<span class="sig-name descname"><span class="pre">get_var_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood.get_var_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.get_var_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.has_random_effect">
+<span class="sig-name descname"><span class="pre">has_random_effect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood.has_random_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.has_random_effect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#SHASHoLikelihood.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.delta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.epsilon">
+<span class="sig-name descname"><span class="pre">epsilon</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.mu" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.SHASHoLikelihood.sigma">
+<span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.SHASHoLikelihood.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pcntoolkit.math_functions.likelihood.get_default_normal_likelihood">
+<span class="sig-name descname"><span class="pre">get_default_normal_likelihood</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.math_functions.likelihood.NormalLikelihood" title="pcntoolkit.math_functions.likelihood.NormalLikelihood"><span class="pre">NormalLikelihood</span></a></span></span><a class="reference internal" href="../../../../_modules/pcntoolkit/math_functions/likelihood.html#get_default_normal_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.math_functions.likelihood.get_default_normal_likelihood" title="Link to this definition"></a></dt>
+<dd><p>Return a normal likelihood with a random intercept of the mean, and heteroskedasticity</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../factorize/index.html" class="btn btn-neutral float-left" title="pcntoolkit.math_functions.factorize" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../prior/index.html" class="btn btn-neutral float-right" title="pcntoolkit.math_functions.prior" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

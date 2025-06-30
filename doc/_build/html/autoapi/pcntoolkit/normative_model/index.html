@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.normative_model &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="pcntoolkit.regression_model" href="../regression_model/index.html" />
+    <link rel="prev" title="pcntoolkit.normative" href="../normative/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Setup:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/citing.html">Citing the PCNtoolkit</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Background</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/background.html">PCNtoolkit Background</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Function &amp; Class Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/00_getting_started.html">Getting started with normative modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/01_loading_data.html">The NormData class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/02_BLR.html">Normative Modelling: Bayesian Linear Regression</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/03_HBR_Normal.html">Normative Modelling: Hierarchical Bayesian Regression with Normal likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/04_HBR_SHASH.html">Normative Modelling: Hierarchical Bayesian Regression with SHASH likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/05_HBR_Beta.html">Normative Modelling: Hierarchical Bayesian Regression with Beta likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/06_transfer_extend.html">Transfering and extending normative models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/07_cluster.html">Fitting normative models on a compute cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/tutorials/08_command_line_interface.html">Command line interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">pcntoolkit</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../dataio/index.html">pcntoolkit.dataio</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../math_functions/index.html">pcntoolkit.math_functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../normative/index.html">pcntoolkit.normative</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pcntoolkit.normative_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../regression_model/index.html">pcntoolkit.regression_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../util/index.html">pcntoolkit.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">pcntoolkit</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.normative_model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/pcntoolkit/normative_model/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="../normative/index.html" class="btn btn-neutral float-left" title="pcntoolkit.normative" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../regression_model/index.html" class="btn btn-neutral float-right" title="pcntoolkit.regression_model" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pcntoolkit.normative_model">
+<span id="pcntoolkit-normative-model"></span><h1>pcntoolkit.normative_model<a class="headerlink" href="#module-pcntoolkit.normative_model" title="Link to this heading"></a></h1>
+<p>Module providing the NormativeModel class, which is the main class for building and using normative models.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormativeModel</span></code></a></p></td>
+<td><p>This class provides the foundation for building normative models, handling multiple</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NormativeModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_regression_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../regression_model/regression_model/index.html#pcntoolkit.regression_model.regression_model.RegressionModel" title="pcntoolkit.regression_model.regression_model.RegressionModel"><span class="pre">pcntoolkit.regression_model.regression_model.RegressionModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">savemodel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluate_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveresults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveplots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inscaler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outscaler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel" title="Link to this definition"></a></dt>
+<dd><p>This class provides the foundation for building normative models, handling multiple
+response variables through separate regression models. It manages data preprocessing,
+model fitting, prediction, and evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template_reg_model</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionModel</span></code>) – Regression model used as a template to create all regression models.</p></li>
+<li><p><strong>savemodel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to save the model.</p></li>
+<li><p><strong>evaluate_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to evaluate the model.</p></li>
+<li><p><strong>saveresults</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to save the results.</p></li>
+<li><p><strong>saveplots</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to save the plots.</p></li>
+<li><p><strong>save_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Directory to save the model, results, and plots.</p></li>
+<li><p><strong>inscaler</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Input (X/covariates) scaler to use.</p></li>
+<li><p><strong>outscaler</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Output (Y/response_vars) scaler to use.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of the model</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../regression_model/regression_model/index.html#pcntoolkit.regression_model.regression_model.RegressionModel" title="pcntoolkit.regression_model.regression_model.RegressionModel"><span class="pre">pcntoolkit.regression_model.regression_model.RegressionModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.__getitem__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.__setitem__">
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../regression_model/regression_model/index.html#pcntoolkit.regression_model.regression_model.RegressionModel" title="pcntoolkit.regression_model.regression_model.RegressionModel"><span class="pre">pcntoolkit.regression_model.regression_model.RegressionModel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.__setitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.__setitem__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.check_compatibility">
+<span class="sig-name descname"><span class="pre">check_compatibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.check_compatibility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.check_compatibility" title="Link to this definition"></a></dt>
+<dd><p>Check if the data is compatible with the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Data to check compatibility with.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if compatible, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_centiles">
+<span class="sig-name descname"><span class="pre">compute_centiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">centiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">numpy.ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_centiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_centiles" title="Link to this definition"></a></dt>
+<dd><p>Computes the centiles for each response variable in the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Test data containing covariates (X) for which to generate predictions, batch effects (batch_effects), and response variables (Y).</p></li>
+<li><p><strong>centiles</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">np.ndarray</span></code>, <em>optional</em>) – The centiles to compute. Defaults to [0.05, 0.25, 0.5, 0.75, 0.95].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prediction results containing:
+- Centiles: centiles of the response variables</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_correlation_matrix">
+<span class="sig-name descname"><span class="pre">compute_correlation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'age'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_correlation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_correlation_matrix" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_logp">
+<span class="sig-name descname"><span class="pre">compute_logp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_logp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_logp" title="Link to this definition"></a></dt>
+<dd><p>Computes the log-probability of the data under the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Test data containing covariates (X) for which to generate predictions, batch effects (batch_effects), and response variables (Y).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prediction results containing:
+- Logp: log-probability of the response variables per datapoint</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_thrivelines">
+<span class="sig-name descname"><span class="pre">compute_thrivelines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_thrive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'age'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_thrivelines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_thrivelines" title="Link to this definition"></a></dt>
+<dd><p>Computes the thrivelines for each responsevar in the data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_yhat">
+<span class="sig-name descname"><span class="pre">compute_yhat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_yhat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_yhat" title="Link to this definition"></a></dt>
+<dd><p>Computes the predicted values for each response variable in the data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.compute_zscores">
+<span class="sig-name descname"><span class="pre">compute_zscores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.compute_zscores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.compute_zscores" title="Link to this definition"></a></dt>
+<dd><p>Computes Z-scores for each response variable using fitted regression models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Test data containing covariates (X) for which to generate predictions, batch effects (batch_effects), and response variables (Y).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prediction results containing:
+- Zscores: z-scores of the response variables</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.evaluate" title="Link to this definition"></a></dt>
+<dd><p>Evaluates the model performance on the data.
+This method performs the following steps:
+1. Preprocesses the data</p>
+<ol class="arabic simple" start="5">
+<li><p>Evaluates the model performance</p></li>
+<li><p>Postprocesses the data</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_synth_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.extend" title="Link to this definition"></a></dt>
+<dd><p>Extends the model to a new dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.extend_predict">
+<span class="sig-name descname"><span class="pre">extend_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extend_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_synth_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.extend_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.extend_predict" title="Link to this definition"></a></dt>
+<dd><p>Extends the model to a new dataset and predicts the data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.extract_data">
+<span class="sig-name descname"><span class="pre">extract_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">xarray.DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">xarray.DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">xarray.DataArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">xarray.DataArray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.extract_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.extract_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.fit" title="Link to this definition"></a></dt>
+<dd><p>Fits a regression model for each response variable in the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Training data containing covariates (X), batch effects (batch_effects), and response variables (Y).
+Must be a valid NormData object with properly formatted dimensions:
+- X: (n_samples, n_covariates)
+- batch_effects: (n_samples, n_batch_effects)
+- Y: (n_samples, n_response_vars)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.fit_predict">
+<span class="sig-name descname"><span class="pre">fit_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.fit_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.fit_predict" title="Link to this definition"></a></dt>
+<dd><p>Combines model.fit and model.predict in a single operation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.from_args">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.from_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.from_args" title="Link to this definition"></a></dt>
+<dd><p>Create a new normative model from command line arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str]</span></code>) – A dictionary of command line arguments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of a normative model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">NormBase</span></code></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If the regression model specified in the arguments is unknown.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.harmonize">
+<span class="sig-name descname"><span class="pre">harmonize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_batch_effect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.harmonize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.harmonize" title="Link to this definition"></a></dt>
+<dd><p>Harmonizes the data to a reference batch effect. Harmonizes to the provided reference batch effect if provided,
+otherwise, harmonizes to the first batch effect alphabetically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – Data to harmonize.</p></li>
+<li><p><strong>reference_batch_effect</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str]</span></code>) – Reference batch effect.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.load">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">into</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.load" title="Link to this definition"></a></dt>
+<dd><p>Load a normative model from a path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The path to the normative model.</p></li>
+<li><p><strong>into</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormBase</span></code>, <em>optional</em>) – The normative model to load the data into. If None, a new normative model is created.
+This is useful if you want to load a normative model into an existing normative model, for example in the runner.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.map_batch_effects">
+<span class="sig-name descname"><span class="pre">map_batch_effects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_effects</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.DataArray</span></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.map_batch_effects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.map_batch_effects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.model_specific_evaluation">
+<span class="sig-name descname"><span class="pre">model_specific_evaluation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.model_specific_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.model_specific_evaluation" title="Link to this definition"></a></dt>
+<dd><p>Save model-specific evaluation metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.postprocess">
+<span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.postprocess" title="Link to this definition"></a></dt>
+<dd><p>Apply postprocessing to the data.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (NormData): Data to postprocess.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.predict" title="Link to this definition"></a></dt>
+<dd><p>Computes Z-scores, centiles, logp, yhat for each observation using fitted regression models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.preprocess" title="Link to this definition"></a></dt>
+<dd><p>Applies preprocessing transformations to the input data.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>data (NormData): Data to preprocess.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.register_batch_effects">
+<span class="sig-name descname"><span class="pre">register_batch_effects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.register_batch_effects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.register_batch_effects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.register_data_info">
+<span class="sig-name descname"><span class="pre">register_data_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.register_data_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.register_data_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.sample_batch_effects">
+<span class="sig-name descname"><span class="pre">sample_batch_effects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.DataArray</span></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.sample_batch_effects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.sample_batch_effects" title="Link to this definition"></a></dt>
+<dd><p>Sample the batch effects from the estimated distribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.sample_covariates">
+<span class="sig-name descname"><span class="pre">sample_covariates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xarray.DataArray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariate_range_per_batch_effect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xarray.DataArray</span></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.sample_covariates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.sample_covariates" title="Link to this definition"></a></dt>
+<dd><p>Sample the covariates from the estimated distribution.</p>
+<p>Uses ranges of observed covariates matched with batch effects to create a representative sample</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.save" title="Link to this definition"></a></dt>
+<dd><p>Save the model to a file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.scale_backward">
+<span class="sig-name descname"><span class="pre">scale_backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.scale_backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.scale_backward" title="Link to this definition"></a></dt>
+<dd><p>Scales data back to its original scale using stored scalers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – <p>Data object containing arrays to be scaled back:
+- X : array-like, shape (n_samples, n_covariates)</p>
+<blockquote>
+<div><p>Covariate data to be scaled back</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>y<span class="classifier">array-like, shape (n_samples, n_response_vars), optional</span></dt><dd><p>Response variable data to be scaled back</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.scale_forward">
+<span class="sig-name descname"><span class="pre">scale_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.scale_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.scale_forward" title="Link to this definition"></a></dt>
+<dd><p>Scales input data to standardized form using configured scalers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>) – <p>Data object containing arrays to be scaled:
+- X : array-like, shape (n_samples, n_covariates)</p>
+<blockquote>
+<div><p>Covariate data to be scaled</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>y<span class="classifier">array-like, shape (n_samples, n_response_vars), optional</span></dt><dd><p>Response variable data to be scaled</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If True, creates new scalers even if they already exist.
+If False, uses existing scalers when available.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.set_ensure_save_dirs">
+<span class="sig-name descname"><span class="pre">set_ensure_save_dirs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.set_ensure_save_dirs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.set_ensure_save_dirs" title="Link to this definition"></a></dt>
+<dd><p>Ensures that the save directories for results and plots are created when they are not there yet (otherwise resulted in an error)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.set_save_dir">
+<span class="sig-name descname"><span class="pre">set_save_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.set_save_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.set_save_dir" title="Link to this definition"></a></dt>
+<dd><p>Override the save_dir in the norm_conf.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>save_dir (str): New save directory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.synthesize">
+<span class="sig-name descname"><span class="pre">synthesize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariate_range_per_batch_effect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.synthesize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.synthesize" title="Link to this definition"></a></dt>
+<dd><p>Synthesize data from the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">NormData</span></code>, <em>optional</em>) – A NormData object with X and batch_effects. If provided, used to generate the synthetic data.
+If the data has no batch_effects, batch_effects are sampled from the model.
+If the data has no X, X is sampled from the model, using the provided or sampled batch_effects.
+If neither X nor batch_effects are provided, the model is used to generate the synthetic data.</p></li>
+<li><p><strong>n_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Number of samples to synthesize. If this is None, the number of samples that were in the train data is used.</p></li>
+<li><p><strong>covariate_range_per_batch_effect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If True, the covariate range is different for each batch effect.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.to_dict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.transfer">
+<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transfer_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.transfer" title="Link to this definition"></a></dt>
+<dd><p>Transfers the model to a new dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.transfer_predict">
+<span class="sig-name descname"><span class="pre">transfer_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transfer_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataio/norm_data/index.html#pcntoolkit.dataio.norm_data.NormData" title="pcntoolkit.dataio.norm_data.NormData"><span class="pre">pcntoolkit.dataio.norm_data.NormData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pcntoolkit.normative_model.NormativeModel" title="pcntoolkit.normative_model.NormativeModel"><span class="pre">NormativeModel</span></a></span></span><a class="reference internal" href="../../../_modules/pcntoolkit/normative_model.html#NormativeModel.transfer_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.transfer_predict" title="Link to this definition"></a></dt>
+<dd><p>Transfers the model to a new dataset and predicts the data.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.batch_effect_dims">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_effect_dims</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.batch_effect_dims" title="Link to this definition"></a></dt>
+<dd><p>Returns the batch effect dimensions.
+Returns:</p>
+<blockquote>
+<div><p>list[str]: The batch effect dimensions.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.evaluate_model">
+<span class="sig-name descname"><span class="pre">evaluate_model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.evaluate_model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.evaluator">
+<span class="sig-name descname"><span class="pre">evaluator</span></span><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.evaluator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.has_batch_effect">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_batch_effect</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.has_batch_effect" title="Link to this definition"></a></dt>
+<dd><p>Returns whether the model has a batch effect.
+Returns:</p>
+<blockquote>
+<div><p>bool: True if the model has a batch effect, False otherwise. This currently looks at the template reg conf</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.inscaler">
+<span class="sig-name descname"><span class="pre">inscaler</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.inscaler" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.inscalers">
+<span class="sig-name descname"><span class="pre">inscalers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.inscalers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.is_fitted">
+<span class="sig-name descname"><span class="pre">is_fitted</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.is_fitted" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.n_fit_observations">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_fit_observations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.n_fit_observations" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of batch effects.
+Returns:</p>
+<blockquote>
+<div><p>int: The number of batch effects.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.outscaler">
+<span class="sig-name descname"><span class="pre">outscaler</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.outscaler" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.outscalers">
+<span class="sig-name descname"><span class="pre">outscalers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.outscalers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.regression_models">
+<span class="sig-name descname"><span class="pre">regression_models</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../regression_model/regression_model/index.html#pcntoolkit.regression_model.regression_model.RegressionModel" title="pcntoolkit.regression_model.regression_model.RegressionModel"><span class="pre">pcntoolkit.regression_model.regression_model.RegressionModel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.regression_models" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.response_vars">
+<span class="sig-name descname"><span class="pre">response_vars</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.response_vars" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.save_dir">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.save_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.savemodel">
+<span class="sig-name descname"><span class="pre">savemodel</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.savemodel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.saveplots">
+<span class="sig-name descname"><span class="pre">saveplots</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.saveplots" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.saveresults">
+<span class="sig-name descname"><span class="pre">saveresults</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.saveresults" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pcntoolkit.normative_model.NormativeModel.template_regression_model">
+<span class="sig-name descname"><span class="pre">template_regression_model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../regression_model/regression_model/index.html#pcntoolkit.regression_model.regression_model.RegressionModel" title="pcntoolkit.regression_model.regression_model.RegressionModel"><span class="pre">pcntoolkit.regression_model.regression_model.RegressionModel</span></a></em><a class="headerlink" href="#pcntoolkit.normative_model.NormativeModel.template_regression_model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../normative/index.html" class="btn btn-neutral float-left" title="pcntoolkit.normative" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../regression_model/index.html" class="btn btn-neutral float-right" title="pcntoolkit.regression_model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,455 @@
+{
+    "name": null,
+    "save_dir": "resources/hbr_normal/save_dir",
+    "savemodel": true,
+    "saveresults": true,
+    "saveplots": false,
+    "evaluate_model": true,
+    "template_regression_model": {
+        "name": "template",
+        "type": "HBR",
+        "is_fitted": false,
+        "is_from_dict": false,
+        "ptk_version": "1.0.0a16",
+        "likelihood": {
+            "name": "Normal",
+            "mu": {
+                "name": "mu",
+                "_dims": null,
+                "mapping": "identity",
+                "mapping_params": [
+                    0,
+                    1
+                ],
+                "slope": {
+                    "name": "slope_mu",
+                    "_dims": [
+                        "covariates"
+                    ],
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0.0,
+                        10.0
+                    ],
+                    "dims": [
+                        "covariates"
+                    ],
+                    "type": "Prior"
+                },
+                "intercept": {
+                    "name": "intercept_mu",
+                    "_dims": null,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "mu": {
+                        "name": "mu_intercept_mu",
+                        "_dims": null,
+                        "mapping": "identity",
+                        "mapping_params": [
+                            0,
+                            1
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    },
+                    "sigma": {
+                        "name": "sigma_intercept_mu",
+                        "_dims": null,
+                        "mapping": "softplus",
+                        "mapping_params": [
+                            0.0,
+                            3.0
+                        ],
+                        "dist_name": "Normal",
+                        "dist_params": [
+                            0.0,
+                            1.0
+                        ],
+                        "dims": null,
+                        "type": "Prior"
+                    },
+                    "dims": null,
+                    "type": "RandomPrior"
+                },
+                "basis_function": {
+                    "is_fitted": false,
+                    "basis_name": "bspline",
+                    "min": {},
+                    "max": {},
+                    "compute_min": true,
+                    "compute_max": true,
+                    "basis_column": [
+                        0
+                    ],
+                    "degree": 3,
+                    "nknots": 5,
+                    "left_expand": 0.05,
+                    "right_expand": 0.05,
+                    "knot_method": "uniform",
+                    "knots": {},
+                    "basis_function": "BsplineBasisFunction"
+                },
+                "dims": null,
+                "type": "LinearPrior"
+            },
+            "sigma": {
+                "name": "sigma",
+                "_dims": null,
+                "mapping": "softplus",
+                "mapping_params": [
+                    0.0,
+                    3.0
+                ],
+                "slope": {
+                    "name": "slope_sigma",
+                    "_dims": [
+                        "covariates"
+                    ],
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        0.0,
+                        2.0
+                    ],
+                    "dims": [
+                        "covariates"
+                    ],
+                    "type": "Prior"
+                },
+                "intercept": {
+                    "name": "intercept_sigma",
+                    "_dims": null,
+                    "mapping": "identity",
+                    "mapping_params": [
+                        0,
+                        1
+                    ],
+                    "dist_name": "Normal",
+                    "dist_params": [
+                        1.0,
+                        1.0
+                    ],
+                    "dims": null,
+                    "type": "Prior"
+                },
+                "basis_function": {
+                    "is_fitted": false,
+                    "basis_name": "bspline",
+                    "min": {},
+                    "max": {},
+                    "compute_min": true,
+                    "compute_max": true,
+                    "basis_column": [
+                        0
+                    ],
+                    "degree": 3,
+                    "nknots": 5,
+                    "left_expand": 0.05,
+                    "right_expand": 0.05,
+                    "knot_method": "uniform",
+                    "knots": {},
+                    "basis_function": "BsplineBasisFunction"
+                },
+                "dims": null,
+                "type": "LinearPrior"
+            }
+        },
+        "_name": "template",
+        "draws": 1500,
+        "tune": 500,
+        "cores": 16,
+        "chains": 4,
+        "nuts_sampler": "nutpie",
+        "init": "jitter+adapt_diag",
+        "progressbar": true
+    },
+    "inscalers": {
+        "age": {
+            "scaler_type": "standardize",
+            "adjust_outliers": false,
+            "m": 28.290696055684457,
+            "s": 13.543061484195308,
+            "min": 7.88,
+            "max": 85.0
+        }
+    },
+    "is_fitted": true,
+    "inscaler": "standardize",
+    "outscaler": "standardize",
+    "ptk_version": "1.0.0a16",
+    "covariates": [
+        "age"
+    ],
+    "unique_batch_effects": {
+        "sex": [
+            "F",
+            "M"
+        ],
+        "site": [
+            "AnnArbor_a",
+            "AnnArbor_b",
+            "Atlanta",
+            "Baltimore",
+            "Bangor",
+            "Beijing_Zang",
+            "Berlin_Margulies",
+            "Cambridge_Buckner",
+            "Cleveland",
+            "ICBM",
+            "Leiden_2180",
+            "Leiden_2200",
+            "Milwaukee_b",
+            "Munchen",
+            "NewYork_a",
+            "NewYork_a_ADHD",
+            "Newark",
+            "Oulu",
+            "Oxford",
+            "PaloAlto",
+            "Pittsburgh",
+            "Queensland",
+            "SaintLouis"
+        ]
+    },
+    "inverse_batch_effect_counts": {
+        "sex": {
+            "0_589": "F",
+            "1_489": "M"
+        },
+        "site": {
+            "0_24": "AnnArbor_a",
+            "1_32": "AnnArbor_b",
+            "2_28": "Atlanta",
+            "3_23": "Baltimore",
+            "4_20": "Bangor",
+            "5_198": "Beijing_Zang",
+            "6_26": "Berlin_Margulies",
+            "7_198": "Cambridge_Buckner",
+            "8_31": "Cleveland",
+            "9_85": "ICBM",
+            "10_12": "Leiden_2180",
+            "11_19": "Leiden_2200",
+            "12_46": "Milwaukee_b",
+            "13_15": "Munchen",
+            "14_83": "NewYork_a",
+            "15_25": "NewYork_a_ADHD",
+            "16_19": "Newark",
+            "17_102": "Oulu",
+            "18_22": "Oxford",
+            "19_17": "PaloAlto",
+            "20_3": "Pittsburgh",
+            "21_19": "Queensland",
+            "22_31": "SaintLouis"
+        }
+    },
+    "batch_effects_maps": {
+        "sex": {
+            "0_0": "F",
+            "1_1": "M"
+        },
+        "site": {
+            "0_0": "AnnArbor_a",
+            "1_1": "AnnArbor_b",
+            "2_2": "Atlanta",
+            "3_3": "Baltimore",
+            "4_4": "Bangor",
+            "5_5": "Beijing_Zang",
+            "6_6": "Berlin_Margulies",
+            "7_7": "Cambridge_Buckner",
+            "8_8": "Cleveland",
+            "9_9": "ICBM",
+            "10_10": "Leiden_2180",
+            "11_11": "Leiden_2200",
+            "12_12": "Milwaukee_b",
+            "13_13": "Munchen",
+            "14_14": "NewYork_a",
+            "15_15": "NewYork_a_ADHD",
+            "16_16": "Newark",
+            "17_17": "Oulu",
+            "18_18": "Oxford",
+            "19_19": "PaloAlto",
+            "20_20": "Pittsburgh",
+            "21_21": "Queensland",
+            "22_22": "SaintLouis"
+        }
+    },
+    "batch_effect_covariate_ranges": {
+        "sex": {
+            "F": {
+                "age": {
+                    "min": 7.88,
+                    "max": 85.0
+                }
+            },
+            "M": {
+                "age": {
+                    "min": 9.21,
+                    "max": 78.0
+                }
+            }
+        },
+        "site": {
+            "AnnArbor_a": {
+                "age": {
+                    "min": 13.41,
+                    "max": 40.98
+                }
+            },
+            "AnnArbor_b": {
+                "age": {
+                    "min": 19.0,
+                    "max": 79.0
+                }
+            },
+            "Atlanta": {
+                "age": {
+                    "min": 22.0,
+                    "max": 57.0
+                }
+            },
+            "Baltimore": {
+                "age": {
+                    "min": 20.0,
+                    "max": 40.0
+                }
+            },
+            "Bangor": {
+                "age": {
+                    "min": 19.0,
+                    "max": 38.0
+                }
+            },
+            "Beijing_Zang": {
+                "age": {
+                    "min": 18.0,
+                    "max": 26.0
+                }
+            },
+            "Berlin_Margulies": {
+                "age": {
+                    "min": 23.0,
+                    "max": 44.0
+                }
+            },
+            "Cambridge_Buckner": {
+                "age": {
+                    "min": 18.0,
+                    "max": 30.0
+                }
+            },
+            "Cleveland": {
+                "age": {
+                    "min": 24.0,
+                    "max": 60.0
+                }
+            },
+            "ICBM": {
+                "age": {
+                    "min": 19.0,
+                    "max": 85.0
+                }
+            },
+            "Leiden_2180": {
+                "age": {
+                    "min": 20.0,
+                    "max": 27.0
+                }
+            },
+            "Leiden_2200": {
+                "age": {
+                    "min": 18.0,
+                    "max": 28.0
+                }
+            },
+            "Milwaukee_b": {
+                "age": {
+                    "min": 44.0,
+                    "max": 65.0
+                }
+            },
+            "Munchen": {
+                "age": {
+                    "min": 63.0,
+                    "max": 74.0
+                }
+            },
+            "NewYork_a": {
+                "age": {
+                    "min": 7.88,
+                    "max": 49.16
+                }
+            },
+            "NewYork_a_ADHD": {
+                "age": {
+                    "min": 20.69,
+                    "max": 50.9
+                }
+            },
+            "Newark": {
+                "age": {
+                    "min": 21.0,
+                    "max": 39.0
+                }
+            },
+            "Oulu": {
+                "age": {
+                    "min": 20.0,
+                    "max": 23.0
+                }
+            },
+            "Oxford": {
+                "age": {
+                    "min": 20.0,
+                    "max": 35.0
+                }
+            },
+            "PaloAlto": {
+                "age": {
+                    "min": 22.0,
+                    "max": 46.0
+                }
+            },
+            "Pittsburgh": {
+                "age": {
+                    "min": 25.0,
+                    "max": 47.0
+                }
+            },
+            "Queensland": {
+                "age": {
+                    "min": 20.0,
+                    "max": 34.0
+                }
+            },
+            "SaintLouis": {
+                "age": {
+                    "min": 21.0,
+                    "max": 29.0
+                }
+            }
+        }
+    },
+    "covariate_ranges": {
+        "age": {
+            "min": 7.88,
+            "max": 85.0
+        }
+    }
+}

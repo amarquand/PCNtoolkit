@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pcntoolkit.dataio.data_factory &mdash; PCNToolkit 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PCNToolkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/quickstart.html">Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pages/contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other Useful Stuff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PCNToolkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pcntoolkit.dataio.data_factory</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pcntoolkit.dataio.data_factory</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcntoolkit.dataio.norm_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormData</span>
+
+
+<div class="viewcode-block" id="load_fcon1000">
+<a class="viewcode-back" href="../../../autoapi/pcntoolkit/dataio/data_factory/index.html#pcntoolkit.dataio.data_factory.load_fcon1000">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_fcon1000</span><span class="p">(</span><span class="n">save_path</span><span class="p">:</span><span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span>  <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download and save fcon dataset to specified path, or load it from there if it is already downloaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">save_path</span><span class="p">:</span>
+        <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;pcntoolkit_resources&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;fcon1000.csv&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="s2">&quot;https://raw.githubusercontent.com/predictive-clinical-neuroscience/PCNtoolkit-demo/refs/heads/main/data/fcon1000.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+
+    <span class="c1"># Define the variables</span>
+    <span class="n">sex_map</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span><span class="p">}</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;sex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;sex&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sex_map</span><span class="p">)</span>
+    <span class="n">subject_ids</span> <span class="o">=</span> <span class="s2">&quot;sub_id&quot;</span>
+    <span class="n">covariates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span>
+    <span class="n">batch_effects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sex&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">]</span>
+    <span class="n">response_vars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;lh_G&amp;S_frontomargin_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_occipital_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_paracentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_subcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_transv_frontopol_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_cingul-Ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_cingul-Mid-Ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G&amp;S_cingul-Mid-Post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_cingul-Post-dorsal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_cingul-Post-ventral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_cuneus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_front_inf-Opercular_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_front_inf-Orbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_front_inf-Triangul_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_front_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_front_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_Ins_lg&amp;S_cent_ins_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_insular_short_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_occipital_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_occipital_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_oc-temp_lat-fusifor_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_oc-temp_med-Lingual_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_oc-temp_med-Parahip_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_orbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_pariet_inf-Angular_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_pariet_inf-Supramar_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_parietal_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_postcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_precentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_precuneus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_rectus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_subcallosal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temp_sup-G_T_transv_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temp_sup-Lateral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temp_sup-Plan_polar_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temp_sup-Plan_tempo_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temporal_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_G_temporal_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_Lat_Fis-ant-Horizont_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_Lat_Fis-ant-Vertical_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_Lat_Fis-post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_Pole_occipital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_Pole_temporal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_calcarine_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_central_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_cingul-Marginalis_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_circular_insula_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_circular_insula_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_circular_insula_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_collat_transv_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_collat_transv_post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_front_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_front_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_front_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_interm_prim-Jensen_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_intrapariet&amp;P_trans_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_oc_middle&amp;Lunatus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_oc_sup&amp;transversal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_occipital_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_oc-temp_lat_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_oc-temp_med&amp;Lingual_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_orbital_lateral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_orbital_med-olfact_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_orbital-H_Shaped_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_parieto_occipital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_pericallosal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_postcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_precentral-inf-part_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_precentral-sup-part_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_suborbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_subparietal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_temporal_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_temporal_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_S_temporal_transverse_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lh_MeanThickness_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BrainSegVolNotVent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;eTIV&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_frontomargin_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_occipital_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_paracentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_subcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_transv_frontopol_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_cingul-Ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_cingul-Mid-Ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G&amp;S_cingul-Mid-Post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_cingul-Post-dorsal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_cingul-Post-ventral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_cuneus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_front_inf-Opercular_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_front_inf-Orbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_front_inf-Triangul_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_front_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_front_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_Ins_lg&amp;S_cent_ins_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_insular_short_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_occipital_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_occipital_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_oc-temp_lat-fusifor_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_oc-temp_med-Lingual_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_oc-temp_med-Parahip_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_orbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_pariet_inf-Angular_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_pariet_inf-Supramar_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_parietal_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_postcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_precentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_precuneus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_rectus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_subcallosal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temp_sup-G_T_transv_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temp_sup-Lateral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temp_sup-Plan_polar_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temp_sup-Plan_tempo_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temporal_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_G_temporal_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_Lat_Fis-ant-Horizont_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_Lat_Fis-ant-Vertical_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_Lat_Fis-post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_Pole_occipital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_Pole_temporal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_calcarine_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_central_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_cingul-Marginalis_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_circular_insula_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_circular_insula_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_circular_insula_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_collat_transv_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_collat_transv_post_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_front_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_front_middle_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_front_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_interm_prim-Jensen_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_intrapariet&amp;P_trans_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_oc_middle&amp;Lunatus_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_oc_sup&amp;transversal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_occipital_ant_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_oc-temp_lat_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_oc-temp_med&amp;Lingual_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_orbital_lateral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_orbital_med-olfact_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_orbital-H_Shaped_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_parieto_occipital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_pericallosal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_postcentral_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_precentral-inf-part_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_precentral-sup-part_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_suborbital_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_subparietal_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_temporal_inf_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_temporal_sup_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_S_temporal_transverse_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rh_MeanThickness_thickness&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Lateral-Ventricle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Inf-Lat-Vent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Cerebellum-White-Matter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Cerebellum-Cortex&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Thalamus-Proper&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Caudate&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Putamen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Pallidum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;3rd-Ventricle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4th-Ventricle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Brain-Stem&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Hippocampus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Amygdala&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CSF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-Accumbens-area&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-VentralDC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-vessel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-choroid-plexus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Lateral-Ventricle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Inf-Lat-Vent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Cerebellum-White-Matter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Cerebellum-Cortex&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Thalamus-Proper&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Caudate&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Putamen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Pallidum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Hippocampus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Amygdala&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-Accumbens-area&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-VentralDC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-vessel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-choroid-plexus&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;5th-Ventricle&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;non-WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Left-non-WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Right-non-WM-hypointensities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Optic-Chiasm&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CC_Posterior&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CC_Mid_Posterior&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CC_Central&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CC_Mid_Anterior&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CC_Anterior&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BrainSegVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BrainSegVolNotVentSurf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lhCortexVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rhCortexVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CortexVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lhCerebralWhiteMatterVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rhCerebralWhiteMatterVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CerebralWhiteMatterVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SubCortGrayVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;TotalGrayVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SupraTentorialVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SupraTentorialVolNotVent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SupraTentorialVolNotVentVox&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MaskVol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;BrainSegVol-to-eTIV&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MaskVol-to-eTIV&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lhSurfaceHoles&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rhSurfaceHoles&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SurfaceHoles&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;EstimatedTotalIntraCranialVol&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">norm_data</span> <span class="o">=</span> <span class="n">NormData</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;fcon1000&quot;</span><span class="p">,</span>
+        <span class="n">dataframe</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="n">covariates</span><span class="o">=</span><span class="n">covariates</span><span class="p">,</span>
+        <span class="n">batch_effects</span><span class="o">=</span><span class="n">batch_effects</span><span class="p">,</span>
+        <span class="n">response_vars</span><span class="o">=</span><span class="n">response_vars</span><span class="p">,</span>
+        <span class="n">subject_ids</span><span class="o">=</span><span class="n">subject_ids</span><span class="p">,</span>
+        <span class="n">remove_Nan</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">norm_data</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andre Marquand.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

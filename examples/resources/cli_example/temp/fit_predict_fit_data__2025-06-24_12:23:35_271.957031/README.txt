@@ -1,0 +1,1 @@
+The contents of the folder containing this README file are temporary files used by the Runner. Once the Runner has successfully finished all its jobs, this folder and all its contents can be safely deleted.
