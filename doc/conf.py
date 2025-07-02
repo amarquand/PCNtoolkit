@@ -79,10 +79,11 @@ autodoc_default_options = {
 }
 
 def run_notebook_conversion(app):
-    import pathlib
-    import subprocess
-    script_path = pathlib.Path(__file__).parent / 'convert_notebooks.py'
-    subprocess.run([sys.executable, str(script_path)], check=True)
+    pass
+    # import pathlib
+    # import subprocess
+    # script_path = pathlib.Path(__file__).parent / 'convert_notebooks.py'
+    # subprocess.run([sys.executable, str(script_path)], check=True)
 
 def setup(app):
     app.connect('builder-inited', run_notebook_conversion)
