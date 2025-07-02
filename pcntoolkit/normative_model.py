@@ -457,7 +457,7 @@ class NormativeModel:
         """
         self.preprocess(data)
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
-        n_samples = 1
+        n_samples = 10000
         data["Yhat"] = xr.DataArray(np.zeros((data.X.shape[0], len(respvar_intersection))), dims=("observations", "response_vars"), coords={"observations": data.observations, "response_vars": list(respvar_intersection)})
         Output.print(Messages.COMPUTING_YHAT, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:

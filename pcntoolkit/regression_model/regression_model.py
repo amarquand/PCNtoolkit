@@ -170,8 +170,10 @@ class RegressionModel(ABC):
     def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
         samples = np.zeros((data.X.shape[0], n_samples))
         Output.print(Messages.COMPUTING_YHAT_MODEL, model_name=responsevar)
+        random_samples = np.random.randn(data.X.shape[0], n_samples)
+        Z = xr.DataArray(np.random.randn(data.X.shape[0]), dims=("observations",))
         for s in range(n_samples):
-            Z = xr.DataArray(np.random.randn(data.X.shape[0]), dims=("observations",))
+            Z.values = random_samples[:,s]
             samples[:, s] = self.backward(X, be, be_maps, Z).values
         return samples.mean(axis=1)
         
