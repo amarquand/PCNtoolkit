@@ -161,7 +161,7 @@ class BsplineBasisFunction(BasisFunction):
         self,
         basis_column: Optional[Union[int, list[int]]] = None,
         degree: int = 3,
-        nknots: int = 3,
+        nknots: int = 5,
         left_expand: float = 0.05,
         right_expand: float = 0.05,
         knot_method: str = "uniform",
@@ -197,7 +197,8 @@ class BsplineBasisFunction(BasisFunction):
             self.knots[i] = np.array(knots)
 
     def _transform(self, data: np.ndarray, i: int) -> np.ndarray:
-        return BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
+        spline = BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
+        return np.concatenate((spline, data.reshape(-1, 1)), axis = 1)
 
     def to_dict(self) -> dict:
         mydict = super().to_dict()

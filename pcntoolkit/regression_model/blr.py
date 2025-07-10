@@ -40,14 +40,16 @@ class BLR(RegressionModel):
         self,
         name: str = "template",
         fixed_effect: bool = False,
+        fixed_effect_slope: bool = False,
         heteroskedastic: bool = False,
         fixed_effect_var: bool = False,
+        fixed_effect_var_slope: bool = False,
         warp_name: Optional[str] = None,
         warp_reparam: bool = False,
         basis_function_mean: BasisFunction = None,  # type: ignore
         basis_function_var: BasisFunction = None,  # type: ignore
-        n_iter: int = 300,
-        tol: float = 1e-5,
+        n_iter: int = 100,
+        tol: float = 1e-3,
         ard: bool = False,
         optimizer: str = "l-bfgs-b",
         l_bfgs_b_l: float = 0.1,
@@ -67,11 +69,15 @@ class BLR(RegressionModel):
         name : str
             Unique identifier for the model instance
         fixed_effect : bool, optional
-            Whether to model a fixed effect in the mean, by default False
+            Whether to model a fixed effect in the intercept of the mean, by default False
+        fixed_effect_slope: bool, optional
+            Whether to model a fixed effect in the slope of the mean, by default False
         heteroskedastic : bool, optional
             Whether to use heteroskedastic noise modeling, by default False
         fixed_effect_var : bool, optional
-            Whether to model a fixed effect in the variance, by default False
+            Whether to model a fixed effect in the intercept of the variance, by default False
+        fixed_effect_var_slope : bool, optional
+            Whether to model a fixed effect in the slope of the variance, by default False
         warp_name : str, optional
             Name of the warp function to use, by default None
         warp_reparam : bool, optional
@@ -111,8 +117,10 @@ class BLR(RegressionModel):
         self.l_bfgs_b_epsilon = l_bfgs_b_epsilon
         self.l_bfgs_b_norm = l_bfgs_b_norm
         self.fixed_effect = fixed_effect
+        self.fixed_effect_slope = fixed_effect_slope
         self.heteroskedastic = heteroskedastic
         self.fixed_effect_var = fixed_effect_var
+        self.fixed_effect_var_slope = fixed_effect_var_slope
         self.warp_name = warp_name
         self.initialize_warp()
         self.warp_reparam = warp_reparam
@@ -392,11 +400,9 @@ class BLR(RegressionModel):
             w_d = np.asarray(hyp[0:Dv])
             beta = np.exp(Phi_var.dot(w_d))
             n_lik_param = len(w_d)
-            self.lambda_n_vec = beta
         else:
             beta = np.asarray([np.exp(hyp[0])])
             n_lik_param = len(beta)
-            self.lambda_n_vec = np.ones(N) * beta
 
         if self.warp:
             gamma = hyp[n_lik_param : (n_lik_param + self.n_gamma)]
@@ -408,6 +414,12 @@ class BLR(RegressionModel):
                 beta = beta / (delta**2)
         else:
             gamma = None  # type: ignore
+
+        # Noise precision
+        if self.models_variance:
+            self.lambda_n_vec = beta
+        else:
+            self.lambda_n_vec = np.ones(N) * beta
 
         # Coefficients precision
         if isinstance(beta, list) or isinstance(beta, np.ndarray):
@@ -703,6 +715,7 @@ class BLR(RegressionModel):
             linear=True,
             intercept=True,
             fixed_effect=self.fixed_effect,
+            fixed_effect_slope=self.fixed_effect_slope,
         )
 
         if self.models_variance:
@@ -715,6 +728,7 @@ class BLR(RegressionModel):
                 linear=self.heteroskedastic,
                 intercept=True,
                 fixed_effect=self.fixed_effect_var,
+                fixed_effect_slope=self.fixed_effect_var_slope,
             )
         else:
             Phi_var = np.zeros((Phi.shape[0], 1))
@@ -845,6 +859,7 @@ def create_design_matrix(
     linear: bool = False,
     intercept: bool = False,
     fixed_effect: bool = False,
+    fixed_effect_slope: bool = False,
 ) -> np.ndarray:
     """Create design matrix for the model.
 
@@ -857,7 +872,9 @@ def create_design_matrix(
     intercept : bool, default=False
         Include intercept term in the design matrix.
     fixed_effect : bool, default=False
-        Include fixed effect for batch effects.
+        Include fixed effect intercept for batch effects.
+    fixef_effect_slope: bool, default=False
+        Include fixed effect slope for batch effects.
 
     Returns
     -------
@@ -883,6 +900,9 @@ def create_design_matrix(
                 np.eye(len(v))[be[:, i]],
             )
 
+    # if fixed_effect_slope:
+    # TODO add the slope fixed effect here 
+    
     if len(acc) == 0:
         raise ValueError(Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED))
 
