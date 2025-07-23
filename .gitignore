@@ -93,16 +93,12 @@ docs/autoapi/*
 docs/_build/*
 docs
 
-# Test resources
-test/resources
-!test/resources/gitkeep
+# Test profile
 prof/*
 
-
+# Test resources
 examples/resources/*
 !examples/resources/gitkeep
-# examples/runner_sandbox.py
-examples/runner_sandbox.ipynb
 
 # Sphinx documentation
 docs/_build/
@@ -111,8 +107,15 @@ docs/autoapi/
 test/output/*
 !test/output/gitkeep
 
+test/resources
+!test/resources/gitkeep
+
 examples/pcntoolkit_resources/data/
 !examples/pcntoolkit_resources/data/gitkeep
 
 
 poetry.lock
+examples/saves/
+!examples/saves/gitkeep
+examples/big_cluster_jobs.py
+examples/sandbox.ipynb
