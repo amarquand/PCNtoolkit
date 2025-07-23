@@ -147,3 +147,5 @@ pcntoolkit/saves/*
 pcntoolkit/saves/plots/*
 pcntoolkit/util/plotter.py
 examples/cluster_job_test.py
+examples/pcntoolkit_resources/data/
+test/resources/
