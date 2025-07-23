@@ -808,8 +808,10 @@ class NormativeModel:
             coords={"batch_effect_dims": list(self.unique_batch_effects.keys())},
         )
         for i, be in enumerate(self.unique_batch_effects.keys()):
-            for j, v in enumerate(batch_effects.sel(batch_effect_dims=be).values):
-                mapped_batch_effects.loc[{"observations": j, "batch_effect_dims": be}] = self.batch_effects_maps[be][v]
+            vals = batch_effects.sel(batch_effect_dims=be).values
+            unique_vals, inverses = np.unique(vals, return_inverse=True)
+            unique_vals_mapped = np.array([self.batch_effects_maps[be][un] for un in unique_vals])
+            mapped_batch_effects.loc[{"batch_effect_dims": be}] = unique_vals_mapped[list(inverses)]
 
         return mapped_batch_effects
 
