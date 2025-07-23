@@ -365,7 +365,11 @@ class BLR(RegressionModel):
         else:
             n_beta = 1
 
-        n_alpha = self.D
+        if self.ard:
+            n_alpha = self.D
+        else:
+            n_alpha = 1
+            
         n_gamma = self.n_gamma
         self.n_hyp = n_beta + n_alpha + n_gamma  # type: ignore
         return np.ones(self.n_hyp)
