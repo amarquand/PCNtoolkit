@@ -69,18 +69,8 @@ build
 # egg
 pcntoolkit.egg-info
 
-# Demo folder
-HBR_demo
-
-ssh_error_log.txt
-HBR_demo/*
-dist/pcntoolkit-0.27-py3.11.egg
-
 # Overrule for github folder
 !.github
-
-# Basic test functions for SHASH
-tests/test_SHASH.ipynb
 
 # Dist folder
 dist/pcntoolkit-0.30.post2-py3.12.egg
@@ -88,109 +78,20 @@ dist/*
 dist
 build/*
 
-# CLI test folder
-tests/cli_test/*
-!tests/cli_test/test_cli.sh
-!tests/cli_test/split_data.py
-
-docs/autoapi/*
-docs/_build/*
+# docs
+doc/autoapi/*
+doc/_build/*
 docs
-tests/cli_test_parallel_kfold/temp/be_te_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/be_tr_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/fcon1000
-tests/cli_test_parallel_kfold/temp/X_te_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/X_tr_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/X_var_te_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/X_var_tr_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/Y_te_fcon1000.pkl
-tests/cli_test_parallel_kfold/temp/Y_tr_fcon1000.pkl
 
-batch_effects_test.csv
-batch_effects.csv
-covariates.csv
-covariates_test.csv
-responses.csv
-responses_test.csv
-test/resources/save_load_test
-test/resources/save_load_test/normative_model_dict.json
-test/resources/save_load_test/idata_response_var_1.nc
-test/resources/save_load_test/idata_response_var_0.nc
-test/resources/hbr/save_load_test/idata_response_var_0.nc
-test/resources/hbr/save_load_test/idata_response_var_1.nc
-test/resources/hbr/save_load_test_without_idata/normative_model_dict.json
-test/resources/hbr/save_load_test/normative_model_dict.json
-prof/*
-dist/pcntoolkit-0.3-py3.11.egg
-examples/resources/*
-examples/resources/save_dir/idata_rh_MeanThickness_thickness.nc
-examples/resources/save_dir/normative_model_dict.json
-examples/resources/save_dir/*
-examples/resources 
-examples/save_dir/*
-examples/sandbox.ipynb
-# examples/runner_sandbox.py
-examples/runner_sandbox.ipynb
-
-# Sphinx documentation
-docs/_build/
-docs/autoapi/
+# Large files
+test/resources/*
+!test/resources/.gitkeep
+!test/resources/hbr/save_load_test/.gitkeep
 
 test/output/*
-!test/output/gitkeep
-examples/sandbox.py
-examples/sandbox.ipynb
-poetry.lock
-examples/01_nm_hbr.ipynb
-examples/saves/*
-pcntoolkit/saves/*
-pcntoolkit/saves/plots/*
-pcntoolkit/util/plotter.py
-examples/cluster_job_test.py
+!test/output/.gitkeep
 
-batch_effects_test.csv
-batch_effects.csv
-covariates.csv
-covariates_test.csv
-responses.csv
-responses_test.csv
-test/resources/save_load_test
-test/resources/save_load_test/normative_model_dict.json
-test/resources/save_load_test/idata_response_var_1.nc
-test/resources/save_load_test/idata_response_var_0.nc
-test/resources/hbr/save_load_test/idata_response_var_0.nc
-test/resources/hbr/save_load_test/idata_response_var_1.nc
-test/resources/hbr/save_load_test_without_idata/normative_model_dict.json
-test/resources/hbr/save_load_test/normative_model_dict.json
+examples/resources/*
+!examples/resources/data/.gitkeep
+
 prof/*
-dist/pcntoolkit-0.3-py3.11.egg
-examples/resources/*
-examples/resources/save_dir/idata_rh_MeanThickness_thickness.nc
-examples/resources/save_dir/normative_model_dict.json
-examples/resources/save_dir/*
-examples/resources 
-examples/save_dir/*
-examples/sandbox.ipynb
-# examples/runner_sandbox.py
-examples/runner_sandbox.ipynb
-
-# Sphinx documentation
-docs/_build/
-docs/autoapi/
-
-test/output/*
-!test/output/gitkeep
-examples/sandbox.py
-examples/sandbox.ipynb
-poetry.lock
-examples/01_nm_hbr.ipynb
-examples/saves/*
-pcntoolkit/saves/*
-pcntoolkit/saves/plots/*
-pcntoolkit/util/plotter.py
-examples/cluster_job_test.py
-doc/_build/doctrees/environment.pickle
-pytest_tests
-
-examples/resources/*
-!examples/resources/.gitkeep
