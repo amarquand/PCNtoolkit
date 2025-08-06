@@ -92,14 +92,13 @@ class RegressionModel(ABC):
         pass
 
     @abstractmethod
-    def forward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> xr.DataArray:
+    def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """Compute Z-scores for provided Y values 
 
         Parameters
         ----------
         X: xr.DataArray containing covariates
         be: xr.DataArray containing batch effects
-        be_maps: dictionary of dictionaries mapping batch effect to indices
         Y: xr.DataArray containing covariates
 
         Returns
@@ -110,14 +109,13 @@ class RegressionModel(ABC):
         pass
 
     @abstractmethod
-    def backward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Z: xr.DataArray) -> xr.DataArray:
+    def backward(self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray) -> xr.DataArray:
         """Compute points in feature space for given z-scores 
 
         Parameters
         ----------
         X: xr.DataArray containing covariates
         be: xr.DataArray containing batch effects
-        be_maps: dictionary of dictionaries mapping batch effect to indices
         Y: xr.DataArray containing covariates
 
         Returns
@@ -127,13 +125,13 @@ class RegressionModel(ABC):
         """
 
     @abstractmethod
-    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> xr.DataArray:
+    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """Compute the log-probability of the data under the model.
         """
         pass
 
     @abstractmethod
-    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> RegressionModel:
+    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]],Y: xr.DataArray) -> RegressionModel:
         """Transfer the model to a new dataset.
 
         Parameters
@@ -167,14 +165,14 @@ class RegressionModel(ABC):
         my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
         return my_dict
         
-    def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
+    def compute_yhat(self, data, n_samples, responsevar, X, be):
         samples = np.zeros((data.X.shape[0], n_samples))
         Output.print(Messages.COMPUTING_YHAT_MODEL, model_name=responsevar)
         random_samples = np.random.randn(data.X.shape[0], n_samples)
         Z = xr.DataArray(np.random.randn(data.X.shape[0]), dims=("observations",))
         for s in range(n_samples):
             Z.values = random_samples[:,s]
-            samples[:, s] = self.backward(X, be, be_maps, Z).values
+            samples[:, s] = self.backward(X, be, Z).values
         return samples.mean(axis=1)
         
     @abstractmethod

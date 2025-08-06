@@ -52,12 +52,12 @@ def test_fit(blr_model: BLR, norm_data_from_arrays: NormData, fitted_norm_blr_mo
 
 
 def test_forward_backward(fitted_blr_model: BLR, norm_data_from_arrays: NormData, fitted_norm_blr_model: NormativeModel):
-    be_maps = fitted_norm_blr_model.batch_effects_maps
+    _ = fitted_norm_blr_model.batch_effects_maps
     response_var = norm_data_from_arrays.response_vars[0]
-    X, be, be_maps, Y, _ = fitted_norm_blr_model.extract_data(norm_data_from_arrays.sel(response_vars=response_var))
-    Z = fitted_blr_model.forward(X, be, be_maps, Y)
+    X, be, _, Y, _ = fitted_norm_blr_model.extract_data(norm_data_from_arrays.sel(response_vars=response_var))
+    Z = fitted_blr_model.forward(X, be,  Y)
     assert Z.shape == Y.shape
-    Y_prime = fitted_blr_model.backward(X, be, be_maps, Z)
+    Y_prime = fitted_blr_model.backward(X, be,  Z)
     assert Y_prime.shape == Y.shape
     assert np.allclose(Y_prime, Y)
 

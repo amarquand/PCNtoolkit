@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm  # type: ignore
 import xarray as xr
+import copy
 
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.likelihood import Likelihood, get_default_normal_likelihood
@@ -79,6 +80,7 @@ class HBR(RegressionModel):
         self.progressbar = progressbar
         self.idata: az.InferenceData = None  # type: ignore
         self.pymc_model: pm.Model = None  # type: ignore
+        self.be_maps: dict = None # type:ignore
 
     def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
         """
@@ -99,7 +101,8 @@ class HBR(RegressionModel):
         -------
         None
         """
-        self.pymc_model: pm.Model = self.likelihood.compile(X, be, be_maps, Y)
+        self.be_maps = copy.deepcopy(be_maps)
+        self.pymc_model: pm.Model = self.likelihood.compile(X, be, self.be_maps, Y)
         with self.pymc_model:
             self.idata = pm.sample(
                 self.draws,
@@ -112,7 +115,7 @@ class HBR(RegressionModel):
             )
         self.is_fitted = True
 
-    def forward(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> xr.DataArray:
+    def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """
         Map Y values to Z space using MCMC samples
 
@@ -122,8 +125,6 @@ class HBR(RegressionModel):
             Covariate data
         be : xr.DataArray
             Batch effect data
-        be_maps : dict[str, dict[str, int]]
-            Batch effect maps
         Y : xr.DataArray
             Response variable data
 
@@ -134,9 +135,9 @@ class HBR(RegressionModel):
         """
         fn = self.likelihood.forward
         kwargs = {"Y": np.squeeze(Y.values)[:, None]}
-        return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
+        return self.generic_MCMC_apply(X, be, Y, fn, kwargs)
 
-    def backward(self, X, be, be_maps, Z) -> xr.DataArray:  # type: ignore
+    def backward(self, X, be, Z) -> xr.DataArray:  # type: ignore
         """
         Map Z values to Y space using MCMC samples
 
@@ -146,8 +147,6 @@ class HBR(RegressionModel):
             Covariate data
         be : xr.
             Batch effect data
-        be_maps : dict[str, dict[str, int]]
-            Batch effect maps
         Z : xr.DataArray
             Z-score data
 
@@ -159,17 +158,17 @@ class HBR(RegressionModel):
         Y = xr.DataArray(np.zeros_like(Z.values), dims=Z.dims)
         fn = self.likelihood.backward
         kwargs = kwargs = {"Z": np.squeeze(Z.values)[:, None]}
-        return self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs)
+        return self.generic_MCMC_apply(X, be, Y, fn, kwargs)
 
-    def generic_MCMC_apply(self, X, be, be_maps, Y, fn, kwargs):
+    def generic_MCMC_apply(self, X, be,  Y, fn, kwargs):
         """
         Apply a generic function to likelihood parameters
         """
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
 
-        model = self.likelihood.create_model_with_data(X, be, be_maps, Y)
-        params = self.likelihood.compile_params(model, X, be, be_maps, Y)
+        model = self.likelihood.create_model_with_data(X, be, self.be_maps, Y)
+        params = self.likelihood.compile_params(model, X, be, self.be_maps, Y)
         var_names = [f"{k}_per_subject" for k, _ in params.items()]
         with model:
             for param_name, (value, dims) in params.items():
@@ -192,7 +191,7 @@ class HBR(RegressionModel):
         result = xr.apply_ufunc(fn, *array_of_vars, kwargs=kwargs).mean(dim="sample")
         return result
 
-    def elemwise_logp(self, X, be, be_maps, Y) -> xr.DataArray:  # type: ignore
+    def elemwise_logp(self, X, be, Y) -> xr.DataArray:  # type: ignore
         """
         Compute log-probabilities for each observation in the data.
 
@@ -216,9 +215,9 @@ class HBR(RegressionModel):
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.HBR_MODEL_NOT_FITTED))
         if not self.pymc_model:
-            self.pymc_model = self.likelihood.compile(X, be, be_maps, Y)
+            self.pymc_model = self.likelihood.compile(X, be, self.be_maps, Y)
         else:
-            self.likelihood.update_data(self.pymc_model, X, be, be_maps, Y)
+            self.likelihood.update_data(self.pymc_model, X, be, self.be_maps, Y)
         with self.pymc_model:
             logp = pm.compute_log_likelihood(
                 self.idata,
@@ -344,6 +343,10 @@ class HBR(RegressionModel):
             idata_path = os.path.join(path, "idata.nc")
             self.save_idata(idata_path)
             my_dict["idata_path"] = idata_path
+        if self.is_fitted:
+            my_dict["be_maps"] = copy.deepcopy(self.be_maps)
+        else:
+            my_dict["be_maps"] = None
         return my_dict
 
     @classmethod
@@ -378,6 +381,7 @@ class HBR(RegressionModel):
         if is_fitted and (path is not None):
             idata_path = os.path.join(path, "idata.nc")
             self.load_idata(idata_path)
+        self.be_maps = my_dict["be_maps"]
         return self
 
     @classmethod
@@ -458,8 +462,8 @@ class HBR(RegressionModel):
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
 
-    def compute_yhat(self, data, n_samples, responsevar, X, be, be_maps):
+    def compute_yhat(self, data, n_samples, responsevar, X, be):
         fn = self.likelihood.yhat
         Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
-        yhat = self.generic_MCMC_apply(X, be, be_maps, Y, fn, kwargs={})
+        yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
         return yhat

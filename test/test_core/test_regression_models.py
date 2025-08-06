@@ -106,11 +106,11 @@ class TestBLR:
         self.model.fit(X, self.mapped_batch_effects, self.be_maps, Y)
         
         # Test forward pass
-        Z = self.model.forward(X, be, self.be_maps, Y)
+        Z = self.model.forward(X, be, Y)
         assert Z.shape == Y.shape
         
         # Test backward pass
-        Y_prime = self.model.backward(X, be, self.be_maps, Z)
+        Y_prime = self.model.backward(X, be, Z)
         assert Y_prime.shape == Y.shape
         assert np.allclose(Y_prime, Y)
 

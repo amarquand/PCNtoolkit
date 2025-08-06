@@ -248,8 +248,8 @@ class NormativeModel:
             Output.print(Messages.SYNTHESIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
             resp_Z_data = data.Z.sel({"response_vars": responsevar})
-            X, be, be_maps, _, _ = self.extract_data(resp_fit_data)
-            Z_pred = self[responsevar].backward(X, be, be_maps, resp_Z_data)
+            X, be, _, _, _ = self.extract_data(resp_fit_data)
+            Z_pred = self[responsevar].backward(X, be,  resp_Z_data)
             data["Y"].loc[{"response_vars": responsevar}] = Z_pred
         self.postprocess(data)
         return data
@@ -297,9 +297,9 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             Output.print(Messages.HARMONIZING_DATA_MODEL, model_name=responsevar)
             resp_fit_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y, _ = self.extract_data(resp_fit_data)
-            Z_pred = self[responsevar].forward(X, be, be_maps, Y)
-            Y_harmonized = self[responsevar].backward(X, ref_be_array, be_maps, Z_pred)
+            X, be, _, Y, _ = self.extract_data(resp_fit_data)
+            Z_pred = self[responsevar].forward(X, be, Y)
+            Y_harmonized = self[responsevar].backward(X, ref_be_array, Z_pred)
             data["Y_harmonized"].loc[{"response_vars": responsevar}] = Y_harmonized
             if hasattr(data, "thrive_Y"):
                 for o in data.offset:
@@ -307,7 +307,7 @@ class NormativeModel:
                     # ! here
                     offset_X.loc[{"covariates": self.thrive_covariate}] = resp_fit_data.thrive_X.sel({"offset": o})
                     thrive_Y_harmonized = self[responsevar].backward(
-                        offset_X, ref_be_array, be_maps, resp_fit_data.thrive_Z.sel({"offset": o})
+                        offset_X, ref_be_array, resp_fit_data.thrive_Z.sel({"offset": o})
                     )
                     data["thrive_Y_harmonized"].loc[{"response_vars": responsevar, "offset": o}] = thrive_Y_harmonized
         self.is_fitted = True
@@ -349,8 +349,8 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y, _ = self.extract_data(resp_predict_data)
-            data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be, be_maps, Y)
+            X, be, _, Y, _ = self.extract_data(resp_predict_data)
+            data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be,  Y)
 
         self.postprocess(data)
         return data
@@ -404,10 +404,10 @@ class NormativeModel:
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             Output.print(Messages.COMPUTING_CENTILES_MODEL, model_name=responsevar)
-            X, be, be_maps, _, _ = self.extract_data(resp_predict_data)
+            X, be, _, _, _ = self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
                 Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("observations",))
-                data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, be_maps, Z)
+                data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be,  Z)
 
         self.postprocess(data)
         return data
@@ -444,9 +444,9 @@ class NormativeModel:
         Output.print(Messages.COMPUTING_LOGP, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y, _ = self.extract_data(resp_predict_data)
+            X, be, _, Y, _ = self.extract_data(resp_predict_data)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
-            data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, be_maps, Y)
+            data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be,  Y)
 
         self.postprocess(data)
         return data
@@ -462,8 +462,8 @@ class NormativeModel:
         Output.print(Messages.COMPUTING_YHAT, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, _, _ = self.extract_data(resp_predict_data)
-            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, n_samples, responsevar, X, be, be_maps)    
+            X, be, _, _, _ = self.extract_data(resp_predict_data)
+            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, n_samples, responsevar, X, be)    
         self.postprocess(data)
         return data
 
@@ -522,7 +522,7 @@ class NormativeModel:
         )
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
-            X, be, be_maps, m, Z = self.extract_data(resp_predict_data)
+            X, be, _, m, Z = self.extract_data(resp_predict_data)
             X_cov = self.inscalers[covariate].inverse_transform(X.sel({"covariates": covariate}, drop=False))
             thrive_Z, thrive_X = get_thrive_Z_X(cormat.sel({"response_vars": responsevar}), X_cov, Z, span, z_thrive=z_thrive)
             data["thrive_X"] = xr.DataArray(
@@ -535,7 +535,7 @@ class NormativeModel:
                 this_Z = thrive_Z[:, io]
                 offset_X = X.copy()
                 offset_X.loc[{"covariates": self.thrive_covariate}] = data.thrive_X.sel({"offset": o})
-                scaled_thrive_Y = self[responsevar].backward(X, be, be_maps, this_Z)
+                scaled_thrive_Y = self[responsevar].backward(X, be, this_Z)
                 data["thrive_Y"].loc[{"response_vars": responsevar, "offset": o}] = scaled_thrive_Y
         # self.postprocess(data)
         return data
@@ -573,6 +573,9 @@ class NormativeModel:
     def extract_data(
         self, data: NormData
     ) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
+        """Returns a 5-tuple of covariates, batch effects, batch effect maps, response vars, Z-scores. 
+        If the variable is not available, returns None instead of the variable. 
+        """
         if hasattr(data, "X"):
             X = data.X
         else:
