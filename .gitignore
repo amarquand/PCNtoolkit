@@ -95,3 +95,4 @@ examples/resources/*
 !examples/resources/data/.gitkeep
 
 prof/*
+examples/pcntoolkit_resources/data/*
