@@ -25,8 +25,8 @@ from pcntoolkit.math_functions.basis_function import BasisFunction, create_basis
 from pcntoolkit.math_functions.warp import *
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
-
-
+from itertools import product
+from functools import reduce
 class BLR(RegressionModel):
     """
     Bayesian Linear Regression model implementation.
@@ -224,6 +224,21 @@ class BLR(RegressionModel):
         _, self.beta, self.gamma = self.parse_hyps(self.hyp, Phi, Phi_var)
         self.is_fitted = True
 
+    def be_idx_gen(self, be, be_maps):
+        # Loop over the unique batch effects:
+        # This creates a list of dictionaries
+        # Each dictionary contains a unique combination of batch effects:
+        # [{"sex":"F", "site":"A"}, {"sex":"F", "site":"B"}, {"sex":"M", "site":"A"}, {"sex":"M", "site":"B"}]
+        unique_batch_effect_dict = list(
+            map(lambda f: reduce(lambda p, q: p | q, f), product(*[[{str(k): be_maps[k][str(v)]} for v in v1] for k, v1 in dict(sorted(be_maps.items(), key=lambda v: v[0])).items()]))
+        )
+        for t in unique_batch_effect_dict:
+            mask = np.full(be.values.shape, False)
+            for i, be_dim in enumerate(be.batch_effect_dims):
+                mask[np.where(be.sel(batch_effect_dims=be_dim).values == t[str(be_dim.to_numpy().item())]), i] = True
+            mask = np.all(mask, axis = 1)
+            yield t, mask
+
     def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """Map Y values to Z space using BLR.
 
@@ -244,14 +259,33 @@ class BLR(RegressionModel):
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
         np_X = X.values
-        np_be = be.values
+        if self.transfered:
+            # Create synthetic batch effect data
+            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+        else:
+            np_be = be.values
         np_Y = Y.values
         self.ys_s2(np_X, np_be)
+
+        if self.transfered:
+            # Loop over the unique batch effects:
+            # This creates a list of dictionaries
+            # Each dictionary contains a unique combination of batch effects:
+            # [{"sex":"F", "site":"A"}, {"sex":"F", "site":"B"}, {"sex":"M", "site":"A"}, {"sex":"M", "site":"B"}]
+            for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
+                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+
+                self.ys[mask] = self.ys[mask] + residual_mean
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
+
+
         if self.warp:
             warped_y = self.warp.f(np_Y, self.gamma)
             toreturn = (warped_y - self.ys) / np.sqrt(self.s2)
         else:
             toreturn = (np_Y - self.ys) / np.sqrt(self.s2)
+        
+
         return xr.DataArray(toreturn, dims=("observations",))
 
     def backward(self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray) -> xr.DataArray:
@@ -275,12 +309,26 @@ class BLR(RegressionModel):
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
         np_X = X.values
-        np_be = be.values
+        if self.transfered:
+            # Create synthetic batch effect data
+            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+        else:
+            np_be = be.values        
         np_Z = Z.values
         self.ys_s2(np_X, np_be)
+        if self.transfered:
+
+            for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
+                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+
+                self.ys[mask] = self.ys[mask] + residual_mean
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
+
+
         centiles = np_Z * np.sqrt(self.s2) + self.ys
         if self.warp:
             centiles = self.warp.invf(centiles, self.gamma)
+
         return xr.DataArray(centiles, dims=("observations",))
 
     def elemwise_logp(
@@ -336,25 +384,43 @@ class BLR(RegressionModel):
         """
         pass
 
-    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs) -> BLR:
+    def transfer(self: BLR, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs) -> BLR:
 
-        # Create fake batch effect data (only ones)
+        # Create synthetic batch effect data
+        synth_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+        synth_be = xr.DataArray(synth_be, dims=("observations", "batch_effect_dims"), coords=(X.observations, list(self.be_maps.keys())))
 
-        # Make predictions on X with fake batch effects
+        # Get predictive mean and variance
+        synth_ys, synth_s2 = self.ys_s2(X.values, synth_be)
 
-        # Warp y (if needed)
+        if self.warp:
+            y = self.warp.f(Y.values, self.gamma)
 
-        # For each set of unique batch effects in be:
+        transfered_model = copy.deepcopy(self)
+        transfered_model.correction_coefficients = {}
+        transfered_model.transfered_be_maps = be_maps
 
-        #   Get IDXs
+        for t, mask in self.be_idx_gen(be, be_maps):
+            # The predicted centiles do not align with the data, so we need to correct them
+            # First we correct the mean
+            # We compute the residuals and add the difference to the predicted mean
+            residuals = y[mask] - synth_ys[mask]
+            residual_mean = np.mean(residuals)
+            corrected_mean = synth_ys[mask] + residual_mean
 
-        #   Get residuals between Y and predictions in Gaussian domain
+            # Then we correct the variance
+            # The predicted average std is: 
+            pred_avg_std = np.mean(np.sqrt(synth_s2[mask]))
+            # The actual average std is:
+            real_avg_std = np.mean(np.std(y[mask] - corrected_mean))
+            # So the predicted average std has to be corrected with a factor of:
+            correction_factor = real_avg_std/pred_avg_std
 
-        #   Compute mean and var of residuals
-
-        #   Save in dict, indexed by batch effects
-
-        pass
+            # We have to save these correction coefficients:
+            transfered_model.correction_coefficients[str(tuple(t.values()))] = (residual_mean, correction_factor)
+        
+        transfered_model.transfered = True
+        return transfered_model
 
 
     def predict_and_adjust(self, hyp, X, y, Xs=None,

@@ -53,6 +53,7 @@ class RegressionModel(ABC):
         self._name: str = name
         self.is_fitted: bool = is_fitted
         self.is_from_dict: bool = is_from_dict
+        self.transfered=False
 
     @property
     def name(self) -> str:
@@ -162,6 +163,7 @@ class RegressionModel(ABC):
         my_dict["type"] = self.__class__.__name__
         my_dict["is_fitted"] = self.is_fitted
         my_dict["is_from_dict"] = self.is_from_dict
+        my_dict["transfered"] = self.transfered
         my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
         return my_dict
         
