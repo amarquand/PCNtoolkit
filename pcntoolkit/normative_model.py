@@ -457,13 +457,12 @@ class NormativeModel:
         """
         self.preprocess(data)
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
-        n_samples = 1
         data["Yhat"] = xr.DataArray(np.zeros((data.X.shape[0], len(respvar_intersection))), dims=("observations", "response_vars"), coords={"observations": data.observations, "response_vars": list(respvar_intersection)})
         Output.print(Messages.COMPUTING_YHAT, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             X, be, _, _, _ = self.extract_data(resp_predict_data)
-            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, n_samples, responsevar, X, be)    
+            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, responsevar, X, be)    
         self.postprocess(data)
         return data
 

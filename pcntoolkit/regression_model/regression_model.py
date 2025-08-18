@@ -19,7 +19,7 @@ import numpy as np
 import xarray as xr
 
 from pcntoolkit.util.output import Messages, Output
-
+from scipy.stats.distributions import norm
 
 class RegressionModel(ABC):
     """
@@ -167,15 +167,18 @@ class RegressionModel(ABC):
         my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
         return my_dict
         
-    def compute_yhat(self, data, n_samples, responsevar, X, be):
-        samples = np.zeros((data.X.shape[0], n_samples))
+    def compute_yhat(self, data, responsevar, X, be):
+        n_importance_samples = 200
+        Z_space = np.linspace(-4, 4, n_importance_samples)
+        Y_space = np.zeros((data.X.shape[0], n_importance_samples))
         Output.print(Messages.COMPUTING_YHAT_MODEL, model_name=responsevar)
-        random_samples = np.random.randn(data.X.shape[0], n_samples)
-        Z = xr.DataArray(np.random.randn(data.X.shape[0]), dims=("observations",))
-        for s in range(n_samples):
-            Z.values = random_samples[:,s]
-            samples[:, s] = self.backward(X, be, Z).values
-        return samples.mean(axis=1)
+        Z = xr.DataArray(np.zeros(data.X.shape[0]), dims=("observations",))
+        for i, s in enumerate(Z_space):
+            Z.values = np.full(Z.values.shape, s)
+            Y_space[:, i] = self.backward(X, be, Z).values
+        Z_pdf = norm.pdf(Z_space)
+        Y_space *= Z_pdf
+        return Y_space.sum(axis=1)/Z_pdf.sum()
         
     @abstractmethod
     def to_dict(self, path: str | None = None) -> dict:
