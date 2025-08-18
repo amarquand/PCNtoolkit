@@ -487,10 +487,10 @@ class NormativeModel:
         # Add them to the dataset, label them correctly
 
         # Drop the thrivelines and dimensions if they already exist
-        centiles_already_computed = ("thrive_Z" in data or "thrive_Y" in data or "offset" in data.coords) and (
+        thrivelines_already_computed = ("thrive_Z" in data or "thrive_Y" in data or "offset" in data.coords) and (
             data.attrs["z_thrive"] == z_thrive
         )
-        if centiles_already_computed:
+        if thrivelines_already_computed:
             if not kwargs.get("recompute", False):
                 if all([c in data.offset.values for c in offsets]):
                     Output.warning(Warnings.THRIVELINES_ALREADY_COMPUTED_FOR, dataset_name=data.attrs["name"], offsets=offsets)
