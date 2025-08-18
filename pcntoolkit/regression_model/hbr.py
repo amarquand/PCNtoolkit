@@ -462,7 +462,7 @@ class HBR(RegressionModel):
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
 
-    def compute_yhat(self, data, n_samples, responsevar, X, be):
+    def compute_yhat(self, data, responsevar, X, be):
         fn = self.likelihood.yhat
         Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
         yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
