@@ -386,9 +386,9 @@ class NormData(xr.Dataset):
             new_data_vars["subjects"] = (["observations"], list(np.arange(self.X.shape[0] + other.X.shape[0])))
 
         new_coords["observations"] = list(np.arange(self.X.shape[0] + other.X.shape[0]))
-        covar_intersection = list(set(self.covariates.to_numpy()) & set(other.covariates.to_numpy()))
-        respvar_intersection = list(set(self.response_vars.to_numpy()) & set(other.response_vars.to_numpy()))
-        batch_effect_dims_intersection = list(set(self.batch_effect_dims.to_numpy()) & set(other.batch_effect_dims.to_numpy()))
+        covar_intersection = [c for c in self.covariates.to_numpy() if c in other.covariates.to_numpy()]
+        respvar_intersection = [r for r in self.response_vars.to_numpy() if r in other.response_vars.to_numpy()]
+        batch_effect_dims_intersection = [b for b in self.batch_effect_dims.to_numpy() if b in other.batch_effect_dims.to_numpy()]
         new_coords["covariates"] = covar_intersection
         new_coords["response_vars"] = respvar_intersection
         new_coords["batch_effect_dims"] = batch_effect_dims_intersection
