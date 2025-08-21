@@ -1,7 +1,7 @@
 cff-version: "1.2.0"
 message: "If you use this software, please cite it using the metadata below."
 title: "PCNtoolkit"
-version: "1.0.2-alpha2"
+version: "1.0.1"
 date-released: "2025-06-24"
 doi: "10.5281/zenodo.5207839"
 authors:
