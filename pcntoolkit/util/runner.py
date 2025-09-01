@@ -50,7 +50,7 @@ class Runner:
         environment: Optional[str] = None,
         cross_validate: bool = False,
         cv_folds: int = 5,
-        preamble: str = "module load anaconda3",        
+        preamble: str = "module load anaconda3",
         log_dir: Optional[str] = None,
         temp_dir: Optional[str] = None,
     ):
@@ -115,8 +115,8 @@ class Runner:
                     raise ValueError(Output.error(Errors.INVALID_ENVIRONMENT, environment=environment))
                 else:
                     self.environment = environment
-                    self.preamble = preamble        
-        
+                    self.preamble = preamble
+
         self.cross_validate = cross_validate
         self.cv_folds = cv_folds
         if self.cross_validate and self.cv_folds <= 1:
@@ -139,17 +139,20 @@ class Runner:
         self.unique_log_dir = ""
         self.job_observer = None
         self.save_dir = ""
-        self.job_commands: Dict[str, list[str]] = {}  
+        self.job_commands: Dict[str, list[str]] = {}
         self.active_jobs: Dict[str, str] = {}
         self.failed_jobs: Dict[str, str] = {}
 
-
-    def wait_or_finish(self, observe: bool, into: NormativeModel | None = None) -> NormativeModel | None:
+    def wait_or_finish(self, observe: bool, into: NormativeModel | None = None, *data_sources) -> NormativeModel | None:
         if self.parallelize:
             if observe:
                 self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
                 self.job_observer.wait_for_jobs()
                 self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+                if data_sources:
+                    for data_source in data_sources:
+                        self.load_data(data_source)
+                    self.load_data(data_source)
                 return self.load_model(into=into)
             else:
                 self.save()
@@ -157,7 +160,7 @@ class Runner:
         else:
             return self.load_model(into=into)
 
-    def set_task_id(self, task_name: str , model: NormativeModel, data: NormData):
+    def set_task_id(self, task_name: str, model: NormativeModel, data: NormData):
         unique_id = ""
         if task_name is not None:
             unique_id = task_name + "_"
@@ -175,12 +178,16 @@ class Runner:
         self.unique_log_dir = os.path.join(self.log_dir, self.task_id)
         os.makedirs(self.unique_temp_dir, exist_ok=True)
         with open(os.path.join(self.unique_temp_dir, "README.txt"), "wt") as file:
-            file.write("The contents of the folder containing this README file are temporary files used by the Runner. Once the Runner has successfully finished all its jobs, this folder and all its contents can be safely deleted.")
+            file.write(
+                "The contents of the folder containing this README file are temporary files used by the Runner. Once the Runner has successfully finished all its jobs, this folder and all its contents can be safely deleted."
+            )
         os.makedirs(self.unique_log_dir, exist_ok=True)
         Output.print(Messages.TEMP_DIR_CREATED, temp_dir=self.unique_temp_dir)
         Output.print(Messages.LOG_DIR_CREATED, log_dir=self.unique_log_dir)
 
-    def fit(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
+    def fit(
+        self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
+    ) -> NormativeModel | None:
         """
         Fit a normative model on a dataset.
 
@@ -203,11 +210,11 @@ class Runner:
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
-        self.set_task_id("fit",model, data)
+        self.set_task_id("fit", model, data)
         self.create_temp_and_log_dir()
         fn = self.get_fit_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        return self.wait_or_finish(observe,into=model)
+        return self.wait_or_finish(observe, model, data)
 
     def fit_predict(
         self,
@@ -241,7 +248,7 @@ class Runner:
         """
         save_dir = save_dir if save_dir is not None else model.save_dir
         self.save_dir = save_dir
-        self.set_task_id("fit_predict",model, fit_data)
+        self.set_task_id("fit_predict", model, fit_data)
         self.create_temp_and_log_dir()
         fn = self.get_fit_predict_chunk_fn(model, save_dir)
         self.submit_jobs(
@@ -250,9 +257,11 @@ class Runner:
             second_data_source=predict_data,
             mode="binary",
         )
-        return self.wait_or_finish(observe, into=model)
+        return self.wait_or_finish(observe, model, fit_data, predict_data)
 
-    def predict(self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True) -> NormativeModel | None:
+    def predict(
+        self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
+    ) -> NormativeModel | None:
         """
         Predict on a dataset.
 
@@ -274,12 +283,11 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_task_id("predict",model, data)
+        self.set_task_id("predict", model, data)
         self.create_temp_and_log_dir()
         fn = self.get_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, first_data_source=data, mode="unary")
-        return self.wait_or_finish(observe)
-
+        return self.wait_or_finish(observe, None, data)
 
     def transfer(
         self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
@@ -307,12 +315,12 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_task_id("transfer",model, data)
+        self.set_task_id("transfer", model, data)
         self.create_temp_and_log_dir()
         fn = self.get_transfer_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
-        return self.wait_or_finish(observe)
-    
+        return self.wait_or_finish(observe, None, data)
+
     def transfer_predict(
         self,
         model: NormativeModel,
@@ -346,11 +354,11 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_transfer"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_task_id("transfer_predict",model, fit_data)
+        self.set_task_id("transfer_predict", model, fit_data)
         self.create_temp_and_log_dir()
         fn = self.get_transfer_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        return self.wait_or_finish(observe)
+        return self.wait_or_finish(observe, None, fit_data, predict_data)
 
     def extend(
         self, model: NormativeModel, data: NormData, save_dir: Optional[str] = None, observe: bool = True
@@ -378,11 +386,11 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_task_id("extend",model, data)
+        self.set_task_id("extend", model, data)
         self.create_temp_and_log_dir()
         fn = self.get_extend_chunk_fn(model, save_dir)
         self.submit_jobs(fn, data, mode="unary")
-        return self.wait_or_finish(observe)
+        return self.wait_or_finish(observe, None, data)
 
     def extend_predict(
         self,
@@ -406,7 +414,6 @@ class Runner:
         save_dir : Optional[str], optional
             The directory to save the model to. If None, the model will be saved in the model's save directory.
         observe : bool, optional
-            Whether to observe the jobs. If true, the function will wait for the jobs to finish and then load the model into the model object.
             If false, the function will dispatch the jobs and return.
 
         Returns
@@ -417,11 +424,11 @@ class Runner:
         save_dir = save_dir if save_dir is not None else model.save_dir + "_extend"
         assert save_dir is not None
         self.save_dir = save_dir
-        self.set_task_id("extend_predict",model, fit_data)
+        self.set_task_id("extend_predict", model, fit_data)
         self.create_temp_and_log_dir()
         fn = self.get_extend_predict_chunk_fn(model, save_dir)
         self.submit_jobs(fn, fit_data, predict_data, mode="binary")
-        return self.wait_or_finish(observe)
+        return self.wait_or_finish(observe, None, fit_data, predict_data)
 
     def get_fit_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data"""
@@ -678,7 +685,6 @@ class Runner:
             Data to predict on, by default None
         """
 
-
         if self.parallelize:
             if self.n_batches is None and self.batch_size is not None:
                 self.n_batches = len(first_data_source.response_vars) // self.batch_size
@@ -686,7 +692,7 @@ class Runner:
                 self.batch_size = len(first_data_source.response_vars) // self.n_batches
             else:
                 raise ValueError("Either n_batches or batch_size must be specified")
-        
+
             first_chunks = first_data_source.chunk(self.n_batches)
             second_chunks = [None] * self.n_batches if second_data_source is None else second_data_source.chunk(self.n_batches)
 
@@ -777,7 +783,7 @@ exit $exit_code
         create_incremental_backup(job_path)
         create_incremental_backup(out_file)
         create_incremental_backup(err_file)
-        return job_path,out_file,err_file,success_file
+        return job_path, out_file, err_file, success_file
 
     def wrap_in_torque_job(self, job_name: int | str, python_callable_path: str, data_path: str) -> list[str]:
         job_path, out_file, err_file, success_file = self.get_all_job_file_paths(job_name)
@@ -820,6 +826,13 @@ exit $exit_code
         else:
             return NormativeModel.load(self.save_dir, into=into)
 
+    def load_data(self, data_source: NormData, fold_index: Optional[int] = 0) -> None:
+        if self.cross_validate:
+            path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}", "results")
+            data_source.load_results(path)
+        else:
+            data_source.load_results(os.path.join(self.save_dir, "results"))
+
     def save(self) -> None:
         """Save the runner state to a JSON file in the save directory."""
         runner_state = {
@@ -835,7 +848,7 @@ exit $exit_code
             "save_dir": self.save_dir,
             "job_commands": self.job_commands,
             "failed_jobs": self.failed_jobs,
-            "environment":self.environment
+            "environment": self.environment,
         }
 
         runner_file = os.path.join(self.unique_temp_dir, "runner_state.json")
@@ -862,14 +875,16 @@ exit $exit_code
         with open(runner_file, "r") as f:
             state = json.load(f)
 
-        runner = cls(job_type=state["job_type"], n_batches=state["n_batches"], log_dir=state["log_dir"], temp_dir=state["temp_dir"])
+        runner = cls(
+            job_type=state["job_type"], n_batches=state["n_batches"], log_dir=state["log_dir"], temp_dir=state["temp_dir"]
+        )
         runner.task_id = state["task_id"]
         runner.unique_log_dir = state["unique_log_dir"]
         runner.unique_temp_dir = state["unique_temp_dir"]
         runner.save_dir = state["save_dir"]
         runner.job_commands = state["job_commands"]
         runner.active_jobs = state["active_jobs"]
-        runner.environment = state['environment']
+        runner.environment = state["environment"]
         runner.batch_size = state["batch_size"]
         runner.active_jobs, runner.finished_jobs, runner.failed_jobs = runner.check_jobs_status()
         Output.print(
@@ -903,12 +918,12 @@ exit $exit_code
                     elif self.job_type == "torque":
                         job_id = re.search(r"(.*)", stdout).group(1).strip()  # type: ignore
                 except AttributeError:
-                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))                
-                
+                    raise ValueError(Output.error(Errors.ERROR_SUBMITTING_JOB, job_id=job_name, stderr=stderr))
+
                 if job_id:
                     self.active_jobs[job_name] = job_id
                     self.job_commands[job_name] = command
-               
+
         self.failed_jobs.clear()
         if observe:
             self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
@@ -929,7 +944,7 @@ def load_and_execute(args):
     retries = int(args[2])
     scale = float(args[3])
     for i in range(retries + 1):
-        # Sleep for a random amount of time. 
+        # Sleep for a random amount of time.
         # Try to avoid some async access issues.
         time.sleep(random.uniform(0, scale))
         try:
@@ -949,7 +964,6 @@ def load_and_execute(args):
             else:
                 Output.print(Messages.EXECUTION_FAILED, attempt=i + 1, total=retries + 1, error=e)
                 continue
-
 
 
 if __name__ == "__main__":
