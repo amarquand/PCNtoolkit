@@ -35,7 +35,6 @@ dependencies = [
     "matplotlib>=3.9.2",
     "seaborn>=0.13.2",
     "numba>=0.60.0",
-    "torch>=2.1.1",
     "nutpie>=0.13.2",
     "joblib>=1.4.2",
     "dill>=0.3.9",
