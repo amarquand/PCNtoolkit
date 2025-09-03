@@ -13,13 +13,15 @@ from pcntoolkit.dataio.norm_data import NormData
 if TYPE_CHECKING:
     from pcntoolkit.normative_model import NormativeModel
 import os
-
+import copy
 sns.set_theme(style="darkgrid")
 
 
 def plot_centiles(
     model: "NormativeModel",
     centiles: List[float] | np.ndarray | None = None,
+    conditionals: List[float] | np.ndarray | None = None,
+    conditionals_range: tuple[float, float] = (None, None),
     covariate: str | None = None,
     covariate_range: tuple[float, float] = (None, None),  # type: ignore
     batch_effects: Dict[str, List[str]] | None | Literal["all"] = None,
@@ -49,6 +51,10 @@ def plot_centiles(
         The model to plot the centiles for.
     centiles: List[float] | np.ndarray | None, optional
         The centiles to plot. If None, the default centiles will be used.
+    conditionals: List[float] | np.ndarray | None, optional
+        A list of x-coordinates for which to plot the conditionals
+    conditionals_range: tuple[float, float], optional
+        The Z-range of the conditionals to plot.
     covariate: str | None, optional
         The covariate to plot on the x-axis. If None, the first covariate in the model will be used.
     covariate_range: tuple[float, float], optional
@@ -124,6 +130,20 @@ def plot_centiles(
         batch_effects=list(batch_effects.keys()),
     )  # type:ignore
 
+    conditionals_data = []
+    if conditionals is not None:
+        for c in conditionals:
+            centile = copy.deepcopy(centile_data).isel(observations=[0,1])
+            centile.X.loc[{"covariates":covariate}] = c
+            model.compute_centiles(centile, centiles=np.array([*conditionals_range]))
+            conditional_d = copy.deepcopy(centile_data)
+            conditional_d.X.loc[{"covariates":covariate}] = c
+            for rv in model.response_vars:
+                conditional_d.Y.loc[{"response_vars":rv}] = np.linspace(*(centile.centiles.sel(observations=0, response_vars=rv).values.tolist()), 150)
+            if not hasattr(conditional_d, "logp"):
+                model.compute_logp(conditional_d)
+            conditionals_data.append(conditional_d)
+
     if not hasattr(centile_data, "centiles"):
         model.compute_centiles(centile_data, centiles=centiles, **kwargs)
     if scatter_data and show_thrivelines:
@@ -146,7 +166,7 @@ def plot_centiles(
             centile_data=centile_data,
             response_var=response_var,
             covariate=covariate,
-            covariate_range=covariate_range,
+            conditionals_data=conditionals_data,
             batch_effects=batch_effects,
             scatter_data=scatter_data,
             harmonize_data=harmonize_data,
@@ -166,7 +186,7 @@ def _plot_centiles(
     centile_data: NormData,
     response_var: str,
     covariate: str = None,  # type: ignore
-    covariate_range: tuple[float, float] = (None, None),  # type: ignore
+    conditionals_data: List[NormData] | None = None,
     batch_effects: Dict[str, List[str]] = None,  # type: ignore
     scatter_data: NormData | None = None,
     harmonize_data: bool = True,
@@ -323,6 +343,14 @@ def _plot_centiles(
             plotname = f"centiles_{response_var}_{scatter_data.name}"
             title = f"{title}\n With raw {scatter_data.name} data"
 
+    
+    if conditionals_data:
+        for conditional_d in conditionals_data:
+            filter_cond = conditional_d.sel(filter_dict)
+            plt.plot(np.exp(filter_cond.logp.values)*10+filter_cond.X, filter_cond.Y, color="blue", linestyle="--", linewidth=1, zorder=2, label="Conditional")
+            # Put a text annotation on top of the plot, rotate the text 90 degrees
+            plt.text(filter_cond.X[-1], filter_cond.Y[-1], f"{filter_cond.X[-1].values.item():.2f}", color="black", fontsize=10, ha="right", va="bottom", rotation=-90)
+            
     plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)
