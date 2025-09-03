@@ -16,7 +16,9 @@ from pcntoolkit.normative_model import NormativeModel
 from pcntoolkit.util.job_observer import JobObserver
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 from pcntoolkit.util.paths import get_default_log_dir, get_default_temp_dir
-
+from typing import Tuple
+from numpy.typing import ArrayLike
+import copy
 
 class Runner:
     cross_validate: bool = False
@@ -152,7 +154,6 @@ class Runner:
                 if data_sources:
                     for data_source in data_sources:
                         self.load_data(data_source)
-                    self.load_data(data_source)
                 return self.load_model(into=into)
             else:
                 self.save()
@@ -435,10 +436,13 @@ class Runner:
         if self.cross_validate:
 
             def kfold_fit_chunk_fn(chunk: NormData):
-                for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
+
+                for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
                     fold_norm_model: NormativeModel = deepcopy(model)
                     fold_norm_model.set_save_dir(os.path.join(save_dir, "folds", f"fold_{i_fold}"))
-                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_fit"
                     fold_norm_model.fit(train_data)
 
             return kfold_fit_chunk_fn
@@ -453,11 +457,13 @@ class Runner:
     def get_fit_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data and predicts on another chunk of data"""
         if self.cross_validate:
-
             def kfold_fit_predict_chunk_fn(all_data: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
-                for i_fold, (fit_data, predict_data) in enumerate(all_data.kfold_split(self.cv_folds)):
+                for i_fold, (fit_idx, predict_idx) in enumerate(all_data.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    fit_data = copy.deepcopy(all_data.isel(observations=fit_idx))
+                    predict_data = copy.deepcopy(all_data.isel(observations=predict_idx))
                     fold_norm_model: NormativeModel = deepcopy(model)
                     fold_norm_model.set_save_dir(os.path.join(save_dir, "folds", f"fold_{i_fold}"))
                     fit_data.attrs["name"] = fit_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
@@ -493,8 +499,10 @@ class Runner:
         if self.cross_validate:
 
             def kfold_transfer_chunk_fn(chunk: NormData):
-                for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold)
+                for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_fit"
                     model.transfer(
                         train_data,
                         save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
@@ -511,12 +519,14 @@ class Runner:
 
     def get_transfer_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
-
             def kfold_transfer_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
-                for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
+                    predict_data = copy.deepcopy(chunk.isel(observations=predict_idx))
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_fit"
                     predict_data.attrs["name"] = predict_data.attrs["name"] + "_fold_" + str(i_fold) + "_predict"
                     model.transfer_predict(
                         train_data,
@@ -536,10 +546,11 @@ class Runner:
 
     def get_extend_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
-
             def kfold_extend_chunk_fn(chunk: NormData):
-                for i_fold, (train_data, _) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold)
+                for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_fit"
                     model.extend(
                         data=train_data,
                         save_dir=os.path.join(save_dir, "folds", f"fold_{i_fold}"),
@@ -560,8 +571,11 @@ class Runner:
             def kfold_extend_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
-                for i_fold, (train_data, predict_data) in enumerate(chunk.kfold_split(self.cv_folds)):
-                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_train"
+                for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
+                    self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
+                    train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
+                    predict_data = copy.deepcopy(chunk.isel(observations=predict_idx))
+                    train_data.attrs["name"] = train_data.attrs["name"] + "_fold_" + str(i_fold) + "_fit"
                     predict_data.attrs["name"] = predict_data.attrs["name"] + "_fold_" + str(i_fold) + "_predict"
                     model.extend_predict(
                         extend_data=train_data,
@@ -579,6 +593,17 @@ class Runner:
                 model.extend_predict(extend_data=train_data, predict_data=predict_data, save_dir=save_dir)
 
             return extend_predict_chunk_fn
+
+    def register_fold_indices(self, save_dir: str, i_fold: int, indices: tuple[int, int]):
+        fit_idx, predict_idx = indices
+        os.makedirs(os.path.join(save_dir, "folds", f"fold_{i_fold}"), exist_ok=True)
+        with open(os.path.join(save_dir, "folds", f"fold_{i_fold}/fit_observations.txt"), "w") as f:
+            f.truncate(0)
+            f.write(str(fit_idx))
+        with open(os.path.join(save_dir, "folds", f"fold_{i_fold}/predict_observations.txt"), "w") as f:
+            f.truncate(0)
+            f.write(str(predict_idx))
+
 
     def save_callable_and_data(
         self,
@@ -828,8 +853,14 @@ exit $exit_code
 
     def load_data(self, data_source: NormData, fold_index: Optional[int] = 0) -> None:
         if self.cross_validate:
-            path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}", "results")
-            data_source.load_results(path)
+            Output.warning(Warnings.LOADING_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION)
+            # path = os.path.join(self.save_dir, "folds", f"fold_{fold_index}", "results")
+            # original_name = data_source.name
+            # data_source.name = f"{original_name}_fold_{fold_index}_train"
+            # data_source.load_results(path)
+            # data_source.name = f"{original_name}_fold_{fold_index}_predict"
+            # data_source.load_results(path)
+            # data_source.name = original_name
         else:
             data_source.load_results(os.path.join(self.save_dir, "results"))
 

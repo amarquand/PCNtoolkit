@@ -4,6 +4,8 @@ from datetime import datetime
 
 
 class Messages:
+
+
     FITTING_MODELS = "Fitting models on {n_models} response variables."
     FITTING_MODEL = "Fitting model for {model_name}."
     PREDICTING_MODELS = "Making predictions on {n_models} response variables."
@@ -91,6 +93,7 @@ Total failed jobs: {total_failed_jobs}
     """
     COMPUTING_YHAT = "Computing yhat for {n_models} response variables."
     COMPUTING_YHAT_MODEL = "Computing yhat for {model_name}."
+    LOADING_DATA_UNDER_KFOLD_CV = "Automatically loading data under KFold CV is not implemented yet. Please load the data using NormData.load_results."
 
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
@@ -123,6 +126,7 @@ class Warnings:
     MULTIPLE_BATCH_EFFECT_SUMMARY = "Multiple batch effect dimensions found. The summary printout currently uses the first dimension for 'unique_batch_effects' display."
     LOAD_CIFTI_GENERIC_EXCEPTION = "A general exception occurred while loading CIFTI file: {}"
     LOAD_NIFTI_GENERIC_EXCEPTION = "A general exception occurred while loading NIFTI file: {}"
+    LOADING_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Automatic data loading by the Runner is not supported for cross-validation."
 
 class Errors:
     ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."

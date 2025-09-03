@@ -585,7 +585,7 @@ class NormData(xr.Dataset):
             split2.attrs["name"] = f"{self.attrs['name']}_test"
         return split1, split2
 
-    def kfold_split(self, k: int) -> Generator[Tuple[NormData, NormData], Any, Any]:
+    def kfold_split(self, k: int) -> Generator[Tuple[ArrayLike[int], ArrayLike[int]], Any, Any]:
         """
         Perform k-fold splitting of the data.
 
@@ -596,8 +596,8 @@ class NormData(xr.Dataset):
 
         Returns
         -------
-        Generator[Tuple[NormData, NormData], Any, Any]
-            A generator yielding training and testing NormData instances for each fold.
+        Generator[Tuple[ArrayLike[int], ArrayLike[int]], Any, Any]
+            A generator yielding training and testing indices for each fold.
         """
         # Returns an iterator of (NormData, NormData) objects, split into k folds
         stratified_kfold_split = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
@@ -605,9 +605,9 @@ class NormData(xr.Dataset):
             *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
         )
         for train_idx, test_idx in stratified_kfold_split.split(self.X, batch_effects_stringified):
-            split1 = copy.deepcopy(self.isel(observations=train_idx))
-            split2 = copy.deepcopy(self.isel(observations=test_idx))
-            yield split1, split2
+            train_idx = np.array(train_idx)
+            test_idx = np.array(test_idx)
+            yield train_idx, test_idx
 
     def batch_effects_split(
         self,
