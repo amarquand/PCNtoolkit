@@ -198,7 +198,7 @@ class BsplineBasisFunction(BasisFunction):
 
     def _transform(self, data: np.ndarray, i: int) -> np.ndarray:
         spline = BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
-        return np.concatenate((spline, data.reshape(-1, 1)), axis = 1)
+        return np.concatenate((data.reshape(-1, 1),spline), axis = 1)
 
     def to_dict(self) -> dict:
         mydict = super().to_dict()

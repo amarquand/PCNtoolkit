@@ -41,9 +41,11 @@ class BLR(RegressionModel):
         name: str = "template",
         fixed_effect: bool = False,
         fixed_effect_slope: bool = False,
+        fixed_effect_slope_indices: list[int] | Literal["all"] = None,
         heteroskedastic: bool = False,
         fixed_effect_var: bool = False,
         fixed_effect_var_slope: bool = False,
+        fixed_effect_var_slope_indices: list[int] | Literal["all"] = None,
         warp_name: Optional[str] = None,
         warp_reparam: bool = False,
         basis_function_mean: BasisFunction = None,  # type: ignore
@@ -72,12 +74,16 @@ class BLR(RegressionModel):
             Whether to model a fixed effect in the intercept of the mean, by default False
         fixed_effect_slope: bool, optional
             Whether to model a fixed effect in the slope of the mean, by default False
+        fixed_effect_slope_indices : list[int] | "all", optional
+            If fixed_effect_slope is True, the indices of the columns in the design matrix for which to model a fixed effect in the slope ofthe mean. By default  this is [0], so a fixed effect is learned on the first column of the design matrix. Set to "all" to model a fixed effect on all columns of the design matrix.
         heteroskedastic : bool, optional
             Whether to use heteroskedastic noise modeling, by default False
         fixed_effect_var : bool, optional
             Whether to model a fixed effect in the intercept of the variance, by default False
         fixed_effect_var_slope : bool, optional
             Whether to model a fixed effect in the slope of the variance, by default False
+        fixed_effect_var_slope_indices : list[int] | "all", optional
+            If fixed_effect_slope is True, the indices of the columns in the design matrix for which to model a fixed effect in the slope of the variance. By default  this is [0], so a fixed effect is learned on the first column of the design matrix. Set to "all" to model a fixed effect on all columns of the design matrix.
         warp_name : str, optional
             Name of the warp function to use, by default None
         warp_reparam : bool, optional
@@ -118,9 +124,11 @@ class BLR(RegressionModel):
         self.l_bfgs_b_norm = l_bfgs_b_norm
         self.fixed_effect = fixed_effect
         self.fixed_effect_slope = fixed_effect_slope
+        self.fixed_effect_slope_indices = fixed_effect_slope_indices
         self.heteroskedastic = heteroskedastic
         self.fixed_effect_var = fixed_effect_var
         self.fixed_effect_var_slope = fixed_effect_var_slope
+        self.fixed_effect_var_slope_indices = fixed_effect_var_slope_indices
         self.warp_name = warp_name
         self.initialize_warp()
         self.warp_reparam = warp_reparam
@@ -896,6 +904,7 @@ class BLR(RegressionModel):
             intercept=True,
             fixed_effect=self.fixed_effect,
             fixed_effect_slope=self.fixed_effect_slope,
+            fixed_effect_slope_indices=self.fixed_effect_slope_indices,
         )
 
         if self.models_variance:
@@ -909,6 +918,7 @@ class BLR(RegressionModel):
                 intercept=True,
                 fixed_effect=self.fixed_effect_var,
                 fixed_effect_slope=self.fixed_effect_var_slope,
+                fixed_effect_slope_indices=self.fixed_effect_var_slope_indices,
             )
         else:
             Phi_var = np.zeros((Phi.shape[0], 1))
@@ -1040,6 +1050,7 @@ def create_design_matrix(
     intercept: bool = False,
     fixed_effect: bool = False,
     fixed_effect_slope: bool = False,
+    fixed_effect_slope_indices: list[int] | Literal["all"] = None,
 ) -> np.ndarray:
     """Create design matrix for the model.
 
@@ -1080,9 +1091,19 @@ def create_design_matrix(
                 np.eye(len(v))[be[:, i]],
             )
 
-    # if fixed_effect_slope:
-    # TODO add the slope fixed effect here 
-    
+    # Create the slope fixed effect
+    if fixed_effect_slope_indices is None:
+        fixed_effect_slope_indices = [0]
+    if fixed_effect_slope_indices == "all":
+        fixed_effect_slope_indices = range(X.shape[1])
+
+    if fixed_effect_slope:
+        for j in fixed_effect_slope_indices:
+            for i, v in enumerate(be_maps.values()):
+                acc.append(
+                    X[:,j][:,np.newaxis] * np.eye(len(v))[be[:, i]],
+                )
+
     if len(acc) == 0:
         raise ValueError(Output.error(Errors.BLR_ERROR_NO_DESIGN_MATRIX_CREATED))
 
