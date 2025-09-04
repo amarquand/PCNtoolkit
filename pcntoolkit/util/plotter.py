@@ -21,7 +21,6 @@ def plot_centiles(
     model: "NormativeModel",
     centiles: List[float] | np.ndarray | None = None,
     conditionals: List[float] | np.ndarray | None = None,
-    conditionals_range: tuple[float, float] = (None, None),
     covariate: str | None = None,
     covariate_range: tuple[float, float] = (None, None),  # type: ignore
     batch_effects: Dict[str, List[str]] | None | Literal["all"] = None,
@@ -53,8 +52,6 @@ def plot_centiles(
         The centiles to plot. If None, the default centiles will be used.
     conditionals: List[float] | np.ndarray | None, optional
         A list of x-coordinates for which to plot the conditionals
-    conditionals_range: tuple[float, float], optional
-        The Z-range of the conditionals to plot.
     covariate: str | None, optional
         The covariate to plot on the x-axis. If None, the first covariate in the model will be used.
     covariate_range: tuple[float, float], optional
@@ -135,7 +132,7 @@ def plot_centiles(
         for c in conditionals:
             centile = copy.deepcopy(centile_data).isel(observations=[0,1])
             centile.X.loc[{"covariates":covariate}] = c
-            model.compute_centiles(centile, centiles=np.array([*conditionals_range]))
+            model.compute_centiles(centile, centiles=[0.001, 0.999])
             conditional_d = copy.deepcopy(centile_data)
             conditional_d.X.loc[{"covariates":covariate}] = c
             for rv in model.response_vars:
