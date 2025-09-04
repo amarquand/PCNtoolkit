@@ -66,8 +66,8 @@ class NormativeModel:
         saveresults: bool = True,
         saveplots: bool = True,
         save_dir: Optional[str] = None,
-        inscaler: str = "none",
-        outscaler: str = "none",
+        inscaler: str = "standardize",
+        outscaler: str = "standardize",
         name: Optional[str] = None,
     ):
         self.savemodel: bool = savemodel
