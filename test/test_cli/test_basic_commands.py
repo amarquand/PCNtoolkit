@@ -62,8 +62,8 @@ class TestBasicCLI:
         for fold in range(3):
             fold_dir = self.save_dir / "folds" / f"fold_{fold}"
             assert (fold_dir / "model" / "normative_model.json").exists()
-            assert (fold_dir / "plots" / f"centiles_response_var_0_fit_data_fold_{fold}_train_harmonized.png").exists()
-            assert (fold_dir / "results" / f"centiles_fit_data_fold_{fold}_train.csv").exists()
+            assert (fold_dir / "plots" / f"centiles_response_var_0_fit_data_fold_{fold}_fit_harmonized.png").exists()
+            assert (fold_dir / "results" / f"centiles_fit_data_fold_{fold}_fit.csv").exists()
     
     def test_blr_cli_with_batch_effects(self):
         """Test CLI command with batch effect correction."""

@@ -243,8 +243,8 @@ class NormData(xr.Dataset):
                 if array.ndim == 1:
                     array = array[:, None]
                 names = attrs.get(key, [f"{default_prefix}_{i}" for i in range(array.shape[1])])
-                for i, name in enumerate(names):
-                    df_data[name] = array[:, i]
+                for i, dataname in enumerate(names):
+                    df_data[dataname] = array[:, i]
         
         if subject_ids is not None:
             df_data["subjects"] = subject_ids
