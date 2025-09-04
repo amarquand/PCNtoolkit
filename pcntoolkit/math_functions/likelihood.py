@@ -635,13 +635,13 @@ def get_default_normal_likelihood() -> NormalLikelihood:
                     "mu_intercept_mu",
                     dist_name="Normal",
                     dist_params=(0, 1.0),
-                    sigma=make_prior(
-                        "sigma_intercept_mu",
-                        dist_name="Normal",
-                        dist_params=(1.0, 2, 0),
-                        mapping="softplus",
-                        mapping_params=(0.0, 3.0),
-                    ),
+                ),
+                sigma=make_prior(
+                    "sigma_intercept_mu",
+                    dist_name="Normal",
+                    dist_params=(1.0, 1.0),
+                    mapping="softplus",
+                    mapping_params=(0.0, 3.0),
                 ),
             ),
             basis_function=BsplineBasisFunction(0, 3, 5),
@@ -649,8 +649,10 @@ def get_default_normal_likelihood() -> NormalLikelihood:
         sigma=make_prior(
             "sigma",
             linear=True,
-            slope=make_prior(dist_name="Normal", dist_params=(0, 10.0)),
-            intercept=make_prior(dist_name="Normal", dist_params=(1.0, 3.0), mapping="softplus", mapping_params=(0.0, 3.0)),
+            slope=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
+            intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
             basis_function=BsplineBasisFunction(0, 3, 5),
+            mapping="softplus",
+            mapping_params=(0.0, 3.0),
         ),
     )

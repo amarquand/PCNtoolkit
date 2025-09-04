@@ -135,6 +135,91 @@ class NormData(xr.Dataset):
             batch_effects=be_str,
         )
 
+    # @classmethod
+    # def from_ndarrays_old(
+    #     cls,
+    #     name: str,
+    #     X: np.ndarray,
+    #     Y: np.ndarray,
+    #     batch_effects: np.ndarray | None = None,
+    #     subject_ids: np.ndarray | None = None,
+    #     attrs: Mapping[str, Any] | None = None,
+    # ) -> NormData:
+    #     """Create a NormData object from numpy arrays.
+
+    #     Parameters
+    #     ----------
+    #     name : str
+    #         The name of the dataset
+    #     X : np.ndarray
+    #         Covariate data of shape (n_samples, n_features)
+    #     y : np.ndarray
+    #         Response variable data of shape (n_samples, n_responses)
+    #     batch_effects : np.ndarray
+    #         Batch effect data of shape (n_samples, n_batch_effects)
+    #     attrs : Mapping[str, Any] | None, optional
+    #         Additional attributes for the dataset, by default None
+
+    #     Returns
+    #     -------
+    #     NormData
+    #         A new NormData instance containing the provided data
+
+    #     Notes
+    #     -----
+    #     Input arrays are automatically reshaped to 2D if they are 1D
+    #     """
+    #     data_vars = {}
+    #     coords = {}
+    #     attrs = attrs or {}
+    #     if subject_ids is not None:
+    #         attrs["real_ids"] = True  # type:ignore
+    #         data_vars["subjects"] = (["observations"], subject_ids)
+    #     else:
+    #         attrs["real_ids"] = False  # type: ignore
+    #         data_vars["subjects"] = (["observations"], list(np.arange(X.shape[0])))
+
+    #     coords["observations"] = list(np.arange(X.shape[0]))
+    #     lengths = []
+    #     if X is not None:
+    #         lengths.append(X.shape[0])
+    #         if X.ndim == 1:
+    #             X = X[:, None]
+    #         data_vars["X"] = (["observations", "covariates"], X)
+    #         if "covariates" in attrs:
+    #             if len(attrs["covariates"]) != X.shape[1]:
+    #                 raise ValueError("The number of covariate names must match the number of covariates")
+    #             coords["covariates"] = attrs["covariates"]
+    #         else:
+    #             coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
+    #     if Y is not None:
+    #         lengths.append(Y.shape[0])
+    #         if Y.ndim == 1:
+    #             Y = Y[:, None]
+    #         data_vars["Y"] = (["observations", "response_vars"], Y)
+    #         if "response_vars" in attrs:
+    #             if len(attrs["response_vars"]) != Y.shape[1]:
+    #                 raise ValueError("The number of response names must match the number of response variables")
+    #             coords["response_vars"] = attrs["response_vars"]
+    #         else:
+    #             coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
+    #     if batch_effects is not None:
+    #         lengths.append(batch_effects.shape[0])
+    #         if batch_effects.ndim == 1:
+    #             batch_effects = batch_effects[:, None]
+    #         data_vars["batch_effects"] = (["observations", "batch_effect_dims"], batch_effects)
+    #         if "batch_effect_dims" in attrs:
+    #             if len(attrs["batch_effect_dims"]) != batch_effects.shape[1]:
+    #                 raise ValueError("The number of batch effect names must match the number of batch effects")
+    #             coords["batch_effect_dims"] = attrs["batch_effect_dims"]
+    #         else:
+    #             coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+    #     else:
+    #         data_vars["batch_effects"] = (["observations", "batch_effect_dims"], np.zeros((lengths[0], 1)))
+    #         coords["batch_effect_dims"] = ["dummy_batch_effect"]
+    #     assert len(set(lengths)) == 1, "All arrays must have the same number of observations"
+    #     return cls(name, data_vars, coords, attrs)
+
     @classmethod
     def from_ndarrays(
         cls,
@@ -144,81 +229,38 @@ class NormData(xr.Dataset):
         batch_effects: np.ndarray | None = None,
         subject_ids: np.ndarray | None = None,
         attrs: Mapping[str, Any] | None = None,
+        remove_outliers: bool = False,
+        z_threshold: float = 3.0,
+        remove_Nan: bool = False,
     ) -> NormData:
-        """Create a NormData object from numpy arrays.
-
-        Parameters
-        ----------
-        name : str
-            The name of the dataset
-        X : np.ndarray
-            Covariate data of shape (n_samples, n_features)
-        y : np.ndarray
-            Response variable data of shape (n_samples, n_responses)
-        batch_effects : np.ndarray
-            Batch effect data of shape (n_samples, n_batch_effects)
-        attrs : Mapping[str, Any] | None, optional
-            Additional attributes for the dataset, by default None
-
-        Returns
-        -------
-        NormData
-            A new NormData instance containing the provided data
-
-        Notes
-        -----
-        Input arrays are automatically reshaped to 2D if they are 1D
-        """
-        data_vars = {}
-        coords = {}
+        """Create a NormData object from numpy arrays via DataFrame conversion."""
         attrs = attrs or {}
+        
+        # Create DataFrame from arrays
+        df_data = {}
+        for array, key, default_prefix in [(X, "covariates", "covariate"), (Y, "response_vars", "response_var"), (batch_effects, "batch_effect_dims", "batch_effect")]:
+            if array is not None:
+                if array.ndim == 1:
+                    array = array[:, None]
+                names = attrs.get(key, [f"{default_prefix}_{i}" for i in range(array.shape[1])])
+                for i, name in enumerate(names):
+                    df_data[name] = array[:, i]
+        
         if subject_ids is not None:
-            attrs["real_ids"] = True  # type:ignore
-            data_vars["subjects"] = (["observations"], subject_ids)
-        else:
-            attrs["real_ids"] = False  # type: ignore
-            data_vars["subjects"] = (["observations"], list(np.arange(X.shape[0])))
-
-        coords["observations"] = list(np.arange(X.shape[0]))
-        lengths = []
-        if X is not None:
-            lengths.append(X.shape[0])
-            if X.ndim == 1:
-                X = X[:, None]
-            data_vars["X"] = (["observations", "covariates"], X)
-            if "covariates" in attrs:
-                if len(attrs["covariates"]) != X.shape[1]:
-                    raise ValueError("The number of covariate names must match the number of covariates")
-                coords["covariates"] = attrs["covariates"]
-            else:
-                coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
-        if Y is not None:
-            lengths.append(Y.shape[0])
-            if Y.ndim == 1:
-                Y = Y[:, None]
-            data_vars["Y"] = (["observations", "response_vars"], Y)
-            if "response_vars" in attrs:
-                if len(attrs["response_vars"]) != Y.shape[1]:
-                    raise ValueError("The number of response names must match the number of response variables")
-                coords["response_vars"] = attrs["response_vars"]
-            else:
-                coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
-        if batch_effects is not None:
-            lengths.append(batch_effects.shape[0])
-            if batch_effects.ndim == 1:
-                batch_effects = batch_effects[:, None]
-            data_vars["batch_effects"] = (["observations", "batch_effect_dims"], batch_effects)
-            if "batch_effect_dims" in attrs:
-                if len(attrs["batch_effect_dims"]) != batch_effects.shape[1]:
-                    raise ValueError("The number of batch effect names must match the number of batch effects")
-                coords["batch_effect_dims"] = attrs["batch_effect_dims"]
-            else:
-                coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
-        else:
-            data_vars["batch_effects"] = (["observations", "batch_effect_dims"], np.zeros((lengths[0], 1)))
-            coords["batch_effect_dims"] = ["dummy_batch_effect"]
-        assert len(set(lengths)) == 1, "All arrays must have the same number of observations"
-        return cls(name, data_vars, coords, attrs)
+            df_data["subjects"] = subject_ids
+        
+        return cls.from_dataframe(
+            name=name,
+            dataframe=pd.DataFrame(df_data),
+            covariates=attrs.get("covariates", [f"covariate_{i}" for i in range(X.shape[1])] if X is not None else None),
+            batch_effects=attrs.get("batch_effect_dims", [f"batch_effect_{i}" for i in range(batch_effects.shape[1])] if batch_effects is not None else None),
+            response_vars=attrs.get("response_vars", [f"response_var_{i}" for i in range(Y.shape[1])] if Y is not None else None),
+            subject_ids="subjects" if subject_ids is not None else None,
+            attrs=attrs,
+            remove_outliers=remove_outliers,
+            z_threshold=z_threshold,
+            remove_Nan=remove_Nan,
+        )
 
     @classmethod
     def from_paths(cls, name: str, covariates_path: str, responses_path: str, batch_effects_path: str, **kwargs) -> "NormData":  # type: ignore
