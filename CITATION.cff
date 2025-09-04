@@ -2,7 +2,7 @@ cff-version: "1.2.0"
 message: "If you use this software, please cite it using the metadata below."
 title: "PCNtoolkit"
 version: "1.0.1"
-date-released: "2025-06-24"
+date-released: "2025-09-04"
 doi: "10.5281/zenodo.5207839"
 authors:
   - family-names: "Marquand"
@@ -90,5 +90,3 @@ url: "https://github.com/andmarquand/PCNtoolkit"
 abstract: >
   PCNtoolkit is a lightweight Python package designed to support
   normative modeling workflows in neuroscience.
-
-
