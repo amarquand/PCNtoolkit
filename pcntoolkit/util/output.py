@@ -120,7 +120,7 @@ class Warnings:
     CENTILES_ALREADY_COMPUTED_FOR_CENTILES = "Centiles are already computed for {dataset_name} for centiles {centiles}, skipping computation. Force recompute by passing recompute=True to compute_centiles"
     THRIVELINES_ALREADY_COMPUTED_FOR = "Thrivelines are already computed for {dataset_name} for offsets {offsets}, skipping computation. Force recompute by passing recompute=True to compute_thrivelines"  
     REMOVE_NAN_SET_TO_FALSE = "Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training."
-    REMOVE_NAN_SET_TO_FALSE = "remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately."
+    REMOVE_NAN_SET_TO_FALSE = "Dataframe contains NaNs, but remove_Nan is set to False. Pass remove_Nan=True to NormData.from_dataframe to remove them."
     SUBJECT_ID_MULTIPLE_COLUMNS = "Subject ID file contains multiple columns. Using the first column for subject IDs."
     SUBJECT_ID_UNEXPECTED_SHAPE = "Subject ID data has an unexpected shape. Expected 1D array or 2D array with one column. Using flattened data or first column."
     MULTIPLE_BATCH_EFFECT_SUMMARY = "Multiple batch effect dimensions found. The summary printout currently uses the first dimension for 'unique_batch_effects' display."

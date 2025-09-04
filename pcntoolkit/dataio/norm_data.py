@@ -32,6 +32,7 @@ from typing import (
 
 # pylint: enable=deprecated-class
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd  # type: ignore
 import xarray as xr
 from nibabel.loadsave import load
@@ -43,6 +44,7 @@ from xarray.core.types import DataVars
 from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
 
+from scipy import stats 
 
 class NormData(xr.Dataset):
     """A class for handling normative modeling data, extending xarray.Dataset.
@@ -184,19 +186,34 @@ class NormData(xr.Dataset):
             if X.ndim == 1:
                 X = X[:, None]
             data_vars["X"] = (["observations", "covariates"], X)
-            coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
+            if "covariates" in attrs:
+                if len(attrs["covariates"]) != X.shape[1]:
+                    raise ValueError("The number of covariate names must match the number of covariates")
+                coords["covariates"] = attrs["covariates"]
+            else:
+                coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
         if Y is not None:
             lengths.append(Y.shape[0])
             if Y.ndim == 1:
                 Y = Y[:, None]
             data_vars["Y"] = (["observations", "response_vars"], Y)
-            coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
+            if "response_vars" in attrs:
+                if len(attrs["response_vars"]) != Y.shape[1]:
+                    raise ValueError("The number of response names must match the number of response variables")
+                coords["response_vars"] = attrs["response_vars"]
+            else:
+                coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
         if batch_effects is not None:
             lengths.append(batch_effects.shape[0])
             if batch_effects.ndim == 1:
                 batch_effects = batch_effects[:, None]
             data_vars["batch_effects"] = (["observations", "batch_effect_dims"], batch_effects)
-            coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+            if "batch_effect_dims" in attrs:
+                if len(attrs["batch_effect_dims"]) != batch_effects.shape[1]:
+                    raise ValueError("The number of batch effect names must match the number of batch effects")
+                coords["batch_effect_dims"] = attrs["batch_effect_dims"]
+            else:
+                coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
         else:
             data_vars["batch_effects"] = (["observations", "batch_effect_dims"], np.zeros((lengths[0], 1)))
             coords["batch_effect_dims"] = ["dummy_batch_effect"]
@@ -286,6 +303,8 @@ class NormData(xr.Dataset):
         response_vars: List[str | LiteralString] | None = None,
         subject_ids: str | None = None,
         remove_Nan: bool = False,
+        remove_outliers: bool = False,
+        z_threshold: float = 3.0,
         attrs: Mapping[str, Any] | None = None,
     ) -> NormData:
         """
@@ -316,17 +335,24 @@ class NormData(xr.Dataset):
             An instance of NormData.
         """
 
+        all_colums = []
+        if covariates:
+            all_colums += covariates
+        if response_vars:
+            all_colums += response_vars
+            continuous_vars = all_colums.copy()
+        if batch_effects:
+            all_colums += batch_effects
+        if subject_ids:
+            all_colums += [subject_ids]
+        dataframe = dataframe[all_colums]
         if remove_Nan:
-            cols_to_check = []
-            if covariates:
-                cols_to_check += covariates
-            if response_vars:
-                cols_to_check += response_vars
-            if batch_effects:
-                cols_to_check += batch_effects
-            dataframe = dataframe.dropna(subset=cols_to_check)
+            dataframe = cls.remove_nan(dataframe)
         else:
-            Output.warning(Warnings.REMOVE_NAN_SET_TO_FALSE)
+            if np.sum(dataframe.isna().sum()) > 0:
+                Output.warning(Warnings.REMOVE_NAN_SET_TO_FALSE)
+        if remove_outliers:
+            dataframe = cls.remove_outliers(dataframe, continuous_vars, z_threshold=z_threshold)
 
         data_vars = {}
         coords = {}
@@ -366,6 +392,32 @@ class NormData(xr.Dataset):
             coords,
             attrs,
         )
+
+    @classmethod
+    def remove_nan(
+        cls, dataframe: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Remove NaN values from the dataframe.
+        """
+        cleaned = dataframe.dropna(axis=0)
+        Output.print(f"Removed {len(dataframe) - len(cleaned)} NANs")
+        return cleaned
+
+    @classmethod
+    def remove_outliers(cls, dataframe: pd.DataFrame, continuous_vars: List[str], z_threshold: float = 3.0) -> pd.DataFrame:
+        """
+        Remove outliers from the dataframe.
+        """
+        if z_threshold == 0.0:
+            return dataframe
+        idx = np.full(len(dataframe), True)
+        for covar in continuous_vars:
+            zscores = stats.zscore(dataframe[covar])
+            idx = idx & (np.abs(zscores) < z_threshold)
+        Output.print(f"Removed {np.sum(~idx)} outliers")
+        return dataframe.loc[idx]
+
 
     def merge(self, other: NormData) -> NormData:
         """
@@ -631,7 +683,7 @@ class NormData(xr.Dataset):
         my_be: xr.DataArray = self.batch_effects
         # create a dictionary with for each column in the batch effects, a dict from value to int
         self.attrs["unique_batch_effects"] = {}
-        self.attrs["batch_effect_counts"] = defaultdict(lambda : 0)
+        self.attrs["batch_effect_counts"] = defaultdict(lambda: 0)
         self.attrs["covariate_ranges"] = {}
         self.attrs["batch_effect_covariate_ranges"] = {}
         for dim in self.batch_effect_dims.to_numpy():
@@ -696,10 +748,9 @@ class NormData(xr.Dataset):
         if len(missing_covariates) > 0 or len(extra_covariates) > 0 or len(extra_response_vars) > 0:
             return False
         return self.unique_batch_effects == other.unique_batch_effects
-    
+
     def make_compatible(self: NormData, other: NormData):
-        """Ensures datasets are compatible by merging the batch effects maps
-        """
+        """Ensures datasets are compatible by merging the batch effects maps"""
         myu = self.unique_batch_effects
         otu = other.unique_batch_effects
         all_unique_batch_effects = {dim: list(set(val).union(set(otu[dim]))) for dim, val in myu.items()}
@@ -737,7 +788,7 @@ class NormData(xr.Dataset):
         self.covariate_ranges = copy.deepcopy(ncr)
         other.covariate_ranges = copy.deepcopy(ncr)
         self.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
-        other.covariate_ranges = copy.deepcopy(nbecr)
+        other.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
 
     def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """
