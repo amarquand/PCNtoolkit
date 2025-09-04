@@ -93,9 +93,15 @@ def plot_centiles(
     covariate_range = (cov_min, cov_max)
 
     if batch_effects == "all":
-        batch_effects = model.unique_batch_effects
+        if scatter_data:
+            batch_effects = scatter_data.unique_batch_effects
+        else:
+            batch_effects = model.unique_batch_effects
     elif batch_effects is None:
-        batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
+        if scatter_data:
+            batch_effects = {k: [v[0]] for k, v in scatter_data.unique_batch_effects.items()}
+        else:
+            batch_effects = {k: [v[0]] for k, v in model.unique_batch_effects.items()}
 
     if plt_kwargs is None:
         plt_kwargs = {}
