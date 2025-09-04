@@ -9,7 +9,7 @@ import glob
 import importlib.metadata
 import json
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import scipy.stats as stats
@@ -681,6 +681,32 @@ class NormativeModel:
         new_model = self.extend(extend_data, save_dir, n_synth_samples)
         new_model.predict(predict_data)
         return new_model
+
+    @classmethod
+    def merge(cls, save_dir:str ,models: list[Union[NormativeModel, str]]) -> NormativeModel:
+        """
+        Merges multiple models into a single model.
+        """
+        assert len(models) > 1, "At least two models are required to merge"
+        if isinstance(models[0], NormativeModel):
+            merged_model = copy.deepcopy(models[0])
+        else:
+            merged_model = cls.load(models[0])
+        if save_dir is not None:
+            merged_model.save_dir = save_dir
+        else:
+            merged_model.save_dir = merged_model.save_dir + "_merged"
+        acc = merged_model.synthesize()
+        for model in models[1:]:
+            if isinstance(model, NormativeModel):
+                acc = acc.merge(model.synthesize())
+            else:
+                this_model = cls.load(model)
+                acc = acc.merge(this_model.synthesize())
+                del this_model
+        merged_model.fit(acc)
+        return merged_model
+
 
     def preprocess(self, data: NormData) -> None:
         """
