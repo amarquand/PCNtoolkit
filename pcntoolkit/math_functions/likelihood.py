@@ -623,36 +623,43 @@ class BetaLikelihood(Likelihood):
 
 
 def get_default_normal_likelihood() -> NormalLikelihood:
-    "Return a normal likelihood with a random intercept of the mean, and heteroskedasticity"
-    return NormalLikelihood(
-        mu=make_prior(
-            "mu",
-            linear=True,
-            slope=make_prior(dist_name="Normal", dist_params=(0, 10.0)),
-            intercept=make_prior(
-                random=True,
-                mu=make_prior(
-                    "mu_intercept_mu",
-                    dist_name="Normal",
-                    dist_params=(0, 1.0),
-                ),
-                sigma=make_prior(
-                    "sigma_intercept_mu",
-                    dist_name="Normal",
-                    dist_params=(1.0, 1.0),
-                    mapping="softplus",
-                    mapping_params=(0.0, 3.0),
-                ),
-            ),
-            basis_function=BsplineBasisFunction(0, 3, 5),
+    mu = make_prior(
+        # Mu is linear because we want to allow the mean to vary as a function of the covariates.
+        linear=True,
+        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 10.
+        slope=make_prior(dist_name="Normal", dist_params=(0.0, 10.0)),
+        # The intercept is random, because we expect the intercept to vary between sites and sexes.
+        intercept=make_prior(
+            random=True,
+            # Mu is the mean of the intercept, which is normally distributed with a mean of 0 and a standard deviation of 1.
+            mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
+            # Sigma is the scale at which the intercepts vary. It is a positive parameter, so we have to map it to the positive domain.
+            sigma=make_prior(dist_name="Normal", dist_params=(0.0, 1.0), mapping="softplus", mapping_params=(0.0, 3.0)),
         ),
-        sigma=make_prior(
-            "sigma",
-            linear=True,
-            slope=make_prior(dist_name="Normal", dist_params=(0, 2.0)),
-            intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
-            basis_function=BsplineBasisFunction(0, 3, 5),
-            mapping="softplus",
-            mapping_params=(0.0, 3.0),
-        ),
+        # We use a B-spline basis function to allow for non-linearity in the mean.
+        basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),
     )
+    sigma = make_prior(
+        # Sigma is also linear, because we want to allow the standard deviation to vary as a function of the covariates: heteroskedasticity.
+        linear=True,
+        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 2.
+        slope=make_prior(dist_name="Normal", dist_params=(0.0, 2.0)),
+        # The intercept is not random, because we assume the intercept of the variance to be the same for all sites and sexes.
+        intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
+        # We use a B-spline basis function to allow for non-linearity in the standard deviation.
+        basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),
+        # We use a softplus mapping to ensure that sigma is strictly positive.
+        mapping="softplus",
+        # We scale the softplus mapping by a factor of 3, to avoid spikes in the resulting density.
+        # The parameters (a, b, c) provided to a mapping f are used as: f_abc(x) = f((x - a) / b) * b + c
+        # This basically provides an affine transformation of the softplus function.
+        # a -> horizontal shift
+        # b -> scaling
+        # c -> vertical shift
+        # You can leave c out, and it will default to 0.
+        mapping_params=(0.0, 3.0),
+    )
+
+    # Set the likelihood with the priors we just created.
+    likelihood = NormalLikelihood(mu, sigma)
+    return likelihood
