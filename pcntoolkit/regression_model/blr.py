@@ -365,26 +365,36 @@ class BLR(RegressionModel):
             raise ValueError(Output.error(Errors.BLR_MODEL_NOT_FITTED))
 
         np_X = X.values
-        np_be = be.values
+        if self.transfered:
+            # Create synthetic batch effect data
+            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+        else:
+            np_be = be.values
         np_Y = Y.values
-        # Get predictions (mean and variance)
-        ys, s2 = self.ys_s2(np_X, np_be)
+        self.ys_s2(np_X, np_be)
+
+        if self.transfered:
+            for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
+                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+                self.ys[mask] = self.ys[mask] + residual_mean
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
+                
+        ys = self.ys
+        s2 = self.s2
 
         if self.warp:
-            # For warped models, transform the observations
-            y_warped = self.warp.f(np_Y, self.gamma)
-            y = y_warped
+            warped_y = self.warp.f(np_Y, self.gamma)
+            y = warped_y
         else:
             y = np_Y
-
-        # Compute log probabilities using Gaussian PDF
-        # log p(y|x) = -0.5 * (log(2π) + log(σ²) + (y-μ)²/σ²)
+    
         logp = -0.5 * (np.log(2 * np.pi) + np.log(s2) + ((y - ys) ** 2) / s2)
         if self.warp:
             # Add log determinant of Jacobian for warped models
-            logp += np.log(self.warp.df(y, self.gamma))
+            logp += np.log(self.warp.df(np_Y, self.gamma))
 
         return xr.DataArray(logp, dims=("observations",))
+
 
     def model_specific_evaluation(self, path: str) -> None:
         """
