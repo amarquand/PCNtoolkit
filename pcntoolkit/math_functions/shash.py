@@ -51,14 +51,12 @@ from pytensor.tensor.random.op import RandomVariable  # type: ignore
 
 # Basic shash operations
 def S(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Sinh arcsinh transformation.
-    """
+    """Sinh arcsinh transformation."""
     return np.sinh(np.arcsinh(x) * d - e)
 
 
 def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Inverse sinh arcsinh transformation.
-    """
+    """Inverse sinh arcsinh transformation."""
     return np.sinh((np.arcsinh(x) + e) / d)
 
 
@@ -68,15 +66,14 @@ def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]
 #     ps, idxs = np.unique(p, return_inverse=True)
 #     return spp.kv(ps, x)[idxs].reshape(p.shape)
 
+
 def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
-    """Bessel function of the second kind for unique values.
-    """
+    """Bessel function of the second kind for unique values."""
     return spp.kv(p, x)
 
 
 def P(q: NDArray[np.float64]) -> NDArray[np.float64]:
-    """The P function as given in Jones et al.
-    """
+    """The P function as given in Jones et al."""
     frac = np.exp(1 / 4) / np.sqrt(8 * np.pi)
     K1 = K((q + 1) / 2, 1 / 4)
     K2 = K((q - 1) / 2, 1 / 4)
@@ -85,8 +82,7 @@ def P(q: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArray[np.float64]:
-    """The r'th uncentered moment as given in Jones et al.
-    """
+    """The r'th uncentered moment as given in Jones et al."""
     frac1 = 1 / np.power(2, r)
     acc = 0
     for i in range(r + 1):
@@ -99,8 +95,6 @@ def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArr
 
 
 class Kv(BinaryScalarOp):
-   
-
     nfunc_spec = ("scipy.special.kv", 2, 1)
 
     @staticmethod
@@ -115,7 +109,6 @@ class Kv(BinaryScalarOp):
         inputs: Sequence[Variable[Any, Any]],
         output_gradients: Sequence[Variable[Any, Any]],
     ) -> List[Variable]:
-   
         dp = 1e-16
         (p, x) = inputs
         (gz,) = output_gradients
@@ -124,9 +117,8 @@ class Kv(BinaryScalarOp):
         return [gz * dfdp, grad_not_implemented(self, 1, "x")]  # type: ignore
 
 
-
 # Create operation instances
-kv = Kv(upgrade_to_float, name="kv") #type:ignore
+kv = Kv(upgrade_to_float, name="kv")  # type:ignore
 
 ##### Constants #####
 
@@ -137,9 +129,8 @@ CONST2 = -np.log(2 * np.pi) / 2
 
 ##### SHASH Distributions #####
 
+
 class SHASHrv(RandomVariable):
-
-
     name = "shash"
     signature = "(),()->()"
     dtype = "floatX"
@@ -153,7 +144,6 @@ class SHASHrv(RandomVariable):
         delta: float,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-      
         return np.sinh((np.arcsinh(rng.normal(loc=0, scale=1, size=size)) + epsilon) / delta)
 
 
@@ -161,14 +151,12 @@ shash = SHASHrv()
 
 
 class SHASH(Continuous):
-
     rv_op = shash
     my_K = Elemwise(kv)
 
     @staticmethod
     @lru_cache(maxsize=128)
     def P(q: float) -> float:
-
         K1 = SHASH.my_K((q + 1) / 2, 0.25)
         K2 = SHASH.my_K((q - 1) / 2, 0.25)
         a: Variable[Any, Any] = (K1 + K2) * CONST1  # type: ignore
@@ -176,17 +164,14 @@ class SHASH(Continuous):
 
     @staticmethod
     def m1(epsilon: float, delta: float) -> float:
-
         return np.sinh(epsilon / delta) * SHASH.P(1 / delta)
 
     @staticmethod
     def m2(epsilon: float, delta: float) -> float:
-
         return (np.cosh(2 * epsilon / delta) * SHASH.P(2 / delta) - 1) / 2
 
     @staticmethod
     def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
-
         inv_delta = 1.0 / delta
         two_inv_delta = 2.0 * inv_delta
         p1 = SHASH.P(inv_delta)
@@ -201,13 +186,11 @@ class SHASH(Continuous):
 
     @classmethod
     def dist(cls, epsilon: pt.TensorLike, delta: pt.TensorLike, **kwargs: Any) -> Any:
-
         epsilon = as_tensor_variable(floatX(epsilon))
         delta = as_tensor_variable(floatX(delta))
         return super().dist([epsilon, delta], **kwargs)
 
     def logp(value: ArrayLike, epsilon: float, delta: float) -> float:  # type: ignore
-
         this_S = S(value, epsilon, delta)
         this_S_sqr = np.square(this_S)
         this_C_sqr = 1 + this_S_sqr
@@ -217,7 +200,6 @@ class SHASH(Continuous):
 
 
 class SHASHoRV(RandomVariable):
-
     name = "shasho"
     signature = "(),(),(),()->()"
     dtype = "floatX"
@@ -233,7 +215,6 @@ class SHASHoRV(RandomVariable):
         delta: pt.TensorLike,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-
         s = rng.normal(size=size)
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma + mu  # type: ignore
 
@@ -242,7 +223,6 @@ shasho = SHASHoRV()
 
 
 class SHASHo(Continuous):
-
     rv_op = shasho
 
     @classmethod
@@ -254,7 +234,6 @@ class SHASHo(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -268,7 +247,6 @@ class SHASHo(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-
         remapped_value = (value - mu) / sigma  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
         this_S_sqr = np.square(this_S)
@@ -279,7 +257,6 @@ class SHASHo(Continuous):
 
 
 class SHASHo2RV(RandomVariable):
-
     name = "shasho2"
     signature = "(),(),(),()->()"
     dtype = "floatX"
@@ -295,7 +272,6 @@ class SHASHo2RV(RandomVariable):
         delta: pt.TensorLike,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-
         s = rng.normal(size=size)
         sigma_d = sigma / delta  # type: ignore
         return np.sinh((np.arcsinh(s) + epsilon) / delta) * sigma_d + mu  # type: ignore
@@ -305,7 +281,6 @@ shasho2 = SHASHo2RV()
 
 
 class SHASHo2(Continuous):
-
     rv_op = shasho2
 
     @classmethod
@@ -317,7 +292,6 @@ class SHASHo2(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -331,7 +305,6 @@ class SHASHo2(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-
         sigma_d = sigma / delta
         remapped_value = (value - mu) / sigma_d  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
@@ -343,7 +316,6 @@ class SHASHo2(Continuous):
 
 
 class SHASHbRV(RandomVariable):
-
     name = "shashb"
     signature = "(),(),(),()->()"
     dtype = "floatX"
@@ -359,7 +331,6 @@ class SHASHbRV(RandomVariable):
         delta: float,
         size: Optional[Union[int, Tuple[int, ...]]] = None,
     ) -> NDArray[np.float64]:
-
         s = rng.normal(size=size)
 
         def P(q: float) -> float:
@@ -369,7 +340,6 @@ class SHASHbRV(RandomVariable):
             return a
 
         def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
-
             inv_delta = 1.0 / delta
             two_inv_delta = 2.0 * inv_delta
             p1 = P(inv_delta)
@@ -391,7 +361,6 @@ shashb = SHASHbRV()
 
 
 class SHASHb(Continuous):
-
     rv_op = shashb
 
     @classmethod
@@ -403,7 +372,6 @@ class SHASHb(Continuous):
         delta: pt.TensorLike,
         **kwargs: Any,
     ) -> Any:
-
         mu = as_tensor_variable(floatX(mu))
         sigma = as_tensor_variable(floatX(sigma))
         epsilon = as_tensor_variable(floatX(epsilon))
@@ -417,7 +385,6 @@ class SHASHb(Continuous):
         epsilon: float,
         delta: float,  # type: ignore
     ) -> float:
-
         mean, var = SHASH.m1m2(epsilon, delta)
         remapped_value = ((value - mu) / sigma) * np.sqrt(var) + mean  # type: ignore
         this_S = S(remapped_value, epsilon, delta)
@@ -426,4 +393,3 @@ class SHASHb(Continuous):
         frac2 = np.log(delta) + np.log(this_C_sqr) / 2 - np.log(1 + np.square(remapped_value)) / 2
         exp = -this_S_sqr / 2
         return CONST2 + frac2 + exp + np.log(var) / 2 - np.log(sigma)
-

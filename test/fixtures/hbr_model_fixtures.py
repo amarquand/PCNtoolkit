@@ -1,4 +1,3 @@
-
 import pytest
 
 from pcntoolkit.dataio.norm_data import NormData
@@ -30,7 +29,7 @@ N_SAMPLES = 15
 N_TUNES = 5
 N_PYMC_CORES = 4
 N_CHAINS = 2
-CVFOLDS = 4 
+CVFOLDS = 4
 ALG = "hbr"
 SAVEMODEL = True
 
@@ -63,6 +62,7 @@ def sigma():
         mapping="softplus",
         mapping_params=(0.0, 3.0),
     )
+
 
 @pytest.fixture(scope="module")
 def hbr_model(mu, sigma):
@@ -103,8 +103,6 @@ def train_and_save_hbr_model(
 
 @pytest.fixture(scope="module")
 def fitted_norm_hbr_model(train_and_save_hbr_model):
-
     loaded_model = NormativeModel.load(train_and_save_hbr_model.save_dir)
     # loaded_model = NormativeModel.load(save_dir_hbr)
     return loaded_model
-    

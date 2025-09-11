@@ -132,15 +132,13 @@ def test_hbr_to_and_from_dict_and_args(sample_args, args):
     assert hbr.is_from_dict
 
 
-
-
 @pytest.fixture(scope="module")
 def extract_data(fitted_norm_hbr_model: NormativeModel, norm_data_from_arrays: NormData):
-    fitted_norm_hbr_model.saveplots = False 
+    fitted_norm_hbr_model.saveplots = False
     fitted_norm_hbr_model.saveresults = True
     fitted_norm_hbr_model.savemodel = False
     fitted_norm_hbr_model.evaluate_model = True
-    fitted_norm_hbr_model.save_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr","results")
+    fitted_norm_hbr_model.save_dir = os.path.join(gettempdir(), "pcntoolkit_tests", "save_load_test", "hbr", "results")
     if os.path.exists(fitted_norm_hbr_model.save_dir):
         shutil.rmtree(fitted_norm_hbr_model.save_dir)
     os.makedirs(fitted_norm_hbr_model.save_dir, exist_ok=True)
@@ -297,7 +295,6 @@ def test_two_priors_from_args(extract_data):
     assert sigma.dist_name == "LogNormal"
     assert sigma.dist_params == (2.0,)
     assert tuple(samples.shape.eval()) == ()
-
 
 
 def test_prior_from_args_random_with_covariate_dim(extract_data):
@@ -487,6 +484,7 @@ def test_prior_from_args_linear_with_random_intercept_and_slope(extract_data):
     assert mu.slope.sigma.dist_params == (1.0,)
 
     assert samples.shape.eval()[0] == len(extract_data[0].coords["observations"])
+
 
 def test_to_dict(extract_data):
     prior_dict = {

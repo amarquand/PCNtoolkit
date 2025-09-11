@@ -24,63 +24,68 @@ def test_parseWarpString():
     assert isinstance(warp.warps[1], WarpAffine)
     assert isinstance(warp.warps[2], WarpSinhArcsinh)
     assert isinstance(warp.warps[3], WarpBoxCox)
-    
+
 
 def test_warplog():
     warp = WarpLog()
-    x = np.array([1,2,3])
-    param=None
+    x = np.array([1, 2, 3])
+    param = None
     assert isinstance(warp, WarpLog)
     assert warp.get_n_params() == 0
     y = np.log(x)
     assert np.allclose(warp.f(x, param), y)
     assert np.allclose(warp.invf(y, param), x)
-    assert np.allclose(warp.df(x, param), 1/x)
+    assert np.allclose(warp.df(x, param), 1 / x)
 
-@pytest.mark.parametrize("a,b",[(0,1),(1,2),(2,3)])
-def test_warpaffine(a,b):
+
+@pytest.mark.parametrize("a,b", [(0, 1), (1, 2), (2, 3)])
+def test_warpaffine(a, b):
     warp = WarpAffine()
-    x = np.array([1,2,3])
-    param = np.array([a,b])
+    x = np.array([1, 2, 3])
+    param = np.array([a, b])
     assert isinstance(warp, WarpAffine)
     assert warp.get_n_params() == 2
-    y = a + np.exp(b)*x
+    y = a + np.exp(b) * x
     assert np.allclose(warp.f(x, param), y)
     assert np.allclose(warp.invf(y, param), x)
     assert np.allclose(warp.df(x, param), np.exp(b))
 
-@pytest.mark.parametrize("lmb",[0,1,2])
+
+@pytest.mark.parametrize("lmb", [0, 1, 2])
 def test_warpboxcox(lmb):
     warp = WarpBoxCox()
-    x = np.array([1,2,3])
+    x = np.array([1, 2, 3])
     param = np.array([lmb])
     assert isinstance(warp, WarpBoxCox)
     assert warp.get_n_params() == 1
-    def bct(x,lmb):
+
+    def bct(x, lmb):
         if lmb == 0:
             return np.log(x)
         else:
-            return (np.sign(x)*np.abs(x)**lmb- 1)/lmb
-    y = bct(x,np.exp(lmb))
+            return (np.sign(x) * np.abs(x) ** lmb - 1) / lmb
+
+    y = bct(x, np.exp(lmb))
     assert np.allclose(warp.f(x, param), y)
     assert np.allclose(warp.invf(y, param), x)
-    assert np.allclose(warp.df(x, param), np.sign(x)*np.abs(x)**(np.exp(lmb)-1))
+    assert np.allclose(warp.df(x, param), np.sign(x) * np.abs(x) ** (np.exp(lmb) - 1))
 
-@pytest.mark.parametrize("epsilon,delta",[(0,1),(1,2),(2,3)])
-def test_warpsinharcsinh(epsilon,delta):
 
+@pytest.mark.parametrize("epsilon,delta", [(0, 1), (1, 2), (2, 3)])
+def test_warpsinharcsinh(epsilon, delta):
     b = np.exp(delta)
     a = -epsilon * b
 
     warp = WarpSinhArcsinh()
-    x = np.array([1,2,3])
-    param = np.array([epsilon,delta])
+    x = np.array([1, 2, 3])
+    param = np.array([epsilon, delta])
     assert isinstance(warp, WarpSinhArcsinh)
     assert warp.get_n_params() == 2
-    y = np.sinh(b*np.arcsinh(x)-a)
+    y = np.sinh(b * np.arcsinh(x) - a)
     assert np.allclose(warp.f(x, param), y)
     assert np.allclose(warp.invf(y, param), x)
-    assert np.allclose(warp.df(x, param), b*np.cosh(b*np.arcsinh(x)-a)/np.sqrt(x**2 + 1))
+    assert np.allclose(warp.df(x, param), b * np.cosh(b * np.arcsinh(x) - a) / np.sqrt(x**2 + 1))
+
 
 def test_warpcompose():
     warp = WarpCompose([WarpLog(), WarpAffine(), WarpSinhArcsinh(), WarpBoxCox()])

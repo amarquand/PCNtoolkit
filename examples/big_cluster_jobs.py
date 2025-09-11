@@ -1,4 +1,3 @@
-
 import logging
 import os
 import sys
@@ -32,7 +31,8 @@ pcntoolkit.util.output.Output.set_show_messages(True)
 this_file_path = os.path.dirname(os.path.abspath(__file__))
 resource_dir = os.path.join(this_file_path, "resources")
 
-def load_fcon1000(n_response_vars=None,n_largest_sites=None):
+
+def load_fcon1000(n_response_vars=None, n_largest_sites=None):
     os.makedirs(os.path.join(resource_dir, "data"), exist_ok=True)
     if not os.path.exists(os.path.join(resource_dir, "data/fcon1000.csv")):
         pd.read_csv(
@@ -40,7 +40,7 @@ def load_fcon1000(n_response_vars=None,n_largest_sites=None):
         ).to_csv(os.path.join(resource_dir, "data/fcon1000.csv"), index=False)
 
     data = pd.read_csv(os.path.join(resource_dir, "data/fcon1000.csv"))
-    subject_ids = ['sub_id']
+    subject_ids = ["sub_id"]
     covariates = ["age"]
     batch_effects = ["sex", "site"]
     response_vars = data.columns[3:220]
@@ -49,7 +49,7 @@ def load_fcon1000(n_response_vars=None,n_largest_sites=None):
         response_vars = response_vars[:n_response_vars]
 
     if n_largest_sites is not None:
-        data = data[data['site'].isin(data['site'].value_counts().head(n_largest_sites).index)]
+        data = data[data["site"].isin(data["site"].value_counts().head(n_largest_sites).index)]
 
     norm_data = NormData.from_dataframe(
         name="fcon1000",
@@ -57,38 +57,47 @@ def load_fcon1000(n_response_vars=None,n_largest_sites=None):
         covariates=covariates,
         batch_effects=batch_effects,
         response_vars=response_vars,
-        subject_ids=subject_ids
+        subject_ids=subject_ids,
     )
     return norm_data
 
+
 def load_lifespan_big(n_response_vars=None, n_largest_sites=None, n_subjects=None):
-    subject_ids = ['participant_id']
-    covariates = ['age']
-    batch_effects = ['sex', 'site']
-    dtypes = {'participant_id': str, "group": str, "group2": str}
+    subject_ids = ["participant_id"]
+    covariates = ["age"]
+    batch_effects = ["sex", "site"]
+    dtypes = {"participant_id": str, "group": str, "group2": str}
     for col in batch_effects:
         dtypes[col] = str
     for col in covariates:
         dtypes[col] = float
-    data= pd.read_csv("/project_cephfs/3022017.06/projects/stijdboe/Data/sairut_data/lifespan_big.csv", dtype=dtypes)
+    data = pd.read_csv("/project_cephfs/3022017.06/projects/stijdboe/Data/sairut_data/lifespan_big.csv", dtype=dtypes)
 
-    data = data.dropna(axis=0, how='all', inplace=False)
-    data = data.dropna(axis=1, how='any', inplace=False)
+    data = data.dropna(axis=0, how="all", inplace=False)
+    data = data.dropna(axis=1, how="any", inplace=False)
 
     data["sex"] = data["sex"].map({"0.0": "Female", "1.0": "Male", "2.0": "Female"})
-    data["site"] = data['site_ID']
-    
+    data["site"] = data["site_ID"]
+
     # Take only the n largest sites
     if n_largest_sites is not None:
-        data = data[data['site_ID'].isin(data['site_ID'].value_counts().head(n_largest_sites).index)]
+        data = data[data["site_ID"].isin(data["site_ID"].value_counts().head(n_largest_sites).index)]
 
     # Take only n subjects
     if n_subjects is not None:
         data = data.sample(n=n_subjects, replace=False)
 
     def is_response_var(str):
-        return str not in subject_ids and str not in covariates and str not in batch_effects and not str.startswith('site_') and not str.startswith('group') and not str.startswith('race') and data[str].var() > 0
-    
+        return (
+            str not in subject_ids
+            and str not in covariates
+            and str not in batch_effects
+            and not str.startswith("site_")
+            and not str.startswith("group")
+            and not str.startswith("race")
+            and data[str].var() > 0
+        )
+
     response_vars = [col for col in data.columns if is_response_var(col)]
 
     if n_response_vars is not None:
@@ -100,18 +109,19 @@ def load_lifespan_big(n_response_vars=None, n_largest_sites=None, n_subjects=Non
         covariates=covariates,
         batch_effects=batch_effects,
         response_vars=response_vars,
-        subject_ids=subject_ids
+        subject_ids=subject_ids,
     )
     return norm_data
+
 
 def main():
     data = "lifespan_big"
     # data = "fcon1000"
-    if data == "lifespan_big": 
+    if data == "lifespan_big":
         normdata = load_lifespan_big(n_response_vars=4)
     else:
         normdata = load_fcon1000()
-    train, test = normdata.train_test_split(splits = [0.8, 0.2])
+    train, test = normdata.train_test_split(splits=[0.8, 0.2])
     # Inspect the data
     df = train.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
@@ -137,7 +147,6 @@ def main():
     plt.savefig(os.path.join(resource_dir, f"test_plot_{data}.png"))
     plt.close()
 
-     
     mu = make_prior(
         # Mu is linear because we want to allow the mean to vary as a function of the covariates.
         linear=True,
@@ -211,17 +220,11 @@ def main():
         # The implementation of NUTS to use for sampling.
         nuts_sampler="nutpie",
         # The likelihood function to use for the model.
-        likelihood=SHASHbLikelihood(
-            mu,
-            sigma,
-            epsilon,
-            delta
-        ),
+        likelihood=SHASHbLikelihood(mu, sigma, epsilon, delta),
     )
 
-
     model = NormativeModel(
-        name = "SHASHb2",
+        name="SHASHb2",
         template_regression_model=template_hbr,
         # Whether to save the model after fitting.
         savemodel=True,

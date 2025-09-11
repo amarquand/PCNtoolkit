@@ -80,7 +80,7 @@ class HBR(RegressionModel):
         self.progressbar = progressbar
         self.idata: az.InferenceData = None  # type: ignore
         self.pymc_model: pm.Model = None  # type: ignore
-        self.be_maps: dict = None # type:ignore
+        self.be_maps: dict = None  # type:ignore
 
     def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
         """
@@ -160,7 +160,7 @@ class HBR(RegressionModel):
         kwargs = kwargs = {"Z": np.squeeze(Z.values)[:, None]}
         return self.generic_MCMC_apply(X, be, Y, fn, kwargs)
 
-    def generic_MCMC_apply(self, X, be,  Y, fn, kwargs):
+    def generic_MCMC_apply(self, X, be, Y, fn, kwargs):
         """
         Apply a generic function to likelihood parameters
         """

@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import copy
@@ -286,7 +285,7 @@ class Prior(BasePrior):
 class RandomPrior(BasePrior):
     def __init__(
         self,
-        mu: Optional[BasePrior] = None ,
+        mu: Optional[BasePrior] = None,
         sigma: Optional[BasePrior] = None,
         name: str = "theta",
         dims: Optional[Union[Tuple[str, ...], str]] = None,
@@ -295,8 +294,10 @@ class RandomPrior(BasePrior):
         **kwargs,
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
-        self.mu = mu or make_prior(dist_name = "Normal", dist_params = (0, 2.))
-        self.sigma = sigma or make_prior(dist_name = "Normal", dist_params = (1.0, 1.0),mapping="softplus", mapping_params = (0.,3.))
+        self.mu = mu or make_prior(dist_name="Normal", dist_params=(0, 2.0))
+        self.sigma = sigma or make_prior(
+            dist_name="Normal", dist_params=(1.0, 1.0), mapping="softplus", mapping_params=(0.0, 3.0)
+        )
         self.sigmas = {}
         self.offsets = {}
         self.scaled_offsets = {}
@@ -413,9 +414,9 @@ class LinearPrior(BasePrior):
         **kwargs,
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
-        self.slope = slope or make_prior(dist_name = "Normal", dist_params= (0, 5.))
+        self.slope = slope or make_prior(dist_name="Normal", dist_params=(0, 5.0))
         self.slope.dims = ("covariates",) if not self.dims else ("covariates", *self.dims)
-        self.intercept = intercept or  make_prior(dist_name="Normal", dist_params = (0, 2.))
+        self.intercept = intercept or make_prior(dist_name="Normal", dist_params=(0, 2.0))
         self.intercept.dims = self.dims
         self.sample_dims = ("observations",)
         self.set_name(self.name)
@@ -505,4 +506,3 @@ class LinearPrior(BasePrior):
         self.name = name
         self.slope.set_name(f"slope_{self.name}")
         self.intercept.set_name(f"intercept_{self.name}")
-

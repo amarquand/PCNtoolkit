@@ -47,10 +47,10 @@ def parseWarpString(warp_string: str) -> WarpBase:
     warp_string : str
         String of a warp name or a composition of warps
     """
-    warp_string = warp_string.replace(" ","")
+    warp_string = warp_string.replace(" ", "")
     if warp_string.startswith("WarpCompose("):
         # parse the string after WarpCompose( into a list of warps
-        warp_string = warp_string[len("WarpCompose("):-1]
+        warp_string = warp_string[len("WarpCompose(") : -1]
         warps = warp_string.split(",")
         warps = [parseWarpString(warp) for warp in warps]
         return WarpCompose(warps)
@@ -58,7 +58,6 @@ def parseWarpString(warp_string: str) -> WarpBase:
         return eval(warp_string)()
     else:
         raise ValueError(Output.error(Errors.ERROR_WARP_STRING_INVALID, warp_string=warp_string))
-    
 
 
 class WarpBase(ABC):
@@ -599,14 +598,14 @@ class WarpCompose(WarpBase):
         """Apply composed warping functions.
 
         Parameters
-        ----------  
+        ----------
         x : NDArray[np.float64]
             Input values
         param : NDArray[np.float64]
             Combined parameters for all warps
 
         Returns
-        ------- 
+        -------
         NDArray[np.float64]
             Warped values after applying all transforms
         """
@@ -628,13 +627,13 @@ class WarpCompose(WarpBase):
         y : NDArray[np.float64]
             Input values
         param : NDArray[np.float64]
-            Combined parameters for all warps   
+            Combined parameters for all warps
 
         Returns
         -------
         NDArray[np.float64]
             Inverse warped values after applying all inverse transforms
-        """ 
+        """
         theta = param
         theta_offset = 0
         finvw = y
@@ -674,5 +673,4 @@ class WarpCompose(WarpBase):
 
             df *= warp.df(dfw, theta_c)
             dfw = warp.f(dfw, theta_c)
-        return df      
-
+        return df

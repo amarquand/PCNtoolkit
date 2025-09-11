@@ -102,7 +102,7 @@ def test_arrays(n_test_subjects, n_covariates, n_response_vars, batch_effect_val
     return X_test, y_test, batch_effects_test
 
 
-@pytest.fixture(scope="module")     
+@pytest.fixture(scope="module")
 def transfer_arrays(n_transfer_subjects, n_covariates, n_response_vars, batch_effect_values):
     X_transfer, y_transfer, batch_effects_transfer = np_arrays(
         n_transfer_subjects, n_covariates, n_response_vars, batch_effect_values
@@ -112,7 +112,7 @@ def transfer_arrays(n_transfer_subjects, n_covariates, n_response_vars, batch_ef
     return X_transfer, y_transfer, batch_effects_transfer
 
 
-@pytest.fixture(scope="module") 
+@pytest.fixture(scope="module")
 def train_dataframe(n_train_subjects, n_covariates, n_response_vars, batch_effect_values):
     dataframe_train = dataframe(n_train_subjects, n_covariates, n_response_vars, batch_effect_values)
     return dataframe_train

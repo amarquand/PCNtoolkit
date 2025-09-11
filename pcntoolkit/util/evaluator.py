@@ -42,19 +42,7 @@ class Evaluator:
         """
         # data["Yhat"] = data.centiles.sel(centile=0.5, method="nearest")
         assert "Yhat" in data.data_vars, "Yhat must be computed before evaluation"
-        all_statistics = [
-            "Rho",
-            "Rho_p",
-            "R2",
-            "RMSE",
-            "SMSE",
-            "MSLL",
-            "NLL",
-            "ShapiroW",
-            "MACE",
-            "MAPE",
-            "EXPV"
-        ]
+        all_statistics = ["Rho", "Rho_p", "R2", "RMSE", "SMSE", "MSLL", "NLL", "ShapiroW", "MACE", "MAPE", "EXPV"]
         if statistics:
             self.statistics = [m for m in all_statistics if m in statistics]
 
@@ -255,7 +243,7 @@ class Evaluator:
         for responsevar in data.response_var_list:
             resp_predict_data = data.sel({"response_vars": responsevar})
             mace = self._evaluate_mace(resp_predict_data)
-            data.statistics.loc[{"response_vars": responsevar, "statistic": "MACE"}] = mace 
+            data.statistics.loc[{"response_vars": responsevar, "statistic": "MACE"}] = mace
 
     def evaluate_mape(self, data: NormData) -> None:
         """
@@ -283,7 +271,7 @@ class Evaluator:
         y = data["Y"].values
         yhat = data["Yhat"].values
         rho, p_rho = stats.spearmanr(y, yhat)
-        return float(rho), float(p_rho) #type:ignore
+        return float(rho), float(p_rho)  # type:ignore
 
     def _evaluate_R2(self, data: NormData) -> float:
         """
@@ -433,7 +421,7 @@ class Evaluator:
         y = data["Z"].values
         shapiro_w, _ = stats.shapiro(y)
         return float(shapiro_w)  # Explicitly cast to float
-    
+
     def _evaluate_mace(self, data: NormData) -> float:
         """
         Calculate Mean Absolute Centile Error.
@@ -444,9 +432,8 @@ class Evaluator:
         empirical_centiles = (centile_data >= y).mean(axis=1)
         mace = np.abs(centile_list - empirical_centiles).mean()
         return float(mace)
-    
 
-    def _evaluate_mape(self, data:NormData) -> float:
+    def _evaluate_mape(self, data: NormData) -> float:
         """
         Calculate Mean Absolute Percentage Error.
         """

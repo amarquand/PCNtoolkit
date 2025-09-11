@@ -51,8 +51,8 @@ def test_approximate_halfnormal(sigma):
     assert np.allclose(approximation, (sigma,), atol=0.01)
 
 
-@pytest.mark.parametrize("s, sigma", [(1,  1), (1, 2), (1,  0.5)])
-def test_approximate_lognormal(s,  sigma):
+@pytest.mark.parametrize("s, sigma", [(1, 1), (1, 2), (1, 0.5)])
+def test_approximate_lognormal(s, sigma):
     samples = stats.lognorm.rvs(s=s, loc=0, scale=sigma, size=1000000)
     dens = stats.gaussian_kde(samples)
     approximation = factorize_lognormal(samples, 1)
@@ -78,7 +78,7 @@ def test_approximate_lognormal(s,  sigma):
 #     samples2 = pm.draw(pm.Cauchy.dist(0, beta), draws=100000)
 #     dens = stats.gaussian_kde(samples)
 #     dens2 = stats.gaussian_kde(samples2)
-#     approximation = factorize_cauchy(samples, 1)    
+#     approximation = factorize_cauchy(samples, 1)
 #     tight_approximation = factorize_cauchy(samples, 0.5)
 #     loose_approximation = factorize_cauchy(samples, 2)
 #     dist = pm.Cauchy.dist(*approximation)
@@ -104,10 +104,9 @@ def test_approximate_lognormal(s,  sigma):
 
 @pytest.mark.parametrize("shape, scale", [(1, 1), (2, 2), (1, 0.5)])
 def test_approximate_gamma(shape, scale):
-
     samples = stats.gamma.rvs(a=shape, scale=scale, size=100000)
     dens = stats.gaussian_kde(samples)
-    approximation = factorize_gamma(samples,1)
+    approximation = factorize_gamma(samples, 1)
     loose_approximation = factorize_gamma(samples, 2)
     tight_approximation = factorize_gamma(samples, 0.1)
     dist = pm.Gamma.dist(*approximation)
@@ -121,14 +120,14 @@ def test_approximate_gamma(shape, scale):
     plt.legend()
     plt.savefig(os.path.join("test", "output", f"gamma_samples_{shape}_{scale}.png"))
     plt.close()
-    assert np.allclose(approximation, (shape, 1/scale), atol=0.05)
+    assert np.allclose(approximation, (shape, 1 / scale), atol=0.05)
 
 
 @pytest.mark.parametrize("lower, upper", [(0, 1), (1, 2), (-1, 0.5)])
 def test_approximate_uniform(lower, upper):
     samples = stats.uniform.rvs(lower, upper, size=1000000)
     dens = stats.gaussian_kde(samples)
-    approximation = factorize_uniform(samples,1)
+    approximation = factorize_uniform(samples, 1)
     loose_approximation = factorize_uniform(samples, 2)
     tight_approximation = factorize_uniform(samples, 0.5)
     dist = pm.Uniform.dist(*approximation)
@@ -144,11 +143,12 @@ def test_approximate_uniform(lower, upper):
     plt.close()
     assert np.allclose(approximation, (lower, upper), atol=0.01)
 
-@pytest.mark.parametrize("lmb", [( 1), ( 2), (0.5)])
+
+@pytest.mark.parametrize("lmb", [(1), (2), (0.5)])
 def test_approximate_exponential(lmb):
-    samples = stats.expon.rvs(scale=1/lmb, size=1000000)
+    samples = stats.expon.rvs(scale=1 / lmb, size=1000000)
     dens = stats.gaussian_kde(samples)
-    approximation = factorize_exponential(samples,1)
+    approximation = factorize_exponential(samples, 1)
     loose_approximation = factorize_exponential(samples, 2)
     tight_approximation = factorize_exponential(samples, 0.5)
     dist = pm.Exponential.dist(*approximation)

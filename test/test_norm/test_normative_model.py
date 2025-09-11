@@ -117,27 +117,24 @@ def assert_minmax_scaled(data):
     assert np.allclose(data.Y.data.max(axis=0), 1)
 
 
-
-
 def test_test_model_to_and_from_dict_and_args(test_model_args: dict, norm_data_from_arrays: NormData, save_dir_test_model):
     model = NormativeModel.from_args(**test_model_args)
     model_dict = model.to_dict()
-    assert model_dict['template_regression_model']['success_ratio'] == test_model_args["success_ratio"]
+    assert model_dict["template_regression_model"]["success_ratio"] == test_model_args["success_ratio"]
     model.fit(norm_data_from_arrays)
     assert model.is_fitted
     model_dict = model.to_dict()
-    assert model_dict['template_regression_model']['success_ratio'] == test_model_args["success_ratio"]
+    assert model_dict["template_regression_model"]["success_ratio"] == test_model_args["success_ratio"]
     model.predict(norm_data_from_arrays)
-    assert hasattr(norm_data_from_arrays, 'Z')
-    Z_bak = copy.deepcopy(norm_data_from_arrays['Z'])
-    del norm_data_from_arrays['Z']
-    assert not hasattr(norm_data_from_arrays, 'Z')
+    assert hasattr(norm_data_from_arrays, "Z")
+    Z_bak = copy.deepcopy(norm_data_from_arrays["Z"])
+    del norm_data_from_arrays["Z"]
+    assert not hasattr(norm_data_from_arrays, "Z")
     model.save(save_dir_test_model)
     loaded_model = NormativeModel.load(save_dir_test_model)
     assert loaded_model.is_fitted
     loaded_model.predict(norm_data_from_arrays)
-    assert np.allclose(norm_data_from_arrays['Z'], Z_bak)
-    
+    assert np.allclose(norm_data_from_arrays["Z"], Z_bak)
 
 
 @pytest.fixture
@@ -170,7 +167,7 @@ def hbr_model_args(save_dir_hbr):
 def test_hbr_model_to_and_from_dict_and_args(hbr_model_args: dict, norm_data_from_arrays: NormData, save_dir_hbr):
     model = NormativeModel.from_args(**hbr_model_args)
     model_dict = model.to_dict()
-    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","name"]:
+    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots", "inscaler", "outscaler", "name"]:
         assert model_dict[k] == hbr_model_args[k]
     tmplt = model.template_regression_model
     assert isinstance(tmplt, HBR)
@@ -184,7 +181,7 @@ def test_hbr_model_to_and_from_dict_and_args(hbr_model_args: dict, norm_data_fro
     model.fit(norm_data_from_arrays)
     assert model.is_fitted
 
-    model1= model[model.response_vars[0]]
+    model1 = model[model.response_vars[0]]
     assert isinstance(model1, HBR)
     assert isinstance(model1.likelihood, NormalLikelihood)
     assert isinstance(model1.likelihood.mu, LinearPrior)
@@ -195,15 +192,15 @@ def test_hbr_model_to_and_from_dict_and_args(hbr_model_args: dict, norm_data_fro
     assert model1.likelihood.sigma.sigma.dist_params == (2.5, 1.3)
 
     model.predict(norm_data_from_arrays)
-    assert hasattr(norm_data_from_arrays, 'Z')
-    Z_bak = copy.deepcopy(norm_data_from_arrays['Z'])
-    del norm_data_from_arrays['Z']
-    assert not hasattr(norm_data_from_arrays, 'Z')
+    assert hasattr(norm_data_from_arrays, "Z")
+    Z_bak = copy.deepcopy(norm_data_from_arrays["Z"])
+    del norm_data_from_arrays["Z"]
+    assert not hasattr(norm_data_from_arrays, "Z")
     model.save(save_dir_hbr)
     del model
     loaded_model = NormativeModel.load(save_dir_hbr)
     loaded_model.predict(norm_data_from_arrays)
-    assert np.allclose(norm_data_from_arrays['Z'], Z_bak)
+    assert np.allclose(norm_data_from_arrays["Z"], Z_bak)
     assert loaded_model.is_fitted
     model1 = loaded_model[loaded_model.response_vars[0]]
     assert isinstance(model1, HBR)
@@ -237,14 +234,14 @@ def blr_model_args(save_dir_blr):
         "l_bfgs_b_norm": "l2",
         "fixed_effect": True,
         "heteroskedastic": False,
-        "fixed_effect_var":False
+        "fixed_effect_var": False,
     }
 
 
 def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_from_arrays: NormData, save_dir_blr):
     model = NormativeModel.from_args(**blr_model_args)
     model_dict = model.to_dict()
-    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots","inscaler","outscaler","name"]:
+    for k in ["savemodel", "saveresults", "evaluate_model", "saveplots", "inscaler", "outscaler", "name"]:
         assert model_dict[k] == blr_model_args[k]
     tmplt = model.template_regression_model
     assert isinstance(tmplt, BLR)
@@ -263,7 +260,7 @@ def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_fro
     print("fitted")
     assert model.is_fitted
 
-    model1= model[model.response_vars[0]]
+    model1 = model[model.response_vars[0]]
     assert isinstance(model1, BLR)
     assert model1.n_iter == 10
     assert model1.tol == 1e-3
@@ -275,22 +272,22 @@ def test_blr_model_to_and_from_dict_and_args(blr_model_args: dict, norm_data_fro
     assert model1.fixed_effect
     assert not model1.fixed_effect_var
     model.predict(norm_data_from_arrays)
-    assert hasattr(norm_data_from_arrays, 'Z')
-    Z_bak = copy.deepcopy(norm_data_from_arrays['Z'])
-    del norm_data_from_arrays['Z']
-    assert not hasattr(norm_data_from_arrays, 'Z')
+    assert hasattr(norm_data_from_arrays, "Z")
+    Z_bak = copy.deepcopy(norm_data_from_arrays["Z"])
+    del norm_data_from_arrays["Z"]
+    assert not hasattr(norm_data_from_arrays, "Z")
     model.save(save_dir_blr)
     del model
     loaded_model = NormativeModel.load(save_dir_blr)
     model1 = loaded_model[loaded_model.response_vars[0]]
     loaded_model.predict(norm_data_from_arrays)
-    assert np.allclose(norm_data_from_arrays['Z'], Z_bak)
+    assert np.allclose(norm_data_from_arrays["Z"], Z_bak)
 
     assert loaded_model.is_fitted
     assert isinstance(model1, BLR)
     assert model1.n_iter == 10
     assert model1.tol == 1e-3
-    assert not model1.ard   
+    assert not model1.ard
     assert model1.optimizer == "l-bfgs-b"
     assert model1.l_bfgs_b_l == 0.7
     assert model1.l_bfgs_b_epsilon == 0.1

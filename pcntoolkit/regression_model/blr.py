@@ -27,6 +27,8 @@ from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.output import Errors, Messages, Output, Warnings
 from itertools import product
 from functools import reduce
+
+
 class BLR(RegressionModel):
     """
     Bayesian Linear Regression model implementation.
@@ -175,7 +177,7 @@ class BLR(RegressionModel):
         np_X = X.values
         np_be = be.values
         np_Y = Y.values
-        # We need to store the be_maps to use them when we transfer. At transfer time, we need to be aware of the batch effects in the train data. 
+        # We need to store the be_maps to use them when we transfer. At transfer time, we need to be aware of the batch effects in the train data.
         self.be_maps = copy.deepcopy(be_maps)
         Phi, Phi_var = self.Phi_Phi_var(np_X, np_be)
         self.D = Phi.shape[1]
@@ -238,13 +240,21 @@ class BLR(RegressionModel):
         # Each dictionary contains a unique combination of batch effects:
         # [{"sex":"F", "site":"A"}, {"sex":"F", "site":"B"}, {"sex":"M", "site":"A"}, {"sex":"M", "site":"B"}]
         unique_batch_effect_dict = list(
-            map(lambda f: reduce(lambda p, q: p | q, f), product(*[[{str(k): be_maps[k][str(v)]} for v in v1] for k, v1 in dict(sorted(be_maps.items(), key=lambda v: v[0])).items()]))
+            map(
+                lambda f: reduce(lambda p, q: p | q, f),
+                product(
+                    *[
+                        [{str(k): be_maps[k][str(v)]} for v in v1]
+                        for k, v1 in dict(sorted(be_maps.items(), key=lambda v: v[0])).items()
+                    ]
+                ),
+            )
         )
         for t in unique_batch_effect_dict:
             mask = np.full(be.values.shape, False)
             for i, be_dim in enumerate(be.batch_effect_dims):
                 mask[np.where(be.sel(batch_effect_dims=be_dim).values == t[str(be_dim.to_numpy().item())]), i] = True
-            mask = np.all(mask, axis = 1)
+            mask = np.all(mask, axis=1)
             yield t, mask
 
     def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
@@ -284,15 +294,13 @@ class BLR(RegressionModel):
                 residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
 
                 self.ys[mask] = self.ys[mask] + residual_mean
-                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
-
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
 
         if self.warp:
             warped_y = self.warp.f(np_Y, self.gamma)
             toreturn = (warped_y - self.ys) / np.sqrt(self.s2)
         else:
             toreturn = (np_Y - self.ys) / np.sqrt(self.s2)
-        
 
         return xr.DataArray(toreturn, dims=("observations",))
 
@@ -321,17 +329,15 @@ class BLR(RegressionModel):
             # Create synthetic batch effect data
             np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
         else:
-            np_be = be.values        
+            np_be = be.values
         np_Z = Z.values
         self.ys_s2(np_X, np_be)
         if self.transfered:
-
             for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
                 residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
 
                 self.ys[mask] = self.ys[mask] + residual_mean
-                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
-
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
 
         centiles = np_Z * np.sqrt(self.s2) + self.ys
         if self.warp:
@@ -339,9 +345,7 @@ class BLR(RegressionModel):
 
         return xr.DataArray(centiles, dims=("observations",))
 
-    def elemwise_logp(
-        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
-    ) -> xr.DataArray:
+    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """
 
         Compute log-probabilities for each observation in the data.
@@ -377,8 +381,8 @@ class BLR(RegressionModel):
             for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
                 residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
                 self.ys[mask] = self.ys[mask] + residual_mean
-                self.s2[mask] = np.square(np.sqrt(self.s2[mask])*correction_factor)
-                
+                self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
+
         ys = self.ys
         s2 = self.s2
 
@@ -387,7 +391,7 @@ class BLR(RegressionModel):
             y = warped_y
         else:
             y = np_Y
-    
+
         logp = -0.5 * (np.log(2 * np.pi) + np.log(s2) + ((y - ys) ** 2) / s2)
         if self.warp:
             # Add log determinant of Jacobian for warped models
@@ -395,18 +399,20 @@ class BLR(RegressionModel):
 
         return xr.DataArray(logp, dims=("observations",))
 
-
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
         """
         pass
 
-    def transfer(self: BLR, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs) -> BLR:
-
+    def transfer(
+        self: BLR, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs
+    ) -> BLR:
         # Create synthetic batch effect data
         synth_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
-        synth_be = xr.DataArray(synth_be, dims=("observations", "batch_effect_dims"), coords=(X.observations, list(self.be_maps.keys())))
+        synth_be = xr.DataArray(
+            synth_be, dims=("observations", "batch_effect_dims"), coords=(X.observations, list(self.be_maps.keys()))
+        )
 
         # Get predictive mean and variance
         synth_ys, synth_s2 = self.ys_s2(X.values, synth_be)
@@ -427,60 +433,56 @@ class BLR(RegressionModel):
             corrected_mean = synth_ys[mask] + residual_mean
 
             # Then we correct the variance
-            # The predicted average std is: 
+            # The predicted average std is:
             pred_avg_std = np.mean(np.sqrt(synth_s2[mask]))
             # The actual average std is:
             real_avg_std = np.mean(np.std(y[mask] - corrected_mean))
             # So the predicted average std has to be corrected with a factor of:
-            correction_factor = real_avg_std/pred_avg_std
+            correction_factor = real_avg_std / pred_avg_std
 
             # We have to save these correction coefficients:
             transfered_model.correction_coefficients[str(tuple(t.values()))] = (residual_mean, correction_factor)
-        
+
         transfered_model.transfered = True
         return transfered_model
 
+    def predict_and_adjust(self, hyp, X, y, Xs=None, ys=None, var_groups_test=None, var_groups_adapt=None, **kwargs):
+        """Function to transfer the model to a new site. This is done by
+        first making predictions on the adaptation data given by X,
+        adjusting by the residuals with respect to y.
 
-    def predict_and_adjust(self, hyp, X, y, Xs=None,
-                           ys=None,
-                           var_groups_test=None,
-                           var_groups_adapt=None, **kwargs):
-        """ Function to transfer the model to a new site. This is done by
-            first making predictions on the adaptation data given by X,
-            adjusting by the residuals with respect to y.
+        :param hyp: hyperparameter vector
+        :param X: covariates for adaptation (i.e. calibration) data
+        :param y: responses for adaptation data
+        :param Xs: covariate data (for which predictions should be adjusted)
+        :param ys: true response variables (to be adjusted)
+        :param var_groups_test: variance groups (e.g. sites) for test data
+        :param var_groups_adapt: variance groups for adaptation data
 
-            :param hyp: hyperparameter vector
-            :param X: covariates for adaptation (i.e. calibration) data
-            :param y: responses for adaptation data
-            :param Xs: covariate data (for which predictions should be adjusted)
-            :param ys: true response variables (to be adjusted)
-            :param var_groups_test: variance groups (e.g. sites) for test data
-            :param var_groups_adapt: variance groups for adaptation data
+        There are two possible ways of using this function, depending on
+        whether ys or Xs is specified
 
-            There are two possible ways of using this function, depending on
-            whether ys or Xs is specified
+        If ys is specified, this is applied directly to the data, which is
+        assumed to be in the input space (i.e. not warped). In this case
+        the adjusted true data points are returned in the same space
 
-            If ys is specified, this is applied directly to the data, which is
-            assumed to be in the input space (i.e. not warped). In this case 
-            the adjusted true data points are returned in the same space
+        Alternatively, Xs is specified, then the predictions are made and
+        adjusted. In this case the predictive variance are returned in the
+        warped (i.e. Gaussian) space.
 
-            Alternatively, Xs is specified, then the predictions are made and 
-            adjusted. In this case the predictive variance are returned in the 
-            warped (i.e. Gaussian) space.
-
-            This function needs to know which sites are associated with which 
-            data points, which provided by var_groups_xxx, which is a list or 
-            array of scalar ids .
+        This function needs to know which sites are associated with which
+        data points, which provided by var_groups_xxx, which is a list or
+        array of scalar ids .
         """
 
         if ys is None:
             if Xs is None:
-                raise ValueError('Either ys or Xs must be specified')
+                raise ValueError("Either ys or Xs must be specified")
             else:
                 N = Xs.shape[0]
         else:
             if len(ys.shape) < 1:
-                raise ValueError('ys is specified but has insufficent length')
+                raise ValueError("ys is specified but has insufficent length")
             N = ys.shape[0]
 
         if var_groups_test is None:
@@ -494,19 +496,17 @@ class BLR(RegressionModel):
             idx_a = var_groups_adapt == g
 
             if sum(idx_a) < 2:
-                raise ValueError(
-                    'Insufficient adaptation data to estimate variance')
+                raise ValueError("Insufficient adaptation data to estimate variance")
 
             # Get predictions from old model on new data X
             ys_ref, s2_ref = self.predict(hyp, None, None, X[idx_a, :])
 
             # Subtract the predictions from true data to get the residuals
             if self.warp is None:
-                residuals = ys_ref-y[idx_a]
+                residuals = ys_ref - y[idx_a]
             else:
                 # Calculate the residuals in warped space
-                y_ref_ws = self.warp.f(
-                    y[idx_a], hyp[1:self.warp.get_n_params()+1])
+                y_ref_ws = self.warp.f(y[idx_a], hyp[1 : self.warp.get_n_params() + 1])
                 residuals = ys_ref - y_ref_ws
 
             residuals_mu = np.mean(residuals)
@@ -515,26 +515,22 @@ class BLR(RegressionModel):
             # Adjust the mean with the mean of the residuals
             if ys is None:
                 # make and adjust predictions
-                ys_out[idx_s], s2_out[idx_s] = self.predict(
-                    hyp, None, None, Xs[idx_s, :])
+                ys_out[idx_s], s2_out[idx_s] = self.predict(hyp, None, None, Xs[idx_s, :])
                 ys_out[idx_s] = ys_out[idx_s] - residuals_mu
 
                 # Set the deviation to the devations of the residuals
-                s2_out[idx_s] = np.ones(len(s2_out[idx_s]))*residuals_sd**2
+                s2_out[idx_s] = np.ones(len(s2_out[idx_s])) * residuals_sd**2
             else:
                 # adjust the data
                 if self.warp is not None:
-                    y_ws = self.warp.f(
-                        ys[idx_s], hyp[1:self.warp.get_n_params()+1])
+                    y_ws = self.warp.f(ys[idx_s], hyp[1 : self.warp.get_n_params() + 1])
                     ys_out[idx_s] = y_ws + residuals_mu
-                    ys_out[idx_s] = self.warp.invf(
-                        ys_out[idx_s], hyp[1:self.warp.get_n_params()+1])
+                    ys_out[idx_s] = self.warp.invf(ys_out[idx_s], hyp[1 : self.warp.get_n_params() + 1])
                 else:
                     ys = ys - residuals_mu
                 s2_out = None
 
         return ys_out, s2_out
-
 
     def init_hyp(self) -> np.ndarray:  # type:ignore
         """
@@ -563,7 +559,7 @@ class BLR(RegressionModel):
             n_alpha = self.D
         else:
             n_alpha = 1
-            
+
         n_gamma = self.n_gamma
         self.n_hyp = n_beta + n_alpha + n_gamma  # type: ignore
         return np.ones(self.n_hyp)
@@ -1111,7 +1107,7 @@ def create_design_matrix(
         for j in fixed_effect_slope_indices:
             for i, v in enumerate(be_maps.values()):
                 acc.append(
-                    X[:,j][:,np.newaxis] * np.eye(len(v))[be[:, i]],
+                    X[:, j][:, np.newaxis] * np.eye(len(v))[be[:, i]],
                 )
 
     if len(acc) == 0:

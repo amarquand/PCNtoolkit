@@ -20,6 +20,7 @@ def linear_BLR():
     )
     return BLR_model
 
+
 def warped_BLR():
     # Warped BLR with a fixed effect in the intercept of the mean, and BSplineheteroskedasticity
     BLR_model = BLR(
@@ -38,7 +39,7 @@ def warped_BLR():
         l_bfgs_b_norm="l2",
     )
     return BLR_model
-    
+
 
 def Normal_HBR():
     # Normal likelihood with a random intercept of the mean, and heteroskedasticity

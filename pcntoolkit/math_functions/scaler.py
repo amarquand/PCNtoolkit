@@ -433,7 +433,7 @@ class RobustMinMaxScaler(MinMaxScaler):
 
     def to_dict(self) -> Dict[str, Union[bool, str, float, List[float]]]:
         if self.min is None or self.max is None:
-            raise ValueError(Output.error(Errors.ERROR_SCALER_NOT_FITTED, method="to_dict"))    
+            raise ValueError(Output.error(Errors.ERROR_SCALER_NOT_FITTED, method="to_dict"))
         return {
             "scaler_type": "robminmax",
             "adjust_outliers": self.adjust_outliers,

@@ -44,7 +44,8 @@ from xarray.core.types import DataVars
 from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
 
-from scipy import stats 
+from scipy import stats
+
 
 class NormData(xr.Dataset):
     """A class for handling normative modeling data, extending xarray.Dataset.
@@ -235,25 +236,32 @@ class NormData(xr.Dataset):
     ) -> NormData:
         """Create a NormData object from numpy arrays via DataFrame conversion."""
         attrs = attrs or {}
-        
+
         # Create DataFrame from arrays
         df_data = {}
-        for array, key, default_prefix in [(X, "covariates", "covariate"), (Y, "response_vars", "response_var"), (batch_effects, "batch_effect_dims", "batch_effect")]:
+        for array, key, default_prefix in [
+            (X, "covariates", "covariate"),
+            (Y, "response_vars", "response_var"),
+            (batch_effects, "batch_effect_dims", "batch_effect"),
+        ]:
             if array is not None:
                 if array.ndim == 1:
                     array = array[:, None]
                 names = attrs.get(key, [f"{default_prefix}_{i}" for i in range(array.shape[1])])
                 for i, dataname in enumerate(names):
                     df_data[dataname] = array[:, i]
-        
+
         if subject_ids is not None:
             df_data["subjects"] = subject_ids
-        
+
         return cls.from_dataframe(
             name=name,
             dataframe=pd.DataFrame(df_data),
             covariates=attrs.get("covariates", [f"covariate_{i}" for i in range(X.shape[1])] if X is not None else None),
-            batch_effects=attrs.get("batch_effect_dims", [f"batch_effect_{i}" for i in range(batch_effects.shape[1])] if batch_effects is not None else None),
+            batch_effects=attrs.get(
+                "batch_effect_dims",
+                [f"batch_effect_{i}" for i in range(batch_effects.shape[1])] if batch_effects is not None else None,
+            ),
             response_vars=attrs.get("response_vars", [f"response_var_{i}" for i in range(Y.shape[1])] if Y is not None else None),
             subject_ids="subjects" if subject_ids is not None else None,
             attrs=attrs,
@@ -436,9 +444,7 @@ class NormData(xr.Dataset):
         )
 
     @classmethod
-    def remove_nan(
-        cls, dataframe: pd.DataFrame
-    ) -> pd.DataFrame:
+    def remove_nan(cls, dataframe: pd.DataFrame) -> pd.DataFrame:
         """
         Remove NaN values from the dataframe.
         """
@@ -459,7 +465,6 @@ class NormData(xr.Dataset):
             idx = idx & (np.abs(zscores) < z_threshold)
         Output.print(f"Removed {np.sum(~idx)} outliers")
         return dataframe.loc[idx]
-
 
     def merge(self, other: NormData) -> NormData:
         """

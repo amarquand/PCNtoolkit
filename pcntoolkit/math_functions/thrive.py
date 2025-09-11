@@ -34,6 +34,7 @@ def design_matrix(bandwidth: int, Sigma: np.ndarray) -> pd.DataFrame:
     df = pd.concat(dfs, axis=0)
     return df
 
+
 def fill_missing(bandwidth: int, cors: np.ndarray) -> np.ndarray:
     """Fills in missing correlation values according to:
 
@@ -91,10 +92,12 @@ def offset_indices(max_age: int, bandwidth: int):
     for pair in zip(*np.where(acc)):
         yield pair
 
+
 def fisher_transform(cor):
     epsilon = 1e-13
-    cor = np.clip(cor, -1+epsilon, 1+epsilon)
+    cor = np.clip(cor, -1 + epsilon, 1 + epsilon)
     return 0.5 * np.log((1 + cor) / (1 - cor))
+
 
 def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age"):
     """Compute correlations of Z scores between pairs of observations of the same subject at different ages
@@ -107,12 +110,12 @@ def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age")
     Returns:
         xr.DataArray: Correlations of shape [n_response_vars, n_ages, n_ages]
     """
-    
+
     df = data.to_dataframe()[["X", "Z", "batch_effects", "subjects"]].droplevel(level=0, axis=1)
     # create dictionary of (age:indices)
     grps = df.groupby(covariate_name).indices | defaultdict(list)
     # get the max age in the dataset
-    max_age = int(max(list(grps.keys()))) #type:ignore
+    max_age = int(max(list(grps.keys())))  # type:ignore
     # the number of response variable for which to compute correlations
     n_responsevars = len(data.response_vars.to_numpy())
     # create empty correlation matrix
@@ -124,7 +127,7 @@ def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age")
             # Compute correlations if there are enough samples
             for i, rv in enumerate(data.response_vars.to_numpy()):
                 cors[i, age2, age1] = cors[i, age1, age2] = merged[f"{rv}_x"].corr(merged[f"{rv}_y"])
-        elif (age1 != age2):
+        elif age1 != age2:
             # Otherwise, set all response variables to NaN for these ages
             cors[:, age2, age1] = cors[:, age1, age2] = np.NaN
     # Fill in missing correlation values
@@ -139,6 +142,7 @@ def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age")
         },
     )
     return newcors
+
 
 def get_thrive_Z_X(cors: xr.DataArray, start_x: xr.DataArray, start_z: xr.DataArray, span: int, z_thrive=1.96):
     assert start_x.shape == start_z.shape

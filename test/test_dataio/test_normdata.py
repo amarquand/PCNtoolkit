@@ -142,10 +142,11 @@ def test_chunk(norm_data_from_arrays):
         assert chunk.response_vars == ["response_var_{}".format(i)]
 
 
-def test_merge(norm_data_from_arrays:NormData):
+def test_merge(norm_data_from_arrays: NormData):
     datacopy = copy.deepcopy(norm_data_from_arrays)
     merged = datacopy.merge(norm_data_from_arrays)
-    assert merged.X.to_numpy().shape[0] == 2*norm_data_from_arrays.X.to_numpy().shape[0]
+    assert merged.X.to_numpy().shape[0] == 2 * norm_data_from_arrays.X.to_numpy().shape[0]
+
 
 def test_to_dataframe():
     # create data with duplicate subject IDs

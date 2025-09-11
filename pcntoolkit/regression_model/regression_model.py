@@ -21,6 +21,7 @@ import xarray as xr
 from pcntoolkit.util.output import Messages, Output
 from scipy.stats.distributions import norm
 
+
 class RegressionModel(ABC):
     """
     This class defines the interface for all regression models in the toolkit,
@@ -53,7 +54,7 @@ class RegressionModel(ABC):
         self._name: str = name
         self.is_fitted: bool = is_fitted
         self.is_from_dict: bool = is_from_dict
-        self.transfered=False
+        self.transfered = False
 
     @property
     def name(self) -> str:
@@ -66,14 +67,14 @@ class RegressionModel(ABC):
             The unique identifier of the model
         """
         return self._name
-    
+
     @name.setter
     def name(self, name: str) -> None:
         """
         Set the model's name.
         """
         self._name = name
-    
+
     @abstractmethod
     def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
         """
@@ -94,7 +95,7 @@ class RegressionModel(ABC):
 
     @abstractmethod
     def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
-        """Compute Z-scores for provided Y values 
+        """Compute Z-scores for provided Y values
 
         Parameters
         ----------
@@ -111,7 +112,7 @@ class RegressionModel(ABC):
 
     @abstractmethod
     def backward(self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray) -> xr.DataArray:
-        """Compute points in feature space for given z-scores 
+        """Compute points in feature space for given z-scores
 
         Parameters
         ----------
@@ -127,12 +128,11 @@ class RegressionModel(ABC):
 
     @abstractmethod
     def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
-        """Compute the log-probability of the data under the model.
-        """
+        """Compute the log-probability of the data under the model."""
         pass
 
     @abstractmethod
-    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]],Y: xr.DataArray) -> RegressionModel:
+    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> RegressionModel:
         """Transfer the model to a new dataset.
 
         Parameters
@@ -154,7 +154,7 @@ class RegressionModel(ABC):
         Save model-specific evaluation metrics.
         """
         pass
-    
+
     @property
     def regmodel_dict(self) -> dict:
         my_dict: dict[str, str | dict | bool] = {}
@@ -166,7 +166,7 @@ class RegressionModel(ABC):
         my_dict["transfered"] = self.transfered
         my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
         return my_dict
-        
+
     def compute_yhat(self, data, responsevar, X, be):
         n_importance_samples = 200
         Z_space = np.linspace(-4, 4, n_importance_samples)
@@ -178,14 +178,14 @@ class RegressionModel(ABC):
             Y_space[:, i] = self.backward(X, be, Z).values
         Z_pdf = norm.pdf(Z_space)
         Y_space *= Z_pdf
-        return Y_space.sum(axis=1)/Z_pdf.sum()
-        
+        return Y_space.sum(axis=1) / Z_pdf.sum()
+
     @abstractmethod
     def to_dict(self, path: str | None = None) -> dict:
         """
         Convert model instance to dictionary representation.
 
-        Used for saving models to disk. 
+        Used for saving models to disk.
 
         Parameters
         ----------
@@ -205,8 +205,8 @@ class RegressionModel(ABC):
         """
         Create model instance from dictionary representation.
 
-        Used for loading models from disk. 
-        
+        Used for loading models from disk.
+
         Parameters
         ----------
         dct : dict
@@ -231,7 +231,7 @@ class RegressionModel(ABC):
         """
         Create model instance from arguments dictionary.
 
-        Used for instantiating models from the command line. 
+        Used for instantiating models from the command line.
 
         Parameters
         ----------
@@ -264,11 +264,12 @@ class RegressionModel(ABC):
         """
         pass
 
+
 # class TransferableRegressionModel(RegressionModel):
 #     """
 #     Abstract base class for transferable regression models.
 #     """
-    
+
 #     @abstractmethod
 #     def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> TransferableRegressionModel:
 #         """

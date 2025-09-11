@@ -179,12 +179,12 @@ class NormativeModel:
             plotdir = os.path.join(self.save_dir, "plots")
             plot_qq(data, plot_id_line=True, save_dir=plotdir)
             plot_centiles(
-                    self,
-                    save_dir=plotdir,
-                    show_other_data=True,
-                    harmonize_data=True,
-                    scatter_data=data,
-                )
+                self,
+                save_dir=plotdir,
+                show_other_data=True,
+                harmonize_data=True,
+                scatter_data=data,
+            )
         return data
 
     def synthesize(
@@ -249,7 +249,7 @@ class NormativeModel:
             resp_fit_data = data.sel({"response_vars": responsevar})
             resp_Z_data = data.Z.sel({"response_vars": responsevar})
             X, be, _, _, _ = self.extract_data(resp_fit_data)
-            Z_pred = self[responsevar].backward(X, be,  resp_Z_data)
+            Z_pred = self[responsevar].backward(X, be, resp_Z_data)
             data["Y"].loc[{"response_vars": responsevar}] = Z_pred
         self.postprocess(data)
         return data
@@ -350,7 +350,7 @@ class NormativeModel:
             Output.print(Messages.COMPUTING_ZSCORES_MODEL, model_name=responsevar)
             resp_predict_data = data.sel({"response_vars": responsevar})
             X, be, _, Y, _ = self.extract_data(resp_predict_data)
-            data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be,  Y)
+            data["Z"].loc[{"response_vars": responsevar}] = self[responsevar].forward(X, be, Y)
 
         self.postprocess(data)
         return data
@@ -407,7 +407,7 @@ class NormativeModel:
             X, be, _, _, _ = self.extract_data(resp_predict_data)
             for p, c in zip(ppf, centiles):
                 Z = xr.DataArray(np.full(resp_predict_data.X.shape[0], p), dims=("observations",))
-                data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be,  Z)
+                data["centiles"].loc[{"response_vars": responsevar, "centile": c}] = self[responsevar].backward(X, be, Z)
 
         self.postprocess(data)
         return data
@@ -446,7 +446,7 @@ class NormativeModel:
             resp_predict_data = data.sel({"response_vars": responsevar})
             X, be, _, Y, _ = self.extract_data(resp_predict_data)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
-            data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be,  Y)
+            data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, Y)
 
         self.postprocess(data)
         return data
@@ -457,16 +457,20 @@ class NormativeModel:
         """
         self.preprocess(data)
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
-        data["Yhat"] = xr.DataArray(np.zeros((data.X.shape[0], len(respvar_intersection))), dims=("observations", "response_vars"), coords={"observations": data.observations, "response_vars": list(respvar_intersection)})
+        data["Yhat"] = xr.DataArray(
+            np.zeros((data.X.shape[0], len(respvar_intersection))),
+            dims=("observations", "response_vars"),
+            coords={"observations": data.observations, "response_vars": list(respvar_intersection)},
+        )
         Output.print(Messages.COMPUTING_YHAT, n_models=len(respvar_intersection))
         for responsevar in respvar_intersection:
             resp_predict_data = data.sel({"response_vars": responsevar})
             X, be, _, _, _ = self.extract_data(resp_predict_data)
-            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(resp_predict_data, responsevar, X, be)    
+            data["Yhat"].loc[{"response_vars": responsevar}] = self[responsevar].compute_yhat(
+                resp_predict_data, responsevar, X, be
+            )
         self.postprocess(data)
         return data
-
-
 
     def compute_correlation_matrix(self, data, bandwidth=5, covariate="age"):
         self.thrive_covariate = covariate
@@ -572,8 +576,8 @@ class NormativeModel:
     def extract_data(
         self, data: NormData
     ) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
-        """Returns a 5-tuple of covariates, batch effects, batch effect maps, response vars, Z-scores. 
-        If the variable is not available, returns None instead of the variable. 
+        """Returns a 5-tuple of covariates, batch effects, batch effect maps, response vars, Z-scores.
+        If the variable is not available, returns None instead of the variable.
         """
         if hasattr(data, "X"):
             X = data.X
@@ -617,10 +621,10 @@ class NormativeModel:
         new_model.covariates = copy.deepcopy(self.covariates)
         new_model.inscalers = copy.deepcopy(self.inscalers)
         new_model.outscalers = copy.deepcopy(self.outscalers)
-        
+
         respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
         new_model.response_vars = respvar_intersection
-        
+
         new_model.preprocess(transfer_data)
         new_model.register_batch_effects(transfer_data)
 
@@ -684,7 +688,7 @@ class NormativeModel:
         return new_model
 
     @classmethod
-    def merge(cls, save_dir:str ,models: list[Union[NormativeModel, str]]) -> NormativeModel:
+    def merge(cls, save_dir: str, models: list[Union[NormativeModel, str]]) -> NormativeModel:
         """
         Merges multiple models into a single model.
         """
@@ -707,7 +711,6 @@ class NormativeModel:
                 del this_model
         merged_model.fit(acc)
         return merged_model
-
 
     def preprocess(self, data: NormData) -> None:
         """
@@ -796,12 +799,12 @@ class NormativeModel:
 
     # def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
     #     """Map batch effects to their integer indices using vectorized operations.
-        
+
     #     Parameters
     #     ----------
     #     batch_effects : xr.DataArray
     #         Input batch effects array with dimensions (observations, batch_effect_dims)
-            
+
     #     Returns
     #     -------
     #     xr.DataArray
@@ -813,11 +816,11 @@ class NormativeModel:
     #         dims=batch_effects.dims,
     #         coords=batch_effects.coords
     #     )
-        
+
     #     # Convert to numpy for faster operations
     #     be_values = batch_effects.values
     #     mapped_values = mapped_batch_effects.values
-        
+
     #     # For each batch effect dimension, apply mapping
     #     for i, be in enumerate(self.unique_batch_effects.keys()):
     #         # Get the mapping dictionary for this batch effect
@@ -826,7 +829,7 @@ class NormativeModel:
     #         vfunc = np.vectorize(lambda x: be_map[x])
     #         # Apply mapping to the entire column at once
     #         mapped_values[:, i] = vfunc(be_values[:, i])
-            
+
     #     return mapped_batch_effects
 
     def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
@@ -982,7 +985,7 @@ class NormativeModel:
             "is_fitted": self.is_fitted,
             "inscaler": self.inscaler,
             "outscaler": self.outscaler,
-            "ptk_version": importlib.metadata.version("pcntoolkit")
+            "ptk_version": importlib.metadata.version("pcntoolkit"),
         }
 
         if hasattr(self, "covariates"):

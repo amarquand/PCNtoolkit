@@ -27,5 +27,5 @@ __all__ = [
     "plot_qq",
     "plot_ridge",
     "load_fcon1000",
-    "Runner"
+    "Runner",
 ]

@@ -50,5 +50,5 @@ def test_bspline_fit_and_transform(norm_data_from_arrays, nknots, degree):
     assert basis_function.basis_name == "bspline"
     assert Phi.shape == (
         norm_data_from_arrays.X.data.shape[0],
-        len(norm_data_from_arrays.X.coords["covariates"]) * (nknots + degree ),
+        len(norm_data_from_arrays.X.coords["covariates"]) * (nknots + degree),
     )

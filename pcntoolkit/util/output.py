@@ -4,8 +4,6 @@ from datetime import datetime
 
 
 class Messages:
-
-
     FITTING_MODELS = "Fitting models on {n_models} response variables."
     FITTING_MODEL = "Fitting model for {model_name}."
     PREDICTING_MODELS = "Making predictions on {n_models} response variables."
@@ -42,7 +40,6 @@ Task ID: {task_id}
 Job ID      Name          State      Time      Nodes
 ---------------------------------------------------------
 """
-
 
     NO_MORE_RUNNING_JOBS = """
 ---------------------------------------------------------
@@ -93,7 +90,10 @@ Total failed jobs: {total_failed_jobs}
     """
     COMPUTING_YHAT = "Computing yhat for {n_models} response variables."
     COMPUTING_YHAT_MODEL = "Computing yhat for {model_name}."
-    LOADING_DATA_UNDER_KFOLD_CV = "Automatically loading data under KFold CV is not implemented yet. Please load the data using NormData.load_results."
+    LOADING_DATA_UNDER_KFOLD_CV = (
+        "Automatically loading data under KFold CV is not implemented yet. Please load the data using NormData.load_results."
+    )
+
 
 class Warnings:
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
@@ -112,24 +112,35 @@ class Warnings:
     ERROR_SUBMITTING_JOB = "Error submitting job {job_id}: {stderr}"
     NO_RESPONSE_VARS = "No response variables provided for dataset {dataset_name}. Please provide a list of response variables for which you want to fit or predict."
     RESPONSE_VAR_NOT_FOUND = "Response variable {response_var} not found in dataset {dataset_name}. Setting to NaN."
-    MULTIPLE_JOBS_FOUND_FOR_JOB_ID = "Multiple jobs found for job ID {job_id}: {job_name}. Please check the job statuses and try again."
+    MULTIPLE_JOBS_FOUND_FOR_JOB_ID = (
+        "Multiple jobs found for job ID {job_id}: {job_name}. Please check the job statuses and try again."
+    )
     DATA_NOT_SCALED = "Data is not scaled, skipping scaling back to original scale."
     DATA_ALREADY_SCALED = "Data is already scaled, skipping scaling back to original scale."
     NO_COVARIATES = "No covariates provided for dataset {dataset_name}."
     SYNTHESIZE_N_SAMPLES_IGNORED = "n_samples is ignored because data is provided."
     CENTILES_ALREADY_COMPUTED_FOR_CENTILES = "Centiles are already computed for {dataset_name} for centiles {centiles}, skipping computation. Force recompute by passing recompute=True to compute_centiles"
-    THRIVELINES_ALREADY_COMPUTED_FOR = "Thrivelines are already computed for {dataset_name} for offsets {offsets}, skipping computation. Force recompute by passing recompute=True to compute_thrivelines"  
-    REMOVE_NAN_SET_TO_FALSE = "Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training."
-    REMOVE_NAN_SET_TO_FALSE = "Dataframe contains NaNs, but remove_Nan is set to False. Pass remove_Nan=True to NormData.from_dataframe to remove them."
+    THRIVELINES_ALREADY_COMPUTED_FOR = "Thrivelines are already computed for {dataset_name} for offsets {offsets}, skipping computation. Force recompute by passing recompute=True to compute_thrivelines"
+    REMOVE_NAN_SET_TO_FALSE = (
+        "Warning: remove_NAN is set to False. Missing (NaN) values may cause errors during model creation or training."
+    )
+    REMOVE_NAN_SET_TO_FALSE = (
+        "Dataframe contains NaNs, but remove_Nan is set to False. Pass remove_Nan=True to NormData.from_dataframe to remove them."
+    )
     SUBJECT_ID_MULTIPLE_COLUMNS = "Subject ID file contains multiple columns. Using the first column for subject IDs."
     SUBJECT_ID_UNEXPECTED_SHAPE = "Subject ID data has an unexpected shape. Expected 1D array or 2D array with one column. Using flattened data or first column."
     MULTIPLE_BATCH_EFFECT_SUMMARY = "Multiple batch effect dimensions found. The summary printout currently uses the first dimension for 'unique_batch_effects' display."
     LOAD_CIFTI_GENERIC_EXCEPTION = "A general exception occurred while loading CIFTI file: {}"
     LOAD_NIFTI_GENERIC_EXCEPTION = "A general exception occurred while loading NIFTI file: {}"
-    LOADING_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Automatic data loading by the Runner is not supported for cross-validation."
+    LOADING_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = (
+        "Automatic data loading by the Runner is not supported for cross-validation."
+    )
+
 
 class Errors:
-    ERROR_ENVIRONMENT_NOT_FOUND = "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
+    ERROR_ENVIRONMENT_NOT_FOUND = (
+        "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
+    )
     INVALID_ENVIRONMENT = "The python environment {environment} is invalid because it has no /bin/python file. Please specify a valid python environment."
     SAMPLE_BATCH_EFFECTS = (
         "Cannot sample {n_samples} batch effects, because some batch effects have more levels than the number of samples."
@@ -177,14 +188,18 @@ class Errors:
     ERROR_PREDICT_DATA_REQUIRED_FOR_FIT_PREDICT_WITHOUT_CROSS_VALIDATION = (
         "Predict data is required for fit_predict without cross-validation"
     )
-    ERROR_NO_ENVIRONMENT_SPECIFIED = "No python environment specified. Please specify the path to the python environment using the environment keyword."
+    ERROR_NO_ENVIRONMENT_SPECIFIED = (
+        "No python environment specified. Please specify the path to the python environment using the environment keyword."
+    )
     ERROR_ZSCORES_INVERSE = "Z-scores inverse has invalid shape: Z_shape={Z_shape}, X_shape={X_shape}"
     ERROR_CDF_SHAPE = "CDF shape {cdf_shape} does not match data shape {data_shape}"
     ERROR_Y_NOT_FOUND = "y not found in data"
     HBR_MODEL_NOT_FITTED = "HBR model is not fitted"
     ERROR_BLR_TRANSFER_NOT_IMPLEMENTED = "BLR transfer not implemented"
     ERROR_MULTIPLE_COVARIATE_DIMS = "Multiple covariate dimensions found: {covariate_dims}"
-    ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = "Predict with cross-validation is not supported. Please use fit_predict instead."
+    ERROR_PREDICT_DATA_NOT_SUPPORTED_FOR_CROSS_VALIDATION = (
+        "Predict with cross-validation is not supported. Please use fit_predict instead."
+    )
     ERROR_WARP_STRING_INVALID = "Invalid warp string: {warp_string}"
     ENSURE_POSITIVE_DISTRIBUTION = "Distribution for {name} needs to be positive."
     OFFSETS_NOT_1D = "Offsets must be a 1-d array or list"
@@ -192,8 +207,8 @@ class Errors:
     WB_COMMAND_FAILED = "wb_command failed with error: {error}"
     WB_COMMAND_NOT_FOUND = "wb_command not found in PATH"
 
-class Output:
 
+class Output:
     _show_messages = True  # Default to showing output
     _show_warnings = True
     _show_pid = True
@@ -246,7 +261,7 @@ class Output:
     @classmethod
     def get_show_timestamp(cls) -> bool:
         return cls._show_timestamp
-    
+
     @classmethod
     def set_show_messages(cls, value: bool) -> None:
         cls._show_messages = value

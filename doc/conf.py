@@ -78,6 +78,7 @@ autodoc_default_options = {
     "imported-members": True,
 }
 
+
 def run_notebook_conversion(app):
     pass
     # import pathlib
@@ -85,5 +86,6 @@ def run_notebook_conversion(app):
     # script_path = pathlib.Path(__file__).parent / 'convert_notebooks.py'
     # subprocess.run([sys.executable, str(script_path)], check=True)
 
+
 def setup(app):
-    app.connect('builder-inited', run_notebook_conversion)
+    app.connect("builder-inited", run_notebook_conversion)

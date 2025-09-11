@@ -1,1 +1,1 @@
-"""Core functionality test package.""" 
+"""Core functionality test package."""

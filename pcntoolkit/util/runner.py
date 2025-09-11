@@ -20,6 +20,7 @@ from typing import Tuple
 from numpy.typing import ArrayLike
 import copy
 
+
 class Runner:
     cross_validate: bool = False
     cv_folds: int = 5
@@ -436,7 +437,6 @@ class Runner:
         if self.cross_validate:
 
             def kfold_fit_chunk_fn(chunk: NormData):
-
                 for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
                     self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
                     train_data = copy.deepcopy(chunk.isel(observations=fit_idx))
@@ -457,6 +457,7 @@ class Runner:
     def get_fit_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         """Returns a callable that fits a model on a chunk of data and predicts on another chunk of data"""
         if self.cross_validate:
+
             def kfold_fit_predict_chunk_fn(all_data: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
@@ -519,6 +520,7 @@ class Runner:
 
     def get_transfer_predict_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
+
             def kfold_transfer_predict_chunk_fn(chunk: NormData, unused_predict_data: Optional[NormData] = None):
                 if unused_predict_data is not None:
                     Output.warning(Warnings.PREDICT_DATA_NOT_USED_IN_KFOLD_CROSS_VALIDATION)
@@ -546,6 +548,7 @@ class Runner:
 
     def get_extend_chunk_fn(self, model: NormativeModel, save_dir: str) -> Callable:
         if self.cross_validate:
+
             def kfold_extend_chunk_fn(chunk: NormData):
                 for i_fold, (fit_idx, predict_idx) in enumerate(chunk.kfold_split(self.cv_folds)):
                     self.register_fold_indices(model.save_dir, i_fold, (fit_idx, predict_idx))
@@ -603,7 +606,6 @@ class Runner:
         with open(os.path.join(save_dir, "folds", f"fold_{i_fold}/predict_observations.txt"), "w") as f:
             f.truncate(0)
             f.write(str(predict_idx))
-
 
     def save_callable_and_data(
         self,

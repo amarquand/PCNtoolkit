@@ -541,10 +541,10 @@ def create_incremental_backup(filepath):
     """
     directory, filename = os.path.split(filepath)
     name, ext = os.path.splitext(filename)
-    
+
     if not os.path.exists(filepath):
         # Create an empty file
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             pass
     else:
         print("File exists:")
@@ -552,14 +552,9 @@ def create_incremental_backup(filepath):
     # Pattern: name.bakN.ext
     regex = re.compile(rf"^{re.escape(name)}\.bak(\d+){re.escape(ext)}$")
 
-    existing = [
-        f for f in os.listdir(directory)
-        if regex.match(f)
-    ]
+    existing = [f for f in os.listdir(directory) if regex.match(f)]
 
-    numbers = [
-        int(regex.match(f).group(1)) for f in existing
-    ] if existing else []
+    numbers = [int(regex.match(f).group(1)) for f in existing] if existing else []
 
     next_n = max(numbers, default=0) + 1
     backup_name = f"{name}.bak{next_n}{ext}"

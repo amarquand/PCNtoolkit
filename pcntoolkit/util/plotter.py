@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from pcntoolkit.normative_model import NormativeModel
 import os
 import copy
+
 sns.set_theme(style="darkgrid")
 
 
@@ -137,15 +138,17 @@ def plot_centiles(
     if conditionals is not None:
         for c in conditionals:
             # Compute the endpoints of the conditional curve (0.01th and 0.99th centile)
-            centile = copy.deepcopy(centile_data).isel(observations=[0,1])
-            centile.X.loc[{"covariates":covariate}] = c
+            centile = copy.deepcopy(centile_data).isel(observations=[0, 1])
+            centile.X.loc[{"covariates": covariate}] = c
             model.compute_centiles(centile, centiles=[0.01, 0.99])
 
             # Compute the curve in between the endpoints
             conditional_d = copy.deepcopy(centile_data)
-            conditional_d.X.loc[{"covariates":covariate}] = c
+            conditional_d.X.loc[{"covariates": covariate}] = c
             for rv in model.response_vars:
-                conditional_d.Y.loc[{"response_vars":rv}] = np.linspace(*(centile.centiles.sel(observations=0, response_vars=rv).values.tolist()), 150)
+                conditional_d.Y.loc[{"response_vars": rv}] = np.linspace(
+                    *(centile.centiles.sel(observations=0, response_vars=rv).values.tolist()), 150
+                )
             if not hasattr(conditional_d, "logp"):
                 model.compute_logp(conditional_d)
             conditionals_data.append(conditional_d)
@@ -314,7 +317,7 @@ def _plot_centiles(
 
             if show_other_data:
                 non_be_df = df[~idx]
-                markers= ["Other data"] * len(non_be_df)
+                markers = ["Other data"] * len(non_be_df)
                 sns.scatterplot(
                     data=non_be_df,
                     x=covariate,
@@ -349,14 +352,30 @@ def _plot_centiles(
             plotname = f"centiles_{response_var}_{scatter_data.name}"
             title = f"{title}\n With raw {scatter_data.name} data"
 
-    
     if conditionals_data:
         for conditional_d in conditionals_data:
             filter_cond = conditional_d.sel(filter_dict)
-            plt.plot(np.exp(filter_cond.logp.values)*10+filter_cond.X, filter_cond.Y, color="blue", linestyle="--", linewidth=1, zorder=2, label="Conditional")
+            plt.plot(
+                np.exp(filter_cond.logp.values) * 10 + filter_cond.X,
+                filter_cond.Y,
+                color="blue",
+                linestyle="--",
+                linewidth=1,
+                zorder=2,
+                label="Conditional",
+            )
             # Put a text annotation on top of the plot, rotate the text 90 degrees
-            plt.text(filter_cond.X[-1], filter_cond.Y[-1], f"{filter_cond.X[-1].values.item():.2f}", color="black", fontsize=10, ha="right", va="bottom", rotation=-90)
-            
+            plt.text(
+                filter_cond.X[-1],
+                filter_cond.Y[-1],
+                f"{filter_cond.X[-1].values.item():.2f}",
+                color="black",
+                fontsize=10,
+                ha="right",
+                va="bottom",
+                rotation=-90,
+            )
+
     plt.title(title)
     plt.xlabel(covariate)
     plt.ylabel(response_var)
@@ -366,7 +385,7 @@ def _plot_centiles(
         plt.show(block=False)
     plt.close()
 
-    
+
 def plot_qq(
     data: NormData,
     plt_kwargs: dict | None = None,
@@ -524,7 +543,7 @@ def _plot_qq(
                     [-3, 3], [-3 + my_offset, 3 + my_offset], color="black", linestyle="--", linewidth=1, alpha=0.8, zorder=0
                 )
         else:
-            plt.plot([-3, 3], [-3, 3], color="black", linestyle="--", linewidth=1, alpha =0.8, zorder=0)
+            plt.plot([-3, 3], [-3, 3], color="black", linestyle="--", linewidth=1, alpha=0.8, zorder=0)
 
     if bound != 0:
         plt.axis((-bound, bound, -bound, bound))

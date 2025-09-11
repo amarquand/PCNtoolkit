@@ -20,7 +20,7 @@ def create_basis_function(
     elif basis_type in ["polynomial", "PolynomialBasisFunction"]:
         return PolynomialBasisFunction(basis_column, **kwargs)
     elif basis_type in ["bspline", "BsplineBasisFunction"]:
-        new_knots = {int(k):v for k,v in kwargs.pop("knots",{}).items()}
+        new_knots = {int(k): v for k, v in kwargs.pop("knots", {}).items()}
         for k, v in new_knots.items():
             if isinstance(v, list):
                 new_knots[k] = np.array(v)
@@ -53,7 +53,7 @@ class BasisFunction(ABC):
         basis_function_type = my_dict["basis_function"]
         basis_function = create_basis_function(basis_function_type, **my_dict)
         return basis_function
-    
+
     @classmethod
     def from_args(cls, name: str, args: dict) -> BasisFunction:
         basis_function_type = args.pop(name, "linear")
@@ -64,22 +64,22 @@ class BasisFunction(ABC):
             right_expand = args.pop(f"{name}_right_expand", 0.05)
             knot_method = args.pop(f"{name}_knot_method", "uniform")
             basis_column = args.pop(f"{name}_basis_column", None)
-            return BsplineBasisFunction(basis_column=basis_column, 
-                                       degree=degree, 
-                                       nknots=nknots, 
-                                       left_expand=left_expand, 
-                                       right_expand=right_expand, 
-                                       knot_method=knot_method)
+            return BsplineBasisFunction(
+                basis_column=basis_column,
+                degree=degree,
+                nknots=nknots,
+                left_expand=left_expand,
+                right_expand=right_expand,
+                knot_method=knot_method,
+            )
         elif basis_function_type == "polynomial":
             degree = args.pop(f"{name}_degree", 3)
             basis_column = args.pop(f"{name}_basis_column", None)
-            return PolynomialBasisFunction(basis_column=basis_column, 
-                                         degree=degree)
+            return PolynomialBasisFunction(basis_column=basis_column, degree=degree)
         else:
             basis_column = args.pop(f"{name}_basis_column", None)
             return LinearBasisFunction(basis_column=basis_column)
-        
-        
+
     def fit(self, X: np.ndarray) -> None:
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(X.shape[1])]
@@ -97,7 +97,7 @@ class BasisFunction(ABC):
                 all_arrays.append(expanded_arrays)
             else:
                 copied_array = copy.deepcopy(X[:, i])
-                all_arrays.append(copied_array[:,None])
+                all_arrays.append(copied_array[:, None])
 
         return np.concatenate(all_arrays, axis=1)
 
@@ -140,8 +140,8 @@ class BasisFunction(ABC):
 class PolynomialBasisFunction(BasisFunction):
     def __init__(
         self,
-        basis_column: Optional[Union[int, list[int] ]] = None,
-        degree: int = 3,    
+        basis_column: Optional[Union[int, list[int]]] = None,
+        degree: int = 3,
         **kwargs,
     ):
         super().__init__(basis_column, **kwargs)
@@ -165,7 +165,7 @@ class BsplineBasisFunction(BasisFunction):
         left_expand: float = 0.05,
         right_expand: float = 0.05,
         knot_method: str = "uniform",
-        knots: dict[int, np.ndarray] = None, #type: ignore
+        knots: dict[int, np.ndarray] = None,  # type: ignore
         **kwargs,
     ):
         super().__init__(basis_column, **kwargs)
@@ -175,7 +175,7 @@ class BsplineBasisFunction(BasisFunction):
         self.right_expand = right_expand
         self.knot_method = knot_method
         self.knots = knots or {}
-        for k, v in self.knots.items(): 
+        for k, v in self.knots.items():
             if isinstance(v, list):
                 self.knots[k] = np.array(v)
         self.basis_name = "bspline"
@@ -198,7 +198,7 @@ class BsplineBasisFunction(BasisFunction):
 
     def _transform(self, data: np.ndarray, i: int) -> np.ndarray:
         spline = BSpline.design_matrix(data, self.knots[i], self.degree, extrapolate=True).toarray()
-        return np.concatenate((data.reshape(-1, 1),spline), axis = 1)
+        return np.concatenate((data.reshape(-1, 1), spline), axis=1)
 
     def to_dict(self) -> dict:
         mydict = super().to_dict()
@@ -216,6 +216,8 @@ class BsplineBasisFunction(BasisFunction):
             else:
                 mydict["knots"][k] = list(v)
         return mydict
+
+
 class LinearBasisFunction(BasisFunction):
     def __init__(self, basis_column: Optional[Union[int, list[int]]] = None, **kwargs):
         super().__init__(basis_column, **kwargs)

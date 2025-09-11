@@ -47,6 +47,7 @@ def fitted_blr_model(blr_model: BLR, norm_data_from_arrays: NormData, fitted_nor
     blr_model.fit(X, be, be_maps, Y)
     return blr_model
 
+
 @pytest.fixture
 def new_norm_blr_model(blr_model, save_dir_blr):
     if os.path.exists(save_dir_blr):

@@ -36,12 +36,12 @@ class JobObserver:
         success_file = os.path.join(self.log_dir, f"{job_name}.success")
         max_retries = 10
         retry_delay = 1  # seconds
-        
+
         for _ in range(max_retries):
             if os.path.exists(success_file):
                 try:
                     # Try to open the file to ensure it's fully written
-                    with open(success_file, 'r') as f:
+                    with open(success_file, "r") as f:
                         f.read()
                     return True
                 except (IOError, OSError):
@@ -102,7 +102,7 @@ class JobObserver:
         elif stderr:
             Output.warning(Warnings.ERROR_GETTING_JOB_STATUSES, stderr=stderr)
 
-        # Any jobs not in the process list are assumed to be completed. 
+        # Any jobs not in the process list are assumed to be completed.
         # Check if they have a success file
         job_ids_set = set(self.all_job_ids.values())
         found_job_ids = {status.job_id for status in statuses}
@@ -149,11 +149,11 @@ class JobObserver:
         statuses = self.get_job_statuses()
         self.show_job_status_monitor(in_notebook, statuses)
 
-    def show_job_status_monitor(self,in_notebook, statuses):
+    def show_job_status_monitor(self, in_notebook, statuses):
         show_pid = Output.get_show_pid()
         show_messages = Output.get_show_messages()
         show_timestamp = Output.get_show_timestamp()
-        
+
         Output.set_show_pid(False)
         Output.set_show_messages(True)
         Output.set_show_timestamp(False)
@@ -162,16 +162,16 @@ class JobObserver:
         Output.print(Messages.JOB_STATUS_MONITOR, task_id=self.task_id)
         for status in sorted(statuses, key=lambda x: x.job_id):
             Output.print(
-                    Messages.JOB_STATUS_LINE,
-                    status.job_id,
-                    status.name,
-                    status.state,
-                    status.time,
-                    status.nodes,
-                )
+                Messages.JOB_STATUS_LINE,
+                status.job_id,
+                status.name,
+                status.state,
+                status.time,
+                status.nodes,
+            )
 
             # Count completed, failed, and active jobs
-        completed_jobs, failed_jobs, active_jobs = 0,0,0
+        completed_jobs, failed_jobs, active_jobs = 0, 0, 0
         for job_name, job_id in sorted(list(self.active_job_ids.items()), key=lambda x: x[0]):
             matching_statuses = [s for s in statuses if s.job_id == job_id]
             if len(matching_statuses) > 1:
@@ -184,9 +184,13 @@ class JobObserver:
                     failed_jobs += 1
                 else:
                     active_jobs += 1
-        
-        Output.print(Messages.JOB_STATUS_SUMMARY, total_completed_jobs=completed_jobs, total_active_jobs=active_jobs, total_failed_jobs=failed_jobs)
 
+        Output.print(
+            Messages.JOB_STATUS_SUMMARY,
+            total_completed_jobs=completed_jobs,
+            total_active_jobs=active_jobs,
+            total_failed_jobs=failed_jobs,
+        )
 
         if not any(status.state in ["RUNNING", "PENDING", "COMPLETING"] for status in statuses):
             Output.print(Messages.NO_MORE_RUNNING_JOBS)
@@ -197,4 +201,3 @@ class JobObserver:
         Output.set_show_messages(show_messages)
         Output.set_show_pid(show_pid)
         Output.set_show_timestamp(show_timestamp)
-

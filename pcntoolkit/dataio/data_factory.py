@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import os
@@ -8,9 +7,8 @@ import pandas as pd
 from pcntoolkit.dataio.norm_data import NormData
 
 
-def load_fcon1000(save_path:str|None=  None):
-    """Download and save fcon dataset to specified path, or load it from there if it is already downloaded
-    """
+def load_fcon1000(save_path: str | None = None):
+    """Download and save fcon dataset to specified path, or load it from there if it is already downloaded"""
     if not save_path:
         save_path = os.path.join("pcntoolkit_resources", "data")
     os.makedirs(save_path, exist_ok=True)
@@ -255,6 +253,6 @@ def load_fcon1000(save_path:str|None=  None):
         batch_effects=batch_effects,
         response_vars=response_vars,
         subject_ids=subject_ids,
-        remove_Nan=True
+        remove_Nan=True,
     )
     return norm_data
