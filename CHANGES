@@ -103,7 +103,8 @@ Major code refactor (effectively a re-write of the toolbox). Key changes include
 - IMPORTANT:
 Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMPATIBLE with this release. Please install the old version to continue working with legacy models
 
-# version 1.1.0
+# Version 1.0.1
+
 **Major changes:**
 1. NormativeModel.merge implemented, completing the federated learning arsenal
 2. BLR transfer implemented
@@ -124,5 +125,13 @@ Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMP
 4. Better support for dataloading from ndarrays
 5. Explained Variance in the measures dataframe
 6. Avoid annoying Pandas warning in the plotter
-7. Correctly use semantic versioning
-8. Correctly use the `__version__` attribute
+
+# Version 1.1.0
+
+**Major changes**
+1. Add support for `evaluate_logp` for transfered BLR models
+
+**Bug fixes**
+1. Fix incorrect application of change-of-variables in BLR `evaluate_logp`
+1. Correctly use semantic versioning
+1. Correctly use the `__version__` attribute
