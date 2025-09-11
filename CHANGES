@@ -87,3 +87,43 @@ version 0.29
 - Addedd functionality to compute SHASH z-scores from normative.py
 - Updated requirements
 - Basic pytest continuous integration framework implemented
+
+version 1.0.0
+Major code refactor (effectively a re-write of the toolbox). Key changes include:
+
+- Improved object-orientation
+- Improved code readability
+- Improved in-line documentation
+- Human readable models (JSON format)
+- Improved extendability
+- Algorithmic improvements, e.g. merge, extend, transfer, harmonise, synthesize and improvments to HBR
+- Completely revised documentation
+- No longer supports Gaussian process regression
+- Updated cluster job submission system
+- IMPORTANT:
+Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMPATIBLE with this release. Please install the old version to continue working with legacy models
+version 1.1.0
+
+version 1.1.0
+**Major changes:**
+1. NormativeModel.merge implemented, completing the federated learning arsenal
+2. BLR transfer implemented
+3. HBR model comparison using WAIC convenience function in `util.model_comparison.py`
+
+**Other nice things**
+1. Implemented ARD for BLR
+2. Yhat estimation with importance weighting as default method
+3. Fixed effect in the slope of mean and variance in BLR
+5. Add vertical conditional density plots to `plot_centiles` function
+6. Outlier detection and removal in NormData.from_dataframe
+7. Model factory for common regression models 
+
+**Minor changes:**
+1. Much faster `map_batch_effects`
+2. Runner loads data results back into NormData objects when parallelise=True and observed=True
+3. Remove Torch from dependencies
+4. Better support for dataloading from ndarrays
+5. Explained Variance in the measures dataframe
+6. Avoid annoying Pandas warning in the plotter
+7. Correctly use semantic versioning
+8. Correctly use the `__version__` attribute

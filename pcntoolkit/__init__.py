@@ -8,7 +8,9 @@ from .regression_model.blr import BLR
 from .regression_model.hbr import HBR
 from .util.plotter import plot_centiles, plot_qq, plot_ridge
 from .util.runner import Runner
+from importlib.metadata import version
 
+__version__ = version("pcntoolkit")
 __all__ = [
     "NormData",
     "BsplineBasisFunction",
