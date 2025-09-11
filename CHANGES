@@ -1,10 +1,10 @@
-version 0.15
+# version 0.15
 A number of new functions have been implemented and we decided to use a new version numbering system to improve consistency.
 
-version 0.16
+# version 0.16
 Minor bug fix relative to release 0.15. Fixed a transpose operation that would cause normative.py to fail in certain cases
 
-version 0.17:
+# version 0.17:
 - New syntax for functions related to parallelization (python path is automatically generated)
 - Support for slurm clusters has been added
 - Updates to hierarchical Bayesian regression (different priors for intercepts and noise) for improved transfer
@@ -13,18 +13,18 @@ version 0.17:
 - Addition of a utility function for loading freesurfer measures
 - Updated sphinx documentation
 
-version 0.18
+# version 0.18
 - addition of cross-validation functionality for HBR
 - minor bug fixes for HBR
 
-version 0.19
+# version 0.19
 - separate standardization of responses and covariates
 - standardization is no longer on by default
 - new standardization methods
 - pymc3 version fixed
 - minor bugs resolved (CV with HBR)
 
-version 0.20
+# version 0.20
 - Major code refactoring
 - Requirements updated for python 3.8.3
 - Updates to documentation and Integrations with Read the Docs
@@ -53,33 +53,33 @@ version 0.23
 - SHASH functionality for HBR added
 - Bug fix for normative model predict() function
 
-version 0.24
+# version 0.24
 - Minor bug fix related to SHASH/HBR
 - Added change log
 
-version 0.25
+# version 0.25
 - Minor bug fixes related to imports
 - Minor bug fixes related to SHASH/HBR
 - Minor bug fix in normative.py (affecting SMSE)
 
-version 0.26
+# version 0.26
 - Multiple bug fixes, relating to imports, predict() and transfer() functions
 - Added support for web portal
 - Provided a wrapper for blr to use transfer() functionality 
 - Also streamlined tutorials (PCNtoolkit-demo), so that all tutorials run with this version
 
-version 0.27
+# version 0.27
 - Configured more sensible default options for HBR (random slope and intercept for mu and random intercept for sigma)
 - Fixed a translation problem between the previous naming convention for HBR models (only Gaussian models) and the current naming (also SHASH models)
 - Minor updates to fix synchronisation problems in PCNportal (related to the HBR updates above)
 - Added configuration files for containerisation with Docker
 
-version 0.28
+# version 0.28
 - Updated to PyMC5 (including migrating back-end to PyTensor)
 - Added support for longitudinal normative modelling with BLR (see Buckova-Rehak et al 2023)
 - Changed default optimiser for trend surface models (for scalability)
 
-version 0.29
+# version 0.29
 - Bug fixes (e.g. HBR predict crash, normative_paralell support for .txt input)
 - Added docstrings for most functions
 - Fixed some problems with exception handling
@@ -88,7 +88,7 @@ version 0.29
 - Updated requirements
 - Basic pytest continuous integration framework implemented
 
-version 1.0.0
+# version 1.0.0
 Major code refactor (effectively a re-write of the toolbox). Key changes include:
 
 - Improved object-orientation
@@ -102,9 +102,8 @@ Major code refactor (effectively a re-write of the toolbox). Key changes include
 - Updated cluster job submission system
 - IMPORTANT:
 Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMPATIBLE with this release. Please install the old version to continue working with legacy models
-version 1.1.0
 
-version 1.1.0
+# version 1.1.0
 **Major changes:**
 1. NormativeModel.merge implemented, completing the federated learning arsenal
 2. BLR transfer implemented
