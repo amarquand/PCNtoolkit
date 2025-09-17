@@ -85,55 +85,31 @@ class NormativeModel:
         self.inscalers: dict = {}
         self.outscalers: dict = {}
         self.is_fitted: bool = False
+        self.covariates = None
+        self.response_vars = None
 
-    @classmethod
-    def from_args(cls, **kwargs) -> NormativeModel:
-        """
-        Create a new normative model from command line arguments.
+        self.unique_batch_effects = None
+        self.unique_batch_effects = None
+        self.batch_effects_maps = None
+        self.batch_effect_counts = None
+        self.batch_effect_covariate_ranges = None
+        self.covariate_ranges = None
 
-        Parameters
-        ----------
-        args : dict[str, str]
-            A dictionary of command line arguments.
+        self.thrive_covariate = None
+        self.correlation_matrix = None
 
-        Returns
-        -------
-        NormBase
-            An instance of a normative model.
+    """
+        ########################################################################################################################
+        ########################################################################################################################
+        ########################################################################################################################
+        ########################################################################################################################
 
-        Raises
-        ------
-        ValueError
-            If the regression model specified in the arguments is unknown.
-        """
-        savemodel = kwargs.get("savemodel", True) in ["True", True]
-        saveresults = kwargs.get("saveresults", True) in ["True", True]
-        saveplots = kwargs.get("saveplots", True) in ["True", True]
-        evaluate_model = kwargs.get("evaluate_model", True) in ["True", True]
-        save_dir = kwargs.get("save_dir", "./saves")
-        inscaler = kwargs.get("inscaler", "none")
-        outscaler = kwargs.get("outscaler", "none")
-        name = kwargs.get("name", None)
-        assert "alg" in kwargs, "Algorithm must be specified"
-        if kwargs["alg"] == "blr":
-            template_regression_model = BLR.from_args("template", kwargs)
-        elif kwargs["alg"] == "hbr":
-            template_regression_model = HBR.from_args("template", kwargs)
-        elif kwargs["alg"] == "test_model":
-            template_regression_model = TestModel.from_args("template", kwargs)
-        else:
-            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=kwargs["alg"]))
-        return cls(
-            template_regression_model=template_regression_model,
-            savemodel=savemodel,
-            saveresults=saveresults,
-            saveplots=saveplots,
-            evaluate_model=evaluate_model,
-            save_dir=save_dir,
-            inscaler=inscaler,
-            outscaler=outscaler,
-            name=name,
-        )
+        main functions
+
+        ########################################################################################################################
+        ########################################################################################################################
+        ########################################################################################################################
+    """
 
     def fit(self, data: NormData) -> None:
         """
@@ -186,6 +162,128 @@ class NormativeModel:
                 scatter_data=data,
             )
         return data
+
+    def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
+        """
+        Combines model.fit and model.predict in a single operation.
+        """
+        self.fit(fit_data)
+        self.predict(predict_data)
+        if self.savemodel:  # Make sure model is saved
+            self.save()
+        return predict_data
+
+    def transfer(self, transfer_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
+        """
+        Transfers the model to a new dataset.
+        """
+        new_model = NormativeModel(
+            copy.deepcopy(self.template_regression_model),
+            savemodel=True,
+            evaluate_model=True,
+            saveresults=True,
+            saveplots=True,
+            inscaler=self.inscaler,
+            outscaler=self.outscaler,
+            save_dir=self.save_dir,
+        )
+        if save_dir is not None:
+            new_model.save_dir = save_dir
+        else:
+            new_model.save_dir = self.save_dir + "_transfer"
+        new_model.covariates = copy.deepcopy(self.covariates)
+        new_model.inscalers = copy.deepcopy(self.inscalers)
+        new_model.outscalers = copy.deepcopy(self.outscalers)
+
+        respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
+        new_model.response_vars = respvar_intersection
+
+        new_model.preprocess(transfer_data)
+        new_model.register_batch_effects(transfer_data)
+
+        Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
+        for responsevar in respvar_intersection:
+            Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
+            resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
+            X, be, be_maps, Y, _ = new_model.extract_data(resp_transfer_data)
+            new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
+            new_model[responsevar].be_maps = copy.deepcopy(be_maps)
+        new_model.is_fitted = True
+        new_model.postprocess(transfer_data)
+        new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
+        if new_model.savemodel:
+            new_model.save()
+        return new_model
+
+    def transfer_predict(
+        self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None, **kwargs
+    ) -> NormativeModel:
+        """
+        Transfers the model to a new dataset and predicts the data.
+        """
+        new_model = self.transfer(transfer_data, save_dir, **kwargs)
+        new_model.predict(predict_data)
+        return new_model
+
+    def extend(self, data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
+        """
+        Extends the model to a new dataset.
+        """
+        synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
+        self.postprocess(synth)
+        self.postprocess(data)
+        merged_data = data.merge(synth)
+        if save_dir is None:
+            save_dir = self.save_dir + "_extend"
+
+        new_model = NormativeModel(
+            copy.deepcopy(self.template_regression_model),
+            savemodel=True,
+            evaluate_model=True,
+            saveresults=True,
+            saveplots=True,
+            inscaler=self.inscaler,
+            outscaler=self.outscaler,
+            save_dir=save_dir,
+        )
+
+        new_model.fit(merged_data)
+        return new_model
+
+    def extend_predict(
+        self, extend_data: NormData, predict_data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None
+    ) -> NormativeModel:
+        """
+        Extends the model to a new dataset and predicts the data.
+        """
+        new_model = self.extend(extend_data, save_dir, n_synth_samples)
+        new_model.predict(predict_data)
+        return new_model
+
+    @classmethod
+    def merge(cls, save_dir: str, models: list[Union[NormativeModel, str]]) -> NormativeModel:
+        """
+        Merges multiple models into a single model.
+        """
+        assert len(models) > 1, "At least two models are required to merge"
+        if isinstance(models[0], NormativeModel):
+            merged_model = copy.deepcopy(models[0])
+        else:
+            merged_model = cls.load(models[0])
+        if save_dir is not None:
+            merged_model.save_dir = save_dir
+        else:
+            merged_model.save_dir = merged_model.save_dir + "_merged"
+        acc = merged_model.synthesize()
+        for model in models[1:]:
+            if isinstance(model, NormativeModel):
+                acc = acc.merge(model.synthesize())
+            else:
+                this_model = cls.load(model)
+                acc = acc.merge(this_model.synthesize())
+                del this_model
+        merged_model.fit(acc)
+        return merged_model
 
     def synthesize(
         self, data: NormData | None = None, n_samples: int | None = None, covariate_range_per_batch_effect=False
@@ -314,6 +412,216 @@ class NormativeModel:
 
         self.postprocess(data)
         return data
+
+    def save(self, path: Optional[str] = None) -> None:
+        """
+        Save the model to a file.
+
+        Args:
+            path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.
+        """
+        savepath = path if path is not None else self.save_dir
+        modelpath = os.path.join(savepath, "model")
+        os.makedirs(modelpath, exist_ok=True)
+        my_dict = self.to_dict()
+        self.set_ensure_save_dirs()
+        Output.print(Messages.SAVING_MODEL, save_dir=savepath)
+        with open(os.path.join(modelpath, "normative_model.json"), "w", encoding="utf-8") as f:
+            json.dump(my_dict, f, indent=4)
+
+        for responsevar, model in self.regression_models.items():
+            regmodel_path = os.path.join(modelpath, responsevar)
+            os.makedirs(regmodel_path, exist_ok=True)
+            reg_model_dict = {}
+            reg_model_dict["model"] = model.to_dict(regmodel_path)
+            reg_model_dict["outscaler"] = self.outscalers[responsevar].to_dict()
+            with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
+                json.dump(reg_model_dict, f, indent=4)
+
+    @classmethod
+    def load(cls, path: str, into: NormativeModel | None = None) -> NormativeModel:
+        """
+        Load a normative model from a path.
+
+        Parameters
+        ----------
+        path : str
+            The path to the normative model.
+        into : NormBase, optional
+            The normative model to load the data into. If None, a new normative model is created.
+            This is useful if you want to load a normative model into an existing normative model, for example in the runner.
+        """
+        assert isinstance(path, str), f"Path must be a string, got {type(path)}"
+        assert os.path.exists(path), f"Path {path} does not exist"
+        model_path = os.path.join(path, "model", "normative_model.json")
+        with open(model_path, mode="r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+        savemodel = metadata["savemodel"]
+        saveresults = metadata["saveresults"]
+        save_dir = metadata["save_dir"]
+        inscaler = metadata["inscaler"]
+        outscaler = metadata["outscaler"]
+        saveplots = metadata["saveplots"]
+        evaluate_model = metadata["evaluate_model"]
+        name = metadata["name"]
+
+        response_vars = []
+        outscalers = {}
+        regression_models = {}
+        reg_models_path = os.path.join(path, "model", "*")
+        for path in glob.glob(reg_models_path):
+            if os.path.isdir(path):
+                with open(
+                    os.path.join(path, "regression_model.json"),
+                    mode="r",
+                    encoding="utf-8",
+                ) as f:
+                    reg_model_dict = json.load(f)
+                    responsevar = reg_model_dict["model"]["name"]
+                    response_vars.append(responsevar)
+                    regression_model_type = globals()[reg_model_dict["model"]["type"]]
+                    regression_models[responsevar] = regression_model_type.from_dict(reg_model_dict["model"], path)
+                    outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
+        template_regression_model = type(regression_models[response_vars[0]]).from_dict(
+            metadata["template_regression_model"], None
+        )
+        if into is None:
+            self = cls(
+                template_regression_model=template_regression_model,
+                savemodel=savemodel,
+                evaluate_model=evaluate_model,
+                saveresults=saveresults,
+                saveplots=saveplots,
+                save_dir=save_dir,
+                inscaler=inscaler,
+                outscaler=outscaler,
+                name=name,
+            )
+        else:
+            self = into
+
+        self.regression_models = regression_models
+        self.outscalers = outscalers
+        self.response_vars = response_vars
+        self.inscalers = {k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()}
+
+        if "batch_effects_maps" in metadata:
+            self.batch_effects_maps = {
+                be: {v: int(k.split("_")[1]) for k, v in mp.items()} for be, mp in metadata["batch_effects_maps"].items()
+            }
+        if "inverse_batch_effect_counts" in metadata:
+            self.batch_effect_counts = {
+                be: {v: int(k.split("_")[1]) for k, v in mp.items()} for be, mp in metadata["inverse_batch_effect_counts"].items()
+            }
+        if "batch_effect_covariate_ranges" in metadata:
+            self.batch_effect_covariate_ranges = metadata["batch_effect_covariate_ranges"]
+
+        if "unique_batch_effects" in metadata:
+            self.unique_batch_effects = metadata["unique_batch_effects"]
+
+        if "covariates" in metadata:
+            self.covariates = metadata["covariates"]
+
+        if "covariate_ranges" in metadata:
+            self.covariate_ranges = metadata["covariate_ranges"]
+
+        self.is_fitted = metadata["is_fitted"]
+
+        return self
+
+    def model_specific_evaluation(self) -> None:
+        """
+        Save model-specific evaluation metrics.
+        """
+        for responsevar in self.response_vars:
+            self[responsevar].model_specific_evaluation(self.save_dir)
+
+    """
+        ########################################################################################################################
+        ########################################################################################################################
+        ########################################################################################################################
+
+        helper functions
+
+        ########################################################################################################################
+        ########################################################################################################################
+        ########################################################################################################################
+    """
+
+    def preprocess(self, data: NormData) -> None:
+        """
+        Applies preprocessing transformations to the input data.
+
+        Args:
+            data (NormData): Data to preprocess.
+        """
+        self.scale_forward(data)
+
+    def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
+        """
+        Scales input data to standardized form using configured scalers.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing arrays to be scaled:
+            - X : array-like, shape (n_samples, n_covariates)
+                Covariate data to be scaled
+            - y : array-like, shape (n_samples, n_response_vars), optional
+                Response variable data to be scaled
+
+        overwrite : bool, default=False
+            If True, creates new scalers even if they already exist.
+            If False, uses existing scalers when available.
+        """
+        for covariate in data.covariates.to_numpy():
+            if (covariate not in self.inscalers) or overwrite:
+                self.inscalers[covariate] = Scaler.from_string(self.inscaler)
+                self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
+
+        for responsevar in data.response_vars.to_numpy():
+            if (responsevar not in self.outscalers) or overwrite:
+                self.outscalers[responsevar] = Scaler.from_string(self.outscaler)
+                self.outscalers[responsevar].fit(data.Y.sel(response_vars=responsevar).data)
+
+        data.scale_forward(self.inscalers, self.outscalers)
+
+    def postprocess(self, data: NormData) -> None:
+        """Apply postprocessing to the data.
+
+        Args:
+            data (NormData): Data to postprocess.
+        """
+        self.scale_backward(data)
+
+    def scale_backward(self, data: NormData) -> None:
+        """
+        Scales data back to its original scale using stored scalers.
+
+        Parameters
+        ----------
+        data : NormData
+            Data object containing arrays to be scaled back:
+            - X : array-like, shape (n_samples, n_covariates)
+                Covariate data to be scaled back
+            - y : array-like, shape (n_samples, n_response_vars), optional
+                Response variable data to be scaled back
+        """
+        data.scale_backward(self.inscalers, self.outscalers)
+
+    def evaluate(self, data: NormData) -> None:
+        """
+        Evaluates the model performance on the data.
+        This method performs the following steps:
+        1. Preprocesses the data
+
+        5. Evaluates the model performance
+        6. Postprocesses the data
+        """
+        self.preprocess(data)
+        self.evaluator.evaluate(data)
+        self.postprocess(data)
 
     def compute_zscores(self, data: NormData) -> NormData:
         """
@@ -543,245 +851,6 @@ class NormativeModel:
         # self.postprocess(data)
         return data
 
-    def evaluate(self, data: NormData) -> None:
-        """
-        Evaluates the model performance on the data.
-        This method performs the following steps:
-        1. Preprocesses the data
-
-        5. Evaluates the model performance
-        6. Postprocesses the data
-        """
-        self.preprocess(data)
-        self.evaluator.evaluate(data)
-        self.postprocess(data)
-
-    def model_specific_evaluation(self) -> None:
-        """
-        Save model-specific evaluation metrics.
-        """
-        for responsevar in self.response_vars:
-            self[responsevar].model_specific_evaluation(self.save_dir)
-
-    def fit_predict(self, fit_data: NormData, predict_data: NormData) -> NormData:
-        """
-        Combines model.fit and model.predict in a single operation.
-        """
-        self.fit(fit_data)
-        self.predict(predict_data)
-        if self.savemodel:  # Make sure model is saved
-            self.save()
-        return predict_data
-
-    def extract_data(
-        self, data: NormData
-    ) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
-        """Returns a 5-tuple of covariates, batch effects, batch effect maps, response vars, Z-scores.
-        If the variable is not available, returns None instead of the variable.
-        """
-        if hasattr(data, "X"):
-            X = data.X
-        else:
-            X = None
-        if hasattr(data, "batch_effects"):
-            batch_effects = self.map_batch_effects(data.batch_effects)
-            batch_effects_maps = self.batch_effects_maps
-        else:
-            batch_effects = None
-            batch_effects_maps = None
-        if hasattr(data, "Y"):
-            Y = data.Y
-        else:
-            Y = None
-
-        if hasattr(data, "Z"):
-            Z = data.Z
-        else:
-            Z = None
-        return X, batch_effects, batch_effects_maps, Y, Z  # type: ignore
-
-    def transfer(self, transfer_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
-        """
-        Transfers the model to a new dataset.
-        """
-        new_model = NormativeModel(
-            copy.deepcopy(self.template_regression_model),
-            savemodel=True,
-            evaluate_model=True,
-            saveresults=True,
-            saveplots=True,
-            inscaler=self.inscaler,
-            outscaler=self.outscaler,
-            save_dir=self.save_dir,
-        )
-        if save_dir is not None:
-            new_model.save_dir = save_dir
-        else:
-            new_model.save_dir = self.save_dir + "_transfer"
-        new_model.covariates = copy.deepcopy(self.covariates)
-        new_model.inscalers = copy.deepcopy(self.inscalers)
-        new_model.outscalers = copy.deepcopy(self.outscalers)
-
-        respvar_intersection = list(set(self.response_vars).intersection(transfer_data.response_vars.values))
-        new_model.response_vars = respvar_intersection
-
-        new_model.preprocess(transfer_data)
-        new_model.register_batch_effects(transfer_data)
-
-        Output.print(Messages.TRANSFERRING_MODELS, n_models=len(respvar_intersection))
-        for responsevar in respvar_intersection:
-            Output.print(Messages.TRANSFERRING_MODEL, model_name=responsevar)
-            resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
-            X, be, be_maps, Y, _ = new_model.extract_data(resp_transfer_data)
-            new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
-            new_model[responsevar].be_maps = copy.deepcopy(be_maps)
-        new_model.is_fitted = True
-        new_model.postprocess(transfer_data)
-        new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
-        if new_model.savemodel:
-            new_model.save()
-        return new_model
-
-    def transfer_predict(
-        self, transfer_data: NormData, predict_data: NormData, save_dir: str | None = None, **kwargs
-    ) -> NormativeModel:
-        """
-        Transfers the model to a new dataset and predicts the data.
-        """
-        new_model = self.transfer(transfer_data, save_dir, **kwargs)
-        new_model.predict(predict_data)
-        return new_model
-
-    def extend(self, data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None) -> NormativeModel:
-        """
-        Extends the model to a new dataset.
-        """
-        synth = self.synthesize(n_samples=n_synth_samples, covariate_range_per_batch_effect=True)
-        self.postprocess(synth)
-        self.postprocess(data)
-        merged_data = data.merge(synth)
-        if save_dir is None:
-            save_dir = self.save_dir + "_extend"
-
-        new_model = NormativeModel(
-            copy.deepcopy(self.template_regression_model),
-            savemodel=True,
-            evaluate_model=True,
-            saveresults=True,
-            saveplots=True,
-            inscaler=self.inscaler,
-            outscaler=self.outscaler,
-            save_dir=save_dir,
-        )
-
-        new_model.fit(merged_data)
-        return new_model
-
-    def extend_predict(
-        self, extend_data: NormData, predict_data: NormData, save_dir: str | None = None, n_synth_samples: int | None = None
-    ) -> NormativeModel:
-        """
-        Extends the model to a new dataset and predicts the data.
-        """
-        new_model = self.extend(extend_data, save_dir, n_synth_samples)
-        new_model.predict(predict_data)
-        return new_model
-
-    @classmethod
-    def merge(cls, save_dir: str, models: list[Union[NormativeModel, str]]) -> NormativeModel:
-        """
-        Merges multiple models into a single model.
-        """
-        assert len(models) > 1, "At least two models are required to merge"
-        if isinstance(models[0], NormativeModel):
-            merged_model = copy.deepcopy(models[0])
-        else:
-            merged_model = cls.load(models[0])
-        if save_dir is not None:
-            merged_model.save_dir = save_dir
-        else:
-            merged_model.save_dir = merged_model.save_dir + "_merged"
-        acc = merged_model.synthesize()
-        for model in models[1:]:
-            if isinstance(model, NormativeModel):
-                acc = acc.merge(model.synthesize())
-            else:
-                this_model = cls.load(model)
-                acc = acc.merge(this_model.synthesize())
-                del this_model
-        merged_model.fit(acc)
-        return merged_model
-
-    def preprocess(self, data: NormData) -> None:
-        """
-        Applies preprocessing transformations to the input data.
-
-        Args:
-            data (NormData): Data to preprocess.
-        """
-        self.scale_forward(data)
-
-    def postprocess(self, data: NormData) -> None:
-        """Apply postprocessing to the data.
-
-        Args:
-            data (NormData): Data to postprocess.
-        """
-        self.scale_backward(data)
-
-    def check_compatibility(self, data: NormData) -> bool:
-        """
-        Check if the data is compatible with the model.
-
-        Parameters
-        ----------
-        data : NormData
-            Data to check compatibility with.
-
-        Returns
-        -------
-        bool
-            True if compatible, False otherwise
-        """
-        missing_covariates = [i for i in self.covariates if i not in data.covariates.values]
-        if len(missing_covariates) > 0:
-            Output.warning(
-                Warnings.MISSING_COVARIATES,
-                covariates=missing_covariates,
-                dataset_name=data.name,
-            )
-
-        extra_covariates = [i for i in data.covariates.values if i not in self.covariates]
-        if len(extra_covariates) > 0:
-            Output.warning(
-                Warnings.EXTRA_COVARIATES,
-                covariates=extra_covariates,
-                dataset_name=data.name,
-            )
-
-        extra_response_vars = [i for i in data.response_vars.values if i not in self.response_vars]
-        if len(extra_response_vars) > 0:
-            Output.warning(
-                Warnings.EXTRA_RESPONSE_VARS,
-                response_vars=extra_response_vars,
-                dataset_name=data.name,
-            )
-
-        compatible = True
-        unknown_batch_effects = {
-            be: [u for u in unique if u not in self.unique_batch_effects[be]] for be, unique in data.unique_batch_effects.items()
-        }
-        compatible = sum([len(unknown) for unknown in unknown_batch_effects.values()]) == 0
-        if not compatible:
-            Output.warning(
-                Warnings.UNKNOWN_BATCH_EFFECTS,
-                batch_effects=unknown_batch_effects,
-                dataset_name=data.name,
-            )
-        return (
-            (len(missing_covariates) == 0) and (len(extra_covariates) == 0) and (len(extra_response_vars) == 0) and (compatible)
-        )
-
     def register_data_info(self, data: NormData) -> None:
         self.covariates = data.covariates.to_numpy().copy().tolist()
         self.response_vars = data.response_vars.to_numpy().copy().tolist()
@@ -796,56 +865,6 @@ class NormativeModel:
         self.batch_effect_counts = copy.deepcopy(data.batch_effect_counts)
         self.batch_effect_covariate_ranges = copy.deepcopy(data.batch_effect_covariate_ranges)
         self.covariate_ranges = copy.deepcopy(data.covariate_ranges)
-
-    # def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
-    #     """Map batch effects to their integer indices using vectorized operations.
-
-    #     Parameters
-    #     ----------
-    #     batch_effects : xr.DataArray
-    #         Input batch effects array with dimensions (observations, batch_effect_dims)
-
-    #     Returns
-    #     -------
-    #     xr.DataArray
-    #         Mapped batch effects with integer indices
-    #     """
-    #     # Create output array with same shape and coordinates
-    #     mapped_batch_effects = xr.DataArray(
-    #         np.zeros(batch_effects.shape).astype(int),
-    #         dims=batch_effects.dims,
-    #         coords=batch_effects.coords
-    #     )
-
-    #     # Convert to numpy for faster operations
-    #     be_values = batch_effects.values
-    #     mapped_values = mapped_batch_effects.values
-
-    #     # For each batch effect dimension, apply mapping
-    #     for i, be in enumerate(self.unique_batch_effects.keys()):
-    #         # Get the mapping dictionary for this batch effect
-    #         be_map = self.batch_effects_maps[be]
-    #         # Create a vectorized mapping function
-    #         vfunc = np.vectorize(lambda x: be_map[x])
-    #         # Apply mapping to the entire column at once
-    #         mapped_values[:, i] = vfunc(be_values[:, i])
-
-    #     return mapped_batch_effects
-
-    def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
-        # ! check if synthesize, harmonize, etc. also do this correctly, and if xarrays passed to fit and predict are also indexed properly
-        mapped_batch_effects = xr.DataArray(
-            np.zeros(batch_effects.values.shape).astype(int),
-            dims=("observations", "batch_effect_dims"),
-            coords={"batch_effect_dims": list(self.unique_batch_effects.keys())},
-        )
-        for i, be in enumerate(self.unique_batch_effects.keys()):
-            vals = batch_effects.sel(batch_effect_dims=be).values
-            unique_vals, inverses = np.unique(vals, return_inverse=True)
-            unique_vals_mapped = np.array([self.batch_effects_maps[be][un] for un in unique_vals])
-            mapped_batch_effects.loc[{"batch_effect_dims": be}] = unique_vals_mapped[list(inverses)]
-
-        return mapped_batch_effects
 
     def sample_batch_effects(self, n_samples: int) -> xr.DataArray:
         """
@@ -903,75 +922,6 @@ class NormativeModel:
                 )
         return X
 
-    def scale_forward(self, data: NormData, overwrite: bool = False) -> None:
-        """
-        Scales input data to standardized form using configured scalers.
-
-        Parameters
-        ----------
-        data : NormData
-            Data object containing arrays to be scaled:
-            - X : array-like, shape (n_samples, n_covariates)
-                Covariate data to be scaled
-            - y : array-like, shape (n_samples, n_response_vars), optional
-                Response variable data to be scaled
-
-        overwrite : bool, default=False
-            If True, creates new scalers even if they already exist.
-            If False, uses existing scalers when available.
-        """
-        for covariate in data.covariates.to_numpy():
-            if (covariate not in self.inscalers) or overwrite:
-                self.inscalers[covariate] = Scaler.from_string(self.inscaler)
-                self.inscalers[covariate].fit(data.X.sel(covariates=covariate).data)
-
-        for responsevar in data.response_vars.to_numpy():
-            if (responsevar not in self.outscalers) or overwrite:
-                self.outscalers[responsevar] = Scaler.from_string(self.outscaler)
-                self.outscalers[responsevar].fit(data.Y.sel(response_vars=responsevar).data)
-
-        data.scale_forward(self.inscalers, self.outscalers)
-
-    def scale_backward(self, data: NormData) -> None:
-        """
-        Scales data back to its original scale using stored scalers.
-
-        Parameters
-        ----------
-        data : NormData
-            Data object containing arrays to be scaled back:
-            - X : array-like, shape (n_samples, n_covariates)
-                Covariate data to be scaled back
-            - y : array-like, shape (n_samples, n_response_vars), optional
-                Response variable data to be scaled back
-        """
-        data.scale_backward(self.inscalers, self.outscalers)
-
-    def save(self, path: Optional[str] = None) -> None:
-        """
-        Save the model to a file.
-
-        Args:
-            path (str, optional): The path to save the model to. If None, the model is saved to the save_dir provided in the norm_conf.
-        """
-        savepath = path if path is not None else self.save_dir
-        modelpath = os.path.join(savepath, "model")
-        os.makedirs(modelpath, exist_ok=True)
-        my_dict = self.to_dict()
-        self.set_ensure_save_dirs()
-        Output.print(Messages.SAVING_MODEL, save_dir=savepath)
-        with open(os.path.join(modelpath, "normative_model.json"), "w", encoding="utf-8") as f:
-            json.dump(my_dict, f, indent=4)
-
-        for responsevar, model in self.regression_models.items():
-            regmodel_path = os.path.join(modelpath, responsevar)
-            os.makedirs(regmodel_path, exist_ok=True)
-            reg_model_dict = {}
-            reg_model_dict["model"] = model.to_dict(regmodel_path)
-            reg_model_dict["outscaler"] = self.outscalers[responsevar].to_dict()
-            with open(os.path.join(regmodel_path, "regression_model.json"), "w", encoding="utf-8") as f:
-                json.dump(reg_model_dict, f, indent=4)
-
     def to_dict(self):
         my_dict = {
             "name": self.name,
@@ -1017,96 +967,53 @@ class NormativeModel:
         return my_dict
 
     @classmethod
-    def load(cls, path: str, into: NormativeModel | None = None) -> NormativeModel:
+    def from_args(cls, **kwargs) -> NormativeModel:
         """
-        Load a normative model from a path.
+        Create a new normative model from command line arguments.
 
         Parameters
         ----------
-        path : str
-            The path to the normative model.
-        into : NormBase, optional
-            The normative model to load the data into. If None, a new normative model is created.
-            This is useful if you want to load a normative model into an existing normative model, for example in the runner.
+        args : dict[str, str]
+            A dictionary of command line arguments.
+
+        Returns
+        -------
+        NormBase
+            An instance of a normative model.
+
+        Raises
+        ------
+        ValueError
+            If the regression model specified in the arguments is unknown.
         """
-        assert isinstance(path, str), f"Path must be a string, got {type(path)}"
-        assert os.path.exists(path), f"Path {path} does not exist"
-        model_path = os.path.join(path, "model", "normative_model.json")
-        with open(model_path, mode="r", encoding="utf-8") as f:
-            metadata = json.load(f)
-
-        savemodel = metadata["savemodel"]
-        saveresults = metadata["saveresults"]
-        save_dir = metadata["save_dir"]
-        inscaler = metadata["inscaler"]
-        outscaler = metadata["outscaler"]
-        saveplots = metadata["saveplots"]
-        evaluate_model = metadata["evaluate_model"]
-        name = metadata["name"]
-
-        response_vars = []
-        outscalers = {}
-        regression_models = {}
-        reg_models_path = os.path.join(path, "model", "*")
-        for path in glob.glob(reg_models_path):
-            if os.path.isdir(path):
-                with open(
-                    os.path.join(path, "regression_model.json"),
-                    mode="r",
-                    encoding="utf-8",
-                ) as f:
-                    reg_model_dict = json.load(f)
-                    responsevar = reg_model_dict["model"]["name"]
-                    response_vars.append(responsevar)
-                    regression_model_type = globals()[reg_model_dict["model"]["type"]]
-                    regression_models[responsevar] = regression_model_type.from_dict(reg_model_dict["model"], path)
-                    outscalers[responsevar] = Scaler.from_dict(reg_model_dict["outscaler"])
-        template_regression_model = type(regression_models[response_vars[0]]).from_dict(
-            metadata["template_regression_model"], None
-        )
-        if into is None:
-            self = cls(
-                template_regression_model=template_regression_model,
-                savemodel=savemodel,
-                evaluate_model=evaluate_model,
-                saveresults=saveresults,
-                saveplots=saveplots,
-                save_dir=save_dir,
-                inscaler=inscaler,
-                outscaler=outscaler,
-                name=name,
-            )
+        savemodel = kwargs.get("savemodel", True) in ["True", True]
+        saveresults = kwargs.get("saveresults", True) in ["True", True]
+        saveplots = kwargs.get("saveplots", True) in ["True", True]
+        evaluate_model = kwargs.get("evaluate_model", True) in ["True", True]
+        save_dir = kwargs.get("save_dir", "./saves")
+        inscaler = kwargs.get("inscaler", "none")
+        outscaler = kwargs.get("outscaler", "none")
+        name = kwargs.get("name", None)
+        assert "alg" in kwargs, "Algorithm must be specified"
+        if kwargs["alg"] == "blr":
+            template_regression_model = BLR.from_args("template", kwargs)
+        elif kwargs["alg"] == "hbr":
+            template_regression_model = HBR.from_args("template", kwargs)
+        elif kwargs["alg"] == "test_model":
+            template_regression_model = TestModel.from_args("template", kwargs)
         else:
-            self = into
-
-        self.regression_models = regression_models
-        self.outscalers = outscalers
-        self.response_vars = response_vars
-        self.inscalers = {k: Scaler.from_dict(v) for k, v in metadata["inscalers"].items()}
-
-        if "batch_effects_maps" in metadata:
-            self.batch_effects_maps = {
-                be: {v: int(k.split("_")[1]) for k, v in mp.items()} for be, mp in metadata["batch_effects_maps"].items()
-            }
-        if "inverse_batch_effect_counts" in metadata:
-            self.batch_effect_counts = {
-                be: {v: int(k.split("_")[1]) for k, v in mp.items()} for be, mp in metadata["inverse_batch_effect_counts"].items()
-            }
-        if "batch_effect_covariate_ranges" in metadata:
-            self.batch_effect_covariate_ranges = metadata["batch_effect_covariate_ranges"]
-
-        if "unique_batch_effects" in metadata:
-            self.unique_batch_effects = metadata["unique_batch_effects"]
-
-        if "covariates" in metadata:
-            self.covariates = metadata["covariates"]
-
-        if "covariate_ranges" in metadata:
-            self.covariate_ranges = metadata["covariate_ranges"]
-
-        self.is_fitted = metadata["is_fitted"]
-
-        return self
+            raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=kwargs["alg"]))
+        return cls(
+            template_regression_model=template_regression_model,
+            savemodel=savemodel,
+            saveresults=saveresults,
+            saveplots=saveplots,
+            evaluate_model=evaluate_model,
+            save_dir=save_dir,
+            inscaler=inscaler,
+            outscaler=outscaler,
+            name=name,
+        )
 
     def set_save_dir(self, save_dir: str) -> None:
         """Override the save_dir in the norm_conf.
@@ -1134,6 +1041,103 @@ class NormativeModel:
         ensure_dir_exists(model_dir)
         if self.saveplots:
             ensure_dir_exists(plots_dir)
+
+
+    def extract_data(
+        self, data: NormData
+    ) -> Tuple[xr.DataArray, xr.DataArray, dict[str, dict[str, int]], xr.DataArray, xr.DataArray]:
+        """Returns a 5-tuple of covariates, batch effects, batch effect maps, response vars, Z-scores.
+        If the variable is not available, returns None instead of the variable.
+        """
+        if hasattr(data, "X"):
+            X = data.X
+        else:
+            X = None
+        if hasattr(data, "batch_effects"):
+            batch_effects = self.map_batch_effects(data.batch_effects)
+            batch_effects_maps = self.batch_effects_maps
+        else:
+            batch_effects = None
+            batch_effects_maps = None
+        if hasattr(data, "Y"):
+            Y = data.Y
+        else:
+            Y = None
+
+        if hasattr(data, "Z"):
+            Z = data.Z
+        else:
+            Z = None
+        return X, batch_effects, batch_effects_maps, Y, Z  # type: ignore
+
+
+    def check_compatibility(self, data: NormData) -> bool:
+        """
+        Check if the data is compatible with the model.
+
+        Parameters
+        ----------
+        data : NormData
+            Data to check compatibility with.
+
+        Returns
+        -------
+        bool
+            True if compatible, False otherwise
+        """
+        missing_covariates = [i for i in self.covariates if i not in data.covariates.values]
+        if len(missing_covariates) > 0:
+            Output.warning(
+                Warnings.MISSING_COVARIATES,
+                covariates=missing_covariates,
+                dataset_name=data.name,
+            )
+
+        extra_covariates = [i for i in data.covariates.values if i not in self.covariates]
+        if len(extra_covariates) > 0:
+            Output.warning(
+                Warnings.EXTRA_COVARIATES,
+                covariates=extra_covariates,
+                dataset_name=data.name,
+            )
+
+        extra_response_vars = [i for i in data.response_vars.values if i not in self.response_vars]
+        if len(extra_response_vars) > 0:
+            Output.warning(
+                Warnings.EXTRA_RESPONSE_VARS,
+                response_vars=extra_response_vars,
+                dataset_name=data.name,
+            )
+
+        compatible = True
+        unknown_batch_effects = {
+            be: [u for u in unique if u not in self.unique_batch_effects[be]] for be, unique in data.unique_batch_effects.items()
+        }
+        compatible = sum([len(unknown) for unknown in unknown_batch_effects.values()]) == 0
+        if not compatible:
+            Output.warning(
+                Warnings.UNKNOWN_BATCH_EFFECTS,
+                batch_effects=unknown_batch_effects,
+                dataset_name=data.name,
+            )
+        return (
+            (len(missing_covariates) == 0) and (len(extra_covariates) == 0) and (len(extra_response_vars) == 0) and (compatible)
+        )
+
+    def map_batch_effects(self, batch_effects: xr.DataArray) -> xr.DataArray:
+        mapped_batch_effects = xr.DataArray(
+            np.zeros(batch_effects.values.shape).astype(int),
+            dims=("observations", "batch_effect_dims"),
+            coords={"batch_effect_dims": list(self.unique_batch_effects.keys())},
+        )
+        for i, be in enumerate(self.unique_batch_effects.keys()):
+            vals = batch_effects.sel(batch_effect_dims=be).values
+            unique_vals, inverses = np.unique(vals, return_inverse=True)
+            unique_vals_mapped = np.array([self.batch_effects_maps[be][un] for un in unique_vals])
+            mapped_batch_effects.loc[{"batch_effect_dims": be}] = unique_vals_mapped[list(inverses)]
+
+        return mapped_batch_effects
+
 
     def __getitem__(self, key: str) -> RegressionModel:
         if key not in self.regression_models:
