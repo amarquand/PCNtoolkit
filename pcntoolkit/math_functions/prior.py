@@ -326,20 +326,19 @@ class RandomPrior(BasePrior):
     ):
         # outdims = "observations" if not self.dims else ("observations", *self.dims)
         with model:
-            self.mu.compile(model, X, be, be_maps, Y)
+            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
             if self.dims:
-                acc = self.mu.dist[None]  # type: ignore
+                acc = mu_samples[None]  # type: ignore
             else:
-                acc = self.mu.dist  # type: ignore
+                acc = mu_samples  # type: ignore
             for be_i in model.coords["batch_effect_dims"]:  # type:ignore
                 be_dims = (be_i,) if not self.dims else (be_i, *self.dims)
                 if be_i not in self.sigmas:
                     self.sigmas[be_i] = copy.deepcopy(self.sigma)
                     self.sigmas[be_i].set_name(f"{be_i}_sigma_{self.name}")
-                self.sigmas[be_i].compile(model, X, be, be_maps, Y)
                 self.scaled_offsets[be_i] = pm.Deterministic(
                     f"{be_i}_offset_{self.name}",
-                    self.sigmas[be_i].dist  # type: ignore
+                    self.sigmas[be_i].compile(model, X, be, be_maps, Y) 
                     * pm.Normal(
                         f"normalized_{be_i}_offset_{self.name}",
                         dims=be_dims,  # type:ignore
