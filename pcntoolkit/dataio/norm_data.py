@@ -452,6 +452,7 @@ class NormData(xr.Dataset):
         Output.print(f"Removed {len(dataframe) - len(cleaned)} NANs")
         return cleaned
 
+        
     @classmethod
     def remove_outliers(cls, dataframe: pd.DataFrame, continuous_vars: List[str], z_threshold: float = 3.0) -> pd.DataFrame:
         """
@@ -462,9 +463,13 @@ class NormData(xr.Dataset):
         idx = np.full(len(dataframe), True)
         for covar in continuous_vars:
             zscores = stats.zscore(dataframe[covar])
-            idx = idx & (np.abs(zscores) < z_threshold)
+            outliers = np.abs(zscores) > z_threshold
+            if sum(outliers) > 0:
+                Output.print(f"Removed {sum(outliers)} outliers for {covar}")
+            idx = idx & (~outliers)
         Output.print(f"Removed {np.sum(~idx)} outliers")
         return dataframe.loc[idx]
+
 
     def merge(self, other: NormData) -> NormData:
         """
