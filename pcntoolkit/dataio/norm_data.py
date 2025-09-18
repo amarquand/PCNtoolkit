@@ -128,98 +128,13 @@ class NormData(xr.Dataset):
         Output.print(
             Messages.DATASET_CREATED,
             name=name,
-            n_subjects=len(np.unique(self.subjects)),
+            n_subjects=len(np.unique(self.subject_ids)),
             n_observations=len(self.observations),
             n_covariates=len(self.covariates),
             n_response_vars=len(self.response_vars),
             n_batch_effects=len(self.unique_batch_effects),
             batch_effects=be_str,
         )
-
-    # @classmethod
-    # def from_ndarrays_old(
-    #     cls,
-    #     name: str,
-    #     X: np.ndarray,
-    #     Y: np.ndarray,
-    #     batch_effects: np.ndarray | None = None,
-    #     subject_ids: np.ndarray | None = None,
-    #     attrs: Mapping[str, Any] | None = None,
-    # ) -> NormData:
-    #     """Create a NormData object from numpy arrays.
-
-    #     Parameters
-    #     ----------
-    #     name : str
-    #         The name of the dataset
-    #     X : np.ndarray
-    #         Covariate data of shape (n_samples, n_features)
-    #     y : np.ndarray
-    #         Response variable data of shape (n_samples, n_responses)
-    #     batch_effects : np.ndarray
-    #         Batch effect data of shape (n_samples, n_batch_effects)
-    #     attrs : Mapping[str, Any] | None, optional
-    #         Additional attributes for the dataset, by default None
-
-    #     Returns
-    #     -------
-    #     NormData
-    #         A new NormData instance containing the provided data
-
-    #     Notes
-    #     -----
-    #     Input arrays are automatically reshaped to 2D if they are 1D
-    #     """
-    #     data_vars = {}
-    #     coords = {}
-    #     attrs = attrs or {}
-    #     if subject_ids is not None:
-    #         attrs["real_ids"] = True  # type:ignore
-    #         data_vars["subjects"] = (["observations"], subject_ids)
-    #     else:
-    #         attrs["real_ids"] = False  # type: ignore
-    #         data_vars["subjects"] = (["observations"], list(np.arange(X.shape[0])))
-
-    #     coords["observations"] = list(np.arange(X.shape[0]))
-    #     lengths = []
-    #     if X is not None:
-    #         lengths.append(X.shape[0])
-    #         if X.ndim == 1:
-    #             X = X[:, None]
-    #         data_vars["X"] = (["observations", "covariates"], X)
-    #         if "covariates" in attrs:
-    #             if len(attrs["covariates"]) != X.shape[1]:
-    #                 raise ValueError("The number of covariate names must match the number of covariates")
-    #             coords["covariates"] = attrs["covariates"]
-    #         else:
-    #             coords["covariates"] = [f"covariate_{i}" for i in np.arange(X.shape[1])]
-    #     if Y is not None:
-    #         lengths.append(Y.shape[0])
-    #         if Y.ndim == 1:
-    #             Y = Y[:, None]
-    #         data_vars["Y"] = (["observations", "response_vars"], Y)
-    #         if "response_vars" in attrs:
-    #             if len(attrs["response_vars"]) != Y.shape[1]:
-    #                 raise ValueError("The number of response names must match the number of response variables")
-    #             coords["response_vars"] = attrs["response_vars"]
-    #         else:
-    #             coords["response_vars"] = [f"response_var_{i}" for i in np.arange(Y.shape[1])]
-    #     if batch_effects is not None:
-    #         lengths.append(batch_effects.shape[0])
-    #         if batch_effects.ndim == 1:
-    #             batch_effects = batch_effects[:, None]
-    #         data_vars["batch_effects"] = (["observations", "batch_effect_dims"], batch_effects)
-    #         if "batch_effect_dims" in attrs:
-    #             if len(attrs["batch_effect_dims"]) != batch_effects.shape[1]:
-    #                 raise ValueError("The number of batch effect names must match the number of batch effects")
-    #             coords["batch_effect_dims"] = attrs["batch_effect_dims"]
-    #         else:
-    #             coords["batch_effect_dims"] = [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
-    #     else:
-    #         data_vars["batch_effects"] = (["observations", "batch_effect_dims"], np.zeros((lengths[0], 1)))
-    #         coords["batch_effect_dims"] = ["dummy_batch_effect"]
-    #     assert len(set(lengths)) == 1, "All arrays must have the same number of observations"
-    #     return cls(name, data_vars, coords, attrs)
 
     @classmethod
     def from_ndarrays(
@@ -252,7 +167,7 @@ class NormData(xr.Dataset):
                     df_data[dataname] = array[:, i]
 
         if subject_ids is not None:
-            df_data["subjects"] = subject_ids
+            df_data["subject_ids"] = subject_ids
 
         return cls.from_dataframe(
             name=name,
@@ -263,7 +178,7 @@ class NormData(xr.Dataset):
                 [f"batch_effect_{i}" for i in range(batch_effects.shape[1])] if batch_effects is not None else None,
             ),
             response_vars=attrs.get("response_vars", [f"response_var_{i}" for i in range(Y.shape[1])] if Y is not None else None),
-            subject_ids="subjects" if subject_ids is not None else None,
+            subject_ids="subject_ids" if subject_ids is not None else None,
             attrs=attrs,
             remove_outliers=remove_outliers,
             z_threshold=z_threshold,
@@ -410,10 +325,10 @@ class NormData(xr.Dataset):
 
         if subject_ids is not None:
             attrs["real_ids"] = True  # type: ignore
-            data_vars["subjects"] = (["observations"], dataframe[subject_ids].to_numpy())
+            data_vars["subject_ids"] = (["observations"], dataframe[subject_ids].to_numpy())
         else:
             attrs["real_ids"] = False  # type: ignore
-            data_vars["subjects"] = (["observations"], list(np.arange(len(dataframe))))
+            data_vars["subject_ids"] = (["observations"], list(np.arange(len(dataframe))))
 
         coords["observations"] = list(np.arange(len(dataframe)))
 
@@ -482,12 +397,12 @@ class NormData(xr.Dataset):
         new_coords = {}
 
         if self.attrs["real_ids"] or other.attrs["real_ids"]:
-            new_data_vars["subjects"] = (
+            new_data_vars["subject_ids"] = (
                 ["observations"],
-                list(np.concatenate([self.subjects.to_numpy(), other.subjects.to_numpy()])),
+                list(np.concatenate([self.subject_ids.to_numpy(), other.subject_ids.to_numpy()])),
             )
         else:
-            new_data_vars["subjects"] = (["observations"], list(np.arange(self.X.shape[0] + other.X.shape[0])))
+            new_data_vars["subject_ids"] = (["observations"], list(np.arange(self.X.shape[0] + other.X.shape[0])))
 
         new_coords["observations"] = list(np.arange(self.X.shape[0] + other.X.shape[0]))
         covar_intersection = [c for c in self.covariates.to_numpy() if c in other.covariates.to_numpy()]
@@ -1089,11 +1004,11 @@ class NormData(xr.Dataset):
 
         acc.append(be)
 
-        subjects = xr.DataArray.to_dataframe(self.subjects, dim_order)[["subjects"]]
-        subjects.columns = [
-            ("subjects", "subjects"),
+        subject_ids = xr.DataArray.to_dataframe(self.subject_ids, dim_order)[["subject_ids"]]
+        subject_ids.columns = [
+            ("subject_ids", "subject_ids"),
         ]
-        acc.append(subjects)
+        acc.append(subject_ids)
         if hasattr(self, "centiles"):
             centiles = (
                 xr.DataArray.to_dataframe(self.centiles, dim_order)
@@ -1113,6 +1028,8 @@ class NormData(xr.Dataset):
     def save_zscores(self, save_dir: str) -> None:
         zdf = self.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
+        zdf = zdf.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
+        zdf = zdf[[ "subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
         zdf.index = zdf.index.astype(str)
         res_path = os.path.join(save_dir, f"Z_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
@@ -1150,6 +1067,15 @@ class NormData(xr.Dataset):
         centiles = self.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
         centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
+        subject_ids = self.subject_ids.to_dataframe()
+        subject_ids.index = subject_ids.index.astype(str)
+        subject_ids.columns = pd.MultiIndex.from_tuples([("subject_ids", "X")], names=["subject_ids", "centile"])
+        for c in self.centile.to_numpy():
+            subject_ids[("subject_ids", c)] = subject_ids[("subject_ids","X")]
+        subject_ids = subject_ids.drop(columns=[("subject_ids", "X")])
+        subject_ids = subject_ids.stack(level="centile")
+        centiles = centiles.merge(subject_ids, on=["observations","centile"], how="left")
+        centiles = centiles[[ "subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
         res_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
@@ -1195,6 +1121,8 @@ class NormData(xr.Dataset):
     def save_logp(self, save_dir: str) -> None:
         logp = self.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
+        logp = logp.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
+        logp = logp[[ "subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
         logp.index = logp.index.astype(str)
         res_path = os.path.join(save_dir, f"logp_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:

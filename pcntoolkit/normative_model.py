@@ -321,7 +321,7 @@ class NormativeModel:
             subjects = xr.DataArray(np.arange(n_samples), dims=("observations",))
             data = NormData(
                 name="synthesized",
-                data_vars={"X": X, "batch_effects": bes, "subjects": subjects},
+                data_vars={"X": X, "batch_effects": bes, "subject_ids": subjects},
                 coords={
                     "observations": np.arange(n_samples),
                     "response_vars": self.response_vars,
@@ -948,20 +948,20 @@ class NormativeModel:
         # We invert the map, so that the original keys are stored as the values
         # The original integer values are then converted to strings by json, but we can safely convert them back to ints when loading
         # We also add an index to the keys to make sure they are unique
-        if hasattr(self, "batch_effect_counts"):
+        if hasattr(self, "batch_effect_counts") and self.batch_effect_counts is not None:
             my_dict["inverse_batch_effect_counts"] = {
                 be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effect_counts[be].items())}
                 for be, mp in self.batch_effect_counts.items()
             }
-        if hasattr(self, "batch_effects_maps"):
+        if hasattr(self, "batch_effects_maps") and self.batch_effects_maps is not None:
             my_dict["batch_effects_maps"] = {
                 be: {f"{i}_{k}": v for i, (v, k) in enumerate(self.batch_effects_maps[be].items())}
                 for be in self.batch_effects_maps.keys()
             }
-        if hasattr(self, "batch_effect_covariate_ranges"):
+        if hasattr(self, "batch_effect_covariate_ranges") and self.batch_effect_covariate_ranges is not None:
             my_dict["batch_effect_covariate_ranges"] = copy.deepcopy(self.batch_effect_covariate_ranges)
 
-        if hasattr(self, "covariate_ranges"):
+        if hasattr(self, "covariate_ranges") and self.covariate_ranges is not None:
             my_dict["covariate_ranges"] = copy.deepcopy(self.covariate_ranges)
 
         return my_dict

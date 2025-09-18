@@ -111,7 +111,7 @@ def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age")
         xr.DataArray: Correlations of shape [n_response_vars, n_ages, n_ages]
     """
 
-    df = data.to_dataframe()[["X", "Z", "batch_effects", "subjects"]].droplevel(level=0, axis=1)
+    df = data.to_dataframe()[["X", "Z", "batch_effects", "subject_ids"]].droplevel(level=0, axis=1)
     # create dictionary of (age:indices)
     grps = df.groupby(covariate_name).indices | defaultdict(list)
     # get the max age in the dataset
@@ -122,7 +122,7 @@ def get_correlation_matrix(data: NormData, bandwidth: int, covariate_name="age")
     cors = np.tile(np.eye(max_age + 1), (n_responsevars, 1, 1))
     for age1, age2 in offset_indices(max_age, bandwidth):
         # merge two ages on subjects
-        merged = pd.merge(df.iloc[grps[age1]], df.iloc[grps[age2]], how="inner", on="subjects")
+        merged = pd.merge(df.iloc[grps[age1]], df.iloc[grps[age2]], how="inner", on="subject_ids")
         if len(merged) >= 4:
             # Compute correlations if there are enough samples
             for i, rv in enumerate(data.response_vars.to_numpy()):
