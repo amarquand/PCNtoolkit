@@ -386,7 +386,7 @@ class NormData(xr.Dataset):
         return dataframe.loc[idx]
 
 
-    def merge(self, other: NormData) -> NormData:
+    def merge(self, other: NormData, name: str | None = None) -> NormData:
         """
         Merge two NormData objects.
 
@@ -501,7 +501,7 @@ class NormData(xr.Dataset):
             new_data_vars["batch_effects"] = (["observations", "batch_effect_dims"], new_batch_effects.data)
 
         new_normdata = NormData(
-            name=self.attrs["name"],
+            name=name or (self.attrs["name"] + "_+_" + other.attrs["name"]),
             data_vars=new_data_vars,
             coords=new_coords,
             attrs=self.attrs,
@@ -652,6 +652,8 @@ class NormData(xr.Dataset):
         self.attrs["unique_batch_effects"] = {}
         self.attrs["batch_effect_counts"] = defaultdict(lambda: 0)
         self.attrs["covariate_ranges"] = {}
+
+        # TODO: the following can be done much easier using df.groupby.min and xarray.unstack, but that is a TODO for another day. This works for now.
         self.attrs["batch_effect_covariate_ranges"] = {}
         for dim in self.batch_effect_dims.to_numpy():
             dim_subset = my_be.sel(batch_effect_dims=dim)
@@ -712,9 +714,11 @@ class NormData(xr.Dataset):
                 dataset_name=self.name,
                 response_vars=extra_response_vars,
             )
-        if len(missing_covariates) > 0 or len(extra_covariates) > 0 or len(extra_response_vars) > 0:
+
+        if len(missing_covariates) > 0 or len(extra_covariates) > 0:
             return False
-        return self.unique_batch_effects == other.unique_batch_effects
+
+        return self.unique_batch_effects.keys() == other.unique_batch_effects.keys()
 
     def make_compatible(self: NormData, other: NormData):
         """Ensures datasets are compatible by merging the batch effects maps"""
@@ -728,6 +732,7 @@ class NormData(xr.Dataset):
             cov: {"min": min(mycr[cov]["min"], otcr[cov]["min"]), "max": max(mycr[cov]["max"], otcr[cov]["max"])}
             for cov in self.covariates.to_numpy()
         }
+
 
         mybecr = self.batch_effect_covariate_ranges
         otbecr = other.batch_effect_covariate_ranges
@@ -1241,7 +1246,6 @@ class NormData(xr.Dataset):
             self.statistics.to_dataframe()
             .reset_index()
             .pivot(index=["response_vars"], columns=["statistic"], values="statistics")
-            .round(2)
         )
         return statistics_df
 
