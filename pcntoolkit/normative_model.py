@@ -619,9 +619,9 @@ class NormativeModel:
         5. Evaluates the model performance
         6. Postprocesses the data
         """
-        self.preprocess(data)
+        # self.preprocess(data)
         self.evaluator.evaluate(data)
-        self.postprocess(data)
+        # self.postprocess(data)
 
     def compute_zscores(self, data: NormData) -> NormData:
         """
