@@ -154,7 +154,7 @@ def plot_centiles(
             conditionals_data.append(conditional_d)
 
     if not hasattr(centile_data, "centiles"):
-        model.compute_centiles(centile_data, centiles=centiles, **kwargs)
+        model.compute_centiles(centile_data, centiles=centiles, recompute=False,**kwargs)
     if scatter_data and show_thrivelines:
         model.compute_thrivelines(scatter_data, z_thrive=z_thrive)
     if show_yhat and not hasattr(centile_data, "yhat"):
