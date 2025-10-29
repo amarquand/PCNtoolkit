@@ -207,7 +207,7 @@ class NormativeModel:
             resp_transfer_data = transfer_data.sel({"response_vars": responsevar})
             X, be, be_maps, Y, _ = new_model.extract_data(resp_transfer_data)
             new_model[responsevar] = self[responsevar].transfer(X, be, be_maps, Y, **kwargs)
-            new_model[responsevar].be_maps = copy.deepcopy(be_maps)
+            #new_model[responsevar].be_maps = copy.deepcopy(be_maps)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
         new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
