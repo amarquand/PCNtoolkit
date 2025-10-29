@@ -1106,7 +1106,7 @@ class NormData(xr.Dataset):
         C_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         if os.path.isfile(C_path):
             df = pd.read_csv(C_path)
-            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile")]
+            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile" or i == "subject_ids")]
             centiles = np.unique(df["centile"])
             obs = np.unique(df["observations"])
             obs.sort()
