@@ -32,10 +32,11 @@ from typing import (
 
 # pylint: enable=deprecated-class
 import numpy as np
-from numpy.typing import ArrayLike
 import pandas as pd  # type: ignore
 import xarray as xr
 from nibabel.loadsave import load
+from numpy.typing import ArrayLike
+from scipy import stats
 from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
 # import datavars from xarray
@@ -43,8 +44,6 @@ from xarray.core.types import DataVars
 
 from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
-
-from scipy import stats
 
 
 class NormData(xr.Dataset):
@@ -257,6 +256,30 @@ class NormData(xr.Dataset):
             xarray_dataset.attrs,
         )
 
+    @classmethod
+    def from_netcdf(cls, name: str, netcdf_path: str) -> NormData:
+        """
+        Load a normative dataset from a netcdf file.
+
+        Parameters
+        ----------
+        name: str
+            The name of the dataset.
+        netcdf_path: str
+            The path to the netcdf file.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
+        xr_dset = xr.open_dataset(netcdf_path)
+        if xr_dset.attrs["is_scaled"]:
+            xr_dset.attrs["is_scaled"] = True if xr_dset.attrs["is_scaled"] == "True" else False
+        if xr_dset.attrs["real_ids"]:
+            xr_dset.attrs["real_ids"] = True if xr_dset.attrs["real_ids"] == "True" else False
+        return cls.from_xarray(name=name, xarray_dataset=xr_dset)
+
     # pylint: disable=arguments-differ
     @classmethod
     def from_dataframe(  # type:ignore
@@ -358,6 +381,31 @@ class NormData(xr.Dataset):
             attrs,
         )
 
+    def to_netcdf(self, netcdf_path: str) -> None:
+        """
+        Save the NormData object to a netcdf file.
+
+        Parameters
+        ----------
+        netcdf_path: str
+            The path to the netcdf file.
+
+        Returns
+        -------
+        None
+        """
+        # Remove or convert incompatible attributes before saving.
+        ds = self.copy(deep=False)
+        attrs = dict(ds.attrs)
+        attrs.pop("unique_batch_effects", None)
+        attrs.pop("batch_effect_counts", None)
+        attrs.pop("batch_effect_covariate_ranges", None)
+        attrs.pop("covariate_ranges", None)
+        attrs["is_scaled"] = str(attrs["is_scaled"])
+        attrs["real_ids"] = str(attrs["real_ids"])
+        ds.attrs = attrs
+        xr.Dataset.to_netcdf(ds, netcdf_path, invalid_netcdf=False, format="NETCDF4")
+
     @classmethod
     def remove_nan(cls, dataframe: pd.DataFrame) -> pd.DataFrame:
         """
@@ -367,7 +415,6 @@ class NormData(xr.Dataset):
         Output.print(f"Removed {len(dataframe) - len(cleaned)} NANs")
         return cleaned
 
-        
     @classmethod
     def remove_outliers(cls, dataframe: pd.DataFrame, continuous_vars: List[str], z_threshold: float = 3.0) -> pd.DataFrame:
         """
@@ -384,7 +431,6 @@ class NormData(xr.Dataset):
             idx = idx & (~outliers)
         Output.print(f"Removed {np.sum(~idx)} outliers")
         return dataframe.loc[idx]
-
 
     def merge(self, other: NormData, name: str | None = None) -> NormData:
         """
@@ -733,7 +779,6 @@ class NormData(xr.Dataset):
             for cov in self.covariates.to_numpy()
         }
 
-
         mybecr = self.batch_effect_covariate_ranges
         otbecr = other.batch_effect_covariate_ranges
         nbecr = {}
@@ -1034,7 +1079,7 @@ class NormData(xr.Dataset):
         zdf = self.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         zdf = zdf.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        zdf = zdf[[ "subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
+        zdf = zdf[["subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
         zdf.index = zdf.index.astype(str)
         res_path = os.path.join(save_dir, f"Z_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
@@ -1076,11 +1121,11 @@ class NormData(xr.Dataset):
         subject_ids.index = subject_ids.index.astype(str)
         subject_ids.columns = pd.MultiIndex.from_tuples([("subject_ids", "X")], names=["subject_ids", "centile"])
         for c in self.centile.to_numpy():
-            subject_ids[("subject_ids", c)] = subject_ids[("subject_ids","X")]
+            subject_ids[("subject_ids", c)] = subject_ids[("subject_ids", "X")]
         subject_ids = subject_ids.drop(columns=[("subject_ids", "X")])
         subject_ids = subject_ids.stack(level="centile")
-        centiles = centiles.merge(subject_ids, on=["observations","centile"], how="left")
-        centiles = centiles[[ "subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
+        centiles = centiles.merge(subject_ids, on=["observations", "centile"], how="left")
+        centiles = centiles[["subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
         res_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
@@ -1127,7 +1172,7 @@ class NormData(xr.Dataset):
         logp = self.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
         logp = logp.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        logp = logp[[ "subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
+        logp = logp[["subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
         logp.index = logp.index.astype(str)
         res_path = os.path.join(save_dir, f"logp_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
