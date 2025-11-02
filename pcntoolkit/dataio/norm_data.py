@@ -699,29 +699,36 @@ class NormData(xr.Dataset):
         self.attrs["batch_effect_counts"] = defaultdict(lambda: 0)
         self.attrs["covariate_ranges"] = {}
 
-        # TODO: the following can be done much easier using df.groupby.min and xarray.unstack, but that is a TODO for another day. This works for now.
-        self.attrs["batch_effect_covariate_ranges"] = {}
-        for dim in self.batch_effect_dims.to_numpy():
-            dim_subset = my_be.sel(batch_effect_dims=dim)
-            uniques, counts = np.unique(dim_subset, return_counts=True)
+        # Vectorized implementation using pandas groupby/agg
+        be_cols = self.batch_effect_dims.to_numpy()
+        be_df = pd.DataFrame(my_be.values, columns=be_cols)
 
-            self.attrs["unique_batch_effects"][dim] = list(uniques)
-            self.attrs["batch_effect_counts"][dim] = {k: int(v) for k, v in zip(uniques, counts)}
+        x_available = "X" in self.data_vars
+        if x_available:
+            covs = self.covariates.to_numpy()
+            X_df = pd.DataFrame(self.X.values, columns=covs)
+
+        self.attrs["batch_effect_covariate_ranges"] = {}
+        for dim in be_cols:
+            vc = be_df[dim].value_counts(sort=False)
+            self.attrs["unique_batch_effects"][dim] = vc.index.astype(str).tolist()
+            self.attrs["batch_effect_counts"][dim] = {str(k): int(v) for k, v in vc.to_dict().items()}
             self.attrs["batch_effect_covariate_ranges"][dim] = {}
-            if self.X is not None:
-                for u in uniques:
-                    self.attrs["batch_effect_covariate_ranges"][dim][u] = {}
-                    for c in self.covariates.to_numpy():
-                        u_mask = dim_subset.values == u
-                        my_c = self.X.sel(covariates=c).values[u_mask]
-                        my_min = my_c.min()
-                        my_max = my_c.max()
-                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"min": my_min, "max": my_max}
-        for c in self.covariates.to_numpy():
-            my_c = self.X.sel(covariates=c).values
-            my_min = my_c.min()
-            my_max = my_c.max()
-            self.attrs["covariate_ranges"][c] = {"min": my_min, "max": my_max}
+
+            if x_available:
+                grouped = X_df.groupby(be_df[dim], sort=False).agg(["min", "max"])
+                for u, row in grouped.iterrows():
+                    self.attrs["batch_effect_covariate_ranges"][dim][u] = {
+                        c: {"min": float(row[(c, "min")]), "max": float(row[(c, "max")])} for c in covs
+                    }
+
+        if x_available:
+            overall = X_df.agg(["min", "max"])
+            for c in covs:
+                self.attrs["covariate_ranges"][c] = {
+                    "min": float(overall.loc["min", c]),
+                    "max": float(overall.loc["max", c]),
+                }
 
     def check_compatibility(self, other: NormData) -> bool:
         """
