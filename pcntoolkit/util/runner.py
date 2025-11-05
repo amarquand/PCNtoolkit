@@ -93,8 +93,9 @@ class Runner:
         self.job_type = job_type
         self.n_batches = n_batches
         self.batch_size = batch_size
-        if self.n_batches is not None and self.batch_size is not None:
-            self.n_batches = None
+        if (self.n_batches is not None) and (self.batch_size is not None):
+            Output.warning(Warnings.BATCH_SIZE_AND_N_BATCHES_SPECIFIED, n_batches=self.n_batches, batch_size=self.batch_size)
+            self.batch_size = None
         self.n_cores = n_cores
         try:
             if isinstance(time_limit, str):
@@ -713,6 +714,9 @@ class Runner:
         """
 
         if self.parallelize:
+            if self.batch_size is not None and self.n_batches is not None:
+                if not (self.n_response_vars // self.n_batches == self.batch_size):
+                    raise ValueError(Output.error(Errors.ERROR_BATCH_SIZE_AND_N_BATCHES_MISMATCH, batch_size=self.batch_size, n_batches=self.n_batches, n_response_vars=len(first_data_source.response_vars)))
             if self.n_batches is None and self.batch_size is not None:
                 self.n_batches = len(first_data_source.response_vars) // self.batch_size
             elif self.n_batches is not None and self.batch_size is None:

@@ -96,6 +96,7 @@ Total failed jobs: {total_failed_jobs}
 
 
 class Warnings:
+    BATCH_SIZE_AND_N_BATCHES_SPECIFIED = "Batch size and number of batches specified. Batch size will be ignored."
     MISSING_COVARIATES = "The dataset {dataset_name} is missing the following covariates: {covariates}"
     EXTRA_COVARIATES = "The dataset {dataset_name} has too many covariates: {covariates}"
     EXTRA_RESPONSE_VARS = "The dataset {dataset_name} has too many response variables: {response_vars}"
@@ -138,6 +139,7 @@ class Warnings:
 
 
 class Errors:
+    ERROR_BATCH_SIZE_AND_N_BATCHES_MISMATCH = "Batch size ({batch_size}) and number of batches ({n_batches}) are both specified, but do not match the number of response variables ({n_response_vars})"
     ERROR_ENVIRONMENT_NOT_FOUND = (
         "Environment {environment} not found. Please specify the path to the python environment using the environment keyword."
     )
