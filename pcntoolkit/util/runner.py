@@ -151,7 +151,7 @@ class Runner:
             if observe:
                 self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
                 self.job_observer.wait_for_jobs()
-                self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+                _, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
                 if data_sources:
                     for data_source in data_sources:
                         self.load_data(data_source)
@@ -961,7 +961,7 @@ exit $exit_code
         if observe:
             self.job_observer = JobObserver(self.active_jobs, self.job_type, self.unique_log_dir, self.task_id)
             self.job_observer.wait_for_jobs()
-            self.active_jobs, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
+            _, self.finished_jobs, self.failed_jobs = self.check_jobs_status()
 
         self.save()
 
