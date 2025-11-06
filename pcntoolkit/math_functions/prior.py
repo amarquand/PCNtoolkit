@@ -413,9 +413,9 @@ class LinearPrior(BasePrior):
         **kwargs,
     ):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
-        self.slope = slope or make_prior(dist_name="Normal", dist_params=(0, 5.0))
+        self.slope = slope or make_prior(dist_name="Normal", dist_params=(0, 10.0))
         self.slope.dims = ("covariates",) if not self.dims else ("covariates", *self.dims)
-        self.intercept = intercept or make_prior(dist_name="Normal", dist_params=(0, 2.0))
+        self.intercept = intercept or make_prior(dist_name="Normal", dist_params=(0, 5.0))
         self.intercept.dims = self.dims
         self.sample_dims = ("observations",)
         self.set_name(self.name)
