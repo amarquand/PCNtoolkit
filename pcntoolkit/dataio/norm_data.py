@@ -670,12 +670,14 @@ class NormData(xr.Dataset):
                         my_c = self.X.sel(covariates=c).values[u_mask]
                         my_min = my_c.min()
                         my_max = my_c.max()
-                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"min": my_min, "max": my_max}
+                        my_mean = my_c.mean()
+                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"mean": my_mean, "min": my_min, "max": my_max}
         for c in self.covariates.to_numpy():
             my_c = self.X.sel(covariates=c).values
+            my_mean = my_c.mean()
             my_min = my_c.min()
             my_max = my_c.max()
-            self.attrs["covariate_ranges"][c] = {"min": my_min, "max": my_max}
+            self.attrs["covariate_ranges"][c] = {"mean": my_mean, "min": my_min, "max": my_max}
 
     def check_compatibility(self, other: NormData) -> bool:
         """
