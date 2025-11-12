@@ -156,10 +156,8 @@ class NormativeModel:
             plot_qq(data, plot_id_line=True, save_dir=plotdir)
             plot_centiles(
                 self,
+                data,
                 save_dir=plotdir,
-                show_other_data=True,
-                harmonize_data=True,
-                scatter_data=data,
             )
         return data
 
