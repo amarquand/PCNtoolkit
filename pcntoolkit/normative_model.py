@@ -142,19 +142,15 @@ class NormativeModel:
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores, centiles, logp, yhat for each observation using fitted regression models."""
         self.set_ensure_save_dirs()
-        data = self.compute_zscores(data)
-        data = self.compute_centiles(data, recompute=True)
-        data = self.compute_logp(data)
-        print("1", data.logp.mean())
-        data = self.compute_yhat(data)
-        print("2", data.logp.mean())
+        self.compute_zscores(data)
+        self.compute_centiles(data, recompute=True)
+        self.compute_logp(data)
+        self.compute_yhat(data)
         if self.evaluate_model:
             self.evaluate(data)
-        print("3", data.logp.mean())
         if self.saveresults:
             resultsdir = os.path.join(self.save_dir, "results")
             data.save_results(resultsdir)
-            print("4", data.logp.mean())
         if self.saveplots:
             plotdir = os.path.join(self.save_dir, "plots")
             plot_qq(data, plot_id_line=True, save_dir=plotdir)
@@ -700,8 +696,9 @@ class NormativeModel:
                         Warnings.CENTILES_ALREADY_COMPUTED_FOR_CENTILES, dataset_name=data.attrs["name"], centiles=centiles
                     )
                     return data
-            data = data.drop_vars(["centiles"])
-            data = data.drop_dims(["centile"])
+            del data.coords['centile']
+            del data.dims.mapping['centile']
+            del data.vars['centiles']
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["centiles"] = xr.DataArray(
@@ -740,9 +737,9 @@ class NormativeModel:
         self.preprocess(data)
 
         # Drop the centiles and dimensions if they already exist
-        centiles_already_computed = "logp" in data
-        if centiles_already_computed:
-            data = data.drop_vars(["logp"])
+        logp_already_computed = "logp" in data
+        if logp_already_computed:
+            data.drop_vars(["logp"])
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["logp"] = xr.DataArray(
@@ -757,10 +754,8 @@ class NormativeModel:
             X, be, _, Y, _ = self.extract_data(resp_predict_data)
             Output.print(Messages.COMPUTING_LOGP_MODEL, model_name=responsevar)
             data["logp"].loc[{"response_vars": responsevar}] = self[responsevar].elemwise_logp(X, be, Y)
-            print("-1", data.logp.sel({"response_vars": responsevar}).mean())
 
         self.postprocess(data)
-        print("0", data.logp.mean())
         return data
 
     def compute_yhat(self, data: NormData) -> NormData:
@@ -810,9 +805,10 @@ class NormativeModel:
                 if all([c in data.offset.values for c in offsets]):
                     Output.warning(Warnings.THRIVELINES_ALREADY_COMPUTED_FOR, dataset_name=data.attrs["name"], offsets=offsets)
                     return data
-            data = data.drop_vars(["thrive_Z"])
-            data = data.drop_vars(["thrive_Y"])
-            data = data.drop_dims(["offset"])
+            del data["thrive_Z"]
+            del data["thrive_Y"]
+            del data.coords["offset"]
+            del data.dims.mapping["offset"]
         data.attrs["z_thrive"] = z_thrive
 
         # Make Z-score predictions if needed
