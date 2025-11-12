@@ -35,7 +35,6 @@ class Runner:
     preamble: str = "module load anaconda3"
     memory: str = "5gb"
     max_retries: int = 3
-    random_sleep_scale: float = 0.1
     log_dir: str = ""
     temp_dir: str = ""
 
@@ -49,7 +48,6 @@ class Runner:
         time_limit: str | int = "00:05:00",
         memory: str = "5GB",
         max_retries: int = 3,
-        random_sleep_scale: float = 0.1,
         environment: Optional[str] = None,
         cross_validate: bool = False,
         cv_folds: int = 5,
@@ -109,7 +107,6 @@ class Runner:
             raise ValueError(Output.error(Errors.ERROR_PARSING_TIME_LIMIT, time_limit_str=time_limit))
         self.memory = memory
         self.max_retries = max_retries
-        self.random_sleep_scale = random_sleep_scale
         if parallelize:
             if not environment:
                 raise ValueError(Output.error(Errors.ERROR_NO_ENVIRONMENT_SPECIFIED))
@@ -795,7 +792,7 @@ export PYTHONUNBUFFERED=1
 # Force stdout/stderr to be unbuffered
 exec 1> >(tee -a {out_file})
 exec 2> >(tee -a {err_file})
-python {current_file_path} {python_callable_path} {data_path} {self.max_retries} {self.random_sleep_scale}
+python {current_file_path} {python_callable_path} {data_path} {self.max_retries} 
 
 exit_code=$?
 if [ $exit_code -eq 0 ]; then
@@ -976,14 +973,13 @@ def load_and_execute(args):
     Parameters
     ----------
     args : list[str]
-        A list of arguments. The first argument is the path to the callable. The second argument is the path to the data. The third argument is the max number of retries.  The fourth argument is the scale of the random sleep.
+        A list of arguments. The first argument is the path to the callable. The second argument is the path to the data. The third argument is the max number of retries.  
     """
     retries = int(args[2])
-    scale = float(args[3])
     for i in range(retries + 1):
         # Sleep for a random amount of time.
         # Try to avoid some async access issues.
-        time.sleep(random.uniform(0, scale))
+        time.sleep(random.uniform(0, 0.1))
         try:
             Output.print(Messages.LOADING_CALLABLE, path=args[0])
             with open(args[0], "rb") as executable_path:
