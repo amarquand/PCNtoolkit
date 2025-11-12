@@ -698,7 +698,7 @@ class NormativeModel:
                     return data
             del data.coords['centile']
             del data.dims.mapping['centile']
-            del data.vars['centiles']
+            del data['centiles']
 
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["centiles"] = xr.DataArray(
