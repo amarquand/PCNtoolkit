@@ -51,7 +51,7 @@ def plot_centiles(
     """
     default_scatter_kwargs = {
         "color": "#f7932f",
-        "alpha": min(1, 1000/np.sqrt(len(scatter_data.X))),
+        "alpha": min(1, 20/np.sqrt(len(scatter_data.X))),
         "s": 30,
         "marker": "o",
         "edgecolor": "black",
