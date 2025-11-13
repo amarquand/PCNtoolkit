@@ -296,7 +296,7 @@ class RandomPrior(BasePrior):
         super().__init__(name, dims, mapping, mapping_params, **kwargs)
         self.mu = mu or make_prior(dist_name="Normal", dist_params=(0, 2.0))
         self.sigma = sigma or make_prior(
-            dist_name="Normal", dist_params=(1.0, 1.0), mapping="softplus", mapping_params=(0.0, 3.0)
+            dist_name="Normal", dist_params=(1.0, 1.0), mapping="softplus", mapping_params=(0.0, 1.0)
         )
         self.sigmas = {}
         self.offsets = {}
