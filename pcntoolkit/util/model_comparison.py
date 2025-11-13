@@ -16,8 +16,16 @@ def compare_hbr_models(models: dict[str, str]):
     loaded_models: dict[str, NormativeModel] = {}
     for k, v in models.items():
         try:
+
             m = NormativeModel.load(v)
-            m.predict(m.synthesize())
+            savemodels, saveplots, saveresults = m.savemodel, m.saveplots, m.saveresults
+            m.savemodel = False
+            m.saveplots = False
+            m.saveresults = False
+            m.predict(m.synthesize(n_samples=10))
+            m.savemodel = savemodels
+            m.saveplots = saveplots
+            m.saveresults = saveresults
             loaded_models[k] = m
         except Exception as e:
             print("Cannot load model at location:", v, e)
