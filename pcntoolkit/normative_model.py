@@ -736,11 +736,6 @@ class NormativeModel:
         """
         self.preprocess(data)
 
-        # Drop the centiles and dimensions if they already exist
-        logp_already_computed = "logp" in data
-        if logp_already_computed:
-            data.drop_vars(["logp"])
-
         respvar_intersection = set(self.response_vars).intersection(data.response_vars.values)
         data["logp"] = xr.DataArray(
             np.zeros((data.X.shape[0], len(respvar_intersection))),
