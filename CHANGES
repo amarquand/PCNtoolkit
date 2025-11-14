@@ -135,3 +135,19 @@ Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMP
 1. Fix incorrect application of change-of-variables in BLR `evaluate_logp`
 1. Correctly use semantic versioning
 1. Correctly use the `__version__` attribute
+
+
+# Version 1.1.2
+
+**Changes**
+1. Better default centile plot
+2. Improve MSLL computation
+3. Speedup model comparison
+
+**Bug fixes**
+1. Fix bug with re-submitting a runner's failed jobs
+2. Fix bug with incremental file backup function
+3. Solve problem that occurs when both n_batches and batch_size are specified
+4. Small updates to default prior settings in HBR
+5. Improve MSLL computation
+6. Fix bug with nm.predict, it is now fully in-place on the Normdata
