@@ -67,7 +67,6 @@ First we download a small example dataset from github.
     train, test = norm_data.train_test_split()
 
 
-
 .. parsed-literal::
 
     Process: 61853 - 2025-09-04 15:45:56 - Removed 0 NANs
@@ -142,7 +141,7 @@ expansion to use, and more.
             degree=3, nknots=5
         ),  # We use a B-spline basis expansion for the mean, so the predicted mean is a smooth function of the covariates
         fixed_effect=True,  # By setting fixed_effect=True, we \model offsets in the mean for each individual batch effect,
-        fixed_effect_slope=True, # We also model a fixed effect in the slope of the mean for each individual batch effect
+        fixed_effect_slope=True,  # We also model a fixed effect in the slope of the mean for each individual batch effect
         fixed_effect_var_slope=True,
         heteroskedastic=True,  # We want the variance to be a function of the covariates too
         warp_name="warpsinharcsinh",  # We configure a sinh-arcsinh warp, so we can model flexible non-gaussian distributions
@@ -2449,7 +2448,6 @@ site B.
         harmonize_data=True,
         show_legend=True,
     )
-
 
 
 .. parsed-literal::

@@ -70,7 +70,6 @@ First we download a small example dataset from github.
     # Split into train and test sets
     train, test = norm_data.train_test_split()
 
-
 .. code:: ipython3
 
     # Visualize the data
@@ -269,7 +268,6 @@ BetaLikelihood, which we will use to model our response variable.
         tune=500,
         chains=4,
     )
-
 
 After specifying the regression model, we can configure a normative
 model.
@@ -3127,7 +3125,6 @@ site B.
     )
 
 
-
 .. parsed-literal::
 
     /opt/anaconda3/envs/uv_refactor/lib/python3.12/site-packages/pcntoolkit/util/output.py:218: UserWarning: Process: 64750 - 2025-06-23 16:04:14 - remove_Nan is set to False. Ensure your data does not contain NaNs in critical columns, or handle them appropriately.
@@ -3268,4 +3265,3 @@ Here are some more HBR model configuration examples. You can replace the
         tune=500,
         chains=4,
     )
-

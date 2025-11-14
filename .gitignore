@@ -98,3 +98,5 @@ prof/*
 examples/pcntoolkit_resources/data/*
 cspell.json
 examples/sandbox_2.ipynb
+doc/pages/tutorials/sandbox_2_files/*
+doc/pages/tutorials/sandbox_2.rst

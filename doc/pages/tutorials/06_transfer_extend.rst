@@ -88,7 +88,6 @@ First we download a small example dataset from github.
     train, test = fit_data.train_test_split()
     transfer_train, transfer_test = transfer_data.train_test_split()
 
-
 .. code:: ipython3
 
     # Visualize the data

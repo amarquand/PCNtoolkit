@@ -61,8 +61,6 @@
     
     data_group1, data_group23 = norm_data.batch_effects_split({"site": group1}, names=("group1", "group23"))
     data_group2, data_group3 = data_group23.batch_effects_split({"site": group2}, names=("group2", "group3"))
-    
-
 
 
 .. parsed-literal::
@@ -1265,7 +1263,9 @@
 .. code:: ipython3
 
     # We can pass a list of models or paths to the merge function.
-    merged_model = NormativeModel.merge(save_dir="resources/hbr_merge/merged_model", models=["resources/hbr_merge/model1", model2, model3])
+    merged_model = NormativeModel.merge(
+        save_dir="resources/hbr_merge/merged_model", models=["resources/hbr_merge/model1", model2, model3]
+    )
     # merged_model = NormativeModel.load(path="resources/hbr_merge/merged_model")
 
 
@@ -1649,7 +1649,6 @@
     merged_model.predict(data_group2)
     merged_model.predict(data_group3)
     merged_model.predict(norm_data)
-
 
 
 

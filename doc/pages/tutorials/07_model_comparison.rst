@@ -52,7 +52,6 @@
     train, test = norm_data.train_test_split()
 
 
-
 .. parsed-literal::
 
     Process: 88956 - 2025-09-04 16:31:34 - Removed 0 NANs
@@ -76,7 +75,8 @@
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 5.0)),
         # The intercept is not random, because we want to compare to a model with random intercept
         intercept=make_prior(
-            dist_name = "Normal", dist_params = (0.0, 2.0),
+            dist_name="Normal",
+            dist_params=(0.0, 2.0),
         ),
         # We use a B-spline basis function to allow for non-linearity in the mean.
         basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),

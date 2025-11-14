@@ -17,7 +17,6 @@ more.
     
     from pcntoolkit import NormData
 
-
 Creating a NormData object
 --------------------------
 
@@ -1331,7 +1330,6 @@ observations.
 
 
 
-
 .. raw:: html
 
     <div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
@@ -2419,7 +2417,6 @@ applicable to both of them.
     )
     # Create an arbitrary split as a placeholder for a predefined split ()
     train, test = train_test_split(data, test_size=100)
-
 
 .. code:: ipython3
 

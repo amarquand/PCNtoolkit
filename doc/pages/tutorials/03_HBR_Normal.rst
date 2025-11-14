@@ -69,7 +69,6 @@ First we download a small example dataset from github.
     # Split into train and test sets
     train, test = norm_data.train_test_split()
 
-
 .. code:: ipython3
 
     # Visualize the data
@@ -2962,7 +2961,6 @@ site B.
         harmonize_data=True,
         show_legend=True,
     )
-
 
 
 .. parsed-literal::
