@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd  # type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
-
+from typing import Optional
 from pcntoolkit.dataio.norm_data import NormData
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ sns.set_theme(style="darkgrid")
 
 def plot_centiles(
     model: "NormativeModel",
-    scatter_data: NormData,
+    scatter_data: Optional[NormData] = None,
     centiles: List[float] = [0.05, 0.25, 0.5, 0.75, 0.95],
     covariate: str | None = None,
     scatter_kwargs: dict = {},
@@ -105,7 +105,8 @@ def plot_centiles(
     if not model.has_batch_effect:
         batch_effects = {}
 
-    model.harmonize(scatter_data, reference_batch_effect=batch_effects)
+    if scatter_data:
+        model.harmonize(scatter_data, reference_batch_effect=batch_effects)
 
     for response_var in model.response_vars:
         _plot_centiles(centile_data=centile_data, response_var=response_var, covariate=covariate, scatter_data=scatter_data, scatter_kwargs=complete_scatter_kwargs, save_dir=save_dir)
@@ -115,7 +116,7 @@ def _plot_centiles(
     centile_data: NormData,
     response_var: str,
     covariate: str = None,  # type: ignore
-    scatter_data: NormData | None = None,
+    scatter_data: Optional[NormData] = None,
     scatter_kwargs: dict = {},
     save_dir: str | None = None,
 ) -> None:
@@ -191,8 +192,12 @@ def _plot_centiles(
             **scatter_kwargs
         )
 
-        plotname = f"centiles_{response_var}_{scatter_data.name}_harmonized"
-        title = f"Centiles of {response_var}\n With harmonized {scatter_data.name} data"
+        if scatter_data:
+            plotname = f"centiles_{response_var}_{scatter_data.name}_harmonized"
+            title = f"Centiles of {response_var}\n With harmonized {scatter_data.name} data"
+        else:
+            plotname = f"centiles_{response_var}"
+            title = f"Centiles of {response_var}"
 
     plt.title(title)
     plt.xlabel(covariate)
