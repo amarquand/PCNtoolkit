@@ -789,6 +789,11 @@ class Runner:
 source activate {self.environment}
 # Force Python to use unbuffered output
 export PYTHONUNBUFFERED=1
+# Ensure that it does not spawn multiple threads randomly.
+export OMP_NUM_THREADS=self.n_cores
+export MKL_NUM_THREADS=self.n_cores
+export OPENBLAS_NUM_THREADS=self.n_cores
+export NUMEXPR_NUM_THREADS=self.n_cores
 # Force stdout/stderr to be unbuffered
 exec 1> >(tee -a {out_file})
 exec 2> >(tee -a {err_file})
@@ -832,6 +837,11 @@ exit $exit_code
 source activate {self.environment}
 # Force Python to use unbuffered output
 export PYTHONUNBUFFERED=1
+# Ensure that it does not spawn multiple threads randomly.
+export OMP_NUM_THREADS=self.n_cores
+export MKL_NUM_THREADS=self.n_cores
+export OPENBLAS_NUM_THREADS=self.n_cores
+export NUMEXPR_NUM_THREADS=self.n_cores
 # Force stdout/stderr to be unbuffered
 exec 1> >(tee -a {out_file})
 exec 2> >(tee -a {err_file})
