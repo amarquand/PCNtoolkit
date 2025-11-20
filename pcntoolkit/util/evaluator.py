@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import xarray as xr
 from scipy import stats  # type: ignore
-from sklearn.metrics import explained_variance_score, r2_score
+from sklearn.metrics import explained_variance_score, r2_score,mean_absolute_percentage_error
 
 from pcntoolkit.dataio.norm_data import NormData
 
@@ -358,6 +358,7 @@ class Evaluator:
         """
         logp = data["logp"].values
         y = data["Y"].values
+        
         # model mean log loss (negative log-likelihood)
         mll_model = -np.mean(logp)
 
@@ -446,8 +447,9 @@ class Evaluator:
         """
         y = data["Y"].values
         yhat = data["Yhat"].values
-        mape = np.abs((y - yhat) / y).mean()
-        return float(mape)
+
+        return mean_absolute_percentage_error(y, yhat)
+
 
     def empty_statistic(self) -> xr.DataArray:
         return xr.DataArray(
