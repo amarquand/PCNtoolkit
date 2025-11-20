@@ -147,6 +147,7 @@ Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMP
 5. Save predictions in normal order
 6. Switch to SKLearn MAPE
 7. Add centered random parameterization
+8. Change default random offset distribution to ZeroSumNormal
 
 **Bug fixes**
 1. Fix bug with re-submitting a runner's failed jobs
