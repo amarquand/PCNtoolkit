@@ -1055,6 +1055,17 @@ class NormData(xr.Dataset):
                     new_results = zdf
                 f.seek(0)
                 f.truncate()
+                if "observations" in new_results.columns:
+                    new_results = new_results.sort_values(
+                        by="observations",
+                        key=lambda col: pd.to_numeric(col, errors="coerce"),
+                    )
+                    new_results["observations"] = new_results["observations"].astype(str)
+                else:
+                    new_results = new_results.sort_index(
+                        key=lambda idx: pd.to_numeric(idx, errors="coerce")
+                    )
+                    new_results.index = new_results.index.astype(str)
                 new_results.to_csv(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
@@ -1100,6 +1111,17 @@ class NormData(xr.Dataset):
                     new_results = centiles
                 f.seek(0)
                 f.truncate()
+                if "observations" in new_results.columns:
+                    new_results = new_results.sort_values(
+                        by="observations",
+                        key=lambda col: pd.to_numeric(col, errors="coerce"),
+                    )
+                    new_results["observations"] = new_results["observations"].astype(str)
+                else:
+                    new_results = new_results.sort_index(
+                        key=lambda idx: pd.to_numeric(idx, errors="coerce")
+                    )
+                    # new_results.index = new_results.index.astype(str)
                 new_results.to_csv(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
@@ -1148,6 +1170,17 @@ class NormData(xr.Dataset):
                     new_results = logp
                 f.seek(0)
                 f.truncate()
+                if "observations" in new_results.columns:
+                    new_results = new_results.sort_values(
+                        by="observations",
+                        key=lambda col: pd.to_numeric(col, errors="coerce"),
+                    )
+                    new_results["observations"] = new_results["observations"].astype(str)
+                else:
+                    new_results = new_results.sort_index(
+                        key=lambda idx: pd.to_numeric(idx, errors="coerce")
+                    )
+                    new_results.index = new_results.index.astype(str)
                 new_results.to_csv(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
