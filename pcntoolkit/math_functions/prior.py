@@ -338,10 +338,10 @@ class RandomPrior(BasePrior):
                     self.sigmas[be_i].set_name(f"{be_i}_sigma_{self.name}")
                 sig = self.sigmas[be_i].compile(model, X, be, be_maps, Y)
                 # norm = pm.Normal(f"normalized_{be_i}_offset_{self.name}", dims=be_dims,mu=0,sigma=1)
-                norm = pm.ZeroSumNormal(f"normalized_{be_i}_offset_{self.name}", dims=be_dims, sigma=1)
+                norm = pm.ZeroSumNormal(f"normalized_{be_i}_offset_{self.name}", dims=be_dims, sigma=1).T
                 self.scaled_offsets[be_i] = pm.Deterministic(f"{be_i}_offset_{self.name}", sig * norm)
                 indices = model[f"{be_i}_data"]
-                accumulant = self.scaled_offsets[be_i][...,indices]
+                accumulant = self.scaled_offsets[be_i][indices]
                 acc += accumulant
             self.dist = acc
         return self.dist
