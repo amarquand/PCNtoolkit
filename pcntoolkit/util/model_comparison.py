@@ -1,7 +1,7 @@
 from pcntoolkit.normative_model import NormativeModel
 import arviz as az
 import pymc as pm
-
+import math
 
 def compare_hbr_models(models: dict[str, str]):
     """Compares HBR models
@@ -22,7 +22,8 @@ def compare_hbr_models(models: dict[str, str]):
             m.savemodel = False
             m.saveplots = False
             m.saveresults = False
-            m.predict(m.synthesize(n_samples=10))
+            n_samples = int(2*math.exp(sum([math.log(len(uni)) for uni in m.unique_batch_effects.values()])))
+            m.predict(m.synthesize(n_samples=n_samples))
             m.savemodel = savemodels
             m.saveplots = saveplots
             m.saveresults = saveresults
