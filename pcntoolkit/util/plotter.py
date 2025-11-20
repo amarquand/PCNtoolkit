@@ -477,11 +477,12 @@ def _plot_centiles_advanced(
                 x=covariate,
                 y=response_var,
                 label=scatter_data.name,
-                color="black",
-                s=20,
-                alpha=0.6,
-                zorder=1,
-                linewidth=0,
+                color = "#f7932f",
+                alpha = min(1, 20/np.sqrt(len(scatter_data.X))),
+                s = 30,
+                marker="o",
+                edgecolor="black",
+                linewidth=0
             )
             if show_thrivelines:
                 plt.plot(scatter_filter.thrive_X.to_numpy().T, scatter_filter[thriveline_data_name].to_numpy().T)
@@ -514,9 +515,9 @@ def _plot_centiles_advanced(
                     data=non_be_df,
                     x=covariate,
                     y=response_var,
-                    color="black",
+                    color="#696969",
                     style=markers,
-                    markers={"Other data":"+"},
+                    markers={"Other data":"s"},
                     linewidth=0,
                     s=20,
                     alpha=0.4,
