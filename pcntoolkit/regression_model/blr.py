@@ -87,7 +87,7 @@ class BLR(RegressionModel):
         fixed_effect_var_slope_indices : list[int] | "all", optional
             If fixed_effect_slope is True, the indices of the columns in the design matrix for which to model a fixed effect in the slope of the variance. By default  this is [0], so a fixed effect is learned on the first column of the design matrix. Set to "all" to model a fixed effect on all columns of the design matrix.
         warp_name : str, optional
-            Name of the warp function to use, by default None
+            Name of the warp function to use, by default None. Can be one of "WarpSinhArcsinh", "WarpLog", "WarpBoxCox", "WarpAffine", "WarpCompose"
         warp_reparam : bool, optional
             Whether to use a reparameterized warp function, by default False
         basis_function_mean : BasisFunction, optional
