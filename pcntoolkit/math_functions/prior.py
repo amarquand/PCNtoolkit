@@ -332,20 +332,129 @@ class RandomPrior(BasePrior):
             else:
                 acc = mu_samples  # type: ignore
             for be_i in model.coords["batch_effect_dims"]:  # type:ignore
-                be_dims = (be_i,) if not self.dims else (be_i, *self.dims)
+                be_dims = (be_i,) if not self.dims else ( *self.dims, be_i)
                 if be_i not in self.sigmas:
                     self.sigmas[be_i] = copy.deepcopy(self.sigma)
                     self.sigmas[be_i].set_name(f"{be_i}_sigma_{self.name}")
-                self.scaled_offsets[be_i] = pm.Deterministic(
-                    f"{be_i}_offset_{self.name}",
-                    self.sigmas[be_i].compile(model, X, be, be_maps, Y) 
-                    * pm.Normal(
-                        f"normalized_{be_i}_offset_{self.name}",
-                        dims=be_dims,  # type:ignore
-                    ),
-                    dims=be_dims,
+                sig = self.sigmas[be_i].compile(model, X, be, be_maps, Y)
+                # norm = pm.Normal(f"normalized_{be_i}_offset_{self.name}", dims=be_dims,mu=0,sigma=1)
+                norm = pm.ZeroSumNormal(f"normalized_{be_i}_offset_{self.name}", dims=be_dims, sigma=1)
+                self.scaled_offsets[be_i] = pm.Deterministic(f"{be_i}_offset_{self.name}", sig * norm)
+                indices = model[f"{be_i}_data"]
+                accumulant = self.scaled_offsets[be_i][...,indices]
+                acc += accumulant
+            self.dist = acc
+        return self.dist
+
+    def transfer(self, idata: az.InferenceData, **kwargs) -> "RandomPrior":
+        new_mu = self.mu.transfer(idata, **kwargs)
+        new_sigma = copy.deepcopy(self.sigma)
+        new_prior = RandomPrior(
+            name=self.name, dims=self.dims, mapping=self.mapping, mapping_params=self.mapping_params, mu=new_mu, sigma=new_sigma
+        )
+        for be_i in self.sigmas.keys():
+            new_prior.sigmas[be_i] = self.sigmas[be_i].transfer(idata, **kwargs)
+        return new_prior
+
+    def update_data(
+        self, model: pm.Model, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray
+    ):
+        pass
+
+    def set_name(self, name: str):
+        self.name = name
+        self.mu.set_name(f"mu_{self.name}")
+        self.sigma.set_name(f"sigma_{self.name}")
+
+    @property
+    def has_random_effect(self):
+        return True
+
+    def to_dict(self):
+        dct = super().to_dict()
+        dct["mu"] = self.mu.to_dict()
+        dct["sigma"] = self.sigma.to_dict()
+        if hasattr(self, "sigmas"):
+            for k, v in self.sigmas.items():
+                dct[f"{k}_sigma"] = v.to_dict()
+
+        for thing in ["sigmas", "offsets", "scaled_offsets", "dist"]:
+            if hasattr(self, thing):
+                del dct[thing]
+        return dct
+
+    @classmethod
+    def from_dict(cls, dct):
+        mu = BasePrior.from_dict(dct["mu"])
+        sigma = BasePrior.from_dict(dct["sigma"])
+        instance = cls(
+            mu=mu,
+            sigma=sigma,
+            **{k: v for k, v in dct.items() if k in ["name", "dims", "mapping", "mapping_params"]},
+        )
+        instance.sigmas = {k.split("_")[0]: BasePrior.from_dict(v) for k, v in dct.items() if k.endswith("_sigma")}
+        # instance.scaled_offsets = {k: Param.from_dict(v) for k, v in dct.items() if k.endswith("_offset")}
+        return instance
+
+
+class CenteredRandomPrior(BasePrior):
+    def __init__(
+        self,
+        mu: Optional[BasePrior] = None,
+        sigma: Optional[BasePrior] = None,
+        name: str = "theta",
+        dims: Optional[Union[Tuple[str, ...], str]] = None,
+        mapping: str = "identity",
+        mapping_params: tuple[float, ...] = None,  # type: ignore
+        **kwargs,
+    ):
+        super().__init__(name, dims, mapping, mapping_params, **kwargs)
+        self.mu = mu or make_prior(dist_name="Normal", dist_params=(0, 2.0))
+        self.sigma = sigma or make_prior(
+            dist_name="Normal", dist_params=(1.0, 1.0), mapping="softplus", mapping_params=(0.0, 1.0)
+        )
+        self.sigmas = {}
+        self.offsets = {}
+        self.scaled_offsets = {}
+        self.sample_dims = ("observations",)
+        self.set_name(self.name)
+
+    @property
+    def dims(self):
+        return self._dims
+
+    @dims.setter
+    def dims(self, value):
+        if hasattr(self, "mu"):
+            self.mu.dims = value
+        if hasattr(self, "sigma"):
+            self.sigma.dims = value
+        self._dims = value
+
+    def _compile(
+        self,
+        model: pm.Model,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ):
+        # outdims = "observations" if not self.dims else ("observations", *self.dims)
+        with model:
+            mu_samples = self.mu.compile(model, X, be, be_maps, Y)
+            if self.dims:
+                acc = mu_samples[None]  # type: ignore
+            else:
+                acc = mu_samples  # type: ignore
+            for be_i in model.coords["batch_effect_dims"]:  # type:ignore
+                be_dims = (be_i,) if not self.dims else ( *self.dims,be_i)
+                if be_i not in self.sigmas:
+                    self.sigmas[be_i] = copy.deepcopy(self.sigma)
+                    self.sigmas[be_i].set_name(f"{be_i}_sigma_{self.name}")
+                self.scaled_offsets[be_i] = pm.ZeroSumNormal(
+                    f"{be_i}_offset_{self.name}", sigma=self.sigmas[be_i].compile(model, X, be, be_maps, Y), dims=be_dims
                 )
-                acc += self.scaled_offsets[be_i][model[f"{be_i}_data"]]
+                acc += self.scaled_offsets[be_i][...,model[f"{be_i}_data"]]
             self.dist = acc
         return self.dist
 
