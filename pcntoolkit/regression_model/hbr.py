@@ -309,6 +309,7 @@ class HBR(RegressionModel):
             )
             new_hbr_model.is_fitted = True
         new_hbr_model.pymc_model = new_hbr_model_model
+        new_hbr_model.be_maps = be_maps
         return new_hbr_model
 
     def has_batch_effect(self) -> bool:
