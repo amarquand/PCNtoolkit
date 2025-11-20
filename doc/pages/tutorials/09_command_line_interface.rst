@@ -180,7 +180,7 @@ Running command
 
 .. parsed-literal::
 
-    Process: 91943 - 2025-09-04 16:35:14 - Dataset "fit_data" created.
+    Process: 84141 - 2025-11-20 13:25:31 - Dataset "fit_data" created.
         - 862 observations
         - 862 unique subjects
         - 1 covariates
@@ -189,7 +189,7 @@ Running command
         	batch_effect_0 (2)
     	batch_effect_1 (23)
         
-    Process: 91943 - 2025-09-04 16:35:14 - Dataset "predict_data" created.
+    Process: 84141 - 2025-11-20 13:25:31 - Dataset "predict_data" created.
         - 216 observations
         - 216 unique subjects
         - 1 covariates
@@ -198,21 +198,21 @@ Running command
         	batch_effect_0 (2)
     	batch_effect_1 (23)
         
-    Process: 91943 - 2025-09-04 16:35:14 - Task ID created: fit_predict_fit_data__2025-09-04_16:35:14_377.071045
-    Process: 91943 - 2025-09-04 16:35:14 - Temporary directory created:
-    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/temp/fit_predict_fit_data__2025-09-04_16:35:14_377.071045
-    Process: 91943 - 2025-09-04 16:35:14 - Log directory created:
-    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/log/fit_predict_fit_data__2025-09-04_16:35:14_377.071045
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:14 - Predict data not used in k-fold cross-validation
+    Process: 84141 - 2025-11-20 13:25:31 - Task ID created: fit_predict_fit_data__2025-11-20_13:25:31_161.049072
+    Process: 84141 - 2025-11-20 13:25:31 - Temporary directory created:
+    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/temp/fit_predict_fit_data__2025-11-20_13:25:31_161.049072
+    Process: 84141 - 2025-11-20 13:25:31 - Log directory created:
+    	/Users/stijndeboer/Projects/PCN/PCNtoolkit/examples/resources/cli_example/log/fit_predict_fit_data__2025-11-20_13:25:31_161.049072
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:31 - Predict data not used in k-fold cross-validation
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/sklearn/model_selection/_split.py:811: UserWarning: The least populated class in y has only 2 members, which is less than n_splits=5.
       warnings.warn(
-    Process: 91943 - 2025-09-04 16:35:14 - Fitting models on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Fitting model for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Fitting model for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Fitting models on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Fitting model for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Fitting model for response_var_1.
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=5.52372e-27): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:14 - Estimation of posterior distribution failed due to: 
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:31 - Estimation of posterior distribution failed due to: 
     Matrix is not positive definite
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=6.3755e-27): result may not be accurate.
@@ -223,20 +223,22 @@ Running command
       return f(*arrays, *other_args, **kwargs)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=6.10466e-27): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    Process: 91943 - 2025-09-04 16:35:14 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:31 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:31 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -245,40 +247,30 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:14 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:14 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:14 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:15 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:31 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:31 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:32 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -287,20 +279,20 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Harmonizing data for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Fitting models on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Fitting model for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Fitting model for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Fitting models on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Fitting model for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Fitting model for response_var_1.
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=4.24552e-20): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:15 - Estimation of posterior distribution failed due to: 
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:32 - Estimation of posterior distribution failed due to: 
     Matrix is not positive definite
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=4.91007e-20): result may not be accurate.
@@ -313,20 +305,22 @@ Running command
       return f(*arrays, *other_args, **kwargs)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/optimize/_numdiff.py:687: RuntimeWarning: overflow encountered in divide
       df_dx = [delf / delx for delf, delx in zip(df, dx)]
-    Process: 91943 - 2025-09-04 16:35:15 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:15 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:32 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:32 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -335,40 +329,30 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:16 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:32 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:33 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:33 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -377,20 +361,20 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:16 - Harmonizing data for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Fitting models on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Fitting model for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Fitting model for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Fitting models on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Fitting model for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Fitting model for response_var_1.
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=1.59493e-18): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:17 - Estimation of posterior distribution failed due to: 
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:33 - Estimation of posterior distribution failed due to: 
     Matrix is not positive definite
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=1.02392e-18): result may not be accurate.
@@ -399,20 +383,22 @@ Running command
       return f(*arrays, *other_args, **kwargs)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=1.81723e-18): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    Process: 91943 - 2025-09-04 16:35:17 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:33 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:33 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -421,40 +407,30 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:17 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:33 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_2.
-    Process: 91943 - 2025-09-04 16:35:17 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:17 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:34 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:34 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -463,20 +439,20 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_2.
-    Process: 91943 - 2025-09-04 16:35:18 - Fitting models on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Fitting model for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Fitting model for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Fitting models on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Fitting model for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Fitting model for response_var_1.
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=4.33597e-18): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:18 - Estimation of posterior distribution failed due to: 
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:34 - Estimation of posterior distribution failed due to: 
     Matrix is not positive definite
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=2.84075e-18): result may not be accurate.
@@ -487,20 +463,22 @@ Running command
       return f(*arrays, *other_args, **kwargs)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/optimize/_numdiff.py:687: RuntimeWarning: overflow encountered in divide
       df_dx = [delf / delx for delf, delx in zip(df, dx)]
-    Process: 91943 - 2025-09-04 16:35:18 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:34 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:34 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:35 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -509,40 +487,30 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:18 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_3.
-    Process: 91943 - 2025-09-04 16:35:18 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:18 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:35 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:35 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -551,50 +519,40 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:19 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_3.
-    Process: 91943 - 2025-09-04 16:35:19 - Fitting models on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Fitting model for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Fitting model for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:35 - Fitting models on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:35 - Fitting model for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:35 - Fitting model for response_var_1.
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=8.20486e-55): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 91943 - 2025-09-04 16:35:19 - Estimation of posterior distribution failed due to: 
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 84141 - 2025-11-20 13:25:36 - Estimation of posterior distribution failed due to: 
     Matrix is not positive definite
       warnings.warn(message)
     /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/scipy/_lib/_util.py:1226: LinAlgWarning: Ill-conditioned matrix (rcond=5.16182e-55): result may not be accurate.
       return f(*arrays, *other_args, **kwargs)
-    Process: 91943 - 2025-09-04 16:35:19 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:36 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:36 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -603,40 +561,30 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:19 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:20 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_4.
-    Process: 91943 - 2025-09-04 16:35:20 - Making predictions on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing z-scores for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing z-scores for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing z-scores for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing log-probabilities for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing log-probabilities for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing log-probabilities for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing yhat for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing yhat for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing yhat for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:20 - Dataset "centile" created.
+    Process: 84141 - 2025-11-20 13:25:36 - Making predictions on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing z-scores for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing log-probabilities for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing yhat for response_var_1.
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84141 - 2025-11-20 13:25:36 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -645,25 +593,13 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Computing centiles for response_var_0.
-    Process: 91943 - 2025-09-04 16:35:20 - Harmonizing data on 2 response variables.
-    Process: 91943 - 2025-09-04 16:35:20 - Harmonizing data for response_var_1.
-    Process: 91943 - 2025-09-04 16:35:20 - Harmonizing data for response_var_0.
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 91943 - 2025-09-04 16:35:20 - Saving model to:
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Computing centiles for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data on 2 response variables.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data for response_var_0.
+    Process: 84141 - 2025-11-20 13:25:36 - Harmonizing data for response_var_1.
+    Process: 84141 - 2025-11-20 13:25:37 - Saving model to:
     	resources/cli_example/blr_cli/save_dir/folds/fold_4.
     [0m
 
@@ -739,9 +675,9 @@ Running command
 
 .. parsed-literal::
 
-    Process: 92110 - 2025-09-04 16:35:23 - No log directory specified. Using default log directory: /Users/stijndeboer/.pcntoolkit/logs
-    Process: 92110 - 2025-09-04 16:35:23 - No temporary directory specified. Using default temporary directory: /Users/stijndeboer/.pcntoolkit/temp
-    Process: 92110 - 2025-09-04 16:35:23 - Dataset "fit_data" created.
+    Process: 84328 - 2025-11-20 13:25:45 - No log directory specified. Using default log directory: /Users/stijndeboer/.pcntoolkit/logs
+    Process: 84328 - 2025-11-20 13:25:45 - No temporary directory specified. Using default temporary directory: /Users/stijndeboer/.pcntoolkit/temp
+    Process: 84328 - 2025-11-20 13:25:45 - Dataset "fit_data" created.
         - 862 observations
         - 862 unique subjects
         - 1 covariates
@@ -750,7 +686,7 @@ Running command
         	batch_effect_0 (2)
     	batch_effect_1 (23)
         
-    Process: 92110 - 2025-09-04 16:35:23 - Dataset "predict_data" created.
+    Process: 84328 - 2025-11-20 13:25:45 - Dataset "predict_data" created.
         - 216 observations
         - 216 unique subjects
         - 1 covariates
@@ -759,40 +695,42 @@ Running command
         	batch_effect_0 (2)
     	batch_effect_1 (23)
         
-    Process: 92110 - 2025-09-04 16:35:23 - Task ID created: fit_predict_fit_data__2025-09-04_16:35:23_630.651855
-    Process: 92110 - 2025-09-04 16:35:23 - Temporary directory created:
-    	/Users/stijndeboer/.pcntoolkit/temp/fit_predict_fit_data__2025-09-04_16:35:23_630.651855
-    Process: 92110 - 2025-09-04 16:35:23 - Log directory created:
-    	/Users/stijndeboer/.pcntoolkit/logs/fit_predict_fit_data__2025-09-04_16:35:23_630.651855
-    Process: 92110 - 2025-09-04 16:35:23 - Fitting models on 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:23 - Fitting model for response_var_0.
-    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 92110 - 2025-09-04 16:35:35 - Fitting model for response_var_1.
-    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 92110 - 2025-09-04 16:35:41 - Making predictions on 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:41 - Computing z-scores for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:41 - Computing z-scores for response_var_0.
+    Process: 84328 - 2025-11-20 13:25:45 - Task ID created: fit_predict_fit_data__2025-11-20_13:25:45_833.302002
+    Process: 84328 - 2025-11-20 13:25:45 - Temporary directory created:
+    	/Users/stijndeboer/.pcntoolkit/temp/fit_predict_fit_data__2025-11-20_13:25:45_833.302002
+    Process: 84328 - 2025-11-20 13:25:45 - Log directory created:
+    	/Users/stijndeboer/.pcntoolkit/logs/fit_predict_fit_data__2025-11-20_13:25:45_833.302002
+    Process: 84328 - 2025-11-20 13:25:45 - Fitting models on 2 response variables.
+    Process: 84328 - 2025-11-20 13:25:45 - Fitting model for response_var_0.
+    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 84328 - 2025-11-20 13:25:55 - Fitting model for response_var_1.
+    [2K██████████████████████████████████████████████████████████████████████ 6000/6000Process: 84328 - 2025-11-20 13:26:01 - Making predictions on 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:01 - Computing z-scores for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:01 - Computing z-scores for response_var_0.
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:43 - Computing z-scores for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:01 - Computing z-scores for response_var_1.
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:43 - Computing centiles for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:43 - Computing centiles for response_var_0.
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Process: 92110 - 2025-09-04 16:35:44 - Computing centiles for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:02 - Computing centiles for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:02 - Computing centiles for response_var_0.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:45 - Computing log-probabilities for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:45 - Computing log-probabilities for response_var_0.
-    Process: 92110 - 2025-09-04 16:35:46 - Computing log-probabilities for response_var_1.
-    Process: 92110 - 2025-09-04 16:35:46 - Computing yhat for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:03 - Computing centiles for response_var_1.
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:47 - Dataset "centile" created.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 84328 - 2025-11-20 13:26:04 - Computing log-probabilities for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:04 - Computing log-probabilities for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:05 - Computing log-probabilities for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:05 - Computing yhat for 2 response variables.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84328 - 2025-11-20 13:26:06 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -801,66 +739,56 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 92110 - 2025-09-04 16:35:47 - Computing centiles for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:47 - Computing centiles for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:06 - Computing centiles for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:06 - Computing centiles for response_var_0.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:48 - Computing centiles for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:06 - Computing centiles for response_var_1.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:49 - Harmonizing data on 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:49 - Harmonizing data for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:07 - Harmonizing data on 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:07 - Harmonizing data for response_var_0.
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:49 - Harmonizing data for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:08 - Harmonizing data for response_var_1.
     Sampling: []
     Sampling: []
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 92110 - 2025-09-04 16:35:50 - Saving model to:
+    Process: 84328 - 2025-11-20 13:26:08 - Saving model to:
     	resources/cli_example/hbr/save_dir.
-    Process: 92110 - 2025-09-04 16:35:50 - Making predictions on 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:50 - Computing z-scores for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:50 - Computing z-scores for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:09 - Making predictions on 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:09 - Computing z-scores for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:09 - Computing z-scores for response_var_0.
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:50 - Computing z-scores for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:09 - Computing z-scores for response_var_1.
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:50 - Computing centiles for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:50 - Computing centiles for response_var_0.
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Sampling: []
-    Process: 92110 - 2025-09-04 16:35:51 - Computing centiles for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:09 - Computing centiles for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:09 - Computing centiles for response_var_0.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:52 - Computing log-probabilities for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:52 - Computing log-probabilities for response_var_0.
-    Process: 92110 - 2025-09-04 16:35:52 - Computing log-probabilities for response_var_1.
-    Process: 92110 - 2025-09-04 16:35:53 - Computing yhat for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:10 - Computing centiles for response_var_1.
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:53 - Dataset "centile" created.
+    Sampling: []
+    Sampling: []
+    Sampling: []
+    Process: 84328 - 2025-11-20 13:26:11 - Computing log-probabilities for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:11 - Computing log-probabilities for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:12 - Computing log-probabilities for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:12 - Computing yhat for 2 response variables.
+    Sampling: []
+    Sampling: []
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/dataio/norm_data.py:1094: FutureWarning: The previous implementation of stack is deprecated and will be removed in a future version of pandas. See the What's New notes for pandas 2.1.0 for details. Specify future_stack=True to adopt the new implementation and silence this warning.
+      subject_ids = subject_ids.stack(level="centile")
+    Process: 84328 - 2025-11-20 13:26:12 - Dataset "centile" created.
         - 150 observations
         - 150 unique subjects
         - 1 covariates
@@ -869,38 +797,27 @@ Running command
         	batch_effect_0 (1)
     	batch_effect_1 (1)
         
-    Process: 92110 - 2025-09-04 16:35:53 - Computing centiles for 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:53 - Computing centiles for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:12 - Computing centiles for 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:12 - Computing centiles for response_var_0.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:54 - Computing centiles for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:13 - Computing centiles for response_var_1.
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:55 - Harmonizing data on 2 response variables.
-    Process: 92110 - 2025-09-04 16:35:55 - Harmonizing data for response_var_0.
+    Process: 84328 - 2025-11-20 13:26:14 - Harmonizing data on 2 response variables.
+    Process: 84328 - 2025-11-20 13:26:14 - Harmonizing data for response_var_0.
     Sampling: []
     Sampling: []
-    Process: 92110 - 2025-09-04 16:35:55 - Harmonizing data for response_var_1.
+    Process: 84328 - 2025-11-20 13:26:15 - Harmonizing data for response_var_1.
     Sampling: []
     Sampling: []
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/plotter.py:314: SettingWithCopyWarning: 
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    
-    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-      non_be_df["marker"] = ["Other data"] * len(non_be_df)
-    Process: 92110 - 2025-09-04 16:35:56 - Saving model to:
+    Process: 84328 - 2025-11-20 13:26:16 - Saving model to:
     	resources/cli_example/hbr/save_dir.
     [0m
+

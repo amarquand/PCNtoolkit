@@ -36,12 +36,10 @@ Imports
         NormativeModel,
         NormData,
         load_fcon1000,
-        SHASHbLikelihood,
         NormalLikelihood,
-        BetaLikelihood,
         make_prior,
         plot_centiles,
-        plot_qq,
+        plot_centiles_advanced,
         plot_ridge,
     )
     
@@ -282,7 +280,7 @@ configuration.
             Finished Chains:
             <span id="active-chains">4</span>
         </p>
-        <p>Sampling for 12 seconds</p>
+        <p>Sampling for now</p>
         <p>
             Estimated Time to Completion:
             <span id="eta">now</span>
@@ -313,8 +311,34 @@ configuration.
                             </progress>
                         </td>
                         <td>2000</td>
-                        <td>2</td>
+                        <td>0</td>
+                        <td>0.10</td>
+                        <td>63</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
                         <td>0.11</td>
+                        <td>63</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.13</td>
                         <td>31</td>
                     </tr>
     
@@ -326,35 +350,9 @@ configuration.
                             </progress>
                         </td>
                         <td>2000</td>
-                        <td>14</td>
-                        <td>0.10</td>
-                        <td>159</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>17</td>
+                        <td>0</td>
                         <td>0.11</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>7</td>
-                        <td>0.10</td>
-                        <td>63</td>
+                        <td>511</td>
                     </tr>
     
                 </tr>
@@ -366,13 +364,9 @@ configuration.
 
 .. code:: ipython3
 
-    plot_centiles(
+    plot_centiles_advanced(
         model,
-        centiles=[0.05, 0.5, 0.95],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
         scatter_data=train,  # Scatter this data along with the centiles
-        batch_effects={"site": ["Beijing_Zang", "AnnArbor_a"], "sex": ["M"]},  # Highlight these groups
-        show_other_data=True,  # scatter data not in those groups as smaller black circles
-        harmonize=True,  # harmonize the scatterdata, this means that we 'remove' the batch effects from the data, by simulating what the data would have looked like if all data was from the same batch.
     )
 
 
@@ -403,7 +397,7 @@ error:
 
 .. parsed-literal::
 
-    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:222: UserWarning: Process: 88464 - 2025-09-04 16:30:51 - The dataset transfer_train has unknown batch effects: {np.str_('sex'): [], np.str_('site'): [np.str_('Milwaukee_b'), np.str_('Oulu')]}
+    /opt/anaconda3/envs/ptk/lib/python3.12/site-packages/pcntoolkit/util/output.py:239: UserWarning: Process: 76944 - 2025-11-20 13:16:29 - The dataset transfer_train has unknown batch effects: {np.str_('sex'): [], np.str_('site'): [np.str_('Milwaukee_b'), np.str_('Oulu')]}
       warnings.warn(message)
 
 
@@ -425,10 +419,7 @@ the held-out dataset, we can show how bad such a model would be:
     small_model.fit_predict(transfer_train, transfer_test)
     plot_centiles(
         small_model,
-        centiles=[0.05, 0.5, 0.95],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
         scatter_data=transfer_train,
-        show_other_data=True,
-        harmonize=True,
     )
 
 
@@ -568,8 +559,8 @@ the held-out dataset, we can show how bad such a model would be:
                             </progress>
                         </td>
                         <td>2000</td>
-                        <td>5</td>
-                        <td>0.13</td>
+                        <td>0</td>
+                        <td>0.12</td>
                         <td>127</td>
                     </tr>
     
@@ -583,7 +574,20 @@ the held-out dataset, we can show how bad such a model would be:
                         <td>2000</td>
                         <td>0</td>
                         <td>0.13</td>
-                        <td>63</td>
+                        <td>127</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.12</td>
+                        <td>191</td>
                     </tr>
     
                     <tr>
@@ -596,20 +600,7 @@ the held-out dataset, we can show how bad such a model would be:
                         <td>2000</td>
                         <td>1</td>
                         <td>0.13</td>
-                        <td>191</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>5</td>
-                        <td>0.12</td>
-                        <td>127</td>
+                        <td>63</td>
                     </tr>
     
                 </tr>
@@ -631,12 +622,9 @@ smaller dataset, and see how those centiles look:
 .. code:: ipython3
 
     extended_model = model.extend_predict(transfer_train, transfer_test)
-    plot_centiles(
+    plot_centiles_advanced(
         extended_model,
-        centiles=[0.05, 0.5, 0.95],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
         scatter_data=transfer_train,
-        show_other_data=True,
-        harmonize=True,
     )
 
 
@@ -745,7 +733,7 @@ smaller dataset, and see how those centiles look:
             Finished Chains:
             <span id="active-chains">4</span>
         </p>
-        <p>Sampling for 22 seconds</p>
+        <p>Sampling for 15 seconds</p>
         <p>
             Estimated Time to Completion:
             <span id="eta">now</span>
@@ -776,48 +764,48 @@ smaller dataset, and see how those centiles look:
                             </progress>
                         </td>
                         <td>2000</td>
-                        <td>13</td>
-                        <td>0.10</td>
-                        <td>127</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>7</td>
-                        <td>0.10</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>3</td>
-                        <td>0.09</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>14</td>
-                        <td>0.09</td>
+                        <td>0</td>
+                        <td>0.11</td>
                         <td>31</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.10</td>
+                        <td>63</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.12</td>
+                        <td>95</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.11</td>
+                        <td>319</td>
                     </tr>
     
                 </tr>
@@ -1289,34 +1277,34 @@ as the extended data:
     }
     </style><pre class='xr-text-repr-fallback'>&lt;xarray.NormData&gt; Size: 179kB
     Dimensions:            (observations: 744, response_vars: 1, covariates: 1,
-                            batch_effect_dims: 2, centile: 5, statistic: 11)
+                            batch_effect_dims: 2, statistic: 11, centile: 5)
     Coordinates:
       * observations       (observations) int64 6kB 459 995 432 ... 1023 1062 372
       * response_vars      (response_vars) &lt;U18 72B &#x27;WM-hypointensities&#x27;
       * covariates         (covariates) &lt;U3 12B &#x27;age&#x27;
       * batch_effect_dims  (batch_effect_dims) &lt;U4 32B &#x27;sex&#x27; &#x27;site&#x27;
-      * centile            (centile) float64 40B 0.05 0.25 0.5 0.75 0.95
       * statistic          (statistic) &lt;U8 352B &#x27;EXPV&#x27; &#x27;MACE&#x27; ... &#x27;SMSE&#x27; &#x27;ShapiroW&#x27;
+      * centile            (centile) float64 40B 0.05 0.25 0.5 0.75 0.95
     Data variables:
-        subjects           (observations) object 6kB &#x27;Cambridge_Buckner_sub53615&#x27;...
+        subject_ids        (observations) object 6kB &#x27;Cambridge_Buckner_sub53615&#x27;...
         Y                  (observations, response_vars) float64 6kB 974.0 ... 1....
         X                  (observations, covariates) float64 6kB 19.0 29.0 ... 25.0
         batch_effects      (observations, batch_effect_dims) &lt;U17 101kB &#x27;M&#x27; ... &#x27;...
-        Z                  (observations, response_vars) float64 6kB -1.092 ... 2...
-        centiles           (centile, observations, response_vars) float64 30kB 76...
-        logp               (observations, response_vars) float64 6kB -0.7251 ... ...
-        Yhat               (observations, response_vars) float64 6kB 1.418e+03 .....
-        statistics         (response_vars, statistic) float64 88B 0.3322 ... 0.9195
-        Y_harmonized       (observations, response_vars) float64 6kB 1.011e+03 .....
+        Z                  (observations, response_vars) float64 6kB -1.035 ... 1...
+        logp               (observations, response_vars) float64 6kB -0.7314 ... ...
+        Yhat               (observations, response_vars) float64 6kB 1.402e+03 .....
+        statistics         (response_vars, statistic) float64 88B 0.3637 ... 0.9033
+        Y_harmonized       (observations, response_vars) float64 6kB 802.4 ... 1....
+        centiles           (centile, observations, response_vars) float64 30kB 72...
     Attributes:
         real_ids:                       True
         is_scaled:                      False
         name:                           fit_train
         unique_batch_effects:           {np.str_(&#x27;sex&#x27;): [np.str_(&#x27;F&#x27;), np.str_(&#x27;...
         batch_effect_counts:            defaultdict(&lt;function NormData.register_b...
-        covariate_ranges:               {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(7.88)...
-        batch_effect_covariate_ranges:  {np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): {np.str_(...</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.NormData</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-a4b4fe14-1568-4144-a410-f8be1a5bedfa' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-a4b4fe14-1568-4144-a410-f8be1a5bedfa' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>observations</span>: 744</li><li><span class='xr-has-index'>response_vars</span>: 1</li><li><span class='xr-has-index'>covariates</span>: 1</li><li><span class='xr-has-index'>batch_effect_dims</span>: 2</li><li><span class='xr-has-index'>centile</span>: 5</li><li><span class='xr-has-index'>statistic</span>: 11</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-f78b8f2c-0144-470a-bf63-08fc48b48016' class='xr-section-summary-in' type='checkbox'  checked><label for='section-f78b8f2c-0144-470a-bf63-08fc48b48016' class='xr-section-summary' >Coordinates: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>observations</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>459 995 432 288 ... 1023 1062 372</div><input id='attrs-5f22e060-6d75-417f-a009-bf0c32bf6b76' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5f22e060-6d75-417f-a009-bf0c32bf6b76' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-b9cd72d6-4529-41de-88d3-b65ee7a2d91a' class='xr-var-data-in' type='checkbox'><label for='data-b9cd72d6-4529-41de-88d3-b65ee7a2d91a' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([ 459,  995,  432, ..., 1023, 1062,  372], shape=(744,))</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>response_vars</span></div><div class='xr-var-dims'>(response_vars)</div><div class='xr-var-dtype'>&lt;U18</div><div class='xr-var-preview xr-preview'>&#x27;WM-hypointensities&#x27;</div><input id='attrs-89c72512-d4d6-4641-b3df-aa6da4b6c5d2' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-89c72512-d4d6-4641-b3df-aa6da4b6c5d2' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d4999448-8529-4b6c-844d-b4a8a215577e' class='xr-var-data-in' type='checkbox'><label for='data-d4999448-8529-4b6c-844d-b4a8a215577e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;WM-hypointensities&#x27;], dtype=&#x27;&lt;U18&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>covariates</span></div><div class='xr-var-dims'>(covariates)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;age&#x27;</div><input id='attrs-0e7d7ae9-45c5-4540-ad75-3029e5061e12' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0e7d7ae9-45c5-4540-ad75-3029e5061e12' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-90a50faa-bdc5-4561-a381-4655e9045ef8' class='xr-var-data-in' type='checkbox'><label for='data-90a50faa-bdc5-4561-a381-4655e9045ef8' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;age&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>batch_effect_dims</span></div><div class='xr-var-dims'>(batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U4</div><div class='xr-var-preview xr-preview'>&#x27;sex&#x27; &#x27;site&#x27;</div><input id='attrs-612da643-503f-46d5-89a7-b38a6624678f' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-612da643-503f-46d5-89a7-b38a6624678f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-898c1c44-9b1f-4585-8072-08cb0ea6e82b' class='xr-var-data-in' type='checkbox'><label for='data-898c1c44-9b1f-4585-8072-08cb0ea6e82b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;&lt;U4&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>centile</span></div><div class='xr-var-dims'>(centile)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.05 0.25 0.5 0.75 0.95</div><input id='attrs-bc50789a-57e3-4617-af79-a7cef3b0a5e0' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-bc50789a-57e3-4617-af79-a7cef3b0a5e0' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-9efde6c2-022a-44a9-96ce-68934049b2aa' class='xr-var-data-in' type='checkbox'><label for='data-9efde6c2-022a-44a9-96ce-68934049b2aa' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([0.05, 0.25, 0.5 , 0.75, 0.95])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>statistic</span></div><div class='xr-var-dims'>(statistic)</div><div class='xr-var-dtype'>&lt;U8</div><div class='xr-var-preview xr-preview'>&#x27;EXPV&#x27; &#x27;MACE&#x27; ... &#x27;SMSE&#x27; &#x27;ShapiroW&#x27;</div><input id='attrs-0b134f60-de6a-49f1-8506-9efc33167ad2' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0b134f60-de6a-49f1-8506-9efc33167ad2' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-861f7436-bc24-433c-8d81-601075526be6' class='xr-var-data-in' type='checkbox'><label for='data-861f7436-bc24-433c-8d81-601075526be6' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;EXPV&#x27;, &#x27;MACE&#x27;, &#x27;MAPE&#x27;, &#x27;MSLL&#x27;, &#x27;NLL&#x27;, &#x27;R2&#x27;, &#x27;RMSE&#x27;, &#x27;Rho&#x27;, &#x27;Rho_p&#x27;,
-           &#x27;SMSE&#x27;, &#x27;ShapiroW&#x27;], dtype=&#x27;&lt;U8&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-54267a89-8337-4a3f-8e8b-b65e7928392a' class='xr-section-summary-in' type='checkbox'  checked><label for='section-54267a89-8337-4a3f-8e8b-b65e7928392a' class='xr-section-summary' >Data variables: <span>(10)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>subjects</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Cambridge_Buckner_sub53615&#x27; ......</div><input id='attrs-863f41a6-933e-4f58-ba87-e37f450974ae' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-863f41a6-933e-4f58-ba87-e37f450974ae' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-bfecb4f7-b41b-4916-873c-fdd80a18a815' class='xr-var-data-in' type='checkbox'><label for='data-bfecb4f7-b41b-4916-873c-fdd80a18a815' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Cambridge_Buckner_sub53615&#x27;, &#x27;Oxford_sub47141&#x27;,
+        covariate_ranges:               {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(27.7...
+        batch_effect_covariate_ranges:  {np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): {np.str_(...</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.NormData</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-aadf494f-2f23-4ef9-a0ee-72b23382f233' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-aadf494f-2f23-4ef9-a0ee-72b23382f233' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>observations</span>: 744</li><li><span class='xr-has-index'>response_vars</span>: 1</li><li><span class='xr-has-index'>covariates</span>: 1</li><li><span class='xr-has-index'>batch_effect_dims</span>: 2</li><li><span class='xr-has-index'>statistic</span>: 11</li><li><span class='xr-has-index'>centile</span>: 5</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-8b56e069-6e01-49e1-80f5-34de2673a9d0' class='xr-section-summary-in' type='checkbox'  checked><label for='section-8b56e069-6e01-49e1-80f5-34de2673a9d0' class='xr-section-summary' >Coordinates: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>observations</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>459 995 432 288 ... 1023 1062 372</div><input id='attrs-d5ebb667-4d64-462c-977d-8bcc98274537' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-d5ebb667-4d64-462c-977d-8bcc98274537' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-1816f60b-c258-418c-b7cd-e4b38150045a' class='xr-var-data-in' type='checkbox'><label for='data-1816f60b-c258-418c-b7cd-e4b38150045a' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([ 459,  995,  432, ..., 1023, 1062,  372], shape=(744,))</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>response_vars</span></div><div class='xr-var-dims'>(response_vars)</div><div class='xr-var-dtype'>&lt;U18</div><div class='xr-var-preview xr-preview'>&#x27;WM-hypointensities&#x27;</div><input id='attrs-c879e5c2-fa3d-45b7-ae82-a616da2bf090' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-c879e5c2-fa3d-45b7-ae82-a616da2bf090' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-ae9c0e96-73ff-4065-9681-928990973332' class='xr-var-data-in' type='checkbox'><label for='data-ae9c0e96-73ff-4065-9681-928990973332' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;WM-hypointensities&#x27;], dtype=&#x27;&lt;U18&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>covariates</span></div><div class='xr-var-dims'>(covariates)</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;age&#x27;</div><input id='attrs-8d86b522-c78c-4c5d-817c-0433ebc55447' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-8d86b522-c78c-4c5d-817c-0433ebc55447' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-908a4a67-7559-478f-b739-825dbe2a7069' class='xr-var-data-in' type='checkbox'><label for='data-908a4a67-7559-478f-b739-825dbe2a7069' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;age&#x27;], dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>batch_effect_dims</span></div><div class='xr-var-dims'>(batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U4</div><div class='xr-var-preview xr-preview'>&#x27;sex&#x27; &#x27;site&#x27;</div><input id='attrs-5712d0eb-cdf9-44bf-ac7a-4745a699c9f6' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5712d0eb-cdf9-44bf-ac7a-4745a699c9f6' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-16da2bc8-57a9-4496-8c45-8d9160532b7e' class='xr-var-data-in' type='checkbox'><label for='data-16da2bc8-57a9-4496-8c45-8d9160532b7e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;&lt;U4&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>statistic</span></div><div class='xr-var-dims'>(statistic)</div><div class='xr-var-dtype'>&lt;U8</div><div class='xr-var-preview xr-preview'>&#x27;EXPV&#x27; &#x27;MACE&#x27; ... &#x27;SMSE&#x27; &#x27;ShapiroW&#x27;</div><input id='attrs-a344936a-d476-457d-a5fa-0be83eeecf5c' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-a344936a-d476-457d-a5fa-0be83eeecf5c' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7ebf782e-c65f-4c5e-a1d6-e0483c8d4c4b' class='xr-var-data-in' type='checkbox'><label for='data-7ebf782e-c65f-4c5e-a1d6-e0483c8d4c4b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;EXPV&#x27;, &#x27;MACE&#x27;, &#x27;MAPE&#x27;, &#x27;MSLL&#x27;, &#x27;NLL&#x27;, &#x27;R2&#x27;, &#x27;RMSE&#x27;, &#x27;Rho&#x27;, &#x27;Rho_p&#x27;,
+           &#x27;SMSE&#x27;, &#x27;ShapiroW&#x27;], dtype=&#x27;&lt;U8&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>centile</span></div><div class='xr-var-dims'>(centile)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.05 0.25 0.5 0.75 0.95</div><input id='attrs-a0174cd3-59e7-4b08-a694-3c7cbde16dd1' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-a0174cd3-59e7-4b08-a694-3c7cbde16dd1' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6fc0a28a-d421-4a1e-a49e-1a79b841b218' class='xr-var-data-in' type='checkbox'><label for='data-6fc0a28a-d421-4a1e-a49e-1a79b841b218' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([0.05, 0.25, 0.5 , 0.75, 0.95])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-792b08b5-bbc1-4bb8-9ef7-e9b01ac108b5' class='xr-section-summary-in' type='checkbox'  checked><label for='section-792b08b5-bbc1-4bb8-9ef7-e9b01ac108b5' class='xr-section-summary' >Data variables: <span>(10)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>subject_ids</span></div><div class='xr-var-dims'>(observations)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Cambridge_Buckner_sub53615&#x27; ......</div><input id='attrs-17920fec-1899-459a-b38c-60330339f883' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-17920fec-1899-459a-b38c-60330339f883' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-254d187c-2c0a-45b0-a596-47cffabf4c9f' class='xr-var-data-in' type='checkbox'><label for='data-254d187c-2c0a-45b0-a596-47cffabf4c9f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Cambridge_Buckner_sub53615&#x27;, &#x27;Oxford_sub47141&#x27;,
            &#x27;Cambridge_Buckner_sub42146&#x27;, &#x27;Beijing_Zang_sub82714&#x27;,
            &#x27;AnnArbor_a_sub96621&#x27;, &#x27;SaintLouis_sub95721&#x27;, &#x27;Cleveland_sub99664&#x27;,
            &#x27;Cambridge_Buckner_sub83683&#x27;, &#x27;Beijing_Zang_sub59347&#x27;,
@@ -1356,7 +1344,7 @@ as the extended data:
            &#x27;AnnArbor_b_sub98007&#x27;, &#x27;NewYork_a_sub53710&#x27;,
            &#x27;NewYork_a_ADHD_sub20676&#x27;, &#x27;Berlin_Margulies_sub54976&#x27;,
            &#x27;NewYork_a_sub20732&#x27;, &#x27;PaloAlto_sub96705&#x27;, &#x27;SaintLouis_sub58674&#x27;,
-           &#x27;Cambridge_Buckner_sub09015&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>974.0 1.114e+03 ... 485.4 1.934e+03</div><input id='attrs-ad1647b3-e88d-4409-966e-e9f61987ebe1' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-ad1647b3-e88d-4409-966e-e9f61987ebe1' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0f767dbc-e903-4a58-94e8-2fbe53edfc30' class='xr-var-data-in' type='checkbox'><label for='data-0f767dbc-e903-4a58-94e8-2fbe53edfc30' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[  974. ],
+           &#x27;Cambridge_Buckner_sub09015&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>974.0 1.114e+03 ... 485.4 1.934e+03</div><input id='attrs-4eab8b85-abc9-4e72-9be6-e8cb73479682' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-4eab8b85-abc9-4e72-9be6-e8cb73479682' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-02462b63-4460-4c3e-a2c5-1f56df47636b' class='xr-var-data-in' type='checkbox'><label for='data-02462b63-4460-4c3e-a2c5-1f56df47636b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[  974. ],
            [ 1113.8],
            [  916. ],
            [  612.6],
@@ -1396,7 +1384,7 @@ as the extended data:
            [  937.1],
            [ 2242.1],
            [  485.4],
-           [ 1934.5]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>X</span></div><div class='xr-var-dims'>(observations, covariates)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>19.0 29.0 24.0 ... 29.0 28.0 25.0</div><input id='attrs-56085ae4-f3b9-4cf2-a0d2-b6271c4fac5f' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-56085ae4-f3b9-4cf2-a0d2-b6271c4fac5f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-5d4c7e9b-17f1-40cd-a248-c55aa3402a75' class='xr-var-data-in' type='checkbox'><label for='data-5d4c7e9b-17f1-40cd-a248-c55aa3402a75' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[19.  ],
+           [ 1934.5]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>X</span></div><div class='xr-var-dims'>(observations, covariates)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>19.0 29.0 24.0 ... 29.0 28.0 25.0</div><input id='attrs-0f4e2f94-fff8-4140-bd0a-b060ae39b98e' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0f4e2f94-fff8-4140-bd0a-b060ae39b98e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-76b48d5a-04e5-4b2e-be69-973e8a45ebbe' class='xr-var-data-in' type='checkbox'><label for='data-76b48d5a-04e5-4b2e-be69-973e8a45ebbe' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[19.  ],
            [29.  ],
            [24.  ],
            [20.  ],
@@ -1436,218 +1424,219 @@ as the extended data:
            [11.07],
            [29.  ],
            [28.  ],
-           [25.  ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>batch_effects</span></div><div class='xr-var-dims'>(observations, batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U17</div><div class='xr-var-preview xr-preview'>&#x27;M&#x27; ... &#x27;Cambridge_Buckner&#x27;</div><input id='attrs-f7b8c81d-a364-474d-9c93-b1133778b2a9' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-f7b8c81d-a364-474d-9c93-b1133778b2a9' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-5213e8cf-8595-42ba-83bb-9860b6779100' class='xr-var-data-in' type='checkbox'><label for='data-5213e8cf-8595-42ba-83bb-9860b6779100' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[&#x27;M&#x27;, &#x27;Cambridge_Buckner&#x27;],
+           [25.  ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>batch_effects</span></div><div class='xr-var-dims'>(observations, batch_effect_dims)</div><div class='xr-var-dtype'>&lt;U17</div><div class='xr-var-preview xr-preview'>&#x27;M&#x27; ... &#x27;Cambridge_Buckner&#x27;</div><input id='attrs-c85abdae-0618-4c19-8b8a-7756f9955349' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-c85abdae-0618-4c19-8b8a-7756f9955349' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-ebc1a341-dae0-49b7-808d-85cc3185c756' class='xr-var-data-in' type='checkbox'><label for='data-ebc1a341-dae0-49b7-808d-85cc3185c756' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[&#x27;M&#x27;, &#x27;Cambridge_Buckner&#x27;],
            [&#x27;F&#x27;, &#x27;Oxford&#x27;],
            [&#x27;F&#x27;, &#x27;Cambridge_Buckner&#x27;],
            ...,
            [&#x27;F&#x27;, &#x27;PaloAlto&#x27;],
            [&#x27;F&#x27;, &#x27;SaintLouis&#x27;],
-           [&#x27;F&#x27;, &#x27;Cambridge_Buckner&#x27;]], shape=(744, 2), dtype=&#x27;&lt;U17&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Z</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-1.092 0.351 ... -0.4755 2.035</div><input id='attrs-d33047d4-32b3-40d5-b891-3a5309041d1c' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-d33047d4-32b3-40d5-b891-3a5309041d1c' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-5164cfda-7a07-4a8b-b6de-468acb391482' class='xr-var-data-in' type='checkbox'><label for='data-5164cfda-7a07-4a8b-b6de-468acb391482' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[-1.09195844e+00],
-           [ 3.50996813e-01],
-           [-7.00559802e-01],
-           [-8.55421151e-01],
-           [-1.34891393e-01],
-           [ 8.71546153e-01],
-           [-3.88054837e-01],
-           [-5.34664126e-01],
-           [ 6.41115477e-01],
-           [ 7.61532892e-01],
-           [-1.16461091e+00],
-           [-1.19035449e+00],
-           [ 2.30559034e-01],
-           [-7.76357374e-01],
-           [-7.43085132e-02],
-           [ 4.31150231e-01],
-           [ 2.38930864e-01],
-           [ 1.32998082e+00],
-           [-2.93408275e-01],
-           [-6.32965725e-01],
+           [&#x27;F&#x27;, &#x27;Cambridge_Buckner&#x27;]], shape=(744, 2), dtype=&#x27;&lt;U17&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Z</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-1.035 0.4821 ... -0.6326 1.832</div><input id='attrs-9763bf7a-7964-4289-b9a0-9b2ee6b66775' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-9763bf7a-7964-4289-b9a0-9b2ee6b66775' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-37e6403b-a718-4462-926c-86ce35324709' class='xr-var-data-in' type='checkbox'><label for='data-37e6403b-a718-4462-926c-86ce35324709' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[-1.03495918e+00],
+           [ 4.82110777e-01],
+           [-7.69863863e-01],
+           [-9.27981878e-01],
+           [ 3.42622725e-02],
+           [ 7.82889130e-01],
+           [-4.34574636e-01],
+           [-5.79797501e-01],
+           [ 5.85706463e-01],
+           [ 7.10086226e-01],
+           [-1.12207192e+00],
+           [-1.13165633e+00],
+           [ 5.70933849e-02],
+           [-5.83955759e-01],
+           [-7.17013846e-02],
+           [ 3.08503886e-01],
+           [ 3.95607190e-02],
+           [ 1.17627159e+00],
+           [-3.03557801e-01],
+           [-8.15575507e-01],
     ...
-           [-1.19274235e+00],
-           [-1.31181229e-01],
-           [-5.19243262e-01],
-           [-4.88670710e-02],
-           [ 6.34365842e-01],
-           [-5.52543616e-01],
-           [-2.33369109e-01],
-           [-5.08989721e-01],
-           [-1.13293759e+00],
-           [-1.56047277e+00],
-           [ 1.48161485e-01],
-           [-6.64764095e-01],
-           [ 1.07695403e+00],
-           [ 1.98288910e-01],
-           [-1.95084675e-02],
-           [-6.53492637e-01],
-           [-5.96512851e-01],
-           [ 2.33044048e+00],
-           [-4.75546852e-01],
-           [ 2.03452137e+00]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>centiles</span></div><div class='xr-var-dims'>(centile, observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>764.5 361.4 ... 1.348e+03 1.764e+03</div><input id='attrs-d70f6bfd-c8be-4f58-9cb1-e914ad33a416' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-d70f6bfd-c8be-4f58-9cb1-e914ad33a416' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-06cf3852-32fd-4410-951b-1711b5f51411' class='xr-var-data-in' type='checkbox'><label for='data-06cf3852-32fd-4410-951b-1711b5f51411' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[[ 764.48051935],
-            [ 361.41563123],
-            [ 615.76299489],
-            ...,
-            [ 823.51251943],
-            [ 151.5070198 ],
-            [ 612.26862972]],
-    
-           [[1123.34693879],
-            [ 721.46917209],
-            [ 953.94158253],
-            ...,
-            [1183.56606029],
-            [ 504.42671063],
-            [ 951.96394225]],
-    
-           [[1372.79122191],
-            [ 971.73861085],
-            [1189.00597081],
-            ...,
-            [1433.83549905],
-            [ 749.73748508],
-            [1188.08259008]],
-    
-           [[1622.23550502],
-            [1222.00804961],
-            [1424.07035908],
-            ...,
-            [1684.10493781],
-            [ 995.04825952],
-            [1424.20123792]],
-    
-           [[1981.10192446],
-            [1582.06159047],
-            [1762.24894672],
-            ...,
-            [2044.15847867],
-            [1347.96795035],
-            [1763.89655044]]], shape=(5, 744, 1))</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>logp</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-0.7251 -0.241 ... -0.4037 -2.371</div><input id='attrs-29d18ce6-1789-4e72-9a73-dcc9a1098510' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-29d18ce6-1789-4e72-9a73-dcc9a1098510' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-98d63f01-0260-458c-8511-37de2f189b4c' class='xr-var-data-in' type='checkbox'><label for='data-98d63f01-0260-458c-8511-37de2f189b4c' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[ -0.72514707],
-           [ -0.24098231],
-           [ -0.39056752],
-           [ -0.73731169],
-           [ -0.31361777],
-           [ -0.4209407 ],
-           [ -1.25669061],
-           [ -0.26749261],
-           [ -0.31233777],
-           [ -2.21532219],
-           [ -0.74076312],
-           [ -0.84820539],
-           [ -0.136635  ],
-           [ -0.47906776],
-           [ -1.08559202],
-           [ -0.13980737],
-           [ -0.53212433],
-           [ -0.90522857],
-           [ -0.20658304],
-           [ -2.42246417],
+           [-1.02206216e+00],
+           [-6.78884255e-02],
+           [-5.76642331e-01],
+           [ 2.86759670e-01],
+           [ 5.26522909e-01],
+           [-8.64959390e-01],
+           [-3.02820512e-01],
+           [-5.73067479e-01],
+           [-1.16446356e+00],
+           [-1.28084318e+00],
+           [ 9.70738275e-04],
+           [-9.00302758e-01],
+           [ 9.69113961e-01],
+           [ 2.74186553e-01],
+           [-1.73629588e-01],
+           [-4.12645320e-01],
+           [-5.35226503e-01],
+           [ 2.33939900e+00],
+           [-6.32568255e-01],
+           [ 1.83214840e+00]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>logp</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-0.7314 -0.3002 ... -0.3636 -1.814</div><input id='attrs-7f9add43-3f51-448f-abd5-0ced5c6d4d55' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-7f9add43-3f51-448f-abd5-0ced5c6d4d55' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-bc8602f3-4e11-4591-bde1-7e9ac5a50456' class='xr-var-data-in' type='checkbox'><label for='data-bc8602f3-4e11-4591-bde1-7e9ac5a50456' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[ -0.73138379],
+           [ -0.30024691],
+           [ -0.43181896],
+           [ -0.60655884],
+           [ -0.30583961],
+           [ -0.48240038],
+           [ -1.32005173],
+           [ -0.31730421],
+           [ -0.33238232],
+           [ -2.1275148 ],
+           [ -0.77066067],
+           [ -0.83634424],
+           [ -0.16455033],
+           [ -0.34515329],
+           [ -1.13236594],
+           [ -0.2080825 ],
+           [ -0.47953191],
+           [ -0.85298468],
+           [ -0.23973887],
+           [ -2.39426028],
     ...
-           [ -0.95452581],
-           [ -0.16766304],
-           [ -0.27762984],
-           [ -0.14055616],
-           [ -0.3010195 ],
-           [ -2.60932586],
-           [ -0.13325421],
-           [ -1.29851664],
-           [ -0.90712641],
-           [ -1.90228146],
-           [ -2.05826182],
-           [ -2.09331046],
-           [ -2.40667657],
-           [ -0.3538538 ],
-           [ -0.87978561],
-           [ -0.5162091 ],
-           [ -0.70631746],
-           [ -2.56946896],
-           [ -0.40371459],
-           [ -2.371211  ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Yhat</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.418e+03 978.5 ... 666.5 1.174e+03</div><input id='attrs-5c1d8917-d23e-4e5a-8eb6-4f743bb43c24' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5c1d8917-d23e-4e5a-8eb6-4f743bb43c24' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-74a7f085-0fcd-4daa-84f4-1a770fb634e2' class='xr-var-data-in' type='checkbox'><label for='data-74a7f085-0fcd-4daa-84f4-1a770fb634e2' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[1417.88456857],
-           [ 978.47679131],
-           [1178.22371089],
-           [ 950.7821152 ],
-           [1686.65205914],
-           [ 691.0757922 ],
-           [1315.90822338],
-           [1191.04341594],
-           [1142.49560347],
-           [2883.46166402],
-           [1384.53062535],
-           [1417.88456857],
-           [ 916.45992131],
-           [ 921.93761406],
-           [1460.20352177],
-           [ 941.92274304],
-           [ 738.08957645],
-           [ 941.92274304],
-           [1160.63647195],
-           [3544.79367796],
+           [ -0.80722004],
+           [ -0.1749193 ],
+           [ -0.30235333],
+           [ -0.23371562],
+           [ -0.27910268],
+           [ -2.55236665],
+           [ -0.18185332],
+           [ -1.38820827],
+           [ -0.8144811 ],
+           [ -1.00260213],
+           [ -2.01231996],
+           [ -2.17551341],
+           [ -2.13975271],
+           [ -0.3273611 ],
+           [ -0.8747072 ],
+           [ -0.45365434],
+           [ -0.59026043],
+           [ -2.93067286],
+           [ -0.3636228 ],
+           [ -1.81389268]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Yhat</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.402e+03 920.5 ... 736.1 1.22e+03</div><input id='attrs-0b9b9695-bd8d-49a4-986a-77dce53bcf3c' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-0b9b9695-bd8d-49a4-986a-77dce53bcf3c' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-9d9d531e-635d-4270-8341-e50e38a16ea9' class='xr-var-data-in' type='checkbox'><label for='data-9d9d531e-635d-4270-8341-e50e38a16ea9' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[1402.06998747],
+           [ 920.51118672],
+           [1216.8566214 ],
+           [ 989.87323755],
+           [1608.11256484],
+           [ 714.42398407],
+           [1344.20120166],
+           [1217.12363649],
+           [1155.82336889],
+           [3095.05373634],
+           [1386.71691142],
+           [1402.06998747],
+           [ 980.90877114],
+           [ 857.83050716],
+           [1453.31564012],
+           [ 985.0933737 ],
+           [ 844.15163377],
+           [ 985.0933737 ],
+           [1167.01981476],
+           [3941.33618648],
     ...
-           [1224.8750454 ],
-           [ 905.44194263],
-           [1121.5484747 ],
-           [1155.11738833],
-           [1183.95776492],
-           [3803.94190048],
-           [1121.5484747 ],
-           [1382.70355834],
-           [1121.5484747 ],
-           [1354.97742631],
-           [3379.8085924 ],
-           [2478.60163974],
-           [2196.78054488],
-           [1090.61849198],
-           [1311.14678241],
-           [ 974.95197126],
-           [1326.9597592 ],
-           [1342.86414964],
-           [ 666.45269705],
-           [1174.1510781 ]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>statistics</span></div><div class='xr-var-dims'>(response_vars, statistic)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.3322 0.0422 ... 0.6681 0.9195</div><input id='attrs-cd3ea20e-4fd9-476b-8395-ea8e977a6d39' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-cd3ea20e-4fd9-476b-8395-ea8e977a6d39' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0c407651-326b-4384-880d-852c35c7293b' class='xr-var-data-in' type='checkbox'><label for='data-0c407651-326b-4384-880d-852c35c7293b' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[3.32216979e-01, 4.22043011e-02, 1.81570089e+00, 5.33916786e-01,
-            7.78275130e-01, 3.31902692e-01, 7.34616018e-01, 5.24282707e-01,
-            9.10468485e-54, 6.68097308e-01, 9.19475800e-01]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y_harmonized</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>1.011e+03 1.552e+03 ... 2.173e+03</div><input id='attrs-a5a3d98e-6ad6-4aa4-a8d6-6b708f7f8e4a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-a5a3d98e-6ad6-4aa4-a8d6-6b708f7f8e4a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-93e9175d-3e8b-43ec-b31e-7f0129be5d9f' class='xr-var-data-in' type='checkbox'><label for='data-93e9175d-3e8b-43ec-b31e-7f0129be5d9f' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[ 1010.50393194],
-           [ 1552.44247456],
-           [ 1153.70426029],
-           [ 1107.26854921],
-           [ 1422.27586615],
-           [ 1774.58282311],
-           [ 1303.58091073],
-           [ 1225.25403886],
-           [ 1685.34859547],
-           [ 4833.24540665],
-           [  983.00004642],
-           [  970.43091326],
-           [ 1497.1376417 ],
-           [ 1133.1742108 ],
-           [ 1638.60202249],
-           [ 1604.03960147],
-           [ 1673.56603935],
-           [ 1952.11154642],
-           [ 1335.72345661],
-           [ 1988.73158542],
+           [1164.85263514],
+           [ 882.50284491],
+           [1152.53644387],
+           [1021.29809113],
+           [1215.98691623],
+           [4655.94609758],
+           [1152.53644387],
+           [1423.45426397],
+           [1152.53644387],
+           [1268.22065709],
+           [3761.37124602],
+           [2857.18722483],
+           [2519.56977097],
+           [1053.73794232],
+           [1434.61453292],
+           [ 865.50782817],
+           [1211.60805424],
+           [1303.93758042],
+           [ 736.07641189],
+           [1219.85598775]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>statistics</span></div><div class='xr-var-dims'>(response_vars, statistic)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.3637 0.04785 ... 0.6363 0.9033</div><input id='attrs-51b79186-89a3-4ad4-bcbe-b7d2b9ea84fc' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-51b79186-89a3-4ad4-bcbe-b7d2b9ea84fc' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-25eb442a-b41c-4a86-bc63-eeee552a761c' class='xr-var-data-in' type='checkbox'><label for='data-25eb442a-b41c-4a86-bc63-eeee552a761c' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[ 3.63677114e-01,  4.78494624e-02,  3.00775040e-01,
+            -7.37374807e+00,  7.40199825e-01,  3.63651373e-01,
+             6.44841797e+02,  5.31703862e-01,  1.59382528e-55,
+             6.36348627e-01,  9.03311639e-01]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>Y_harmonized</span></div><div class='xr-var-dims'>(observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>802.4 1.446e+03 ... 990.8 1.935e+03</div><input id='attrs-fd662d4d-d614-43c7-838a-24fbb4bc5442' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-fd662d4d-d614-43c7-838a-24fbb4bc5442' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-dec5e668-278f-451e-b5b9-3a64a3feb8fa' class='xr-var-data-in' type='checkbox'><label for='data-dec5e668-278f-451e-b5b9-3a64a3feb8fa' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[  802.41738175],
+           [ 1446.44663155],
+           [  915.78209136],
+           [  847.13863978],
+           [ 1279.62446896],
+           [ 1534.16076801],
+           [ 1136.05546655],
+           [  987.27846038],
+           [ 1455.07070178],
+           [ 4726.03942736],
+           [  774.92613626],
+           [  762.3427603 ],
+           [ 1254.9313028 ],
+           [  985.63003049],
+           [ 1501.27271146],
+           [ 1343.88460957],
+           [ 1448.56252233],
+           [ 1691.94666906],
+           [ 1105.53521916],
+           [ 1867.54364099],
     ...
-           [  947.63902826],
-           [ 1362.43825994],
-           [ 1221.6243182 ],
-           [ 1418.15300913],
-           [ 1660.9135859 ],
-           [ 2391.3080917 ],
-           [ 1328.71101333],
-           [ 1156.16041773],
-           [  991.73820724],
-           [  834.44343925],
-           [ 3964.52459936],
-           [ 1326.59101794],
-           [ 4518.58102192],
-           [ 1559.17453285],
-           [ 1631.11495501],
-           [ 1191.42832685],
-           [ 1111.60402638],
-           [ 2317.19368301],
-           [ 1231.14211259],
-           [ 2173.11030591]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-bc1141bb-c624-4f60-a798-aa70e8d5ab49' class='xr-section-summary-in' type='checkbox'  ><label for='section-bc1141bb-c624-4f60-a798-aa70e8d5ab49' class='xr-section-summary' >Indexes: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-index-name'><div>observations</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-4e50e0b8-0b9c-4862-8b5d-249c9042fd99' class='xr-index-data-in' type='checkbox'/><label for='index-4e50e0b8-0b9c-4862-8b5d-249c9042fd99' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([ 459,  995,  432,  288,   23, 1073,  579,  516,  248,  752,
+           [  871.47933012],
+           [ 1214.85825556],
+           [  991.34620677],
+           [ 1335.16299372],
+           [ 1422.95101661],
+           [ 2025.6680209 ],
+           [ 1098.43108176],
+           [  976.03845843],
+           [  761.46400317],
+           [  709.36769646],
+           [ 3807.80578229],
+           [  980.5051181 ],
+           [ 4177.54539281],
+           [ 1463.12216399],
+           [ 1372.50675296],
+           [ 1176.45931177],
+           [ 1045.33415117],
+           [ 2192.29653561],
+           [  990.79669741],
+           [ 1935.19659273]])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>centiles</span></div><div class='xr-var-dims'>(centile, observations, response_vars)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>720.4 260.0 ... 1.389e+03 1.862e+03</div><input id='attrs-4c36dfc4-de38-4171-bc24-48411d4a0d6f' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-4c36dfc4-de38-4171-bc24-48411d4a0d6f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-30030f88-cd06-49ec-99fd-bc35bc6b56ad' class='xr-var-data-in' type='checkbox'><label for='data-30030f88-cd06-49ec-99fd-bc35bc6b56ad' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[[ 720.38618029],
+            [ 259.97077819],
+            [ 573.5954466 ],
+            ...,
+            [ 643.3971719 ],
+            [  83.40839161],
+            [ 577.64240634]],
+    
+           [[1122.53828126],
+            [ 649.64955633],
+            [ 953.08052486],
+            ...,
+            [1033.07595004],
+            [ 468.44293816],
+            [ 956.50946803]],
+    
+           [[1402.06998747],
+            [ 920.51118672],
+            [1216.8566214 ],
+            ...,
+            [1303.93758042],
+            [ 736.07641189],
+            [1219.85598775]],
+    
+           [[1681.60169369],
+            [1191.3728171 ],
+            [1480.63271794],
+            ...,
+            [1574.79921081],
+            [1003.70988562],
+            [1483.20250746]],
+    
+           [[2083.75379466],
+            [1581.05159524],
+            [1860.11779619],
+            ...,
+            [1964.47798895],
+            [1388.74443217],
+            [1862.06956915]]], shape=(5, 744, 1))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-d72880cf-1e53-4dae-bc27-7f97e185a2fb' class='xr-section-summary-in' type='checkbox'  ><label for='section-d72880cf-1e53-4dae-bc27-7f97e185a2fb' class='xr-section-summary' >Indexes: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-index-name'><div>observations</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-6eac684f-3e09-47b6-a17a-3e764ba9aa92' class='xr-index-data-in' type='checkbox'/><label for='index-6eac684f-3e09-47b6-a17a-3e764ba9aa92' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([ 459,  995,  432,  288,   23, 1073,  579,  516,  248,  752,
            ...
             618,   24,   54,  801,  847,  340,  771, 1023, 1062,  372],
-          dtype=&#x27;int64&#x27;, name=&#x27;observations&#x27;, length=744))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>response_vars</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-0eaa53f2-27ed-4de4-8024-3c2abbcf57e5' class='xr-index-data-in' type='checkbox'/><label for='index-0eaa53f2-27ed-4de4-8024-3c2abbcf57e5' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;WM-hypointensities&#x27;], dtype=&#x27;object&#x27;, name=&#x27;response_vars&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>covariates</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-0d2eabe5-b188-4a0d-911d-75fd101a7a20' class='xr-index-data-in' type='checkbox'/><label for='index-0d2eabe5-b188-4a0d-911d-75fd101a7a20' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;age&#x27;], dtype=&#x27;object&#x27;, name=&#x27;covariates&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>batch_effect_dims</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-df2d0e12-b383-4bc7-a36f-9c24e1513a6f' class='xr-index-data-in' type='checkbox'/><label for='index-df2d0e12-b383-4bc7-a36f-9c24e1513a6f' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;object&#x27;, name=&#x27;batch_effect_dims&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>centile</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-6b83981f-968c-45b7-b413-da3af88555bb' class='xr-index-data-in' type='checkbox'/><label for='index-6b83981f-968c-45b7-b413-da3af88555bb' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([0.05, 0.25, 0.5, 0.75, 0.95], dtype=&#x27;float64&#x27;, name=&#x27;centile&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>statistic</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-d49ceedd-f256-4b52-8dee-b65b35991afa' class='xr-index-data-in' type='checkbox'/><label for='index-d49ceedd-f256-4b52-8dee-b65b35991afa' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;EXPV&#x27;, &#x27;MACE&#x27;, &#x27;MAPE&#x27;, &#x27;MSLL&#x27;, &#x27;NLL&#x27;, &#x27;R2&#x27;, &#x27;RMSE&#x27;, &#x27;Rho&#x27;, &#x27;Rho_p&#x27;,
+          dtype=&#x27;int64&#x27;, name=&#x27;observations&#x27;, length=744))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>response_vars</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-37829f96-738d-4cf0-8880-7ec4a591a7cc' class='xr-index-data-in' type='checkbox'/><label for='index-37829f96-738d-4cf0-8880-7ec4a591a7cc' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;WM-hypointensities&#x27;], dtype=&#x27;object&#x27;, name=&#x27;response_vars&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>covariates</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-7d0e6d26-8035-4e82-a236-11a4d129b605' class='xr-index-data-in' type='checkbox'/><label for='index-7d0e6d26-8035-4e82-a236-11a4d129b605' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;age&#x27;], dtype=&#x27;object&#x27;, name=&#x27;covariates&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>batch_effect_dims</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-9f4b1b65-12f7-4980-a4be-67d5e3d9a2e0' class='xr-index-data-in' type='checkbox'/><label for='index-9f4b1b65-12f7-4980-a4be-67d5e3d9a2e0' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;sex&#x27;, &#x27;site&#x27;], dtype=&#x27;object&#x27;, name=&#x27;batch_effect_dims&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>statistic</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-bf7259dc-4ded-48a9-aadc-11835641153c' class='xr-index-data-in' type='checkbox'/><label for='index-bf7259dc-4ded-48a9-aadc-11835641153c' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([&#x27;EXPV&#x27;, &#x27;MACE&#x27;, &#x27;MAPE&#x27;, &#x27;MSLL&#x27;, &#x27;NLL&#x27;, &#x27;R2&#x27;, &#x27;RMSE&#x27;, &#x27;Rho&#x27;, &#x27;Rho_p&#x27;,
            &#x27;SMSE&#x27;, &#x27;ShapiroW&#x27;],
-          dtype=&#x27;object&#x27;, name=&#x27;statistic&#x27;))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-9b2c5769-0b86-4177-8ec3-8db3fca05482' class='xr-section-summary-in' type='checkbox'  checked><label for='section-9b2c5769-0b86-4177-8ec3-8db3fca05482' class='xr-section-summary' >Attributes: <span>(7)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>real_ids :</span></dt><dd>True</dd><dt><span>is_scaled :</span></dt><dd>False</dd><dt><span>name :</span></dt><dd>fit_train</dd><dt><span>unique_batch_effects :</span></dt><dd>{np.str_(&#x27;sex&#x27;): [np.str_(&#x27;F&#x27;), np.str_(&#x27;M&#x27;)], np.str_(&#x27;site&#x27;): [np.str_(&#x27;AnnArbor_a&#x27;), np.str_(&#x27;AnnArbor_b&#x27;), np.str_(&#x27;Atlanta&#x27;), np.str_(&#x27;Baltimore&#x27;), np.str_(&#x27;Bangor&#x27;), np.str_(&#x27;Beijing_Zang&#x27;), np.str_(&#x27;Berlin_Margulies&#x27;), np.str_(&#x27;Cambridge_Buckner&#x27;), np.str_(&#x27;Cleveland&#x27;), np.str_(&#x27;ICBM&#x27;), np.str_(&#x27;Leiden_2180&#x27;), np.str_(&#x27;Leiden_2200&#x27;), np.str_(&#x27;Munchen&#x27;), np.str_(&#x27;NewYork_a&#x27;), np.str_(&#x27;NewYork_a_ADHD&#x27;), np.str_(&#x27;Newark&#x27;), np.str_(&#x27;Oxford&#x27;), np.str_(&#x27;PaloAlto&#x27;), np.str_(&#x27;Pittsburgh&#x27;), np.str_(&#x27;Queensland&#x27;), np.str_(&#x27;SaintLouis&#x27;)]}</dd><dt><span>batch_effect_counts :</span></dt><dd>defaultdict(&lt;function NormData.register_batch_effects.&lt;locals&gt;.&lt;lambda&gt; at 0x148479080&gt;, {np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): 493, np.str_(&#x27;M&#x27;): 437}, np.str_(&#x27;site&#x27;): {np.str_(&#x27;AnnArbor_a&#x27;): 24, np.str_(&#x27;AnnArbor_b&#x27;): 32, np.str_(&#x27;Atlanta&#x27;): 28, np.str_(&#x27;Baltimore&#x27;): 23, np.str_(&#x27;Bangor&#x27;): 20, np.str_(&#x27;Beijing_Zang&#x27;): 198, np.str_(&#x27;Berlin_Margulies&#x27;): 26, np.str_(&#x27;Cambridge_Buckner&#x27;): 198, np.str_(&#x27;Cleveland&#x27;): 31, np.str_(&#x27;ICBM&#x27;): 85, np.str_(&#x27;Leiden_2180&#x27;): 12, np.str_(&#x27;Leiden_2200&#x27;): 19, np.str_(&#x27;Munchen&#x27;): 15, np.str_(&#x27;NewYork_a&#x27;): 83, np.str_(&#x27;NewYork_a_ADHD&#x27;): 25, np.str_(&#x27;Newark&#x27;): 19, np.str_(&#x27;Oxford&#x27;): 22, np.str_(&#x27;PaloAlto&#x27;): 17, np.str_(&#x27;Pittsburgh&#x27;): 3, np.str_(&#x27;Queensland&#x27;): 19, np.str_(&#x27;SaintLouis&#x27;): 31}})</dd><dt><span>covariate_ranges :</span></dt><dd>{np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(85.0)}}</dd><dt><span>batch_effect_covariate_ranges :</span></dt><dd>{np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(85.0)}}, np.str_(&#x27;M&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(9.21), &#x27;max&#x27;: np.float64(78.0)}}}, np.str_(&#x27;site&#x27;): {np.str_(&#x27;AnnArbor_a&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(13.41), &#x27;max&#x27;: np.float64(40.98)}}, np.str_(&#x27;AnnArbor_b&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(79.0)}}, np.str_(&#x27;Atlanta&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(22.0), &#x27;max&#x27;: np.float64(57.0)}}, np.str_(&#x27;Baltimore&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(40.0)}}, np.str_(&#x27;Bangor&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(38.0)}}, np.str_(&#x27;Beijing_Zang&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(26.0)}}, np.str_(&#x27;Berlin_Margulies&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(23.0), &#x27;max&#x27;: np.float64(44.0)}}, np.str_(&#x27;Cambridge_Buckner&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(30.0)}}, np.str_(&#x27;Cleveland&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(24.0), &#x27;max&#x27;: np.float64(60.0)}}, np.str_(&#x27;ICBM&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(85.0)}}, np.str_(&#x27;Leiden_2180&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(27.0)}}, np.str_(&#x27;Leiden_2200&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(28.0)}}, np.str_(&#x27;Munchen&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(63.0), &#x27;max&#x27;: np.float64(74.0)}}, np.str_(&#x27;NewYork_a&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(49.16)}}, np.str_(&#x27;NewYork_a_ADHD&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(20.69), &#x27;max&#x27;: np.float64(50.9)}}, np.str_(&#x27;Newark&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(21.0), &#x27;max&#x27;: np.float64(39.0)}}, np.str_(&#x27;Oxford&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(35.0)}}, np.str_(&#x27;PaloAlto&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(22.0), &#x27;max&#x27;: np.float64(46.0)}}, np.str_(&#x27;Pittsburgh&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(25.0), &#x27;max&#x27;: np.float64(47.0)}}, np.str_(&#x27;Queensland&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(34.0)}}, np.str_(&#x27;SaintLouis&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;min&#x27;: np.float64(21.0), &#x27;max&#x27;: np.float64(29.0)}}}}</dd></dl></div></li></ul></div></div>
+          dtype=&#x27;object&#x27;, name=&#x27;statistic&#x27;))</pre></div></li><li class='xr-var-item'><div class='xr-index-name'><div>centile</div></div><div class='xr-index-preview'>PandasIndex</div><input type='checkbox' disabled/><label></label><input id='index-1bd09d0e-f640-41fd-9ead-54c54a7f1cb9' class='xr-index-data-in' type='checkbox'/><label for='index-1bd09d0e-f640-41fd-9ead-54c54a7f1cb9' title='Show/Hide index repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-index-data'><pre>PandasIndex(Index([0.05, 0.25, 0.5, 0.75, 0.95], dtype=&#x27;float64&#x27;, name=&#x27;centile&#x27;))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-8af46a1d-df1f-42ef-9723-ccb0058cea1e' class='xr-section-summary-in' type='checkbox'  checked><label for='section-8af46a1d-df1f-42ef-9723-ccb0058cea1e' class='xr-section-summary' >Attributes: <span>(7)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>real_ids :</span></dt><dd>True</dd><dt><span>is_scaled :</span></dt><dd>False</dd><dt><span>name :</span></dt><dd>fit_train</dd><dt><span>unique_batch_effects :</span></dt><dd>{np.str_(&#x27;sex&#x27;): [np.str_(&#x27;F&#x27;), np.str_(&#x27;M&#x27;)], np.str_(&#x27;site&#x27;): [np.str_(&#x27;AnnArbor_a&#x27;), np.str_(&#x27;AnnArbor_b&#x27;), np.str_(&#x27;Atlanta&#x27;), np.str_(&#x27;Baltimore&#x27;), np.str_(&#x27;Bangor&#x27;), np.str_(&#x27;Beijing_Zang&#x27;), np.str_(&#x27;Berlin_Margulies&#x27;), np.str_(&#x27;Cambridge_Buckner&#x27;), np.str_(&#x27;Cleveland&#x27;), np.str_(&#x27;ICBM&#x27;), np.str_(&#x27;Leiden_2180&#x27;), np.str_(&#x27;Leiden_2200&#x27;), np.str_(&#x27;Munchen&#x27;), np.str_(&#x27;NewYork_a&#x27;), np.str_(&#x27;NewYork_a_ADHD&#x27;), np.str_(&#x27;Newark&#x27;), np.str_(&#x27;Oxford&#x27;), np.str_(&#x27;PaloAlto&#x27;), np.str_(&#x27;Pittsburgh&#x27;), np.str_(&#x27;Queensland&#x27;), np.str_(&#x27;SaintLouis&#x27;)]}</dd><dt><span>batch_effect_counts :</span></dt><dd>defaultdict(&lt;function NormData.register_batch_effects.&lt;locals&gt;.&lt;lambda&gt; at 0x15e38ea20&gt;, {np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): 493, np.str_(&#x27;M&#x27;): 437}, np.str_(&#x27;site&#x27;): {np.str_(&#x27;AnnArbor_a&#x27;): 24, np.str_(&#x27;AnnArbor_b&#x27;): 32, np.str_(&#x27;Atlanta&#x27;): 28, np.str_(&#x27;Baltimore&#x27;): 23, np.str_(&#x27;Bangor&#x27;): 20, np.str_(&#x27;Beijing_Zang&#x27;): 198, np.str_(&#x27;Berlin_Margulies&#x27;): 26, np.str_(&#x27;Cambridge_Buckner&#x27;): 198, np.str_(&#x27;Cleveland&#x27;): 31, np.str_(&#x27;ICBM&#x27;): 85, np.str_(&#x27;Leiden_2180&#x27;): 12, np.str_(&#x27;Leiden_2200&#x27;): 19, np.str_(&#x27;Munchen&#x27;): 15, np.str_(&#x27;NewYork_a&#x27;): 83, np.str_(&#x27;NewYork_a_ADHD&#x27;): 25, np.str_(&#x27;Newark&#x27;): 19, np.str_(&#x27;Oxford&#x27;): 22, np.str_(&#x27;PaloAlto&#x27;): 17, np.str_(&#x27;Pittsburgh&#x27;): 3, np.str_(&#x27;Queensland&#x27;): 19, np.str_(&#x27;SaintLouis&#x27;): 31}})</dd><dt><span>covariate_ranges :</span></dt><dd>{np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(27.73636559139785), &#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(85.0)}}</dd><dt><span>batch_effect_covariate_ranges :</span></dt><dd>{np.str_(&#x27;sex&#x27;): {np.str_(&#x27;F&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(27.250324543610546), &#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(85.0)}}, np.str_(&#x27;M&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(28.284691075514875), &#x27;min&#x27;: np.float64(9.21), &#x27;max&#x27;: np.float64(78.0)}}}, np.str_(&#x27;site&#x27;): {np.str_(&#x27;AnnArbor_a&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(21.28333333333333), &#x27;min&#x27;: np.float64(13.41), &#x27;max&#x27;: np.float64(40.98)}}, np.str_(&#x27;AnnArbor_b&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(44.40625), &#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(79.0)}}, np.str_(&#x27;Atlanta&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(30.892857142857142), &#x27;min&#x27;: np.float64(22.0), &#x27;max&#x27;: np.float64(57.0)}}, np.str_(&#x27;Baltimore&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(29.26086956521739), &#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(40.0)}}, np.str_(&#x27;Bangor&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(23.4), &#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(38.0)}}, np.str_(&#x27;Beijing_Zang&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(21.161616161616163), &#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(26.0)}}, np.str_(&#x27;Berlin_Margulies&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(29.76923076923077), &#x27;min&#x27;: np.float64(23.0), &#x27;max&#x27;: np.float64(44.0)}}, np.str_(&#x27;Cambridge_Buckner&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(21.03030303030303), &#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(30.0)}}, np.str_(&#x27;Cleveland&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(43.54838709677419), &#x27;min&#x27;: np.float64(24.0), &#x27;max&#x27;: np.float64(60.0)}}, np.str_(&#x27;ICBM&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(44.04705882352941), &#x27;min&#x27;: np.float64(19.0), &#x27;max&#x27;: np.float64(85.0)}}, np.str_(&#x27;Leiden_2180&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(23.0), &#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(27.0)}}, np.str_(&#x27;Leiden_2200&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(21.68421052631579), &#x27;min&#x27;: np.float64(18.0), &#x27;max&#x27;: np.float64(28.0)}}, np.str_(&#x27;Munchen&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(68.13333333333334), &#x27;min&#x27;: np.float64(63.0), &#x27;max&#x27;: np.float64(74.0)}}, np.str_(&#x27;NewYork_a&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(24.507710843373495), &#x27;min&#x27;: np.float64(7.88), &#x27;max&#x27;: np.float64(49.16)}}, np.str_(&#x27;NewYork_a_ADHD&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(34.9952), &#x27;min&#x27;: np.float64(20.69), &#x27;max&#x27;: np.float64(50.9)}}, np.str_(&#x27;Newark&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(24.105263157894736), &#x27;min&#x27;: np.float64(21.0), &#x27;max&#x27;: np.float64(39.0)}}, np.str_(&#x27;Oxford&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(29.0), &#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(35.0)}}, np.str_(&#x27;PaloAlto&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(32.470588235294116), &#x27;min&#x27;: np.float64(22.0), &#x27;max&#x27;: np.float64(46.0)}}, np.str_(&#x27;Pittsburgh&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(32.333333333333336), &#x27;min&#x27;: np.float64(25.0), &#x27;max&#x27;: np.float64(47.0)}}, np.str_(&#x27;Queensland&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(25.94736842105263), &#x27;min&#x27;: np.float64(20.0), &#x27;max&#x27;: np.float64(34.0)}}, np.str_(&#x27;SaintLouis&#x27;): {np.str_(&#x27;age&#x27;): {&#x27;mean&#x27;: np.float64(25.096774193548388), &#x27;min&#x27;: np.float64(21.0), &#x27;max&#x27;: np.float64(29.0)}}}}</dd></dl></div></li></ul></div></div>
 
 
 
@@ -1661,13 +1650,13 @@ original train data.
 
 .. code:: ipython3
 
+    from pcntoolkit.util.plotter import plot_centiles
+    
+    
     transfered_model = model.transfer_predict(transfer_train, transfer_test)
     plot_centiles(
         transfered_model,
-        centiles=[0.05, 0.5, 0.95],  # Plot these centiles, the default is [0.05, 0.25, 0.5, 0.75, 0.95]
         scatter_data=transfer_train,
-        show_other_data=True,
-        harmonize=True,
     )
 
 
@@ -1807,34 +1796,34 @@ original train data.
                             </progress>
                         </td>
                         <td>2000</td>
-                        <td>2</td>
-                        <td>0.18</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>5</td>
-                        <td>0.19</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
                         <td>1</td>
-                        <td>0.20</td>
+                        <td>0.22</td>
+                        <td>63</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.23</td>
+                        <td>15</td>
+                    </tr>
+    
+                    <tr>
+                        <td class="progress-cell">
+                            <progress
+                                max="2000"
+                                value="2000">
+                            </progress>
+                        </td>
+                        <td>2000</td>
+                        <td>0</td>
+                        <td>0.25</td>
                         <td>31</td>
                     </tr>
     
@@ -1847,8 +1836,8 @@ original train data.
                         </td>
                         <td>2000</td>
                         <td>0</td>
-                        <td>0.19</td>
-                        <td>63</td>
+                        <td>0.23</td>
+                        <td>15</td>
                     </tr>
     
                 </tr>

@@ -171,6 +171,8 @@ class Evaluator:
         MSLL compares the log loss of the model to that of a simple baseline predictor
         that always predicts the mean of the training data.
 
+        MSLL = MLL_model - MLL_null
+
         Parameters
         ----------
         data : NormData

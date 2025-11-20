@@ -143,6 +143,10 @@ Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMP
 1. Better default centile plot
 2. Improve MSLL computation
 3. Speedup model comparison
+4. Change default Normal likelihood
+5. Save predictions in normal order
+6. Switch to SKLearn MAPE
+7. Add centered random parameterization
 
 **Bug fixes**
 1. Fix bug with re-submitting a runner's failed jobs
@@ -151,3 +155,4 @@ Models estimated on earlier versions of PCNtoolkit (up until v0.39) are NOT COMP
 4. Small updates to default prior settings in HBR
 5. Improve MSLL computation
 6. Fix bug with nm.predict, it is now fully in-place on the Normdata
+7. Fix transfer bug for HBR
