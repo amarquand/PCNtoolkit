@@ -18,18 +18,20 @@ def autoscale(ax=None, axis='y', margin=0.1):
 
     for artist in ax.collections + ax.lines:
         x,y = get_xy(artist)
-        if axis == 'y':
-            setlim = ax.set_ylim
-            lim = ax.get_xlim()
-            fixed, dependent = x, y
-        else:
-            setlim = ax.set_xlim
-            lim = ax.get_ylim()
-            fixed, dependent = y, x
-        if len(fixed) > 0 and len(dependent) > 0:
-            low, high = calculate_new_limit(fixed, dependent, lim)
-            newlow = low if low < newlow else newlow
-            newhigh = high if high > newhigh else newhigh
+        type = artist.__class__.__name__
+        if not type == "FillBetweenPolyCollection":
+            if axis == 'y':
+                setlim = ax.set_ylim
+                lim = ax.get_xlim()
+                fixed, dependent = x, y
+            else:
+                setlim = ax.set_xlim
+                lim = ax.get_ylim()
+                fixed, dependent = y, x
+            if len(fixed) > 0 and len(dependent) > 0:
+                low, high = calculate_new_limit(fixed, dependent, lim)
+                newlow = low if low < newlow else newlow
+                newhigh = high if high > newhigh else newhigh
 
     margin = margin*(newhigh - newlow)
 
