@@ -166,9 +166,9 @@ class NormativeModel:
         Combines model.fit and model.predict in a single operation.
         """
         self.fit(fit_data)
-        self.predict(predict_data)
         if self.savemodel:  # Make sure model is saved
             self.save()
+        self.predict(predict_data)
         return predict_data
 
     def transfer(self, transfer_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
