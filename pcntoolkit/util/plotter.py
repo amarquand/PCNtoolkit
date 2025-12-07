@@ -8,6 +8,8 @@ import pandas as pd  # type: ignore
 import seaborn as sns  # type: ignore
 from matplotlib.font_manager import FontProperties
 from typing import Optional
+
+# from xarray.core.common import P
 from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.util.autoscale_plot import autoscale
 if TYPE_CHECKING:
@@ -76,7 +78,6 @@ def plot_centiles(
     if response_vars is None:
         response_vars = model.response_vars
     response_vars = list(set(model.response_vars).intersection(set(response_vars)))
-    scatter_data = scatter_data.sel(response_vars = response_vars)
     batch_effects = {k: max(v.items(), key=lambda x: x[1])[0] for k, v in model.batch_effect_counts.items()}
 
     # Create some synthetic data with a single batch effect
@@ -114,6 +115,8 @@ def plot_centiles(
         batch_effects = {}
 
     if scatter_data:
+        scatter_data = scatter_data.sel(response_vars = response_vars)
+
         model.harmonize(scatter_data, reference_batch_effect=batch_effects)
 
     for response_var in response_vars:
@@ -298,7 +301,9 @@ def plot_centiles_advanced(
     if response_vars is None:
         response_vars = model.response_vars
     response_vars = list(set(model.response_vars).intersection(set(response_vars)))
-    scatter_data = scatter_data.sel(response_vars = response_vars)
+    if scatter_data:
+        scatter_data = scatter_data.sel(response_vars = response_vars)
+        
 
     if batch_effects == "all":
         if scatter_data:
@@ -352,7 +357,7 @@ def plot_centiles_advanced(
             # Compute the curve in between the endpoints
             conditional_d = copy.deepcopy(centile_data)
             conditional_d.X.loc[{"covariates": covariate}] = c
-            for rv in model.response_vars:
+            for rv in response_vars:
                 conditional_d.Y.loc[{"response_vars": rv}] = np.linspace(
                     *(centile.centiles.sel(observations=0, response_vars=rv).values.tolist()), 150
                 )
@@ -533,9 +538,10 @@ def _plot_centiles_advanced(
                     style=markers,
                     markers={"Other data":"s"},
                     linewidth=0,
-                    s=20,
+                    s=10,
                     alpha=0.4,
                     zorder=0,
+                    legend=False,
                 )
 
             if show_legend:
@@ -563,26 +569,27 @@ def _plot_centiles_advanced(
     if conditionals_data:
         for conditional_d in conditionals_data:
             filter_cond = conditional_d.sel(filter_dict)
+            x = filter_cond.X
+            p = (np.exp(filter_cond.logp.values) * 30 + x)
+            y = filter_cond.Y.values
             plt.plot(
-                np.exp(filter_cond.logp.values) * 10 + filter_cond.X,
-                filter_cond.Y,
-                color="blue",
-                linestyle="--",
-                linewidth=1,
-                zorder=2,
+                p,
+                y,
+                color="#1fbde0",
+                linewidth=2,
+                zorder=4,
                 label="Conditional",
             )
-            # Put a text annotation on top of the plot, rotate the text 90 degrees
-            plt.text(
-                filter_cond.X[-1],
-                filter_cond.Y[-1],
-                f"{filter_cond.X[-1].values.item():.2f}",
-                color="black",
-                fontsize=10,
-                ha="right",
-                va="bottom",
-                rotation=-90,
-            )
+            x = [x[0], x[-1]]
+            y = [y[0], y[-1]]
+            plt.plot(
+                x,
+                y,
+                color="#1fbde0",
+                linewidth=2,
+                zorder=4,
+                alpha = 0.2,
+            )   
 
     autoscale(ax=plt.gca())
 
