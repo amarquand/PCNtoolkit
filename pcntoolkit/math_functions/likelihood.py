@@ -548,15 +548,11 @@ class BetaLikelihood(Likelihood):
         Y: xr.DataArray,
     ) -> pm.Model:
         with model:
-            alpha_samples = self.alpha.compile(model, X, be, be_maps, Y)
-            beta_samples = self.beta.compile(model, X, be, be_maps, Y)
-
-            alpha_samples = pm.Deterministic("alpha_samples", alpha_samples, dims=self.alpha.sample_dims)
-            beta_samples = pm.Deterministic("beta_samples", beta_samples, dims=self.beta.sample_dims)
+            compiled_params = self.compile_params(model, X, be, be_maps, Y)
+            compiled_params = {k: v[0] for k, v in compiled_params.items()}
             pm.Beta(
                 "Yhat",
-                alpha=alpha_samples,
-                beta=beta_samples,
+                **compiled_params,
                 observed=model["Y"],
                 dims="observations",
             )
