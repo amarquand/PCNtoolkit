@@ -12,7 +12,7 @@ import xarray as xr
 from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.prior import BasePrior, make_prior, prior_from_args
-from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
+from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m, m1m2
 
 
 class Likelihood(ABC):
@@ -321,8 +321,9 @@ class SHASHbLikelihood(Likelihood):
     def forward(self, *args, **kwargs):
         mu, sigma, epsilon, delta = args
         Y = kwargs.get("Y", None)
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+        m1, m2 = m1m2(epsilon, delta)
+        true_mu = m1
+        true_sigma = np.sqrt((m2 - true_mu**2))
         SHASH_centered = (Y - mu) / sigma
         SHASH_uncentered = SHASH_centered * true_sigma + true_mu
         Z = S(SHASH_uncentered, epsilon, delta)
@@ -331,8 +332,9 @@ class SHASHbLikelihood(Likelihood):
     def backward(self, *args, **kwargs):
         mu, sigma, epsilon, delta = args
         Z = kwargs.get("Z", None)
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+        m1, m2 = m1m2(epsilon, delta)
+        true_mu = m1
+        true_sigma = np.sqrt((m2 - true_mu**2))
         SHASH_uncentered = S_inv(Z, epsilon, delta)
         SHASH_centered = (SHASH_uncentered - true_mu) / true_sigma
         Y = SHASH_centered * sigma + mu
