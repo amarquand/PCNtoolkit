@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 from abc import ABC, abstractmethod
-from typing import Optional, Union
 
 import numpy as np
 from scipy.interpolate import BSpline
@@ -25,7 +24,7 @@ def create_basis_function(
         return BsplineBasisFunction(basis_column, **kwargs, knots=new_knots)
     elif basis_type in ["Composite", "CompositeBasis"]:
         parts = [BasisFunction.from_dict(p) for p in kwargs['parts']]
-        return CompositeBasis(parts)
+        return CompositeBasisFunction(parts)
     else:
         return LinearBasisFunction(basis_column)
 
@@ -152,7 +151,7 @@ class PolynomialBasisFunction(BasisFunction):
 class BsplineBasisFunction(BasisFunction):
     def __init__(
         self,
-        basis_column: Optional[int] = None,
+        basis_column: int = 0,
         degree: int = 3,
         nknots: int = 5,
         left_expand: float = 0.05,
@@ -167,7 +166,7 @@ class BsplineBasisFunction(BasisFunction):
         self.left_expand = left_expand
         self.right_expand = right_expand
         self.knot_method = knot_method
-        if knots:
+        if knots is not None:
             self.knots = list(knots)
         else:
             self.knots = None 
@@ -223,7 +222,7 @@ class LinearBasisFunction(BasisFunction):
     def dimension(self):
         return 1
 
-class CompositeBasis(BasisFunction):
+class CompositeBasisFunction(BasisFunction):
     def __init__(self, parts):
         super().__init__(basis_column=0)
         self.parts = parts
