@@ -81,6 +81,8 @@ class BasisFunction(ABC):
             return LinearBasisFunction(basis_column=basis_column)
 
     def fit(self, X: np.ndarray) -> None:
+        if len(X.shape) == 1:
+            X = X[:,None]
         if self.basis_column == [-1]:
             self.basis_column = [i for i in range(X.shape[1])]
         for i in self.basis_column:
@@ -90,6 +92,8 @@ class BasisFunction(ABC):
     def transform(self, X: np.ndarray) -> np.ndarray:
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED))
+        if len(X.shape) == 1:
+            X = X[:,None]
         all_arrays = []
         for i in range(X.shape[1]):
             if i in self.basis_column:
