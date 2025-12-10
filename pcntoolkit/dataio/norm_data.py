@@ -671,7 +671,7 @@ class NormData(xr.Dataset):
                         my_min = my_c.min()
                         my_max = my_c.max()
                         my_mean = my_c.mean()
-                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"mean": my_mean, "min": my_min, "max": my_max}
+                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"mean": float(my_mean), "min": float(my_min), "max": float(my_max)}
         for c in self.covariates.to_numpy():
             my_c = self.X.sel(covariates=c).values
             my_mean = my_c.mean()
