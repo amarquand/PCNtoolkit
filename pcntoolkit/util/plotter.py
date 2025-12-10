@@ -1,5 +1,6 @@
 """A module for plotting functions."""
 
+from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Dict, List, Literal
 
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
     from pcntoolkit.normative_model import NormativeModel
 import os
 import copy
-
+from collections import defaultdict
 sns.set_theme(style="darkgrid")
 
 
@@ -220,12 +221,13 @@ def _plot_centiles(
     plt.close()
 
 
+
 def plot_centiles_advanced(
     model: "NormativeModel",
     centiles: List[float] | np.ndarray | None = None,
     conditionals: List[float] | np.ndarray | None = None,
     covariate: str | None = None,
-    covariate_range: tuple[float, float] = (None, None),  # type: ignore
+    covariate_ranges: dict[str, tuple[float, float]] = None,  # type: ignore
     response_vars: List[str] | None = None,
     batch_effects: Dict[str, List[str]] | None | Literal["all"] = None,
     scatter_data: NormData | None = None,
@@ -294,16 +296,25 @@ def plot_centiles_advanced(
         covariate = model.covariates[0]
         assert isinstance(covariate, str)
 
-    cov_min = covariate_range[0] or model.covariate_ranges[covariate]["min"]
-    cov_max = covariate_range[1] or model.covariate_ranges[covariate]["max"]
-    covariate_range = (cov_min, cov_max)
+    if not covariate_ranges:
+        covariate_ranges = {c:defaultdict(lambda: None) for c in model.covariates}
+    for c in model.covariates:
+        cov_min = covariate_ranges[c] or model.covariate_ranges[c]["min"]
+        cov_max = covariate_ranges[c] or model.covariate_ranges[c]["max"]
+        covariate_ranges[c] = (cov_min, cov_max)
 
     if response_vars is None:
         response_vars = model.response_vars
     response_vars = list(set(model.response_vars).intersection(set(response_vars)))
+
     if scatter_data:
-        scatter_data = scatter_data.sel(response_vars = response_vars)
-        
+        # Filter scatter data
+        scatter_data = scatter_data.sel(response_vars=response_vars)
+        for c in model.covariates:
+            cov = scatter_data.X.sel(covariates=c).values
+            min, max = covariate_ranges[c]
+            idx = np.where((cov > min) & (cov < max))[0]
+            scatter_data = scatter_data.sel(observations=scatter_data.observations[idx])
 
     if batch_effects == "all":
         if scatter_data:
@@ -321,16 +332,15 @@ def plot_centiles_advanced(
 
     # Create some synthetic data with a single batch effect
     # The plotted covariate is just a linspace
-    centile_covariates = np.linspace(covariate_range[0], covariate_range[1], 150)
+    centile_covariates = np.linspace(covariate_ranges[covariate][0], covariate_ranges[covariate][1], 150)
     centile_df = pd.DataFrame({covariate: centile_covariates})
 
     # TODO: use the mean here
     # Any other covariates are taken to be the midpoint between the observed min and max
     for cov in model.covariates:
         if cov != covariate:
-            minc = model.covariate_ranges[cov]["min"]
-            maxc = model.covariate_ranges[cov]["max"]
-            centile_df[cov] = (minc + maxc) / 2
+            minc, maxc = covariate_ranges[cov]
+            centile_df[cov] = scatter_data.X.sel(covariates=cov).mean().values.item()
 
     # Batch effects are the first ones in the highlighted batch effects
     for be, v in batch_effects.items():
@@ -366,7 +376,7 @@ def plot_centiles_advanced(
             conditionals_data.append(conditional_d)
 
     if not hasattr(centile_data, "centiles"):
-        model.compute_centiles(centile_data, centiles=centiles, recompute=False,**kwargs)
+        model.compute_centiles(centile_data, centiles=centiles, recompute=False, **kwargs)
     if scatter_data and show_thrivelines:
         model.compute_thrivelines(scatter_data, z_thrive=z_thrive)
     if show_yhat and not hasattr(centile_data, "yhat"):
@@ -496,12 +506,12 @@ def _plot_centiles_advanced(
                 x=covariate,
                 y=response_var,
                 label=scatter_data.name,
-                color = "#f7932f",
-                alpha = min(1, 20/np.sqrt(len(scatter_data.X))),
-                s = 30,
+                color="#f7932f",
+                alpha=min(1, 20 / np.sqrt(len(scatter_data.X))),
+                s=30,
                 marker="o",
                 edgecolor="black",
-                linewidth=0
+                linewidth=0,
             )
             if show_thrivelines:
                 plt.plot(scatter_filter.thrive_X.to_numpy().T, scatter_filter[thriveline_data_name].to_numpy().T)
@@ -536,7 +546,7 @@ def _plot_centiles_advanced(
                     y=response_var,
                     color="#696969",
                     style=markers,
-                    markers={"Other data":"s"},
+                    markers={"Other data": "s"},
                     linewidth=0,
                     s=10,
                     alpha=0.4,
@@ -570,7 +580,7 @@ def _plot_centiles_advanced(
         for conditional_d in conditionals_data:
             filter_cond = conditional_d.sel(filter_dict)
             x = filter_cond.X
-            p = (np.exp(filter_cond.logp.values) * 30 + x)
+            p = np.exp(filter_cond.logp.values) * 30 + x
             y = filter_cond.Y.values
             plt.plot(
                 p,
@@ -588,8 +598,8 @@ def _plot_centiles_advanced(
                 color="#1fbde0",
                 linewidth=2,
                 zorder=4,
-                alpha = 0.2,
-            )   
+                alpha=0.2,
+            )
 
     autoscale(ax=plt.gca())
 
@@ -601,7 +611,6 @@ def _plot_centiles_advanced(
     else:
         plt.show(block=False)
     plt.close()
-
 
 def plot_qq(
     data: NormData,
