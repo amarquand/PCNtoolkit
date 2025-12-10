@@ -299,9 +299,11 @@ def plot_centiles_advanced(
     if not covariate_ranges:
         covariate_ranges = {c:defaultdict(lambda: None) for c in model.covariates}
     for c in model.covariates:
-        cov_min = covariate_ranges[c] or model.covariate_ranges[c]["min"]
-        cov_max = covariate_ranges[c] or model.covariate_ranges[c]["max"]
-        covariate_ranges[c] = (cov_min, cov_max)
+        if not covariate_ranges[c]:
+            covariate_ranges[c] = (model.covariate_ranges[c]["min"],model.covariate_ranges[c]["max"])
+        # cov_min = covariate_ranges[c] or model.covariate_ranges[c]["min"]
+        # cov_max = covariate_ranges[c] or model.covariate_ranges[c]["max"]
+        # covariate_ranges[c] = (cov_min, cov_max)
 
     if response_vars is None:
         response_vars = model.response_vars
