@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import copy
 import fcntl
+import json
 import os
 from collections import defaultdict
 from functools import reduce
@@ -32,10 +33,11 @@ from typing import (
 
 # pylint: enable=deprecated-class
 import numpy as np
-from numpy.typing import ArrayLike
 import pandas as pd  # type: ignore
 import xarray as xr
 from nibabel.loadsave import load
+from numpy.typing import ArrayLike
+from scipy import stats
 from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
 # import datavars from xarray
@@ -43,8 +45,6 @@ from xarray.core.types import DataVars
 
 from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
-
-from scipy import stats
 
 
 class NormData(xr.Dataset):
@@ -257,6 +257,35 @@ class NormData(xr.Dataset):
             xarray_dataset.attrs,
         )
 
+    @classmethod
+    def from_netcdf(cls, name: str, netcdf_path: str) -> NormData:
+        """
+        Load a normative dataset from a netcdf file.
+
+        Parameters
+        ----------
+        name: str
+            The name of the dataset.
+        netcdf_path: str
+            The path to the netcdf file.
+
+        Returns
+        -------
+        NormData
+            An instance of NormData.
+        """
+        xr_dset = xr.open_dataset(netcdf_path)
+
+        # Deserialize the attributes.
+        for attr in xr_dset.attrs:
+            if attr in xr_dset.attrs:
+                xr_dset.attrs[attr] = json.loads(xr_dset.attrs[attr])
+
+        if "batch_effect_counts" in xr_dset.attrs and xr_dset.attrs["batch_effect_counts"]:
+            # Convert the batch_effect_counts to a defaultdict
+            xr_dset.attrs["batch_effect_counts"] = defaultdict(lambda: 0, xr_dset.attrs["batch_effect_counts"])
+        return cls.from_xarray(name=name, xarray_dataset=xr_dset)
+
     # pylint: disable=arguments-differ
     @classmethod
     def from_dataframe(  # type:ignore
@@ -358,6 +387,26 @@ class NormData(xr.Dataset):
             attrs,
         )
 
+    def to_netcdf(self, netcdf_path: str) -> None:
+        """
+        Save the NormData object to a netcdf file.
+
+        Parameters
+        ----------
+        netcdf_path: str
+            The path to the netcdf file.
+
+        Returns
+        -------
+        None
+        """
+        ds = self.copy(deep=False)
+        # Serialize the attributes using json so that they can be saved to netcdf
+        for attr in ds.attrs:
+            if attr in ds.attrs:
+                ds.attrs[attr] = json.dumps(ds.attrs[attr])
+        xr.Dataset.to_netcdf(ds, netcdf_path, invalid_netcdf=False, format="NETCDF4")
+
     @classmethod
     def remove_nan(cls, dataframe: pd.DataFrame) -> pd.DataFrame:
         """
@@ -367,7 +416,6 @@ class NormData(xr.Dataset):
         Output.print(f"Removed {len(dataframe) - len(cleaned)} NANs")
         return cleaned
 
-        
     @classmethod
     def remove_outliers(cls, dataframe: pd.DataFrame, continuous_vars: List[str], z_threshold: float = 3.0) -> pd.DataFrame:
         """
@@ -384,7 +432,6 @@ class NormData(xr.Dataset):
             idx = idx & (~outliers)
         Output.print(f"Removed {np.sum(~idx)} outliers")
         return dataframe.loc[idx]
-
 
     def merge(self, other: NormData, name: str | None = None) -> NormData:
         """
@@ -643,39 +690,71 @@ class NormData(xr.Dataset):
         B = self.select_batch_effects(names[1], batch_effects, invert=True)
         return A, B
 
+    def has_registered_metadata(self) -> bool:
+        """
+        Check if the batch effect and covariate metadata have been registered and are non-empty.
+
+        Returns
+        -------
+        bool
+            True if all required metadata attributes exist and are not empty, False otherwise.
+        """
+        required_attrs = [
+            "unique_batch_effects",
+            "batch_effect_counts",
+            "covariate_ranges",
+            "batch_effect_covariate_ranges",
+        ]
+
+        for attr in required_attrs:
+            # Check if attribute exists and is not an empty dict/defaultdict
+            if attr not in self.attrs or not self.attrs[attr]:
+                return False
+
+        return True
+
     def register_batch_effects(self) -> None:
         """
         Create a mapping of batch effects to unique values.
         """
+        if self.has_registered_metadata():
+            return
         my_be: xr.DataArray = self.batch_effects
         # create a dictionary with for each column in the batch effects, a dict from value to int
         self.attrs["unique_batch_effects"] = {}
         self.attrs["batch_effect_counts"] = defaultdict(lambda: 0)
         self.attrs["covariate_ranges"] = {}
-
-        # TODO: the following can be done much easier using df.groupby.min and xarray.unstack, but that is a TODO for another day. This works for now.
         self.attrs["batch_effect_covariate_ranges"] = {}
-        for dim in self.batch_effect_dims.to_numpy():
-            dim_subset = my_be.sel(batch_effect_dims=dim)
-            uniques, counts = np.unique(dim_subset, return_counts=True)
 
-            self.attrs["unique_batch_effects"][dim] = list(uniques)
-            self.attrs["batch_effect_counts"][dim] = {k: int(v) for k, v in zip(uniques, counts)}
+        # Vectorized implementation using pandas groupby/agg
+        be_cols = self.batch_effect_dims.to_numpy()
+        be_df = pd.DataFrame(my_be.values, columns=be_cols)
+
+        x_available = "X" in self.data_vars
+        if x_available:
+            covs = self.covariates.to_numpy()
+            X_df = pd.DataFrame(self.X.values, columns=covs)
+
+        for dim in be_cols:
+            vc = be_df[dim].value_counts(sort=False)
+            self.attrs["unique_batch_effects"][dim] = vc.index.astype(str).tolist()
+            self.attrs["batch_effect_counts"][dim] = {str(k): int(v) for k, v in vc.to_dict().items()}
             self.attrs["batch_effect_covariate_ranges"][dim] = {}
-            if self.X is not None:
-                for u in uniques:
-                    self.attrs["batch_effect_covariate_ranges"][dim][u] = {}
-                    for c in self.covariates.to_numpy():
-                        u_mask = dim_subset.values == u
-                        my_c = self.X.sel(covariates=c).values[u_mask]
-                        my_min = my_c.min()
-                        my_max = my_c.max()
-                        self.attrs["batch_effect_covariate_ranges"][dim][u][c] = {"min": my_min, "max": my_max}
-        for c in self.covariates.to_numpy():
-            my_c = self.X.sel(covariates=c).values
-            my_min = my_c.min()
-            my_max = my_c.max()
-            self.attrs["covariate_ranges"][c] = {"min": my_min, "max": my_max}
+
+            if x_available:
+                grouped = X_df.groupby(be_df[dim], sort=False).agg(["min", "max"])
+                for u, row in grouped.iterrows():
+                    self.attrs["batch_effect_covariate_ranges"][dim][u] = {
+                        c: {"min": float(row[(c, "min")]), "max": float(row[(c, "max")])} for c in covs
+                    }
+
+        if x_available:
+            overall = X_df.agg(["min", "max"])
+            for c in covs:
+                self.attrs["covariate_ranges"][c] = {
+                    "min": float(overall.loc["min", c]),
+                    "max": float(overall.loc["max", c]),
+                }
 
     def check_compatibility(self, other: NormData) -> bool:
         """
@@ -733,7 +812,6 @@ class NormData(xr.Dataset):
             for cov in self.covariates.to_numpy()
         }
 
-
         mybecr = self.batch_effect_covariate_ranges
         otbecr = other.batch_effect_covariate_ranges
         nbecr = {}
@@ -755,12 +833,21 @@ class NormData(xr.Dataset):
                         case False, False:
                             raise ValueError("This should never happen")
 
+        # Update instance attributes
         self.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
         other.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
         self.covariate_ranges = copy.deepcopy(ncr)
         other.covariate_ranges = copy.deepcopy(ncr)
         self.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
         other.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
+
+        # Update xarray attrs dicts to make them in sync.
+        self.attrs["unique_batch_effects"] = copy.copy(self.unique_batch_effects)
+        other.attrs["unique_batch_effects"] = copy.copy(other.unique_batch_effects)
+        self.attrs["covariate_ranges"] = copy.copy(self.covariate_ranges)
+        other.attrs["covariate_ranges"] = copy.copy(other.covariate_ranges)
+        self.attrs["batch_effect_covariate_ranges"] = copy.copy(self.batch_effect_covariate_ranges)
+        other.attrs["batch_effect_covariate_ranges"] = copy.copy(other.batch_effect_covariate_ranges)
 
     def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """
@@ -1034,7 +1121,7 @@ class NormData(xr.Dataset):
         zdf = self.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         zdf = zdf.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        zdf = zdf[[ "subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
+        zdf = zdf[["subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
         zdf.index = zdf.index.astype(str)
         res_path = os.path.join(save_dir, f"Z_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
@@ -1076,11 +1163,11 @@ class NormData(xr.Dataset):
         subject_ids.index = subject_ids.index.astype(str)
         subject_ids.columns = pd.MultiIndex.from_tuples([("subject_ids", "X")], names=["subject_ids", "centile"])
         for c in self.centile.to_numpy():
-            subject_ids[("subject_ids", c)] = subject_ids[("subject_ids","X")]
+            subject_ids[("subject_ids", c)] = subject_ids[("subject_ids", "X")]
         subject_ids = subject_ids.drop(columns=[("subject_ids", "X")])
         subject_ids = subject_ids.stack(level="centile")
-        centiles = centiles.merge(subject_ids, on=["observations","centile"], how="left")
-        centiles = centiles[[ "subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
+        centiles = centiles.merge(subject_ids, on=["observations", "centile"], how="left")
+        centiles = centiles[["subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
         res_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
             try:
@@ -1106,7 +1193,7 @@ class NormData(xr.Dataset):
         C_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         if os.path.isfile(C_path):
             df = pd.read_csv(C_path)
-            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile")]
+            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile" or i == "subject_ids")]
             centiles = np.unique(df["centile"])
             obs = np.unique(df["observations"])
             obs.sort()
@@ -1127,7 +1214,7 @@ class NormData(xr.Dataset):
         logp = self.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
         logp = logp.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        logp = logp[[ "subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
+        logp = logp[["subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
         logp.index = logp.index.astype(str)
         res_path = os.path.join(save_dir, f"logp_{self.name}.csv")
         with open(res_path, mode="a+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
