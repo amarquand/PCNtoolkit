@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import copy
 import fcntl
+import json
 import os
 from collections import defaultdict
 from functools import reduce
@@ -274,10 +275,15 @@ class NormData(xr.Dataset):
             An instance of NormData.
         """
         xr_dset = xr.open_dataset(netcdf_path)
-        if xr_dset.attrs["is_scaled"]:
-            xr_dset.attrs["is_scaled"] = True if xr_dset.attrs["is_scaled"] == "True" else False
-        if xr_dset.attrs["real_ids"]:
-            xr_dset.attrs["real_ids"] = True if xr_dset.attrs["real_ids"] == "True" else False
+
+        # Deserialize the attributes.
+        for attr in xr_dset.attrs:
+            if attr in xr_dset.attrs:
+                xr_dset.attrs[attr] = json.loads(xr_dset.attrs[attr])
+
+        if "batch_effect_counts" in xr_dset.attrs and xr_dset.attrs["batch_effect_counts"]:
+            # Convert the batch_effect_counts to a defaultdict
+            xr_dset.attrs["batch_effect_counts"] = defaultdict(lambda: 0, xr_dset.attrs["batch_effect_counts"])
         return cls.from_xarray(name=name, xarray_dataset=xr_dset)
 
     # pylint: disable=arguments-differ
@@ -394,16 +400,11 @@ class NormData(xr.Dataset):
         -------
         None
         """
-        # Remove or convert incompatible attributes before saving.
         ds = self.copy(deep=False)
-        attrs = dict(ds.attrs)
-        attrs.pop("unique_batch_effects", None)
-        attrs.pop("batch_effect_counts", None)
-        attrs.pop("batch_effect_covariate_ranges", None)
-        attrs.pop("covariate_ranges", None)
-        attrs["is_scaled"] = str(attrs["is_scaled"])
-        attrs["real_ids"] = str(attrs["real_ids"])
-        ds.attrs = attrs
+        # Serialize the attributes using json so that they can be saved to netcdf
+        for attr in ds.attrs:
+            if attr in ds.attrs:
+                ds.attrs[attr] = json.dumps(ds.attrs[attr])
         xr.Dataset.to_netcdf(ds, netcdf_path, invalid_netcdf=False, format="NETCDF4")
 
     @classmethod
@@ -689,15 +690,41 @@ class NormData(xr.Dataset):
         B = self.select_batch_effects(names[1], batch_effects, invert=True)
         return A, B
 
+    def has_registered_metadata(self) -> bool:
+        """
+        Check if the batch effect and covariate metadata have been registered and are non-empty.
+
+        Returns
+        -------
+        bool
+            True if all required metadata attributes exist and are not empty, False otherwise.
+        """
+        required_attrs = [
+            "unique_batch_effects",
+            "batch_effect_counts",
+            "covariate_ranges",
+            "batch_effect_covariate_ranges",
+        ]
+
+        for attr in required_attrs:
+            # Check if attribute exists and is not an empty dict/defaultdict
+            if attr not in self.attrs or not self.attrs[attr]:
+                return False
+
+        return True
+
     def register_batch_effects(self) -> None:
         """
         Create a mapping of batch effects to unique values.
         """
+        if self.has_registered_metadata():
+            return
         my_be: xr.DataArray = self.batch_effects
         # create a dictionary with for each column in the batch effects, a dict from value to int
         self.attrs["unique_batch_effects"] = {}
         self.attrs["batch_effect_counts"] = defaultdict(lambda: 0)
         self.attrs["covariate_ranges"] = {}
+        self.attrs["batch_effect_covariate_ranges"] = {}
 
         # Vectorized implementation using pandas groupby/agg
         be_cols = self.batch_effect_dims.to_numpy()
@@ -708,7 +735,6 @@ class NormData(xr.Dataset):
             covs = self.covariates.to_numpy()
             X_df = pd.DataFrame(self.X.values, columns=covs)
 
-        self.attrs["batch_effect_covariate_ranges"] = {}
         for dim in be_cols:
             vc = be_df[dim].value_counts(sort=False)
             self.attrs["unique_batch_effects"][dim] = vc.index.astype(str).tolist()
@@ -807,12 +833,21 @@ class NormData(xr.Dataset):
                         case False, False:
                             raise ValueError("This should never happen")
 
+        # Update instance attributes
         self.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
         other.unique_batch_effects = copy.deepcopy(all_unique_batch_effects)
         self.covariate_ranges = copy.deepcopy(ncr)
         other.covariate_ranges = copy.deepcopy(ncr)
         self.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
         other.batch_effect_covariate_ranges = copy.deepcopy(nbecr)
+
+        # Update xarray attrs dicts to make them in sync.
+        self.attrs["unique_batch_effects"] = copy.copy(self.unique_batch_effects)
+        other.attrs["unique_batch_effects"] = copy.copy(other.unique_batch_effects)
+        self.attrs["covariate_ranges"] = copy.copy(self.covariate_ranges)
+        other.attrs["covariate_ranges"] = copy.copy(other.covariate_ranges)
+        self.attrs["batch_effect_covariate_ranges"] = copy.copy(self.batch_effect_covariate_ranges)
+        other.attrs["batch_effect_covariate_ranges"] = copy.copy(other.batch_effect_covariate_ranges)
 
     def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
         """

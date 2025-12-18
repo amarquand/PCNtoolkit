@@ -1,4 +1,6 @@
 import copy
+import os
+from tempfile import gettempdir
 
 import numpy as np
 import pytest
@@ -168,3 +170,16 @@ def test_to_dataframe():
 
     print(df)
     print(data.to_dataframe())
+
+
+def test_netcdf(norm_data_from_arrays: NormData):
+    norm_data_from_arrays.to_netcdf(os.path.join(gettempdir(), "test.nc"))
+    norm_data_from_netcdf = NormData.from_netcdf("from_arrays", os.path.join(gettempdir(), "test.nc"))
+
+    # Check if the two norm data objects are equal
+    # Checks for data variables and coordinates.
+    assert norm_data_from_arrays.equals(norm_data_from_netcdf)
+
+    # Check if the two norm data objects are identical
+    # Additionally checks for object's name and attributes.
+    assert norm_data_from_arrays.identical(norm_data_from_netcdf)
