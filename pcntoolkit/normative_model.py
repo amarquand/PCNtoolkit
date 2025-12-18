@@ -134,10 +134,9 @@ class NormativeModel:
             self[responsevar].fit(X, be, be_maps, Y)
         self.is_fitted = True
         self.postprocess(data)
-        self.predict(data)  # Make sure everything is evaluated and saved
-        # self.compute_correlation_matrix(data)
         if self.savemodel:  # Make sure model is saved
             self.save()
+        self.predict(data)  # Make sure everything is evaluated and saved
 
     def predict(self, data: NormData) -> NormData:
         """Computes Z-scores, centiles, logp, yhat for each observation using fitted regression models."""
@@ -167,8 +166,6 @@ class NormativeModel:
         """
         self.fit(fit_data)
         self.predict(predict_data)
-        if self.savemodel:  # Make sure model is saved
-            self.save()
         return predict_data
 
     def transfer(self, transfer_data: NormData, save_dir: str | None = None, **kwargs) -> NormativeModel:
@@ -208,9 +205,9 @@ class NormativeModel:
             #new_model[responsevar].be_maps = copy.deepcopy(be_maps)
         new_model.is_fitted = True
         new_model.postprocess(transfer_data)
-        new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
         if new_model.savemodel:
             new_model.save()
+        new_model.predict(transfer_data)  # Make sure everything is evaluated and saved
         return new_model
 
     def transfer_predict(

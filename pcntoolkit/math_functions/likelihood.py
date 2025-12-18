@@ -12,7 +12,7 @@ import xarray as xr
 from pcntoolkit.math_functions.basis_function import BsplineBasisFunction
 from pcntoolkit.math_functions.factorize import *
 from pcntoolkit.math_functions.prior import BasePrior, make_prior, prior_from_args
-from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m
+from pcntoolkit.math_functions.shash import S, S_inv, SHASHb, SHASHo, SHASHo2, m, m1m2
 
 
 class Likelihood(ABC):
@@ -321,8 +321,9 @@ class SHASHbLikelihood(Likelihood):
     def forward(self, *args, **kwargs):
         mu, sigma, epsilon, delta = args
         Y = kwargs.get("Y", None)
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+        m1, m2 = m1m2(epsilon, delta)
+        true_mu = m1
+        true_sigma = np.sqrt((m2 - true_mu**2))
         SHASH_centered = (Y - mu) / sigma
         SHASH_uncentered = SHASH_centered * true_sigma + true_mu
         Z = S(SHASH_uncentered, epsilon, delta)
@@ -331,8 +332,9 @@ class SHASHbLikelihood(Likelihood):
     def backward(self, *args, **kwargs):
         mu, sigma, epsilon, delta = args
         Z = kwargs.get("Z", None)
-        true_mu = m(epsilon, delta, 1)
-        true_sigma = np.sqrt((m(epsilon, delta, 2) - true_mu**2))
+        m1, m2 = m1m2(epsilon, delta)
+        true_mu = m1
+        true_sigma = np.sqrt((m2 - true_mu**2))
         SHASH_uncentered = S_inv(Z, epsilon, delta)
         SHASH_centered = (SHASH_uncentered - true_mu) / true_sigma
         Y = SHASH_centered * sigma + mu
@@ -548,15 +550,11 @@ class BetaLikelihood(Likelihood):
         Y: xr.DataArray,
     ) -> pm.Model:
         with model:
-            alpha_samples = self.alpha.compile(model, X, be, be_maps, Y)
-            beta_samples = self.beta.compile(model, X, be, be_maps, Y)
-
-            alpha_samples = pm.Deterministic("alpha_samples", alpha_samples, dims=self.alpha.sample_dims)
-            beta_samples = pm.Deterministic("beta_samples", beta_samples, dims=self.beta.sample_dims)
+            compiled_params = self.compile_params(model, X, be, be_maps, Y)
+            compiled_params = {k: v[0] for k, v in compiled_params.items()}
             pm.Beta(
                 "Yhat",
-                alpha=alpha_samples,
-                beta=beta_samples,
+                **compiled_params,
                 observed=model["Y"],
                 dims="observations",
             )

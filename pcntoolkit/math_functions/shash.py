@@ -32,6 +32,7 @@ All distributions support random sampling and log-probability calculations.
 from functools import lru_cache
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
+import dask.array as da
 import numpy as np
 import scipy.special as spp  # type: ignore
 from numpy.random import Generator
@@ -45,7 +46,6 @@ from pytensor.scalar.basic import BinaryScalarOp, upgrade_to_float
 from pytensor.tensor import as_tensor_variable  # type: ignore
 from pytensor.tensor.elemwise import Elemwise, scalar_elemwise
 from pytensor.tensor.random.op import RandomVariable  # type: ignore
-
 # pylint: disable=arguments-differ
 
 
@@ -67,16 +67,24 @@ def S_inv(x: NDArray[np.float64], e: NDArray[np.float64], d: NDArray[np.float64]
 #     return spp.kv(ps, x)[idxs].reshape(p.shape)
 
 
-def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
-    """Bessel function of the second kind for unique values."""
-    return spp.kv(p, x)
+# def K(p: NDArray[np.float64], x: float) -> NDArray[np.float64]:
+#     """Bessel function of the second kind for unique values."""
+#     return spp.kv(p, x)
+
+
+# Fast version 3: Dask parallelized (best for large arrays, multi-core)
+def K(p, x, chunks=None):
+    if isinstance(p, float):
+        return spp.kv(p, x)
+    return da.map_blocks(lambda c: spp.kv(c, x), da.from_array(p, chunks=chunks or 'auto'), dtype=np.float64)
+
 
 
 def P(q: NDArray[np.float64]) -> NDArray[np.float64]:
     """The P function as given in Jones et al."""
     frac = np.exp(1 / 4) / np.sqrt(8 * np.pi)
-    K1 = K((q + 1) / 2, 1 / 4)
-    K2 = K((q - 1) / 2, 1 / 4)
+    K1 = K((q + 1) / 2, 1 / 4, chunks=(1000,1000))
+    K2 = K((q - 1) / 2, 1 / 4, chunks=(1000,1000))
     a = (K1 + K2) * frac
     return a
 
@@ -92,7 +100,19 @@ def m(epsilon: NDArray[np.float64], delta: NDArray[np.float64], r: int) -> NDArr
         p = P((r - 2 * i) / delta)
         acc += combs * flip * ex * p
     return frac1 * acc
-
+    
+def m1m2(epsilon: float, delta: float) -> Tuple[float, float]:
+    inv_delta = 1.0 / delta
+    two_inv_delta = 2.0 * inv_delta
+    p1 = P(inv_delta)
+    p2 = P(two_inv_delta)
+    eps_delta = epsilon / delta
+    sinh_eps_delta = np.sinh(eps_delta)
+    cosh_2eps_delta = np.cosh(2 * eps_delta)
+    mean = sinh_eps_delta * p1
+    raw_second = (cosh_2eps_delta * p2 - 1) / 2
+    var = raw_second - mean**2
+    return mean, var
 
 class Kv(BinaryScalarOp):
     nfunc_spec = ("scipy.special.kv", 2, 1)
