@@ -75,8 +75,10 @@ class HBR(RegressionModel):
         inference_method : str, optional
             How to approximate the posterior, by default "mcmc".
             One of "mcmc" (NUTS sampling), "advi" (mean-field variational
-            inference) or "pathfinder" (requires the optional pymc-extras
-            package). The variational methods are much faster but return an
+            inference), "pathfinder" (requires the optional pymc-extras
+            package) or "laplace" (a Gaussian centred on the posterior mode,
+            with covariance from the Hessian there); the last two both need
+            pymc-extras. The variational methods are much faster but return an
             approximate posterior; in particular they can misestimate the
             width of the posterior, which propagates into the z-scores.
         vi_iterations : int, optional
@@ -88,7 +90,8 @@ class HBR(RegressionModel):
             Extra keyword arguments forwarded to the variational fitter:
             ``pm.fit`` for "advi" (e.g. obj_optimizer, callbacks, method) and
             ``pymc_extras.fit`` for "pathfinder" (e.g. num_paths, jitter,
-            importance_sampling, maxcor). Ignored when inference_method="mcmc".
+            importance_sampling, maxcor) and "laplace" (e.g. optimize_method,
+            use_hessp). Ignored when inference_method="mcmc".
 
         """
         super().__init__(name, is_fitted, is_from_dict)
@@ -159,9 +162,11 @@ class HBR(RegressionModel):
         Raises
         ------
         ValueError
-            If ``inference_method`` is not one of "mcmc", "advi", "pathfinder".
+            If ``inference_method`` is not one of "mcmc", "advi",
+            "pathfinder" or "laplace".
         ImportError
-            If "pathfinder" is requested but pymc-extras is not installed.
+            If "pathfinder" or "laplace" is requested but pymc-extras is not
+            installed.
         """
 
         def opt(key: str) -> Any:
@@ -213,8 +218,25 @@ class HBR(RegressionModel):
                 **vi_kwargs,
             )
 
+        if method == "laplace":
+            try:
+                import pymc_extras as pmx  # type: ignore
+            except ImportError as exc:
+                raise ImportError(
+                    "inference_method='laplace' requires the optional pymc-extras "
+                    "package. Install it with: pip install 'pymc-extras>=0.10.0,<0.11.0'"
+                ) from exc
+            # fit_laplace names its draw count `draws`, unlike the other fitters.
+            return pmx.fit(
+                method="laplace",
+                draws=opt("vi_draws"),
+                progressbar=opt("progressbar"),
+                **vi_kwargs,
+            )
+
         raise ValueError(
-            f"Unknown inference_method '{method}'. Expected 'mcmc', 'advi' or 'pathfinder'."
+            f"Unknown inference_method '{method}'. Expected 'mcmc', 'advi', "
+            f"'pathfinder' or 'laplace'."
         )
 
     def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
