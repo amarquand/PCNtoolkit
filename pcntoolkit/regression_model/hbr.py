@@ -76,12 +76,12 @@ class HBR(RegressionModel):
         inference_method : str, optional
             How to approximate the posterior, by default "mcmc".
             One of "mcmc" (NUTS sampling), "advi" (mean-field variational
-            inference), "pathfinder" (requires the optional pymc-extras
-            package) or "laplace" (a Gaussian centred on the posterior mode,
-            with covariance from the Hessian there); the last two both need
-            pymc-extras. The variational methods are much faster but return an
-            approximate posterior; in particular they can misestimate the
-            width of the posterior, which propagates into the z-scores.
+            inference), "pathfinder" or "laplace" (a Gaussian centred on the
+            posterior mode, with covariance from the Hessian there); the last
+            two are provided by pymc-extras. The variational methods are much
+            faster but return an approximate posterior; in particular they can
+            misestimate the width of the posterior, which propagates into the
+            z-scores.
         vi_iterations : int, optional
             Number of optimizer steps for inference_method="advi", by default 30000
         vi_draws : int, optional
@@ -209,8 +209,8 @@ class HBR(RegressionModel):
                 import pymc_extras as pmx  # type: ignore
             except ImportError as exc:
                 raise ImportError(
-                    "inference_method='pathfinder' requires the optional pymc-extras "
-                    "package. Install it with: pip install 'pymc-extras>=0.10.0,<0.11.0'"
+                    "inference_method='pathfinder' requires pymc-extras. It ships as a "
+                    "dependency; reinstall it with: pip install 'pymc-extras>=0.11.0'"
                 ) from exc
             return pmx.fit(
                 method="pathfinder",
@@ -224,8 +224,8 @@ class HBR(RegressionModel):
                 import pymc_extras as pmx  # type: ignore
             except ImportError as exc:
                 raise ImportError(
-                    "inference_method='laplace' requires the optional pymc-extras "
-                    "package. Install it with: pip install 'pymc-extras>=0.10.0,<0.11.0'"
+                    "inference_method='laplace' requires pymc-extras. It ships as a "
+                    "dependency; reinstall it with: pip install 'pymc-extras>=0.11.0'"
                 ) from exc
             # fit_laplace names its draw count `draws`, unlike the other fitters.
             return pmx.fit(
