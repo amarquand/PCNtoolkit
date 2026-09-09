@@ -25,6 +25,15 @@ authors = [
     { name = "Pierre Berthet" },
 ]
 
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
 # pymc>=6 and arviz>=1 both require Python >=3.12
 requires-python = ">=3.12,<3.14"
 
