@@ -1,6 +1,10 @@
 Getting started with normative modelling
 ========================================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/00_getting_started.ipynb>`
+
 Welcome to this tutorial notebook that will show you the very basics of
 normative modeling. It’s like the “Hello World” of normative modeling.
 
@@ -31,7 +35,7 @@ Imports
     pcntoolkit.util.output.Output.set_show_messages(False)
 
 
-.. parsed-literal::
+.. code:: text
 
     /opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/arviz/__init__.py:50: FutureWarning: 
     ArviZ is undergoing a major refactor to improve flexibility and extensibility while maintaining a user-friendly interface.
@@ -103,7 +107,7 @@ Creating a Normative model
 
 
 
-.. parsed-literal::
+.. code:: text
 
     False
 
@@ -1106,7 +1110,7 @@ example.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>,
      <Figure size 640x480 with 1 Axes>,
@@ -1367,7 +1371,7 @@ We also have a nice function to make QQ plots.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>,
      <Figure size 640x480 with 1 Axes>,

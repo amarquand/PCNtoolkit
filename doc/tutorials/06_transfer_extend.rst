@@ -1,6 +1,10 @@
 Transfer and extend
 ===================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/06_transfer_extend.ipynb>`
+
 Training a normative model on a large reference cohort takes a lot of
 data and a lot of compute. Rather than training one from scratch,
 PCNtoolkit lets you take a model that was already trained on tens of
@@ -13,10 +17,13 @@ hospital or institution where it was collected, because of privacy
 regulations such as the GDPR. *Extend and transfer* are
 privacy-preserving, since each site adapts the model locally and shares
 only the model parameters, never the raw data. The two, however, play
-different roles: - Extend allows the model to be extended sequentially:
-the first site extends it and passes it to the second, which extends it
-again, and so on across the consortium. - On the other hand, a model
-should not be transferred sequentially but only once.
+different roles:
+
+- Extend allows the model to be extended sequentially: the first site
+  extends it and passes it to the second, which extends it again, and so
+  on across the consortium.
+- On the other hand, a model should not be transferred sequentially but
+  only once.
 
 Imports
 -------
@@ -187,7 +194,7 @@ We first fit a BLR model on the dataset with 21 sites.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -227,7 +234,7 @@ the small dataset, we can show how bad such a model would be:
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -258,7 +265,7 @@ merges it with the real local data, and refits a full model.
     )
 
 
-.. parsed-literal::
+.. code:: text
 
     C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 4.4374536951328396e-32.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)
@@ -290,7 +297,7 @@ merges it with the real local data, and refits a full model.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -338,7 +345,7 @@ centiles plot below), not the age range of the reference model.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -381,7 +388,7 @@ reference point that both methods are trying to approximate.
     );
 
 
-.. parsed-literal::
+.. code:: text
 
     C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\regression_model\blr.py:632: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.6928204946457924e-18.
       invAXt: np.ndarray = linalg.solve(self.A, X.T, check_finite=False)

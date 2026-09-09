@@ -35,7 +35,7 @@ class HBR(RegressionModel):
         cores: int = 4,
         chains: int = 4,
         nuts_sampler: str = "nutpie",
-        init: str = "jitter+adapt_diag",
+        init: str = "auto",
         progressbar: bool = True,
         is_fitted: bool = False,
         is_from_dict: bool = False,
@@ -65,7 +65,8 @@ class HBR(RegressionModel):
         nuts_sampler : str, optional
             NUTS sampler to use for parallel sampling, by default "nutpie"
         init : str, optional
-            Initialization method for the model, by default "jitter+adapt_diag"
+            Initialization method for the model, by default "auto". External
+            samplers such as nutpie ignore this and use their own initialization.
         progressbar : bool, optional
             Whether to display a progress bar during sampling, by default True
         is_fitted : bool, optional
@@ -107,7 +108,7 @@ class HBR(RegressionModel):
         self.vi_iterations = vi_iterations
         self.vi_draws = vi_draws
         self.vi_kwargs = vi_kwargs or {}
-        self.idata: az.InferenceData = None  # type: ignore
+        self.idata: xr.DataTree = None  # type: ignore
         # ELBO trace of the last ADVI run; used for convergence diagnostics.
         self.vi_loss: np.ndarray | None = None
         self.pymc_model: pm.Model = None  # type: ignore
@@ -138,7 +139,7 @@ class HBR(RegressionModel):
             self.idata = self._run_inference()
         self.is_fitted = True
 
-    def _run_inference(self, **overrides: Any) -> az.InferenceData:
+    def _run_inference(self, **overrides: Any) -> xr.DataTree:
         """
         Approximate the posterior of the PyMC model in the active context.
 
@@ -154,7 +155,7 @@ class HBR(RegressionModel):
 
         Returns
         -------
-        az.InferenceData
+        xr.DataTree
             Posterior samples. For the variational methods these are draws
             from the fitted approximation, carrying the same (chain, draw)
             dimensions as MCMC output so downstream code is unaffected.
@@ -351,6 +352,7 @@ class HBR(RegressionModel):
             )
         return az.extract(logp, "log_likelihood", var_names=["Yhat"]).mean("sample")
 
+
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
@@ -367,14 +369,14 @@ class HBR(RegressionModel):
                 # Trace and autocorrelation plots only mean something for MCMC:
                 # variational draws are independent by construction.
                 if self.inference_method == "mcmc":
-                    az.plot_trace(self.idata, var_names="~_per_subject", filter_vars="like")
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(plotdir, self.name + "_trace.png"))
-                    plt.close()
-                    az.plot_autocorr(self.idata, var_names="~_per_subject", filter_vars="like")
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(plotdir, self.name + "_autocorr.png"))
-                    plt.close()
+                    self._save_plot(
+                        az.plot_trace_dist(self.idata, var_names="~_per_subject", filter_vars="like"),
+                        os.path.join(plotdir, self.name + "_trace.png"),
+                    )
+                    self._save_plot(
+                        az.plot_autocorr(self.idata, var_names="~_per_subject", filter_vars="like"),
+                        os.path.join(plotdir, self.name + "_autocorr.png"),
+                    )
                 elif self.vi_loss is not None:
                     # For ADVI the ELBO trace is the convergence diagnostic.
                     plt.plot(self.vi_loss)
@@ -384,11 +386,11 @@ class HBR(RegressionModel):
                     plt.tight_layout()
                     plt.savefig(os.path.join(plotdir, self.name + "_elbo.png"))
                     plt.close()
-                if hasattr(self.idata, "posterior_predictive"):
-                    az.plot_ppc(self.idata)
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(plotdir, self.name + "_ppc.png"))
-                    plt.close()
+                if "posterior_predictive" in self.idata.children:
+                    self._save_plot(
+                        az.plot_ppc_dist(self.idata),
+                        os.path.join(plotdir, self.name + "_ppc.png"),
+                    )
             if self.pymc_model is not None:
                 self.pymc_model.to_graphviz(save=os.path.join(plotdir, self.name + "_model.png"))
         else:
@@ -618,6 +620,14 @@ class HBR(RegressionModel):
         )
         return self
 
+    def compute_yhat(self, data, responsevar, X, be):
+        fn = self.likelihood.yhat
+        Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
+        yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
+        return yhat
+
+# ------- Helpers -------
+
     def save_idata(self, path: str) -> None:
         """
         Save inference data to NetCDF file.
@@ -638,7 +648,7 @@ class HBR(RegressionModel):
         """
         if self.is_fitted:
             if hasattr(self, "idata"):
-                self.idata.to_netcdf(path, groups=["posterior"])
+                xr.DataTree.from_dict({"posterior": self.idata["posterior"].dataset}).to_netcdf(path)
             else:
                 raise ValueError(Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA))
 
@@ -666,8 +676,25 @@ class HBR(RegressionModel):
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
 
-    def compute_yhat(self, data, responsevar, X, be):
-        fn = self.likelihood.yhat
-        Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
-        yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
-        return yhat
+    @staticmethod
+    def _save_plot(plot_collection: Any, path: str) -> None:
+        """
+        Save an ArviZ plot to disk.
+
+        ArviZ 1.0 returns a PlotCollection instead of matplotlib axes, so we
+        save its figure directly rather than relying on the current figure.
+
+        Parameters
+        ----------
+        plot_collection : Any
+            PlotCollection returned by an ArviZ plotting function
+        path : str
+            Path to save the figure to
+
+        Returns
+        -------
+        None
+        """
+        figure = plot_collection.viz["figure"].item()
+        figure.savefig(path, bbox_inches="tight")
+        plt.close(figure)

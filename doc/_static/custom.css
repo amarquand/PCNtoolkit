@@ -57,13 +57,17 @@ html[data-theme="dark"] .bd-header {
     border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
-/* Notebook printed output (parsed-literal / cell output)
-   rendered in a light yellow box, visually distinct
-   from normal code blocks. The more-specific selector
-   ensures it overrides the theme's bare `pre` rule. */
+/* Notebook printed output (cell output) rendered in a light yellow box,
+   visually distinct from normal code blocks.
+   
+   `highlight-text` comes from the `.. code:: text` blocks that
+   doc/convert_notebooks.py writes; `highlight-default` is kept for
+   RST files generated before that change. */
 /* Light mode */
 .bd-article .highlight-default .highlight pre,
-.bd-article-container .highlight-default .highlight pre {
+.bd-article-container .highlight-default .highlight pre,
+.bd-article .highlight-text .highlight pre,
+.bd-article-container .highlight-text .highlight pre {
     background-color: #fffde7 !important;
     border: 1px solid #f0d080 !important;
     border-left: 4px solid #f9a825 !important;
@@ -73,7 +77,9 @@ html[data-theme="dark"] .bd-header {
 }
 /* Dark mode */
 html[data-theme="dark"] .bd-article .highlight-default .highlight pre,
-html[data-theme="dark"] .bd-article-container .highlight-default .highlight pre {
+html[data-theme="dark"] .bd-article-container .highlight-default .highlight pre,
+html[data-theme="dark"] .bd-article .highlight-text .highlight pre,
+html[data-theme="dark"] .bd-article-container .highlight-text .highlight pre {
     background-color: #2a2400 !important;
     border: 1px solid #5a4a00 !important;
     border-left: 4px solid #c8861f !important;
@@ -81,7 +87,9 @@ html[data-theme="dark"] .bd-article-container .highlight-default .highlight pre 
 }
 /* Ensure the text color inside the notebook output box is white in dark mode. */
 html[data-theme="dark"] .bd-article .highlight-default .highlight pre *,
-html[data-theme="dark"] .bd-article-container .highlight-default .highlight pre * {
+html[data-theme="dark"] .bd-article-container .highlight-default .highlight pre *,
+html[data-theme="dark"] .bd-article .highlight-text .highlight pre *,
+html[data-theme="dark"] .bd-article-container .highlight-text .highlight pre * {
     color: #ffffff !important;
 }
 
@@ -168,4 +176,27 @@ html[data-theme="dark"] .bd-article div:has(> table.dataframe)::-webkit-scrollba
     color: #5ea8cb;
     font-weight: bold;
     margin-top: 0;
+}
+
+/* Notebook download link under each tutorial title. Written by
+   doc/convert_notebooks.py as a `.. container:: notebook-download`. */
+.notebook-download {
+    margin: 0.5rem 0 2.0rem;
+}
+.notebook-download a.reference.download {
+    text-decoration: none !important;
+}
+.notebook-download a.reference.download:hover {
+    text-decoration: underline !important;
+}
+
+/* The :download: role wraps its text in <code>, which would render the
+   link in monospace on a grey background. Undo that so it reads as an
+   ordinary link. */
+.notebook-download a.reference.download code.download {
+    background-color: transparent !important;
+    border: none !important;
+    color: inherit;
+    font-family: inherit !important;
+    font-size: inherit;
 }

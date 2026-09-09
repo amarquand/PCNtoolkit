@@ -1,6 +1,10 @@
 The NormData class
 ==================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/01_loading_data.ipynb>`
+
 A key component of the PCNtoolkit is the NormData object. It is a
 container for the data that will be used to fit the normative model. The
 NormData object keeps track of the all the dimensions of your data, the
@@ -52,7 +56,7 @@ Here are examples of both.
     norm_data.coords
 
 
-.. parsed-literal::
+.. code:: text
 
     Process: 2568 - 2026-07-22 18:46:04 - Removed 2 outliers for WM-hypointensities
     Process: 2568 - 2026-07-22 18:46:04 - Removed 2 outliers
@@ -69,7 +73,7 @@ Here are examples of both.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Coordinates:
       * observations       (observations) int64 9kB 0 1 2 3 ... 1072 1073 1074 1075
@@ -97,7 +101,7 @@ Here are examples of both.
     np_norm_data.coords
 
 
-.. parsed-literal::
+.. code:: text
 
     Process: 2568 - 2026-07-22 18:46:05 - Dataset "fcon1000" created.
         - 100 observations
@@ -111,7 +115,7 @@ Here are examples of both.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Coordinates:
       * observations       (observations) int64 800B 0 1 2 3 4 5 ... 95 96 97 98 99
@@ -277,7 +281,7 @@ object.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Data variables:
         subject_ids    (observations) int64 9kB 0 1 2 3 4 ... 1072 1073 1074 1075
@@ -306,7 +310,7 @@ batch effect dimensions
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Coordinates:
       * observations       (observations) int64 9kB 0 1 2 3 ... 1072 1073 1074 1075
@@ -1564,7 +1568,7 @@ values - ``statistic``: The name of the computed statistics
     model.fit(norm_data)  # Fitting on the data also makes predictions for that data
 
 
-.. parsed-literal::
+.. code:: text
 
     Process: 2568 - 2026-07-22 18:46:05 - Fitting models on 3 response variables.
     Process: 2568 - 2026-07-22 18:46:05 - Fitting model for WM-hypointensities.
@@ -1616,7 +1620,7 @@ values - ``statistic``: The name of the computed statistics
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Data variables:
         subject_ids    (observations) int64 9kB 0 1 2 3 4 ... 1072 1073 1074 1075
@@ -1639,7 +1643,7 @@ values - ``statistic``: The name of the computed statistics
 
 
 
-.. parsed-literal::
+.. code:: text
 
     Coordinates:
       * observations       (observations) int64 9kB 0 1 2 3 ... 1072 1073 1074 1075
@@ -3148,7 +3152,7 @@ applicable to both of them.
     )
 
 
-.. parsed-literal::
+.. code:: text
 
     Process: 2568 - 2026-07-22 18:46:07 - Dataset "train" created.
         - 978 observations
@@ -3176,7 +3180,7 @@ applicable to both of them.
     print(norm_train.check_compatibility(norm_test))
 
 
-.. parsed-literal::
+.. code:: text
 
     True
     
@@ -3188,7 +3192,7 @@ applicable to both of them.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     True
 
@@ -3205,7 +3209,7 @@ applicable to both of them.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     True
 
