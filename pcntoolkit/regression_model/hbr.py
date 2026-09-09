@@ -141,11 +141,8 @@ class HBR(RegressionModel):
 
     def _run_inference(self, **overrides: Any) -> xr.DataTree:
         """
-        Approximate the posterior of the PyMC model in the active context.
-
-        Dispatches on ``self.inference_method``. Must be called inside a
-        ``with pymc_model:`` block. Every inference entry point routes through
-        here so that fit and transfer stay consistent.
+        Run MCMC, ADVI, Pathfinder, or Laplace inference depending on the
+        specified ``inference_method``.
 
         Parameters
         ----------
@@ -166,8 +163,8 @@ class HBR(RegressionModel):
             If ``inference_method`` is not one of "mcmc", "advi",
             "pathfinder" or "laplace".
         ImportError
-            If "pathfinder" or "laplace" is requested but pymc-extras is not
-            installed.
+            If the packages from pymc-extras (eg "pathfinder" or "laplace") are 
+            requested but pymc-extras is not installed.
         """
 
         def opt(key: str) -> Any:
