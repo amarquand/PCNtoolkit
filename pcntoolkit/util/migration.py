@@ -273,3 +273,27 @@ def _migrate_basis_function_1_2_0post1(d: dict) -> dict:
             d["knots"] = None
 
     return d
+
+
+@registry.register("HBR", introduced_in="1.4.0")
+def _migrate_variational_inference_1_4_0(d: dict) -> dict:
+    """Add the variational inference fields to an HBR dict saved before VI.
+    These fields specify what methods is used for fitting
+    (e.g., "mcmc", "pathfinder" etc).
+
+    Parameters
+    ----------
+    d : dict
+        Raw dict read from the saved JSON file.
+
+    Returns
+    -------
+    dict
+        Dict with the variational inference fields populated.
+    """
+    d.setdefault("inference_method", "mcmc")
+    d.setdefault("vi_iterations", 30000)
+    d.setdefault("vi_draws", 1000)
+    d.setdefault("vi_kwargs", {})
+
+    return d

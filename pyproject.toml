@@ -25,7 +25,17 @@ authors = [
     { name = "Pierre Berthet" },
 ]
 
-requires-python = ">=3.11,<3.14"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+# pymc>=6 and arviz>=1 both require Python >=3.12
+requires-python = ">=3.12,<3.14"
 
 dependencies = [
     # Arrays and dataframes
@@ -40,6 +50,7 @@ dependencies = [
     "pymc>=6.0.0",
     "pytensor>=3.0.0",
     "arviz>=1.0.0",
+    "pymc-extras>=0.11.0",
     "nutpie>=0.16.9",
     "numba>=0.61.0", # required by nutpie's PyMC (numba) sampling backend
     "scikit-learn>=1.5.2",
@@ -100,10 +111,11 @@ exclude = [
     ".vscode", "__pypackages__", "_build", "buck-out", "build", "dist",
     "node_modules", "site-packages", "venv",
 ]
-ignore = ["F403", "F405", "F841"]
-line-length = 130
 indent-width = 4
-target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["F403", "F405"]
 
 [tool.ruff.format]
 quote-style = "double"
