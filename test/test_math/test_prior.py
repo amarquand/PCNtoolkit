@@ -38,6 +38,9 @@ def test_apply_mapping(mapping, mapping_params, expected):
 
     assert np.allclose(mapped, expected, atol=1e-4)
 
+# --------------------------------------------------------------------------- # 
+# sigmoid
+# --------------------------------------------------------------------------- #
 
 def test_sigmoid_maps_into_unit_interval():
     """The sigmoid mapping exists to keep probabilities (e.g. the psi of a ZINB)
