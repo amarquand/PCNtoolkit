@@ -696,7 +696,7 @@ class ZeroInflatedNegativeBinomialLikelihood(Likelihood):
             "psi": (self.psi.compile(model, X, be, be_maps, Y), self.psi.sample_dims),
         }
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "Likelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
         new_alpha = self.alpha.transfer(idata, **kwargs)
         new_psi = self.psi.transfer(idata, **kwargs)
