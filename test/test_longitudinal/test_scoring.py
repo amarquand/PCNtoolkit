@@ -8,16 +8,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pcntoolkit.dataio.norm_data import NormData
 from pcntoolkit.longitudinal_score.zdiff_score import ZDiffScore
 from pcntoolkit.longitudinal_score.zgain_score import ZGainScore
 from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
-
 from test.test_longitudinal.conftest import (
     expected_zgain,
     make_cross_sectional_norm_data,
     set_z_scores,
 )
-
 
 # ------------------------------------------------------------------ #
 # CorrelationMatrix
@@ -104,51 +103,49 @@ def test_correlation_matrix_get_unknown_response_var_raises(correlation_matrix):
 # ------------------------------------------------------------------ #
 
 
-def _zgain_setup(
-    fitted_norm_blr_model,
-    correlation_matrix_array_factory,
-    blr_longitudinal_dataframe_factory,
-    blr_predicted_norm_data_factory,
-    *,
-    z_values: np.ndarray,
-    ages_subject_a: tuple[float, float] = (20.0, 21.0),
-    visits_subject_a: tuple[int, int] = (1, 2),
-    r: float = 0.8,
-    extra_visits: list[int] | None = None,
-):
-    df = blr_longitudinal_dataframe_factory(extra_visits=extra_visits)
-    if extra_visits is None:
-        mask = df["sub_id"] == "a"
-        df.loc[mask, "visit"] = list(visits_subject_a)
-        df.loc[mask, "covariate_0"] = list(ages_subject_a)
-    data = blr_predicted_norm_data_factory(df, z_values=z_values)
-    matrix = correlation_matrix_array_factory(
-        max_age=25,
-        response_vars=["response_var_0"],
-        offset_correlations={1: r},
-        covariate="covariate_0",
-    )
-    corr = CorrelationMatrix(
-        matrix,
-        covariate="covariate_0",
-        estimated_range=(0, 25),
-    )
-    scorer = ZGainScore(fitted_norm_blr_model, corr)
-    return scorer, data, corr
-
-
-def test_zgain_formula_with_nonzero_prior_z(
+@pytest.fixture
+def zgain_setup(
     fitted_norm_blr_model,
     correlation_matrix_array_factory,
     blr_longitudinal_dataframe_factory,
     blr_predicted_norm_data_factory,
 ):
+    """Return a builder for a ZGainScore scorer and matching predicted NormData."""
+
+    def _build(
+        *,
+        z_values: np.ndarray,
+        ages_subject_a: tuple[float, float] = (20.0, 21.0),
+        visits_subject_a: tuple[int, int] = (1, 2),
+        r: float = 0.8,
+        extra_visits: list[int] | None = None,
+    ) -> tuple[ZGainScore, NormData, CorrelationMatrix]:
+        df = blr_longitudinal_dataframe_factory(extra_visits=extra_visits)
+        if extra_visits is None:
+            mask = df["sub_id"] == "a"
+            df.loc[mask, "visit"] = list(visits_subject_a)
+            df.loc[mask, "covariate_0"] = list(ages_subject_a)
+        data = blr_predicted_norm_data_factory(df, z_values=z_values)
+        matrix = correlation_matrix_array_factory(
+            max_age=25,
+            response_vars=["response_var_0"],
+            offset_correlations={1: r},
+            covariate="covariate_0",
+        )
+        corr = CorrelationMatrix(
+            matrix,
+            covariate="covariate_0",
+            estimated_range=(0, 25),
+        )
+        scorer = ZGainScore(fitted_norm_blr_model, corr)
+        return scorer, data, corr
+
+    return _build
+
+
+def test_zgain_formula_with_nonzero_prior_z(zgain_setup):
     z_prev, z_last, r = 1.5, 0.2, 0.8
-    scorer, data, _ = _zgain_setup(
-        fitted_norm_blr_model,
-        correlation_matrix_array_factory,
-        blr_longitudinal_dataframe_factory,
-        blr_predicted_norm_data_factory,
+    scorer, data, _ = zgain_setup(
         z_values=np.array([[z_prev], [z_last], [0.0], [0.0]]),
     )
     scores = scorer.score(data)
@@ -159,19 +156,9 @@ def test_zgain_formula_with_nonzero_prior_z(
 
 
 @pytest.mark.parametrize("r", [0.0, -0.5, 0.95])
-def test_zgain_formula_across_correlation_values(
-    fitted_norm_blr_model,
-    correlation_matrix_array_factory,
-    blr_longitudinal_dataframe_factory,
-    blr_predicted_norm_data_factory,
-    r,
-):
+def test_zgain_formula_across_correlation_values(zgain_setup, r):
     z_prev, z_last = 0.5, 2.0
-    scorer, data, _ = _zgain_setup(
-        fitted_norm_blr_model,
-        correlation_matrix_array_factory,
-        blr_longitudinal_dataframe_factory,
-        blr_predicted_norm_data_factory,
+    scorer, data, _ = zgain_setup(
         z_values=np.array([[z_prev], [z_last], [0.0], [0.0]]),
         r=r,
     )
@@ -181,19 +168,10 @@ def test_zgain_formula_across_correlation_values(
     )
 
 
-def test_zgain_uses_last_two_visits_when_three_present(
-    fitted_norm_blr_model,
-    correlation_matrix_array_factory,
-    blr_longitudinal_dataframe_factory,
-    blr_predicted_norm_data_factory,
-):
+def test_zgain_uses_last_two_visits_when_three_present(zgain_setup):
     """Three visits: score must use visits 2→3, not 1→2."""
     z1, z2, z3, r = 0.0, 5.0, 1.0, 0.8
-    scorer, data, _ = _zgain_setup(
-        fitted_norm_blr_model,
-        correlation_matrix_array_factory,
-        blr_longitudinal_dataframe_factory,
-        blr_predicted_norm_data_factory,
+    scorer, data, _ = zgain_setup(
         z_values=np.array([[z1], [z2], [z3], [0.0], [0.0]]),
         extra_visits=[1, 2, 3],
     )
@@ -395,7 +373,6 @@ def test_zdiff_zero_reference_variability_raises(
     blr_predicted_norm_data_factory,
 ):
     df = blr_longitudinal_dataframe_factory()
-    yhat = None
     flat = blr_predicted_norm_data_factory(df, yhat_values=np.zeros((4, 1)))
     flat["Yhat"] = (["observations", "response_vars"], flat.Y.values.copy())
 
