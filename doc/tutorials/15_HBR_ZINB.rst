@@ -73,8 +73,6 @@ Let’s simulate ``mu``, ``psi`` and ``alpha``:
         "y": y,
     })
     
-    df.to_csv("zinb_abcd_like_simulated_data.csv", index=False)
-    
     # Sanity checks on the simulated data
     summary = pd.Series({
         "n": n,
@@ -92,7 +90,6 @@ Let’s simulate ``mu``, ``psi`` and ``alpha``:
         "var_y": y.var(), # much larger than mean_y: a Poisson would not fit these data
         "max_y": y.max(),
     })
-    summary.to_csv("zinb_abcd_like_summary.csv")
     summary
 
 
@@ -1301,6 +1298,19 @@ plus the softplus mapping in the HBR modelled ``mu`` is flexible enough.
 
 
 
+To model a discrete likelihood like ZINB we use a method called
+randomized quantile residuals. This is what makes discrete y map to a
+continuous, normally distributed z. This has the cost of making the
+z-scores **stochastic**. So evaluation metrics computed from z-scores
+give a different number every time you run the code. These are
+``ShapiroW``, ``Skew`` and ``Kurtosis``.
+
+``MSLL`` is also not meaningful for ZINB, as it compares ZINB (distrete)
+to a baseline Gaussian which is continuous.
+
+Importantly, the centiles curves and everything else on the y-space
+remain **deterministic**.
+
 Plot centiles
 -------------
 
@@ -1317,7 +1327,7 @@ Plot centiles
 
 
 
-.. image:: 15_HBR_ZINB_files/15_HBR_ZINB_16_0.png
+.. image:: 15_HBR_ZINB_files/15_HBR_ZINB_17_0.png
 
 
 
