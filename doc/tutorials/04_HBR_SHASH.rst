@@ -1,6 +1,10 @@
 HBR with SHASH likelihood
 =========================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/04_HBR_SHASH.ipynb>`
+
 Welcome to this tutorial notebook that will go through the fitting and
 evaluation of Normative models with a Hierarchical Bayesian Regression
 (HBR) model using a SHASH likelihood.
@@ -282,7 +286,8 @@ Likelihood, which we will use to model our response variable.
     shashb1_regression_model = HBR(
         name="template",
         cores=16,
-        progressbar=True,
+        # Enable the progress bar to see the progress of the model sampling
+        progressbar=False,
         draws=1500,
         tune=500,
         chains=4,
@@ -339,194 +344,6 @@ All results can be found in the save directory.
 
     model.fit_predict(train, test);
 
-
-
-.. raw:: html
-
-    
-    <style>
-        :root {
-            --column-width-1: 40%; /* Progress column width */
-            --column-width-2: 15%; /* Chain column width */
-            --column-width-3: 15%; /* Divergences column width */
-            --column-width-4: 15%; /* Step Size column width */
-            --column-width-5: 15%; /* Gradients/Draw column width */
-        }
-    
-        .nutpie {
-            max-width: 800px;
-            margin: 10px auto;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            //color: #333;
-            //background-color: #fff;
-            padding: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            font-size: 14px; /* Smaller font size for a more compact look */
-        }
-        .nutpie table {
-            width: 100%;
-            border-collapse: collapse; /* Remove any extra space between borders */
-        }
-        .nutpie th, .nutpie td {
-            padding: 8px 10px; /* Reduce padding to make table more compact */
-            text-align: left;
-            border-bottom: 1px solid #888;
-        }
-        .nutpie th {
-            //background-color: #f0f0f0;
-        }
-    
-        .nutpie th:nth-child(1) { width: var(--column-width-1); }
-        .nutpie th:nth-child(2) { width: var(--column-width-2); }
-        .nutpie th:nth-child(3) { width: var(--column-width-3); }
-        .nutpie th:nth-child(4) { width: var(--column-width-4); }
-        .nutpie th:nth-child(5) { width: var(--column-width-5); }
-    
-        .nutpie progress {
-            width: 100%;
-            height: 15px; /* Smaller progress bars */
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-bar {
-            background-color: #eee;
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-value {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        progress::-moz-progress-bar {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        .nutpie .progress-cell {
-            width: 100%;
-        }
-    
-        .nutpie p strong { font-size: 16px; font-weight: bold; }
-    
-        @media (prefers-color-scheme: dark) {
-            .nutpie {
-                //color: #ddd;
-                //background-color: #1e1e1e;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
-            .nutpie table, .nutpie th, .nutpie td {
-                border-color: #555;
-                color: #ccc;
-            }
-            .nutpie th {
-                background-color: #2a2a2a;
-            }
-            .nutpie progress::-webkit-progress-bar {
-                background-color: #444;
-            }
-            .nutpie progress::-webkit-progress-value {
-                background-color: #3178c6;
-            }
-            .nutpie progress::-moz-progress-bar {
-                background-color: #3178c6;
-            }
-        }
-    </style>
-    
-
-
-
-.. raw:: html
-
-    
-    <div class="nutpie">
-        <p><strong>Sampler Progress</strong></p>
-        <p>Total Chains: <span id="total-chains">4</span></p>
-        <p>Active Chains: <span id="active-chains">0</span></p>
-        <p>
-            Finished Chains:
-            <span id="active-chains">4</span>
-        </p>
-        <p>Sampling for a minute</p>
-        <p>
-            Estimated Time to Completion:
-            <span id="eta">now</span>
-        </p>
-    
-        <progress
-            id="total-progress-bar"
-            max="8000"
-            value="8000">
-        </progress>
-        <table>
-            <thead>
-                <tr>
-                    <th>Progress</th>
-                    <th>Draws</th>
-                    <th>Divergences</th>
-                    <th>Step Size</th>
-                    <th>Gradients/Draw</th>
-                </tr>
-            </thead>
-            <tbody id="chain-details">
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.09</td>
-                        <td>287</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.08</td>
-                        <td>127</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.09</td>
-                        <td>319</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.08</td>
-                        <td>127</td>
-                    </tr>
-    
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-
-
 Plot the results
 ----------------
 
@@ -558,7 +375,7 @@ Let’s start with the centiles.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -582,7 +399,7 @@ Now let’s see the qq plots
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -609,7 +426,7 @@ And finally the ridge plot:
     )  # We can also show the 'Y' variable, and that will show the marginal distribution of the response variable, per batch effect.
 
 
-.. parsed-literal::
+.. code:: text
 
     c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
@@ -621,7 +438,7 @@ And finally the ridge plot:
       self._figure.tight_layout(*args, **kwargs)
     c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\plotter.py:1051: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\plotter.py:1094: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       g.figure.tight_layout()
     
 
@@ -631,7 +448,7 @@ And finally the ridge plot:
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 750x100 with 2 Axes>]
 
@@ -700,19 +517,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>0.350945</td>
-          <td>1.173475</td>
-          <td>0.081506</td>
-          <td>0.320968</td>
-          <td>0.686721</td>
-          <td>-0.732217</td>
-          <td>0.350142</td>
-          <td>658.378599</td>
-          <td>0.488698</td>
-          <td>6.054985e-53</td>
-          <td>0.649858</td>
-          <td>0.986314</td>
-          <td>0.327245</td>
+          <td>0.350799</td>
+          <td>1.180602</td>
+          <td>0.082455</td>
+          <td>0.321128</td>
+          <td>0.686822</td>
+          <td>-0.732116</td>
+          <td>0.350002</td>
+          <td>658.44965</td>
+          <td>0.48847</td>
+          <td>6.868300e-53</td>
+          <td>0.649998</td>
+          <td>0.986246</td>
+          <td>0.328759</td>
         </tr>
       </tbody>
     </table>
@@ -774,19 +591,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>0.392384</td>
-          <td>0.450777</td>
-          <td>0.180911</td>
-          <td>0.347812</td>
-          <td>0.748561</td>
-          <td>-0.370708</td>
-          <td>0.38341</td>
-          <td>475.247706</td>
-          <td>0.513314</td>
-          <td>6.432733e-16</td>
-          <td>0.61659</td>
-          <td>0.980844</td>
-          <td>-0.495452</td>
+          <td>0.39246</td>
+          <td>0.45288</td>
+          <td>0.180117</td>
+          <td>0.348079</td>
+          <td>0.748077</td>
+          <td>-0.371192</td>
+          <td>0.383477</td>
+          <td>475.222026</td>
+          <td>0.512888</td>
+          <td>6.860878e-16</td>
+          <td>0.616523</td>
+          <td>0.980956</td>
+          <td>-0.494952</td>
         </tr>
       </tbody>
     </table>
@@ -885,7 +702,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -923,7 +740,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -996,7 +813,7 @@ with the covariates, this is the model for you:
     shashb2_regression_model = HBR(
         name="template",
         cores=16,
-        progressbar=True,
+        progressbar=False,
         draws=1500,
         tune=500,
         chains=4,

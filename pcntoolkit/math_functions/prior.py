@@ -160,7 +160,7 @@ class BasePrior(ABC):
         return self.apply_mapping(samples)
 
     @abstractmethod
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "BasePrior":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "BasePrior":
         pass
 
     @abstractmethod
@@ -228,7 +228,7 @@ class Prior(BasePrior):
             self.dist = PM_DISTMAP[self.dist_name](self.name, *self.dist_params, dims=self.dims)
         return self.dist
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "Prior":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "Prior":
         new_prior = Prior(self.name, self.dims, self.mapping, self.mapping_params, self.dist_name, self.dist_params)
         freedom = kwargs.get("freedom", 1)
 
@@ -358,7 +358,7 @@ class RandomPrior(BasePrior):
             self.dist = acc
         return self.dist
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "RandomPrior":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "RandomPrior":
         new_mu = self.mu.transfer(idata, **kwargs)
         new_sigma = copy.deepcopy(self.sigma)
         new_prior = RandomPrior(
@@ -476,7 +476,7 @@ class CenteredRandomPrior(BasePrior):
             self.dist = acc
         return self.dist
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "RandomPrior":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "RandomPrior":
         new_mu = self.mu.transfer(idata, **kwargs)
         new_sigma = copy.deepcopy(self.sigma)
         new_prior = RandomPrior(
@@ -588,7 +588,7 @@ class LinearPrior(BasePrior):
         else:
             return math.sum(slope_samples * pm_X, axis=1, keepdims=False) + intercept_samples
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "LinearPrior":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "LinearPrior":
         new_slope = self.slope.transfer(idata, **kwargs)
         new_intercept = self.intercept.transfer(idata, **kwargs)
         new_basis_function = copy.deepcopy(self.basis_function)

@@ -1,6 +1,10 @@
 HBR with Normal likelihood
 ==========================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/03_HBR_Normal.ipynb>`
+
 Welcome to this tutorial notebook that will go through the fitting and
 evaluation of Normative models with a Hierarchical Bayesian Regression
 (HBR) model using a Normal likelihood.
@@ -220,14 +224,14 @@ NormalLikelihood, which we will use to model our response variable.
     mu = make_prior(
         # Mu is linear because we want to allow the mean to vary as a function of the covariates.
         linear=True,
-        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 10.
+        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 5.
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 5.0)),
         # The intercept is random, because we expect the intercept to vary between sites and sexes.
         intercept=make_prior(
             random=True,
             # Mu is the mean of the intercept, which is normally distributed with a mean of 0 and a standard deviation of 1.
             mu=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
-            # Sigma is the scale at which the intercepts vary. It is a positive parameter, so we have to map it to the positive domain.
+            # Sigma is the scale at which the intercepts vary between sites and sexes.
             sigma=make_prior(dist_name="Normal", dist_params=(0.0, 1.0))
         ),
         # We use a B-spline basis function to allow for non-linearity in the mean.
@@ -236,7 +240,7 @@ NormalLikelihood, which we will use to model our response variable.
     sigma = make_prior(
         # Sigma is also linear, because we want to allow the standard deviation to vary as a function of the covariates: heteroskedasticity.
         linear=True,
-        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 2.
+        # The slope coefficients are assumed to be normally distributed, with a mean of 0 and a standard deviation of 1.
         slope=make_prior(dist_name="Normal", dist_params=(0.0, 1.0)),
         # The intercept is not random, because we assume the intercept of the variance to be the same for all sites and sexes.
         intercept=make_prior(dist_name="Normal", dist_params=(1.0, 1.0)),
@@ -244,7 +248,7 @@ NormalLikelihood, which we will use to model our response variable.
         basis_function=BsplineBasisFunction(basis_column=0, nknots=5, degree=3),
         # We use a softplus mapping to ensure that sigma is strictly positive.
         mapping="softplus",
-        # We scale the softplus mapping by a factor of 3, to avoid spikes in the resulting density.
+        # We scale the softplus mapping by a factor of 2, to avoid spikes in the resulting density.
         # The parameters (a, b, c) provided to a mapping f are used as: f_abc(x) = f((x - a) / b) * b + c
         # This basically provides an affine transformation of the softplus function.
         # a -> horizontal shift
@@ -263,8 +267,8 @@ NormalLikelihood, which we will use to model our response variable.
         name="template",
         # The number of cores to use for sampling.
         cores=16,
-        # Whether to show a progress bar during the model fitting.
-        progressbar=True,
+        # Enable the progress bar to see the progress of the model sampling
+        progressbar=False,
         # The number of draws to sample from the posterior per chain.
         draws=1500,
         # The number of tuning steps to run.
@@ -326,203 +330,6 @@ All results can be found in the save directory.
 
     model.fit_predict(train, test);
 
-
-.. parsed-literal::
-
-    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\pytensor\link\c\cmodule.py:2986: UserWarning: PyTensor could not link to a BLAS installation. Operations that might benefit from BLAS will be severely degraded.
-    This usually happens when PyTensor is installed via pip. We recommend it be installed via conda/mamba/pixi instead.
-    Alternatively, you can use an experimental backend such as Numba or JAX that perform their own BLAS optimizations, by setting `pytensor.config.mode == 'NUMBA'` or passing `mode='NUMBA'` when compiling a PyTensor function.
-    For more options and details see https://pytensor.readthedocs.io/en/latest/troubleshooting.html#how-do-i-configure-test-my-blas-library
-      warnings.warn(
-    
-
-
-.. raw:: html
-
-    
-    <style>
-        :root {
-            --column-width-1: 40%; /* Progress column width */
-            --column-width-2: 15%; /* Chain column width */
-            --column-width-3: 15%; /* Divergences column width */
-            --column-width-4: 15%; /* Step Size column width */
-            --column-width-5: 15%; /* Gradients/Draw column width */
-        }
-    
-        .nutpie {
-            max-width: 800px;
-            margin: 10px auto;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            //color: #333;
-            //background-color: #fff;
-            padding: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            font-size: 14px; /* Smaller font size for a more compact look */
-        }
-        .nutpie table {
-            width: 100%;
-            border-collapse: collapse; /* Remove any extra space between borders */
-        }
-        .nutpie th, .nutpie td {
-            padding: 8px 10px; /* Reduce padding to make table more compact */
-            text-align: left;
-            border-bottom: 1px solid #888;
-        }
-        .nutpie th {
-            //background-color: #f0f0f0;
-        }
-    
-        .nutpie th:nth-child(1) { width: var(--column-width-1); }
-        .nutpie th:nth-child(2) { width: var(--column-width-2); }
-        .nutpie th:nth-child(3) { width: var(--column-width-3); }
-        .nutpie th:nth-child(4) { width: var(--column-width-4); }
-        .nutpie th:nth-child(5) { width: var(--column-width-5); }
-    
-        .nutpie progress {
-            width: 100%;
-            height: 15px; /* Smaller progress bars */
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-bar {
-            background-color: #eee;
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-value {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        progress::-moz-progress-bar {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        .nutpie .progress-cell {
-            width: 100%;
-        }
-    
-        .nutpie p strong { font-size: 16px; font-weight: bold; }
-    
-        @media (prefers-color-scheme: dark) {
-            .nutpie {
-                //color: #ddd;
-                //background-color: #1e1e1e;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
-            .nutpie table, .nutpie th, .nutpie td {
-                border-color: #555;
-                color: #ccc;
-            }
-            .nutpie th {
-                background-color: #2a2a2a;
-            }
-            .nutpie progress::-webkit-progress-bar {
-                background-color: #444;
-            }
-            .nutpie progress::-webkit-progress-value {
-                background-color: #3178c6;
-            }
-            .nutpie progress::-moz-progress-bar {
-                background-color: #3178c6;
-            }
-        }
-    </style>
-    
-
-
-
-.. raw:: html
-
-    
-    <div class="nutpie">
-        <p><strong>Sampler Progress</strong></p>
-        <p>Total Chains: <span id="total-chains">4</span></p>
-        <p>Active Chains: <span id="active-chains">0</span></p>
-        <p>
-            Finished Chains:
-            <span id="active-chains">4</span>
-        </p>
-        <p>Sampling for 13 seconds</p>
-        <p>
-            Estimated Time to Completion:
-            <span id="eta">now</span>
-        </p>
-    
-        <progress
-            id="total-progress-bar"
-            max="8000"
-            value="8000">
-        </progress>
-        <table>
-            <thead>
-                <tr>
-                    <th>Progress</th>
-                    <th>Draws</th>
-                    <th>Divergences</th>
-                    <th>Step Size</th>
-                    <th>Gradients/Draw</th>
-                </tr>
-            </thead>
-            <tbody id="chain-details">
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.13</td>
-                        <td>191</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.11</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.13</td>
-                        <td>31</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>1</td>
-                        <td>0.14</td>
-                        <td>95</td>
-                    </tr>
-    
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-
-
 Plot the results
 ----------------
 
@@ -551,9 +358,9 @@ Let’s start with the centiles.
 
 
 
-.. parsed-literal::
+.. code:: text
 
-    [<Figure size 640x480 with 1 Axes>]
+    [<Figure size 800x550 with 1 Axes>]
 
 
 
@@ -570,9 +377,9 @@ Now let’s see the qq plots
 
 
 
-.. parsed-literal::
+.. code:: text
 
-    [<Figure size 640x480 with 1 Axes>]
+    [<Figure size 800x550 with 1 Axes>]
 
 
 
@@ -653,19 +460,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>0.354731</td>
-          <td>5.898452</td>
-          <td>0.087768</td>
-          <td>0.308666</td>
-          <td>0.870916</td>
-          <td>-0.548023</td>
-          <td>0.35473</td>
-          <td>656.05035</td>
-          <td>0.504326</td>
-          <td>8.349288e-57</td>
-          <td>0.64527</td>
-          <td>0.879556</td>
-          <td>1.80218</td>
+          <td>0.354625</td>
+          <td>5.910348</td>
+          <td>0.087678</td>
+          <td>0.308367</td>
+          <td>0.871006</td>
+          <td>-0.547932</td>
+          <td>0.354623</td>
+          <td>656.104842</td>
+          <td>0.50446</td>
+          <td>7.723401e-57</td>
+          <td>0.645377</td>
+          <td>0.87945</td>
+          <td>1.803624</td>
         </tr>
       </tbody>
     </table>
@@ -727,19 +534,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>0.367656</td>
-          <td>1.286686</td>
-          <td>0.161708</td>
-          <td>0.341987</td>
-          <td>0.796284</td>
-          <td>-0.322985</td>
-          <td>0.364526</td>
-          <td>482.470339</td>
-          <td>0.493964</td>
-          <td>1.092281e-14</td>
-          <td>0.635474</td>
-          <td>0.96293</td>
-          <td>0.814839</td>
+          <td>0.368105</td>
+          <td>1.293957</td>
+          <td>0.161827</td>
+          <td>0.341647</td>
+          <td>0.796115</td>
+          <td>-0.323154</td>
+          <td>0.365075</td>
+          <td>482.262081</td>
+          <td>0.493969</td>
+          <td>1.091451e-14</td>
+          <td>0.634925</td>
+          <td>0.962756</td>
+          <td>0.817352</td>
         </tr>
       </tbody>
     </table>
@@ -839,7 +646,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -874,7 +681,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 

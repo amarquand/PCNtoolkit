@@ -1,13 +1,31 @@
 from .dataio.data_factory import load_fcon1000
 from .dataio.norm_data import NormData
-from .math_functions.basis_function import BsplineBasisFunction, LinearBasisFunction, PolynomialBasisFunction, CompositeBasisFunction, FractionalPolynomialBasisFunction
-from .math_functions.likelihood import BetaLikelihood, NormalLikelihood, SHASHbLikelihood, ZeroInflatedNegativeBinomialLikelihood
+from .math_functions.basis_function import (
+    BsplineBasisFunction,
+    LinearBasisFunction,
+    PolynomialBasisFunction,
+    CompositeBasisFunction,
+    FractionalPolynomialBasisFunction,
+)
+from .math_functions.correlation_matrix import CorrelationMatrix
+from .math_functions.likelihood import (
+    BetaLikelihood,
+    NormalLikelihood,
+    SHASHbLikelihood,
+    ZeroInflatedNegativeBinomialLikelihood,
+)
 from .math_functions.prior import make_prior
 from .longitudinal_score import LongitudinalScore, ZDiffScore, ZGainScore
 from .normative_model import NormativeModel
 from .regression_model.blr import BLR
 from .regression_model.hbr import HBR
-from .util.plotter import plot_centiles, plot_qq, plot_ridge, plot_centiles_advanced
+from .util.plotter import (
+    plot_centiles,
+    plot_qq,
+    plot_ridge,
+    plot_centiles_advanced,
+    plot_thrivelines,
+)
 from .util.runner import Runner
 from importlib.metadata import version
 
@@ -20,6 +38,7 @@ __all__ = [
     "PolynomialBasisFunction",
     "CompositeBasisFunction",
     "NormativeModel",
+    "CorrelationMatrix",
     "BLR",
     "HBR",
     "BetaLikelihood",
@@ -33,6 +52,7 @@ __all__ = [
     "load_fcon1000",
     "Runner",
     "plot_centiles_advanced",
+    "plot_thrivelines",
     "LongitudinalScore",
     "ZDiffScore",
     "ZGainScore",

@@ -148,6 +148,10 @@ class MigrationRegistry:
         if component not in self._migrations:
             return d
 
+        # The version the user is actually running, not the version a
+        # migration was introduced in.
+        current_version: str = importlib.metadata.version("pcntoolkit")
+
         # Apply migrations in ascending version order.
         for introduced_in, fn in self._migrations[component]:
             if saved_version < introduced_in:
@@ -155,7 +159,7 @@ class MigrationRegistry:
                 Output.warning(
                     Warnings.MODEL_MIGRATION_APPLIED,
                     saved_version=str(saved_version),
-                    current_version=str(introduced_in),
+                    current_version=current_version,
                 )
                 d = fn(d)
 
@@ -267,5 +271,29 @@ def _migrate_basis_function_1_2_0post1(d: dict) -> dict:
         else:
             # default to None if the dict is empty (e.g. {} in JSON).
             d["knots"] = None
+
+    return d
+
+
+@registry.register("HBR", introduced_in="1.4.0")
+def _migrate_variational_inference_1_4_0(d: dict) -> dict:
+    """Add the variational inference fields to an HBR dict saved before VI.
+    These fields specify what methods is used for fitting
+    (e.g., "mcmc", "pathfinder" etc).
+
+    Parameters
+    ----------
+    d : dict
+        Raw dict read from the saved JSON file.
+
+    Returns
+    -------
+    dict
+        Dict with the variational inference fields populated.
+    """
+    d.setdefault("inference_method", "mcmc")
+    d.setdefault("vi_iterations", 30000)
+    d.setdefault("vi_draws", 1000)
+    d.setdefault("vi_kwargs", {})
 
     return d

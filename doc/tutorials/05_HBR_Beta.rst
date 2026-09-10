@@ -1,6 +1,10 @@
 HBR with Beta likelihood
 ========================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/05_HBR_Beta.ipynb>`
+
 Welcome to this tutorial notebook that will go through the fitting and
 evaluation of Normative models with a Hierarchical Bayesian Regression
 (HBR) model using a Beta likelihood.
@@ -260,7 +264,8 @@ BetaLikelihood, which we will use to model our response variable.
         name="beta_HBR_model",
         likelihood=beta_likelihood,
         cores=16,
-        progressbar=True,
+        # Enable the progress bar to see the progress of the model sampling
+        progressbar=False,
         draws=1500,
         tune=500,
         chains=4,
@@ -315,203 +320,6 @@ All results can be found in the save directory.
 
     model.fit_predict(train, test);
 
-
-.. parsed-literal::
-
-    c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\pytensor\link\c\cmodule.py:2986: UserWarning: PyTensor could not link to a BLAS installation. Operations that might benefit from BLAS will be severely degraded.
-    This usually happens when PyTensor is installed via pip. We recommend it be installed via conda/mamba/pixi instead.
-    Alternatively, you can use an experimental backend such as Numba or JAX that perform their own BLAS optimizations, by setting `pytensor.config.mode == 'NUMBA'` or passing `mode='NUMBA'` when compiling a PyTensor function.
-    For more options and details see https://pytensor.readthedocs.io/en/latest/troubleshooting.html#how-do-i-configure-test-my-blas-library
-      warnings.warn(
-    
-
-
-.. raw:: html
-
-    
-    <style>
-        :root {
-            --column-width-1: 40%; /* Progress column width */
-            --column-width-2: 15%; /* Chain column width */
-            --column-width-3: 15%; /* Divergences column width */
-            --column-width-4: 15%; /* Step Size column width */
-            --column-width-5: 15%; /* Gradients/Draw column width */
-        }
-    
-        .nutpie {
-            max-width: 800px;
-            margin: 10px auto;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            //color: #333;
-            //background-color: #fff;
-            padding: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            font-size: 14px; /* Smaller font size for a more compact look */
-        }
-        .nutpie table {
-            width: 100%;
-            border-collapse: collapse; /* Remove any extra space between borders */
-        }
-        .nutpie th, .nutpie td {
-            padding: 8px 10px; /* Reduce padding to make table more compact */
-            text-align: left;
-            border-bottom: 1px solid #888;
-        }
-        .nutpie th {
-            //background-color: #f0f0f0;
-        }
-    
-        .nutpie th:nth-child(1) { width: var(--column-width-1); }
-        .nutpie th:nth-child(2) { width: var(--column-width-2); }
-        .nutpie th:nth-child(3) { width: var(--column-width-3); }
-        .nutpie th:nth-child(4) { width: var(--column-width-4); }
-        .nutpie th:nth-child(5) { width: var(--column-width-5); }
-    
-        .nutpie progress {
-            width: 100%;
-            height: 15px; /* Smaller progress bars */
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-bar {
-            background-color: #eee;
-            border-radius: 5px;
-        }
-        progress::-webkit-progress-value {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        progress::-moz-progress-bar {
-            background-color: #5cb85c;
-            border-radius: 5px;
-        }
-        .nutpie .progress-cell {
-            width: 100%;
-        }
-    
-        .nutpie p strong { font-size: 16px; font-weight: bold; }
-    
-        @media (prefers-color-scheme: dark) {
-            .nutpie {
-                //color: #ddd;
-                //background-color: #1e1e1e;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            }
-            .nutpie table, .nutpie th, .nutpie td {
-                border-color: #555;
-                color: #ccc;
-            }
-            .nutpie th {
-                background-color: #2a2a2a;
-            }
-            .nutpie progress::-webkit-progress-bar {
-                background-color: #444;
-            }
-            .nutpie progress::-webkit-progress-value {
-                background-color: #3178c6;
-            }
-            .nutpie progress::-moz-progress-bar {
-                background-color: #3178c6;
-            }
-        }
-    </style>
-    
-
-
-
-.. raw:: html
-
-    
-    <div class="nutpie">
-        <p><strong>Sampler Progress</strong></p>
-        <p>Total Chains: <span id="total-chains">4</span></p>
-        <p>Active Chains: <span id="active-chains">0</span></p>
-        <p>
-            Finished Chains:
-            <span id="active-chains">4</span>
-        </p>
-        <p>Sampling for a minute</p>
-        <p>
-            Estimated Time to Completion:
-            <span id="eta">now</span>
-        </p>
-    
-        <progress
-            id="total-progress-bar"
-            max="8000"
-            value="8000">
-        </progress>
-        <table>
-            <thead>
-                <tr>
-                    <th>Progress</th>
-                    <th>Draws</th>
-                    <th>Divergences</th>
-                    <th>Step Size</th>
-                    <th>Gradients/Draw</th>
-                </tr>
-            </thead>
-            <tbody id="chain-details">
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.15</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.15</td>
-                        <td>127</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.16</td>
-                        <td>63</td>
-                    </tr>
-    
-                    <tr>
-                        <td class="progress-cell">
-                            <progress
-                                max="2000"
-                                value="2000">
-                            </progress>
-                        </td>
-                        <td>2000</td>
-                        <td>0</td>
-                        <td>0.15</td>
-                        <td>63</td>
-                    </tr>
-    
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-
-
 Plot the results
 ----------------
 
@@ -540,9 +348,9 @@ Let’s start with the centiles.
 
 
 
-.. parsed-literal::
+.. code:: text
 
-    [<Figure size 640x480 with 1 Axes>]
+    [<Figure size 800x550 with 1 Axes>]
 
 
 
@@ -559,9 +367,9 @@ Now let’s see the qq plots
 
 
 
-.. parsed-literal::
+.. code:: text
 
-    [<Figure size 640x480 with 1 Axes>]
+    [<Figure size 800x550 with 1 Axes>]
 
 
 
@@ -586,7 +394,7 @@ And finally the ridge plot:
     )  # We can also show the 'Y' variable, and that will show the marginal distribution of the response variable, per batch effect.
 
 
-.. parsed-literal::
+.. code:: text
 
     c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
@@ -598,7 +406,7 @@ And finally the ridge plot:
       self._figure.tight_layout(*args, **kwargs)
     c:\Users\kontsi\AppData\Local\anaconda3\envs\.ptk-dev\Lib\site-packages\seaborn\axisgrid.py:123: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\plotter.py:1051: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    C:\Users\kontsi\Documents\GitHub\PCNtoolkit-local\pcntoolkit\util\plotter.py:1094: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       g.figure.tight_layout()
     
 
@@ -608,7 +416,7 @@ And finally the ridge plot:
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 750x100 with 2 Axes>]
 
@@ -677,19 +485,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>0.006848</td>
-          <td>1.961025</td>
-          <td>0.077111</td>
-          <td>0.343537</td>
-          <td>-1.986123</td>
-          <td>-0.756907</td>
-          <td>-0.001131</td>
-          <td>817.16923</td>
-          <td>0.515762</td>
-          <td>9.276483e-60</td>
-          <td>1.001131</td>
-          <td>0.971499</td>
-          <td>0.462182</td>
+          <td>0.007586</td>
+          <td>1.957312</td>
+          <td>0.077396</td>
+          <td>0.343329</td>
+          <td>-1.986152</td>
+          <td>-0.756936</td>
+          <td>-0.000303</td>
+          <td>816.831496</td>
+          <td>0.515899</td>
+          <td>8.535184e-60</td>
+          <td>1.000303</td>
+          <td>0.971484</td>
+          <td>0.464116</td>
         </tr>
       </tbody>
     </table>
@@ -751,19 +559,19 @@ Evaluation statistcs are stored in the NormData object:
       <tbody>
         <tr>
           <th>WM-hypointensities</th>
-          <td>-0.472575</td>
-          <td>0.34908</td>
+          <td>-0.473211</td>
+          <td>0.344382</td>
           <td>0.165538</td>
-          <td>0.385015</td>
-          <td>-1.914659</td>
-          <td>-0.385773</td>
-          <td>-0.504613</td>
-          <td>742.393429</td>
-          <td>0.467802</td>
-          <td>3.823923e-13</td>
-          <td>1.504613</td>
-          <td>0.993952</td>
-          <td>0.229935</td>
+          <td>0.384979</td>
+          <td>-1.914898</td>
+          <td>-0.386012</td>
+          <td>-0.505126</td>
+          <td>742.520087</td>
+          <td>0.466093</td>
+          <td>4.773968e-13</td>
+          <td>1.505126</td>
+          <td>0.994015</td>
+          <td>0.228566</td>
         </tr>
       </tbody>
     </table>
@@ -863,7 +671,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -898,7 +706,7 @@ site B.
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 800x550 with 1 Axes>]
 
@@ -972,7 +780,7 @@ Here are some more HBR model configuration examples. You can replace the
         name="beta_HBR_model",
         likelihood=beta_likelihood,
         cores=16,
-        progressbar=True,
+        progressbar=False,
         draws=1500,
         tune=500,
         chains=4,

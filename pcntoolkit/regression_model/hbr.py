@@ -35,10 +35,14 @@ class HBR(RegressionModel):
         cores: int = 4,
         chains: int = 4,
         nuts_sampler: str = "nutpie",
-        init: str = "jitter+adapt_diag",
+        init: str = "auto",
         progressbar: bool = True,
         is_fitted: bool = False,
         is_from_dict: bool = False,
+        inference_method: str = "mcmc",
+        vi_iterations: int = 30000,
+        vi_draws: int = 1000,
+        vi_kwargs: Optional[Dict[str, Any]] = None,
     ):
         """
         This class implements a Bayesian hierarchical regression model using PyMC for
@@ -61,13 +65,34 @@ class HBR(RegressionModel):
         nuts_sampler : str, optional
             NUTS sampler to use for parallel sampling, by default "nutpie"
         init : str, optional
-            Initialization method for the model, by default "jitter+adapt_diag"
+            Initialization method for the model, by default "auto". External
+            samplers such as nutpie ignore this and use their own initialization.
         progressbar : bool, optional
             Whether to display a progress bar during sampling, by default True
         is_fitted : bool, optional
             Whether the model has been fitted, by default False
         is_from_dict : bool, optional
             Whether the model was created from a dictionary, by default False
+        inference_method : str, optional
+            How to approximate the posterior, by default "mcmc".
+            One of "mcmc" (NUTS sampling), "advi" (mean-field variational
+            inference), "pathfinder" or "laplace" (a Gaussian centred on the
+            posterior mode, with covariance from the Hessian there); the last
+            two are provided by pymc-extras. The variational methods are much
+            faster but return an approximate posterior; in particular they can
+            misestimate the width of the posterior, which propagates into the
+            z-scores.
+        vi_iterations : int, optional
+            Number of optimizer steps for inference_method="advi", by default 30000
+        vi_draws : int, optional
+            Number of draws taken from the fitted variational approximation,
+            by default 1000. Ignored when inference_method="mcmc".
+        vi_kwargs : dict, optional
+            Extra keyword arguments forwarded to the variational fitter:
+            ``pm.fit`` for "advi" (e.g. obj_optimizer, callbacks, method) and
+            ``pymc_extras.fit`` for "pathfinder" (e.g. num_paths, jitter,
+            importance_sampling, maxcor) and "laplace" (e.g. optimize_method,
+            use_hessp). Ignored when inference_method="mcmc".
 
         """
         super().__init__(name, is_fitted, is_from_dict)
@@ -79,7 +104,13 @@ class HBR(RegressionModel):
         self.nuts_sampler = nuts_sampler
         self.init = init
         self.progressbar = progressbar
-        self.idata: az.InferenceData = None  # type: ignore
+        self.inference_method = inference_method
+        self.vi_iterations = vi_iterations
+        self.vi_draws = vi_draws
+        self.vi_kwargs = vi_kwargs or {}
+        self.idata: xr.DataTree = None  # type: ignore
+        # ELBO trace of the last ADVI run; used for convergence diagnostics.
+        self.vi_loss: np.ndarray | None = None
         self.pymc_model: pm.Model = None  # type: ignore
         self.be_maps: dict = None  # type:ignore
 
@@ -105,16 +136,106 @@ class HBR(RegressionModel):
         self.be_maps = copy.deepcopy(be_maps)
         self.pymc_model: pm.Model = self.likelihood.compile(X, be, self.be_maps, Y)
         with self.pymc_model:
-            self.idata = pm.sample(
-                self.draws,
-                tune=self.tune,
-                cores=self.cores,
-                chains=self.chains,
-                nuts_sampler=self.nuts_sampler,  # type: ignore
-                init=self.init,
-                progressbar=self.progressbar,
-            )
+            self.idata = self._run_inference()
         self.is_fitted = True
+
+    def _run_inference(self, **overrides: Any) -> xr.DataTree:
+        """
+        Run MCMC, ADVI, Pathfinder, or Laplace inference depending on the
+        specified ``inference_method``.
+
+        Parameters
+        ----------
+        **overrides : Any
+            Per-call overrides of the instance defaults (draws, tune, cores,
+            chains, nuts_sampler, init, progressbar, vi_iterations, vi_draws).
+
+        Returns
+        -------
+        xr.DataTree
+            Posterior samples. For the variational methods these are draws
+            from the fitted approximation, carrying the same (chain, draw)
+            dimensions as MCMC output so downstream code is unaffected.
+
+        Raises
+        ------
+        ValueError
+            If ``inference_method`` is not one of "mcmc", "advi",
+            "pathfinder" or "laplace".
+        ImportError
+            If the packages from pymc-extras (eg "pathfinder" or "laplace") are 
+            requested but pymc-extras is not installed.
+        """
+
+        def opt(key: str) -> Any:
+            return overrides.get(key, getattr(self, key))
+
+        method = opt("inference_method")
+
+        if method == "mcmc":
+            return pm.sample(
+                opt("draws"),
+                tune=opt("tune"),
+                cores=opt("cores"),
+                chains=opt("chains"),
+                nuts_sampler=opt("nuts_sampler"),  # type: ignore
+                init=opt("init"),
+                progressbar=opt("progressbar"),
+            )
+
+        # Extra keyword arguments forwarded verbatim to the underlying
+        # variational fitter, so every tuning knob stays reachable.
+        vi_kwargs = dict(opt("vi_kwargs") or {})
+
+        if method == "advi":
+            # "advi" is mean-field; "fullrank_advi" models correlations.
+            vi_method = vi_kwargs.pop("method", "advi")
+            approx = pm.fit(
+                n=opt("vi_iterations"),
+                method=vi_method,
+                progressbar=opt("progressbar"),
+                **vi_kwargs,
+            )
+            # Keep the ELBO trace: for VI this replaces the trace/autocorr
+            # plots as the way to check that the fit converged.
+            self.vi_loss = np.asarray(approx.hist)
+            return approx.sample(opt("vi_draws"))
+
+        if method == "pathfinder":
+            try:
+                import pymc_extras as pmx  # type: ignore
+            except ImportError as exc:
+                raise ImportError(
+                    "inference_method='pathfinder' requires pymc-extras. It ships as a "
+                    "dependency; reinstall it with: pip install 'pymc-extras>=0.11.0'"
+                ) from exc
+            return pmx.fit(
+                method="pathfinder",
+                num_draws=opt("vi_draws"),
+                progressbar=opt("progressbar"),
+                **vi_kwargs,
+            )
+
+        if method == "laplace":
+            try:
+                import pymc_extras as pmx  # type: ignore
+            except ImportError as exc:
+                raise ImportError(
+                    "inference_method='laplace' requires pymc-extras. It ships as a "
+                    "dependency; reinstall it with: pip install 'pymc-extras>=0.11.0'"
+                ) from exc
+            # fit_laplace names its draw count `draws`, unlike the other fitters.
+            return pmx.fit(
+                method="laplace",
+                draws=opt("vi_draws"),
+                progressbar=opt("progressbar"),
+                **vi_kwargs,
+            )
+
+        raise ValueError(
+            f"Unknown inference_method '{method}'. Expected 'mcmc', 'advi', "
+            f"'pathfinder' or 'laplace'."
+        )
 
     def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
         """
@@ -228,6 +349,7 @@ class HBR(RegressionModel):
             )
         return az.extract(logp, "log_likelihood", var_names=["Yhat"]).mean("sample")
 
+
     def model_specific_evaluation(self, path: str) -> None:
         """
         Save model-specific evaluation metrics.
@@ -241,19 +363,31 @@ class HBR(RegressionModel):
                 az.summary(self.idata, fmt="wide", var_names=["~_per_subject"], filter_vars="like").to_csv(
                     os.path.join(resultsdir, self.name + "_summary.csv")
                 )
-                az.plot_trace(self.idata, var_names="~_per_subject", filter_vars="like")
-                plt.tight_layout()
-                plt.savefig(os.path.join(plotdir, self.name + "_trace.png"))
-                plt.close()
-                az.plot_autocorr(self.idata, var_names="~_per_subject", filter_vars="like")
-                plt.tight_layout()
-                plt.savefig(os.path.join(plotdir, self.name + "_autocorr.png"))
-                plt.close()
-                if hasattr(self.idata, "posterior_predictive"):
-                    az.plot_ppc(self.idata)
+                # Trace and autocorrelation plots only mean something for MCMC:
+                # variational draws are independent by construction.
+                if self.inference_method == "mcmc":
+                    self._save_plot(
+                        az.plot_trace_dist(self.idata, var_names="~_per_subject", filter_vars="like"),
+                        os.path.join(plotdir, self.name + "_trace.png"),
+                    )
+                    self._save_plot(
+                        az.plot_autocorr(self.idata, var_names="~_per_subject", filter_vars="like"),
+                        os.path.join(plotdir, self.name + "_autocorr.png"),
+                    )
+                elif self.vi_loss is not None:
+                    # For ADVI the ELBO trace is the convergence diagnostic.
+                    plt.plot(self.vi_loss)
+                    plt.xlabel("iteration")
+                    plt.ylabel("ELBO loss")
+                    plt.yscale("log")
                     plt.tight_layout()
-                    plt.savefig(os.path.join(plotdir, self.name + "_ppc.png"))
+                    plt.savefig(os.path.join(plotdir, self.name + "_elbo.png"))
                     plt.close()
+                if "posterior_predictive" in self.idata.children:
+                    self._save_plot(
+                        az.plot_ppc_dist(self.idata),
+                        os.path.join(plotdir, self.name + "_ppc.png"),
+                    )
             if self.pymc_model is not None:
                 self.pymc_model.to_graphviz(save=os.path.join(plotdir, self.name + "_model.png"))
         else:
@@ -297,17 +431,33 @@ class HBR(RegressionModel):
             self.progressbar,
             self.is_fitted,
             self.is_from_dict,
+            self.inference_method,
+            self.vi_iterations,
+            self.vi_draws,
+            self.vi_kwargs,
         )
         new_hbr_model_model = new_hbr_model.likelihood.compile(X, be, be_maps, Y)
-        with new_hbr_model_model:
-            new_hbr_model.idata = pm.sample(
-                kwargs.get("draws", self.draws),
-                tune=kwargs.get("tune", self.tune),
-                cores=kwargs.get("cores", self.cores),
-                chains=kwargs.get("chains", self.chains),
-                nuts_sampler=kwargs.get("nuts_sampler", self.nuts_sampler),  # type: ignore
-                progressbar=kwargs.get("progressbar", self.progressbar),
+        # Route through _run_inference so transfer honours inference_method
+        # instead of silently falling back to MCMC.
+        inference_overrides = {
+            k: kwargs[k]
+            for k in (
+                "draws",
+                "tune",
+                "cores",
+                "chains",
+                "nuts_sampler",
+                "init",
+                "progressbar",
+                "inference_method",
+                "vi_iterations",
+                "vi_draws",
+                "vi_kwargs",
             )
+            if k in kwargs
+        }
+        with new_hbr_model_model:
+            new_hbr_model.idata = new_hbr_model._run_inference(**inference_overrides)
             new_hbr_model.is_fitted = True
         new_hbr_model.pymc_model = new_hbr_model_model
         new_hbr_model.be_maps = be_maps
@@ -341,7 +491,9 @@ class HBR(RegressionModel):
         for key, value in self.__dict__.items():
             # Save the ptk_version currently 
             # used by the user
-            if key not in ["likelihood", "pymc_model", "idata", "ptk_version"]:
+            # vi_loss is a numpy array (not JSON serializable) and is only a
+            # diagnostic, so it is not persisted.
+            if key not in ["likelihood", "pymc_model", "idata", "ptk_version", "vi_loss"]:
                 my_dict[key] = value
         if self.is_fitted and (path is not None):
             idata_path = os.path.join(path, "idata.nc")
@@ -388,7 +540,27 @@ class HBR(RegressionModel):
         progressbar: bool = my_dict["progressbar"]
         is_fitted: bool = my_dict["is_fitted"]
         is_from_dict: bool = True
-        self = cls(name, likelihood, draws, tune, cores, chains, nuts_sampler, init, progressbar, is_fitted, is_from_dict)
+        inference_method: str = my_dict["inference_method"]
+        vi_iterations: int = my_dict["vi_iterations"]
+        vi_draws: int = my_dict["vi_draws"]
+        vi_kwargs: Dict[str, Any] = my_dict.get("vi_kwargs", {})
+        self = cls(
+            name,
+            likelihood,
+            draws,
+            tune,
+            cores,
+            chains,
+            nuts_sampler,
+            init,
+            progressbar,
+            is_fitted,
+            is_from_dict,
+            inference_method,
+            vi_iterations,
+            vi_draws,
+            vi_kwargs,
+        )
         if is_fitted and (path is not None):
             idata_path = os.path.join(path, "idata.nc")
             self.load_idata(idata_path)
@@ -422,8 +594,36 @@ class HBR(RegressionModel):
         progressbar = args.get("progressbar", True)
         is_fitted = args.get("is_fitted", False)
         is_from_dict = True
-        self = cls(name, likelihood, draws, tune, cores, chains, nuts_sampler, init, progressbar, is_fitted, is_from_dict)
+        inference_method = args.get("inference_method", "mcmc")
+        vi_iterations = args.get("vi_iterations", 30000)
+        vi_draws = args.get("vi_draws", 1000)
+        vi_kwargs = args.get("vi_kwargs", {})
+        self = cls(
+            name,
+            likelihood,
+            draws,
+            tune,
+            cores,
+            chains,
+            nuts_sampler,
+            init,
+            progressbar,
+            is_fitted,
+            is_from_dict,
+            inference_method,
+            vi_iterations,
+            vi_draws,
+            vi_kwargs,
+        )
         return self
+
+    def compute_yhat(self, data, responsevar, X, be):
+        fn = self.likelihood.yhat
+        Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
+        yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
+        return yhat
+
+# ------- Helpers -------
 
     def save_idata(self, path: str) -> None:
         """
@@ -445,7 +645,7 @@ class HBR(RegressionModel):
         """
         if self.is_fitted:
             if hasattr(self, "idata"):
-                self.idata.to_netcdf(path, groups=["posterior"])
+                xr.DataTree.from_dict({"posterior": self.idata["posterior"].dataset}).to_netcdf(path)
             else:
                 raise ValueError(Output.error(Errors.ERROR_HBR_FITTED_BUT_NO_IDATA))
 
@@ -473,8 +673,25 @@ class HBR(RegressionModel):
             except Exception as exc:
                 raise ValueError(Output.error(Errors.ERROR_HBR_COULD_NOT_LOAD_IDATA, path=path)) from exc
 
-    def compute_yhat(self, data, responsevar, X, be):
-        fn = self.likelihood.yhat
-        Y = xr.DataArray(np.squeeze(data.Y.values), dims=("observations",))
-        yhat = self.generic_MCMC_apply(X, be, Y, fn, kwargs={})
-        return yhat
+    @staticmethod
+    def _save_plot(plot_collection: Any, path: str) -> None:
+        """
+        Save an ArviZ plot to disk.
+
+        ArviZ 1.0 returns a PlotCollection instead of matplotlib axes, so we
+        save its figure directly rather than relying on the current figure.
+
+        Parameters
+        ----------
+        plot_collection : Any
+            PlotCollection returned by an ArviZ plotting function
+        path : str
+            Path to save the figure to
+
+        Returns
+        -------
+        None
+        """
+        figure = plot_collection.viz["figure"].item()
+        figure.savefig(path, bbox_inches="tight")
+        plt.close(figure)

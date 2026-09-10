@@ -1,6 +1,10 @@
 Merge normative model
 =====================
 
+.. container:: notebook-download
+
+   :download:`Download Jupyter notebook <notebooks/10_merge.ipynb>`
+
 Suppose two remote locations independently train a normative model on
 their own patient population. These remote locations do not want to
 share their data with you. They can however share their trained models
@@ -166,16 +170,6 @@ Train the Location 1 model (HBR)
     location1_model.fit_predict(location1_train, location1_test);
     
 
-
-.. parsed-literal::
-
-    /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/pytensor/link/c/cmodule.py:2986: UserWarning: PyTensor could not link to a BLAS installation. Operations that might benefit from BLAS will be severely degraded.
-    This usually happens when PyTensor is installed via pip. We recommend it be installed via conda/mamba/pixi instead.
-    Alternatively, you can use an experimental backend such as Numba or JAX that perform their own BLAS optimizations, by setting `pytensor.config.mode == 'NUMBA'` or passing `mode='NUMBA'` when compiling a PyTensor function.
-    For more options and details see https://pytensor.readthedocs.io/en/latest/troubleshooting.html#how-do-i-configure-test-my-blas-library
-      warnings.warn(
-    
-
 Train the Location 2 model (BLR)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -191,7 +185,6 @@ Visualize the individual models
 
     plot_centiles_advanced(location1_model, 
                            scatter_data=location1_train, 
-                           covariate_range=(10, 80), 
                            batch_effects="all",
                            show_legend=False
                            )
@@ -203,7 +196,7 @@ Visualize the individual models
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -213,7 +206,6 @@ Visualize the individual models
 
     plot_centiles_advanced(location2_model, 
                            scatter_data=location2_train, 
-                           covariate_range=(10, 80), 
                            batch_effects="all",
                            show_legend=False
                            )
@@ -225,7 +217,7 @@ Visualize the individual models
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 
@@ -248,7 +240,7 @@ The models are now trained and saved to disk. Each remote location
 shares only the saved model JSON files with you, and not the raw patient
 data.
 
-To do the merge, you first need to load both models from disk abd then
+To do the merge, you first need to load both models from disk and then
 call ``NormativeModel.merge()``. Internally, this works by:
 
 1. Generating **synthetic data** from each model’s learned distribution
@@ -281,7 +273,6 @@ Visualize the merged model
 
     plot_centiles_advanced(merged_model, 
                            scatter_data=data, 
-                           covariate_range=(10, 80), 
                            batch_effects="all",
                            show_legend=False)
 
@@ -292,7 +283,7 @@ Visualize the merged model
 
 
 
-.. parsed-literal::
+.. code:: text
 
     [<Figure size 640x480 with 1 Axes>]
 

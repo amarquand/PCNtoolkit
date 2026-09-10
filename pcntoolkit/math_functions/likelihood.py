@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
-import arviz as az  # type: ignore
 import numpy as np
 import pymc as pm  # type: ignore
 import scipy.stats as stats
@@ -61,7 +60,7 @@ class Likelihood(ABC):
         pass
 
     @abstractmethod
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "Likelihood":
         pass
 
     @abstractmethod
@@ -198,7 +197,7 @@ class NormalLikelihood(Likelihood):
             "sigma": (self.sigma.compile(model, X, be, be_maps, Y), self.sigma.sample_dims),
         }
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "Likelihood":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "Likelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
         new_sigma = self.sigma.transfer(idata, **kwargs)
         return NormalLikelihood(new_mu, new_sigma)
@@ -286,7 +285,7 @@ class SHASHbLikelihood(Likelihood):
             "delta": (self.delta.compile(model, X, be, be_maps, Y), self.delta.sample_dims),
         }
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "SHASHbLikelihood":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "SHASHbLikelihood":
         new_mu = self.mu.transfer(idata, **kwargs)
         new_sigma = self.sigma.transfer(idata, **kwargs)
         new_epsilon = self.epsilon.transfer(idata, **kwargs)
@@ -606,7 +605,7 @@ class BetaLikelihood(Likelihood):
             "beta": (self.beta.compile(model, X, be, be_maps, Y), self.beta.sample_dims),
         }
 
-    def transfer(self, idata: az.InferenceData, **kwargs) -> "BetaLikelihood":
+    def transfer(self, idata: xr.DataTree, **kwargs) -> "BetaLikelihood":
         new_alpha = self.alpha.transfer(idata, **kwargs)
         new_beta = self.beta.transfer(idata, **kwargs)
         return BetaLikelihood(new_alpha, new_beta)
