@@ -1,4 +1,12 @@
+import multiprocessing
 import shutil
+import sys
+from multiprocessing.synchronize import Barrier
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from pcntoolkit.util.runner import Runner
 from test.fixtures.test_model_fixtures import *
@@ -258,3 +266,62 @@ def test_runner_transfer_predict_kfold(fitted_norm_test_model: NormativeModel, n
         )
     )
     cleanup(transferred_model, runner)
+
+
+def _save_zscores_one_var(save_dir: str, i: int, n_obs: int, barrier: Barrier) -> None:
+    """Save Z-scores of one response variable, like one Runner job does."""
+    data = NormData.from_ndarrays(
+        "test",
+        X=np.zeros((n_obs, 1)),
+        Y=np.full((n_obs, 1), float(i)),
+        subject_ids=np.array([f"sub-{j}" for j in range(n_obs)]),
+    )
+    data = data.assign_coords(response_vars=[f"rv_{i}"])
+    data["Z"] = data["Y"]
+    # The bug is a race, so repeat: with 5 rounds v1.1.2 failed in 7/10 trials,
+    # with 50 rounds in 10/10.
+    for _ in range(50):
+        # All processes write at the same moment. The timeout stops the others
+        # from waiting forever if one process crashes.
+        barrier.wait(timeout=10)
+        data.save_zscores(save_dir)
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="fork is not available on Windows"
+)
+def test_save_zscores_parallel_no_duplicate_header(tmp_path: Path) -> None:
+    """Regression test for #534: parallel Runner jobs saving into one folder must
+    give one valid CSV.
+
+    The Runner itself is not used: with parallelize=False its jobs run one after
+    another, and parallelize=True needs SLURM. Instead, here we simulate10 processes 
+    to call save_zscores at the same moment, as parallel jobs do.
+
+    This test fails for pcntoolkit <= 1.1.2.
+    """
+    n_jobs, n_obs = 10, 50
+    # fork instead of spawn, so each process does not re-import pcntoolkit
+    # (makes the test faster)
+    ctx = multiprocessing.get_context("fork")
+    barrier = ctx.Barrier(n_jobs)
+    procs = [
+        ctx.Process(
+            target=_save_zscores_one_var, args=(str(tmp_path), i, n_obs, barrier)
+        )
+        for i in range(n_jobs)
+    ]
+    for p in procs:
+        p.start()
+    for p in procs:
+        p.join(timeout=60)
+    assert all(p.exitcode == 0 for p in procs)
+
+    path = os.path.join(tmp_path, "Z_test.csv")
+    with open(path) as f:
+        n_headers = sum(line.startswith("observations") for line in f)
+    assert n_headers == 1
+    df = pd.read_csv(path)
+    assert len(df) == n_obs
+    saved_vars = sorted(c for c in df.columns if c.startswith("rv_"))
+    assert saved_vars == sorted(f"rv_{i}" for i in range(n_jobs))
