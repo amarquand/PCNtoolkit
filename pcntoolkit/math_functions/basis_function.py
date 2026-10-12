@@ -304,17 +304,38 @@ class LinearBasisFunction(BasisFunction):
 
 
 class CompositeBasisFunction(BasisFunction):
-
     """Combine basis functions and optionally construct pairwise interactions.
+
+    An interaction lets the effect of one covariate depend on another,
+    e.g. a different age curve for each sex. ``(0, 1)`` means
+    ``parts[0] x parts[1]``.
+
+    Output columns: first each covariate's basis (in covariate order),
+    then the interaction columns. Example with covariates ``[age, sex]``::
+
+        parts=[BsplineBasisFunction(basis_column=0),   # age, 7 columns
+               LinearBasisFunction(basis_column=1)]    # sex, 1 column
+        interactions=[(0, 1)]
+
+        columns 0-6   age B-spline
+        column  7     sex
+        columns 8-14  age B-spline x sex
 
     Parameters
     ----------
     parts : list of BasisFunction
-        Component basis functions.
+        Each element is a basis function that operates on a specific covariate column.
     interactions : list of tuple[int, int], optional
-        Pairs of indices into ``parts``. For each pair ``(i, j)``, all
-        pairwise products between the transformed columns of ``parts[i]``
-        and ``parts[j]`` are appended to the output.
+        Pairs of indices into ``parts`` (not covariate columns). For each
+        pair ``(i, j)``, the products of all columns of ``parts[i]`` and
+        ``parts[j]`` are appended to the output. Default: no interactions.
+
+    Raises
+    ------
+    ValueError
+        From ``transform``, if called before ``fit``.
+    IndexError
+        From ``transform``, if an interaction index is ``>= len(parts)``.
 
     Notes
     -----
