@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+import urllib.request
 
 import pandas as pd
 
 from pcntoolkit.dataio.norm_data import NormData
+from pcntoolkit.math_functions.correlation_matrix import CorrelationMatrix
 
 
 def load_fcon1000(save_path: str | None = None):
@@ -271,6 +273,46 @@ def load_fcon1000(save_path: str | None = None):
         remove_Nan=True,
     )
     return norm_data
+
+
+# Example matrix for one region from Charlotte Fraza's CPC_ML_tutorial repo.
+# Swap the source here when a matrix with metadata is published.
+_CORRELATION_MATRIX_URL = (
+    "https://raw.githubusercontent.com/CharFraza/CPC_ML_tutorial/"
+    "master/data/cmat_rh_G_front_middle_thickness.csv"
+)
+_CORRELATION_MATRIX_RESPONSE_VAR = "rh_G_front_middle_thickness"
+
+
+def load_correlation_matrix(save_path: str | None = None) -> CorrelationMatrix:
+    """Download and save an example correlation matrix, or load it from disk.
+
+    The matrix covers one region, ``rh_G_front_middle_thickness``, for ages
+    0-98. The cohort it was estimated from is not recorded, so the loaded
+    matrix has no ``bandwidth``, ``n_subjects`` or ``estimated_range``.
+
+    Parameters
+    ----------
+    save_path : str | None
+        Folder to save the matrix to, or load it from if it is already
+        downloaded. Defaults to ``pcntoolkit_resources/data/correlation_matrix``.
+
+    Returns
+    -------
+    CorrelationMatrix
+        The example correlation matrix.
+    """
+    if not save_path:
+        save_path = os.path.join("pcntoolkit_resources", "data", "correlation_matrix")
+    os.makedirs(save_path, exist_ok=True)
+    data_path = os.path.join(save_path, f"{_CORRELATION_MATRIX_RESPONSE_VAR}.csv")
+
+    # Copy the bytes as-is: re-writing through pandas could change the last
+    # digits of the correlations.
+    if not os.path.exists(data_path):
+        urllib.request.urlretrieve(_CORRELATION_MATRIX_URL, data_path)
+
+    return CorrelationMatrix.load(save_path)
 
 
 # NOTE: This dataset is not public
