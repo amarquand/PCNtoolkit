@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from pcntoolkit.math_functions.velocity import compute_correlation_matrix
@@ -25,7 +26,7 @@ class CorrelationMatrix:
     The matrix records how strongly a subject's z-scores at two ages correlate.
 
     Do not call ``CorrelationMatrix(...)`` directly. Use :meth:`compute` to
-    estimate one from a cohort, or :meth:`load` to read one from a file.
+    estimate one from a cohort, or :meth:`load` to read one from CSV files.
 
     Examples
     --------
@@ -36,12 +37,14 @@ class CorrelationMatrix:
     >>> corr.n_subjects
     67
 
-    Or load one that somebody else estimated (the region name is read from the
-    ``batch_<n>_<region>`` directory):
+    Save it as one CSV per region, and load the folder back later:
 
-    >>> corr = CorrelationMatrix.load(
-    ...     ".../batch_1_lh_G_and_S_frontomargin/Velocity/R.pkl"
-    ... )
+    >>> corr.save("my_matrices")
+    >>> corr = CorrelationMatrix.load("my_matrices")
+
+    Or load a single region:
+
+    >>> corr = CorrelationMatrix.load("my_matrices/rh_G_front_middle_thickness.csv")
 
     Either way, pass it to a score:
 
@@ -55,8 +58,8 @@ class CorrelationMatrix:
     covariate : str, default "age"
         Covariate the matrix is indexed by.
     bandwidth : int, optional
-        Age-offset range within which correlations were estimated directly.
-        Wider offsets were interpolated.
+        Widest age gap with an estimated correlation. Correlations for wider
+        gaps are 0.
     max_correlation : float, default 0.99
         Upper bound applied by :meth:`get`, keeping the correlation away from 1
         so that ``sqrt(1 - r**2)`` stays away from zero.
@@ -115,8 +118,8 @@ class CorrelationMatrix:
             Longitudinal cohort with predicted z-scores and repeated visits per
             subject.
         bandwidth : int, default 5
-            Age-offset range, in years, for direct correlation estimates.
-            Larger offsets are interpolated.
+            Widest age gap, in years, to estimate correlations for.
+            Correlations for wider gaps are set to 0.
         covariate : str, default "age"
             Covariate to index the matrix by.
         max_correlation : float, default 0.99
@@ -161,13 +164,118 @@ class CorrelationMatrix:
         )
 
     @classmethod
-    def load(cls, path: str) -> CorrelationMatrix:
+    def load(
+        cls,
+        path: str,
+        *,
+        covariate: str = "age",
+        max_correlation: float = 0.99,
+    ) -> CorrelationMatrix:
+        """Load correlation matrices from a folder of CSVs, or from one CSV.
+
+        Each CSV holds one response variable and is named after it, as
+        written by :meth:`save`::
+
+            <path>/<response_var>.csv
+
+        A folder loads every ``.csv`` in it, so keep only correlation matrices
+        there. A file loads that one response variable. The file name, without
+        ``.csv``, must match the response variable in the normative model the
+        matrix is used with.
+
+        Only the correlations are stored, so ``bandwidth``, ``n_subjects`` and
+        ``estimated_range`` are ``None``.
+
+        Parameters
+        ----------
+        path : str
+            Folder written by :meth:`save`, or one CSV inside it.
+        covariate : str, default "age"
+            Covariate the matrix is indexed by.
+        max_correlation : float, default 0.99
+            Upper bound applied by :meth:`get`.
+
+        Returns
+        -------
+        CorrelationMatrix
+            The loaded matrix, with one entry along ``response_vars`` per CSV.
+
+        Raises
+        ------
+        FileNotFoundError
+            If ``path`` does not exist, or is a folder without ``.csv`` files.
+        ValueError
+            If a CSV's header row and first column are not the covariate
+            values 0, 1, ..., N-1, if the CSVs differ in size, or if a CSV has
+            empty cells, correlations outside -1 to 1, or is not symmetric.
+        """
+        source = Path(path)
+        if source.is_dir():
+            csv_paths = sorted(source.glob("*.csv"))
+            if not csv_paths:
+                raise FileNotFoundError(
+                    f"'{path}' holds no .csv files. Write correlation matrices "
+                    "there with CorrelationMatrix.save()."
+                )
+        elif source.is_file():
+            csv_paths = [source]
+        else:
+            raise FileNotFoundError(f"'{path}' does not exist.")
+        # The response variable names are derived from the CSV file names.
+        response_vars = [csv_path.stem for csv_path in csv_paths]
+
+        dfs = []
+        for csv_path in csv_paths:
+            # round_trip parsing: the default parser is a hair imprecise, which
+            # would make a loaded matrix score differently from the saved one.
+            df = pd.read_csv(csv_path, index_col=0, float_precision="round_trip")
+            # get() reads cells by position, so covariate value c must sit in
+            # row c and column c.
+            expected = [str(c) for c in range(len(df))]
+            if list(df.columns) != expected or list(df.index.astype(str)) != expected:
+                raise ValueError(
+                    f"'{csv_path}' is not a correlation matrix: its header row "
+                    "and first column must both be the covariate values "
+                    f"0, 1, ..., {len(df) - 1}."
+                )
+            cls._check_correlation_matrix_is_valid(
+                df.to_numpy(dtype=float), csv_path, covariate
+            )
+            dfs.append(df)
+
+        first = dfs[0]
+        for response_var, df in zip(response_vars, dfs, strict=True):
+            if df.shape != first.shape:
+                raise ValueError(
+                    f"'{response_var}' has shape {df.shape}, but "
+                    f"'{response_vars[0]}' has {first.shape}. Every "
+                    "response variable must cover the same covariate values."
+                )
+
+        # Stack into the 3-D layout produced by compute_correlation_matrix.
+        values = np.stack([df.to_numpy(dtype=float) for df in dfs])
+        coords = np.arange(values.shape[1])
+        matrix = xr.DataArray(
+            values,
+            dims=("response_vars", f"{covariate}_1", f"{covariate}_2"),
+            coords={
+                "response_vars": response_vars,
+                f"{covariate}_1": coords,
+                f"{covariate}_2": coords,
+            },
+        )
+
+        return cls(matrix, covariate=covariate, max_correlation=max_correlation)
+
+    @classmethod
+    def load_velocity_pickle(cls, path: str) -> CorrelationMatrix:
         """Load a correlation matrix from a pickled velocity model.
 
         .. note::
            This reads one specific layout: the velocity models produced by
-           Johanna Bayer's pipeline. It is not a general-purpose loader, and it
-           will be replaced once :meth:`save` defines a storage format.
+           Johanna Bayer's pipeline. It is not a general-purpose loader. Use it
+           once to convert such a file, then save it with :meth:`save` and load
+           the result with :meth:`load`.
 
         Those files hold a dict whose ``A_sparse_predict`` entry is the
         correlations, stored lower-triangular with a zero diagonal. They are
@@ -188,8 +296,7 @@ class CorrelationMatrix:
         Returns
         -------
         CorrelationMatrix
-            The loaded matrix. ``n_subjects`` and ``estimated_range`` are
-            ``None``, as the file does not carry them.
+            The loaded matrix.
 
         Raises
         ------
@@ -204,13 +311,39 @@ class CorrelationMatrix:
             file_contents = pickle.load(f)
 
         matrix = cls._matrix_from_velocity_file(file_contents, response_var)
-        # Non-zero entries only reach so far from the diagonal; that distance is
-        # the bandwidth the correlations were estimated over.
-        values = matrix.values[0]
-        rows, cols = np.asarray(values).nonzero()
-        bandwidth = int(np.abs(rows - cols).max()) if rows.size else None
+        return cls(matrix)
 
-        return cls(matrix, bandwidth=bandwidth)
+    @staticmethod
+    def _check_correlation_matrix_is_valid(
+        values: np.ndarray, source: Path, covariate: str
+    ) -> None:
+        """Check that the correlation matrix is valid.
+
+        Raises a ValueError if there are empty cells, values outside [-1, 1],
+        or if the matrix is not symmetric.
+        """
+        empty = np.argwhere(np.isnan(values))
+        if empty.size:
+            i, j = empty[0]
+            raise ValueError(
+                f"'{source}' has an empty cell at {covariate} {i} and {j}. "
+                "Every cell must hold a correlation."
+            )
+
+        out_of_range = np.argwhere(np.abs(values) > 1)
+        if out_of_range.size:
+            i, j = out_of_range[0]
+            raise ValueError(
+                f"'{source}' has a correlation of {values[i, j]:g} at {covariate} "
+                f"{i} and {j}. Correlations must be between -1 and 1."
+            )
+
+        if not np.allclose(values, values.T):
+            raise ValueError(
+                f"'{source}' is not symmetric. The correlation at "
+                f"({covariate}_1, {covariate}_2) must equal the one at "
+                f"({covariate}_2, {covariate}_1)."
+            )
 
     @staticmethod
     def _response_var_from_path(path: str) -> str:
@@ -271,17 +404,36 @@ class CorrelationMatrix:
         )
 
     def save(self, path: str) -> None:
-        """Not implemented yet.
+        """Save the matrix as one CSV per response variable in a folder::
 
-        Raises
-        ------
-        NotImplementedError
-            Always. The storage format has not been decided; matrices are
-            currently read with :meth:`load` from files written elsewhere.
+            <path>/<response_var>.csv
+
+        Each CSV has the covariate values (0, 1, ..., N-1) as both the header
+        row and the first column, with an empty top-left cell.
+
+        Parameters
+        ----------
+        path : str
+            Folder to write to. Created if it does not exist.
+
+        Returns
+        -------
+        None
         """
-        raise NotImplementedError(
-            "Saving correlation matrices is not supported yet. The storage format has not been decided."
-        )
+        directory = Path(path)
+        directory.mkdir(parents=True, exist_ok=True)
+
+        response_vars = [str(r) for r in self.matrix.coords["response_vars"].values]
+        coords = np.asarray(self.matrix.coords[f"{self.covariate}_1"].values, dtype=int)
+
+        for response_var in response_vars:
+            df = pd.DataFrame(
+                self.matrix.sel(response_vars=response_var).values,
+                index=coords,
+                columns=coords,
+            )
+            # Keep full precision and use \n line endings on every OS.
+            df.to_csv(directory / f"{response_var}.csv", lineterminator="\n")
 
     def get(self, response_var: str, cov_1: int, cov_2: int) -> float:
         """Read one correlation, clamped to the matrix and clipped for safety.
