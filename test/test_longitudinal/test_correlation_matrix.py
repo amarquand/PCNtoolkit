@@ -40,22 +40,19 @@ def _make_matrix(
 # ------------------------------------------------------------------ #
 
 
-def test_round_trip_preserves_values_exactly(tmp_path):
-    """A loaded matrix must score identically to the one that was saved."""
-    corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
+def test_round_trip_preserves_matrix(tmp_path: Path) -> None:
+    """A loaded matrix must hold the same correlations, regions and dims."""
+    # A non-default covariate, so both save and load must use it, not "age".
+    corr = CorrelationMatrix(
+        _make_matrix(response_vars=["roi_a", "roi_b"], covariate="timepoint"),
+        covariate="timepoint",
+    )
     corr.save(str(tmp_path / "corr"))
-    loaded = CorrelationMatrix.load(str(tmp_path / "corr"))
-
-    assert np.array_equal(corr.matrix.values, loaded.matrix.values)
-    assert corr.get("roi_a", 5, 3) == loaded.get("roi_a", 5, 3)
-
-
-def test_round_trip_preserves_non_age_covariate(tmp_path: Path) -> None:
-    corr = CorrelationMatrix(_make_matrix(covariate="timepoint"), covariate="timepoint")
-    corr.save(str(tmp_path / "corr"))
+    # The covariate is not stored in the CSVs, so it is passed back in.
     loaded = CorrelationMatrix.load(str(tmp_path / "corr"), covariate="timepoint")
 
-    assert loaded.covariate == "timepoint"
+    assert np.array_equal(corr.matrix.values, loaded.matrix.values)
+    assert list(loaded.matrix.coords["response_vars"].values) == ["roi_a", "roi_b"]
     assert loaded.matrix.dims == ("response_vars", "timepoint_1", "timepoint_2")
 
 
@@ -123,7 +120,7 @@ def test_load_rejects_matrices_of_different_sizes(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ #
 
 
-def test_correlation_matrix_compute_from_longitudinal_cohort(
+def test_compute_from_longitudinal_cohort(
     longitudinal_cohort_norm_data,
 ):
     corr = CorrelationMatrix.compute(
@@ -138,7 +135,7 @@ def test_correlation_matrix_compute_from_longitudinal_cohort(
     assert np.allclose(np.diagonal(corr.matrix.values[0]), 1.0)
 
 
-def test_correlation_matrix_compute_rejects_cross_sectional(
+def test_compute_rejects_cross_sectional(
     predicted_norm_data_factory,
 ):
     data = make_cross_sectional_norm_data(predicted_norm_data_factory)
@@ -148,13 +145,13 @@ def test_correlation_matrix_compute_rejects_cross_sectional(
         CorrelationMatrix.compute(data, bandwidth=1)
 
 
-def test_correlation_matrix_compute_rejects_missing_z(longitudinal_cohort_norm_data):
+def test_compute_rejects_missing_z(longitudinal_cohort_norm_data):
     data = longitudinal_cohort_norm_data.drop_vars("Z")
     with pytest.raises(ValueError, match="'Z'"):
         CorrelationMatrix.compute(data, bandwidth=1)
 
 
-def test_correlation_matrix_invalid_max_correlation(correlation_matrix_array_factory):
+def test_invalid_max_correlation(correlation_matrix_array_factory):
     matrix = correlation_matrix_array_factory()
     with pytest.raises(ValueError, match="max_correlation"):
         CorrelationMatrix(matrix, max_correlation=1.0)
@@ -170,7 +167,7 @@ def test_correlation_matrix_invalid_max_correlation(correlation_matrix_array_fac
     ],
     ids=["forward", "symmetric", "clamp_low", "clamp_high"],
 )
-def test_correlation_matrix_get_clamps_ages(
+def test_get_clamps_ages(
     correlation_matrix,
     age_1,
     age_2,
@@ -179,7 +176,7 @@ def test_correlation_matrix_get_clamps_ages(
     assert correlation_matrix.get("metric_a", age_1, age_2) == pytest.approx(expected_r)
 
 
-def test_correlation_matrix_get_respects_max_correlation(
+def test_get_respects_max_correlation(
     correlation_matrix_array_factory,
 ):
     matrix = correlation_matrix_array_factory(offset_correlations={1: 0.999})
@@ -187,7 +184,7 @@ def test_correlation_matrix_get_respects_max_correlation(
     assert corr.get("metric_a", 0, 1) == pytest.approx(0.5)
 
 
-def test_correlation_matrix_get_warns_outside_estimated_range(correlation_matrix):
+def test_get_warns_outside_estimated_range(correlation_matrix):
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         correlation_matrix.get("metric_a", 99, 100)
@@ -196,6 +193,6 @@ def test_correlation_matrix_get_warns_outside_estimated_range(correlation_matrix
     assert issubclass(caught[0].category, UserWarning)
 
 
-def test_correlation_matrix_get_unknown_response_var_raises(correlation_matrix):
+def test_get_unknown_response_var_raises(correlation_matrix):
     with pytest.raises(KeyError, match="metric_b"):
         correlation_matrix.get("metric_b", 0, 1)
