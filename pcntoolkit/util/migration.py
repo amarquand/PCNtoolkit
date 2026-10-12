@@ -1,12 +1,12 @@
 """
-The saved model JSON file can change structure across PCNtoolkit versions as 
+The saved model JSON file can change structure across PCNtoolkit versions as
 new features are added. This module is one central place to register
 and apply migrations required to load these changed models files.
 
 This module does two things:
 1. It updates older saved models during loading.
 
-2. It warns if a model was created with a newer PCNtoolkit version than 
+2. It warns if a model was created with a newer PCNtoolkit version than
 the one currently installed by the user.
 
 In simple:
@@ -21,6 +21,7 @@ version_model > version_pcntoolkit  →  WARN USER
 
 from __future__ import annotations
 
+import functools
 import importlib.metadata
 from typing import Callable, Literal
 
@@ -28,6 +29,24 @@ from typing import Callable, Literal
 from packaging.version import Version
 
 from pcntoolkit.util.output import Output, Warnings
+
+
+@functools.cache
+def ptk_version() -> str:
+    """
+    Return the installed PCNtoolkit version.
+
+    The result is cached because ``importlib.metadata.version`` parses the
+    package metadata on every call. Loading a model with 50,000 response
+    variables called it 100,000 times, which was half of the load time.
+
+    Returns
+    -------
+    str
+        The installed PCNtoolkit version, e.g. ``"1.3.0"``.
+    """
+    return importlib.metadata.version("pcntoolkit")
+
 
 # All components that are saved in the model file and may require migrations.
 ComponentName = Literal[
@@ -115,7 +134,7 @@ class MigrationRegistry:
         Apply all migrations specified in self._migrations when loading models
         saved with previous PCNtoolkit versions.
 
-        Called by from_dict() methods that exist in the components being 
+        Called by from_dict() methods that exist in the components being
         migrated (e.g. BasisFunction.from_dict()).
 
         Parameters
@@ -126,20 +145,18 @@ class MigrationRegistry:
         d : dict
             The raw dict read from a saved JSON file.
         version : str | None, optional
-            Explicit version override. If no version is exists in the JSON 
+            Explicit version override. If no version is exists in the JSON
             file, it defaults to 0.0.0
 
         Returns
         -------
         dict
-            The dict, updated to the format expected by the current 
+            The dict, updated to the format expected by the current
             PCNtoolkit version.
         """
         # Determine the version of the saved dict.
         raw_version: str = (
-            version
-            if version is not None
-            else d.get("ptk_version", "0.0.0")
+            version if version is not None else d.get("ptk_version", "0.0.0")
         )
         # Use "0.0.0" as fallback for models saved before versioning.
         saved_version: Version = Version(raw_version or "0.0.0")
@@ -150,7 +167,7 @@ class MigrationRegistry:
 
         # The version the user is actually running, not the version a
         # migration was introduced in.
-        current_version: str = importlib.metadata.version("pcntoolkit")
+        current_version: str = ptk_version()
 
         # Apply migrations in ascending version order.
         for introduced_in, fn in self._migrations[component]:
@@ -199,13 +216,15 @@ def check_forward_compatibility(
             current_version=str(parsed_current),
         )
 
-# MigrationRegistry is a singleton: All components import this same instance 
+
+# MigrationRegistry is a singleton: All components import this same instance
 # of registry which holds all registered migration functions.
 registry: MigrationRegistry = MigrationRegistry()
 
 # ---------------------------------------------------------------------------
 # Add migration functions below
 # ---------------------------------------------------------------------------
+
 
 @registry.register("BasisFunction", introduced_in="1.2.0post1")
 def _migrate_basis_function_1_2_0post1(d: dict) -> dict:
@@ -221,12 +240,12 @@ def _migrate_basis_function_1_2_0post1(d: dict) -> dict:
 
     Not implemented
     -------------
-    Basis functions with multiple basis columns saved before v1.2.0post1 
-    could store knots, min and max as multi-key dicts 
-    (e.g. ``{"0": [...], "1": [...]}``). 
+    Basis functions with multiple basis columns saved before v1.2.0post1
+    could store knots, min and max as multi-key dicts
+    (e.g. ``{"0": [...], "1": [...]}``).
     Migrating these to version higher than v1.2.0post1 is not yet supported.
     A ``NotImplementedError`` is raised when such a model is loaded.
-    
+
     Parameters
     ----------
     d : dict
@@ -295,5 +314,80 @@ def _migrate_variational_inference_1_4_0(d: dict) -> dict:
     d.setdefault("vi_iterations", 30000)
     d.setdefault("vi_draws", 1000)
     d.setdefault("vi_kwargs", {})
+
+    return d
+
+
+@registry.register("BasisFunction", introduced_in="1.4.0")
+def _migrate_bspline_basis_function_1_4_0(d: dict) -> dict:
+    """Preserve legacy B-spline behavior for models saved before v1.4.0.
+
+    Before v1.4.0, BsplineBasisFunction implicitly included the original
+    linear feature alongside the B-spline basis. New B-spline basis
+    functions no longer include this redundant linear term.
+
+    When loading an older saved B-spline model, retain the old behavior
+    so that its design matrix remains compatible with the fitted model
+    parameters.
+    """
+    if d.get("basis_function") == "BsplineBasisFunction":
+        d.setdefault("include_linear", True)
+
+    return d
+
+
+@registry.register("BLR", introduced_in="1.4.0")
+def _migrate_blr_slope_indices_1_4_0(d: dict) -> dict:
+    """Keep the batch effect slopes of BLR models saved before v1.4.0 on covariate 0.
+
+    Before v1.4.0, `fixed_effect_slope_indices=None` (and the variance
+    counterpart) always meant `[0]`. From v1.4.0, None means the covariate
+    that the basis function expands (its `basis_column`). Setting `[0]`
+    explicitly keeps old models identical when that column is not 0.
+
+    `fixed_effect_slope_indices` > 0 pointed at basis function columns before v1.4.0
+    and at covariates from v1.4.0 on. So indices other than None
+    or [0] are rejected from 1.4.0 onwards as they have a different meaning than before.
+
+    Parameters
+    ----------
+    d : dict
+        Raw dict read from the saved JSON file.
+
+    Returns
+    -------
+    dict
+        Dict with explicit slope indices.
+
+    Raises
+    ------
+    NotImplementedError
+        If a non-linear basis has slope indices other than None or [0].
+    """
+    for slope, key, basis in (
+        ("fixed_effect_slope", "fixed_effect_slope_indices", "basis_function_mean"),
+        (
+            "fixed_effect_var_slope",
+            "fixed_effect_var_slope_indices",
+            "basis_function_var",
+        ),
+    ):
+        basis_name = (d.get(basis) or {}).get("basis_function")
+        indices = d.get(key)
+        # non linear are the Polynomial or Bspline basis functions
+        nonlinear = basis_name != "LinearBasisFunction"
+        if d.get(slope) and nonlinear and indices not in (None, [0]):
+            raise NotImplementedError(
+                f"Cannot load this model: it uses {key}={indices} with a "
+                f"{basis_name}. Before PCNtoolkit v1.4.0, these indices counted "
+                "the columns made by the basis function (e.g. 1 = the first "
+                "B-spline column). From v1.4.0 they count the covariates "
+                "(e.g. 1 = the second covariate). Refit the model with "
+                "PCNtoolkit v1.4.0 or later, or load it with pcntoolkit<1.4.0."
+            )
+
+    for key in ("fixed_effect_slope_indices", "fixed_effect_var_slope_indices"):
+        if d.get(key) is None:
+            d[key] = [0]
 
     return d

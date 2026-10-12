@@ -275,9 +275,9 @@ def load_fcon1000(save_path: str | None = None):
 
 # NOTE: This dataset is not public
 def load_lifespan_big(
-        n_response_vars: int | None = None,
-        n_largest_sites: int | None = None,
-        n_subjects: int | None = None
+    n_response_vars: int | None = None,
+    n_largest_sites: int | None = None,
+    n_subjects: int | None = None,
 ) -> NormData:
     """
     Load the lifespan_big dataset, which is a large lifespan dataset with many sites.
@@ -315,21 +315,25 @@ def load_lifespan_big(
     # https://doi.org/10.7554/eLife.72904
     data = pd.read_csv(
         "/project_cephfs/3022017.06/projects/stijdboe/Data/sairut_data/"
-        "lifespan_big.csv", dtype=dtypes)
+        "lifespan_big.csv",
+        dtype=dtypes,
+    )
 
     # Drop rows where all values are NaN
     data = data.dropna(axis=0, how="all", inplace=False)
     # Drop columns where even if 1 value is NaN
     data = data.dropna(axis=1, how="any", inplace=False)
 
-    data["sex"] = data["sex"].map(
-        {"0.0": "Female", "1.0": "Male", "2.0": "Female"})
+    data["sex"] = data["sex"].map({"0.0": "Female", "1.0": "Male", "2.0": "Female"})
     data["site"] = data["site_ID"]
 
     # If requested, take only the n largest sites
     if n_largest_sites is not None:
-        data = data[data["site_ID"].isin(
-            data["site_ID"].value_counts().head(n_largest_sites).index)]
+        data = data[
+            data["site_ID"].isin(
+                data["site_ID"].value_counts().head(n_largest_sites).index
+            )
+        ]
 
     # If requested, take only n subjects
     if n_subjects is not None:

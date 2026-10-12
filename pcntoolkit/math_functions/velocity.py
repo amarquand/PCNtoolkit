@@ -1,6 +1,6 @@
 """Algorithms for longitudinal (velocity-centile) modelling.
 
-This modules has the mathematical implementation of the correlation matrix, 
+This modules has the mathematical implementation of the correlation matrix,
 thrivelines and conditional forecasting.
 """
 
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 # ------------------------------------------------------------------- #
 # Correlation matrix
 # ------------------------------------------------------------------- #
+
 
 def compute_correlation_matrix(
     data: NormData,
@@ -53,9 +54,9 @@ def compute_correlation_matrix(
         ``(response_vars, f"{covariate_name}_1", f"{covariate_name}_2")``.
     """
     # Flatten the xarray dataset into one table per observation.
-    df = data.to_dataframe()[
-        ["X", "Z", "batch_effects", "subject_ids"]
-    ].droplevel(level=0, axis=1)
+    df = data.to_dataframe()[["X", "Z", "batch_effects", "subject_ids"]].droplevel(
+        level=0, axis=1
+    )
 
     # Stop early when there are no repeated subjects at all.
     if not df["subject_ids"].duplicated().any():
@@ -67,9 +68,7 @@ def compute_correlation_matrix(
         )
 
     # Bin the covariate to integer years so the matrix can be indexed by age.
-    df[covariate_name] = np.round(
-        df[covariate_name].astype(float)
-    ).astype(int)
+    df[covariate_name] = np.round(df[covariate_name].astype(float)).astype(int)
 
     # Map each integer age to the row indices of observations at that age.
     grps: dict[int, list[int]] = defaultdict(list)
@@ -99,8 +98,8 @@ def compute_correlation_matrix(
         if len(merged) >= 4:
             # Compute one correlation per response variable.
             for i, rv in enumerate(response_vars):
-                cors[i, age2, age1] = cors[i, age1, age2] = (
-                    merged[f"{rv}_x"].corr(merged[f"{rv}_y"])
+                cors[i, age2, age1] = cors[i, age1, age2] = merged[f"{rv}_x"].corr(
+                    merged[f"{rv}_y"]
                 )
         # Mark sparse age pairs as missing so regression can fill them.
         elif age1 != age2:
@@ -128,6 +127,7 @@ def compute_correlation_matrix(
             f"{covariate_name}_2": np.arange(cors.shape[1]),
         },
     )
+
 
 # ------------------------------------------------------------------- #
 # Internals for compute_correlation_matrix
@@ -175,9 +175,7 @@ def fill_missing(bandwidth: int, cors: np.ndarray) -> np.ndarray:
         y_pred = regmodel.predict(Phi.drop(columns="y"))
         # Write the predictions symmetrically into the matrix.
         for i, (age1, age2) in enumerate(offset_indices(max_age, bandwidth)):
-            newcors[rv, age1, age2] = newcors[rv, age2, age1] = (
-                y_pred[i].item()
-            )
+            newcors[rv, age1, age2] = newcors[rv, age2, age1] = y_pred[i].item()
     # Inverse Fisher transform (tanh)
     # Convert predicted Fisher values back to ordinary correlations.
     return np.tanh(newcors)
@@ -327,7 +325,9 @@ def compute_thrivelines(
     *,
     timepoint_diff: int = 1,
     z_thrive: float = -1.96,
-    propagate: Callable[[xr.DataArray, xr.DataArray | float, float], xr.DataArray] = propagate_thriveline_z,
+    propagate: Callable[
+        [xr.DataArray, xr.DataArray | float, float], xr.DataArray
+    ] = propagate_thriveline_z,
     anchor_step: int = 1,
     z_anchor_start: int = -3,
     z_anchor_end: int = 4,
@@ -398,7 +398,9 @@ def compute_thrivelines(
         min_covariate, max_covariate = _covariate_bounds_from_R(R)
 
     # Identify which matrix axes correspond to later and earlier covariate values.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Extend the grid upper bound so the last anchor can still take one forward step.
     end_covariate = max_covariate + timepoint_diff
 
@@ -567,8 +569,7 @@ def compute_thriveline_y(
             )
         if covariate not in covariates:
             raise ValueError(
-                f"covariate '{covariate}' is not among model covariates: "
-                f"{covariates}."
+                f"covariate '{covariate}' is not among model covariates: {covariates}."
             )
         thrive_covariate = covariate
 
@@ -632,9 +633,9 @@ def compute_thriveline_y(
             )
             # Invert the regional normative map: (X, Z) -> scaled Y, then unscale.
             y_scaled = model[rv].backward(X_da, be_slice, Z_da).values
-            y_vals = model.outscalers[rv].inverse_transform(
-                y_scaled.reshape(-1, 1)
-            ).ravel()
+            y_vals = (
+                model.outscalers[rv].inverse_transform(y_scaled.reshape(-1, 1)).ravel()
+            )
             y_rv[valid, o_idx] = y_vals
 
         thrive_Y.loc[{"response_vars": rv}] = y_rv
@@ -660,8 +661,7 @@ def validate_thrivelines(thrivelines: pd.DataFrame) -> None:
     """Check that a pre-computed thriveline table can be plotted."""
     if not isinstance(thrivelines, pd.DataFrame):
         raise TypeError(
-            "thrivelines must be a pandas DataFrame from "
-            "ZGainScore.get_thrivelines()."
+            "thrivelines must be a pandas DataFrame from ZGainScore.get_thrivelines()."
         )
     missing = [col for col in THRIVELINE_DF_COLUMNS if col not in thrivelines.columns]
     if missing:
@@ -696,8 +696,12 @@ def thrivelines_to_dataframe(
     """
     rows: list[dict[str, object]] = []
     # Segment-level anchor metadata attached by compute_thrivelines.
-    start_ages = thrive_Z.coords["start_age"].values if "start_age" in thrive_Z.coords else None
-    start_zs = thrive_Z.coords["start_z"].values if "start_z" in thrive_Z.coords else None
+    start_ages = (
+        thrive_Z.coords["start_age"].values if "start_age" in thrive_Z.coords else None
+    )
+    start_zs = (
+        thrive_Z.coords["start_z"].values if "start_z" in thrive_Z.coords else None
+    )
     offsets = thrive_Z.coords["offset"].values
 
     for rv in thrive_Z.coords["response_vars"].values:
@@ -706,16 +710,8 @@ def thrivelines_to_dataframe(
         y_rv = thrive_Y.sel(response_vars=rv, drop=True)
         for seg_idx in range(z_rv.sizes["segment"]):
             segment = int(z_rv.coords["segment"].values[seg_idx])
-            start_age = (
-                float(start_ages[seg_idx])
-                if start_ages is not None
-                else np.nan
-            )
-            start_z = (
-                float(start_zs[seg_idx])
-                if start_zs is not None
-                else np.nan
-            )
+            start_age = float(start_ages[seg_idx]) if start_ages is not None else np.nan
+            start_z = float(start_zs[seg_idx]) if start_zs is not None else np.nan
             # Each segment has two points: offset 0 (anchor) and offset timepoint_diff.
             for off_idx, offset in enumerate(offsets):
                 rows.append(
@@ -806,7 +802,9 @@ def _encode_batch_effects(
 def _covariate_bounds_from_R(R: xr.DataArray) -> tuple[int, int]:
     """Return the minimum and maximum integer covariate values present in ``R``."""
     # Resolve the two covariate axis names on a single-region slice of R.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Collect every covariate coordinate value from both matrix axes.
     ages = np.concatenate(
         [
@@ -826,7 +824,9 @@ def _slice_r_to_covariate_range(
     # Unpack the inclusive lower and upper covariate bounds.
     lo, hi = covariate_range
     # Resolve which dimensions index later and earlier covariate values.
-    age_dim_later, age_dim_earlier = _covariate_age_dims(R.isel(response_vars=0, drop=True))
+    age_dim_later, age_dim_earlier = _covariate_age_dims(
+        R.isel(response_vars=0, drop=True)
+    )
     # Slice both covariate axes symmetrically to the requested range.
     return R.sel({age_dim_later: slice(lo, hi), age_dim_earlier: slice(lo, hi)})
 
@@ -890,8 +890,18 @@ def _grid_anchors(
     segment = np.arange(age_grid.size)
     # Return covariate and z anchors as parallel segment-indexed arrays.
     return (
-        xr.DataArray(age_grid.ravel(), dims=("segment",), coords={"segment": segment}, name="start_age"),
-        xr.DataArray(z_grid.ravel(), dims=("segment",), coords={"segment": segment}, name="start_z"),
+        xr.DataArray(
+            age_grid.ravel(),
+            dims=("segment",),
+            coords={"segment": segment},
+            name="start_age",
+        ),
+        xr.DataArray(
+            z_grid.ravel(),
+            dims=("segment",),
+            coords={"segment": segment},
+            name="start_z",
+        ),
     )
 
 
