@@ -206,7 +206,8 @@ class CorrelationMatrix:
             If ``path`` does not exist, or is a folder without ``.csv`` files.
         ValueError
             If a CSV's header row and first column are not the covariate
-            values 0, 1, ..., N-1, or if the CSVs differ in size.
+            values 0, 1, ..., N-1, if the CSVs differ in size, or if a CSV has
+            empty cells, correlations outside -1 to 1, or is not symmetric.
         """
         source = Path(path)
         if source.is_dir():
@@ -237,6 +238,9 @@ class CorrelationMatrix:
                     "and first column must both be the covariate values "
                     f"0, 1, ..., {len(df) - 1}."
                 )
+            cls._check_correlation_matrix_is_valid(
+                df.to_numpy(dtype=float), csv_path, covariate
+            )
             dfs.append(df)
 
         first = dfs[0]
@@ -308,6 +312,38 @@ class CorrelationMatrix:
 
         matrix = cls._matrix_from_velocity_file(file_contents, response_var)
         return cls(matrix)
+
+    @staticmethod
+    def _check_correlation_matrix_is_valid(
+        values: np.ndarray, source: Path, covariate: str
+    ) -> None:
+        """Check that the correlation matrix is valid.
+
+        Raises a ValueError if there are empty cells, values outside [-1, 1],
+        or if the matrix is not symmetric.
+        """
+        empty = np.argwhere(np.isnan(values))
+        if empty.size:
+            i, j = empty[0]
+            raise ValueError(
+                f"'{source}' has an empty cell at {covariate} {i} and {j}. "
+                "Every cell must hold a correlation."
+            )
+
+        out_of_range = np.argwhere(np.abs(values) > 1)
+        if out_of_range.size:
+            i, j = out_of_range[0]
+            raise ValueError(
+                f"'{source}' has a correlation of {values[i, j]:g} at {covariate} "
+                f"{i} and {j}. Correlations must be between -1 and 1."
+            )
+
+        if not np.allclose(values, values.T):
+            raise ValueError(
+                f"'{source}' is not symmetric. The correlation at "
+                f"({covariate}_1, {covariate}_2) must equal the one at "
+                f"({covariate}_2, {covariate}_1)."
+            )
 
     @staticmethod
     def _response_var_from_path(path: str) -> str:

@@ -106,6 +106,25 @@ def test_load_rejects_csv_that_is_not_a_matrix(tmp_path: Path) -> None:
         CorrelationMatrix.load(str(tmp_path / "corr"))
 
 
+@pytest.mark.parametrize(
+    ("content", "message"),
+    [
+        (b",0,1\n0,1.0,\n1,,1.0\n", "empty cell at age 0 and 1"),
+        (b",0,1\n0,1.0,1.7\n1,1.7,1.0\n", "correlation of 1.7 at age 0 and 1"),
+        (b",0,1\n0,1.0,0.9\n1,0.1,1.0\n", "not symmetric"),
+    ],
+    ids=["empty_cell", "out_of_range", "not_symmetric"],
+)
+def test_load_rejects_invalid_correlation_matrix(
+    tmp_path: Path, content: bytes, message: str
+) -> None:
+    csv_path = tmp_path / "roi_a.csv"
+    csv_path.write_bytes(content)
+
+    with pytest.raises(ValueError, match=message):
+        CorrelationMatrix.load(str(csv_path))
+
+
 def test_load_rejects_matrices_of_different_sizes(tmp_path: Path) -> None:
     folder = str(tmp_path / "corr")
     CorrelationMatrix(_make_matrix(n_ages=4, response_vars=["roi_a"])).save(folder)
