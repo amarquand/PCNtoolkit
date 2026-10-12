@@ -32,8 +32,8 @@ def test_check_is_longitudinal_visit_rules(
 
 
 def test_get_visits_requires_visits_on_norm_data(longitudinal_dataframe):
-    '''Ensure that NormData without visit labels raises an error when calling 
-    get_visits()'''
+    """Ensure that NormData without visit labels raises an error when calling
+    get_visits()"""
     data = NormData.from_dataframe(
         "longitudinal",
         longitudinal_dataframe,

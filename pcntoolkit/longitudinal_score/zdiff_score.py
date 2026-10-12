@@ -48,7 +48,7 @@ class ZDiffScore(LongitudinalScore):
         self,
         normative_model: NormativeModel,
         reference_data: NormData,
-        subject_id_col: str, # TODO: Are these subject_id_col necessary as a keyword argument? Does the user need to specify that?
+        subject_id_col: str,  # TODO: Are these subject_id_col necessary as a keyword argument? Does the user need to specify that?
     ):
         # Reuse the shared setup from the base class.
         super().__init__(normative_model, reference_data, subject_id_col)
@@ -117,9 +117,7 @@ class ZDiffScore(LongitudinalScore):
         for j, rv in enumerate(response_vars):
             # Learn the typical size of expected change from the reference
             # cohort (reference_data).
-            delta_reference = self._compute_residual_change(
-                self.reference_data, rv
-            )
+            delta_reference = self._compute_residual_change(self.reference_data, rv)
             # Convert the subject-level changes into a numeric vector.
             delta_reference_values = np.fromiter(
                 delta_reference.values(),

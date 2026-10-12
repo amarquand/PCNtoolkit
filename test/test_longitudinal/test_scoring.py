@@ -23,7 +23,9 @@ from test.test_longitudinal.conftest import (
 # ------------------------------------------------------------------ #
 
 
-def test_correlation_matrix_compute_from_longitudinal_cohort(longitudinal_cohort_norm_data):
+def test_correlation_matrix_compute_from_longitudinal_cohort(
+    longitudinal_cohort_norm_data,
+):
     corr = CorrelationMatrix.compute(
         longitudinal_cohort_norm_data,
         bandwidth=1,
@@ -36,9 +38,13 @@ def test_correlation_matrix_compute_from_longitudinal_cohort(longitudinal_cohort
     assert np.allclose(np.diagonal(corr.matrix.values[0]), 1.0)
 
 
-def test_correlation_matrix_compute_rejects_cross_sectional(predicted_norm_data_factory):
+def test_correlation_matrix_compute_rejects_cross_sectional(
+    predicted_norm_data_factory,
+):
     data = make_cross_sectional_norm_data(predicted_norm_data_factory)
-    with pytest.raises(ValueError, match="single-visit|cross-sectional|multiple visits"):
+    with pytest.raises(
+        ValueError, match="single-visit|cross-sectional|multiple visits"
+    ):
         CorrelationMatrix.compute(data, bandwidth=1)
 
 
@@ -78,7 +84,9 @@ def test_correlation_matrix_get_clamps_ages(
     assert correlation_matrix.get("metric_a", age_1, age_2) == pytest.approx(expected_r)
 
 
-def test_correlation_matrix_get_respects_max_correlation(correlation_matrix_array_factory):
+def test_correlation_matrix_get_respects_max_correlation(
+    correlation_matrix_array_factory,
+):
     matrix = correlation_matrix_array_factory(offset_correlations={1: 0.999})
     corr = CorrelationMatrix(matrix, max_correlation=0.5)
     assert corr.get("metric_a", 0, 1) == pytest.approx(0.5)
@@ -150,9 +158,9 @@ def test_zgain_formula_with_nonzero_prior_z(zgain_setup):
     )
     scores = scorer.score(data)
     expected = expected_zgain(z_prev, z_last, r)
-    assert scores.sel(subjects="a", response_vars="response_var_0").item() == pytest.approx(
-        expected
-    )
+    assert scores.sel(
+        subjects="a", response_vars="response_var_0"
+    ).item() == pytest.approx(expected)
 
 
 @pytest.mark.parametrize("r", [0.0, -0.5, 0.95])
@@ -163,9 +171,9 @@ def test_zgain_formula_across_correlation_values(zgain_setup, r):
         r=r,
     )
     scores = scorer.score(data)
-    assert scores.sel(subjects="a", response_vars="response_var_0").item() == pytest.approx(
-        expected_zgain(z_prev, z_last, r)
-    )
+    assert scores.sel(
+        subjects="a", response_vars="response_var_0"
+    ).item() == pytest.approx(expected_zgain(z_prev, z_last, r))
 
 
 def test_zgain_uses_last_two_visits_when_three_present(zgain_setup):
@@ -176,9 +184,9 @@ def test_zgain_uses_last_two_visits_when_three_present(zgain_setup):
         extra_visits=[1, 2, 3],
     )
     scores = scorer.score(data)
-    assert scores.sel(subjects="a", response_vars="response_var_0").item() == pytest.approx(
-        expected_zgain(z2, z3, r)
-    )
+    assert scores.sel(
+        subjects="a", response_vars="response_var_0"
+    ).item() == pytest.approx(expected_zgain(z2, z3, r))
 
 
 def test_zgain_sorts_by_visit_label_not_row_order(
@@ -203,9 +211,9 @@ def test_zgain_sorts_by_visit_label_not_row_order(
     )
     corr = CorrelationMatrix(matrix, covariate="covariate_0", estimated_range=(0, 25))
     scores = ZGainScore(fitted_norm_blr_model, corr).score(data)
-    assert scores.sel(subjects="a", response_vars="response_var_0").item() == pytest.approx(
-        expected_zgain(z_prev, z_last, r)
-    )
+    assert scores.sel(
+        subjects="a", response_vars="response_var_0"
+    ).item() == pytest.approx(expected_zgain(z_prev, z_last, r))
 
 
 def test_zgain_leaves_single_visit_subject_as_nan(
@@ -250,7 +258,9 @@ def test_zgain_caches_and_overwrites_on_rescore(
     data_v2 = set_z_scores(data_v1, np.array([[0.0], [5.0], [0.0], [0.0]]))
     second = scorer.score(data_v2)
     assert scorer.zgain is second
-    assert second.sel(subjects="a").item() != pytest.approx(first.sel(subjects="a").item())
+    assert second.sel(subjects="a").item() != pytest.approx(
+        first.sel(subjects="a").item()
+    )
 
 
 def test_zgain_rejects_unpredicted_data(
@@ -284,7 +294,9 @@ def test_zgain_subject_order_follows_first_appearance(
     blr_longitudinal_dataframe_factory,
     blr_predicted_norm_data_factory,
 ):
-    data = blr_predicted_norm_data_factory(blr_longitudinal_dataframe_factory(n_subjects=3))
+    data = blr_predicted_norm_data_factory(
+        blr_longitudinal_dataframe_factory(n_subjects=3)
+    )
     matrix = correlation_matrix_array_factory(
         response_vars=["response_var_0"],
         covariate="covariate_0",
@@ -320,13 +332,15 @@ def test_zdiff_score_scales_by_reference_spread(
     scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
     scores = scorer.score(score_data)
 
-    ref_deltas = list(scorer._compute_residual_change(reference, "response_var_0").values())
+    ref_deltas = list(
+        scorer._compute_residual_change(reference, "response_var_0").values()
+    )
     denom = np.sqrt(np.mean(np.square(ref_deltas)))
     target_delta = scorer._compute_residual_change(score_data, "response_var_0")["a"]
 
-    assert scores.sel(subjects="a", response_vars="response_var_0").item() == pytest.approx(
-        target_delta / denom
-    )
+    assert scores.sel(
+        subjects="a", response_vars="response_var_0"
+    ).item() == pytest.approx(target_delta / denom)
     assert scorer.zdiff is scores
 
 
@@ -377,7 +391,9 @@ def test_zdiff_zero_reference_variability_raises(
     flat["Yhat"] = (["observations", "response_vars"], flat.Y.values.copy())
 
     scorer = ZDiffScore(fitted_norm_blr_model, flat, subject_id_col="sub_id")
-    target = blr_predicted_norm_data_factory(blr_longitudinal_dataframe_factory(n_subjects=1))
+    target = blr_predicted_norm_data_factory(
+        blr_longitudinal_dataframe_factory(n_subjects=1)
+    )
     with pytest.raises(ValueError, match="zero residual-change variability"):
         scorer.score(target)
 

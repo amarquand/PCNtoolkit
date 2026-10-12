@@ -70,7 +70,9 @@ def test_compute_thrivelines_timepoint_diff_two(correlation_matrix_array_factory
     assert thrive_Z.attrs.get("timepoint_diff") == 2
 
 
-def test_thrivelines_to_dataframe_multiple_response_vars(correlation_matrix_array_factory):
+def test_thrivelines_to_dataframe_multiple_response_vars(
+    correlation_matrix_array_factory,
+):
     matrix = correlation_matrix_array_factory(
         max_age=2,
         response_vars=["metric_a", "metric_b"],
@@ -87,7 +89,9 @@ def test_thrivelines_to_dataframe_multiple_response_vars(correlation_matrix_arra
     assert set(df["response_var"]) == {"metric_a", "metric_b"}
 
 
-def test_zgain_get_thrivelines_overwrites_cache(fitted_norm_blr_model, blr_correlation_matrix):
+def test_zgain_get_thrivelines_overwrites_cache(
+    fitted_norm_blr_model, blr_correlation_matrix
+):
     scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
     first = scorer.get_thrivelines(z_anchors=[0.0], covariate_range=(0, 1))
     second = scorer.get_thrivelines(z_anchors=[1.0, 2.0], covariate_range=(0, 2))
@@ -111,7 +115,9 @@ def test_propagate_thriveline_z_requires_hop_dimension():
 
 
 def test_propagate_thriveline_z_bayer_update():
-    hop = xr.DataArray([0.8], dims=("hop",), coords={"hop": [0]}, attrs={"timepoint_diff": 2})
+    hop = xr.DataArray(
+        [0.8], dims=("hop",), coords={"hop": [0]}, attrs={"timepoint_diff": 2}
+    )
     z_path = propagate_thriveline_z(hop, start_z=1.0, z_thrive=-1.96)
 
     expected_next = 1.0 * 0.8 + math.sqrt(1.0 - 0.8**2) * (-1.96)
@@ -271,7 +277,9 @@ def test_thrivelines_to_dataframe_long_format(correlation_matrix_array_factory):
     assert df.attrs.get("timepoint_diff") == 1
 
 
-def test_zgain_get_thrivelines_returns_dataframe(fitted_norm_blr_model, blr_correlation_matrix):
+def test_zgain_get_thrivelines_returns_dataframe(
+    fitted_norm_blr_model, blr_correlation_matrix
+):
     scorer = ZGainScore(fitted_norm_blr_model, blr_correlation_matrix)
     thrivelines = scorer.get_thrivelines(
         z_anchors=[0.0, 1.0],

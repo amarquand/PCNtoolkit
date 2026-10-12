@@ -12,14 +12,14 @@ implement the abstract methods.
 
 from __future__ import annotations
 
-import importlib.metadata
 from abc import ABC, abstractmethod
 
 import numpy as np
 import xarray as xr
-
-from pcntoolkit.util.output import Messages, Output
 from scipy.stats.distributions import norm
+
+from pcntoolkit.util.migration import ptk_version
+from pcntoolkit.util.output import Messages, Output
 
 
 class RegressionModel(ABC):
@@ -76,7 +76,13 @@ class RegressionModel(ABC):
         self._name = name
 
     @abstractmethod
-    def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
+    def fit(
+        self,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> None:
         """
         Fit the model to the data.
 
@@ -94,7 +100,9 @@ class RegressionModel(ABC):
         pass
 
     @abstractmethod
-    def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
+    def forward(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
         """Compute Z-scores for provided Y values
 
         Parameters
@@ -111,7 +119,9 @@ class RegressionModel(ABC):
         pass
 
     @abstractmethod
-    def backward(self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray) -> xr.DataArray:
+    def backward(
+        self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray
+    ) -> xr.DataArray:
         """Compute points in feature space for given z-scores
 
         Parameters
@@ -127,12 +137,20 @@ class RegressionModel(ABC):
         """
 
     @abstractmethod
-    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
+    def elemwise_logp(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
         """Compute the log-probability of the data under the model."""
         pass
 
     @abstractmethod
-    def transfer(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> RegressionModel:
+    def transfer(
+        self,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> RegressionModel:
         """Transfer the model to a new dataset.
 
         Parameters
@@ -164,7 +182,7 @@ class RegressionModel(ABC):
         my_dict["is_fitted"] = self.is_fitted
         my_dict["is_from_dict"] = self.is_from_dict
         my_dict["transfered"] = self.transfered
-        my_dict["ptk_version"] = importlib.metadata.version("pcntoolkit")
+        my_dict["ptk_version"] = ptk_version()
         return my_dict
 
     def compute_yhat(self, data, responsevar, X, be):

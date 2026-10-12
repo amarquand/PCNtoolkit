@@ -39,7 +39,9 @@ class CorrelationMatrix:
     Or load one that somebody else estimated (the region name is read from the
     ``batch_<n>_<region>`` directory):
 
-    >>> corr = CorrelationMatrix.load(".../batch_1_lh_G_and_S_frontomargin/Velocity/R.pkl")
+    >>> corr = CorrelationMatrix.load(
+    ...     ".../batch_1_lh_G_and_S_frontomargin/Velocity/R.pkl"
+    ... )
 
     Either way, pass it to a score:
 
@@ -144,7 +146,9 @@ class CorrelationMatrix:
 
         # Record the ages actually observed. The matrix coordinates always run
         # from 0, so anything below the youngest subject is extrapolated.
-        observed = np.round(np.asarray(data.X.sel(covariates=covariate).values, dtype=float)).astype(int)
+        observed = np.round(
+            np.asarray(data.X.sel(covariates=covariate).values, dtype=float)
+        ).astype(int)
         estimated_range = (int(observed.min()), int(observed.max()))
 
         return cls(
@@ -247,7 +251,9 @@ class CorrelationMatrix:
             dtype=float,
         )
         if lower.ndim != 2 or lower.shape[0] != lower.shape[1]:
-            raise ValueError(f"'A_sparse_predict' must be a square matrix; got shape {lower.shape}.")
+            raise ValueError(
+                f"'A_sparse_predict' must be a square matrix; got shape {lower.shape}."
+            )
 
         # Stored as the lower triangle with an empty diagonal.
         full = lower + lower.T
@@ -273,7 +279,9 @@ class CorrelationMatrix:
             Always. The storage format has not been decided; matrices are
             currently read with :meth:`load` from files written elsewhere.
         """
-        raise NotImplementedError("Saving correlation matrices is not supported yet. The storage format has not been decided.")
+        raise NotImplementedError(
+            "Saving correlation matrices is not supported yet. The storage format has not been decided."
+        )
 
     def get(self, response_var: str, cov_1: int, cov_2: int) -> float:
         """Read one correlation, clamped to the matrix and clipped for safety.
@@ -296,7 +304,7 @@ class CorrelationMatrix:
         KeyError
             If the matrix holds no correlations for the model's ``response_var``.
         """
-        # check that the response variable from the model is available in the 
+        # check that the response variable from the model is available in the
         # correlation matrix too.
         available = [str(r) for r in self.matrix.coords["response_vars"].values]
         if response_var not in available:
@@ -323,5 +331,7 @@ class CorrelationMatrix:
                     stacklevel=2,
                 )
 
-        value = float(self.matrix.sel(response_vars=response_var).values[clamped[0], clamped[1]])
+        value = float(
+            self.matrix.sel(response_vars=response_var).values[clamped[0], clamped[1]]
+        )
         return float(np.clip(value, -self.max_correlation, self.max_correlation))
