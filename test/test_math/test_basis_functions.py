@@ -368,3 +368,40 @@ def test_composite_basis_preserves_untransformed_columns():
 
     np.testing.assert_allclose(Phi, X)
     
+
+
+@pytest.mark.parametrize(
+    "interactions, match",
+    [
+        ([(0, 5)], "valid part indices are 0 to 1"),
+        ([(-1, 0)], "valid part indices are 0 to 1"),
+        ([0, 5], r"inside a list, e\.g\. interactions=\[\(0, 1\)\]"),
+        ([(0, 1, 1)], "has 3 indices, but only pairwise"),
+        ([(0, 1.0)], r"interaction \(0, 1\.0\) must be an integer"),
+        ([(0, True)], r"interaction \(0, True\) must be an integer"),
+    ],
+)
+def test_composite_basis_invalid_interactions(
+    interactions: list, match: str
+) -> None:
+    """Verify that we raise a clear error to the user for edge cases"""
+    with pytest.raises(ValueError, match=match):
+        CompositeBasisFunction(
+            parts=[
+                LinearBasisFunction(basis_column=0),
+                LinearBasisFunction(basis_column=1),
+            ],
+            interactions=interactions,
+        )
+
+
+def test_composite_basis_interactions_as_lists_roundtrip() -> None:
+    """Saved models store interaction pairs as JSON lists; loading must work."""
+    X = np.random.default_rng(0).uniform(size=(20, 2))
+    composite = CompositeBasisFunction(
+        [LinearBasisFunction(basis_column=0), LinearBasisFunction(basis_column=1)],
+        interactions=[[0, 1]],
+    )
+    loaded = BasisFunction.from_dict(composite.to_dict())
+    loaded.fit(X)
+    assert loaded.transform(X).shape == (20, 3)

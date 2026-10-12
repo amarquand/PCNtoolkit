@@ -311,7 +311,8 @@ class CompositeBasisFunction(BasisFunction):
     ``parts[0] x parts[1]``.
 
     Output columns: first each covariate's basis (in covariate order),
-    then the interaction columns. Example with covariates ``[age, sex]``::
+    then the interaction columns. A covariate with no part is copied
+    unchanged. Example with covariates ``[age, sex, x3]``::
 
         parts=[BsplineBasisFunction(basis_column=0),   # age, 7 columns
                LinearBasisFunction(basis_column=1)]    # sex, 1 column
@@ -319,7 +320,8 @@ class CompositeBasisFunction(BasisFunction):
 
         columns 0-6   age B-spline
         column  7     sex
-        columns 8-14  age B-spline x sex
+        column  8     x3, copied unchanged (no part covers it)
+        columns 9-15  age B-spline x sex
 
     Parameters
     ----------
@@ -333,9 +335,9 @@ class CompositeBasisFunction(BasisFunction):
     Raises
     ------
     ValueError
-        From ``transform``, if called before ``fit``.
-    IndexError
-        From ``transform``, if an interaction index is ``>= len(parts)``.
+        If an interaction is not a pair of integers, or refers to a part
+        index outside ``0`` to ``len(parts) - 1``. Also raised by
+        ``transform`` if called before ``fit``.
 
     Notes
     -----
@@ -344,10 +346,49 @@ class CompositeBasisFunction(BasisFunction):
     removed automatically.
     """
 
-    def __init__(self, parts, interactions=None):
+    def __init__(
+        self,
+        parts: list[BasisFunction],
+        interactions: list[tuple[int, int]] | None = None,
+    ) -> None:
         super().__init__(basis_column=0)
         self.parts = parts
         self.interactions = [] if interactions is None else interactions
+        for pair in self.interactions:
+            # Saved models store pairs as JSON lists, so accept lists too.
+            if not isinstance(pair, (tuple, list)):
+                raise ValueError(
+                    Output.error(
+                        Errors.ERROR_WRONG_TYPE,
+                        name="Each interaction",
+                        expected=(
+                            "two numbers in round brackets inside a list, "
+                            "e.g. interactions=[(0, 1)] or [(0, 1), (0, 2)]"
+                        ),
+                    )
+                )
+            if len(pair) != 2:
+                raise ValueError(
+                    f"Interaction {tuple(pair)} has {len(pair)} indices, but "
+                    "only pairwise interactions (two numbers) such as (0, 1) "
+                    "are supported. "
+                )
+            for k in pair:
+                if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+                    raise ValueError(
+                        Output.error(
+                            Errors.ERROR_WRONG_TYPE,
+                            name=f"Each part number in interaction {tuple(pair)}",
+                            expected="an integer",
+                        )
+                    )
+            for k in pair:
+                # Reject negatives too: Python would read -1 as the last part.
+                if not 0 <= k < len(parts):
+                    raise ValueError(
+                        f"Interaction {tuple(pair)} refers to part {k}, but "
+                        f"valid part indices are 0 to {len(parts) - 1}."
+                    )
 
     def _fit(self, data, i):
         pass
