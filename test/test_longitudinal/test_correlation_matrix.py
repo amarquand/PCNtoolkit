@@ -7,32 +7,50 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-import xarray as xr
 
 from pcntoolkit import CorrelationMatrix
 from test.test_longitudinal.conftest import make_cross_sectional_norm_data
 
+# A valid CSV with full-precision values, as another user would share it.
+VALID_CSV = (
+    b",0,1,2\n"
+    b"0,1.0,0.9764900020268343,0.0\n"
+    b"1,0.9764900020268343,1.0,0.9457637571045612\n"
+    b"2,0.0,0.9457637571045612,1.0\n"
+)
 
-def _make_matrix(
-    n_ages: int = 8,
-    response_vars: list[str] | None = None,
-    covariate: str = "age",
-) -> xr.DataArray:
-    """Build a correlation matrix that decays away from the diagonal."""
-    response_vars = response_vars or ["roi_a"]
-    gap = np.abs(np.arange(n_ages)[:, None] - np.arange(n_ages)[None, :])
-    single = np.exp(-gap / 3.0)
-    np.fill_diagonal(single, 1.0)
-
-    return xr.DataArray(
-        np.stack([single] * len(response_vars)),
-        dims=("response_vars", f"{covariate}_1", f"{covariate}_2"),
-        coords={
-            "response_vars": response_vars,
-            f"{covariate}_1": np.arange(n_ages),
-            f"{covariate}_2": np.arange(n_ages),
-        },
-    )
+# CSVs that load() must reject, each with the error message it should give.
+# Formatting is off to keep one CSV row per line, so each matrix reads as a grid.
+# fmt: off
+INVALID_CSVS = {
+    # Ages must run 0, 1, ..., N-1, because get() reads cells by position.
+    "ages_not_from_0": (
+        b",5,6,7\n"
+        b"5,1.0,0.5,0.0\n"
+        b"6,0.5,1.0,0.5\n"
+        b"7,0.0,0.5,1.0\n",
+        "header row and first column",
+    ),
+    "empty_cell": (
+        b",0,1\n"
+        b"0,1.0,\n"
+        b"1,,1.0\n",
+        "empty cell at age 0 and 1",
+    ),
+    "out_of_range": (
+        b",0,1\n"
+        b"0,1.0,1.7\n"
+        b"1,1.7,1.0\n",
+        "correlation of 1.7 at age 0 and 1",
+    ),
+    "not_symmetric": (
+        b",0,1\n"
+        b"0,1.0,0.9\n"
+        b"1,0.1,1.0\n",
+        "not symmetric",
+    ),
+}
+# fmt: on
 
 
 # ------------------------------------------------------------------ #
@@ -40,11 +58,15 @@ def _make_matrix(
 # ------------------------------------------------------------------ #
 
 
-def test_round_trip_preserves_matrix(tmp_path: Path) -> None:
+def test_round_trip_preserves_matrix(
+    tmp_path: Path, correlation_matrix_array_factory
+) -> None:
     """A loaded matrix must hold the same correlations, regions and dims."""
     # A non-default covariate, so both save and load must use it, not "age".
     corr = CorrelationMatrix(
-        _make_matrix(response_vars=["roi_a", "roi_b"], covariate="timepoint"),
+        correlation_matrix_array_factory(
+            response_vars=["roi_a", "roi_b"], covariate="timepoint"
+        ),
         covariate="timepoint",
     )
     corr.save(str(tmp_path / "corr"))
@@ -56,8 +78,12 @@ def test_round_trip_preserves_matrix(tmp_path: Path) -> None:
     assert loaded.matrix.dims == ("response_vars", "timepoint_1", "timepoint_2")
 
 
-def test_load_single_file_loads_one_response_var(tmp_path: Path) -> None:
-    corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
+def test_load_single_file_loads_one_response_var(
+    tmp_path: Path, correlation_matrix_array_factory
+) -> None:
+    corr = CorrelationMatrix(
+        correlation_matrix_array_factory(response_vars=["roi_a", "roi_b"])
+    )
     corr.save(str(tmp_path / "corr"))
     loaded = CorrelationMatrix.load(str(tmp_path / "corr" / "roi_b.csv"))
 
@@ -71,12 +97,7 @@ def test_save_reproduces_shared_csv_byte_for_byte(tmp_path: Path) -> None:
     """A matrix shared as CSV must survive a load and save unchanged, down to
     the last digit and line ending."""
     original = tmp_path / "roi_a.csv"
-    original.write_bytes(
-        b",0,1,2\n"
-        b"0,1.0,0.9764900020268343,0.0\n"
-        b"1,0.9764900020268343,1.0,0.9457637571045612\n"
-        b"2,0.0,0.9457637571045612,1.0\n"
-    )
+    original.write_bytes(VALID_CSV)
 
     CorrelationMatrix.load(str(original)).save(str(tmp_path / "saved"))
 
@@ -95,25 +116,10 @@ def test_load_missing_path_raises(tmp_path: Path) -> None:
         CorrelationMatrix.load(str(tmp_path / "missing"))
 
 
-def test_load_rejects_csv_that_is_not_a_matrix(tmp_path: Path) -> None:
-    """Ages must run 0, 1, ..., N-1, because get() reads cells by position."""
-    (tmp_path / "corr").mkdir()
-    (tmp_path / "corr" / "roi_a.csv").write_bytes(
-        b",5,6,7\n5,1.0,0.5,0.0\n6,0.5,1.0,0.5\n7,0.0,0.5,1.0\n"
-    )
-
-    with pytest.raises(ValueError, match="roi_a.csv"):
-        CorrelationMatrix.load(str(tmp_path / "corr"))
-
-
 @pytest.mark.parametrize(
     ("content", "message"),
-    [
-        (b",0,1\n0,1.0,\n1,,1.0\n", "empty cell at age 0 and 1"),
-        (b",0,1\n0,1.0,1.7\n1,1.7,1.0\n", "correlation of 1.7 at age 0 and 1"),
-        (b",0,1\n0,1.0,0.9\n1,0.1,1.0\n", "not symmetric"),
-    ],
-    ids=["empty_cell", "out_of_range", "not_symmetric"],
+    INVALID_CSVS.values(),
+    ids=INVALID_CSVS.keys(),
 )
 def test_load_rejects_invalid_correlation_matrix(
     tmp_path: Path, content: bytes, message: str
@@ -125,10 +131,15 @@ def test_load_rejects_invalid_correlation_matrix(
         CorrelationMatrix.load(str(csv_path))
 
 
-def test_load_rejects_matrices_of_different_sizes(tmp_path: Path) -> None:
+def test_load_rejects_matrices_of_different_sizes(
+    tmp_path: Path, correlation_matrix_array_factory
+) -> None:
     folder = str(tmp_path / "corr")
-    CorrelationMatrix(_make_matrix(n_ages=4, response_vars=["roi_a"])).save(folder)
-    CorrelationMatrix(_make_matrix(n_ages=5, response_vars=["roi_b"])).save(folder)
+    for max_age, response_var in [(3, "roi_a"), (4, "roi_b")]:
+        matrix = correlation_matrix_array_factory(
+            max_age=max_age, response_vars=[response_var]
+        )
+        CorrelationMatrix(matrix).save(folder)
 
     with pytest.raises(ValueError, match="same covariate values"):
         CorrelationMatrix.load(folder)
