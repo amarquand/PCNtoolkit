@@ -42,8 +42,8 @@ def compute_correlation_matrix(
         Longitudinal data containing covariates (X), predicted z-scores (Z),
         batch effects and subject ids.
     bandwidth : int
-        The age-offset range within which correlations are computed; larger
-        offsets are interpolated by :func:`fill_missing`.
+        Widest age gap, in years, to estimate correlations for.
+        Correlations for wider gaps are set to 0.
     covariate_name : str, default "age"
         Covariate used to index the correlation matrix.
 
