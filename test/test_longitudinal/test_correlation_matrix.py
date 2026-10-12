@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import json
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -40,35 +40,6 @@ def _make_matrix(
 # ------------------------------------------------------------------ #
 
 
-def test_save_writes_one_csv_per_response_var(tmp_path):
-    corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
-    corr.save(str(tmp_path / "corr"))
-
-    written = sorted(p.name for p in (tmp_path / "corr").iterdir())
-    assert written == ["correlation_matrix.json", "roi_a.csv", "roi_b.csv"]
-
-
-def test_save_records_metadata(tmp_path):
-    corr = CorrelationMatrix(
-        _make_matrix(),
-        bandwidth=3,
-        max_correlation=0.95,
-        n_subjects=67,
-        estimated_range=(2, 5),
-    )
-    corr.save(str(tmp_path / "corr"))
-
-    with open(tmp_path / "corr" / "correlation_matrix.json", encoding="utf-8") as f:
-        metadata = json.load(f)
-
-    assert metadata["covariate"] == "age"
-    assert metadata["response_vars"] == ["roi_a"]
-    assert metadata["bandwidth"] == 3
-    assert metadata["max_correlation"] == 0.95
-    assert metadata["n_subjects"] == 67
-    assert metadata["estimated_range"] == [2, 5]
-
-
 def test_round_trip_preserves_values_exactly(tmp_path):
     """A loaded matrix must score identically to the one that was saved."""
     corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
@@ -79,81 +50,72 @@ def test_round_trip_preserves_values_exactly(tmp_path):
     assert corr.get("roi_a", 5, 3) == loaded.get("roi_a", 5, 3)
 
 
-def test_round_trip_preserves_metadata(tmp_path):
-    corr = CorrelationMatrix(
-        _make_matrix(),
-        bandwidth=3,
-        max_correlation=0.95,
-        n_subjects=67,
-        estimated_range=(2, 5),
-    )
+def test_round_trip_preserves_non_age_covariate(tmp_path: Path) -> None:
+    corr = CorrelationMatrix(_make_matrix(covariate="timepoint"), covariate="timepoint")
     corr.save(str(tmp_path / "corr"))
-    loaded = CorrelationMatrix.load(str(tmp_path / "corr"))
-
-    assert loaded.bandwidth == 3
-    assert loaded.max_correlation == 0.95
-    assert loaded.n_subjects == 67
-    assert loaded.estimated_range == (2, 5)
-
-
-def test_round_trip_preserves_missing_metadata(tmp_path):
-    """Matrices without cohort provenance must not gain any on a round-trip."""
-    corr = CorrelationMatrix(_make_matrix(), bandwidth=3)
-    corr.save(str(tmp_path / "corr"))
-    loaded = CorrelationMatrix.load(str(tmp_path / "corr"))
-
-    assert loaded.n_subjects is None
-    assert loaded.estimated_range is None
-
-
-def test_round_trip_preserves_non_age_covariate(tmp_path):
-    corr = CorrelationMatrix(
-        _make_matrix(covariate="timepoint"), covariate="timepoint"
-    )
-    corr.save(str(tmp_path / "corr"))
-    loaded = CorrelationMatrix.load(str(tmp_path / "corr"))
+    loaded = CorrelationMatrix.load(str(tmp_path / "corr"), covariate="timepoint")
 
     assert loaded.covariate == "timepoint"
     assert loaded.matrix.dims == ("response_vars", "timepoint_1", "timepoint_2")
-    assert np.array_equal(corr.matrix.values, loaded.matrix.values)
 
 
-def test_save_then_load_is_stable(tmp_path):
-    """Saving a loaded matrix again must not drift."""
-    corr = CorrelationMatrix(_make_matrix())
-    corr.save(str(tmp_path / "one"))
-    once = CorrelationMatrix.load(str(tmp_path / "one"))
-    once.save(str(tmp_path / "two"))
-    twice = CorrelationMatrix.load(str(tmp_path / "two"))
+def test_load_single_file_loads_one_response_var(tmp_path: Path) -> None:
+    corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
+    corr.save(str(tmp_path / "corr"))
+    loaded = CorrelationMatrix.load(str(tmp_path / "corr" / "roi_b.csv"))
 
-    assert np.array_equal(once.matrix.values, twice.matrix.values)
+    assert list(loaded.matrix.coords["response_vars"].values) == ["roi_b"]
+    assert np.array_equal(
+        loaded.matrix.values[0], corr.matrix.sel(response_vars="roi_b").values
+    )
 
 
-def test_load_without_metadata_raises(tmp_path):
+def test_save_reproduces_shared_csv_byte_for_byte(tmp_path: Path) -> None:
+    """A matrix shared as CSV must survive a load and save unchanged, down to
+    the last digit and line ending."""
+    original = tmp_path / "roi_a.csv"
+    original.write_bytes(
+        b",0,1,2\n"
+        b"0,1.0,0.9764900020268343,0.0\n"
+        b"1,0.9764900020268343,1.0,0.9457637571045612\n"
+        b"2,0.0,0.9457637571045612,1.0\n"
+    )
+
+    CorrelationMatrix.load(str(original)).save(str(tmp_path / "saved"))
+
+    assert (tmp_path / "saved" / "roi_a.csv").read_bytes() == original.read_bytes()
+
+
+def test_load_empty_folder_raises(tmp_path: Path) -> None:
     (tmp_path / "empty").mkdir()
 
-    with pytest.raises(FileNotFoundError, match="not a saved correlation matrix"):
+    with pytest.raises(FileNotFoundError, match="no .csv files"):
         CorrelationMatrix.load(str(tmp_path / "empty"))
 
 
-def test_load_with_missing_csv_raises(tmp_path):
-    corr = CorrelationMatrix(_make_matrix(response_vars=["roi_a", "roi_b"]))
-    corr.save(str(tmp_path / "corr"))
-    (tmp_path / "corr" / "roi_b.csv").unlink()
+def test_load_missing_path_raises(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        CorrelationMatrix.load(str(tmp_path / "missing"))
 
-    with pytest.raises(FileNotFoundError, match="roi_b"):
+
+def test_load_rejects_csv_that_is_not_a_matrix(tmp_path: Path) -> None:
+    """Ages must run 0, 1, ..., N-1, because get() reads cells by position."""
+    (tmp_path / "corr").mkdir()
+    (tmp_path / "corr" / "roi_a.csv").write_bytes(
+        b",5,6,7\n5,1.0,0.5,0.0\n6,0.5,1.0,0.5\n7,0.0,0.5,1.0\n"
+    )
+
+    with pytest.raises(ValueError, match="roi_a.csv"):
         CorrelationMatrix.load(str(tmp_path / "corr"))
 
 
-def test_saved_csv_is_readable_without_pcntoolkit(tmp_path):
-    """The point of CSV is that the correlations open in any tool."""
-    corr = CorrelationMatrix(_make_matrix(n_ages=4))
-    corr.save(str(tmp_path / "corr"))
+def test_load_rejects_matrices_of_different_sizes(tmp_path: Path) -> None:
+    folder = str(tmp_path / "corr")
+    CorrelationMatrix(_make_matrix(n_ages=4, response_vars=["roi_a"])).save(folder)
+    CorrelationMatrix(_make_matrix(n_ages=5, response_vars=["roi_b"])).save(folder)
 
-    lines = (tmp_path / "corr" / "roi_a.csv").read_text().splitlines()
-    assert lines[0] == "age,0,1,2,3"
-    # Diagonal first, then decaying off-diagonal entries.
-    assert lines[1].split(",")[1] == "1.0"
+    with pytest.raises(ValueError, match="same covariate values"):
+        CorrelationMatrix.load(folder)
 
 
 # ------------------------------------------------------------------ #
