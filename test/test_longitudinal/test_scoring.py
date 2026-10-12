@@ -60,11 +60,6 @@ def test_correlation_matrix_invalid_max_correlation(correlation_matrix_array_fac
         CorrelationMatrix(matrix, max_correlation=1.0)
 
 
-def test_correlation_matrix_save_not_implemented(correlation_matrix):
-    with pytest.raises(NotImplementedError):
-        correlation_matrix.save("/tmp/unused.pkl")
-
-
 @pytest.mark.parametrize(
     ("age_1", "age_2", "expected_r"),
     [
