@@ -1,4 +1,3 @@
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -20,7 +19,9 @@ class TestNormativeModel:
         self.save_dir.mkdir()
 
         # Create template regression model
-        self.template_model = BLR.from_args("template", {"alg": "blr", "save_dir": str(self.save_dir)})
+        self.template_model = BLR.from_args(
+            "template", {"alg": "blr", "save_dir": str(self.save_dir)}
+        )
 
         # Create normative model
         self.model = NormativeModel(
@@ -96,13 +97,37 @@ class TestNormativeModel:
 
         # Load model
         loaded_model = NormativeModel.load(str(self.save_dir))
-        assert loaded_model.template_regression_model.__class__ == self.model.template_regression_model.__class__
+        assert (
+            loaded_model.template_regression_model.__class__
+            == self.model.template_regression_model.__class__
+        )
         assert loaded_model.is_fitted == self.model.is_fitted
 
         # Compare predictions
         original_preds = self.model.predict(data)
         loaded_preds = loaded_model.predict(data)
         np.testing.assert_array_almost_equal(original_preds.Z, loaded_preds.Z)
+
+    def test_model_load_after_move(self):
+        """A moved model writes its results in the new folder, not the old one."""
+        data = NormData.from_ndarrays(
+            name="test_data",
+            X=self.data["covariates"],
+            Y=self.data["responses"],
+            batch_effects=self.data["batch_effects"],
+            subject_ids=self.data["subject_ids"],
+        )
+        self.model.fit(data)
+        assert not list((self.save_dir / "model").glob("*.tmp"))
+
+        moved_dir = self.output_dir / "moved"
+        self.save_dir.rename(moved_dir)
+        loaded_model = NormativeModel.load(str(moved_dir))
+        assert loaded_model.save_dir == str(moved_dir)
+
+        loaded_model.predict(data)
+        assert (moved_dir / "results").exists()
+        assert not self.save_dir.exists()
 
     def test_model_with_batch_effects(self):
         """Test model with batch effect correction."""

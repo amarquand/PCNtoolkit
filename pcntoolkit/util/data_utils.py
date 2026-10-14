@@ -2,13 +2,15 @@
 
 This module is the shared home for programming operations (e.g., from NumPy,
 pandas, xarray, itertools packages). The goal is to keep the main codebase
-focused on Bayesian statistics while moving reusable programming operations 
+focused on Bayesian statistics while moving reusable programming operations
 to a shared utility module.
 """
 
 from __future__ import annotations
+
 from itertools import product
 from typing import Generator
+
 import numpy as np
 
 
@@ -75,6 +77,6 @@ def iter_batch_combinations(
         # eg {'site': 'site1', 'sex': 'M'}
         combination = dict(zip(batch_dims, combo_values))
 
-        # Yield: return one combination at a time (memory-efficient) 
+        # Yield: return one combination at a time (memory-efficient)
         # instead of returning all of them in a list.
         yield combination, mask

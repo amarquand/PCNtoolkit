@@ -53,8 +53,18 @@ class BasisFunction(ABC):
         # Apply any registered BasisFunction migrations for this version.
         my_dict = registry.migrate("BasisFunction", my_dict, version=version)
         basis_function_type = my_dict["basis_function"]
-        basis_function = create_basis_function(basis_function_type, **my_dict)
-        return basis_function
+        # The parts have no ptk_version of their own, so pass the model's
+        # version down; otherwise they are migrated as if saved with v0.0.0.
+        if basis_function_type in ["Composite", "CompositeBasis"]:
+            parts = [
+                cls.from_dict(p, version=version)
+                for p in my_dict["parts"]
+            ]
+            return CompositeBasisFunction(
+                parts,
+                interactions=my_dict.get("interactions"),
+            )
+        return create_basis_function(basis_function_type, **my_dict)
 
     @classmethod
     def from_args(cls, name: str, args: dict) -> BasisFunction:
@@ -168,6 +178,8 @@ class BsplineBasisFunction(BasisFunction):
     contained in the span of the B-spline basis, including this term may
     introduce linear dependence and is primarily provided for backward
     compatibility with models fitted using earlier PCNtoolkit versions.
+    See `issue #542 <https://github.com/predictive-clinical-neuroscience/PCNtoolkit/issues/542>`_
+
 
     Parameters
     ----------
@@ -191,6 +203,11 @@ class BsplineBasisFunction(BasisFunction):
         If True, prepend the original covariate to the B-spline design matrix.
         This reproduces the behavior of earlier PCNtoolkit versions and may
         introduce a redundant column.
+
+    Raises
+    ------
+    ValueError
+        If ``knot_method`` is not ``"uniform"`` or ``"quantile"``.
     """
 
     def __init__(
@@ -206,6 +223,11 @@ class BsplineBasisFunction(BasisFunction):
         **kwargs,
     ):
         super().__init__(basis_column, **kwargs)
+        if knot_method not in ("uniform", "quantile"):
+            raise ValueError(
+                f"Unknown knot_method '{knot_method}'. "
+                "Supported methods are 'uniform' and 'quantile'."
+            )
         self.degree = degree
         self.nknots = nknots
         self.left_expand = left_expand
@@ -228,11 +250,6 @@ class BsplineBasisFunction(BasisFunction):
             knots = np.linspace(aug_min, aug_max, self.nknots)
         elif self.knot_method == "quantile":
             knots = np.percentile(data, np.linspace(0, 100, self.nknots))
-        else:
-            raise ValueError(
-                f"Unknown knot_method '{self.knot_method}'. "
-                "Supported methods are 'uniform' and 'quantile'."
-            )
         knots = np.concatenate(
             [[aug_min] * self.degree, knots, [aug_max] * self.degree]
         )
@@ -287,17 +304,40 @@ class LinearBasisFunction(BasisFunction):
 
 
 class CompositeBasisFunction(BasisFunction):
-
     """Combine basis functions and optionally construct pairwise interactions.
+
+    An interaction lets the effect of one covariate depend on another,
+    e.g. a different age curve for each sex. ``(0, 1)`` means
+    ``parts[0] x parts[1]``.
+
+    Output columns: first each covariate's basis (in covariate order),
+    then the interaction columns. A covariate with no part is copied
+    unchanged. Example with covariates ``[age, sex, x3]``::
+
+        parts=[BsplineBasisFunction(basis_column=0),   # age, 7 columns
+               LinearBasisFunction(basis_column=1)]    # sex, 1 column
+        interactions=[(0, 1)]
+
+        columns 0-6   age B-spline
+        column  7     sex
+        column  8     x3, copied unchanged (no part covers it)
+        columns 9-15  age B-spline x sex
 
     Parameters
     ----------
     parts : list of BasisFunction
-        Component basis functions.
+        Each element is a basis function that operates on a specific covariate column.
     interactions : list of tuple[int, int], optional
-        Pairs of indices into ``parts``. For each pair ``(i, j)``, all
-        pairwise products between the transformed columns of ``parts[i]``
-        and ``parts[j]`` are appended to the output.
+        Pairs of indices into ``parts`` (not covariate columns). For each
+        pair ``(i, j)``, the products of all columns of ``parts[i]`` and
+        ``parts[j]`` are appended to the output. Default: no interactions.
+
+    Raises
+    ------
+    ValueError
+        If an interaction is not a pair of integers, or refers to a part
+        index outside ``0`` to ``len(parts) - 1``. Also raised by
+        ``transform`` if called before ``fit``.
 
     Notes
     -----
@@ -306,10 +346,49 @@ class CompositeBasisFunction(BasisFunction):
     removed automatically.
     """
 
-    def __init__(self, parts, interactions=None):
+    def __init__(
+        self,
+        parts: list[BasisFunction],
+        interactions: list[tuple[int, int]] | None = None,
+    ) -> None:
         super().__init__(basis_column=0)
         self.parts = parts
         self.interactions = [] if interactions is None else interactions
+        for pair in self.interactions:
+            # Saved models store pairs as JSON lists, so accept lists too.
+            if not isinstance(pair, (tuple, list)):
+                raise ValueError(
+                    Output.error(
+                        Errors.ERROR_WRONG_TYPE,
+                        name="Each interaction",
+                        expected=(
+                            "two numbers in round brackets inside a list, "
+                            "e.g. interactions=[(0, 1)] or [(0, 1), (0, 2)]"
+                        ),
+                    )
+                )
+            if len(pair) != 2:
+                raise ValueError(
+                    f"Interaction {tuple(pair)} has {len(pair)} indices, but "
+                    "only pairwise interactions (two numbers) such as (0, 1) "
+                    "are supported. "
+                )
+            for k in pair:
+                if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+                    raise ValueError(
+                        Output.error(
+                            Errors.ERROR_WRONG_TYPE,
+                            name=f"Each part number in interaction {tuple(pair)}",
+                            expected="an integer",
+                        )
+                    )
+            for k in pair:
+                # Reject negatives too: Python would read -1 as the last part.
+                if not 0 <= k < len(parts):
+                    raise ValueError(
+                        f"Interaction {tuple(pair)} refers to part {k}, but "
+                        f"valid part indices are 0 to {len(parts) - 1}."
+                    )
 
     def _fit(self, data, i):
         pass

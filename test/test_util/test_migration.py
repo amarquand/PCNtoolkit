@@ -13,10 +13,10 @@ from pcntoolkit.util.migration import (
     check_forward_compatibility,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers: Create test migrations
 # ---------------------------------------------------------------------------
+
 
 def _make_registry_with_two_migrations() -> MigrationRegistry:
     """Return a fresh registry with two sequential migrations."""
@@ -42,6 +42,7 @@ def _make_registry_with_two_migrations() -> MigrationRegistry:
 # ---------------------------------------------------------------------------
 # MigrationRegistry.migrate tests
 # ---------------------------------------------------------------------------
+
 
 def test_001_migrate_should_applyMigration_when_savedVersionIsOlder():
     """
@@ -134,6 +135,7 @@ def test_005_migrate_should_notApplyMigration_when_UnknownComponent():
 # check_forward_compatibility tests
 # ---------------------------------------------------------------------------
 
+
 def test_006_checkForwardCompat_should_emitWarning_when_savedVersionIsNewer():
     """
     Arrange: saved version 2.0.0, current version 1.0.0.
@@ -144,11 +146,9 @@ def test_006_checkForwardCompat_should_emitWarning_when_savedVersionIsNewer():
     saved_model = "2.0.0"
     current_pcntoolkit = "1.0.0"
 
-    # Act & Assert — the warning line inside check_forward_compatibility 
+    # Act & Assert — the warning line inside check_forward_compatibility
     # was hit exactly once.
-    with patch(
-        "pcntoolkit.util.migration.Output.warning"
-    ) as mock_warning:
+    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
         check_forward_compatibility(saved_model, current_pcntoolkit)
         assert mock_warning.call_count == 1
 
@@ -163,11 +163,9 @@ def test_007_checkForwardCompat_should_notEmitWarning_when_versionsSame():
     saved_model = "1.2.0"
     current_pcntoolkit = "1.2.0"
 
-    # Act & Assert — the warning line inside check_forward_compatibility 
+    # Act & Assert — the warning line inside check_forward_compatibility
     # was NOT hit.
-    with patch(
-        "pcntoolkit.util.migration.Output.warning"
-    ) as mock_warning:
+    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
         check_forward_compatibility(saved_model, current_pcntoolkit)
         assert mock_warning.call_count == 0
 
@@ -182,10 +180,8 @@ def test_008_checkForwardCompat_should_notEmitWarning_when_savedVersionIsOlder()
     saved_model = "1.0.0"
     current_pcntoolkit = "1.2.0"
 
-    # Act & Assert — the warning line inside check_forward_compatibility 
+    # Act & Assert — the warning line inside check_forward_compatibility
     # was NOT hit.
-    with patch(
-        "pcntoolkit.util.migration.Output.warning"
-    ) as mock_warning:
+    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
         check_forward_compatibility(saved_model, current_pcntoolkit)
         assert mock_warning.call_count == 0

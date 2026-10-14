@@ -12,8 +12,8 @@ import xarray as xr
 from pcntoolkit.math_functions.velocity import (
     _resolve_reference_batch_effects,
     compute_thrivelines,
+    propagate_thriveline_z,
     thrivelines_to_dataframe,
-    propagate_thriveline_z
 )
 
 
@@ -51,7 +51,9 @@ def test_propagate_thriveline_z_requires_hop_dimension():
 
 
 def test_propagate_thriveline_z_bayer_update():
-    hop = xr.DataArray([0.8], dims=("hop",), coords={"hop": [0]}, attrs={"timepoint_diff": 2})
+    hop = xr.DataArray(
+        [0.8], dims=("hop",), coords={"hop": [0]}, attrs={"timepoint_diff": 2}
+    )
     z_path = propagate_thriveline_z(hop, start_z=1.0, z_thrive=-1.96)
 
     expected_next = 1.0 * 0.8 + math.sqrt(1.0 - 0.8**2) * (-1.96)

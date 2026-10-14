@@ -1,13 +1,16 @@
+import importlib.metadata
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
 from pcntoolkit.math_functions.basis_function import (
-    create_basis_function,
+    BasisFunction,
+    BsplineBasisFunction,
     CompositeBasisFunction,
     LinearBasisFunction,
-    BsplineBasisFunction,
+    create_basis_function,
 )
-
 from test.fixtures.norm_data_fixtures import *
 
 
@@ -87,6 +90,21 @@ def test_bspline_with_linear_term(norm_data_from_arrays, nknots, degree):
     )
 
 
+def test_composite_from_dict_passes_version_to_parts() -> None:
+    """Loading a saved composite basis must not migrate its parts as if they
+    were saved with v0.0.0 (the parts have no ptk_version of their own)."""
+    rng = np.random.default_rng(0)
+    X = rng.uniform(0, 1, size=(50, 2))
+    composite = CompositeBasisFunction(
+        [BsplineBasisFunction(basis_column=0), LinearBasisFunction(basis_column=1)]
+    )
+    composite.fit(X)
+
+    current_version = importlib.metadata.version("pcntoolkit")
+    with patch("pcntoolkit.util.migration.Output.warning") as mock_warning:
+        BasisFunction.from_dict(composite.to_dict(), version=current_version)
+
+    assert mock_warning.call_count == 0
 def test_composite_basis_interaction_linear():
     X = np.array(
         [
@@ -350,3 +368,40 @@ def test_composite_basis_preserves_untransformed_columns():
 
     np.testing.assert_allclose(Phi, X)
     
+
+
+@pytest.mark.parametrize(
+    "interactions, match",
+    [
+        ([(0, 5)], "valid part indices are 0 to 1"),
+        ([(-1, 0)], "valid part indices are 0 to 1"),
+        ([0, 5], r"inside a list, e\.g\. interactions=\[\(0, 1\)\]"),
+        ([(0, 1, 1)], "has 3 indices, but only pairwise"),
+        ([(0, 1.0)], r"interaction \(0, 1\.0\) must be an integer"),
+        ([(0, True)], r"interaction \(0, True\) must be an integer"),
+    ],
+)
+def test_composite_basis_invalid_interactions(
+    interactions: list, match: str
+) -> None:
+    """Verify that we raise a clear error to the user for edge cases"""
+    with pytest.raises(ValueError, match=match):
+        CompositeBasisFunction(
+            parts=[
+                LinearBasisFunction(basis_column=0),
+                LinearBasisFunction(basis_column=1),
+            ],
+            interactions=interactions,
+        )
+
+
+def test_composite_basis_interactions_as_lists_roundtrip() -> None:
+    """Saved models store interaction pairs as JSON lists; loading must work."""
+    X = np.random.default_rng(0).uniform(size=(20, 2))
+    composite = CompositeBasisFunction(
+        [LinearBasisFunction(basis_column=0), LinearBasisFunction(basis_column=1)],
+        interactions=[[0, 1]],
+    )
+    loaded = BasisFunction.from_dict(composite.to_dict())
+    loaded.fit(X)
+    assert loaded.transform(X).shape == (20, 3)

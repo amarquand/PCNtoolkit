@@ -21,7 +21,10 @@ import xarray as xr
 from scipy import linalg, optimize  # type: ignore
 from scipy.linalg import LinAlgError  # type: ignore
 
-from pcntoolkit.math_functions.basis_function import BasisFunction, create_basis_function
+from pcntoolkit.math_functions.basis_function import (
+    BasisFunction,
+    create_basis_function,
+)
 from pcntoolkit.math_functions.warp import *
 from pcntoolkit.regression_model.regression_model import RegressionModel
 from pcntoolkit.util.data_utils import iter_batch_combinations
@@ -77,7 +80,11 @@ class BLR(RegressionModel):
         fixed_effect_slope: bool, optional
             Whether to model a fixed effect in the slope of the mean, by default False
         fixed_effect_slope_indices : list[int] | "all", optional
-            If fixed_effect_slope is True, the indices of the columns in the design matrix for which to model a fixed effect in the slope ofthe mean. By default  this is [0], so a fixed effect is learned on the first column of the design matrix. Set to "all" to model a fixed effect on all columns of the design matrix.
+            If fixed_effect_slope is True, the indices of the covariates (before the
+            basis expansion) for which to model a fixed effect in the slope of the mean.
+            By default (None) this is the covariate that `basis_function_mean` expands
+            (its `basis_column`, e.g. age). Set to "all" to model a fixed effect on the
+            slopes of all covariates.
         heteroskedastic : bool, optional
             Whether to use heteroskedastic noise modeling, by default False
         fixed_effect_var : bool, optional
@@ -85,7 +92,11 @@ class BLR(RegressionModel):
         fixed_effect_var_slope : bool, optional
             Whether to model a fixed effect in the slope of the variance, by default False
         fixed_effect_var_slope_indices : list[int] | "all", optional
-            If fixed_effect_slope is True, the indices of the columns in the design matrix for which to model a fixed effect in the slope of the variance. By default  this is [0], so a fixed effect is learned on the first column of the design matrix. Set to "all" to model a fixed effect on all columns of the design matrix.
+            If fixed_effect_var_slope is True, the indices of the covariates (before
+            the basis expansion) for which to model a fixed effect in the slope of the
+            variance. By default (None) this is the covariate that `basis_function_var`
+            expands (its `basis_column`, e.g. age). Set to "all" to model a fixed effect
+            on the slopes of all covariates.
         warp_name : str, optional
             Name of the warp function to use, by default None. Can be one of "WarpSinhArcsinh", "WarpLog", "WarpBoxCox", "WarpAffine", "WarpCompose"
         warp_reparam : bool, optional
@@ -136,10 +147,14 @@ class BLR(RegressionModel):
         self.warp_reparam = warp_reparam
         self.gamma: np.ndarray = None  # type: ignore
         self.basis_function_mean = (
-            copy.deepcopy(basis_function_mean) if basis_function_mean else create_basis_function(basis_function_mean)
+            copy.deepcopy(basis_function_mean)
+            if basis_function_mean
+            else create_basis_function(basis_function_mean)
         )
         self.basis_function_var = (
-            copy.deepcopy(basis_function_var) if basis_function_var else create_basis_function(basis_function_var)
+            copy.deepcopy(basis_function_var)
+            if basis_function_var
+            else create_basis_function(basis_function_var)
         )
         self.models_variance = self.heteroskedastic or self.fixed_effect_var
         self.hyp0 = hyp0
@@ -155,7 +170,13 @@ class BLR(RegressionModel):
             self.warp_params = None
             self.warp = None
 
-    def fit(self, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray) -> None:
+    def fit(
+        self,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+    ) -> None:
         """
         Fit the Bayesian Linear Regression model to the data.
 
@@ -218,8 +239,7 @@ class BLR(RegressionModel):
                 # If at least one hyperparameter is non-finite, output an error
                 # and recommend to the user the more robust l-bfgs-b optimizer
                 if not np.all(np.isfinite(np.exp(out[0]))):
-                    raise OverflowError(Output.error(
-                        Errors.ERROR_BLR_POWELL))
+                    raise OverflowError(Output.error(Errors.ERROR_BLR_POWELL))
             case "nelder-mead":
                 out = optimize.fmin(func=self.loglik, x0=hyp0, args=args, full_output=1)
             case "l-bfgs-b":
@@ -239,7 +259,11 @@ class BLR(RegressionModel):
                         callback=store,
                     )
                 except np.linalg.LinAlgError as e:
-                    Output.print(Messages.BLR_RESTARTING_ESTIMATION_AT_HYP, hyp=all_hyp_i[-1], e=e)
+                    Output.print(
+                        Messages.BLR_RESTARTING_ESTIMATION_AT_HYP,
+                        hyp=all_hyp_i[-1],
+                        e=e,
+                    )
                     out = optimize.fmin_l_bfgs_b(
                         func=self.penalized_loglik,
                         x0=all_hyp_i[-1],
@@ -248,7 +272,14 @@ class BLR(RegressionModel):
                         epsilon=self.l_bfgs_b_epsilon,
                     )
             case _:
-                raise ValueError(Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.optimizer))
+                raise ValueError(
+                    Output.error(Errors.ERROR_UNKNOWN_CLASS, class_name=self.optimizer)
+                )
+        # The optimizer's last evaluation might be a trial point next to the final
+        # hyp. Each evaluation overwrites the posterior, so it can belong to that trial
+        # point, not to the final correct hyp. Here we recompute it at the final hyp.
+        # Bug fix for https://github.com/predictive-clinical-neuroscience/PCNtoolkit/issues/550
+        self.loglik(out[0], *args)
         self.hyp = out[0]
         self.nlZ = out[1]
         _, self.beta, self.gamma = self.parse_hyps(self.hyp, Phi, Phi_var)
@@ -275,8 +306,7 @@ class BLR(RegressionModel):
         """
         # Preserve the DataArray dimension order used by the caller.
         # eg ['site', 'sex']
-        batch_dims = [str(batch_dim) for batch_dim in
-                      be.batch_effect_dims.values]
+        batch_dims = [str(batch_dim) for batch_dim in be.batch_effect_dims.values]
 
         # Build the integer batch-effect levels expected by the shared
         # helper.
@@ -288,9 +318,7 @@ class BLR(RegressionModel):
         for batch_dim in batch_dims:
             # Collect the encoded ids for this batch-effect dimension.
             # eg {'site': [0, 1], 'sex': [0, 1, 2]}
-            unique_batch_effects[batch_dim] = list(
-                be_maps[batch_dim].values()
-            )
+            unique_batch_effects[batch_dim] = list(be_maps[batch_dim].values())
 
         yield from iter_batch_combinations(
             be.values,
@@ -298,7 +326,9 @@ class BLR(RegressionModel):
             batch_dims,
         )
 
-    def forward(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
+    def forward(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
         """Map Y values to Z space using BLR.
 
         Parameters
@@ -320,7 +350,10 @@ class BLR(RegressionModel):
         np_X = X.values
         if self.transfered:
             # Create synthetic batch effect data
-            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+            np_be = np.tile(
+                np.array([list(v.values())[0] for v in self.be_maps.values()]),
+                (X.shape[0], 1),
+            )
         else:
             np_be = be.values
         np_Y = Y.values
@@ -332,7 +365,9 @@ class BLR(RegressionModel):
             # Each dictionary contains a unique combination of batch effects:
             # [{"sex":"F", "site":"A"}, {"sex":"F", "site":"B"}, {"sex":"M", "site":"A"}, {"sex":"M", "site":"B"}]
             for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
-                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+                residual_mean, correction_factor = self.correction_coefficients[
+                    str(tuple(t.values()))
+                ]
 
                 self.ys[mask] = self.ys[mask] + residual_mean
                 self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
@@ -345,7 +380,9 @@ class BLR(RegressionModel):
 
         return xr.DataArray(toreturn, dims=("observations",))
 
-    def backward(self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray) -> xr.DataArray:
+    def backward(
+        self, X: xr.DataArray, be: xr.DataArray, Z: xr.DataArray
+    ) -> xr.DataArray:
         """
         Map Z values to Y space using BLR.
 
@@ -368,14 +405,19 @@ class BLR(RegressionModel):
         np_X = X.values
         if self.transfered:
             # Create synthetic batch effect data
-            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+            np_be = np.tile(
+                np.array([list(v.values())[0] for v in self.be_maps.values()]),
+                (X.shape[0], 1),
+            )
         else:
             np_be = be.values
         np_Z = Z.values
         self.ys_s2(np_X, np_be)
         if self.transfered:
             for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
-                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+                residual_mean, correction_factor = self.correction_coefficients[
+                    str(tuple(t.values()))
+                ]
 
                 self.ys[mask] = self.ys[mask] + residual_mean
                 self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
@@ -387,7 +429,9 @@ class BLR(RegressionModel):
 
         return xr.DataArray(centiles, dims=("observations",))
 
-    def elemwise_logp(self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray) -> xr.DataArray:
+    def elemwise_logp(
+        self, X: xr.DataArray, be: xr.DataArray, Y: xr.DataArray
+    ) -> xr.DataArray:
         """
 
         Compute log-probabilities for each observation in the data.
@@ -413,7 +457,10 @@ class BLR(RegressionModel):
         np_X = X.values
         if self.transfered:
             # Create synthetic batch effect data
-            np_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+            np_be = np.tile(
+                np.array([list(v.values())[0] for v in self.be_maps.values()]),
+                (X.shape[0], 1),
+            )
         else:
             np_be = be.values
         np_Y = Y.values
@@ -421,7 +468,9 @@ class BLR(RegressionModel):
 
         if self.transfered:
             for t, mask in self.be_idx_gen(be, self.transfered_be_maps):
-                residual_mean, correction_factor = self.correction_coefficients[str(tuple(t.values()))]
+                residual_mean, correction_factor = self.correction_coefficients[
+                    str(tuple(t.values()))
+                ]
                 self.ys[mask] = self.ys[mask] + residual_mean
                 self.s2[mask] = np.square(np.sqrt(self.s2[mask]) * correction_factor)
 
@@ -448,12 +497,22 @@ class BLR(RegressionModel):
         pass
 
     def transfer(
-        self: BLR, X: xr.DataArray, be: xr.DataArray, be_maps: dict[str, dict[str, int]], Y: xr.DataArray, **kwargs
+        self: BLR,
+        X: xr.DataArray,
+        be: xr.DataArray,
+        be_maps: dict[str, dict[str, int]],
+        Y: xr.DataArray,
+        **kwargs,
     ) -> BLR:
         # Create synthetic batch effect data
-        synth_be = np.tile(np.array([list(v.values())[0] for v in self.be_maps.values()]), (X.shape[0], 1))
+        synth_be = np.tile(
+            np.array([list(v.values())[0] for v in self.be_maps.values()]),
+            (X.shape[0], 1),
+        )
         synth_be = xr.DataArray(
-            synth_be, dims=("observations", "batch_effect_dims"), coords=(X.observations, list(self.be_maps.keys()))
+            synth_be,
+            dims=("observations", "batch_effect_dims"),
+            coords=(X.observations, list(self.be_maps.keys())),
         )
 
         # Get predictive mean and variance
@@ -485,7 +544,10 @@ class BLR(RegressionModel):
             correction_factor = real_avg_std / pred_avg_std
 
             # We have to save these correction coefficients:
-            transfered_model.correction_coefficients[str(tuple(t.values()))] = (residual_mean, correction_factor)
+            transfered_model.correction_coefficients[str(tuple(t.values()))] = (
+                residual_mean,
+                correction_factor,
+            )
 
         transfered_model.transfered = True
         return transfered_model
@@ -610,7 +672,8 @@ class BLR(RegressionModel):
             self.D = X.shape[1]
 
         # Check if hyperparameters have changed
-        if (hyp == self.hyp).all() and hasattr(self, "N"):
+        # Saved models do not store Sigma_a, so recompute when it is missing.
+        if (hyp == self.hyp).all() and hasattr(self, "Sigma_a"):
             Output.print(Messages.BLR_HYPERPARAMETERS_HAVE_NOT_CHANGED)
             return
         else:
@@ -624,7 +687,9 @@ class BLR(RegressionModel):
             self.Sigma_a = np.diag(np.ones(self.D)) / alpha
             self.Lambda_a = np.diag(np.ones(self.D)) * alpha
         else:
-            raise ValueError(Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH))
+            raise ValueError(
+                Output.error(Errors.BLR_HYPERPARAMETER_VECTOR_INVALID_LENGTH)
+            )
 
         # Compute the posterior precision matrix A
         XtLambda_n = X.T * self.lambda_n_vec
@@ -669,11 +734,14 @@ class BLR(RegressionModel):
         something_big: float = float(np.finfo(np.float64).max)
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not hasattr(self, "A"):
+        if (hyp != self.hyp).any() or not hasattr(self, "Sigma_a"):
             try:
                 self.post(hyp, X, y, var_X)
             except ValueError as error:
-                Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
+                Output.warning(
+                    Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED,
+                    error=error,
+                )
                 nlZ = something_big
                 return nlZ
 
@@ -681,7 +749,9 @@ class BLR(RegressionModel):
             # compute the log determinants in a numerically stable way
             logdetA = 2 * np.sum(np.log(np.diag(np.linalg.cholesky(self.A))))
         except (ValueError, LinAlgError) as error:
-            Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
+            Output.warning(
+                Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error
+            )
             nlZ = something_big
             return nlZ
 
@@ -747,13 +817,21 @@ class BLR(RegressionModel):
             If norm is not "L1" or "L2"
         """
         if norm.upper() == "L1":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(np.abs(hyp))
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sum(
+                np.abs(hyp)
+            )
         elif norm.upper() == "L2":
-            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(np.sum(np.square(hyp)))
+            return self.loglik(hyp, X, y, var_X) + regularizer_strength * np.sqrt(
+                np.sum(np.square(hyp))
+            )
         else:
-            raise ValueError(Output.error(Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED, penalty=norm))
+            raise ValueError(
+                Output.error(Errors.ERROR_BLR_PENALTY_NOT_RECOGNIZED, penalty=norm)
+            )
 
-    def dloglik(self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray) -> np.ndarray:
+    def dloglik(
+        self, hyp: np.ndarray, X: np.ndarray, y: np.ndarray, var_X: np.ndarray
+    ) -> np.ndarray:
         """Function to compute derivatives"""
 
         # hyperparameters
@@ -762,9 +840,7 @@ class BLR(RegressionModel):
         if self.warp:
             # Analytical gradients (dloglik) are not implemented for warped
             # models
-            raise ValueError(
-                Output.error(Errors.ERROR_BLR_CG_NOT_SUPPORTED_WITH_WARP)
-            )
+            raise ValueError(Output.error(Errors.ERROR_BLR_CG_NOT_SUPPORTED_WITH_WARP))
 
         if self.models_variance:
             raise NotImplementedError(
@@ -773,11 +849,14 @@ class BLR(RegressionModel):
             )
 
         # load posterior and prior covariance
-        if (hyp != self.hyp).any() or not hasattr(self, "A"):
+        if (hyp != self.hyp).any() or not hasattr(self, "Sigma_a"):
             try:
                 self.post(hyp, X, y, var_X)
             except ValueError as error:
-                Output.warning(Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED, error=error)
+                Output.warning(
+                    Warnings.BLR_ESTIMATION_OF_POSTERIOR_DISTRIBUTION_FAILED,
+                    error=error,
+                )
                 if self.dnlZ is not None:
                     dnlZ = np.sign(self.dnlZ) / np.finfo(float).eps
                     return dnlZ
@@ -867,7 +946,9 @@ class BLR(RegressionModel):
         self.dnlZ = dnlZ
         return dnlZ
 
-    def Phi_Phi_var(self, X: np.ndarray, be: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def Phi_Phi_var(
+        self, X: np.ndarray, be: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         if not self.basis_function_mean.is_fitted:
             self.basis_function_mean.fit(X)
         Phi = create_design_matrix(
@@ -878,7 +959,12 @@ class BLR(RegressionModel):
             intercept=True,
             fixed_effect=self.fixed_effect,
             fixed_effect_slope=self.fixed_effect_slope,
-            fixed_effect_slope_indices=self.fixed_effect_slope_indices,
+            fixed_effect_slope_indices=(
+                self.fixed_effect_slope_indices
+                if self.fixed_effect_slope_indices is not None
+                else default_slope_indices(self.basis_function_mean)
+            ),
+            fixed_effect_slope_X=X,
         )
 
         if self.models_variance:
@@ -892,7 +978,12 @@ class BLR(RegressionModel):
                 intercept=True,
                 fixed_effect=self.fixed_effect_var,
                 fixed_effect_slope=self.fixed_effect_var_slope,
-                fixed_effect_slope_indices=self.fixed_effect_var_slope_indices,
+                fixed_effect_slope_indices=(
+                    self.fixed_effect_var_slope_indices
+                    if self.fixed_effect_var_slope_indices is not None
+                    else default_slope_indices(self.basis_function_var)
+                ),
+                fixed_effect_slope_X=X,
             )
         else:
             Phi_var = np.zeros((Phi.shape[0], 1))
@@ -911,11 +1002,18 @@ class BLR(RegressionModel):
     def to_dict(self, path: str | None = None) -> dict:
         my_dict = self.regmodel_dict
         for key, value in self.__dict__.items():
-            # Save the ptk_version currently 
+            # Save the ptk_version currently
             # used by the user
             if key not in [
-                "warp", "lambda_n_vec", "beta",
-                "ys", "s2", "ptk_version",
+                "warp",
+                "lambda_n_vec",
+                "beta",
+                "ys",
+                "s2",
+                "ptk_version",
+                # Diagonal D x D matrices that post() recomputes from hyp.
+                "Sigma_a",
+                "Lambda_a",
             ]:
                 if isinstance(value, np.ndarray):
                     my_dict[key] = value.tolist()
@@ -966,11 +1064,15 @@ class BLR(RegressionModel):
         ard = args.get("ard", _default_instance.ard)
         optimizer = args.get("optimizer", _default_instance.optimizer)
         l_bfgs_b_l = args.get("l_bfgs_b_l", _default_instance.l_bfgs_b_l)
-        l_bfgs_b_epsilon = args.get("l_bfgs_b_epsilon", _default_instance.l_bfgs_b_epsilon)
+        l_bfgs_b_epsilon = args.get(
+            "l_bfgs_b_epsilon", _default_instance.l_bfgs_b_epsilon
+        )
         l_bfgs_b_norm = args.get("l_bfgs_b_norm", _default_instance.l_bfgs_b_norm)
         fixed_effect = args.get("fixed_effect", _default_instance.fixed_effect)
         heteroskedastic = args.get("heteroskedastic", _default_instance.heteroskedastic)
-        fixed_effect_var = args.get("fixed_effect_var", _default_instance.fixed_effect_var)
+        fixed_effect_var = args.get(
+            "fixed_effect_var", _default_instance.fixed_effect_var
+        )
         warp = args.get("warp", _default_instance.warp)
         warp_reparam = args.get("warp_reparam", _default_instance.warp_reparam)
         try:
@@ -1019,7 +1121,9 @@ class BLR(RegressionModel):
         elif warp.lower().startswith("warpcompose"):
             # Expect a comma separated list of warp names: e.g. warpcompose(warpboxcox,warpaffine,warpsinharcsinh)
             warps = []
-            for warp_name in warp.lower().split("warpcompose")[1].strip("[]").split(","):
+            for warp_name in (
+                warp.lower().split("warpcompose")[1].strip("[]").split(",")
+            ):
                 warps.append(self.get_warp(warp_name.strip()))
             return WarpCompose(warps)
         else:
@@ -1028,6 +1132,29 @@ class BLR(RegressionModel):
     @property
     def has_batch_effect(self) -> bool:
         return self.fixed_effect or self.fixed_effect_var
+
+
+def default_slope_indices(basis_function: BasisFunction) -> list[int]:
+    """Default covariate index for the batch effect slopes.
+
+    The slope goes on the covariate that the basis function expands (its
+    `basis_column`), e.g. age. Falls back to [0] when the basis function has no
+    single integer column (e.g. `CompositeBasisFunction`, or `None` from the CLI).
+
+    Parameters
+    ----------
+    basis_function : BasisFunction
+        The mean or variance basis function of the model.
+
+    Returns
+    -------
+    list[int]
+        A one-element list with the covariate index.
+    """
+    column = getattr(basis_function, "basis_column", None)
+    if isinstance(column, (int, np.integer)) and not isinstance(column, bool):
+        return [int(column)]
+    return [0]
 
 
 def create_design_matrix(
@@ -1039,21 +1166,36 @@ def create_design_matrix(
     fixed_effect: bool = False,
     fixed_effect_slope: bool = False,
     fixed_effect_slope_indices: list[int] | Literal["all"] = None,
+    fixed_effect_slope_X: np.ndarray | None = None,
 ) -> np.ndarray:
     """Create design matrix for the model.
 
     Parameters
     ----------
-    data : NormData
-        Input data containing features and batch effects.
+    X : np.ndarray
+        Covariates after the basis expansion, shape (n_observations, n_basis_columns).
+    be : np.ndarray
+        Integer-coded batch effects, shape (n_observations, n_batch_effect_dims).
+    be_maps : dict[str, dict[str, int]]
+        Mapping from each batch effect dimension to its level codes.
     linear : bool, default=False
         Include linear terms in the design matrix.
     intercept : bool, default=False
         Include intercept term in the design matrix.
     fixed_effect : bool, default=False
         Include fixed effect intercept for batch effects.
-    fixef_effect_slope: bool, default=False
+    fixed_effect_slope : bool, default=False
         Include fixed effect slope for batch effects.
+    fixed_effect_slope_indices : list[int] | "all", default=None
+        Indices of the covariates in `fixed_effect_slope_X` that get a slope per
+        batch effect.
+        None means [0]; "all" means every covariate. `BLR` replaces None with
+        `default_slope_indices(basis_function)` before calling this function.
+    fixed_effect_slope_X : np.ndarray | None, default=None
+        Covariates before the basis expansion, shape (n_observations, n_covariates).
+        The batch effect slopes are built from these columns, so that index 0 is
+        the first covariate (e.g. age) whatever the basis function. If None, `X`
+        is used.
 
     Returns
     -------
@@ -1079,17 +1221,24 @@ def create_design_matrix(
                 np.eye(len(v))[be[:, i]],
             )
 
-    # Create the slope fixed effect
+    # Create the slope fixed effect on the raw covariates, not the basis columns:
+    # with a B-spline basis, column 0 of X is a spline bump, not the covariate itself.
+    if fixed_effect_slope_X is None:
+        fixed_effect_slope_X = X
     if fixed_effect_slope_indices is None:
         fixed_effect_slope_indices = [0]
-    if fixed_effect_slope_indices == "all":
-        fixed_effect_slope_indices = range(X.shape[1])
+    # isinstance, because indices loaded from a saved model are a numpy array
+    if isinstance(fixed_effect_slope_indices, str) and (
+        fixed_effect_slope_indices == "all"
+    ):
+        fixed_effect_slope_indices = range(fixed_effect_slope_X.shape[1])
 
     if fixed_effect_slope:
         for j in fixed_effect_slope_indices:
             for i, v in enumerate(be_maps.values()):
                 acc.append(
-                    X[:, j][:, np.newaxis] * np.eye(len(v))[be[:, i]],
+                    fixed_effect_slope_X[:, j][:, np.newaxis]
+                    * np.eye(len(v))[be[:, i]],
                 )
 
     if len(acc) == 0:
