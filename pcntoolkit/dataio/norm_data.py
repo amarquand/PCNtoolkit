@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import warnings
 from collections import defaultdict
 from functools import reduce
 
@@ -34,17 +35,20 @@ from typing import (
 import numpy as np
 import pandas as pd  # type: ignore
 import xarray as xr
+from filelock import FileLock
 from numpy.typing import ArrayLike
-from scipy import stats
+from pandas.core.groupby.generic import SeriesGroupBy
 from sklearn.model_selection import StratifiedKFold, train_test_split  # type: ignore
 
 # import datavars from xarray
 from xarray.core.types import DataVars
 
-from filelock import FileLock
-
 from pcntoolkit.dataio.fileio import load
 from pcntoolkit.util.output import Messages, Output, Warnings
+
+# Quartiles defining the interquartile range used by Tukey's fences.
+Q1_QUANTILE = 0.25
+Q3_QUANTILE = 0.75
 
 
 class NormData(xr.Dataset):
@@ -84,7 +88,9 @@ class NormData(xr.Dataset):
 
     Examples
     --------
-    >>> data = NormData.from_dataframe("my_data", df, covariates, batch_effects, response_vars)
+    >>> data = NormData.from_dataframe(
+    ...     "my_data", df, covariates, batch_effects, response_vars
+    ... )
     >>> train_data, test_data = data.train_test_split([0.8, 0.2])
     """
 
@@ -126,7 +132,15 @@ class NormData(xr.Dataset):
         attrs["real_ids"] = attrs.get("real_ids", False)
         self.register_batch_effects()
         be_str = (
-            "\t" + ("".join([f"\t{be} ({len(self.unique_batch_effects[be])})\n" for be in self.unique_batch_effects])).strip()
+            "\t"
+            + (
+                "".join(
+                    [
+                        f"\t{be} ({len(self.unique_batch_effects[be])})\n"
+                        for be in self.unique_batch_effects
+                    ]
+                )
+            ).strip()
         )
         Output.print(
             Messages.DATASET_CREATED,
@@ -152,6 +166,9 @@ class NormData(xr.Dataset):
         remove_outliers: bool = False,
         z_threshold: float = 3.0,
         remove_Nan: bool = False,
+        remove_outliers_approach: str = "z-score",
+        remove_outliers_group_by: List[str] | None = None,
+        iqr_factor: float = 1.5,
     ) -> NormData:
         """Create a NormData object from numpy arrays via DataFrame conversion.
 
@@ -170,7 +187,9 @@ class NormData(xr.Dataset):
             if array is not None:
                 if array.ndim == 1:
                     array = array[:, None]
-                names = attrs.get(key, [f"{default_prefix}_{i}" for i in range(array.shape[1])])
+                names = attrs.get(
+                    key, [f"{default_prefix}_{i}" for i in range(array.shape[1])]
+                )
                 for i, dataname in enumerate(names):
                     df_data[dataname] = array[:, i]
 
@@ -183,22 +202,44 @@ class NormData(xr.Dataset):
         return cls.from_dataframe(
             name=name,
             dataframe=pd.DataFrame(df_data),
-            covariates=attrs.get("covariates", [f"covariate_{i}" for i in range(X.shape[1])] if X is not None else None),
+            covariates=attrs.get(
+                "covariates",
+                [f"covariate_{i}" for i in range(X.shape[1])]
+                if X is not None
+                else None,
+            ),
             batch_effects=attrs.get(
                 "batch_effect_dims",
-                [f"batch_effect_{i}" for i in range(batch_effects.shape[1])] if batch_effects is not None else None,
+                [f"batch_effect_{i}" for i in range(batch_effects.shape[1])]
+                if batch_effects is not None
+                else None,
             ),
-            response_vars=attrs.get("response_vars", [f"response_var_{i}" for i in range(Y.shape[1])] if Y is not None else None),
+            response_vars=attrs.get(
+                "response_vars",
+                [f"response_var_{i}" for i in range(Y.shape[1])]
+                if Y is not None
+                else None,
+            ),
             subject_ids="subject_ids" if subject_ids is not None else None,
             visits="visits" if visits is not None else None,
             attrs=attrs,
             remove_outliers=remove_outliers,
             z_threshold=z_threshold,
             remove_Nan=remove_Nan,
+            remove_outliers_approach=remove_outliers_approach,
+            remove_outliers_group_by=remove_outliers_group_by,
+            iqr_factor=iqr_factor,
         )
 
     @classmethod
-    def from_paths(cls, name: str, covariates_path: str, responses_path: str, batch_effects_path: str, **kwargs) -> "NormData":  # type: ignore
+    def from_paths(
+        cls,
+        name: str,
+        covariates_path: str,
+        responses_path: str,
+        batch_effects_path: str,
+        **kwargs,
+    ) -> "NormData":  # type: ignore
         """
         Load a normative dataset from a dictionary of paths.
         """
@@ -293,9 +334,14 @@ class NormData(xr.Dataset):
             if attr in xr_dset.attrs:
                 xr_dset.attrs[attr] = json.loads(xr_dset.attrs[attr])
 
-        if "batch_effect_counts" in xr_dset.attrs and xr_dset.attrs["batch_effect_counts"]:
+        if (
+            "batch_effect_counts" in xr_dset.attrs
+            and xr_dset.attrs["batch_effect_counts"]
+        ):
             # Convert the batch_effect_counts to a defaultdict
-            xr_dset.attrs["batch_effect_counts"] = defaultdict(lambda: 0, xr_dset.attrs["batch_effect_counts"])
+            xr_dset.attrs["batch_effect_counts"] = defaultdict(
+                lambda: 0, xr_dset.attrs["batch_effect_counts"]
+            )
         return cls.from_xarray(name=name, xarray_dataset=xr_dset)
 
     # pylint: disable=arguments-differ
@@ -313,6 +359,9 @@ class NormData(xr.Dataset):
         remove_outliers: bool = False,
         z_threshold: float = 3.0,
         attrs: Mapping[str, Any] | None = None,
+        remove_outliers_approach: str = "z-score",
+        remove_outliers_group_by: List[str] | None = None,
+        iqr_factor: float = 1.5,
     ) -> NormData:
         """
         Load a normative dataset from a pandas DataFrame.
@@ -340,6 +389,29 @@ class NormData(xr.Dataset):
             Additional attributes for the dataset, by default None.
         remove_Nan: bool
             Whether or not to remove NAN values from the dataframe before creating of the class object. By default False
+        remove_outliers : bool, optional
+            Whether to remove outliers from the covariates and response
+            variables. By default False.
+        z_threshold : float, optional
+            The number of standard deviations from the group mean beyond which a
+            value is an outlier. Used only when ``remove_outliers_approach`` is
+            "z-score". By default 3.0.
+        remove_outliers_approach : str, optional
+            The rule used to flag outliers when ``remove_outliers`` is True,
+            either "z-score" or "iqr" (Tukey's fences). By default "z-score".
+            Note that z-scores assume roughly Gaussian data; for skewed or
+            heavy-tailed data prefer "iqr".
+        remove_outliers_group_by : List[str] | None, optional
+            The columns defining the groups within which the outlier thresholds
+            are computed, e.g. ["site"] finds outliers separately for each site rather than across
+            all sites at once. Several columns can be combined into a
+            single grouping. If None, the thresholds are computed across all rows
+            and a warning is raised, since site differences are then ignored.
+            By default None.
+        iqr_factor : float, optional
+            The multiplier k of Tukey's fences, Q1 - k*IQR and Q3 + k*IQR. Used
+            only when ``remove_outliers_approach`` is "iqr". By default 1.5, the
+            conventional fence.
 
         Returns
         -------
@@ -348,6 +420,7 @@ class NormData(xr.Dataset):
         """
 
         all_colums = []
+        continuous_vars: List[str] = []
         if covariates:
             all_colums += covariates
         if response_vars:
@@ -359,6 +432,28 @@ class NormData(xr.Dataset):
             all_colums += [subject_ids]
         if visits:
             all_colums += [visits]
+
+        # Check that the grouping columns for outlier removal select by the user
+        # actually exist in the data.
+        if remove_outliers and remove_outliers_group_by:
+            missing = [
+                c for c in remove_outliers_group_by if c not in dataframe.columns
+            ]
+            if missing:
+                raise ValueError(
+                    f"Your selected remove_outliers_group_by columns: {missing}, are not found in the dataframe. "
+                    f"Available columns: {list(dataframe.columns)}."
+                )
+            undeclared = [c for c in remove_outliers_group_by if c not in all_colums]
+            if undeclared:
+                raise ValueError(
+                    f"Your selected remove_outliers_group_by columns {undeclared} are present in the data "
+                    f"but were not declared as covariates, response_vars, batch_effects, "
+                    f"subject_ids or visits when creating the NormData. Declare them as batch effects."
+                )
+
+        # Drop all columns that are not in all_colums (e.g., columns not declared as
+        # covariates, response_vars, batch_effects, subject_ids, or visits).
         dataframe = dataframe[all_colums]
         if remove_Nan:
             dataframe = cls.remove_nan(dataframe)
@@ -366,7 +461,14 @@ class NormData(xr.Dataset):
             if np.sum(dataframe.isna().sum()) > 0:
                 Output.warning(Warnings.REMOVE_NAN_SET_TO_FALSE)
         if remove_outliers:
-            dataframe = cls.remove_outliers(dataframe, continuous_vars, z_threshold=z_threshold)
+            dataframe = cls.remove_outliers(
+                dataframe,
+                continuous_vars,
+                z_threshold=z_threshold,
+                approach=remove_outliers_approach,
+                group_by=remove_outliers_group_by,
+                iqr_factor=iqr_factor,
+            )
 
         data_vars = {}
         coords = {}
@@ -374,10 +476,16 @@ class NormData(xr.Dataset):
 
         if subject_ids is not None:
             attrs["real_ids"] = True  # type: ignore
-            data_vars["subject_ids"] = (["observations"], dataframe[subject_ids].to_numpy())
+            data_vars["subject_ids"] = (
+                ["observations"],
+                dataframe[subject_ids].to_numpy(),
+            )
         else:
             attrs["real_ids"] = False  # type: ignore
-            data_vars["subject_ids"] = (["observations"], list(np.arange(len(dataframe))))
+            data_vars["subject_ids"] = (
+                ["observations"],
+                list(np.arange(len(dataframe))),
+            )
 
         if visits is not None:
             attrs["visit_col"] = visits  # type: ignore
@@ -389,19 +497,31 @@ class NormData(xr.Dataset):
             for respvar in response_vars:
                 if respvar not in dataframe.columns:
                     dataframe[respvar] = np.nan
-            data_vars["Y"] = (["observations", "response_vars"], dataframe[response_vars].to_numpy())
+            data_vars["Y"] = (
+                ["observations", "response_vars"],
+                dataframe[response_vars].to_numpy(),
+            )
             coords["response_vars"] = response_vars
 
         if covariates is not None and len(covariates) > 0:
-            data_vars["X"] = (["observations", "covariates"], dataframe[covariates].to_numpy())
+            data_vars["X"] = (
+                ["observations", "covariates"],
+                dataframe[covariates].to_numpy(),
+            )
             coords["covariates"] = covariates
 
         if batch_effects is not None and len(batch_effects) > 0:
-            data_vars["batch_effects"] = (["observations", "batch_effect_dims"], dataframe[batch_effects].to_numpy())
+            data_vars["batch_effects"] = (
+                ["observations", "batch_effect_dims"],
+                dataframe[batch_effects].to_numpy(),
+            )
             coords["batch_effect_dims"] = batch_effects
         else:
             # Initialize batch effects as zeros
-            data_vars["batch_effects"] = (["observations", "batch_effect_dims"], np.zeros((len(dataframe), 1)))
+            data_vars["batch_effects"] = (
+                ["observations", "batch_effect_dims"],
+                np.zeros((len(dataframe), 1)),
+            )
             coords["batch_effect_dims"] = ["dummy_batch_effect"]
 
         return cls(
@@ -441,21 +561,142 @@ class NormData(xr.Dataset):
         return cleaned
 
     @classmethod
-    def remove_outliers(cls, dataframe: pd.DataFrame, continuous_vars: List[str], z_threshold: float = 3.0) -> pd.DataFrame:
+    def remove_outliers(
+        cls,
+        dataframe: pd.DataFrame,
+        continuous_vars: List[str],
+        z_threshold: float = 3.0,
+        approach: str = "z-score",
+        group_by: List[str] | None = None,
+        iqr_factor: float = 1.5,
+    ) -> pd.DataFrame:
         """
         Remove outliers from the dataframe.
+
+        Parameters
+        ----------
+        dataframe : pd.DataFrame
+            The dataframe to filter.
+        continuous_vars : List[str]
+            The columns to screen for outliers.
+        z_threshold : float, optional
+            The number of standard deviations from the group mean beyond which a
+            value is an outlier. Used only when ``approach`` is "z-score". By default 3.0.
+        approach : str, optional
+            Either "z-score" or "iqr" (Tukey's fences). By default "z-score".
+        group_by : List[str] | None, optional
+            Columns defining the groups within which the thresholds are computed,
+            e.g. ["site"]. If None, they are computed across all rows and a
+            warning is raised. By default None.
+        iqr_factor : float, optional
+            The multiplier k of Tukey's fences, Q1 - k*IQR and Q3 + k*IQR. Used
+            only when ``approach`` is "iqr". By default 1.5.
+
+        Returns
+        -------
+        pd.DataFrame
+            The dataframe with the outlying rows removed.
+
+        Raises
+        ------
+        ValueError
+            If ``approach`` is not a string, or is neither "z-score" nor "iqr".
         """
-        if z_threshold == 0.0:
+        if not isinstance(approach, str):
+            raise ValueError(
+                f"approach must be a string, got {type(approach).__name__}. Use 'z-score' or 'iqr'."
+            )
+        # Accept "IQR" and "Z-Score" as well as their lowercase spellings.
+        approach = approach.lower()
+        if approach not in ("z-score", "iqr"):
+            raise ValueError(
+                f"Unknown outlier removal approach '{approach}'. Use 'z-score' or 'iqr'."
+            )
+
+        # If z = 0 then no outliers are removed.
+        if approach == "z-score" and z_threshold == 0.0:
             return dataframe
-        idx = np.full(len(dataframe), True)
+
+        if not group_by:
+            warnings.warn(
+                "No grouping was set for outlier removal, so thresholds are computed "
+                "across all rows and site differences are ignored. Consider "
+                "remove_outliers_group_by=['site'] (if available) or your site column.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        # Group on the columns themselves rather than a joined string key, so that
+        # e.g. ("x_y", "z") and ("x", "y_z") stay distinct groups.
+        if group_by:
+            grouping: Any = [dataframe[col] for col in group_by]
+        else:
+            grouping = pd.Series("all", index=dataframe.index)
+
+        keep = pd.Series(True, index=dataframe.index)
         for covar in continuous_vars:
-            zscores = stats.zscore(dataframe[covar])
-            outliers = np.abs(zscores) > z_threshold
-            if sum(outliers) > 0:
-                Output.print(f"Removed {sum(outliers)} outliers for {covar}")
-            idx = idx & (~outliers)
-        Output.print(f"Removed {np.sum(~idx)} outliers")
-        return dataframe.loc[idx]
+            grouped = dataframe[covar].groupby(grouping)
+            if approach == "z-score":
+                outliers = cls.zscore_outliers(grouped, z_threshold)
+            else:
+                outliers = cls.iqr_outliers(grouped, iqr_factor)
+            outliers = outliers.fillna(False)
+            if outliers.sum() > 0:
+                Output.print(f"Removed {outliers.sum()} outliers for {covar}")
+            keep &= ~outliers
+
+        Output.print(f"Removed {(~keep).sum()} outliers")
+        return dataframe.loc[keep]
+
+    @staticmethod
+    def zscore_outliers(grouped: SeriesGroupBy, z_threshold: float) -> pd.Series:
+        """
+        Flag values more than z_threshold standard deviations from the group mean.
+        Suitable for Gaussian-distributed data.
+
+        Parameters
+        ----------
+        grouped : SeriesGroupBy
+            The batch effects to group
+        z_threshold : float
+            The number of standard deviations beyond which a value is an outlier.
+
+        Returns
+        -------
+        pd.Series
+            Boolean mask, True where the value is an outlier.
+            NaN where the group's standard deviation is zero.
+        """
+        mean = grouped.transform("mean")
+        # Replace zero standard deviations with NaN to avoid division by zero.
+        std = grouped.transform("std", ddof=0).replace(0.0, np.nan)
+        return ((grouped.obj - mean) / std).abs() > z_threshold
+
+    @staticmethod
+    def iqr_outliers(grouped: SeriesGroupBy, iqr_factor: float) -> pd.Series:
+        """
+        Flag values outside the group's Tukey fences, Q1 - k*IQR and Q3 + k*IQR.
+        Suitable for non-Gaussian distributed data.
+
+        Parameters
+        ----------
+        grouped : SeriesGroupBy
+            The batch effects to group
+        iqr_factor : float
+            The multiplier k of the fences. 1.5 is conventional.
+
+        Returns
+        -------
+        pd.Series
+            Boolean mask, True where the value is an outlier.
+            Groups with zero IQR flag nothing.
+        """
+        q1 = grouped.transform("quantile", Q1_QUANTILE)
+        q3 = grouped.transform("quantile", Q3_QUANTILE)
+        iqr = q3 - q1
+        return (grouped.obj < q1 - iqr_factor * iqr) | (
+            grouped.obj > q3 + iqr_factor * iqr
+        )
 
     def merge(self, other: NormData, name: str | None = None) -> NormData:
         """
@@ -483,24 +724,37 @@ class NormData(xr.Dataset):
         if real_ids:
             new_data_vars["subject_ids"] = (
                 ["observations"],
-                list(np.concatenate([self.subject_ids.to_numpy(), other.subject_ids.to_numpy()])),
+                list(
+                    np.concatenate(
+                        [self.subject_ids.to_numpy(), other.subject_ids.to_numpy()]
+                    )
+                ),
             )
         else:
-            new_data_vars["subject_ids"] = (["observations"], list(new_coords["observations"]))
+            new_data_vars["subject_ids"] = (
+                ["observations"],
+                list(new_coords["observations"]),
+            )
 
         if "visits" in self.data_vars and "visits" in other.data_vars:
             new_data_vars["visits"] = (
                 ["observations"],
-                list(
-                    np.concatenate(
-                        [self.visits.to_numpy(), other.visits.to_numpy()]
-                    )
-                ),
+                list(np.concatenate([self.visits.to_numpy(), other.visits.to_numpy()])),
             )
 
-        covar_intersection = [c for c in self.covariates.to_numpy() if c in other.covariates.to_numpy()]
-        respvar_intersection = [r for r in self.response_vars.to_numpy() if r in other.response_vars.to_numpy()]
-        batch_effect_dims_intersection = [b for b in self.batch_effect_dims.to_numpy() if b in other.batch_effect_dims.to_numpy()]
+        covar_intersection = [
+            c for c in self.covariates.to_numpy() if c in other.covariates.to_numpy()
+        ]
+        respvar_intersection = [
+            r
+            for r in self.response_vars.to_numpy()
+            if r in other.response_vars.to_numpy()
+        ]
+        batch_effect_dims_intersection = [
+            b
+            for b in self.batch_effect_dims.to_numpy()
+            if b in other.batch_effect_dims.to_numpy()
+        ]
         new_coords["covariates"] = covar_intersection
         new_coords["response_vars"] = respvar_intersection
         new_coords["batch_effect_dims"] = batch_effect_dims_intersection
@@ -509,11 +763,18 @@ class NormData(xr.Dataset):
             new_X = xr.DataArray(
                 np.zeros((self.X.shape[0] + other.X.shape[0], len(covar_intersection))),
                 dims=["observations", "covariates"],
-                coords={"covariates": covar_intersection, "observations": new_coords["observations"]},
+                coords={
+                    "covariates": covar_intersection,
+                    "observations": new_coords["observations"],
+                },
             )
             for covar in covar_intersection:
                 new_X.loc[{"covariates": covar}] = np.concatenate(
-                    [self.X.sel(covariates=covar).values, other.X.sel(covariates=covar).values], axis=0
+                    [
+                        self.X.sel(covariates=covar).values,
+                        other.X.sel(covariates=covar).values,
+                    ],
+                    axis=0,
                 )
             new_data_vars["X"] = (["observations", "covariates"], new_X.data)
 
@@ -521,11 +782,18 @@ class NormData(xr.Dataset):
             new_Y = xr.DataArray(
                 np.zeros((new_X.shape[0], len(respvar_intersection))),
                 dims=["observations", "response_vars"],
-                coords={"response_vars": respvar_intersection, "observations": new_coords["observations"]},
+                coords={
+                    "response_vars": respvar_intersection,
+                    "observations": new_coords["observations"],
+                },
             )
             for respvar in respvar_intersection:
                 new_Y.loc[{"response_vars": respvar}] = np.concatenate(
-                    [self.Y.sel(response_vars=respvar).values, other.Y.sel(response_vars=respvar).values], axis=0
+                    [
+                        self.Y.sel(response_vars=respvar).values,
+                        other.Y.sel(response_vars=respvar).values,
+                    ],
+                    axis=0,
                 )
             new_data_vars["Y"] = (["observations", "response_vars"], new_Y.data)
 
@@ -533,31 +801,53 @@ class NormData(xr.Dataset):
             new_Y_harmonized = xr.DataArray(
                 np.zeros((new_X.shape[0], len(respvar_intersection))),
                 dims=["observations", "response_vars"],
-                coords={"response_vars": respvar_intersection, "observations": new_coords["observations"]},
+                coords={
+                    "response_vars": respvar_intersection,
+                    "observations": new_coords["observations"],
+                },
             )
             for respvar in respvar_intersection:
                 new_Y_harmonized.loc[{"response_vars": respvar}] = np.concatenate(
-                    [self.Y_harmonized.sel(response_vars=respvar).values, other.Y_harmonized.sel(response_vars=respvar).values],
+                    [
+                        self.Y_harmonized.sel(response_vars=respvar).values,
+                        other.Y_harmonized.sel(response_vars=respvar).values,
+                    ],
                     axis=0,
                 )
-            new_data_vars["Y_harmonized"] = (["observations", "response_vars"], new_Y_harmonized.data)
+            new_data_vars["Y_harmonized"] = (
+                ["observations", "response_vars"],
+                new_Y_harmonized.data,
+            )
 
         if hasattr(self, "Z") and hasattr(other, "Z"):
             new_Z = xr.DataArray(
                 np.zeros((new_X.shape[0], len(respvar_intersection))),
                 dims=["observations", "response_vars"],
-                coords={"response_vars": respvar_intersection, "observations": new_coords["observations"]},
+                coords={
+                    "response_vars": respvar_intersection,
+                    "observations": new_coords["observations"],
+                },
             )
             for respvar in respvar_intersection:
                 new_Z.loc[{"response_vars": respvar}] = np.concatenate(
-                    [self.Z.sel(response_vars=respvar).values, other.Z.sel(response_vars=respvar).values], axis=0
+                    [
+                        self.Z.sel(response_vars=respvar).values,
+                        other.Z.sel(response_vars=respvar).values,
+                    ],
+                    axis=0,
                 )
             new_data_vars["Z"] = (["observations", "response_vars"], new_Z.data)
 
         if hasattr(self, "centiles") and hasattr(other, "centiles"):
             if np.array_equal(self.centile.to_numpy(), other.centile.to_numpy()):
                 new_centiles = xr.DataArray(
-                    np.zeros((new_X.shape[0], len(respvar_intersection), len(self.centile.to_numpy()))),
+                    np.zeros(
+                        (
+                            new_X.shape[0],
+                            len(respvar_intersection),
+                            len(self.centile.to_numpy()),
+                        )
+                    ),
                     dims=["observations", "response_vars", "centile"],
                     coords={
                         "response_vars": respvar_intersection,
@@ -567,36 +857,61 @@ class NormData(xr.Dataset):
                 )
                 for respvar in respvar_intersection:
                     for centile in self.centile.to_numpy():
-                        new_centiles.loc[{"response_vars": respvar, "centile": centile}] = np.concatenate(
+                        new_centiles.loc[
+                            {"response_vars": respvar, "centile": centile}
+                        ] = np.concatenate(
                             [
-                                self.centiles.sel(response_vars=respvar, centile=centile).values,
-                                other.centiles.sel(response_vars=respvar, centile=centile).values,
+                                self.centiles.sel(
+                                    response_vars=respvar, centile=centile
+                                ).values,
+                                other.centiles.sel(
+                                    response_vars=respvar, centile=centile
+                                ).values,
                             ],
                             axis=0,
                         )
-                new_data_vars["centiles"] = (["observations", "response_vars", "centile"], new_centiles.data)
+                new_data_vars["centiles"] = (
+                    ["observations", "response_vars", "centile"],
+                    new_centiles.data,
+                )
                 new_coords["centile"] = self.centile.to_numpy()
 
         if hasattr(self, "batch_effects") and hasattr(other, "batch_effects"):
             new_batch_effects = xr.DataArray(
-                np.zeros((new_X.shape[0], len(batch_effect_dims_intersection))).astype(str),
+                np.zeros((new_X.shape[0], len(batch_effect_dims_intersection))).astype(
+                    str
+                ),
                 dims=["observations", "batch_effect_dims"],
-                coords={"batch_effect_dims": batch_effect_dims_intersection, "observations": new_coords["observations"]},
+                coords={
+                    "batch_effect_dims": batch_effect_dims_intersection,
+                    "observations": new_coords["observations"],
+                },
             )
             for batch_effect_dim in batch_effect_dims_intersection:
-                new_batch_effects.loc[{"batch_effect_dims": batch_effect_dim}] = np.concatenate(
-                    [
-                        self.batch_effects.sel(batch_effect_dims=batch_effect_dim).values,
-                        other.batch_effects.sel(batch_effect_dims=batch_effect_dim).values,
-                    ],
-                    axis=0,
+                new_batch_effects.loc[{"batch_effect_dims": batch_effect_dim}] = (
+                    np.concatenate(
+                        [
+                            self.batch_effects.sel(
+                                batch_effect_dims=batch_effect_dim
+                            ).values,
+                            other.batch_effects.sel(
+                                batch_effect_dims=batch_effect_dim
+                            ).values,
+                        ],
+                        axis=0,
+                    )
                 )
-            new_data_vars["batch_effects"] = (["observations", "batch_effect_dims"], new_batch_effects.data)
+            new_data_vars["batch_effects"] = (
+                ["observations", "batch_effect_dims"],
+                new_batch_effects.data,
+            )
 
         # Preserve the original visit column name
         new_attrs = {"real_ids": real_ids}
         if "visits" in new_data_vars:
-            new_attrs["visit_col"] = self.attrs.get("visit_col", other.attrs.get("visit_col", "visits"))
+            new_attrs["visit_col"] = self.attrs.get(
+                "visit_col", other.attrs.get("visit_col", "visits")
+            )
 
         new_normdata = NormData(
             name=name or (self.attrs["name"] + "_+_" + other.attrs["name"]),
@@ -662,11 +977,15 @@ class NormData(xr.Dataset):
             If no batch effect or covariate has this name.
         """
         # First look for the column among batch effects.
-        if hasattr(self, "batch_effect_dims") and name in [str(b) for b in self.batch_effect_dims.values]:
+        if hasattr(self, "batch_effect_dims") and name in [
+            str(b) for b in self.batch_effect_dims.values
+        ]:
             return np.asarray(self.batch_effects.sel(batch_effect_dims=name).values)
 
         # If needed, look for the column among covariates.
-        if hasattr(self, "covariates") and name in [str(c) for c in self.covariates.values]:
+        if hasattr(self, "covariates") and name in [
+            str(c) for c in self.covariates.values
+        ]:
             return np.asarray(self.X.sel(covariates=name).values)
 
         raise ValueError(
@@ -771,11 +1090,16 @@ class NormData(xr.Dataset):
         elif isinstance(splits, list):
             splits = tuple(splits)
         assert isinstance(splits, tuple)
-        assert all([isinstance(i, float) for i in splits]), "Splits must be a list of floats"
+        assert all([isinstance(i, float) for i in splits]), (
+            "Splits must be a list of floats"
+        )
         assert sum(list(splits)) == 1, "Splits must sum to 1"
         assert len(splits) > 1, "Splits must contain at least two elements"
         batch_effects_stringified = self.concatenate_string_arrays(
-            *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
+            *[
+                self.batch_effects[:, i].astype(str)
+                for i in range(self.batch_effects.shape[1])
+            ]
         )
         train_idx, test_idx = train_test_split(
             np.arange(self.X.shape[0]),
@@ -795,7 +1119,9 @@ class NormData(xr.Dataset):
             split2.attrs["name"] = f"{self.attrs['name']}_test"
         return split1, split2
 
-    def kfold_split(self, k: int) -> Generator[Tuple[ArrayLike[int], ArrayLike[int]], Any, Any]:
+    def kfold_split(
+        self, k: int
+    ) -> Generator[Tuple[ArrayLike[int], ArrayLike[int]], Any, Any]:
         """
         Perform k-fold splitting of the data.
 
@@ -810,11 +1136,18 @@ class NormData(xr.Dataset):
             A generator yielding training and testing indices for each fold.
         """
         # Returns an iterator of (NormData, NormData) objects, split into k folds
-        stratified_kfold_split = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
-        batch_effects_stringified = self.concatenate_string_arrays(
-            *[self.batch_effects[:, i].astype(str) for i in range(self.batch_effects.shape[1])]
+        stratified_kfold_split = StratifiedKFold(
+            n_splits=k, shuffle=True, random_state=42
         )
-        for train_idx, test_idx in stratified_kfold_split.split(self.X, batch_effects_stringified):
+        batch_effects_stringified = self.concatenate_string_arrays(
+            *[
+                self.batch_effects[:, i].astype(str)
+                for i in range(self.batch_effects.shape[1])
+            ]
+        )
+        for train_idx, test_idx in stratified_kfold_split.split(
+            self.X, batch_effects_stringified
+        ):
             train_idx = np.array(train_idx)
             test_idx = np.array(test_idx)
             yield train_idx, test_idx
@@ -825,7 +1158,7 @@ class NormData(xr.Dataset):
         names: Optional[Tuple[str, str]],
     ) -> Tuple[NormData, NormData]:
         """
-        Split the data into two datasets, one with the specified batch effects 
+        Split the data into two datasets, one with the specified batch effects
         and one without.
 
         This is useful when you want to split a dataset into two smaller ones.
@@ -882,7 +1215,7 @@ class NormData(xr.Dataset):
         force : bool, optional
                 Recompute the list of batch effects even if one already exists.
                 Example, splitting the fcon1000 in 2 smaller datasets should
-                recompute the batch effects for each smaller dataset. 
+                recompute the batch effects for each smaller dataset.
                 Default is False.
 
         Returns
@@ -910,14 +1243,20 @@ class NormData(xr.Dataset):
         for dim in be_cols:
             vc = be_df[dim].value_counts(sort=False)
             self.attrs["unique_batch_effects"][dim] = vc.index.astype(str).tolist()
-            self.attrs["batch_effect_counts"][dim] = {str(k): int(v) for k, v in vc.to_dict().items()}
+            self.attrs["batch_effect_counts"][dim] = {
+                str(k): int(v) for k, v in vc.to_dict().items()
+            }
             self.attrs["batch_effect_covariate_ranges"][dim] = {}
 
             if x_available:
                 grouped = X_df.groupby(be_df[dim], sort=False).agg(["min", "max"])
                 for u, row in grouped.iterrows():
                     self.attrs["batch_effect_covariate_ranges"][dim][u] = {
-                        c: {"min": float(row[(c, "min")]), "max": float(row[(c, "max")])} for c in covs
+                        c: {
+                            "min": float(row[(c, "min")]),
+                            "max": float(row[(c, "max")]),
+                        }
+                        for c in covs
                     }
 
         if x_available:
@@ -942,7 +1281,9 @@ class NormData(xr.Dataset):
         bool
             True if compatible, False otherwise
         """
-        missing_covariates = [i for i in other.covariates.values if i not in self.covariates.values]
+        missing_covariates = [
+            i for i in other.covariates.values if i not in self.covariates.values
+        ]
         if len(missing_covariates) > 0:
             Output.warning(
                 Warnings.MISSING_COVARIATES,
@@ -950,7 +1291,9 @@ class NormData(xr.Dataset):
                 covariates=missing_covariates,
             )
 
-        extra_covariates = [i for i in self.covariates.values if i not in other.covariates.values]
+        extra_covariates = [
+            i for i in self.covariates.values if i not in other.covariates.values
+        ]
         if len(extra_covariates) > 0:
             Output.warning(
                 Warnings.EXTRA_COVARIATES,
@@ -958,7 +1301,9 @@ class NormData(xr.Dataset):
                 covariates=extra_covariates,
             )
 
-        extra_response_vars = [i for i in self.response_vars.values if i not in other.response_vars.values]
+        extra_response_vars = [
+            i for i in self.response_vars.values if i not in other.response_vars.values
+        ]
         if len(extra_response_vars) > 0:
             Output.warning(
                 Warnings.EXTRA_RESPONSE_VARS,
@@ -975,12 +1320,17 @@ class NormData(xr.Dataset):
         """Ensures datasets are compatible by merging the batch effects maps"""
         myu = self.unique_batch_effects
         otu = other.unique_batch_effects
-        all_unique_batch_effects = {dim: list(set(val).union(set(otu[dim]))) for dim, val in myu.items()}
+        all_unique_batch_effects = {
+            dim: list(set(val).union(set(otu[dim]))) for dim, val in myu.items()
+        }
 
         mycr = self.covariate_ranges
         otcr = other.covariate_ranges
         ncr = {
-            cov: {"min": min(mycr[cov]["min"], otcr[cov]["min"]), "max": max(mycr[cov]["max"], otcr[cov]["max"])}
+            cov: {
+                "min": min(mycr[cov]["min"], otcr[cov]["min"]),
+                "max": max(mycr[cov]["max"], otcr[cov]["max"]),
+            }
             for cov in self.covariates.to_numpy()
         }
 
@@ -995,8 +1345,12 @@ class NormData(xr.Dataset):
                     match (u in mybecr[dim], u in otbecr[dim]):
                         case True, True:
                             nbecr[dim][u][c] = {
-                                "min": min(mybecr[dim][u][c]["min"], otbecr[dim][u][c]["min"]),
-                                "max": max(mybecr[dim][u][c]["max"], otbecr[dim][u][c]["max"]),
+                                "min": min(
+                                    mybecr[dim][u][c]["min"], otbecr[dim][u][c]["min"]
+                                ),
+                                "max": max(
+                                    mybecr[dim][u][c]["max"], otbecr[dim][u][c]["max"]
+                                ),
                             }
                         case True, False:
                             nbecr[dim][u][c] = mybecr[dim][u][c]
@@ -1018,10 +1372,16 @@ class NormData(xr.Dataset):
         other.attrs["unique_batch_effects"] = copy.copy(other.unique_batch_effects)
         self.attrs["covariate_ranges"] = copy.copy(self.covariate_ranges)
         other.attrs["covariate_ranges"] = copy.copy(other.covariate_ranges)
-        self.attrs["batch_effect_covariate_ranges"] = copy.copy(self.batch_effect_covariate_ranges)
-        other.attrs["batch_effect_covariate_ranges"] = copy.copy(other.batch_effect_covariate_ranges)
+        self.attrs["batch_effect_covariate_ranges"] = copy.copy(
+            self.batch_effect_covariate_ranges
+        )
+        other.attrs["batch_effect_covariate_ranges"] = copy.copy(
+            other.batch_effect_covariate_ranges
+        )
 
-    def scale_forward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
+    def scale_forward(
+        self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]
+    ) -> None:
         """
         Scale the data forward in-place using provided scalers.
 
@@ -1037,7 +1397,9 @@ class NormData(xr.Dataset):
             if "X" in self.data_vars:
                 scaled_X = np.zeros(self.X.shape)
                 for i, covariate in enumerate(self.covariates.to_numpy()):
-                    scaled_X[:, i] = inscalers[covariate].transform(self.X.sel(covariates=covariate).data)
+                    scaled_X[:, i] = inscalers[covariate].transform(
+                        self.X.sel(covariates=covariate).data
+                    )
                 self["X"] = xr.DataArray(
                     scaled_X,
                     coords=self.X.coords,
@@ -1048,7 +1410,9 @@ class NormData(xr.Dataset):
             if "Y" in self.data_vars:
                 scaled_y = np.zeros(self.Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_y[:, i] = outscalers[responsevar].transform(self.Y.sel(response_vars=responsevar).data)
+                    scaled_y[:, i] = outscalers[responsevar].transform(
+                        self.Y.sel(response_vars=responsevar).data
+                    )
                 self["Y"] = xr.DataArray(
                     scaled_y,
                     coords=self.Y.coords,
@@ -1071,7 +1435,9 @@ class NormData(xr.Dataset):
             if "Yhat" in self.data_vars:
                 scaled_Yhat = np.zeros(self.Yhat.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    scaled_Yhat[:, i] = outscalers[responsevar].transform(self.Yhat.sel(response_vars=responsevar).data)
+                    scaled_Yhat[:, i] = outscalers[responsevar].transform(
+                        self.Yhat.sel(response_vars=responsevar).data
+                    )
                 self["Yhat"] = xr.DataArray(
                     scaled_Yhat,
                     coords=self.Yhat.coords,
@@ -1093,7 +1459,9 @@ class NormData(xr.Dataset):
                 )
             self.attrs["is_scaled"] = True
 
-    def scale_backward(self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]) -> None:
+    def scale_backward(
+        self, inscalers: Dict[str, Any], outscalers: Dict[str, Any]
+    ) -> None:
         """
         Scale the data backward using provided scalers.
 
@@ -1108,7 +1476,9 @@ class NormData(xr.Dataset):
             if "X" in self.data_vars:
                 unscaled_X = np.zeros(self.X.shape)
                 for i, covariate in enumerate(self.covariates.to_numpy()):
-                    unscaled_X[:, i] = inscalers[covariate].inverse_transform(self.X.sel(covariates=covariate).data)
+                    unscaled_X[:, i] = inscalers[covariate].inverse_transform(
+                        self.X.sel(covariates=covariate).data
+                    )
                 self["X"] = xr.DataArray(
                     unscaled_X,
                     coords=self.X.coords,
@@ -1118,7 +1488,9 @@ class NormData(xr.Dataset):
             if "Y" in self.data_vars:
                 unscaled_y = np.zeros(self.Y.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    unscaled_y[:, i] = outscalers[responsevar].inverse_transform(self.Y.sel(response_vars=responsevar).data)
+                    unscaled_y[:, i] = outscalers[responsevar].inverse_transform(
+                        self.Y.sel(response_vars=responsevar).data
+                    )
                 self["Y"] = xr.DataArray(
                     unscaled_y,
                     coords=self.Y.coords,
@@ -1129,7 +1501,9 @@ class NormData(xr.Dataset):
             if "Y_harmonized" in self.data_vars:
                 unscaled_Y_harmonized = np.zeros(self.Y_harmonized.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    unscaled_Y_harmonized[:, i] = outscalers[responsevar].inverse_transform(
+                    unscaled_Y_harmonized[:, i] = outscalers[
+                        responsevar
+                    ].inverse_transform(
                         self.Y_harmonized.sel(response_vars=responsevar).data
                     )
                 self["Y_harmonized"] = xr.DataArray(
@@ -1142,7 +1516,9 @@ class NormData(xr.Dataset):
             if "Yhat" in self.data_vars:
                 unscaled_Yhat = np.zeros(self.Yhat.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    unscaled_Yhat[:, i] = outscalers[responsevar].inverse_transform(self.Yhat.sel(response_vars=responsevar).data)
+                    unscaled_Yhat[:, i] = outscalers[responsevar].inverse_transform(
+                        self.Yhat.sel(response_vars=responsevar).data
+                    )
                 self["Yhat"] = xr.DataArray(
                     unscaled_Yhat,
                     coords=self.Yhat.coords,
@@ -1153,7 +1529,9 @@ class NormData(xr.Dataset):
             if "centiles" in self.data_vars:
                 unscaled_centiles = np.zeros(self.centiles.shape)
                 for i, responsevar in enumerate(self.response_vars.to_numpy()):
-                    unscaled_centiles[:, :, i] = outscalers[responsevar].inverse_transform(
+                    unscaled_centiles[:, :, i] = outscalers[
+                        responsevar
+                    ].inverse_transform(
                         self.centiles.sel(response_vars=responsevar).data
                     )
                 self["centiles"] = xr.DataArray(
@@ -1222,43 +1600,44 @@ class NormData(xr.Dataset):
         """
         acc = []
         x_columns = [col for col in ["X"] if hasattr(self, col)]
-        y_columns = [col for col in ["Y", "Y_harmonized", "Z", "logp", "Yhat"] 
-                     if hasattr(self, col)]
+        y_columns = [
+            col
+            for col in ["Y", "Y_harmonized", "Z", "logp", "Yhat"]
+            if hasattr(self, col)
+        ]
         acc.append(
             xr.Dataset.to_dataframe(self[x_columns], dim_order)
             .reset_index(drop=False)
-            .pivot(index="observations", 
-                   columns="covariates", 
-                   values=x_columns)
+            .pivot(index="observations", columns="covariates", values=x_columns)
         )
         acc.append(
             xr.Dataset.to_dataframe(self[y_columns], dim_order)
             .reset_index(drop=False)
-            .pivot(index="observations", 
-                   columns="response_vars", 
-                   values=y_columns)
+            .pivot(index="observations", columns="response_vars", values=y_columns)
         )
         be = (
             xr.DataArray.to_dataframe(self.batch_effects, dim_order)
             .reset_index(drop=False)
-            .pivot(index="observations", 
-                   columns="batch_effect_dims", 
-                   values="batch_effects")
+            .pivot(
+                index="observations",
+                columns="batch_effect_dims",
+                values="batch_effects",
+            )
         )
         be.columns = [("batch_effects", col) for col in be.columns]
 
         acc.append(be)
 
-        subject_ids = xr.DataArray.to_dataframe(self.subject_ids, dim_order)[["subject_ids"]]
+        subject_ids = xr.DataArray.to_dataframe(self.subject_ids, dim_order)[
+            ["subject_ids"]
+        ]
         subject_ids.columns = [
             ("subject_ids", "subject_ids"),
         ]
         acc.append(subject_ids)
         if "visits" in self.data_vars:
             visit_col = self.attrs.get("visit_col", "visits")
-            visits_df = xr.DataArray.to_dataframe(self.visits, dim_order)[[
-                "visits"
-            ]]
+            visits_df = xr.DataArray.to_dataframe(self.visits, dim_order)[["visits"]]
             visits_df.columns = [("visits", visit_col)]
             acc.append(visits_df)
         if hasattr(self, "centiles"):
@@ -1282,21 +1661,36 @@ class NormData(xr.Dataset):
         zdf = self.Z.to_dataframe().unstack(level="response_vars")
         zdf.columns = zdf.columns.droplevel(0)
         zdf = zdf.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        zdf = zdf[["subject_ids", *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]]]]
+        zdf = zdf[
+            [
+                "subject_ids",
+                *[z for z in sorted(zdf.columns.tolist()) if z not in ["subject_ids"]],
+            ]
+        ]
         zdf.index = zdf.index.astype(str)
         res_path = os.path.join(save_dir, f"Z_{self.name}.csv")
         lock_path = res_path + ".lock"
         with FileLock(lock_path):
-            with open(res_path, mode="r+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            with open(
+                res_path,
+                mode="r+" if os.path.exists(res_path) else "w",
+                encoding="utf-8",
+            ) as f:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results["observations"] = old_results["observations"].astype(
+                        str
+                    )
                     old_results.set_index(["observations"], inplace=True)
                     # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(zdf, on="observations", how="outer", suffixes=("_old", ""))
+                    new_results = old_results.merge(
+                        zdf, on="observations", how="outer", suffixes=("_old", "")
+                    )
                     # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                    new_results = new_results.loc[
+                        :, ~new_results.columns.str.endswith("_old")
+                    ]
                 else:
                     new_results = zdf
                 f.seek(0)
@@ -1306,7 +1700,9 @@ class NormData(xr.Dataset):
                         by="observations",
                         key=lambda col: pd.to_numeric(col, errors="coerce"),
                     )
-                    new_results["observations"] = new_results["observations"].astype(str)
+                    new_results["observations"] = new_results["observations"].astype(
+                        str
+                    )
                 else:
                     new_results = new_results.sort_index(
                         key=lambda idx: pd.to_numeric(idx, errors="coerce")
@@ -1322,35 +1718,66 @@ class NormData(xr.Dataset):
             self["Z"] = xr.DataArray(
                 df[non_index_columns],
                 dims=("observations", "response_vars"),
-                coords={"observations": df["observations"], "response_vars": non_index_columns},
+                coords={
+                    "observations": df["observations"],
+                    "response_vars": non_index_columns,
+                },
             )
 
     def save_centiles(self, save_dir: str) -> None:
         centiles = self.centiles.to_dataframe().unstack(level="response_vars")
         centiles.columns = centiles.columns.droplevel(0)
-        centiles.index = centiles.index.set_levels(centiles.index.levels[1].astype(str), level=1)
+        centiles.index = centiles.index.set_levels(
+            centiles.index.levels[1].astype(str), level=1
+        )
         subject_ids = self.subject_ids.to_dataframe()
         subject_ids.index = subject_ids.index.astype(str)
-        subject_ids.columns = pd.MultiIndex.from_tuples([("subject_ids", "X")], names=["subject_ids", "centile"])
+        subject_ids.columns = pd.MultiIndex.from_tuples(
+            [("subject_ids", "X")], names=["subject_ids", "centile"]
+        )
         for c in self.centile.to_numpy():
             subject_ids[("subject_ids", c)] = subject_ids[("subject_ids", "X")]
         subject_ids = subject_ids.drop(columns=[("subject_ids", "X")])
         subject_ids = subject_ids.stack(level="centile")
-        centiles = centiles.merge(subject_ids, on=["observations", "centile"], how="left")
-        centiles = centiles[["subject_ids", *[z for z in sorted(centiles.columns.tolist()) if z not in ["subject_ids"]]]]
+        centiles = centiles.merge(
+            subject_ids, on=["observations", "centile"], how="left"
+        )
+        centiles = centiles[
+            [
+                "subject_ids",
+                *[
+                    z
+                    for z in sorted(centiles.columns.tolist())
+                    if z not in ["subject_ids"]
+                ],
+            ]
+        ]
         res_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         lock_path = res_path + ".lock"
         with FileLock(lock_path):
-            with open(res_path, mode="r+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            with open(
+                res_path,
+                mode="r+" if os.path.exists(res_path) else "w",
+                encoding="utf-8",
+            ) as f:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results["observations"] = old_results["observations"].astype(
+                        str
+                    )
                     old_results.set_index(["observations", "centile"], inplace=True)
                     # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(centiles, on=["observations", "centile"], how="outer", suffixes=("_old", ""))
+                    new_results = old_results.merge(
+                        centiles,
+                        on=["observations", "centile"],
+                        how="outer",
+                        suffixes=("_old", ""),
+                    )
                     # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                    new_results = new_results.loc[
+                        :, ~new_results.columns.str.endswith("_old")
+                    ]
                 else:
                     new_results = centiles
                 f.seek(0)
@@ -1360,7 +1787,9 @@ class NormData(xr.Dataset):
                         by="observations",
                         key=lambda col: pd.to_numeric(col, errors="coerce"),
                     )
-                    new_results["observations"] = new_results["observations"].astype(str)
+                    new_results["observations"] = new_results["observations"].astype(
+                        str
+                    )
                 else:
                     new_results = new_results.sort_index(
                         key=lambda idx: pd.to_numeric(idx, errors="coerce")
@@ -1372,7 +1801,11 @@ class NormData(xr.Dataset):
         C_path = os.path.join(save_dir, f"centiles_{self.name}.csv")
         if os.path.isfile(C_path):
             df = pd.read_csv(C_path)
-            response_vars = [i for i in list(df.columns) if not (i == "observations" or i == "centile" or i == "subject_ids")]
+            response_vars = [
+                i
+                for i in list(df.columns)
+                if not (i == "observations" or i == "centile" or i == "subject_ids")
+            ]
             centiles = np.unique(df["centile"])
             obs = np.unique(df["observations"])
             obs.sort()
@@ -1386,28 +1819,49 @@ class NormData(xr.Dataset):
             self["centiles"] = xr.DataArray(
                 A,
                 dims=("centile", "observations", "response_vars"),
-                coords={"centile": centiles, "observations": obs, "response_vars": response_vars},
+                coords={
+                    "centile": centiles,
+                    "observations": obs,
+                    "response_vars": response_vars,
+                },
             )
 
     def save_logp(self, save_dir: str) -> None:
         logp = self.logp.to_dataframe().unstack(level="response_vars")
         logp.columns = logp.columns.droplevel(0)
-        logp = logp.merge(self.subject_ids.to_dataframe(), on="observations", how="left")
-        logp = logp[["subject_ids", *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]]]]
+        logp = logp.merge(
+            self.subject_ids.to_dataframe(), on="observations", how="left"
+        )
+        logp = logp[
+            [
+                "subject_ids",
+                *[z for z in sorted(logp.columns.tolist()) if z not in ["subject_ids"]],
+            ]
+        ]
         logp.index = logp.index.astype(str)
         res_path = os.path.join(save_dir, f"logp_{self.name}.csv")
         lock_path = res_path + ".lock"
         with FileLock(lock_path):
-            with open(res_path, mode="r+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            with open(
+                res_path,
+                mode="r+" if os.path.exists(res_path) else "w",
+                encoding="utf-8",
+            ) as f:
                 f.seek(0)
                 old_results = pd.read_csv(f) if os.path.getsize(res_path) > 0 else None
                 if old_results is not None:
-                    old_results["observations"] = old_results["observations"].astype(str)
+                    old_results["observations"] = old_results["observations"].astype(
+                        str
+                    )
                     old_results.set_index(["observations"], inplace=True)
                     # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(logp, on="observations", how="outer", suffixes=("_old", ""))
+                    new_results = old_results.merge(
+                        logp, on="observations", how="outer", suffixes=("_old", "")
+                    )
                     # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                    new_results = new_results.loc[
+                        :, ~new_results.columns.str.endswith("_old")
+                    ]
                 else:
                     new_results = logp
                 f.seek(0)
@@ -1417,7 +1871,9 @@ class NormData(xr.Dataset):
                         by="observations",
                         key=lambda col: pd.to_numeric(col, errors="coerce"),
                     )
-                    new_results["observations"] = new_results["observations"].astype(str)
+                    new_results["observations"] = new_results["observations"].astype(
+                        str
+                    )
                 else:
                     new_results = new_results.sort_index(
                         key=lambda idx: pd.to_numeric(idx, errors="coerce")
@@ -1433,7 +1889,10 @@ class NormData(xr.Dataset):
             self["logp"] = xr.DataArray(
                 df[non_index_columns],
                 dims=("observations", "response_vars"),
-                coords={"observations": df["observations"], "response_vars": non_index_columns},
+                coords={
+                    "observations": df["observations"],
+                    "response_vars": non_index_columns,
+                },
             )
 
     def save_statistics(self, save_dir: str) -> None:
@@ -1442,14 +1901,26 @@ class NormData(xr.Dataset):
         res_path = os.path.join(save_dir, f"statistics_{self.name}.csv")
         lock_path = res_path + ".lock"
         with FileLock(lock_path):
-            with open(res_path, mode="r+" if os.path.exists(res_path) else "w", encoding="utf-8") as f:
+            with open(
+                res_path,
+                mode="r+" if os.path.exists(res_path) else "w",
+                encoding="utf-8",
+            ) as f:
                 f.seek(0)
-                old_results = pd.read_csv(f, index_col=0) if os.path.getsize(res_path) > 0 else None
+                old_results = (
+                    pd.read_csv(f, index_col=0)
+                    if os.path.getsize(res_path) > 0
+                    else None
+                )
                 if old_results is not None:
                     # Merge on observations, keeping right (new) values for overlapping columns
-                    new_results = old_results.merge(mdf, on="statistic", how="outer", suffixes=("_old", ""))
+                    new_results = old_results.merge(
+                        mdf, on="statistic", how="outer", suffixes=("_old", "")
+                    )
                     # Drop columns ending with '_old' as they're the duplicates from old_results
-                    new_results = new_results.loc[:, ~new_results.columns.str.endswith("_old")]
+                    new_results = new_results.loc[
+                        :, ~new_results.columns.str.endswith("_old")
+                    ]
                 else:
                     new_results = mdf
                 f.seek(0)
@@ -1506,7 +1977,19 @@ class NormData(xr.Dataset):
             dims=("response_vars", "statistics"),
             coords={
                 "response_vars": np.arange(len(rv)),
-                "statistics": ["Rho", "Rho_p", "R2", "RMSE", "SMSE", "MSLL", "MLL", "ShapiroW", "MACE", "MAPE", "EXPV"],
+                "statistics": [
+                    "Rho",
+                    "Rho_p",
+                    "R2",
+                    "RMSE",
+                    "SMSE",
+                    "MSLL",
+                    "MLL",
+                    "ShapiroW",
+                    "MACE",
+                    "MAPE",
+                    "EXPV",
+                ],
             },
         )
 

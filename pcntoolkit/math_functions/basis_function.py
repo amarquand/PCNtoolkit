@@ -6,15 +6,15 @@ from abc import ABC, abstractmethod
 import numpy as np
 from scipy.interpolate import BSpline
 
-from pcntoolkit.util.output import Errors, Output
 from pcntoolkit.util.migration import registry
+from pcntoolkit.util.output import Errors, Output
 
 
 def create_basis_function(
-        basis_type: str | dict | None,
-        basis_column: int = 0,
-        **kwargs,
-        ) -> BasisFunction:
+    basis_type: str | dict | None,
+    basis_column: int = 0,
+    **kwargs,
+) -> BasisFunction:
     if isinstance(basis_type, dict):
         return BasisFunction.from_dict(basis_type)
     elif basis_type in ["polynomial", "PolynomialBasisFunction"]:
@@ -25,16 +25,14 @@ def create_basis_function(
             new_knots = np.array(new_knots)
         return BsplineBasisFunction(basis_column, **kwargs, knots=new_knots)
     elif basis_type in ["Composite", "CompositeBasis"]:
-        parts = [BasisFunction.from_dict(p) for p in kwargs['parts']]
-        return CompositeBasisFunction(parts)
-    elif basis_type in [
-            "fractional_polynomial",
-            "FractionalPolynomialBasisFunction"]:
-        return FractionalPolynomialBasisFunction(
-            basis_column, **kwargs
-        )
+        parts = [BasisFunction.from_dict(p) for p in kwargs["parts"]]
+        interactions = kwargs.get("interactions", None)
+        return CompositeBasisFunction(parts, interactions=interactions)
+    elif basis_type in ["fractional_polynomial", "FractionalPolynomialBasisFunction"]:
+        return FractionalPolynomialBasisFunction(basis_column, **kwargs)
     else:
         return LinearBasisFunction(basis_column)
+
 
 class BasisFunction(ABC):
     def __init__(
@@ -51,16 +49,22 @@ class BasisFunction(ABC):
         self.compute_max: bool = self.max is None
 
     @classmethod
-    def from_dict(
-        cls, my_dict: dict, version: str | None = None
-    ) -> "BasisFunction":
+    def from_dict(cls, my_dict: dict, version: str | None = None) -> "BasisFunction":
         # Apply any registered BasisFunction migrations for this version.
-        my_dict = registry.migrate(
-            "BasisFunction", my_dict, version=version
-        )
+        my_dict = registry.migrate("BasisFunction", my_dict, version=version)
         basis_function_type = my_dict["basis_function"]
-        basis_function = create_basis_function(basis_function_type, **my_dict)
-        return basis_function
+        # The parts have no ptk_version of their own, so pass the model's
+        # version down; otherwise they are migrated as if saved with v0.0.0.
+        if basis_function_type in ["Composite", "CompositeBasis"]:
+            parts = [
+                cls.from_dict(p, version=version)
+                for p in my_dict["parts"]
+            ]
+            return CompositeBasisFunction(
+                parts,
+                interactions=my_dict.get("interactions"),
+            )
+        return create_basis_function(basis_function_type, **my_dict)
 
     @classmethod
     def from_args(cls, name: str, args: dict) -> BasisFunction:
@@ -90,7 +94,7 @@ class BasisFunction(ABC):
 
     def fit(self, X: np.ndarray) -> None:
         if len(X.shape) == 1:
-            X = X[:,None]
+            X = X[:, None]
         array = X[:, self.basis_column]
         if self.compute_min:
             self.min = np.min(array)
@@ -103,7 +107,7 @@ class BasisFunction(ABC):
         if not self.is_fitted:
             raise ValueError(Output.error(Errors.ERROR_BASIS_FUNCTION_NOT_FITTED))
         if len(X.shape) == 1:
-            X = X[:,None]
+            X = X[:, None]
         all_arrays = []
         for i in range(X.shape[1]):
             if i == self.basis_column:
@@ -119,7 +123,6 @@ class BasisFunction(ABC):
                 copied_array = copy.deepcopy(X[:, i])
                 all_arrays.append(copied_array[:, None])
         return np.concatenate(all_arrays, axis=1)
-
 
     @abstractmethod
     def _fit(self, data: np.ndarray) -> None:
@@ -138,6 +141,7 @@ class BasisFunction(ABC):
     @abstractmethod
     def dimension(self):
         pass
+
 
 class PolynomialBasisFunction(BasisFunction):
     def __init__(
@@ -163,6 +167,49 @@ class PolynomialBasisFunction(BasisFunction):
 
 
 class BsplineBasisFunction(BasisFunction):
+    """B-spline basis function for nonlinear covariate effects.
+
+    Transforms the selected covariate into a B-spline design matrix using
+    the specified degree and knot configuration.
+
+    By default, only the B-spline basis functions are returned. The original
+    covariate can optionally be included as an additional linear term by
+    setting ``include_linear=True``. Since linear functions are already
+    contained in the span of the B-spline basis, including this term may
+    introduce linear dependence and is primarily provided for backward
+    compatibility with models fitted using earlier PCNtoolkit versions.
+    See `issue #542 <https://github.com/predictive-clinical-neuroscience/PCNtoolkit/issues/542>`_
+
+
+    Parameters
+    ----------
+    basis_column : int, default=0
+        Index of the covariate to which the B-spline transformation is applied.
+    degree : int, default=3
+        Degree of the B-spline basis.
+    nknots : int, default=5
+        Number of knots used to construct the basis.
+    left_expand : float, default=0.05
+        Fraction by which the lower boundary is expanded beyond the observed
+        data range.
+    right_expand : float, default=0.05
+        Fraction by which the upper boundary is expanded beyond the observed
+        data range.
+    knot_method : {"uniform", "quantile"}, default="uniform"
+        Method used to determine knot locations.
+    knots : array-like or None, default=None
+        Predefined knot sequence. If None, knots are estimated during fitting.
+    include_linear : bool, default=False
+        If True, prepend the original covariate to the B-spline design matrix.
+        This reproduces the behavior of earlier PCNtoolkit versions and may
+        introduce a redundant column.
+
+    Raises
+    ------
+    ValueError
+        If ``knot_method`` is not ``"uniform"`` or ``"quantile"``.
+    """
+
     def __init__(
         self,
         basis_column: int = 0,
@@ -171,19 +218,26 @@ class BsplineBasisFunction(BasisFunction):
         left_expand: float = 0.05,
         right_expand: float = 0.05,
         knot_method: str = "uniform",
-        knots:  np.ndarray | list = None,  # type: ignore
+        knots: np.ndarray | list = None,
+        include_linear: bool = False,
         **kwargs,
     ):
         super().__init__(basis_column, **kwargs)
+        if knot_method not in ("uniform", "quantile"):
+            raise ValueError(
+                f"Unknown knot_method '{knot_method}'. "
+                "Supported methods are 'uniform' and 'quantile'."
+            )
         self.degree = degree
         self.nknots = nknots
         self.left_expand = left_expand
         self.right_expand = right_expand
         self.knot_method = knot_method
+        self.include_linear = include_linear
         if knots is not None:
             self.knots = list(knots)
         else:
-            self.knots = None 
+            self.knots = None
         self.basis_name = "bspline"
 
     def _fit(self, data: np.ndarray) -> None:
@@ -196,12 +250,23 @@ class BsplineBasisFunction(BasisFunction):
             knots = np.linspace(aug_min, aug_max, self.nknots)
         elif self.knot_method == "quantile":
             knots = np.percentile(data, np.linspace(0, 100, self.nknots))
-        knots = np.concatenate([[aug_min] * self.degree, knots, [aug_max] * self.degree])
+        knots = np.concatenate(
+            [[aug_min] * self.degree, knots, [aug_max] * self.degree]
+        )
         self.knots = list(knots)
 
     def _transform(self, data: np.ndarray) -> np.ndarray:
-        spline = BSpline.design_matrix(data, self.knots, self.degree, extrapolate=True).toarray()
-        return np.concatenate((data.reshape(-1, 1), spline), axis=1)
+        spline = BSpline.design_matrix(
+            data,
+            self.knots,
+            self.degree,
+            extrapolate=True,
+        ).toarray()
+
+        if self.include_linear:
+            return np.concatenate((data.reshape(-1, 1), spline), axis=1)
+
+        return spline
 
     def to_dict(self) -> dict:
         mydict = super().to_dict()
@@ -210,15 +275,16 @@ class BsplineBasisFunction(BasisFunction):
         mydict["left_expand"] = self.left_expand
         mydict["right_expand"] = self.right_expand
         mydict["knot_method"] = self.knot_method
+        mydict["include_linear"] = self.include_linear
         if self.knots is not None:
-            mydict["knots"] = list(self.knots)    
+            mydict["knots"] = list(self.knots)
         else:
-            mydict["knots"] = None       
+            mydict["knots"] = None
         return mydict
 
     @property
     def dimension(self):
-        return self.degree + self.nknots
+        return self.degree + self.nknots - 1 + int(self.include_linear)
 
 
 class LinearBasisFunction(BasisFunction):
@@ -236,10 +302,93 @@ class LinearBasisFunction(BasisFunction):
     def dimension(self):
         return 1
 
+
 class CompositeBasisFunction(BasisFunction):
-    def __init__(self, parts):
+    """Combine basis functions and optionally construct pairwise interactions.
+
+    An interaction lets the effect of one covariate depend on another,
+    e.g. a different age curve for each sex. ``(0, 1)`` means
+    ``parts[0] x parts[1]``.
+
+    Output columns: first each covariate's basis (in covariate order),
+    then the interaction columns. A covariate with no part is copied
+    unchanged. Example with covariates ``[age, sex, x3]``::
+
+        parts=[BsplineBasisFunction(basis_column=0),   # age, 7 columns
+               LinearBasisFunction(basis_column=1)]    # sex, 1 column
+        interactions=[(0, 1)]
+
+        columns 0-6   age B-spline
+        column  7     sex
+        column  8     x3, copied unchanged (no part covers it)
+        columns 9-15  age B-spline x sex
+
+    Parameters
+    ----------
+    parts : list of BasisFunction
+        Each element is a basis function that operates on a specific covariate column.
+    interactions : list of tuple[int, int], optional
+        Pairs of indices into ``parts`` (not covariate columns). For each
+        pair ``(i, j)``, the products of all columns of ``parts[i]`` and
+        ``parts[j]`` are appended to the output. Default: no interactions.
+
+    Raises
+    ------
+    ValueError
+        If an interaction is not a pair of integers, or refers to a part
+        index outside ``0`` to ``len(parts) - 1``. Also raised by
+        ``transform`` if called before ``fit``.
+
+    Notes
+    -----
+    Interaction terms are mathematical products of component basis outputs.
+    Linear dependencies in the resulting design matrix are not detected or
+    removed automatically.
+    """
+
+    def __init__(
+        self,
+        parts: list[BasisFunction],
+        interactions: list[tuple[int, int]] | None = None,
+    ) -> None:
         super().__init__(basis_column=0)
         self.parts = parts
+        self.interactions = [] if interactions is None else interactions
+        for pair in self.interactions:
+            # Saved models store pairs as JSON lists, so accept lists too.
+            if not isinstance(pair, (tuple, list)):
+                raise ValueError(
+                    Output.error(
+                        Errors.ERROR_WRONG_TYPE,
+                        name="Each interaction",
+                        expected=(
+                            "two numbers in round brackets inside a list, "
+                            "e.g. interactions=[(0, 1)] or [(0, 1), (0, 2)]"
+                        ),
+                    )
+                )
+            if len(pair) != 2:
+                raise ValueError(
+                    f"Interaction {tuple(pair)} has {len(pair)} indices, but "
+                    "only pairwise interactions (two numbers) such as (0, 1) "
+                    "are supported. "
+                )
+            for k in pair:
+                if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+                    raise ValueError(
+                        Output.error(
+                            Errors.ERROR_WRONG_TYPE,
+                            name=f"Each part number in interaction {tuple(pair)}",
+                            expected="an integer",
+                        )
+                    )
+            for k in pair:
+                # Reject negatives too: Python would read -1 as the last part.
+                if not 0 <= k < len(parts):
+                    raise ValueError(
+                        f"Interaction {tuple(pair)} refers to part {k}, but "
+                        f"valid part indices are 0 to {len(parts) - 1}."
+                    )
 
     def _fit(self, data, i):
         pass
@@ -249,36 +398,64 @@ class CompositeBasisFunction(BasisFunction):
 
     def fit(self, X):
         if len(X.shape) == 1:
-            X = X[:,None]
+            X = X[:, None]
         for bf in self.parts:
             basis_column = bf.basis_column
             bf.basis_column = 0
-            bf.fit(X[:,basis_column])
+            bf.fit(X[:, basis_column])
             bf.basis_column = basis_column
         self.is_fitted = True
 
     def transform(self, X):
         if len(X.shape) == 1:
-            X = X[:,None]
+            X = X[:, None]
+
         mats = []
+        part_mats = [None] * len(self.parts)
+
         for c in range(X.shape[1]):
             transformed = False
-            for bf in self.parts:
+
+            for part_idx, bf in enumerate(self.parts):
                 if bf.basis_column == c:
                     bf.basis_column = 0
-                    mats.append(bf.transform(X[:,c]))
-                    bf.basis_column=c
-                    transformed=True
+                    mat = bf.transform(X[:, c])
+                    bf.basis_column = c
+
+                    mats.append(mat)
+                    part_mats[part_idx] = mat
+                    transformed = True
+
             if not transformed:
-                mats.append(X[:,c])
+                mats.append(X[:, c][:, None])
+
+        for i, j in self.interactions:
+            left = part_mats[i]
+            right = part_mats[j]
+
+            interaction = (
+                left[:, :, None] * right[:, None, :]
+            ).reshape(X.shape[0], -1)
+
+            mats.append(interaction)
+
         return np.concatenate(mats, axis=1)
 
     def to_dict(self):
-        return {"basis_function": "CompositeBasis", "parts": [bf.to_dict() for bf in self.parts]}
+        return {
+            "basis_function": "CompositeBasis",
+            "parts": [bf.to_dict() for bf in self.parts],
+            "interactions": self.interactions,
+        }
 
     @property
     def dimension(self):
-        return sum([p.dimension for p in self.parts])
+        interaction_dimension = sum(
+            self.parts[i].dimension * self.parts[j].dimension
+            for i, j in self.interactions
+        )
+
+        return sum(p.dimension for p in self.parts) + interaction_dimension
 
 
 class FractionalPolynomialBasisFunction(BasisFunction):
@@ -286,7 +463,7 @@ class FractionalPolynomialBasisFunction(BasisFunction):
     Fractional polynomial basis function for modelling smooth nonlinear
     effects.
 
-    The input must be strictly positive (do not standardize the covariates).  
+    The input must be strictly positive (do not standardize the covariates).
     Power convention:
         p = 0      -> log(x)
         p != 0     -> x**p
@@ -462,4 +639,3 @@ class FractionalPolynomialBasisFunction(BasisFunction):
         mydict["power_set"] = list(self.power_set)
         mydict["eps"] = self.eps
         return mydict
-    
