@@ -16,8 +16,12 @@ Imports
 .. code:: ipython3
 
     import warnings
-    import pandas as pd
+    
     import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    
+    import pcntoolkit.util.output
     from pcntoolkit import (
         BLR,
         NormativeModel,
@@ -26,8 +30,6 @@ Imports
         plot_centiles,
         plot_qq,
     )
-    import pcntoolkit.util.output
-    import seaborn as sns
     
     sns.set_style("darkgrid")
     warnings.simplefilter(action="ignore", category=FutureWarning)
@@ -44,7 +46,9 @@ First we download a small example dataset from github.
     # Download an example dataset
     norm_data: NormData = load_fcon1000()
     # Select only these three features to model for this example
-    norm_data = norm_data.sel({"response_vars": ["WM-hypointensities", "Left-Lateral-Ventricle", "Brain-Stem"]})
+    norm_data = norm_data.sel(
+        {"response_vars": ["WM-hypointensities", "Left-Lateral-Ventricle", "Brain-Stem"]}
+    )
     # Train-test split
     train, test = norm_data.train_test_split()
 
@@ -54,7 +58,13 @@ First we download a small example dataset from github.
     df = train.to_dataframe()
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
     
-    sns.countplot(data=df, y=("batch_effects", "site"), hue=("batch_effects", "sex"), ax=ax[0], orient="h")
+    sns.countplot(
+        data=df,
+        y=("batch_effects", "site"),
+        hue=("batch_effects", "sex"),
+        ax=ax[0],
+        orient="h",
+    )
     ax[0].legend(title="Sex")
     ax[0].set_title("Count of sites")
     ax[0].set_xlabel("Site")
