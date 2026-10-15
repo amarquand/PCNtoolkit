@@ -306,8 +306,8 @@ the LNM site, which the model has never seen.
     lnm_model.predict(reference_controls);
     lnm_model.predict(patients);
 
-4. z-diff vs z-gain score
--------------------------
+4. z-diff vs z-gain
+-------------------
 
 Both scores ask whether a person’s change between visits is unusual.
 Values near 0 are typical; large positive or negative values flag
@@ -324,13 +324,12 @@ typically varies in healthy controls. It needs a BLR model and only two
 visits per subject.
 
 .. figure:: ../_static/zdiff.png
-   :alt: Step-by-step computation of the z-diff score
+   :alt: Fig. 1: z-diff score
 
-   Step-by-step computation of the z-diff score
+   Fig. 1: z-diff score
 
-**Fig. 1:** *How z-diff is computed. Kudos to Barbora Rehák Bučková for
-making this fugure (*\ `Rehák Bučková et al.,
-2025 <https://doi.org/10.7554/eLife.95823>`__\ *).*
+Kudos to Barbora Rehák Bučková for making this fugure (`Rehák Bučková et
+al., 2025 <https://doi.org/10.7554/eLife.95823>`__).\*
 
 z-gain
 ~~~~~~
@@ -341,14 +340,12 @@ on the knowledge coming from the correlation matrix. It works with any
 model and any number of visits.
 
 .. figure:: ../_static/zgain.svg
-   :alt: Step-by-step computation of the z-gain score and thrivelines
+   :alt: Fig. 2: z-gain score and thrivelines
 
-   Step-by-step computation of the z-gain score and thrivelines
+   Fig. 2: z-gain score and thrivelines
 
-**Fig. 2:** *How z-gain and thrivelines are computed. The first rows are
-the same as for z-diff because both methods require estimation of the
-cross-sectional models, so the pre-processing and model estimation is
-identical.*
+In the z-gain figure the first rows are the same as for z-diff because
+both methods require longitudinal data and a fitted normative model.
 
 Which score should I use?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
