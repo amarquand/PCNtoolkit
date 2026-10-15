@@ -283,7 +283,18 @@ def load_lnm(save_path: str | None = None) -> NormData:
     """Download and save the LNM longitudinal dataset, or load it from disk.
 
     The dataset has two visits per subject (controls and patients).
-        """
+
+    Parameters
+    ----------
+    save_path : str | None
+        Folder to save or load ``LNM_data.csv`` from. Defaults to
+        ``pcntoolkit_resources/data``.
+
+    Returns
+    -------
+    NormData
+        Longitudinal dataset with ``visits="visit"``.
+    """
     if not save_path:
         save_path = os.path.join("pcntoolkit_resources", "data")
     os.makedirs(save_path, exist_ok=True)
@@ -314,6 +325,7 @@ def load_lnm(save_path: str | None = None) -> NormData:
     )
     return norm_data
 
+
 CORRELATION_MATRIX_URL = (
     "https://raw.githubusercontent.com/CharFraza/CPC_ML_tutorial/"
     "master/data/cmat_rh_G_front_middle_thickness.csv"
@@ -327,14 +339,6 @@ def load_correlation_matrix(save_path: str | None = None) -> CorrelationMatrix:
     Parameters
     ----------
     save_path : str | None
-        Folder to save or load ``LNM_data.csv`` from. Defaults to
-        ``pcntoolkit_resources/data``.
-
-    Returns
-    -------
-    NormData
-        Longitudinal dataset with ``visits="visit"``.
-
         Folder to save the matrix to, or load it from if it is already
         downloaded. Defaults to ``pcntoolkit_resources/data/correlation_matrix``.
 

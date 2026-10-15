@@ -52,6 +52,7 @@ __all__ = [
     "plot_ridge",
     "load_correlation_matrix",
     "load_fcon1000",
+    "load_lnm",
     "Runner",
     "plot_centiles_advanced",
     "plot_thrivelines",
