@@ -6,10 +6,10 @@ Longitudinal normative modelling
    :download:`Download Jupyter notebook <notebooks/14_longitudinal_modelling.ipynb>`
 
 A normative model tells you where a single scan sits relative to a
-reference population (a z-score). With **two or more visits per
-person**, we can ask a further question:
+reference population (a z-score). With two or more visits per subject,
+we can ask a further question:
 
-   Did this person change *more than expected* between visits?
+   Did this subject change *more than expected* between visits?
 
 That we call **Longitudinal Normative Modelling (LNM)**.
 
@@ -192,7 +192,7 @@ the example correlation matrix covers only that one.
 2. The correlation matrix
 -------------------------
 
-z-gain and thrivelines need an **age-by-age correlation matrix**: how
+z-gain and thrivelines need an age-by-age correlation matrix: how
 strongly a person’s z-score at one age is related to their z-score at
 another age.
 
@@ -306,14 +306,17 @@ the LNM site, which the model has never seen.
     lnm_model.predict(reference_controls);
     lnm_model.predict(patients);
 
-4. z-diff and z-gain
---------------------
+4. z-diff vs z-gain score
+-------------------------
 
 Both scores ask whether a person’s change between visits is unusual.
 Values near 0 are typical; large positive or negative values flag
 unusual change.
 
-**z-diff** (`Rehák Bučková et al.,
+z-diff
+~~~~~~
+
+*z-diff* (`Rehák Bučková et al.,
 2025 <https://doi.org/10.7554/eLife.95823>`__) quantifies the
 longitudinal change in a brain measure relative to what would be
 expected based on healthy ageing, divided by how much this change
@@ -325,11 +328,14 @@ visits per subject.
 
    Step-by-step computation of the z-diff score
 
-*How z-diff is computed. Figure courtesy of Barbora Rehák Bučková
-(*\ `Rehák Bučková et al.,
+**Fig. 1:** *How z-diff is computed. Kudos to Barbora Rehák Bučková for
+making this fugure (*\ `Rehák Bučková et al.,
 2025 <https://doi.org/10.7554/eLife.95823>`__\ *).*
 
-**z-gain** (`Bayer et al., 2026 <https://arxiv.org/abs/2601.07591>`__)
+z-gain
+~~~~~~
+
+*z-gain* (`Bayer et al., 2026 <https://arxiv.org/abs/2601.07591>`__)
 asks whether the later z-score is surprising given the earlier one based
 on the knowledge coming from the correlation matrix. It works with any
 model and any number of visits.
@@ -339,8 +345,8 @@ model and any number of visits.
 
    Step-by-step computation of the z-gain score and thrivelines
 
-*How z-gain and thrivelines are computed. The first rows are the same as
-for z-diff because both methods require estimation of the
+**Fig. 2:** *How z-gain and thrivelines are computed. The first rows are
+the same as for z-diff because both methods require estimation of the
 cross-sectional models, so the pre-processing and model estimation is
 identical.*
 
@@ -373,7 +379,7 @@ reuses the same model and correlation matrix to draw thrivelines
 
 .. code:: ipython3
 
-    # 1. Create the ZDiffScore object
+    # Create the ZDiffScore object
     zdiff = ZDiffScore(lnm_model, reference_data=reference_controls)
     
     # Compute zdiff
@@ -514,8 +520,8 @@ everything in one table.
 
 
 
-5. Do z-diff and z-gain agree?
-------------------------------
+Do z-diff and z-gain agree?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Does a person with an extreme z-diff also have an extreme z-gain? Here
 we call a score *extreme* when it is beyond ±1.96 (dashed lines).
@@ -615,7 +621,7 @@ The two scores rank people almost the same way (Spearman correlation:
 0.90), and every patient with an extreme z-gain also has an extreme
 z-diff. z-diff though flags as extreme a few more patients than z-gain.
 
-6. Thrivelines
+5. Thrivelines
 --------------
 
 Thrivelines borrow an idea from children’s growth charts. Each short
