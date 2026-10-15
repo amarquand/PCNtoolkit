@@ -161,11 +161,7 @@ class ZGainScore(LongitudinalScore):
         self.thrivelines = thrivelines_to_dataframe(thrive_Z, thrive_X, thrive_Y)
         return self.thrivelines
 
-    def score(
-        self,
-        score_data: NormData,
-        subject_id_col: str | None = None,
-    ) -> xr.DataArray:
+    def score(self, score_data: NormData) -> xr.DataArray:
         """Compute the z-gain score for every subject in ``score_data``.
 
         Parameters
@@ -174,9 +170,6 @@ class ZGainScore(LongitudinalScore):
             Longitudinal cohort with at least two distinct visits per subject,
             numeric visit labels on the NormData object, and z-scores already
             computed.
-        subject_id_col : str, optional
-            Subject id column name. Kept for backwards compatibility; the
-            subject ids are read from ``score_data`` itself.
 
         Returns
         -------

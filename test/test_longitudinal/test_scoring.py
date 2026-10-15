@@ -238,7 +238,7 @@ def test_zdiff_score_scales_by_reference_spread(
     score_data = blr_predicted_norm_data_factory(score_df, yhat_values=yhat)
     score_data["Y"] = (["observations", "response_vars"], y)
 
-    scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
+    scorer = ZDiffScore(fitted_norm_blr_model, reference)
     scores = scorer.score(score_data)
 
     ref_deltas = list(
@@ -265,7 +265,7 @@ def test_zdiff_doubles_when_target_change_doubles(
         data = blr_predicted_norm_data_factory(base_df)
         y = np.array([[y_pair[0]], [y_pair[1]]])
         data["Y"] = (["observations", "response_vars"], y)
-        scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
+        scorer = ZDiffScore(fitted_norm_blr_model, reference)
         return float(scorer.score(data).sel(subjects="a").item())
 
     small = _score_with_y((10.0, 11.0))
@@ -285,7 +285,7 @@ def test_zdiff_visit_order_not_row_order(
     y = np.array([[5.0], [8.0]])
     score_data = blr_predicted_norm_data_factory(score_df, yhat_values=y.copy())
 
-    scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
+    scorer = ZDiffScore(fitted_norm_blr_model, reference)
     scores = scorer.score(score_data)
     assert np.isfinite(scores.sel(subjects="a").item())
 
@@ -299,7 +299,7 @@ def test_zdiff_zero_reference_variability_raises(
     flat = blr_predicted_norm_data_factory(df, yhat_values=np.zeros((4, 1)))
     flat["Yhat"] = (["observations", "response_vars"], flat.Y.values.copy())
 
-    scorer = ZDiffScore(fitted_norm_blr_model, flat, subject_id_col="sub_id")
+    scorer = ZDiffScore(fitted_norm_blr_model, flat)
     target = blr_predicted_norm_data_factory(
         blr_longitudinal_dataframe_factory(n_subjects=1)
     )
@@ -318,7 +318,6 @@ def test_zdiff_rejects_non_blr_model(blr_predicted_longitudinal_norm_data):
         ZDiffScore(
             _NotBlrModel(),  # type: ignore[arg-type]
             blr_predicted_longitudinal_norm_data,
-            subject_id_col="sub_id",
         )
 
 
@@ -331,7 +330,7 @@ def test_zdiff_rejects_more_than_two_visits(
     score_data = blr_predicted_norm_data_factory(
         blr_longitudinal_dataframe_factory(n_subjects=1, extra_visits=[1, 2, 3])
     )
-    scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
+    scorer = ZDiffScore(fitted_norm_blr_model, reference)
     with pytest.raises(ValueError, match="at most two visits"):
         scorer.score(score_data)
 
@@ -344,7 +343,7 @@ def test_zdiff_caches_result(
 ):
     reference = blr_predicted_longitudinal_norm_data
     target = blr_predicted_norm_data_factory(blr_longitudinal_dataframe_factory())
-    scorer = ZDiffScore(fitted_norm_blr_model, reference, subject_id_col="sub_id")
+    scorer = ZDiffScore(fitted_norm_blr_model, reference)
     first = scorer.score(target)
     assert scorer.zdiff is first
     second = scorer.score(target)
@@ -359,5 +358,4 @@ def test_zdiff_requires_reference_at_init(
         ZDiffScore(
             fitted_norm_blr_model,
             None,  # type: ignore[arg-type]
-            subject_id_col="sub_id",
         )
